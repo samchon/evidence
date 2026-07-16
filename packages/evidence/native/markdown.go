@@ -1,0 +1,184 @@
+package evidence
+
+import (
+	"strings"
+)
+
+// documentSection is one addressable node of the evidence graph: a heading in a
+// markdown document, reachable as `<path>#<anchor>`.
+type documentSection struct {
+	// Anchor is the identity. Prose is free to change; this is not.
+	Anchor string
+	// Title is the heading text as written, carried for diagnostics only. Never
+	// compare against it — see the evidence-graph skill.
+	Title string
+	// Line is 1-based, for a diagnostic that can point a reader at the heading.
+	Line int
+	// Explicit records whether the anchor came from a `{#id}` annotation rather
+	// than being derived from Title. An explicit anchor survives an edit to the
+	// heading text; a derived one does not.
+	Explicit bool
+}
+
+// scanMarkdownSections extracts every ATX heading from a markdown document.
+//
+// Two things this deliberately does NOT do:
+//
+// It does not parse markdown. A full AST buys nothing here — headings are the
+// only construct that matters, and a line-oriented scan cannot be broken by an
+// unsupported extension in the rest of the document.
+//
+// It does not treat Setext headings (underlined with === or ---) as sections.
+// They cannot carry an explicit `{#id}`, so every reference to one would be
+// hostage to its prose. Supporting them would silently hand users the fragile
+// half of the design.
+func scanMarkdownSections(content string) []documentSection {
+	sections := []documentSection{}
+	fence := ""
+	for index, line := range strings.Split(content, "\n") {
+		trimmed := strings.TrimRight(line, "\r")
+
+		// A fenced code block can hold anything, including `# not a heading`.
+		// Tracking the fence is what keeps a README's own examples out of the
+		// graph.
+		if marker := fenceMarker(trimmed); marker != "" {
+			switch {
+			case fence == "":
+				fence = marker
+			case strings.HasPrefix(marker, fence):
+				fence = ""
+			}
+			continue
+		}
+		if fence != "" {
+			continue
+		}
+
+		title, ok := atxHeadingText(trimmed)
+		if !ok {
+			continue
+		}
+		anchor, explicit := headingAnchor(title)
+		if anchor == "" {
+			// A heading of only punctuation or emoji slugs to nothing. It is
+			// unaddressable rather than erroneous, so it is not a section.
+			continue
+		}
+		sections = append(sections, documentSection{
+			Anchor:   anchor,
+			Title:    strings.TrimSpace(stripExplicitAnchor(title)),
+			Line:     index + 1,
+			Explicit: explicit,
+		})
+	}
+	return sections
+}
+
+// fenceMarker returns the fence run opening or closing a code block, or "".
+func fenceMarker(line string) string {
+	trimmed := strings.TrimLeft(line, " ")
+	for _, char := range []byte{'`', '~'} {
+		count := 0
+		for count < len(trimmed) && trimmed[count] == char {
+			count++
+		}
+		if count >= 3 {
+			return trimmed[:count]
+		}
+	}
+	return ""
+}
+
+// atxHeadingText returns the text of an ATX heading (`# Title`), with any
+// closing sequence (`## Title ##`) removed.
+func atxHeadingText(line string) (string, bool) {
+	trimmed := strings.TrimLeft(line, " ")
+	// Four spaces of indent makes an indented code block, not a heading.
+	if len(line)-len(trimmed) >= 4 {
+		return "", false
+	}
+	level := 0
+	for level < len(trimmed) && trimmed[level] == '#' {
+		level++
+	}
+	if level == 0 || level > 6 {
+		return "", false
+	}
+	rest := trimmed[level:]
+	if rest != "" && rest[0] != ' ' && rest[0] != '\t' {
+		// `#hashtag` is prose, not a heading.
+		return "", false
+	}
+	rest = strings.TrimSpace(rest)
+	rest = strings.TrimRight(rest, "#")
+	return strings.TrimSpace(rest), true
+}
+
+// headingAnchor derives a heading's anchor, preferring an explicit `{#id}`.
+//
+// The explicit form exists because anchor identity must be able to outlive the
+// prose. An anchor derived from heading text turns every editorial fix into a
+// broken reference, which teaches authors that the graph is a tax on writing.
+// The derived form exists because requiring an annotation on every heading is a
+// tax of its own. Authors pick per heading: annotate what is cited, leave the
+// rest alone.
+func headingAnchor(title string) (string, bool) {
+	if explicit := explicitAnchor(title); explicit != "" {
+		return explicit, true
+	}
+	return slugify(stripExplicitAnchor(title)), false
+}
+
+// explicitAnchor reads a trailing `{#id}` annotation, the kramdown/pandoc form
+// that GitHub, Docusaurus, and most static site generators already honor.
+func explicitAnchor(title string) string {
+	trimmed := strings.TrimSpace(title)
+	if !strings.HasSuffix(trimmed, "}") {
+		return ""
+	}
+	open := strings.LastIndex(trimmed, "{#")
+	if open == -1 {
+		return ""
+	}
+	id := trimmed[open+2 : len(trimmed)-1]
+	if id == "" || strings.ContainsAny(id, " \t{}#") {
+		return ""
+	}
+	return id
+}
+
+func stripExplicitAnchor(title string) string {
+	trimmed := strings.TrimSpace(title)
+	if explicitAnchor(trimmed) == "" {
+		return trimmed
+	}
+	return strings.TrimSpace(trimmed[:strings.LastIndex(trimmed, "{#")])
+}
+
+// slugify derives a GitHub-compatible anchor from heading text: lowercase,
+// drop everything that is not a letter, digit, space, hyphen, or underscore,
+// then turn runs of spaces into single hyphens.
+//
+// Compatibility with GitHub matters more than elegance. A reader who clicks a
+// heading in the rendered document and pastes the fragment must land on a
+// working reference, or the two addressing schemes drift and the tool feels
+// broken even when it is right.
+func slugify(title string) string {
+	var builder strings.Builder
+	for _, char := range strings.ToLower(strings.TrimSpace(title)) {
+		switch {
+		case char >= 'a' && char <= 'z',
+			char >= '0' && char <= '9',
+			char == '-',
+			char == '_':
+			builder.WriteRune(char)
+		case char == ' ':
+			builder.WriteByte('-')
+		case char > 127:
+			// Keep non-ASCII letters. GitHub does, and dropping them would make
+			// every heading in a non-English document unaddressable.
+			builder.WriteRune(char)
+		}
+	}
+	return strings.Trim(builder.String(), "-")
+}

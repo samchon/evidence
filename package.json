@@ -1,0 +1,34 @@
+{
+  "private": true,
+  "name": "@samchon/evidence-station",
+  "version": "0.1.0",
+  "description": "Evidence-graph lint contributor for @ttsc/lint workspace.",
+  "scripts": {
+    "build": "pnpm --filter=./packages/* -r build",
+    "format": "prettier --write \"**/*.ts\" \"**/*.md\" && pnpm run format:go",
+    "format:go": "gofmt -w packages/evidence/native",
+    "test": "pnpm run build && pnpm run test:go && pnpm run test:features",
+    "test:go": "pnpm --filter @samchon/evidence exec go test ./native/",
+    "test:features": "pnpm --filter=./tests/test-* -r --workspace-concurrency=1 start",
+    "release": "bumpp -r"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/samchon/evidence"
+  },
+  "author": "Jeongho Nam",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/samchon/evidence/issues"
+  },
+  "packageManager": "pnpm@10.6.4",
+  "devDependencies": {
+    "@trivago/prettier-plugin-sort-imports": "^6.0.2",
+    "@types/node": "catalog:utils",
+    "bumpp": "^10.4.1",
+    "prettier": "^3.8.3",
+    "prettier-plugin-jsdoc": "^1.8.0",
+    "rimraf": "catalog:utils",
+    "typescript": "catalog:typescript"
+  }
+}
