@@ -1,0 +1,12 @@
+packages:
+  - 'config'
+  - 'packages/*'
+  - 'tests/*'
+catalogs:
+  typescript:
+    typescript: ^7.0.2
+    ttsc: ^0.19.1
+    '@ttsc/lint': ^0.19.1
+  utils:
+    '@types/node': ^25.3.0
+    rimraf: ^6.1.2

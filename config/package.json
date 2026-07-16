@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "name": "@samchon/evidence-config",
+  "version": "0.1.0",
+  "description": "Shared build configuration for @samchon/evidence packages.",
+  "devDependencies": {
+    "typescript": "catalog:typescript"
+  }
+}
