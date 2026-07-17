@@ -127,8 +127,18 @@ func checkDocumentReference(ctx *rule.Context, index *evidenceIndex, tag evidenc
 		return
 	}
 	if tag.Anchor == "" {
-		// Citing a whole document is legitimate: not every claim is grounded in
-		// one heading.
+		// A whole-document citation is refused on purpose. "The grounds are
+		// somewhere in this file" is not grounds: a reviewer cannot check it,
+		// and it silently survives every edit to the document — including the
+		// edit that deletes the paragraph it meant. A section is the smallest
+		// unit that stays honest.
+		ctx.ReportRange(
+			tag.Pos,
+			tag.End,
+			"Evidence target '"+tag.Target+"' cites a whole document. Cite the "+
+				"section that carries the grounds, as in '"+path+"#"+
+				firstAnchor(sections)+"'."+suggestAnchors(sections),
+		)
 		return
 	}
 	for _, section := range sections {
@@ -171,6 +181,15 @@ func describeIndexScope(index *evidenceIndex) string {
 		paths = paths[:5]
 	}
 	return "Indexed documents include " + strings.Join(paths, ", ") + "."
+}
+
+// firstAnchor names a concrete anchor for a suggestion, so the repair in a
+// diagnostic is something the author can paste rather than a shape to fill in.
+func firstAnchor(sections []documentSection) string {
+	if len(sections) == 0 {
+		return "<section>"
+	}
+	return sections[0].Anchor
 }
 
 // suggestAnchors lists what the document does declare. A "no such section"
