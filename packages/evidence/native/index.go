@@ -1,6 +1,7 @@
 package evidence
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"sort"
@@ -93,7 +94,43 @@ func (index *evidenceIndex) documentPaths() []string {
 type indexOptions struct {
 	// Documents are globs of markdown to index, project-relative.
 	Documents []string `json:"documents"`
+	// EmitIndex is a project-relative path to write the index to as JSON, or
+	// "" to write nothing.
+	//
+	// This exists so an editor can offer completion for `@evidence` targets
+	// without reimplementing this package's scanner in another language. The
+	// contributor API has no data channel — a rule's only egress is a
+	// diagnostic, and the index dies with the process — so the file IS the
+	// channel. See https://github.com/samchon/ttsc/issues/729.
+	EmitIndex string `json:"emitIndex"`
 }
+
+// emittedIndex is the on-disk shape consumers read. It is deliberately not
+// evidenceIndex: this is a published contract, and coupling it to an internal
+// struct would let a refactor silently break every consumer.
+type emittedIndex struct {
+	// Version guards consumers against a shape they cannot read.
+	Version int `json:"version"`
+	// Documents maps a project-relative slash path to its sections.
+	Documents map[string][]emittedSection `json:"documents"`
+	// Symbols are qualified declaration names, sorted.
+	Symbols []string `json:"symbols"`
+}
+
+type emittedSection struct {
+	Anchor string `json:"anchor"`
+	Title  string `json:"title"`
+	Line   int    `json:"line"`
+	// Explicit is true when the anchor came from a `{#id}` annotation and so
+	// survives an edit to the heading text. A consumer can use this to rank a
+	// stable anchor above a derived one.
+	Explicit bool `json:"explicit"`
+	// Exemption is the stated reason this section needs no citation, or "".
+	Exemption string `json:"exemption,omitempty"`
+}
+
+// emittedIndexVersion is bumped when the shape changes incompatibly.
+const emittedIndexVersion = 1
 
 // defaultDocumentPatterns indexes every markdown file in the project.
 //
@@ -162,6 +199,7 @@ func (indexRule) Check(ctx *rule.ProjectContext) {
 
 	index := buildEvidenceIndex(root, patterns, ctx.Sources)
 	reportAmbiguousAnchors(ctx, index)
+	emitIndexFile(ctx, index, root, options.EmitIndex)
 
 	// Published even when empty. Presence is the signal, not length: an index
 	// that exists proves the scan ran, which is exactly what a file rule needs
@@ -193,6 +231,73 @@ func buildEvidenceIndex(
 	collectDocuments(root, patterns, index)
 	collectSymbols(sources, index)
 	return index
+}
+
+// emitIndexFile writes the index for editors to read, when configured to.
+//
+// Writing a file during a check is a side effect, which is why it happens only
+// on an explicit path and never by default. The alternative was worse: with no
+// data channel out of a contributor rule, an editor extension would have to
+// reimplement this package's markdown scanner and slug derivation in
+// TypeScript, and two implementations of one rule set drift. The file keeps the
+// scanner singular.
+//
+// A write failure is reported rather than swallowed. Configuring an emit path
+// and silently getting no file is the exact failure this project treats as
+// worst: indistinguishable from working.
+func emitIndexFile(
+	ctx *rule.ProjectContext,
+	index *evidenceIndex,
+	root string,
+	target string,
+) {
+	if target == "" {
+		return
+	}
+	emitted := emittedIndex{
+		Version:   emittedIndexVersion,
+		Documents: map[string][]emittedSection{},
+		Symbols:   make([]string, 0, len(index.Symbols)),
+	}
+	for path, sections := range index.Documents {
+		converted := make([]emittedSection, 0, len(sections))
+		for _, section := range sections {
+			converted = append(converted, emittedSection{
+				Anchor:    section.Anchor,
+				Title:     section.Title,
+				Line:      section.Line,
+				Explicit:  section.Explicit,
+				Exemption: section.Exemption,
+			})
+		}
+		emitted.Documents[path] = converted
+	}
+	for symbol := range index.Symbols {
+		emitted.Symbols = append(emitted.Symbols, symbol)
+	}
+	// Sorted so the file is stable across runs. An index that reorders itself
+	// every compile would churn any watcher reading it, and would make a
+	// committed one produce noise diffs for people who ignore the advice not to
+	// commit it.
+	sort.Strings(emitted.Symbols)
+
+	payload, err := json.MarshalIndent(emitted, "", "  ")
+	if err != nil {
+		ctx.Report("Evidence index could not be serialized: " + err.Error())
+		return
+	}
+	location := filepath.Join(root, filepath.FromSlash(target))
+	if err := os.MkdirAll(filepath.Dir(location), 0o755); err != nil {
+		ctx.Report(
+			"Evidence index could not be written to " + target + ": " + err.Error(),
+		)
+		return
+	}
+	if err := os.WriteFile(location, payload, 0o644); err != nil {
+		ctx.Report(
+			"Evidence index could not be written to " + target + ": " + err.Error(),
+		)
+	}
 }
 
 // projectRoot prefers the physical root because it is the filesystem identity
