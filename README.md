@@ -101,12 +101,43 @@ Two headings that resolve to the same anchor are an error rather than a silent t
 
 ## Rules
 
-| Rule | Scope | Does |
+| Rule | Scope | Asks |
 | --- | --- | --- |
-| `evidence/index` | project | Builds the document and symbol index everything else resolves against |
-| `evidence/reference` | file | Every `@evidence` tag carries a reason and resolves |
+| `evidence/index` | project | — builds the index everything else resolves against |
+| `evidence/reference` | file | Does this citation point at something real? |
+| `evidence/require` | file | Does this declaration assert something while citing nothing? |
+
+The last two are different questions, and a citation can pass one while failing the other. `evidence/reference` is integrity: it never sees a declaration that simply has no tag. `evidence/require` is obligation: it does not care whether a citation resolves, only whether one exists and points where the policy demands.
 
 `evidence/index` is project-scoped, so it must go in a config entry with no `files` key.
+
+## Requiring citations by folder
+
+```ts
+"evidence/require": ["error", {
+  policies: [
+    { files: ["src/providers/**"], targets: ["docs/analysis/**/*.md"] },
+  ],
+}],
+```
+
+```
+src/providers/order.ts:9:18 - error TS15888: [evidence/require] 'IUngrounded' is not grounded. Declarations under src/providers/** must cite a section under docs/analysis/**/*.md, as in '@evidence docs/spec.md#pricing <why this declaration follows from that section>'.
+
+src/providers/order.ts:19:18 - error TS15888: [evidence/require] 'IWrongTarget' cites 'docs/design/notes.md#scratch', and none of them is a section under docs/analysis/**/*.md. A citation outside the required documents does not discharge this obligation, even when it resolves.
+```
+
+Only exported, top-level `interface`, `type`, `class`, `function`, and `enum` declarations are obliged by default; `variable` and `namespace` are opt-in through `kinds`. Demanding grounds for every exported constant trains authors to write filler, which is worse than demanding nothing.
+
+Only **document sections** discharge an obligation. A symbol citation is still checked for integrity, but it cannot ground a declaration: a symbol both cites and is cited, so two declarations naming each other would satisfy every obligation between them while proving nothing. A section is terminal, and that is what makes it grounds.
+
+Put every policy in one entry. Splitting them across config entries does not accumulate and does not warn — a rule setting has no `files` key, a config file is one object rather than an array, and `extends` takes a single string, so one config file contributes at most one rules entry.
+
+### Adoption is authorship, not configuration
+
+Turning a broad policy on over an existing codebase produces hundreds of errors at once. The cheapest way to clear them is to write a plausible citation on each — and that yields a graph that is fully covered, largely false, and permanently indistinguishable from a real one. No mechanism here can tell the difference afterward, which is exactly why none is offered: there is no baseline file, no autofix that inserts `@evidence`, and no minimum reason length. Each would industrialize the lie.
+
+Start from a folder small enough to cite honestly, and widen the glob deliberately. The glob is the ratchet — it is diffable, reviewable, and states which folders are under discipline.
 
 **Turning `evidence/index` off does not relax enforcement — it silences everything.** Without an index there is nothing to resolve against, and a rule that reported anyway would be blaming authors for its own blindness. This is deliberate: a rule that fires before its evidence is authorable pushes people toward false citations, and a false citation outlives the moment that produced it.
 

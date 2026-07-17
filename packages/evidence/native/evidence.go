@@ -27,4 +27,5 @@ func init() {
 	rule.RegisterProject(indexRule{})
 
 	rule.Register(referenceRule{})
+	rule.Register(requireRule{})
 }

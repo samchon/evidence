@@ -224,25 +224,37 @@ func collectEvidenceTags(file *shimast.SourceFile) []evidenceTag {
 		if node == nil {
 			return false
 		}
-		for _, doc := range node.JSDoc(file) {
-			if doc == nil {
-				continue
-			}
-			block := doc.AsJSDoc()
-			if block == nil || block.Tags == nil {
-				continue
-			}
-			for _, tag := range block.Tags.Nodes {
-				parsed, ok := evidenceTagFrom(file, tag)
-				if ok {
-					tags = append(tags, parsed)
-				}
-			}
-		}
+		tags = append(tags, evidenceTagsOf(file, node)...)
 		node.ForEachChild(visit)
 		return false
 	}
 	file.AsNode().ForEachChild(visit)
+	return tags
+}
+
+// evidenceTagsOf returns the tags attached to ONE node.
+//
+// The node scope is the point. A rule asking whether a declaration is grounded
+// must read that declaration's own JSDoc; reading the file's would let a
+// citation on one interface silently discharge its neighbour's obligation, and
+// the neighbour would look grounded while citing nothing.
+func evidenceTagsOf(file *shimast.SourceFile, node *shimast.Node) []evidenceTag {
+	tags := []evidenceTag{}
+	for _, doc := range node.JSDoc(file) {
+		if doc == nil {
+			continue
+		}
+		block := doc.AsJSDoc()
+		if block == nil || block.Tags == nil {
+			continue
+		}
+		for _, tag := range block.Tags.Nodes {
+			parsed, ok := evidenceTagFrom(file, tag)
+			if ok {
+				tags = append(tags, parsed)
+			}
+		}
+	}
 	return tags
 }
 
