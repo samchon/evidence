@@ -28,6 +28,38 @@ type evidenceIndex struct {
 	// DocumentPatterns records what was scanned, so a diagnostic can tell an
 	// author their document is simply not covered rather than missing.
 	DocumentPatterns []string
+	// Root is the resolved project root.
+	//
+	// It is published here because rule.Context carries no ProjectIdentity —
+	// only a project rule receives one. A file rule that needs to match its own
+	// path against a folder glob has no other way to learn what the path is
+	// relative to.
+	Root string
+}
+
+// relativePath converts an absolute source path into the project-relative,
+// slash-separated form that folder globs are written against.
+//
+// The second return is false when the path escapes the root, and the caller
+// must then stay silent rather than guess. The host relativizes its own `files:`
+// globs through an unexported helper that resolves symlinks and Windows 8.3
+// short names on both sides first; this package cannot reach that helper, so a
+// junction or short-name ancestor makes a plain Rel disagree with the host and
+// return a `..`-prefixed path. Matching a glob against that would be nonsense,
+// and reporting on it would blame an author for a path they never wrote.
+func (index *evidenceIndex) relativePath(absolute string) (string, bool) {
+	if index == nil || index.Root == "" || absolute == "" {
+		return "", false
+	}
+	relative, err := filepath.Rel(index.Root, absolute)
+	if err != nil {
+		return "", false
+	}
+	normalized := normalizePath(relative)
+	if normalized == ".." || strings.HasPrefix(normalized, "../") {
+		return "", false
+	}
+	return normalized, true
 }
 
 // anchors returns a document's anchor set, or nil when the path is unknown.
@@ -122,6 +154,7 @@ func (indexRule) Check(ctx *rule.ProjectContext) {
 		Documents:        map[string][]documentSection{},
 		Symbols:          map[string]bool{},
 		DocumentPatterns: patterns,
+		Root:             root,
 	}
 	collectDocuments(root, patterns, index)
 	collectSymbols(ctx.Sources, index)
