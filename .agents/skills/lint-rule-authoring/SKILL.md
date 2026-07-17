@@ -32,6 +32,28 @@ Register in `init()`. Registration does not check duplicates, and a name that co
 
 Dispatch is a kind-keyed table, not a visitor. `Visits()` enrolls the rule into `map[shimast.Kind][]Rule` and the engine calls `Check` once per matching node. `KindSourceFile` rules dispatch **before** the statement walk against `file.AsNode()`; the walk closure only ever sees statements. Register multiple kinds and branch on `node.Kind` when you need both.
 
+## `As*` Accessors Panic — Check `Kind` First
+
+`node.AsModuleBlock()` and its siblings are **type assertions, not conversions**. Handed the wrong node they panic; they never return nil. A nil check after one is dead code that reads like a safeguard.
+
+```go
+// WRONG — panics on `namespace Outer.Inner {}`, whose Body is another
+// ModuleDeclaration rather than a ModuleBlock.
+body := module.Body.AsModuleBlock()
+if body == nil { return }
+
+// RIGHT — the Kind check is what makes the accessor safe.
+switch module.Body.Kind {
+case shimast.KindModuleBlock:
+    body := module.Body.AsModuleBlock()
+    ...
+}
+```
+
+**Why this matters more here than in a normal rule.** The host turns a panic in `Check` into an error finding and keeps going, so it looks survivable. It is not: this plugin's file rules all gate on an index published by a project rule, so a panic in the index rule means no index, which means every file rule goes silent. One malformed input anywhere disables evidence checking everywhere, and silence is this project's worst failure mode because it is indistinguishable from passing.
+
+Never assume an AST shape from its source syntax. `namespace Outer.Inner {}` looks like one declaration with a dotted name and is actually nested declarations.
+
 ## The Defaults Are The Expensive Ones
 
 Every optional marker interface defaults to the costly or broadest behavior when unimplemented. Implement them deliberately.
@@ -39,9 +61,8 @@ Every optional marker interface defaults to the costly or broadest behavior when
 | Interface | Method | Unimplemented default | Implement it when |
 | --- | --- | --- | --- |
 | `TypeAwareRule` | `NeedsTypeChecker() bool` | **true** — builds a checker over every file and forces a **serial** walk | Return `false` for any AST-only rule. Then never read `ctx.Checker`; it may be nil. |
-| `DeclarationFileRule` | `VisitsDeclarationFiles() bool` | **true** — dispatches on every `.d.ts` | Return `false` unless the rule genuinely inspects declaration files. |
-| `OptionsRule` | `AcceptsTtscLintOptions() bool` | true | Leave alone unless refusing options. |
-| `FormatRule` | `IsFormat() bool` | lint-class | This plugin ships no format rules. |
+
+| `DeclarationFileRule` | `VisitsDeclarationFiles() bool` | **true** — dispatches on every `.d.ts` | Return `false` unless the rule genuinely inspects declaration files. | | `OptionsRule` | `AcceptsTtscLintOptions() bool` | true | Leave alone unless refusing options. | | `FormatRule` | `IsFormat() bool` | lint-class | This plugin ships no format rules. |
 
 ## Reporting
 
@@ -65,6 +86,7 @@ A second registry, `rule.RegisterProject`, runs once per Program **before any fi
 - **Project findings have no file, no range, and no fix.** A markdown-side error cannot point at a line. Report TypeScript-side violations on the JSDoc node instead, where a position exists.
 - **Project rules cannot be configured in an entry with `files`.** Such an entry is rejected even when empty or `off`.
 - **`SetState` values live for one Program cycle.** Do not cache across cycles.
+- **A declared, non-off project rule forces a serial walk for the entire run.** `engine.go:532-534` sets `eng.needsTypeChecker = true` for any project rule that is declared and not `off`, and `runsSerial()` (`engine.go:498-500`) reads that one flag for the whole engine. `NeedsTypeChecker` is **global, not per-rule**. Because `evidence/index` is always on in a working configuration, this plugin's file rules run serially no matter what they declare — so `evidence/reference`'s `NeedsTypeChecker() false` currently buys nothing. Keep declaring it anyway: it is true, it costs nothing, and it is correct the day upstream stops conflating the two. This is a genuine upstream gap — a project rule has no way to say it does not need the checker — and the best candidate for a contribution back to `ttsc`.
 
 ## Options
 
