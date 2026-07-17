@@ -36,6 +36,12 @@ type coverageRule struct{}
 
 func (coverageRule) Name() string { return coverageRuleName }
 
+// NeedsTypeChecker is false for the same reason as the index rule: coverage
+// compares markdown read from disk against tags read from the AST, and never
+// touches ctx.Checker. See index.go for why the marker is declared despite
+// having no effect on the currently published host.
+func (coverageRule) NeedsTypeChecker() bool { return false }
+
 type coverageOptions struct {
 	// Documents whose sections must be cited. Defaults to every indexed
 	// document.

@@ -125,6 +125,16 @@ type indexRule struct{}
 
 func (indexRule) Name() string { return indexRuleName }
 
+// NeedsTypeChecker is false because this rule reads markdown from disk and
+// walks ctx.Sources syntactically. It never touches ctx.Checker.
+//
+// The marker does nothing on @ttsc/lint 0.19.1, where a declared project rule
+// sets the engine-wide checker flag unconditionally and so serializes the file
+// walk for every rule in the run. It is declared anyway: it is true, it costs
+// nothing, and it becomes effective the moment the host honors it. See
+// samchon/ttsc feat/lint-project-rule-checker-opt-out.
+func (indexRule) NeedsTypeChecker() bool { return false }
+
 func (indexRule) Check(ctx *rule.ProjectContext) {
 	if ctx == nil {
 		return
