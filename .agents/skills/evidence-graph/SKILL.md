@@ -1,6 +1,6 @@
 ---
 name: evidence-graph
-description: Defines the evidence graph domain model for @samchon/evidence — the tag grammar, node and edge kinds, reference resolution, the coverage-versus-integrity split, activation gates, and exemptions. Use before changing rule semantics, the tag grammar, the configuration surface, or a diagnostic message; do not use for the mechanics of the Go rule API, which the lint-rule-authoring skill owns.
+description: Defines the evidence graph domain model for @samchon/evidence — the tag grammar, node kinds, reference resolution, the three questions the rules ask (integrity, obligation, coverage), activation gates, and exemptions. Use before changing rule semantics, the tag grammar, the configuration surface, or a diagnostic message; do not use for the mechanics of the Go rule API, which the lint-rule-authoring skill owns.
 ---
 
 # Evidence Graph
