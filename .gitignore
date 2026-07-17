@@ -1,0 +1,30 @@
+# Local knowledge base — see .agents/skills/wiki/SKILL.md. Deliberately not a
+# repository artifact: it is working knowledge for whoever builds here next,
+# not documentation for whoever consumes the package.
+.wiki/
+
+# Dependencies and package manager state
+node_modules/
+
+# Build outputs
+lib/
+dist/
+coverage/
+
+# Local caches and package archives — includes tests/*/.cache/ttsc, the shared
+# plugin build cache the e2e harness pins so fixtures stop paying a cold Go link
+# each.
+.cache/
+*.tgz
+*.tsbuildinfo
+*.log
+
+# AI assistant data
+.claude/
+
+# Local Go workspace overlays
+go.work
+go.work.sum
+
+# Stray native binaries from a bare `go build`
+/plugin
