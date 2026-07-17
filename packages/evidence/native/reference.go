@@ -102,13 +102,14 @@ func checkEvidenceTag(ctx *rule.Context, index *evidenceIndex, tag evidenceTag) 
 
 func checkDocumentReference(ctx *rule.Context, index *evidenceIndex, tag evidenceTag) {
 	path := normalizePath(tag.Path)
+	targetPos, targetEnd := tag.targetRange()
 	if path == "" {
 		// `#anchor` alone: a document reference with no document. Resolving it
 		// against the citing file would be meaningless — the citing file is
 		// TypeScript, and it has no sections.
 		ctx.ReportRange(
-			tag.Pos,
-			tag.End,
+			targetPos,
+			targetEnd,
 			"Evidence target '"+tag.Target+"' names an anchor with no document. "+
 				"Write the document path too, as in 'docs/spec.md"+tag.Target+"'.",
 		)
@@ -117,8 +118,8 @@ func checkDocumentReference(ctx *rule.Context, index *evidenceIndex, tag evidenc
 	sections, known := index.anchors(path)
 	if !known {
 		ctx.ReportRange(
-			tag.Pos,
-			tag.End,
+			targetPos,
+			targetEnd,
 			"Evidence target '"+tag.Target+"' refers to "+path+
 				", which the evidence index does not contain. "+
 				describeIndexScope(index)+" Check the path, or widen the "+
@@ -133,8 +134,8 @@ func checkDocumentReference(ctx *rule.Context, index *evidenceIndex, tag evidenc
 		// edit that deletes the paragraph it meant. A section is the smallest
 		// unit that stays honest.
 		ctx.ReportRange(
-			tag.Pos,
-			tag.End,
+			targetPos,
+			targetEnd,
 			"Evidence target '"+tag.Target+"' cites a whole document. Cite the "+
 				"section that carries the grounds, as in '"+path+"#"+
 				firstAnchor(sections)+"'."+suggestAnchors(sections),
@@ -147,8 +148,8 @@ func checkDocumentReference(ctx *rule.Context, index *evidenceIndex, tag evidenc
 		}
 	}
 	ctx.ReportRange(
-		tag.Pos,
-		tag.End,
+		targetPos,
+		targetEnd,
 		"Evidence target '"+tag.Target+"' refers to a section that "+path+
 			" does not declare."+suggestAnchors(sections)+
 			" An anchor is derived from the heading text unless the heading "+
@@ -160,9 +161,10 @@ func checkSymbolReference(ctx *rule.Context, index *evidenceIndex, tag evidenceT
 	if index.hasSymbol(tag.Target) {
 		return
 	}
+	targetPos, targetEnd := tag.targetRange()
 	ctx.ReportRange(
-		tag.Pos,
-		tag.End,
+		targetPos,
+		targetEnd,
 		"Evidence target '"+tag.Target+"' was read as a "+tag.Kind.String()+
 			", and no such declaration exists in this project. If a document was "+
 			"meant, give it a path or an anchor, as in 'docs/spec.md#"+tag.Target+"'.",
@@ -282,6 +284,9 @@ func evidenceTagFrom(
 	comment := jsdocCommentText(base.Comment)
 	pos, end := trimTagRange(file, node.Pos(), node.End())
 	tag, ok := newEvidenceTag(comment, pos, end)
+	if ok {
+		tag.TargetPos, tag.TargetEnd = locateTarget(file, pos, end, tag.Target)
+	}
 	if !ok {
 		// A bare `@evidence` with nothing after it. Still worth surfacing, so
 		// return it with an empty target rather than dropping it: a tag the
@@ -323,6 +328,43 @@ func trimTagRange(file *shimast.SourceFile, pos int, end int) (int, int) {
 		break
 	}
 	return pos, end
+}
+
+// locateTarget finds the target token's span inside a tag's source range.
+//
+// The parser hands back the target's text but not where it sits, and a tag node
+// spans `@evidence <target> <reason>` entire — so the offset has to be
+// recovered from the source. The search starts past the tag name rather than at
+// the range's start: a target may legitimately BE the tag name
+// (`@evidence evidence`), and searching from zero would underline the tag name
+// while claiming to point at the target.
+func locateTarget(
+	file *shimast.SourceFile,
+	pos int,
+	end int,
+	target string,
+) (int, int) {
+	if target == "" || file == nil {
+		return 0, 0
+	}
+	text := file.Text()
+	if pos < 0 || end > len(text) || pos >= end {
+		return 0, 0
+	}
+	span := text[pos:end]
+	offset := 0
+	if index := strings.Index(span, "@"+evidenceTagName); index != -1 {
+		offset = index + len("@") + len(evidenceTagName)
+	}
+	if offset >= len(span) {
+		return 0, 0
+	}
+	at := strings.Index(span[offset:], target)
+	if at == -1 {
+		return 0, 0
+	}
+	start := pos + offset + at
+	return start, start + len(target)
 }
 
 func jsdocCommentText(list *shimast.NodeList) string {

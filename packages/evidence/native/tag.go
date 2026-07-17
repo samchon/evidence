@@ -44,6 +44,23 @@ type evidenceTag struct {
 	// diagnostic that underlines the tag rather than the whole declaration.
 	Pos int
 	End int
+	// TargetPos and TargetEnd bound the target token alone.
+	//
+	// A diagnostic about the target should underline the target, not the whole
+	// tag. Underlining the reason too says the prose is at fault when the
+	// mistake is one character in a path, and the wider the squiggle the less it
+	// points at anything. Zero when the tag has no target.
+	TargetPos int
+	TargetEnd int
+}
+
+// targetRange returns the span to underline for a complaint about the target,
+// falling back to the whole tag when the target span is unknown.
+func (tag evidenceTag) targetRange() (int, int) {
+	if tag.TargetPos == 0 && tag.TargetEnd == 0 {
+		return tag.Pos, tag.End
+	}
+	return tag.TargetPos, tag.TargetEnd
 }
 
 // evidenceTagName is the JSDoc tag this plugin owns.
