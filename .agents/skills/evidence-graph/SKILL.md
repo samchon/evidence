@@ -31,13 +31,15 @@ The first whitespace-delimited token is the target; everything after it is prose
 
 A tag with a target and no reason is an error. A reason exists so a reader learns why the citation holds; a bare pointer teaches nothing and cannot be reviewed.
 
+**A declaration may carry any number of `@evidence` tags, and every one is validated independently.** More than one ground is the normal case, not an edge case. A walk that stopped at the first tag would leave the rest unchecked while still looking enforced, which is worse than not checking at all.
+
 **Target order is deliberate and costs something.** `autobe-mcp` requires the reason _before_ the section so an authoring LLM states its reasoning first and lets that reasoning steer which section it names. The JSDoc shape forbids that ordering, so the chain-of-thought steering is lost and an AI may pick a target first and rationalize it after. Do not add a rule that tries to judge whether a reason is "real"; a machine cannot settle that, and a rule that guesses will teach authors to write filler that passes.
 
 ## Node And Edge Kinds
 
 Two node kinds exist.
 
-- **Document sections** — a heading in a markdown file, addressed as `<path>#<anchor>`.
+- **Document sections** — a heading in a markdown file, addressed as `<path>#<anchor>`. **A section, never a whole document.** "The grounds are somewhere in this file" is not grounds: a reviewer cannot check it, and it survives every edit to the document, including the one that deletes the paragraph it meant. A whole-document citation resolves trivially — the path exists — so it must be refused explicitly or it becomes the path of least resistance.
 - **TypeScript symbols** — a declaration, addressed by its dotted name.
 
 Targets are discriminated by shape: a target containing `#` or ending in `.md` is a document reference; a dotted identifier is a symbol reference. This is a heuristic, so **every diagnostic must name which kind it resolved the target to**, letting a misclassification surface at the point of failure instead of hiding as a confusing "not found".
