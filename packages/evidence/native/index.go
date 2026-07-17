@@ -150,6 +150,30 @@ func (indexRule) Check(ctx *rule.ProjectContext) {
 		return
 	}
 
+	index := buildEvidenceIndex(root, patterns, ctx.Sources)
+	reportAmbiguousAnchors(ctx, index)
+
+	// Published even when empty. Presence is the signal, not length: an index
+	// that exists proves the scan ran, which is exactly what a file rule needs
+	// to know before it dares to report a dangling reference.
+	ctx.SetState(index)
+}
+
+// buildEvidenceIndex scans the project's markdown and symbols.
+//
+// It is shared rather than owned by the index rule because project rules cannot
+// read one another's state — ProjectResultReader hangs off the file-rule
+// Context only. `evidence/coverage` is therefore a project rule that must build
+// its own view, and the folder-to-node mapping must live in one function or the
+// two rules drift apart. That drift is exactly the duplicated-formula problem
+// this plugin exists to avoid, so the cost paid here is deliberate: the
+// markdown is scanned once per project rule rather than once per Program.
+// Duplicated work is recoverable; duplicated logic is not.
+func buildEvidenceIndex(
+	root string,
+	patterns []string,
+	sources []*shimast.SourceFile,
+) *evidenceIndex {
 	index := &evidenceIndex{
 		Documents:        map[string][]documentSection{},
 		Symbols:          map[string]bool{},
@@ -157,13 +181,8 @@ func (indexRule) Check(ctx *rule.ProjectContext) {
 		Root:             root,
 	}
 	collectDocuments(root, patterns, index)
-	collectSymbols(ctx.Sources, index)
-	reportAmbiguousAnchors(ctx, index)
-
-	// Published even when empty. Presence is the signal, not length: an index
-	// that exists proves the scan ran, which is exactly what a file rule needs
-	// to know before it dares to report a dangling reference.
-	ctx.SetState(index)
+	collectSymbols(sources, index)
+	return index
 }
 
 // projectRoot prefers the physical root because it is the filesystem identity

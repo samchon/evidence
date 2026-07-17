@@ -29,6 +29,9 @@ const plugin = {
     // Citation obligation: declarations in configured folders must cite a
     // section under configured folders.
     "require",
+    // Project-scoped. Coverage: every declared section must be cited by
+    // something, or carry a stated exemption.
+    "coverage",
   ] as const,
   // Absolute path so it stays valid regardless of where the consumer's
   // node_modules lives. `__dirname` is `<pkg>/lib`, so `../native` is the Go
@@ -101,6 +104,50 @@ declare module "@ttsc/lint" {
        * declaration selected by two policies must satisfy both.
        */
       policies?: readonly IEvidencePolicy[];
+    };
+
+    /**
+     * Reports declared sections that nothing cites.
+     *
+     * This is the target-side question, the third of three.
+     * `evidence/reference` asks whether a citation points at something real;
+     * `evidence/require` asks whether a declaration asserts something while
+     * citing nothing; this asks which section of the design nothing in the code
+     * claims to implement.
+     *
+     * Its blindness is structural: it counts sections with no citation, so it
+     * can never see a citation with no section. That is `evidence/reference`'s
+     * job. Enabling one does not cover the other.
+     *
+     * Project-scoped, so it must be configured in an entry with no `files` key.
+     * Its findings name a markdown section and therefore carry no file and no
+     * line — a section has no TypeScript node to point at.
+     *
+     * A section that genuinely needs no citation says so in the document, under
+     * its heading:
+     *
+     * ```md
+     * ## Naming Conventions
+     *
+     * <!-- evidence-exempt: describes a convention, not behavior anything implements -->
+     * ```
+     *
+     * The reason is mandatory; a marker with a blank reason is an error rather
+     * than an exemption. The marker lives in the document because that is where
+     * the uncited thing lives, and it is an HTML comment so it stays invisible
+     * in every renderer while remaining reviewable in the source.
+     */
+    "evidence/coverage": {
+      /**
+       * Documents whose sections must be cited. Defaults to every indexed
+       * document.
+       *
+       * Narrow this rather than exempting sections one by one when a whole
+       * document is reference material. Adoption is authorship: a small
+       * demanded set that is honestly covered beats a large one cleared by
+       * citations written to silence errors.
+       */
+      documents?: readonly string[];
     };
   }
 

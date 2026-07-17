@@ -22,9 +22,11 @@ import (
 )
 
 func init() {
-	// The index must be a project rule: markdown never enters a ttsc Program,
-	// so no file rule would ever be dispatched for it. See index.go.
+	// Both project rules for the same reason: markdown never enters a ttsc
+	// Program, so no file rule is ever dispatched for it. See index.go for the
+	// index, coverage.go for why a section's diagnostic wants no file at all.
 	rule.RegisterProject(indexRule{})
+	rule.RegisterProject(coverageRule{})
 
 	rule.Register(referenceRule{})
 	rule.Register(requireRule{})

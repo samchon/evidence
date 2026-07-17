@@ -46,16 +46,23 @@ Targets are discriminated by shape: a target containing `#` or ending in `.md` i
 
 The default graph is **bipartite**: citers point at cited nodes, and cited nodes point at nothing. `autobe-mcp` gets cycle-freedom structurally from this shape and therefore needs no cycle detection. Symbol-to-symbol citation breaks that property, so it is opt-in, and enabling it enables cycle detection with it.
 
-## Coverage And Integrity Are Different Questions
+## Three Questions, Three Rules
 
-This distinction is the single most valuable idea inherited from the prior art. Do not collapse the two.
+The graph is interrogated from three sides. They look similar and are not, and collapsing any two produces a ledger that answers neither honestly. This separation is the most valuable idea inherited from the prior art, which keeps its own three mechanisms deliberately apart.
 
-- **Coverage** asks: _which declared sections has nothing proven?_ It counts realization edges only.
-- **Integrity** asks: _which citations point at nothing that exists?_ It counts every edge.
+| Rule | Side | Asks |
+| --- | --- | --- |
+| `evidence/reference` | edge | Does this citation point at something real? |
+| `evidence/require` | source | Does this declaration assert something while citing nothing? |
+| `evidence/coverage` | target | Does anything claim to implement this section? |
 
-The scope of integrity is deliberately wider. A section removed from the index later strands every artifact still citing it, and coverage — which only counts sections with no citation, never citations with no section — would let that stranding vanish silently.
+Each is structurally blind to the others' question, and the blindness is why all three exist.
 
-An edge kind that declares intent rather than realization must not drain the coverage ledger. In the prior art's words: an unbuilt promise cannot turn the ledger green. Whether a given edge kind counts toward coverage is a per-edge configuration flag, not a global one.
+- **Coverage counts sections with no citation, so it can never see a citation with no section.** A document renamed or a heading re-anchored strands every citation pointing at it, and only `evidence/reference` can say so. Integrity's scope is deliberately wider for exactly this reason.
+- **Integrity never sees a declaration that simply has no tag** — there is no edge to inspect. That is `evidence/require`'s question.
+- **A citation can satisfy one rule and fail another.** One that resolves but points outside a policy's required documents passes integrity and fails obligation. This is not a contradiction; they are different questions.
+
+The prior art also splits edges into intent and realization so an unbuilt promise cannot turn the ledger green. That distinction is real, but it is a property of the artifact _kind_, which this plugin does not model — the tag grammar cannot express it. Do not invent a split the grammar cannot carry: a ledger whose numbers nobody can explain is worse than a coarser one everybody can.
 
 ## Activation Gates
 
@@ -65,7 +72,19 @@ A rule therefore stays silent until its preconditions hold, and the precondition
 
 ## Exemptions
 
-A section may be exempted, and an exemption carries a reason. The reason is `null` when absent, never `""`; a blank reason is not a reason, and accepting one converts the exemption from a decision into a hole.
+A section excuses itself from coverage in the document, under its heading:
+
+```md
+## Naming Conventions
+
+<!-- evidence-exempt: describes a convention, not behavior anything implements -->
+```
+
+Three properties are load-bearing.
+
+- **The reason is mandatory.** A marker with a blank reason is an error, not an exemption. A blank reason is not a reason, and accepting one turns a decision somebody made into a hole nobody has to defend. Reporting it also matters more than it looks: whoever wrote the marker believes they addressed the finding, so silently ignoring it leaves them staring at an error they think they fixed.
+- **It lives in the document**, because that is where the uncited thing lives. An HTML comment keeps it invisible in every renderer while leaving it plain text — and therefore reviewable — in the source.
+- **It is visible to the graph.** A lint disable comment would be cheaper and is wrong on every count: it sits in TypeScript while the uncited thing is a section, it suppresses every future diagnostic on that node rather than this one question, it demands no reason, and nothing can then answer "how many exemptions does this repository carry".
 
 Never auto-exempt, auto-retarget, or delete an artifact or citation to make a graph green. Repair is the author's, and every diagnostic must name the path that performs it.
 

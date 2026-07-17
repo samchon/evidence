@@ -18,6 +18,21 @@ type documentSection struct {
 	// than being derived from Title. An explicit anchor survives an edit to the
 	// heading text; a derived one does not.
 	Explicit bool
+	// Exemption is the stated reason this section needs no citation, or "" when
+	// it is not exempt.
+	//
+	// There is no separate "is exempt" flag on purpose. An exemption IS its
+	// reason: a blank reason is not a reason, and letting one through converts
+	// a decision somebody made into a hole nobody has to defend.
+	Exemption string
+	// ExemptionBlank marks an exemption marker written with no reason, so the
+	// scan can tell "not exempt" from "tried to exempt and said nothing".
+	ExemptionBlank bool
+}
+
+// Exempt reports whether this section is excused from needing a citation.
+func (section documentSection) Exempt() bool {
+	return section.Exemption != ""
 }
 
 // scanMarkdownSections extracts every ATX heading from a markdown document.
@@ -32,11 +47,36 @@ type documentSection struct {
 // They cannot carry an explicit `{#id}`, so every reference to one would be
 // hostage to its prose. Supporting them would silently hand users the fragile
 // half of the design.
+// exemptionMarker excuses the section it appears under from needing a citation.
+//
+// It is an HTML comment so it stays invisible in every renderer while remaining
+// plain text in the source — the exemption is a decision for reviewers of the
+// document, not a note for its readers.
+//
+// A lint disable comment on the citing side would be the cheaper mechanism and
+// is the wrong one: it lives in TypeScript while the uncited thing is a section,
+// it is invisible to the graph so nobody can ask how many exemptions a
+// repository carries, it suppresses every future diagnostic on that node rather
+// than this one question, and it demands no reason.
+const exemptionMarker = "<!-- evidence-exempt:"
+
 func scanMarkdownSections(content string) []documentSection {
 	sections := []documentSection{}
 	fence := ""
 	for index, line := range strings.Split(content, "\n") {
 		trimmed := strings.TrimRight(line, "\r")
+
+		if reason, blank, found := exemptionOf(trimmed); found && fence == "" {
+			// The marker excuses the section it sits under, so it attaches to
+			// the most recent heading. One before any heading is inert rather
+			// than an error: a document-level note is a reasonable thing to
+			// write, and refusing it would be pedantry.
+			if len(sections) > 0 {
+				sections[len(sections)-1].Exemption = reason
+				sections[len(sections)-1].ExemptionBlank = blank
+			}
+			continue
+		}
 
 		// A fenced code block can hold anything, including `# not a heading`.
 		// Tracking the fence is what keeps a README's own examples out of the
@@ -72,6 +112,26 @@ func scanMarkdownSections(content string) []documentSection {
 		})
 	}
 	return sections
+}
+
+// exemptionOf reads an `<!-- evidence-exempt: reason -->` marker.
+//
+// Returns found=true even when the reason is blank, so the caller can report
+// the attempt rather than silently treating it as no marker at all. Someone who
+// wrote the marker meant to exempt something, and swallowing that intent would
+// leave them staring at an error they thought they had addressed.
+func exemptionOf(line string) (reason string, blank bool, found bool) {
+	trimmed := strings.TrimSpace(line)
+	if !strings.HasPrefix(trimmed, exemptionMarker) {
+		return "", false, false
+	}
+	rest := strings.TrimPrefix(trimmed, exemptionMarker)
+	end := strings.Index(rest, "-->")
+	if end == -1 {
+		return "", true, true
+	}
+	reason = strings.TrimSpace(rest[:end])
+	return reason, reason == "", true
 }
 
 // fenceMarker returns the fence run opening or closing a code block, or "".

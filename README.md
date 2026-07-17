@@ -101,15 +101,20 @@ Two headings that resolve to the same anchor are an error rather than a silent t
 
 ## Rules
 
+The graph is interrogated from three sides. They look similar and are not.
+
 | Rule | Scope | Asks |
 | --- | --- | --- |
 | `evidence/index` | project | — builds the index everything else resolves against |
 | `evidence/reference` | file | Does this citation point at something real? |
 | `evidence/require` | file | Does this declaration assert something while citing nothing? |
+| `evidence/coverage` | project | Does anything claim to implement this section? |
 
-The last two are different questions, and a citation can pass one while failing the other. `evidence/reference` is integrity: it never sees a declaration that simply has no tag. `evidence/require` is obligation: it does not care whether a citation resolves, only whether one exists and points where the policy demands.
+Each is blind to the others' question, which is why all three exist. Coverage counts sections with no citation, so it can never see a citation with no section — that is `evidence/reference`'s job. Integrity never sees a declaration that simply has no tag — that is `evidence/require`'s. And a citation can pass one while failing another: one that resolves but points outside a policy's required documents satisfies integrity and fails obligation.
 
-`evidence/index` is project-scoped, so it must go in a config entry with no `files` key.
+Enabling one does not cover the others. Pick the questions you actually want answered.
+
+`evidence/index` and `evidence/coverage` are project-scoped, so they must go in a config entry with no `files` key.
 
 ## Requiring citations by folder
 
@@ -132,6 +137,32 @@ Only exported, top-level `interface`, `type`, `class`, `function`, and `enum` de
 Only **document sections** discharge an obligation. A symbol citation is still checked for integrity, but it cannot ground a declaration: a symbol both cites and is cited, so two declarations naming each other would satisfy every obligation between them while proving nothing. A section is terminal, and that is what makes it grounds.
 
 Put every policy in one entry. Splitting them across config entries does not accumulate and does not warn — a rule setting has no `files` key, a config file is one object rather than an array, and `extends` takes a single string, so one config file contributes at most one rules entry.
+
+## Finding what nothing implements
+
+```ts
+"evidence/coverage": ["error", { documents: ["docs/analysis/**/*.md"] }],
+```
+
+```
+error TS10735: [evidence/coverage] Nothing cites 2 declared sections: docs/spec.md#refunds, docs/spec.md#shipping. Either cite each from the declaration it grounds with '@evidence <section> <reason>', or state why it needs none by putting '<!-- evidence-exempt: <reason> -->' under its heading.
+```
+
+No file, no line — a section has no TypeScript node to point at, and pretending otherwise would mean nominating some arbitrary file to blame.
+
+A section that genuinely needs no citation says so in the document, under its heading:
+
+```md
+## Naming Conventions
+
+<!-- evidence-exempt: describes a convention, not behavior anything implements -->
+```
+
+The reason is mandatory. A marker with a blank reason is an error rather than an exemption — a blank reason is not a reason, and accepting one turns a decision somebody made into a hole nobody has to defend. It is also reported rather than ignored, because whoever wrote it believes they addressed the finding.
+
+The exemption lives in the document because that is where the uncited thing lives, and it is an HTML comment so it stays invisible in every renderer while staying reviewable in the source. A lint disable comment would be cheaper and wrong on every count: it sits in TypeScript while the uncited thing is a section, it suppresses every future diagnostic on that node rather than this one question, it demands no reason, and nothing could then answer "how many exemptions does this repository carry".
+
+When a whole document is reference material, narrow `documents` instead of exempting its sections one at a time.
 
 ### Adoption is authorship, not configuration
 
