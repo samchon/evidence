@@ -268,22 +268,47 @@ func collectSymbolsFromStatement(
 			addSymbol(index, prefix, shimast.NodeText(declaration.Name()))
 		}
 	case shimast.KindModuleDeclaration:
-		// A namespace contributes its own name and qualifies everything inside
-		// it, which is what makes the `Outer.Inner` form resolvable.
-		module := statement.AsModuleDeclaration()
-		if module == nil {
-			return
-		}
-		name := shimast.NodeText(statement.Name())
-		addSymbol(index, prefix, name)
-		if module.Body == nil || name == "" {
-			return
-		}
+		collectSymbolsFromModule(statement, prefix, index)
+	}
+}
+
+// collectSymbolsFromModule indexes a namespace and everything it qualifies.
+//
+// `namespace Outer.Inner {}` is not one node with a dotted name. It parses as
+// ModuleDeclaration(Outer) whose Body is ModuleDeclaration(Inner) whose Body is
+// the block, so the dotted form must be walked one level at a time, each level
+// extending the qualifier.
+//
+// The Kind check before AsModuleBlock is load-bearing rather than defensive.
+// The shim's As* accessors are type assertions: given the wrong node they
+// PANIC, they do not return nil. Here that panic took out the whole index rule,
+// and since every file rule gates on a resident index, one dotted namespace
+// anywhere in a project silently disabled evidence checking everywhere.
+func collectSymbolsFromModule(
+	statement *shimast.Node,
+	prefix string,
+	index *evidenceIndex,
+) {
+	module := statement.AsModuleDeclaration()
+	if module == nil {
+		return
+	}
+	name := shimast.NodeText(statement.Name())
+	addSymbol(index, prefix, name)
+	if module.Body == nil || name == "" {
+		return
+	}
+	qualified := qualify(prefix, name)
+	switch module.Body.Kind {
+	case shimast.KindModuleBlock:
 		body := module.Body.AsModuleBlock()
 		if body == nil {
 			return
 		}
-		collectSymbolsFromStatements(body.Statements, qualify(prefix, name), index)
+		collectSymbolsFromStatements(body.Statements, qualified, index)
+	case shimast.KindModuleDeclaration:
+		// The `Outer.Inner` form: recurse, carrying `Outer` as the qualifier.
+		collectSymbolsFromModule(module.Body, qualified, index)
 	}
 }
 
