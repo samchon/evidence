@@ -61,8 +61,9 @@ Every optional marker interface defaults to the costly or broadest behavior when
 | Interface | Method | Unimplemented default | Implement it when |
 | --- | --- | --- | --- |
 | `TypeAwareRule` | `NeedsTypeChecker() bool` | **true** — builds a checker over every file and forces a **serial** walk | Return `false` for any AST-only rule. Then never read `ctx.Checker`; it may be nil. |
-
-| `DeclarationFileRule` | `VisitsDeclarationFiles() bool` | **true** — dispatches on every `.d.ts` | Return `false` unless the rule genuinely inspects declaration files. | | `OptionsRule` | `AcceptsTtscLintOptions() bool` | true | Leave alone unless refusing options. | | `FormatRule` | `IsFormat() bool` | lint-class | This plugin ships no format rules. |
+| `DeclarationFileRule` | `VisitsDeclarationFiles() bool` | **true** — dispatches on every `.d.ts` | Return `false` unless the rule genuinely inspects declaration files. |
+| `OptionsRule` | `AcceptsTtscLintOptions() bool` | true | Leave alone unless refusing options. |
+| `FormatRule` | `IsFormat() bool` | lint-class | This plugin ships no format rules. |
 
 ## Reporting
 
