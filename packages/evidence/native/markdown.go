@@ -2,6 +2,7 @@ package evidence
 
 import (
 	"strings"
+	"unicode"
 )
 
 // documentSection is one addressable node of the evidence graph: a heading in a
@@ -81,16 +82,21 @@ func scanMarkdownSections(content string) []documentSection {
 		// A fenced code block can hold anything, including `# not a heading`.
 		// Tracking the fence is what keeps a README's own examples out of the
 		// graph.
-		if marker := fenceMarker(trimmed); marker != "" {
-			switch {
-			case fence == "":
+		if fence == "" {
+			if marker := fenceMarker(trimmed); marker != "" {
 				fence = marker
-			case strings.HasPrefix(marker, fence):
+				continue
+			}
+		} else {
+			// Inside a code block. Only a pure fence run of the same character,
+			// at least as long as the opener, closes it — CommonMark forbids
+			// trailing text on a closing fence, so a code line that merely begins
+			// with the fence character (```stop) does not close the block.
+			// Honoring it would leak the code after it as headings and then
+			// desync every fence that follows.
+			if closesFence(trimmed, fence) {
 				fence = ""
 			}
-			continue
-		}
-		if fence != "" {
 			continue
 		}
 
@@ -128,13 +134,22 @@ func exemptionOf(line string) (reason string, blank bool, found bool) {
 	rest := strings.TrimPrefix(trimmed, exemptionMarker)
 	end := strings.Index(rest, "-->")
 	if end == -1 {
-		return "", true, true
+		// The comment does not close on this line — a multi-line exemption. The
+		// text present after the marker is a real reason; reporting it as blank
+		// would tell the author they wrote nothing when they wrote something, the
+		// exact "staring at an error they think they fixed" failure the design
+		// warns against. A marker alone with nothing after it is still blank.
+		reason = strings.TrimSpace(rest)
+		return reason, reason == "", true
 	}
 	reason = strings.TrimSpace(rest[:end])
 	return reason, reason == "", true
 }
 
-// fenceMarker returns the fence run opening or closing a code block, or "".
+// fenceMarker returns the fence run that OPENS a code block, or "". An opening
+// fence is a run of three or more backticks or tildes; it may carry an info
+// string after the run (```ts), so trailing text is ignored here. Closing is a
+// stricter test — see closesFence.
 func fenceMarker(line string) string {
 	trimmed := strings.TrimLeft(line, " ")
 	for _, char := range []byte{'`', '~'} {
@@ -147,6 +162,27 @@ func fenceMarker(line string) string {
 		}
 	}
 	return ""
+}
+
+// closesFence reports whether line closes a code block opened with `fence`.
+//
+// CommonMark closes a fence only with a run of the SAME character as the opener,
+// at least as long, with nothing after it but optional whitespace. That last
+// clause is why fenceMarker cannot be reused: a code line like ```stop starts
+// with a fence run but is content, not a close. Treating it as a close would end
+// the block early, leak the code after it as headings, and flip fence parity so
+// every real heading later in the file is dropped.
+func closesFence(line, fence string) bool {
+	trimmed := strings.TrimRight(strings.TrimLeft(line, " "), " \t")
+	if len(trimmed) < len(fence) {
+		return false
+	}
+	for i := 0; i < len(trimmed); i++ {
+		if trimmed[i] != fence[0] {
+			return false
+		}
+	}
+	return true
 }
 
 // atxHeadingText returns the text of an ATX heading (`# Title`), with any
@@ -234,9 +270,13 @@ func slugify(title string) string {
 			builder.WriteRune(char)
 		case char == ' ':
 			builder.WriteByte('-')
-		case char > 127:
-			// Keep non-ASCII letters. GitHub does, and dropping them would make
-			// every heading in a non-English document unaddressable.
+		case char > 127 && (unicode.IsLetter(char) || unicode.IsNumber(char)):
+			// Keep non-ASCII letters and digits — GitHub's slugger keeps them, so
+			// a heading in a non-English document stays addressable. Non-ASCII
+			// punctuation and symbols are dropped, which GitHub also does: a curly
+			// apostrophe, an em-dash, or an emoji left in would mint an anchor the
+			// rendered page never produces, so a citation copied from GitHub would
+			// dangle against a section that plainly exists.
 			builder.WriteRune(char)
 		}
 	}
