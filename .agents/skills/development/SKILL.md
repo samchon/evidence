@@ -45,12 +45,34 @@ Fix the verified class of failure, not only the reported witness. Cover positive
 
 ## Testing
 
-**One test case per file, named after what it asserts.** Applies to both layers.
+**Name every test after what it asserts**, at both layers.
 
-- **Go unit tests:** in `packages/evidence/test/`, one `Test*` per file, filename stating the assertion. This repository cannot use `@ttsc/lint`'s internal harness — it is package-private upstream — so drive rules through a fake reporter. A fake must implement `rule.Reporter` **and** `rule.FixReporter` together, since Go interface satisfaction is all-or-nothing; compile-check it with `var _ rule.FixReporter = &myFake{}`.
-- **TypeScript e2e tests:** in `tests/test-evidence/src/features/`. Export exactly one `test_<snake_case>` function from a matching filename. Materialize a temporary project, spawn the real binary, assert observable diagnostics, and clean up in a `finally`.
+- **Go unit tests** live beside the source in `native/`, as `*_test.go` files whose `Test*` functions each pin one assertion — `native/tag_splits_target_from_reason_test.go` is the pattern, and a file may hold more than one `Test*` when they share a subject. They exercise the rule internals directly, the pure helpers such as `parseEvidenceComment` and `classifyTarget`, because `@ttsc/lint`'s rule-driving harness is package-private upstream. When a case must drive a full rule's `Check` rather than a helper, it supplies its own reporter, and that fake must implement `rule.Reporter` **and** `rule.FixReporter` together, since Go interface satisfaction is all-or-nothing; compile-check it with `var _ rule.FixReporter = &myFake{}`.
+- **TypeScript e2e tests** live in `tests/test-evidence/src/features/`, one per file. Export exactly one `test_<snake_case>` function from a matching filename. Materialize a temporary project, spawn the real binary, assert observable diagnostics, and clean up in a `finally`.
 
 Open every case with a doc comment in the same three-part shape: a one-line `Verifies …` headline, a short paragraph stating the non-obvious _why_ (which branch or regression is being pinned), and a 2–4-step numbered list summarizing the scenario.
+
+```ts
+/**
+ * Verifies evidence integrity: a citation to a section no document declares
+ * fails the build, while its well-formed twin stays quiet.
+ *
+ * Every link in the chain fails silently rather than loudly. A namespace typo
+ * drops the rule with only a stderr warning, and a project rule that never
+ * publishes its index leaves every file rule quiet — and a quiet rule is
+ * indistinguishable from a passing one. So the fixture pins a valid citation
+ * one property away: `#pricing` exists and `#discounts` does not, in the same
+ * file, under the same rule.
+ *
+ * 1. Index a document declaring only `Pricing`.
+ * 2. Cite `#pricing` correctly from one declaration and `#discounts` from another.
+ * 3. Assert a non-zero exit that names only the dangling target.
+ */
+export const test_evidence_reference_reports_dangling_document_section =
+  (): void => {
+    /* ... */
+  };
+```
 
 ### Coverage, not happy paths
 
