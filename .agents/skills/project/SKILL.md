@@ -18,7 +18,7 @@ The contract is general-purpose. `autobe-mcp` proves the idea with a hardcoded, 
 
 ## Layout
 
-- `packages/evidence`: `@samchon/evidence`. TypeScript descriptor, plugin metadata, and config-augmentation types in `src/`; every lint rule as Go source in `rules/`. The published tarball must contain both — see the lint-rule-authoring skill.
+- `packages/evidence`: `@samchon/evidence`. TypeScript descriptor, plugin metadata, and config-augmentation types in `src/`; every lint rule as Go source in `native/`, with its Go unit tests co-located there as `*_test.go`. The published tarball must ship `native` alongside the compiled descriptor, or it builds nowhere but here — see the lint-rule-authoring skill.
 - `tests/test-evidence`: end-to-end feature tests. Materialize a project, run the real binary, assert the diagnostics.
 - `config`: shared tsconfig base that packages extend.
 - `.wiki`: Korean knowledge base of prior-art research and decisions. Not documentation; see the wiki skill.

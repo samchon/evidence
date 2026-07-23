@@ -55,14 +55,18 @@ func (referenceRule) Check(ctx *rule.Context, _ *shimast.Node) {
 
 // residentIndex reads the project rule's published index.
 //
-// It returns false unless the index rule actually evaluated and passed. `off`,
-// `absent`, and `not_evaluated` all mean the same thing to a file rule: there
-// is no identity source, so there is nothing to say.
+// The gate is a usable index, not the index rule's pass/fail status. The index
+// rule reports an ambiguous anchor through ctx.Report, which marks it Failed
+// while it still publishes a complete index through ctx.SetState — so keying on
+// ProjectRulePassed would let one duplicate heading anywhere discard the whole
+// index and silence evidence/reference and evidence/require across the entire
+// project, even for citations that have nothing to do with the clash. A result
+// whose State is a valid *evidenceIndex is usable regardless of status; the
+// ambiguity is still surfaced by the index rule's own diagnostic. `off`,
+// `absent`, and `not_evaluated` all leave State nil, which is the real "no
+// identity source, nothing to say" signal a file rule stays silent for.
 func residentIndex(ctx *rule.Context) (*evidenceIndex, bool) {
 	result := ctx.ProjectResult(indexRuleName)
-	if result.Status != rule.ProjectRulePassed {
-		return nil, false
-	}
 	index, ok := result.State.(*evidenceIndex)
 	if !ok || index == nil {
 		return nil, false
