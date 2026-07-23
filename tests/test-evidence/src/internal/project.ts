@@ -34,10 +34,10 @@ export interface IRunResult {
  *
  * The linked dependencies are the point. A fixture that imported the rules
  * directly would prove the Go compiles, not that a consumer can use it: ttsc
- * has to resolve `@samchon/evidence` from node_modules, read its descriptor,
- * find the `source` directory inside the package, and link that Go into its own
- * binary. Every one of those steps is a place packaging can break while every
- * unit test stays green.
+ * has to resolve `@samchon/evidence-graph` from node_modules, read its
+ * descriptor, find the `source` directory inside the package, and link that Go
+ * into its own binary. Every one of those steps is a place packaging can break
+ * while every unit test stays green.
  */
 export const createProject = (props: ICreateProjectProps): IEvidenceProject => {
   const directory: string = fs.mkdtempSync(

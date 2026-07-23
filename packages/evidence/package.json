@@ -1,5 +1,5 @@
 {
-  "name": "@samchon/evidence",
+  "name": "@samchon/evidence-graph",
   "version": "0.1.0",
   "description": "Evidence-graph lint contributor for @ttsc/lint: declare provenance with a JSDoc @evidence tag and fail the build when it is missing or dangling.",
   "main": "lib/index.js",
@@ -36,12 +36,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/samchon/evidence"
+    "url": "https://github.com/samchon/evidence-graph"
   },
   "author": "Jeongho Nam",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/samchon/evidence/issues"
+    "url": "https://github.com/samchon/evidence-graph/issues"
   },
   "peerDependencies": {
     "@ttsc/lint": ">=0.20.0"

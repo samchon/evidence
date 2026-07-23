@@ -1,4 +1,4 @@
-// Package evidence is the Go rule set of `@samchon/evidence`, a `@ttsc/lint`
+// Package evidence is the Go rule set of `@samchon/evidence-graph`, a `@ttsc/lint`
 // contributor that turns provenance into a compile error.
 //
 // It ships as SOURCE, not as a module: ttsc copies this directory into

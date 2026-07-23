@@ -36,11 +36,11 @@ export const test_evidence_coverage_reports_uncited_sections = (): void => {
   const project: IEvidenceProject = createProject({
     name: "coverage",
     lint: {
-      plugins: { evidence: "@samchon/evidence" },
+      plugins: { "evidence-graph": "@samchon/evidence-graph" },
       rules: {
-        "evidence/index": ["error", { documents: ["docs/**/*.md"] }],
-        "evidence/reference": "error",
-        "evidence/coverage": ["error", { documents: ["docs/"] }],
+        "evidence-graph/index": ["error", { documents: ["docs/**/*.md"] }],
+        "evidence-graph/reference": "error",
+        "evidence-graph/coverage": ["error", { documents: ["docs/"] }],
       },
     },
     files: {
@@ -95,7 +95,7 @@ export const test_evidence_coverage_reports_uncited_sections = (): void => {
     );
     assertIncludes(
       result,
-      "evidence/coverage",
+      "evidence-graph/coverage",
       "The diagnostic must be attributed to the rule that raised it.",
     );
     assertIncludes(

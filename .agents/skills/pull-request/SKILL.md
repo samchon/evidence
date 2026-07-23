@@ -1,6 +1,6 @@
 ---
 name: pull-request
-description: Defines @samchon/evidence branch, commit, pull-request, check, and merge workflow. Use when the user explicitly asks to open, submit, update, or merge a pull request, or when a standing autonomous mandate authorizes end-to-end delivery; never open, push, update, or merge one on unprompted initiative.
+description: Defines @samchon/evidence-graph branch, commit, pull-request, check, and merge workflow. Use when the user explicitly asks to open, submit, update, or merge a pull request, or when a standing autonomous mandate authorizes end-to-end delivery; never open, push, update, or merge one on unprompted initiative.
 ---
 
 # Pull Request Submission

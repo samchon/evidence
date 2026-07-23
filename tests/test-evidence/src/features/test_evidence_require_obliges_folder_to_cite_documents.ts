@@ -19,8 +19,8 @@ import {
  * from a violation.
  *
  * The wrong-target case is the subtle one. `IWrongTarget` cites a section that
- * genuinely resolves — `evidence/reference` is content — but the section is not
- * under the required documents, so the obligation stands. Integrity and
+ * genuinely resolves — `evidence-graph/reference` is content — but the section
+ * is not under the required documents, so the obligation stands. Integrity and
  * obligation are different questions, and a citation can satisfy one while
  * failing the other.
  *
@@ -34,11 +34,11 @@ export const test_evidence_require_obliges_folder_to_cite_documents =
     const project: IEvidenceProject = createProject({
       name: "require-policy",
       lint: {
-        plugins: { evidence: "@samchon/evidence" },
+        plugins: { "evidence-graph": "@samchon/evidence-graph" },
         rules: {
-          "evidence/index": ["error", { documents: ["docs/**/*.md"] }],
-          "evidence/reference": "error",
-          "evidence/require": [
+          "evidence-graph/index": ["error", { documents: ["docs/**/*.md"] }],
+          "evidence-graph/reference": "error",
+          "evidence-graph/require": [
             "error",
             {
               policies: [
@@ -128,7 +128,7 @@ export const test_evidence_require_obliges_folder_to_cite_documents =
       );
       assertIncludes(
         result,
-        "evidence/require",
+        "evidence-graph/require",
         "The diagnostic must be attributed to the rule that raised it.",
       );
 

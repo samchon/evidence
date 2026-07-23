@@ -10,14 +10,14 @@ import {
  * Verifies that one document's ambiguous anchor does not switch off integrity
  * checking for the rest of the project.
  *
- * `evidence/index` reports a duplicate-slug heading through `ctx.Report`, which
- * marks the project rule failed even though it still publishes a complete
+ * `evidence-graph/index` reports a duplicate-slug heading through `ctx.Report`,
+ * which marks the project rule failed even though it still publishes a complete
  * index. The file rules read that index back through `ProjectResult`; a version
  * that accepted it only when the status was `passed` let a single duplicate
- * heading anywhere discard the whole index and silence `evidence/reference` and
- * `evidence/require` across every file — a green build with all integrity
- * checking silently off. The gate must be a usable index, not a passing
- * status.
+ * heading anywhere discard the whole index and silence
+ * `evidence-graph/reference` and `evidence-graph/require` across every file — a
+ * green build with all integrity checking silently off. The gate must be a
+ * usable index, not a passing status.
  *
  * The fixture pins both halves at once: the duplicate heading must still be
  * reported (the ambiguity is real), AND a dangling citation in an unrelated
@@ -35,10 +35,10 @@ export const test_evidence_reference_survives_ambiguous_anchor_elsewhere =
     const project: IEvidenceProject = createProject({
       name: "ambiguous-anchor-does-not-silence",
       lint: {
-        plugins: { evidence: "@samchon/evidence" },
+        plugins: { "evidence-graph": "@samchon/evidence-graph" },
         rules: {
-          "evidence/index": ["error", { documents: ["docs/**/*.md"] }],
-          "evidence/reference": "error",
+          "evidence-graph/index": ["error", { documents: ["docs/**/*.md"] }],
+          "evidence-graph/reference": "error",
         },
       },
       files: {
@@ -88,7 +88,7 @@ export const test_evidence_reference_survives_ambiguous_anchor_elsewhere =
       assertIncludes(
         result,
         "Ambiguous evidence anchor 'overview'",
-        "The duplicate-slug heading must still be reported by evidence/index.",
+        "The duplicate-slug heading must still be reported by evidence-graph/index.",
       );
       // The fix: reference keeps working despite the index rule failing. On the
       // old code this citation was silently unreported.
@@ -99,8 +99,8 @@ export const test_evidence_reference_survives_ambiguous_anchor_elsewhere =
       );
       assertIncludes(
         result,
-        "evidence/reference",
-        "The dangling citation must be attributed to evidence/reference, proving it was not silenced.",
+        "evidence-graph/reference",
+        "The dangling citation must be attributed to evidence-graph/reference, proving it was not silenced.",
       );
       // The resolving citation must not be flagged — reference is working
       // normally, not blindly reporting everything.

@@ -1,6 +1,6 @@
 ---
 name: evidence-graph
-description: Defines the evidence graph domain model for @samchon/evidence — the tag grammar, node kinds, reference resolution, the three questions the rules ask (integrity, obligation, coverage), activation gates, and exemptions. Use before changing rule semantics, the tag grammar, the configuration surface, or a diagnostic message; do not use for the mechanics of the Go rule API, which the lint-rule-authoring skill owns.
+description: Defines the evidence graph domain model for @samchon/evidence-graph — the tag grammar, node kinds, reference resolution, the three questions the rules ask (integrity, obligation, coverage), activation gates, and exemptions. Use before changing rule semantics, the tag grammar, the configuration surface, or a diagnostic message; do not use for the mechanics of the Go rule API, which the lint-rule-authoring skill owns.
 ---
 
 # Evidence Graph
@@ -52,14 +52,14 @@ The graph is interrogated from three sides. They look similar and are not, and c
 
 | Rule | Side | Asks |
 | --- | --- | --- |
-| `evidence/reference` | edge | Does this citation point at something real? |
-| `evidence/require` | source | Does this declaration assert something while citing nothing? |
-| `evidence/coverage` | target | Does anything claim to implement this section? |
+| `evidence-graph/reference` | edge | Does this citation point at something real? |
+| `evidence-graph/require` | source | Does this declaration assert something while citing nothing? |
+| `evidence-graph/coverage` | target | Does anything claim to implement this section? |
 
 Each is structurally blind to the others' question, and the blindness is why all three exist.
 
-- **Coverage counts sections with no citation, so it can never see a citation with no section.** A document renamed or a heading re-anchored strands every citation pointing at it, and only `evidence/reference` can say so. Integrity's scope is deliberately wider for exactly this reason.
-- **Integrity never sees a declaration that simply has no tag** — there is no edge to inspect. That is `evidence/require`'s question.
+- **Coverage counts sections with no citation, so it can never see a citation with no section.** A document renamed or a heading re-anchored strands every citation pointing at it, and only `evidence-graph/reference` can say so. Integrity's scope is deliberately wider for exactly this reason.
+- **Integrity never sees a declaration that simply has no tag** — there is no edge to inspect. That is `evidence-graph/require`'s question.
 - **A citation can satisfy one rule and fail another.** One that resolves but points outside a policy's required documents passes integrity and fails obligation. This is not a contradiction; they are different questions.
 
 The prior art also splits edges into intent and realization so an unbuilt promise cannot turn the ledger green. That distinction is real, but it is a property of the artifact _kind_, which this plugin does not model — the tag grammar cannot express it. Do not invent a split the grammar cannot carry: a ledger whose numbers nobody can explain is worse than a coarser one everybody can.

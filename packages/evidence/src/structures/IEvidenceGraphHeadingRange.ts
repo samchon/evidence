@@ -1,4 +1,4 @@
-import type { TSamchonEvidenceHeadingLevel } from "./TSamchonEvidenceHeadingLevel";
+import type { EvidenceGraphHeadingLevel } from "./EvidenceGraphHeadingLevel";
 
 /**
  * A contiguous range of Markdown heading depths that defines documentary
@@ -9,10 +9,10 @@ import type { TSamchonEvidenceHeadingLevel } from "./TSamchonEvidenceHeadingLeve
  * level of detail instead of making a document title answer for every nested
  * paragraph.
  */
-export interface ISamchonEvidenceHeadingRange {
+export interface IEvidenceGraphHeadingRange {
   /** Smallest included ATX heading level. */
-  minimum: TSamchonEvidenceHeadingLevel;
+  minimum: EvidenceGraphHeadingLevel;
 
   /** Largest included ATX heading level. */
-  maximum: TSamchonEvidenceHeadingLevel;
+  maximum: EvidenceGraphHeadingLevel;
 }

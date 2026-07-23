@@ -35,11 +35,11 @@ jobs:
       # The native package's go.mod resolves @ttsc/lint and the typescript-go
       # shims through replace directives pointing at a sibling samchon/ttsc
       # checkout, so the two repositories must sit side by side as
-      # <workspace>/samchon/evidence and <workspace>/samchon/ttsc. The ttsc ref
+      # <workspace>/samchon/evidence-graph and <workspace>/samchon/ttsc. The ttsc ref
       # is pinned to the released version the published peer range targets.
       - uses: actions/checkout@v4
         with:
-          path: samchon/evidence
+          path: samchon/evidence-graph
       - uses: actions/checkout@v4
         with:
           repository: samchon/ttsc
@@ -47,10 +47,10 @@ jobs:
           path: samchon/ttsc
       - uses: actions/setup-go@v5
         with:
-          go-version-file: samchon/evidence/packages/evidence/go.mod
-          cache-dependency-path: samchon/evidence/packages/evidence/go.sum
+          go-version-file: samchon/evidence-graph/packages/evidence/go.mod
+          cache-dependency-path: samchon/evidence-graph/packages/evidence/go.sum
       - name: gofmt
-        working-directory: samchon/evidence
+        working-directory: samchon/evidence-graph
         run: |
           unformatted=$(gofmt -l packages/evidence/native)
           if [ -n "$unformatted" ]; then
@@ -59,7 +59,7 @@ jobs:
             exit 1
           fi
       - name: go test
-        working-directory: samchon/evidence/packages/evidence
+        working-directory: samchon/evidence-graph/packages/evidence
         run: go test -mod=readonly ./native/
 
   features:

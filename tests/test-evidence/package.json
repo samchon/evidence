@@ -1,14 +1,14 @@
 {
   "private": true,
-  "name": "test-evidence",
+  "name": "test-evidence-graph",
   "version": "0.1.0",
-  "description": "End-to-end feature tests for @samchon/evidence, driving the real ttsc binary.",
+  "description": "End-to-end feature tests for @samchon/evidence-graph, driving the real ttsc binary.",
   "type": "module",
   "scripts": {
     "start": "node --disable-warning=ExperimentalWarning --experimental-transform-types src/index.ts"
   },
   "devDependencies": {
-    "@samchon/evidence": "workspace:*",
+    "@samchon/evidence-graph": "workspace:*",
     "@ttsc/lint": "catalog:typescript",
     "@types/node": "catalog:utils",
     "ttsc": "catalog:typescript",

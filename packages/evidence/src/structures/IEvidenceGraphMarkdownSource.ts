@@ -1,6 +1,6 @@
 import type { TtscLintSeverity } from "@ttsc/lint";
-import type { ISamchonEvidenceHeadingRange } from "./ISamchonEvidenceHeadingRange";
-import type { ISamchonEvidenceReference } from "./ISamchonEvidenceReference";
+import type { IEvidenceGraphHeadingRange } from "./IEvidenceGraphHeadingRange";
+import type { IEvidenceGraphReference } from "./IEvidenceGraphReference";
 
 /**
  * A configured body of documentary evidence.
@@ -14,7 +14,7 @@ import type { ISamchonEvidenceReference } from "./ISamchonEvidenceReference";
  * section no artifact relies on, while citations remain narrow enough that an
  * editorial change cannot silently preserve a claim whose grounds disappeared.
  */
-export interface ISamchonEvidenceMarkdownSource {
+export interface IEvidenceGraphMarkdownSource {
   /** Identifies this source as Markdown. */
   type: "markdown";
 
@@ -47,7 +47,7 @@ export interface ISamchonEvidenceMarkdownSource {
    * Inclusive heading range whose sections become evidence units. Both
    * endpoints are included, and `minimum` must not exceed `maximum`.
    */
-  headings: ISamchonEvidenceHeadingRange;
+  headings: IEvidenceGraphHeadingRange;
 
   /**
    * One file group or independently complete file groups that must acknowledge
@@ -58,12 +58,12 @@ export interface ISamchonEvidenceMarkdownSource {
    * element: acknowledgements in one group never count toward another, and
    * partially covered groups cannot be pooled to satisfy this source.
    */
-  reference: ISamchonEvidenceReference | ISamchonEvidenceReference[];
+  reference: IEvidenceGraphReference | IEvidenceGraphReference[];
 
   /**
    * Optional severity for this source. It overrides
-   * `ISamchonEvidenceConfig.severity`; a reference-level severity overrides
-   * this value for that one reference group.
+   * `IEvidenceGraphConfig.severity`; a reference-level severity overrides this
+   * value for that one reference group.
    */
   severity?: TtscLintSeverity;
 }

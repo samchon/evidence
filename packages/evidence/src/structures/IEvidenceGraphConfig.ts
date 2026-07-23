@@ -1,5 +1,5 @@
 import type { TtscLintSeverity } from "@ttsc/lint";
-import type { ISamchonEvidenceSource } from "./ISamchonEvidenceSource";
+import type { IEvidenceGraphSource } from "./IEvidenceGraphSource";
 
 /**
  * The root declaration of a project's evidence graph.
@@ -9,7 +9,7 @@ import type { ISamchonEvidenceSource } from "./ISamchonEvidenceSource";
  * reason. The configuration defines those boundaries without hardcoding a
  * repository's folder layout or its notion of proof.
  */
-export interface ISamchonEvidenceConfig {
+export interface IEvidenceGraphConfig {
   /**
    * Default severity for every evidence source.
    *
@@ -22,5 +22,5 @@ export interface ISamchonEvidenceConfig {
    * source owns its reference obligations; coverage is never pooled across
    * sources.
    */
-  sources: ISamchonEvidenceSource[];
+  sources: IEvidenceGraphSource[];
 }

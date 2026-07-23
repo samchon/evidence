@@ -19,7 +19,7 @@ import (
 // strands every citation pointing at it, and nothing says so.
 type referenceRule struct{}
 
-func (referenceRule) Name() string { return "evidence/reference" }
+func (referenceRule) Name() string { return "evidence-graph/reference" }
 
 func (referenceRule) Visits() []shimast.Kind {
 	return []shimast.Kind{shimast.KindSourceFile}
@@ -59,7 +59,7 @@ func (referenceRule) Check(ctx *rule.Context, _ *shimast.Node) {
 // rule reports an ambiguous anchor through ctx.Report, which marks it Failed
 // while it still publishes a complete index through ctx.SetState — so keying on
 // ProjectRulePassed would let one duplicate heading anywhere discard the whole
-// index and silence evidence/reference and evidence/require across the entire
+// index and silence evidence-graph/reference and evidence-graph/require across the entire
 // project, even for citations that have nothing to do with the clash. A result
 // whose State is a valid *evidenceIndex is usable regardless of status; the
 // ambiguity is still surfaced by the index rule's own diagnostic. `off`,

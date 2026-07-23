@@ -28,10 +28,10 @@ export const test_evidence_reference_requires_section_over_whole_document =
     const project: IEvidenceProject = createProject({
       name: "section-only",
       lint: {
-        plugins: { evidence: "@samchon/evidence" },
+        plugins: { "evidence-graph": "@samchon/evidence-graph" },
         rules: {
-          "evidence/index": ["error", { documents: ["docs/**/*.md"] }],
-          "evidence/reference": "error",
+          "evidence-graph/index": ["error", { documents: ["docs/**/*.md"] }],
+          "evidence-graph/reference": "error",
         },
       },
       files: {

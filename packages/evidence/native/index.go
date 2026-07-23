@@ -12,7 +12,7 @@ import (
 )
 
 // indexRuleName is the project rule every file rule gates on.
-const indexRuleName = "evidence/index"
+const indexRuleName = "evidence-graph/index"
 
 // evidenceIndex is the identity source for every reference.
 //
@@ -173,7 +173,7 @@ func (indexRule) Check(ctx *rule.ProjectContext) {
 //
 // It is shared rather than owned by the index rule because project rules cannot
 // read one another's state — ProjectResultReader hangs off the file-rule
-// Context only. `evidence/coverage` is therefore a project rule that must build
+// Context only. `evidence-graph/coverage` is therefore a project rule that must build
 // its own view, and the folder-to-node mapping must live in one function or the
 // two rules drift apart. That drift is exactly the duplicated-formula problem
 // this plugin exists to avoid, so the cost paid here is deliberate: the

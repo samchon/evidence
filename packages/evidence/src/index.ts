@@ -1,21 +1,21 @@
 import type { ITtscLintPlugin } from "@ttsc/lint";
 import path from "node:path";
-import type { ISamchonEvidenceConfig } from "./structures";
+import type { IEvidenceGraphConfig } from "./structures";
 
 export type {
-  ISamchonEvidenceConfig,
-  ISamchonEvidenceHeadingRange,
-  ISamchonEvidenceMarkdownReference,
-  ISamchonEvidenceMarkdownSource,
-  ISamchonEvidenceReference,
-  ISamchonEvidenceSource,
-  ISamchonEvidenceTypeScriptReference,
-  ISamchonEvidenceTypeScriptSource,
-  SamchonEvidenceTypeScriptSymbol,
-  TSamchonEvidenceHeadingLevel,
+  EvidenceGraphHeadingLevel,
+  EvidenceGraphTypeScriptSymbol,
+  IEvidenceGraphConfig,
+  IEvidenceGraphHeadingRange,
+  IEvidenceGraphMarkdownReference,
+  IEvidenceGraphMarkdownSource,
+  IEvidenceGraphReference,
+  IEvidenceGraphSource,
+  IEvidenceGraphTypeScriptReference,
+  IEvidenceGraphTypeScriptSource,
 } from "./structures";
 
-// `@samchon/evidence` — a `@ttsc/lint` rule contributor.
+// `@samchon/evidence-graph` — a `@ttsc/lint` rule contributor.
 //
 // This descriptor mirrors the shape of an ESLint flat-config plugin object
 // (meta + rules) with one field that carries runtime meaning: `source`. It
@@ -24,14 +24,14 @@ export type {
 //
 // The `rules` array is advisory — the authoritative registration happens in the
 // Go `init()` of `native/evidence.go` via `rule.Register(...)`. Declaring the
-// names here only powers TypeScript autocomplete for `evidence/*` keys in a
+// names here only powers TypeScript autocomplete for `evidence-graph/*` keys in a
 // consumer's lint config, and a name listed here but never registered in Go
 // fails silently at runtime rather than loudly at build.
 const plugin = {
   meta: {
-    name: "@samchon/evidence",
+    name: "@samchon/evidence-graph",
     version: "0.1.0",
-    namespace: "evidence",
+    namespace: "evidence-graph",
   },
   rules: [
     // Project-scoped. Builds the document and symbol index every other rule
@@ -56,6 +56,6 @@ export default plugin;
 
 declare module "@ttsc/lint" {
   interface ITtscLintRuleOptionsMap {
-    "evidence/index": ISamchonEvidenceConfig;
+    "evidence-graph/index": IEvidenceGraphConfig;
   }
 }

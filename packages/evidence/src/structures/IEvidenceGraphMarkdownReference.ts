@@ -9,7 +9,7 @@ import type { TtscLintSeverity } from "@ttsc/lint";
  * opposite decision with its reason, so intentional non-use remains visible to
  * the graph.
  */
-export interface ISamchonEvidenceMarkdownReference {
+export interface IEvidenceGraphMarkdownReference {
   /** Identifies the citing artifacts as Markdown. */
   type: "markdown";
 

@@ -1,6 +1,6 @@
 ---
 name: documentation
-description: Defines README, guide, and agent-instruction structure, audience, concise prose, and voice for @samchon/evidence. Use before writing, modifying, renaming, or moving user-facing repository documentation, AGENTS.md, or any SKILL.md; do not use for the .wiki knowledge base, which the wiki skill owns.
+description: Defines README, guide, and agent-instruction structure, audience, concise prose, and voice for @samchon/evidence-graph. Use before writing, modifying, renaming, or moving user-facing repository documentation, AGENTS.md, or any SKILL.md; do not use for the .wiki knowledge base, which the wiki skill owns.
 ---
 
 # Documentation

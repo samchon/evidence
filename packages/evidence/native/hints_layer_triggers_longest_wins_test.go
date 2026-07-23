@@ -74,7 +74,7 @@ func TestHintsLayerTriggersLongestWins(t *testing.T) {
 // Slice order is the only ranking channel a serialized corpus has. An explicit
 // `{#id}` survives an edit to the heading text and a derived anchor does not, so
 // offering the fragile one first would teach authors to cite it — and then
-// `evidence/reference` would blame them for taking what the editor handed over.
+// `evidence-graph/reference` would blame them for taking what the editor handed over.
 //
 //  1. Build a document whose derived section precedes its explicit one.
 //  2. Ask for the corpus.

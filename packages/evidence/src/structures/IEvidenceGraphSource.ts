@@ -1,5 +1,5 @@
-import type { ISamchonEvidenceMarkdownSource } from "./ISamchonEvidenceMarkdownSource";
-import type { ISamchonEvidenceTypeScriptSource } from "./ISamchonEvidenceTypeScriptSource";
+import type { IEvidenceGraphMarkdownSource } from "./IEvidenceGraphMarkdownSource";
+import type { IEvidenceGraphTypeScriptSource } from "./IEvidenceGraphTypeScriptSource";
 
 /**
  * One origin of evidence nodes in the graph.
@@ -10,5 +10,5 @@ import type { ISamchonEvidenceTypeScriptSource } from "./ISamchonEvidenceTypeScr
  * question of each: which other artifacts can demonstrate that this claim is
  * actually used?
  */
-export type ISamchonEvidenceSource =
-  ISamchonEvidenceMarkdownSource | ISamchonEvidenceTypeScriptSource;
+export type IEvidenceGraphSource =
+  IEvidenceGraphMarkdownSource | IEvidenceGraphTypeScriptSource;

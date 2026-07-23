@@ -1,6 +1,6 @@
 import type { TtscLintSeverity } from "@ttsc/lint";
-import type { ISamchonEvidenceReference } from "./ISamchonEvidenceReference";
-import type { SamchonEvidenceTypeScriptSymbol } from "./SamchonEvidenceTypeScriptSymbol";
+import type { EvidenceGraphTypeScriptSymbol } from "./EvidenceGraphTypeScriptSymbol";
+import type { IEvidenceGraphReference } from "./IEvidenceGraphReference";
 
 /**
  * A configured body of TypeScript evidence.
@@ -14,7 +14,7 @@ import type { SamchonEvidenceTypeScriptSymbol } from "./SamchonEvidenceTypeScrip
  * by default, then opt into functions or properties only where their individual
  * contracts deserve documentary proof.
  */
-export interface ISamchonEvidenceTypeScriptSource {
+export interface IEvidenceGraphTypeScriptSource {
   /** Identifies this source as TypeScript. */
   type: "typescript";
 
@@ -54,7 +54,7 @@ export interface ISamchonEvidenceTypeScriptSource {
    *
    * @default type
    */
-  symbol?: SamchonEvidenceTypeScriptSymbol | SamchonEvidenceTypeScriptSymbol[];
+  symbol?: EvidenceGraphTypeScriptSymbol | EvidenceGraphTypeScriptSymbol[];
 
   /**
    * One file group or independently complete file groups that must acknowledge
@@ -65,12 +65,12 @@ export interface ISamchonEvidenceTypeScriptSource {
    * element: acknowledgements in one group never count toward another, and
    * partially covered groups cannot be pooled to satisfy this source.
    */
-  reference: ISamchonEvidenceReference | ISamchonEvidenceReference[];
+  reference: IEvidenceGraphReference | IEvidenceGraphReference[];
 
   /**
    * Optional severity for this source. It overrides
-   * `ISamchonEvidenceConfig.severity`; a reference-level severity overrides
-   * this value for that one reference group.
+   * `IEvidenceGraphConfig.severity`; a reference-level severity overrides this
+   * value for that one reference group.
    */
   severity?: TtscLintSeverity;
 }

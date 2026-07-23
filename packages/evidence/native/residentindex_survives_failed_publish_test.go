@@ -15,10 +15,10 @@ func (f fakeProjectResults) ProjectResult(string) rule.ProjectRuleResult { retur
 // itself failed.
 //
 // reportAmbiguousAnchors calls ctx.Report for one duplicate heading slug, which
-// flips evidence/index to ProjectRuleFailed even though it goes on to publish a
+// flips evidence-graph/index to ProjectRuleFailed even though it goes on to publish a
 // complete index through ctx.SetState. Keying residentIndex on ProjectRulePassed
 // therefore let a single duplicate heading anywhere discard the whole index and
-// silence evidence/reference and evidence/require across the entire project,
+// silence evidence-graph/reference and evidence-graph/require across the entire project,
 // including citations with nothing to do with the clash. The gate is a usable
 // index, not a passing status; the ambiguity is still surfaced by the index
 // rule's own diagnostic.

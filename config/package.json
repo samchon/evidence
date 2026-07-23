@@ -1,8 +1,8 @@
 {
   "private": true,
-  "name": "@samchon/evidence-config",
+  "name": "@samchon/evidence-graph-config",
   "version": "0.1.0",
-  "description": "Shared build configuration for @samchon/evidence packages.",
+  "description": "Shared build configuration for @samchon/evidence-graph packages.",
   "devDependencies": {
     "typescript": "catalog:typescript"
   }

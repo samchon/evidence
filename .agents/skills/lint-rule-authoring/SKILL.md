@@ -1,6 +1,6 @@
 ---
 name: lint-rule-authoring
-description: Defines the @ttsc/lint contributor contract for @samchon/evidence — the hybrid TypeScript-descriptor plus Go-source package shape, the Go rule API, project-scoped rules, options typing, and the expensive defaults the API sets for you. Use before adding or modifying a Go rule, editing the plugin descriptor, changing the published file set, or wiring rule options; do not use for what the rules should mean, which the evidence-graph skill owns.
+description: Defines the @ttsc/lint contributor contract for @samchon/evidence-graph — the hybrid TypeScript-descriptor plus Go-source package shape, the Go rule API, project-scoped rules, options typing, and the expensive defaults the API sets for you. Use before adding or modifying a Go rule, editing the plugin descriptor, changing the published file set, or wiring rule options; do not use for what the rules should mean, which the evidence-graph skill owns.
 ---
 
 # Lint Rule Authoring
@@ -87,7 +87,7 @@ A second registry, `rule.RegisterProject`, runs once per Program **before any fi
 - **Project findings have no file, no range, and no fix.** A markdown-side error cannot point at a line. Report TypeScript-side violations on the JSDoc node instead, where a position exists.
 - **Project rules cannot be configured in an entry with `files`.** Such an entry is rejected even when empty or `off`.
 - **`SetState` values live for one Program cycle.** Do not cache across cycles.
-- **A declared, non-off project rule forces a serial walk for the entire run — on the published host.** `engine.go:532-534` sets `eng.needsTypeChecker = true` for any project rule that is declared and not `off`, and `runsSerial()` (`engine.go:498-500`) reads that one flag for the whole engine. `NeedsTypeChecker` is **global, not per-rule**, so while `evidence/index` is on, this plugin's file rules run serially no matter what they declare. Every rule here declares `NeedsTypeChecker() false` anyway — it is true, it costs nothing, and it becomes effective the moment the host honors it. **Upstream fix in flight:** `samchon/ttsc` branch `feat/lint-project-rule-checker-opt-out` lets a project rule carry the same marker; once released, bump the peer range and this note becomes history.
+- **A declared, non-off project rule forces a serial walk for the entire run — on the published host.** `engine.go:532-534` sets `eng.needsTypeChecker = true` for any project rule that is declared and not `off`, and `runsSerial()` (`engine.go:498-500`) reads that one flag for the whole engine. `NeedsTypeChecker` is **global, not per-rule**, so while `evidence-graph/index` is on, this plugin's file rules run serially no matter what they declare. Every rule here declares `NeedsTypeChecker() false` anyway — it is true, it costs nothing, and it becomes effective the moment the host honors it. **Upstream fix in flight:** `samchon/ttsc` branch `feat/lint-project-rule-checker-opt-out` lets a project rule carry the same marker; once released, bump the peer range and this note becomes history.
 
 ## Options
 

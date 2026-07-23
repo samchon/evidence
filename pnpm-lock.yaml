@@ -75,7 +75,7 @@ importers:
 
   tests/test-evidence:
     devDependencies:
-      '@samchon/evidence':
+      '@samchon/evidence-graph':
         specifier: workspace:*
         version: link:../../packages/evidence
       '@ttsc/lint':

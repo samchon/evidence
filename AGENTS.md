@@ -1,6 +1,6 @@
 # AGENTS.md
 
-`@samchon/evidence` is an evidence-graph lint contributor for `@ttsc/lint`. It makes provenance declarable with a JSDoc `@evidence` tag, resolvable against markdown sections and TypeScript symbols, and enforceable as a real compile error under rules the consumer configures in `lint.config.ts`.
+`@samchon/evidence-graph` is an evidence-graph lint contributor for `@ttsc/lint`. It makes provenance declarable with a JSDoc `@evidence` tag, resolvable against markdown sections and TypeScript symbols, and enforceable as a real compile error under rules the consumer configures in `lint.config.ts`.
 
 ## Attitude
 
@@ -22,7 +22,7 @@ Durable project conventions and workflows live under `.agents/skills/`. Read the
 
 ### Project Outline
 
-What `@samchon/evidence` is, the workspace layout, package boundaries, and canonical commands, `.agents/skills/project/SKILL.md`. Read when orienting in the repository or choosing a build, test, or format command.
+What `@samchon/evidence-graph` is, the workspace layout, package boundaries, and canonical commands, `.agents/skills/project/SKILL.md`. Read when orienting in the repository or choosing a build, test, or format command.
 
 ### Evidence Graph
 

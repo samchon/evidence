@@ -24,10 +24,10 @@ export const test_evidence_coverage_requires_documents_scope = (): void => {
     const project: IEvidenceProject = createProject({
       name: `coverage-scope-${index}`,
       lint: {
-        plugins: { evidence: "@samchon/evidence" },
+        plugins: { "evidence-graph": "@samchon/evidence-graph" },
         rules: {
-          "evidence/index": ["error", { documents: ["specs"] }],
-          "evidence/coverage": setting,
+          "evidence-graph/index": ["error", { documents: ["specs"] }],
+          "evidence-graph/coverage": setting,
         },
       },
       files: {

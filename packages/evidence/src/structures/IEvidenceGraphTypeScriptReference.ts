@@ -8,7 +8,7 @@ import type { TtscLintSeverity } from "@ttsc/lint";
  * on the file around it. This preserves the reason for a particular exported
  * contract even when nearby declarations evolve independently.
  */
-export interface ISamchonEvidenceTypeScriptReference {
+export interface IEvidenceGraphTypeScriptReference {
   /** Identifies the citing artifacts as TypeScript. */
   type: "typescript";
 

@@ -10,18 +10,18 @@ import (
 )
 
 // coverageRuleName is this rule's registered name.
-const coverageRuleName = "evidence/coverage"
+const coverageRuleName = "evidence-graph/coverage"
 
 // coverageRule reports declared sections that nothing cites.
 //
-// This is the target-side question, the third of three. `evidence/reference`
-// asks whether a citation points at something real; `evidence/require` asks
+// This is the target-side question, the third of three. `evidence-graph/reference`
+// asks whether a citation points at something real; `evidence-graph/require` asks
 // whether a declaration asserts something while citing nothing; this asks which
 // section of the design nothing in the code claims to implement.
 //
 // Its blindness is structural and worth naming: it counts sections with no
 // citation and therefore can never see a citation with no section. That is
-// `evidence/reference`'s job, and the two must not be merged — their scopes
+// `evidence-graph/reference`'s job, and the two must not be merged — their scopes
 // differ on purpose, and a single rule doing both would answer neither
 // question honestly.
 //
@@ -61,9 +61,9 @@ func (coverageRule) Check(ctx *rule.ProjectContext) {
 	_ = ctx.DecodeOptions(&options)
 	if len(options.Documents) == 0 {
 		ctx.Report(
-			"evidence/coverage requires a non-empty 'documents' option, for " +
+			"evidence-graph/coverage requires a non-empty 'documents' option, for " +
 				"example [\"docs/**/*.md\"]. Coverage cannot inherit " +
-				"evidence/index's scope, and guessing every markdown file could " +
+				"evidence-graph/index's scope, and guessing every markdown file could " +
 				"demand citations for unrelated documentation.",
 		)
 		return

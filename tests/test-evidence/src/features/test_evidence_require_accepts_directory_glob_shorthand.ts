@@ -25,11 +25,11 @@ export const test_evidence_require_accepts_directory_glob_shorthand =
     const project: IEvidenceProject = createProject({
       name: "require-directory-shorthand",
       lint: {
-        plugins: { evidence: "@samchon/evidence" },
+        plugins: { "evidence-graph": "@samchon/evidence-graph" },
         rules: {
-          "evidence/index": ["error", { documents: ["docs"] }],
-          "evidence/reference": "error",
-          "evidence/require": [
+          "evidence-graph/index": ["error", { documents: ["docs"] }],
+          "evidence-graph/reference": "error",
+          "evidence-graph/require": [
             "error",
             {
               policies: [

@@ -12,4 +12,4 @@
  * Properties use their declaring type as part of their identity, so they are
  * distinct from top-level function and type symbols.
  */
-export type SamchonEvidenceTypeScriptSymbol = "type" | "function" | "property";
+export type EvidenceGraphTypeScriptSymbol = "type" | "function" | "property";

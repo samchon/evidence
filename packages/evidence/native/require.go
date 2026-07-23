@@ -12,7 +12,7 @@ import (
 // must cite a document section under configured folders.
 //
 // This is the source-side question, and it is a third question rather than a
-// variant of the other two. `evidence/reference` asks whether a citation points
+// variant of the other two. `evidence-graph/reference` asks whether a citation points
 // at something real (integrity, every edge). A coverage rule would ask which
 // declared section nothing has proven (target-side, realization edges). This
 // asks which declaration asserts something while citing nothing at all. The
@@ -21,7 +21,7 @@ import (
 // produces a ledger that answers none of the three questions honestly.
 type requireRule struct{}
 
-func (requireRule) Name() string { return "evidence/require" }
+func (requireRule) Name() string { return "evidence-graph/require" }
 
 // Visits registers only KindSourceFile, and the rule walks top-level statements
 // itself.
@@ -41,7 +41,7 @@ func (requireRule) AcceptsTtscLintOptions() bool { return true }
 // alone: does this declaration carry a tag citing a matching document?
 //
 // Note this currently buys nothing — a declared project rule flips the engine's
-// single global needsTypeChecker flag, and `evidence/index` is always declared.
+// single global needsTypeChecker flag, and `evidence-graph/index` is always declared.
 // It stays because it is true, costs nothing, and becomes correct the day
 // upstream lets a project rule decline the checker.
 func (requireRule) NeedsTypeChecker() bool { return false }
@@ -125,7 +125,7 @@ func checkObligation(
 	for _, tag := range tags {
 		if tag.Kind != referenceKindDocument || tag.Anchor == "" {
 			// Only a section discharges an obligation. A symbol citation is
-			// checked for integrity by evidence/reference, but it cannot ground
+			// checked for integrity by evidence-graph/reference, but it cannot ground
 			// a declaration: a symbol both cites and is cited, so two
 			// declarations naming each other would satisfy every obligation
 			// between them while proving nothing. A section is terminal, which

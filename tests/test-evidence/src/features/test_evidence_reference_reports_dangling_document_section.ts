@@ -11,7 +11,7 @@ import {
  * fails the build, while its well-formed twin does not.
  *
  * This crosses every boundary the product depends on, and each one fails
- * silently rather than loudly. ttsc must resolve `@samchon/evidence` from
+ * silently rather than loudly. ttsc must resolve `@samchon/evidence-graph` from
  * node_modules, read the descriptor's `source` path, copy `native/` into its
  * own Go module, and fire the synthesized `init()` — a namespace typo there
  * drops the rule with only a stderr warning. Then the project rule must read
@@ -32,10 +32,10 @@ export const test_evidence_reference_reports_dangling_document_section =
     const project: IEvidenceProject = createProject({
       name: "dangling-section",
       lint: {
-        plugins: { evidence: "@samchon/evidence" },
+        plugins: { "evidence-graph": "@samchon/evidence-graph" },
         rules: {
-          "evidence/index": ["error", { documents: ["docs/**/*.md"] }],
-          "evidence/reference": "error",
+          "evidence-graph/index": ["error", { documents: ["docs/**/*.md"] }],
+          "evidence-graph/reference": "error",
         },
       },
       files: {
@@ -79,7 +79,7 @@ export const test_evidence_reference_reports_dangling_document_section =
       );
       assertIncludes(
         result,
-        "evidence/reference",
+        "evidence-graph/reference",
         "The diagnostic must be attributed to the rule that raised it.",
       );
       // The negative twin. An over-matching rule that flags every citation

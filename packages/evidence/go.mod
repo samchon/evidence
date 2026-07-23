@@ -10,7 +10,7 @@
 // The replace directives point at a sibling checkout of samchon/ttsc
 // (../../../../samchon/ttsc relative to this package). Adjust them to your
 // layout, or delete this file — the ttsc build is unaffected either way.
-module github.com/samchon/evidence/packages/evidence
+module github.com/samchon/evidence-graph/packages/evidence
 
 go 1.26
 

@@ -80,7 +80,7 @@ func (indexRule) Hints(ctx *rule.HintContext) []rule.Hint {
 // Slice order is the ranking, and an explicit `{#id}` is the anchor worth
 // citing: it survives an edit to the heading text, while a derived one breaks
 // the moment somebody fixes a typo in the prose. Offering the fragile one first
-// would teach authors to pick it, and `evidence/reference` would then blame them
+// would teach authors to pick it, and `evidence-graph/reference` would then blame them
 // for taking what the editor handed over.
 func rankedSections(sections []documentSection) []documentSection {
 	ranked := append([]documentSection(nil), sections...)
