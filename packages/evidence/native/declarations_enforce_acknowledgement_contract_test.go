@@ -109,6 +109,73 @@ func TestMarkdownDeclarationReasonMayBeginWithAtSign(t *testing.T) {
 }
 
 /**
+ * Verifies multiline Markdown declarations report the tag's line rather than
+ * the opening HTML comment's line.
+ *
+ * Declaration locations are part of the repair path. Trimming the comment body
+ * before parsing erases its leading newline and points the diagnostic at
+ * `<!--`, which is especially misleading when several declarations share one
+ * comment.
+ *
+ *  1. Put a reasonless declaration one line after an HTML comment opens.
+ *  2. Trigger the malformed-declaration diagnostic.
+ *  3. Assert its location identifies the actual tag line.
+ */
+func TestMarkdownDeclarationPreservesMultilineTagLocation(t *testing.T) {
+	messages := runIndexRule(t, map[string]string{
+		"docs/spec.md": "## Contract\n",
+		"docs/ref.md": `# Reference
+<!--
+@evidence docs/spec.md#contract
+-->
+`,
+	}, `{"sources":[{
+		"type":"markdown",
+		"files":["docs/spec.md"],
+		"symbol":"h2",
+		"reference":{"type":"markdown","files":["docs/ref.md"],"symbol":"h1"}
+	}]}`)
+	assertProblemContains(t, messages, "Malformed @evidence declaration at docs/ref.md:3")
+}
+
+/**
+ * Verifies declaration identity includes the artifact discriminator.
+ *
+ * One project path may deliberately be interpreted by separate configured
+ * artifact variants. A path, line, and sequence alone would let a Markdown
+ * declaration overwrite a TypeScript declaration when graph evaluation
+ * deduplicates declarations globally.
+ *
+ *  1. Scan a Markdown and TypeScript declaration at the same path and line.
+ *  2. Compare their internal declaration identities.
+ *  3. Assert the artifact-specific identities remain distinct.
+ */
+func TestDeclarationIdentitySeparatesArtifactVariants(t *testing.T) {
+	markdown, problems := scanMarkdownInventory(
+		"src/mixed.ts",
+		"<!-- @evidence Shared Markdown reason. -->\n",
+	)
+	if len(problems) != 0 {
+		t.Fatalf("unexpected Markdown scan problems: %v", problems)
+	}
+	typescript := parseTypeScriptInventory(
+		t,
+		"src/mixed.ts",
+		"/** @evidence Shared TypeScript reason. */\nexport interface Ref {}\n",
+	)
+	if len(markdown.Declarations) != 1 || len(typescript.Declarations) != 1 {
+		t.Fatalf(
+			"declaration counts = Markdown %d, TypeScript %d",
+			len(markdown.Declarations),
+			len(typescript.Declarations),
+		)
+	}
+	if markdown.Declarations[0].ID == typescript.Declarations[0].ID {
+		t.Fatalf("artifact declarations shared identity %q", markdown.Declarations[0].ID)
+	}
+}
+
+/**
  * Verifies ambiguous resolution: two distinct TypeScript declarations with the
  * same public target cannot be selected by declaration order.
  *

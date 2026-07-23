@@ -358,6 +358,38 @@ func TestTypeScriptInventoryExcludesJavaScriptProgramFiles(t *testing.T) {
 }
 
 /**
+ * Verifies every TypeScript-family extension in the public artifact boundary is
+ * eligible when the compiler Program supplies it, including TSX.
+ *
+ * The Program, rather than a filesystem crawl, owns TypeScript availability.
+ * An extension filter that accidentally recognizes only `.ts` would make a
+ * valid exported callable disappear even though ttsc parsed the file.
+ *
+ *  1. Parse a TSX Program entry containing an exported arrow component.
+ *  2. Load TypeScript inventories from that Program.
+ *  3. Assert the TSX path and callable unit are present.
+ */
+func TestTypeScriptInventoryIncludesTSXProgramFiles(t *testing.T) {
+	root := t.TempDir()
+	file := shimparser.ParseSourceFile(
+		shimast.SourceFileParseOptions{
+			FileName: filepath.ToSlash(filepath.Join(root, "view.tsx")),
+		},
+		"export const View = () => <div />;",
+		shimcore.ScriptKindTSX,
+	)
+	inventory := loadTypeScriptInventories(root, []*shimast.SourceFile{file})["view.tsx"]
+	if inventory == nil {
+		t.Fatal("TSX Program file was not indexed")
+	}
+	if len(inventory.Units) != 1 ||
+		inventory.Units[0].Symbol != "function" ||
+		inventory.Units[0].Target != "View" {
+		t.Fatalf("TSX callable inventory = %+v", inventory.Units)
+	}
+}
+
+/**
  * Verifies TypeScript's type and value namespaces do not collapse evidence
  * units that share one public target text.
  *

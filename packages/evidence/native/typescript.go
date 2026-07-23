@@ -462,7 +462,7 @@ func collectTypeScriptDeclarations(
 		for _, parsed := range parseDeclarations(content[entry.node.Pos():entry.node.End()]) {
 			sequence++
 			inventory.Declarations = append(inventory.Declarations, &evidenceDeclaration{
-				ID:       path + ":" + decimal(baseLine+parsed.LineOffset) + ":" + decimal(sequence),
+				ID:       "typescript:" + path + ":" + decimal(baseLine+parsed.LineOffset) + ":" + decimal(sequence),
 				Tag:      parsed.Tag,
 				Target:   normalizeTarget(parsed.Target),
 				Reason:   parsed.Reason,

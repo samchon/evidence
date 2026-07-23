@@ -13,7 +13,9 @@ type parsedDeclaration struct {
 }
 
 func parseDeclarations(comment string) []parsedDeclaration {
-	comment = strings.TrimSpace(comment)
+	trimmed := strings.TrimLeftFunc(comment, unicode.IsSpace)
+	leadingLines := strings.Count(comment[:len(comment)-len(trimmed)], "\n")
+	comment = trimmed
 	jsdoc := strings.HasPrefix(comment, "/**")
 	comment = strings.TrimPrefix(comment, "/**")
 	comment = strings.TrimPrefix(comment, "/*")
@@ -35,7 +37,7 @@ func parseDeclarations(comment string) []parsedDeclaration {
 			Tag:        pending.tag,
 			Target:     target,
 			Reason:     reason,
-			LineOffset: pending.lineOffset,
+			LineOffset: leadingLines + pending.lineOffset,
 		})
 		pending = nil
 	}

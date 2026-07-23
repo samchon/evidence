@@ -187,7 +187,7 @@ func scanMarkdownInventory(path string, content string) (*artifactInventory, []s
 		for _, parsed := range parseDeclarations(comment) {
 			sequence++
 			inventory.Declarations = append(inventory.Declarations, &evidenceDeclaration{
-				ID:       path + ":" + decimal(line+parsed.LineOffset) + ":" + decimal(sequence),
+				ID:       "markdown:" + path + ":" + decimal(line+parsed.LineOffset) + ":" + decimal(sequence),
 				Tag:      parsed.Tag,
 				Target:   normalizeTarget(parsed.Target),
 				Reason:   parsed.Reason,

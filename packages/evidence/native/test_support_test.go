@@ -60,10 +60,14 @@ func runIndexRule(
 			continue
 		}
 		normalized := filepath.ToSlash(absolute)
+		kind := shimcore.ScriptKindTS
+		if strings.HasSuffix(strings.ToLower(relative), ".tsx") {
+			kind = shimcore.ScriptKindTSX
+		}
 		sources = append(sources, shimparser.ParseSourceFile(
 			shimast.SourceFileParseOptions{FileName: normalized},
 			content,
-			shimcore.ScriptKindTS,
+			kind,
 		))
 	}
 	reporter := &capturedProjectReporter{}
@@ -81,12 +85,28 @@ func runIndexRule(
 }
 
 func isTypeScriptTestPath(path string) bool {
-	for _, extension := range []string{".ts", ".mts", ".cts"} {
+	path = strings.ToLower(path)
+	for _, extension := range []string{".ts", ".tsx", ".mts", ".cts"} {
 		if strings.HasSuffix(path, extension) {
 			return true
 		}
 	}
 	return false
+}
+
+func parseTypeScriptInventory(
+	t *testing.T,
+	path string,
+	content string,
+) *artifactInventory {
+	t.Helper()
+	absolute := filepath.ToSlash(filepath.Join(t.TempDir(), filepath.FromSlash(path)))
+	file := shimparser.ParseSourceFile(
+		shimast.SourceFileParseOptions{FileName: absolute},
+		content,
+		shimcore.ScriptKindTS,
+	)
+	return scanTypeScriptInventory(path, file)
 }
 
 func assertNoProblems(t *testing.T, messages []string) {

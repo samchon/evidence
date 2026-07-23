@@ -30,7 +30,7 @@ func newGlobSet(patterns []string) (globSet, error) {
 		set.Patterns = append(set.Patterns, pattern)
 	}
 	if !positive {
-		return globSet{}, errors.New("at least one positive glob is required before exclusions")
+		return globSet{}, errors.New("the files array must contain at least one positive glob")
 	}
 	return set, nil
 }
