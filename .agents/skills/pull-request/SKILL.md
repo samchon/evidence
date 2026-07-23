@@ -27,13 +27,30 @@ The body states what changed, why, and what was verified — naming the commands
 
 Call out anything in the Change Integrity list explicitly: tests, fixtures, CI, package wiring, dependencies, core algorithms. See the development skill.
 
+Open the body with a file-backed `--body-file` when the Markdown is multiline; `gh` mangles a multiline `--body` string. The opening body is the historical intent statement, so do not rewrite it after every follow-up push.
+
+Record later findings — CI fixes, a design issue you noticed after opening, and every Self-Review round below — as formal GitHub pull-request reviews with the `COMMENT` event, so the thread keeps its chronology. Put a line-specific observation in an inline review comment and a change-wide result in the review body. Never `APPROVE` or `REQUEST_CHANGES` on your own pull request, and do not use ordinary issue-style comments for this ledger.
+
 ## Watch Checks After Every Push
 
 Push, then watch the checks. A red check is yours to fix or explain before asking for review; leaving it for the reviewer to discover wastes their pass.
 
+## Self-Review Before Merge
+
+A merge is gated on one clean Overall Self-Review, a solo pass you perform yourself over the whole change. Do not delegate it, and do not treat a green check as a substitute — CI proves the tests that exist pass, not that the change is right.
+
+A round is complete only when it covers the entire surface:
+
+- **Whole diff.** Read every changed file and hunk of the base-to-head diff, plus any uncommitted change. Never partition by file, concern, or pass.
+- **Consequence surface.** Trace each change through its callers, tests, generated output, packaging, documentation, and consumers, and across Windows and POSIX. This is the development skill's Consequence Analysis turned on your own diff.
+- **Reproduce before accepting.** Confirm a suspected defect against the real code path before acting on it. This product treats an unproven claim as a defect, and a self-review finding is a claim.
+- **Fresh rounds, no limit.** Whenever a round changes anything, run the narrowest verification the development skill authorizes and start another complete round from the new state. Stop only when a full round finds nothing sound to change.
+
+Record the outcome as a `COMMENT` review per the ledger rule above: the surviving findings and their fixes, the final clean round, and any verification that could not run.
+
 ## Merge On Explicit Request Or Standing Mandate
 
-Merge only when the user asks or a standing mandate authorizes it, and only with checks green.
+Merge only when the user asks or a standing mandate authorizes it, and only with required checks green and one clean Overall Self-Review round on record. Use the repository's established merge method unless another is specified. If branch protection blocks the requested merge, report the blocker rather than bypassing it.
 
 ## Contributing Upstream To ttsc
 
