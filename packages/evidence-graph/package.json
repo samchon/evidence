@@ -1,18 +1,22 @@
 {
   "name": "@samchon/evidence-graph",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "description": "Evidence-graph lint contributor for @ttsc/lint: declare provenance with a JSDoc @evidence tag and fail the build when it is missing or dangling.",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "src/index.ts",
   "exports": {
-    ".": {
-      "types": "./lib/index.d.ts",
-      "default": "./lib/index.js"
-    },
+    ".": "./src/index.ts",
     "./package.json": "./package.json"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "main": "lib/index.js",
+    "exports": {
+      ".": {
+        "types": "./lib/index.d.ts",
+        "default": "./lib/index.js"
+      },
+      "./package.json": "./package.json"
+    }
   },
   "files": [
     "LICENSE",
@@ -22,9 +26,8 @@
     "!native/*_test.go"
   ],
   "scripts": {
-    "build": "rimraf lib && tsc",
-    "prepack": "node -e \"const fs = require('node:fs'); for (const file of ['LICENSE', 'README.md']) fs.copyFileSync('../../' + file, file)\" && pnpm run build",
-    "postpack": "node -e \"const fs = require('node:fs'); for (const file of ['LICENSE', 'README.md']) fs.rmSync(file, { force: true })\""
+    "build": "rimraf lib && ttsc",
+    "prepack": "pnpm run build && node build/prepack.js"
   },
   "keywords": [
     "ttsc",
