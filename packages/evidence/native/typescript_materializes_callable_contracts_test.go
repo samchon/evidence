@@ -532,3 +532,36 @@ func TestTypeScriptIdentityPreservesLiteralSegmentBoundaries(t *testing.T) {
 	assertProblemContains(t, messages, "src/contracts.ts:2")
 	assertProblemContains(t, messages, "src/contracts.ts:3")
 }
+
+/**
+ * Verifies slash and backslash characters in TypeScript literal names remain
+ * exact symbol identity rather than receiving Markdown path normalization.
+ *
+ * Both literals are legal public method names. Rewriting the backslash globally
+ * makes two distinct callable units ambiguous and leaves neither exact target
+ * independently acknowledgeable.
+ *
+ *  1. Export slash and backslash static literal methods.
+ *  2. Acknowledge each exact target from one Markdown reference group.
+ *  3. Assert both callable units resolve without collision.
+ */
+func TestTypeScriptLiteralTargetsKeepExactSeparators(t *testing.T) {
+	messages := runIndexRule(t, map[string]string{
+		"src/contracts.ts": `export class Service {
+  static "a\\b"(): void {}
+  static "a/b"(): void {}
+}
+`,
+		"docs/ledger.md": `<!--
+@evidence Service.a\b The backslash-named callable is documented.
+@evidence Service.a/b The slash-named callable is documented.
+-->
+`,
+	}, `{"sources":[{
+		"type":"typescript",
+		"files":["src/contracts.ts"],
+		"symbol":"function",
+		"reference":{"type":"markdown","files":["docs/ledger.md"],"symbol":"file"}
+	}]}`)
+	assertNoProblems(t, messages)
+}

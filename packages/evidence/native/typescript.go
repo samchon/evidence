@@ -475,7 +475,7 @@ func collectTypeScriptDeclarations(
 			inventory.Declarations = append(inventory.Declarations, &evidenceDeclaration{
 				ID:       "typescript:" + path + ":" + decimal(baseLine+parsed.LineOffset) + ":" + decimal(sequence),
 				Tag:      parsed.Tag,
-				Target:   normalizeTarget(parsed.Target),
+				Target:   parsed.Target,
 				Reason:   parsed.Reason,
 				Host:     entry.host,
 				Path:     path,

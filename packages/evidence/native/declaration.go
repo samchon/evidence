@@ -99,15 +99,10 @@ func splitDeclarationBody(body string) (string, string) {
 	return body, ""
 }
 
-func normalizeTarget(target string) string {
-	if strings.Contains(target, "/") ||
-		strings.Contains(target, "\\") ||
-		strings.Contains(target, "#") ||
-		strings.HasSuffix(strings.ToLower(target), ".md") {
-		target = strings.ReplaceAll(target, "\\", "/")
-		for strings.HasPrefix(target, "./") {
-			target = strings.TrimPrefix(target, "./")
-		}
+func normalizeMarkdownTarget(target string) string {
+	target = strings.ReplaceAll(target, "\\", "/")
+	for strings.HasPrefix(target, "./") {
+		target = strings.TrimPrefix(target, "./")
 	}
 	return target
 }

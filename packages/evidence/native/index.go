@@ -137,13 +137,19 @@ func materializeSourceStates(
 func evaluateEvidenceGraph(states []sourceState) []string {
 	problems := []string{}
 	targets := map[string]map[string]*evidenceUnit{}
+	markdownTargets := map[string]map[string]*evidenceUnit{}
 	for _, state := range states {
 		for _, unit := range state.Units {
-			target := normalizeTarget(unit.Target)
-			if targets[target] == nil {
-				targets[target] = map[string]*evidenceUnit{}
+			if targets[unit.Target] == nil {
+				targets[unit.Target] = map[string]*evidenceUnit{}
 			}
-			targets[target][unit.ID] = unit
+			targets[unit.Target][unit.ID] = unit
+			if unit.Type == artifactMarkdown {
+				if markdownTargets[unit.Target] == nil {
+					markdownTargets[unit.Target] = map[string]*evidenceUnit{}
+				}
+				markdownTargets[unit.Target][unit.ID] = unit
+			}
 		}
 	}
 
@@ -171,7 +177,7 @@ func evaluateEvidenceGraph(states []sourceState) []string {
 			)
 			continue
 		}
-		candidates := targets[declaration.Target]
+		candidates := declarationCandidates(declaration.Target, targets, markdownTargets)
 		switch len(candidates) {
 		case 0:
 			problems = append(
@@ -242,6 +248,24 @@ func evaluateEvidenceGraph(states []sourceState) []string {
 		}
 	}
 	return problems
+}
+
+func declarationCandidates(
+	target string,
+	targets map[string]map[string]*evidenceUnit,
+	markdownTargets map[string]map[string]*evidenceUnit,
+) map[string]*evidenceUnit {
+	candidates := map[string]*evidenceUnit{}
+	for id, unit := range targets[target] {
+		candidates[id] = unit
+	}
+	normalized := normalizeMarkdownTarget(target)
+	if normalized != target {
+		for id, unit := range markdownTargets[normalized] {
+			candidates[id] = unit
+		}
+	}
+	return candidates
 }
 
 func inventoriesOf(

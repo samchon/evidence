@@ -35,6 +35,8 @@
  * These targets deliberately omit file paths. If selected files expose the same
  * qualified target, a declaration using that target is ambiguous; rename or
  * further qualify the public symbols. A re-export whose declaration lives in
- * another file does not create a second unit in the barrel file.
+ * another file does not create a second unit in the barrel file. TypeScript
+ * target characters are matched exactly; Markdown path-separator normalization
+ * does not rewrite literal symbol names.
  */
 export type EvidenceGraphTypeScriptSymbol = "type" | "function" | "property";

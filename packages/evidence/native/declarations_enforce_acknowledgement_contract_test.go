@@ -109,6 +109,34 @@ func TestMarkdownDeclarationReasonMayBeginWithAtSign(t *testing.T) {
 }
 
 /**
+ * Verifies Markdown declaration paths accept Windows separators without
+ * normalizing unrelated TypeScript symbol names.
+ *
+ * Markdown units have canonical project-relative paths with slash separators,
+ * but declarations are authored on both Windows and POSIX. Path portability is
+ * therefore a Markdown resolution concern, not a global target rewrite.
+ *
+ *  1. Materialize one canonical Markdown heading target.
+ *  2. Cite it from TypeScript with backslash path separators.
+ *  3. Assert the declaration resolves and satisfies coverage.
+ */
+func TestMarkdownTargetsAcceptWindowsPathSeparators(t *testing.T) {
+	messages := runIndexRule(t, map[string]string{
+		"docs/spec.md": "## Contract\n",
+		"src/ref.ts": `
+/** @evidence docs\spec.md#contract This type adopts the portable document path. */
+export interface Ref {}
+`,
+	}, `{"sources":[{
+		"type":"markdown",
+		"files":["docs/spec.md"],
+		"symbol":"h2",
+		"reference":{"type":"typescript","files":["src/ref.ts"],"symbol":"type"}
+	}]}`)
+	assertNoProblems(t, messages)
+}
+
+/**
  * Verifies multiline Markdown declarations report the tag's line rather than
  * the opening HTML comment's line.
  *

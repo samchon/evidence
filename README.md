@@ -178,7 +178,7 @@ Function targets follow their public identity. A top-level callable is `createOr
 
 Local declarations exposed through an export list use the public alias: `export { local as publicName }` creates the target `publicName`. A barrel re-export does not create a second unit because its declaration lives in another file.
 
-TypeScript targets do not contain file paths. If selected files expose the same qualified target, the rule reports it as ambiguous instead of choosing one by filesystem order.
+TypeScript targets do not contain file paths. Their characters are matched exactly, including slash or backslash characters in a literal declaration name. If selected files expose the same qualified target, the rule reports it as ambiguous instead of choosing one by filesystem order.
 
 ## Evidence declarations
 
