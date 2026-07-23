@@ -93,9 +93,9 @@ func materializeClaimStates(
 			referenceInventories := inventoriesOf(reference.Type, markdown, typescript)
 			referencePaths := matchingInventoryPaths(referenceInventories, reference.Files)
 			referenceState := referenceState{
-				Spec:      reference,
-				Paths:     referencePaths,
-				ScopeByID: map[string]*evidenceUnit{},
+				Spec:         reference,
+				Paths:        referencePaths,
+				UnitsByScope: map[string][]*evidenceUnit{},
 			}
 			if len(referencePaths) == 0 {
 				problems = append(
@@ -123,19 +123,23 @@ func materializeClaimStates(
 					referenceState.Units = append(referenceState.Units, unit)
 				}
 			}
+			sortUnits(referenceState.Units)
+			scopesByID := map[string]*evidenceUnit{}
 			for _, unit := range referenceState.Units {
 				for scope := unit; scope != nil; scope = availableUnits[scope.ParentID] {
-					if referenceState.ScopeByID[scope.ID] != nil {
-						break
+					referenceState.UnitsByScope[scope.ID] = append(
+						referenceState.UnitsByScope[scope.ID],
+						unit,
+					)
+					if scopesByID[scope.ID] == nil {
+						scopesByID[scope.ID] = scope
+						referenceState.Scopes = append(referenceState.Scopes, scope)
 					}
-					referenceState.ScopeByID[scope.ID] = scope
-					referenceState.Scopes = append(referenceState.Scopes, scope)
 					if scope.ParentID == "" {
 						break
 					}
 				}
 			}
-			sortUnits(referenceState.Units)
 			sortUnits(referenceState.Scopes)
 			if len(referencePaths) != 0 &&
 				len(referenceState.Units) == 0 &&
@@ -230,7 +234,7 @@ func evaluateEvidenceGraph(states []claimState) []string {
 			acknowledged := map[string]*evidenceDeclaration{}
 			for _, declaration := range state.Declarations {
 				scopeID := resolved[declaration.ID]
-				covered := coveredUnits(reference, scopeID)
+				covered := reference.UnitsByScope[scopeID]
 				if len(covered) == 0 {
 					continue
 				}
@@ -277,28 +281,6 @@ func evaluateEvidenceGraph(states []claimState) []string {
 		}
 	}
 	return problems
-}
-
-func coveredUnits(
-	reference referenceState,
-	scopeID string,
-) []*evidenceUnit {
-	if reference.ScopeByID[scopeID] == nil {
-		return nil
-	}
-	covered := []*evidenceUnit{}
-	for _, unit := range reference.Units {
-		for current := unit; current != nil; current = reference.ScopeByID[current.ParentID] {
-			if current.ID == scopeID {
-				covered = append(covered, unit)
-				break
-			}
-			if current.ParentID == "" {
-				break
-			}
-		}
-	}
-	return covered
 }
 
 func declarationCandidates(

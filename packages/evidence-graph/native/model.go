@@ -135,11 +135,11 @@ type claimState struct {
 }
 
 type referenceState struct {
-	Spec      referenceSpec
-	Paths     []string
-	Units     []*evidenceUnit
-	Scopes    []*evidenceUnit
-	ScopeByID map[string]*evidenceUnit
+	Spec         referenceSpec
+	Paths        []string
+	Units        []*evidenceUnit
+	Scopes       []*evidenceUnit
+	UnitsByScope map[string][]*evidenceUnit
 }
 
 func decimal(value int) string {
