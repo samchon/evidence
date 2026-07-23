@@ -43,8 +43,8 @@ func (coverageRule) Name() string { return coverageRuleName }
 func (coverageRule) NeedsTypeChecker() bool { return false }
 
 type coverageOptions struct {
-	// Documents whose sections must be cited. Defaults to every indexed
-	// document.
+	// Documents whose sections must be cited. Required because project rules
+	// cannot inherit one another's options.
 	Documents []string `json:"documents"`
 }
 
@@ -59,24 +59,20 @@ func (coverageRule) Check(ctx *rule.ProjectContext) {
 
 	var options coverageOptions
 	_ = ctx.DecodeOptions(&options)
-
-	// The index rule's own patterns are not readable from here — project rules
-	// cannot read one another's state — so coverage indexes everything and
-	// narrows afterwards with its own `documents`. Scanning wider than needed
-	// costs file reads; scanning narrower would silently exempt whatever fell
-	// outside, which is the failure worth avoiding.
-	index := buildEvidenceIndex(root, defaultDocumentPatterns, ctx.Sources)
-	demanded := options.Documents
-	if len(demanded) == 0 {
-		demanded = index.DocumentPatterns
+	if len(options.Documents) == 0 {
+		ctx.Report(
+			"evidence/coverage requires a non-empty 'documents' option, for " +
+				"example [\"docs/**/*.md\"]. Coverage cannot inherit " +
+				"evidence/index's scope, and guessing every markdown file could " +
+				"demand citations for unrelated documentation.",
+		)
+		return
 	}
 
+	index := buildEvidenceIndex(root, options.Documents, ctx.Sources)
 	cited := citedAnchors(ctx.Sources)
 	uncovered := []string{}
 	for _, path := range index.documentPaths() {
-		if !matchAnyGlob(demanded, path) {
-			continue
-		}
 		for _, section := range index.Documents[path] {
 			if section.ExemptionBlank {
 				ctx.Report(

@@ -146,6 +146,8 @@ src/providers/order.ts:19:18 - error TS15888: [evidence/require] 'IWrongTarget' 
 
 Only exported, top-level `interface`, `type`, `class`, `function`, and `enum` declarations are obliged by default; `variable` and `namespace` are opt-in through `kinds`. Demanding grounds for every exported constant trains authors to write filler, which is worse than demanding nothing.
 
+Glob patterns select an entry and everything below it, so `src/providers`, `src/providers/`, and `src/providers/**` all govern the same subtree. The same directory shorthand applies to index documents, required targets, and coverage documents.
+
 Only **document sections** discharge an obligation. A symbol citation is still checked for integrity, but it cannot ground a declaration: a symbol both cites and is cited, so two declarations naming each other would satisfy every obligation between them while proving nothing. A section is terminal, and that is what makes it grounds.
 
 Put every policy in one entry. Splitting them across config entries does not accumulate and does not warn — a rule setting has no `files` key, a config file is one object rather than an array, and `extends` takes a single string, so one config file contributes at most one rules entry.
@@ -161,6 +163,8 @@ error TS10735: [evidence/coverage] Nothing cites 2 declared sections: docs/spec.
 ```
 
 No file, no line — a section has no TypeScript node to point at, and pretending otherwise would mean nominating some arbitrary file to blame.
+
+`documents` is required and must be non-empty. Coverage cannot inherit the index rule's scope because project rules cannot read one another's options; guessing every markdown file would instead demand citations for unrelated READMEs and guides.
 
 A section that genuinely needs no citation says so in the document, under its heading:
 
