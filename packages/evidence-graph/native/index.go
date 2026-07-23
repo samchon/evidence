@@ -38,7 +38,7 @@ func (indexRule) Check(ctx *rule.ProjectContext) {
 	markdown, markdownProblems := loadMarkdownInventories(root, config)
 	typescript := loadTypeScriptInventories(root, ctx.Sources)
 	problems = append(problems, markdownProblems...)
-	states, stateProblems := materializeSourceStates(config, markdown, typescript)
+	states, stateProblems := materializeClaimStates(config, markdown, typescript)
 	problems = append(problems, stateProblems...)
 	problems = append(problems, evaluateEvidenceGraph(states)...)
 	reportProblems(ctx, problems)
@@ -66,99 +66,101 @@ func evidenceProjectRoot(identity rule.ProjectIdentity) string {
 	return ""
 }
 
-func materializeSourceStates(
+func materializeClaimStates(
 	config graphConfig,
 	markdown map[string]*artifactInventory,
 	typescript map[string]*artifactInventory,
-) ([]sourceState, []string) {
-	states := make([]sourceState, 0, len(config.Sources))
+) ([]claimState, []string) {
+	states := make([]claimState, 0, len(config.Claims))
 	problems := []string{}
-	for _, source := range config.Sources {
-		inventories := inventoriesOf(source.Type, markdown, typescript)
-		paths := matchingInventoryPaths(inventories, source.Files)
-		state := sourceState{
-			Spec:     source,
-			UnitByID: map[string]*evidenceUnit{},
-		}
+	for _, claim := range config.Claims {
+		inventories := inventoriesOf(claim.Type, markdown, typescript)
+		paths := matchingInventoryPaths(inventories, claim.Files)
+		state := claimState{Spec: claim, Paths: paths}
 		if len(paths) == 0 {
 			problems = append(
 				problems,
-				sourceLabel(source)+" matched no "+string(source.Type)+" files for "+describePatterns(source.Files)+". Fix the project-relative globs; '*' stays within one segment, '**' crosses segments, and a bare directory is not recursive.",
+				claimLabel(claim)+" matched no "+string(claim.Type)+" files for "+describePatterns(claim.Files)+". Fix the project-relative globs; '*' stays within one segment, '**' crosses segments, and a bare directory is not recursive.",
 			)
 		}
-		selectedInventoryProblem := false
 		for _, path := range paths {
-			for _, inventoryProblem := range inventories[path].Problems {
-				if inventoryProblem.Symbol == "*" ||
-					source.Symbols.contains(inventoryProblem.Symbol) {
-					selectedInventoryProblem = true
-				}
-			}
-			for _, unit := range inventories[path].Units {
-				if !source.Symbols.contains(unit.Symbol) || state.UnitByID[unit.ID] != nil {
-					continue
-				}
-				state.UnitByID[unit.ID] = unit
-				state.Units = append(state.Units, unit)
-			}
-		}
-		sortUnits(state.Units)
-		if len(paths) != 0 &&
-			len(state.Units) == 0 &&
-			!selectedInventoryProblem {
-			problems = append(
-				problems,
-				sourceLabel(source)+" matched "+decimal(len(paths))+" file(s) but materialized no selected evidence units ("+source.Symbols.names()+"). Select symbol kinds present in those files or correct the source globs.",
+			state.Declarations = append(
+				state.Declarations,
+				inventories[path].Declarations...,
 			)
 		}
-		for _, citer := range source.CitedBy {
-			citerInventories := inventoriesOf(citer.Type, markdown, typescript)
-			citerPaths := matchingInventoryPaths(citerInventories, citer.Files)
-			citerState := citerState{Spec: citer, Paths: citerPaths}
-			if len(citerPaths) == 0 {
+		for _, reference := range claim.References {
+			referenceInventories := inventoriesOf(reference.Type, markdown, typescript)
+			referencePaths := matchingInventoryPaths(referenceInventories, reference.Files)
+			referenceState := referenceState{
+				Spec:     reference,
+				Paths:    referencePaths,
+				UnitByID: map[string]*evidenceUnit{},
+			}
+			if len(referencePaths) == 0 {
 				problems = append(
 					problems,
-					sourceLabel(source)+" "+citerLabel(citer)+" matched no "+string(citer.Type)+" files for "+describePatterns(citer.Files)+". Fix the citer globs; this independent coverage group cannot acknowledge evidence without files.",
+					claimLabel(claim)+" "+referenceLabel(reference)+" matched no "+string(reference.Type)+" files for "+describePatterns(reference.Files)+". Fix the reference globs; this obligation cannot materialize evidence units without files.",
 				)
 			}
-			for _, path := range citerPaths {
-				citerState.Declarations = append(
-					citerState.Declarations,
-					citerInventories[path].Declarations...,
+			selectedInventoryProblem := false
+			for _, path := range referencePaths {
+				for _, inventoryProblem := range referenceInventories[path].Problems {
+					if inventoryProblem.Symbol == "*" ||
+						reference.Symbols.contains(inventoryProblem.Symbol) {
+						selectedInventoryProblem = true
+					}
+				}
+				for _, unit := range referenceInventories[path].Units {
+					if !reference.Symbols.contains(unit.Symbol) ||
+						referenceState.UnitByID[unit.ID] != nil {
+						continue
+					}
+					referenceState.UnitByID[unit.ID] = unit
+					referenceState.Units = append(referenceState.Units, unit)
+				}
+			}
+			sortUnits(referenceState.Units)
+			if len(referencePaths) != 0 &&
+				len(referenceState.Units) == 0 &&
+				!selectedInventoryProblem {
+				problems = append(
+					problems,
+					claimLabel(claim)+" "+referenceLabel(reference)+" matched "+decimal(len(referencePaths))+" file(s) but materialized no selected evidence units ("+reference.Symbols.names()+"). Select symbol kinds present in those files or correct the reference globs.",
 				)
 			}
-			state.Citers = append(state.Citers, citerState)
+			state.References = append(state.References, referenceState)
 		}
 		states = append(states, state)
 	}
 	return states, problems
 }
 
-func evaluateEvidenceGraph(states []sourceState) []string {
+func evaluateEvidenceGraph(states []claimState) []string {
 	problems := []string{}
 	targets := map[string]map[string]*evidenceUnit{}
 	markdownTargets := map[string]map[string]*evidenceUnit{}
 	for _, state := range states {
-		for _, unit := range state.Units {
-			if targets[unit.Target] == nil {
-				targets[unit.Target] = map[string]*evidenceUnit{}
-			}
-			targets[unit.Target][unit.ID] = unit
-			if unit.Type == artifactMarkdown {
-				if markdownTargets[unit.Target] == nil {
-					markdownTargets[unit.Target] = map[string]*evidenceUnit{}
+		for _, reference := range state.References {
+			for _, unit := range reference.Units {
+				if targets[unit.Target] == nil {
+					targets[unit.Target] = map[string]*evidenceUnit{}
 				}
-				markdownTargets[unit.Target][unit.ID] = unit
+				targets[unit.Target][unit.ID] = unit
+				if unit.Type == artifactMarkdown {
+					if markdownTargets[unit.Target] == nil {
+						markdownTargets[unit.Target] = map[string]*evidenceUnit{}
+					}
+					markdownTargets[unit.Target][unit.ID] = unit
+				}
 			}
 		}
 	}
 
 	declarations := map[string]*evidenceDeclaration{}
 	for _, state := range states {
-		for _, citer := range state.Citers {
-			for _, declaration := range citer.Declarations {
-				declarations[declaration.ID] = declaration
-			}
+		for _, declaration := range state.Declarations {
+			declarations[declaration.ID] = declaration
 		}
 	}
 	declarationIDs := make([]string, 0, len(declarations))
@@ -202,47 +204,47 @@ func evaluateEvidenceGraph(states []sourceState) []string {
 	}
 
 	for _, state := range states {
-		if len(state.Units) == 0 {
+		if len(state.Paths) == 0 {
 			continue
 		}
-		for _, citer := range state.Citers {
-			if len(citer.Paths) == 0 {
+		for _, reference := range state.References {
+			if len(reference.Paths) == 0 || len(reference.Units) == 0 {
 				continue
 			}
 			acknowledged := map[string]*evidenceDeclaration{}
-			for _, declaration := range citer.Declarations {
+			for _, declaration := range state.Declarations {
 				unitID := resolved[declaration.ID]
-				unit := state.UnitByID[unitID]
+				unit := reference.UnitByID[unitID]
 				if unit == nil {
 					continue
 				}
-				if !citer.Spec.Symbols.contains(declaration.Host) {
+				if !state.Spec.Symbols.contains(declaration.Host) {
 					host := declaration.Host
 					if host == "" {
 						host = "unsupported or non-exported declaration"
 					}
 					problems = append(
 						problems,
-						"Out-of-scope @"+string(declaration.Tag)+" host at "+declaration.location()+" for "+sourceLabel(state.Spec)+" "+citerLabel(citer.Spec)+": host kind '"+host+"' is not selected ("+citer.Spec.Symbols.names()+"). Move the declaration to a selected host or widen this citer group's symbol selector.",
+						"Out-of-scope @"+string(declaration.Tag)+" host at "+declaration.location()+" for "+claimLabel(state.Spec)+": host kind '"+host+"' is not selected ("+state.Spec.Symbols.names()+"). Move the declaration to a selected host or widen this claim's symbol selector.",
 					)
 					continue
 				}
 				if first := acknowledged[unitID]; first != nil {
 					problems = append(
 						problems,
-						"Duplicate acknowledgement for '"+unit.Target+"' in "+sourceLabel(state.Spec)+" "+citerLabel(citer.Spec)+" at "+declaration.location()+"; the first is at "+first.location()+". Keep exactly one @evidence or @evidenceExclude declaration for this evidence unit in this citer group.",
+						"Duplicate acknowledgement for '"+unit.Target+"' in "+claimLabel(state.Spec)+" "+referenceLabel(reference.Spec)+" at "+declaration.location()+"; the first is at "+first.location()+". Keep exactly one @evidence or @evidenceExclude declaration for this evidence unit in this claim.",
 					)
 					continue
 				}
 				acknowledged[unitID] = declaration
 			}
-			for _, unit := range state.Units {
+			for _, unit := range reference.Units {
 				if acknowledged[unit.ID] != nil {
 					continue
 				}
 				problems = append(
 					problems,
-					"Missing acknowledgement for '"+unit.Target+"' ("+unit.Readable+" at "+unit.location()+") in "+sourceLabel(state.Spec)+" "+citerLabel(citer.Spec)+". Add '@evidence "+unit.Target+" <reason>' to a selected "+string(citer.Spec.Type)+" host, or '@evidenceExclude "+unit.Target+" <reason>' when this group intentionally does not use it.",
+					"Missing acknowledgement for '"+unit.Target+"' ("+unit.Readable+" at "+unit.location()+") in "+claimLabel(state.Spec)+" "+referenceLabel(reference.Spec)+". Add '@evidence "+unit.Target+" <reason>' to a selected "+string(state.Spec.Type)+" host of this claim, or '@evidenceExclude "+unit.Target+" <reason>' when this claim intentionally does not use it.",
 				)
 			}
 		}
@@ -302,16 +304,16 @@ func sortUnits(units []*evidenceUnit) {
 	})
 }
 
-func sourceLabel(source sourceSpec) string {
-	label := "Source " + decimal(source.Index+1)
-	if source.Name != "" {
-		label += " ('" + source.Name + "')"
+func claimLabel(claim claimSpec) string {
+	label := "Claim " + decimal(claim.Index+1)
+	if claim.Name != "" {
+		label += " ('" + claim.Name + "')"
 	}
 	return label
 }
 
-func citerLabel(citer citerSpec) string {
-	return "citer " + decimal(citer.Index+1) + " (" + string(citer.Type) + ", symbols: " + citer.Symbols.names() + ")"
+func referenceLabel(reference referenceSpec) string {
+	return "reference " + decimal(reference.Index+1) + " (" + string(reference.Type) + ", symbols: " + reference.Symbols.names() + ")"
 }
 
 func reportProblems(ctx *rule.ProjectContext, problems []string) {

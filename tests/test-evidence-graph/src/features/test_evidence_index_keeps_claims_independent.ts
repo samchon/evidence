@@ -7,19 +7,20 @@ import {
 } from "../internal/project.ts";
 
 /**
- * Verifies that separate citer groups cannot pool partial coverage.
+ * Verifies that separate claims cannot pool partial coverage.
  *
- * Each group below acknowledges a different half of the same source. A global
+ * Each claim below acknowledges a different half of the same evidence. A global
  * acknowledgement set would report full coverage, but the public contract
- * requires both populations to account for both evidence units independently.
+ * requires both claiming populations to account for both evidence units
+ * independently.
  *
- * 1. Define two Markdown H2 evidence units.
- * 2. Let each TypeScript citer group cite only the other group's missing unit.
- * 3. Assert that both group-specific missing acknowledgements are reported.
+ * 1. Define two Markdown H2 evidence units behind two claims.
+ * 2. Let each TypeScript claim cite only the other claim's missing unit.
+ * 3. Assert that both claim-specific missing acknowledgements are reported.
  */
-export const test_evidence_index_keeps_citer_groups_independent = (): void => {
+export const test_evidence_index_keeps_claims_independent = (): void => {
   const project: IEvidenceProject = createProject({
-    name: "independent-citers",
+    name: "independent-claims",
     lintConfig: [
       'import type { ITtscLintConfig } from "@ttsc/lint";',
       'import { evidenceGraph } from "@samchon/evidence-graph";',
@@ -28,15 +29,20 @@ export const test_evidence_index_keeps_citer_groups_independent = (): void => {
       '  plugins: { "evidence-graph": evidenceGraph },',
       "  rules: {",
       '    "evidence-graph/index": ["error", {',
-      "      sources: [{",
-      '        type: "markdown",',
-      '        files: ["docs/spec.md"],',
-      '        symbol: "h2",',
-      "        citedBy: [",
-      '          { type: "typescript", files: ["src/team-a.ts"], symbol: "function" },',
-      '          { type: "typescript", files: ["src/team-b.ts"], symbol: "function" },',
-      "        ],",
-      "      }],",
+      "      claims: [",
+      "        {",
+      '          type: "typescript",',
+      '          files: ["src/team-a.ts"],',
+      '          symbol: "function",',
+      '          reference: { type: "markdown", files: ["docs/spec.md"], symbol: "h2" },',
+      "        },",
+      "        {",
+      '          type: "typescript",',
+      '          files: ["src/team-b.ts"],',
+      '          symbol: "function",',
+      '          reference: { type: "markdown", files: ["docs/spec.md"], symbol: "h2" },',
+      "        },",
+      "      ],",
       "    }],",
       "  },",
       "} satisfies ITtscLintConfig;",
@@ -62,27 +68,27 @@ export const test_evidence_index_keeps_citer_groups_independent = (): void => {
     const result = runCheck(project.directory);
     assertFailure(
       result,
-      "Incomplete independent citer groups must fail the consumer build.",
+      "Incomplete independent claims must fail the consumer build.",
     );
     assertIncludes(
       result,
       "Missing acknowledgement for 'docs/spec.md#beta'",
-      "Citer group 1 must not borrow Beta's acknowledgement from group 2.",
+      "Claim 1 must not borrow Beta's acknowledgement from Claim 2.",
     );
     assertIncludes(
       result,
       "Missing acknowledgement for 'docs/spec.md#alpha'",
-      "Citer group 2 must not borrow Alpha's acknowledgement from group 1.",
+      "Claim 2 must not borrow Alpha's acknowledgement from Claim 1.",
     );
     assertIncludes(
       result,
-      "citer 1",
-      "The diagnostic must identify the first incomplete population.",
+      "Claim 1",
+      "The diagnostic must identify the first incomplete claim.",
     );
     assertIncludes(
       result,
-      "citer 2",
-      "The diagnostic must identify the second incomplete population.",
+      "Claim 2",
+      "The diagnostic must identify the second incomplete claim.",
     );
   } finally {
     project.cleanup();

@@ -73,7 +73,7 @@ importers:
         specifier: catalog:typescript
         version: 7.0.2
 
-  tests/test-evidence:
+  tests/test-evidence-graph:
     devDependencies:
       '@samchon/evidence-graph':
         specifier: workspace:*

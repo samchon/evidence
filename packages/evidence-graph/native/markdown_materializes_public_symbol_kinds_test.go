@@ -60,7 +60,7 @@ func TestMarkdownMaterializesFileAndHeadingKinds(t *testing.T) {
 }
 
 /**
- * Verifies Markdown defaults: an omitted source and citer symbol selector
+ * Verifies Markdown defaults: an omitted source and claim symbol selector
  * covers the file plus every resident H1-H4 unit.
  *
  * A quiet result is meaningful only when every default unit actually had to be
@@ -88,10 +88,10 @@ func TestMarkdownDefaultsSelectEverySupportedResidentKind(t *testing.T) {
 #### Persist use
 <!-- @evidence docs/spec.md#persist This section adopts persistence. -->
 `,
-	}, `{"sources":[{
+	}, `{"claims":[{
 		"type":"markdown",
-		"files":["docs/spec.md"],
-		"citedBy":{"type":"markdown","files":["refs/ledger.md"]}
+		"files":["refs/ledger.md"],
+		"reference":{"type":"markdown","files":["docs/spec.md"]}
 	}]}`)
 	assertNoProblems(t, messages)
 }
@@ -100,7 +100,7 @@ func TestMarkdownDefaultsSelectEverySupportedResidentKind(t *testing.T) {
  * Verifies exclusion position independence: moving an exclusion between two
  * eligible Markdown hosts leaves the acknowledged source unit unchanged.
  *
- * The exclusion belongs to the citer group, not to the heading where the
+ * The exclusion belongs to the claim group, not to the heading where the
  * author happened to record it. Both placements remain subject to the H2 host
  * selector, while their host identity cannot alter coverage.
  *
@@ -109,11 +109,11 @@ func TestMarkdownDefaultsSelectEverySupportedResidentKind(t *testing.T) {
  *  3. Assert both graphs satisfy the same source unit.
  */
 func TestMarkdownExclusionIsPositionIndependentAcrossEligibleHosts(t *testing.T) {
-	config := `{"sources":[{
+	config := `{"claims":[{
 		"type":"markdown",
-		"files":["docs/spec.md"],
+		"files":["refs/ledger.md"],
 		"symbol":"h2",
-		"citedBy":{"type":"markdown","files":["refs/ledger.md"],"symbol":"h2"}
+		"reference":{"type":"markdown","files":["docs/spec.md"],"symbol":"h2"}
 	}]}`
 	for name, ledger := range map[string]string{
 		"first": `## First host
@@ -139,34 +139,34 @@ func TestMarkdownExclusionIsPositionIndependentAcrossEligibleHosts(t *testing.T)
  * Verifies Markdown scan diagnostics stay inside the configured source
  * population and symbol selection.
  *
- * The project walk sees citer documents and unrelated repository Markdown,
+ * The project walk sees claim documents and unrelated repository Markdown,
  * but only a heading selected as source evidence needs a resolvable anchor.
  * Reporting every malformed heading would make the files globs stop being a
  * real boundary.
  *
- *  1. Put an empty H2 in the source file, citer file, and unrelated file.
+ *  1. Put an empty H2 in the source file, claim file, and unrelated file.
  *  2. Select only H1 source units and assert the graph ignores all empty H2s.
  *  3. Select H2 source units and assert only the configured source is reported.
  */
 func TestMarkdownProblemsRespectSourceFilesAndSymbols(t *testing.T) {
 	files := map[string]string{
 		"docs/source.md": "# Selected\n##\n",
-		"docs/ref.md":    "<!-- @evidence docs/source.md#selected The citer adopts the H1. -->\n##\n",
+		"docs/ref.md":    "<!-- @evidence docs/source.md#selected The claim adopts the H1. -->\n##\n",
 		"notes/other.md": "##\n",
 	}
-	h1Messages := runIndexRule(t, files, `{"sources":[{
+	h1Messages := runIndexRule(t, files, `{"claims":[{
 		"type":"markdown",
-		"files":["docs/source.md"],
-		"symbol":"h1",
-		"citedBy":{"type":"markdown","files":["docs/ref.md"],"symbol":"file"}
+		"files":["docs/ref.md"],
+		"symbol":"file",
+		"reference":{"type":"markdown","files":["docs/source.md"],"symbol":"h1"}
 	}]}`)
 	assertNoProblems(t, h1Messages)
 
-	h2Messages := runIndexRule(t, files, `{"sources":[{
+	h2Messages := runIndexRule(t, files, `{"claims":[{
 		"type":"markdown",
-		"files":["docs/source.md"],
-		"symbol":"h2",
-		"citedBy":{"type":"markdown","files":["docs/ref.md"],"symbol":"file"}
+		"files":["docs/ref.md"],
+		"symbol":"file",
+		"reference":{"type":"markdown","files":["docs/source.md"],"symbol":"h2"}
 	}]}`)
 	if got := countProblemsContaining(h2Messages, "has no resolvable anchor"); got != 1 {
 		t.Fatalf("source-scoped Markdown problems = %d: %s", got, strings.Join(h2Messages, "\n"))
@@ -234,11 +234,11 @@ func TestMarkdownSelectionDoesNotHardcodeFileExtension(t *testing.T) {
 /** @evidence docs/spec.markdown#contract This type adopts the contract. */
 export interface Ref {}
 `,
-	}, `{"sources":[{
-		"type":"markdown",
-		"files":["docs/spec.markdown"],
-		"symbol":"h2",
-		"citedBy":{"type":"typescript","files":["src/ref.ts"],"symbol":"type"}
+	}, `{"claims":[{
+		"type":"typescript",
+		"files":["src/ref.ts"],
+		"symbol":"type",
+		"reference":{"type":"markdown","files":["docs/spec.markdown"],"symbol":"h2"}
 	}]}`)
 	assertNoProblems(t, messages)
 }
@@ -285,11 +285,11 @@ func TestMarkdownSourceRejectsWhitespaceInTargetPaths(t *testing.T) {
 	messages := runIndexRule(t, map[string]string{
 		"docs/my spec.md": "## Contract\n",
 		"src/ref.ts":      "export interface Ref {}\n",
-	}, `{"sources":[{
-		"type":"markdown",
-		"files":["docs/my spec.md"],
-		"symbol":"h2",
-		"citedBy":{"type":"typescript","files":["src/ref.ts"],"symbol":"type"}
+	}, `{"claims":[{
+		"type":"typescript",
+		"files":["src/ref.ts"],
+		"symbol":"type",
+		"reference":{"type":"markdown","files":["docs/my spec.md"],"symbol":"h2"}
 	}]}`)
 	assertProblemContains(t, messages, "path contains whitespace")
 	if countProblemsContaining(messages, "materialized no selected evidence units") != 0 {

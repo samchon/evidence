@@ -22,13 +22,13 @@ export * from "./typings/index";
  *   } from "@samchon/evidence-graph";
  *
  *   const graph: IEvidenceGraphConfig = {
- *     sources: [
+ *     claims: [
  *       {
- *         type: "markdown",
- *         files: ["docs/*.md"],
- *         citedBy: {
- *           type: "typescript",
- *           files: ["src/**"],
+ *         type: "typescript",
+ *         files: ["src/**"],
+ *         reference: {
+ *           type: "markdown",
+ *           files: ["docs/*.md"],
  *         },
  *       },
  *     ],
@@ -59,8 +59,8 @@ declare module "@ttsc/lint" {
     /**
      * Declares this project's evidence graph.
      *
-     * The sources define evidence units and the independently complete citer
-     * populations that must acknowledge them.
+     * The claims define the citing populations and the independently complete
+     * evidence references each one must acknowledge.
      */
     "evidence-graph/index": IEvidenceGraphConfig;
   }

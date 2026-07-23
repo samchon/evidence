@@ -64,7 +64,7 @@ func loadMarkdownInventories(
 		inventory, _ := scanMarkdownInventory(relative, string(content))
 		inventories[relative] = inventory
 		for _, inventoryProblem := range inventory.Problems {
-			if selectedByMarkdownSource(config, relative, inventoryProblem.Symbol) {
+			if selectedByMarkdownReference(config, relative, inventoryProblem.Symbol) {
 				problems = append(problems, inventoryProblem.Message)
 			}
 		}
@@ -202,12 +202,12 @@ func scanMarkdownInventory(path string, content string) (*artifactInventory, []s
 }
 
 func matchesConfiguredMarkdownFile(config graphConfig, path string) bool {
-	for _, source := range config.Sources {
-		if source.Type == artifactMarkdown && source.Files.matches(path) {
+	for _, claim := range config.Claims {
+		if claim.Type == artifactMarkdown && claim.Files.matches(path) {
 			return true
 		}
-		for _, citer := range source.CitedBy {
-			if citer.Type == artifactMarkdown && citer.Files.matches(path) {
+		for _, reference := range claim.References {
+			if reference.Type == artifactMarkdown && reference.Files.matches(path) {
 				return true
 			}
 		}
@@ -216,14 +216,14 @@ func matchesConfiguredMarkdownFile(config graphConfig, path string) bool {
 }
 
 func couldContainConfiguredMarkdown(config graphConfig, directory string) bool {
-	for _, source := range config.Sources {
-		if source.Type == artifactMarkdown &&
-			source.Files.couldMatchDescendant(directory) {
+	for _, claim := range config.Claims {
+		if claim.Type == artifactMarkdown &&
+			claim.Files.couldMatchDescendant(directory) {
 			return true
 		}
-		for _, citer := range source.CitedBy {
-			if citer.Type == artifactMarkdown &&
-				citer.Files.couldMatchDescendant(directory) {
+		for _, reference := range claim.References {
+			if reference.Type == artifactMarkdown &&
+				reference.Files.couldMatchDescendant(directory) {
 				return true
 			}
 		}
@@ -231,16 +231,18 @@ func couldContainConfiguredMarkdown(config graphConfig, directory string) bool {
 	return false
 }
 
-func selectedByMarkdownSource(
+func selectedByMarkdownReference(
 	config graphConfig,
 	path string,
 	symbol string,
 ) bool {
-	for _, source := range config.Sources {
-		if source.Type == artifactMarkdown &&
-			source.Files.matches(path) &&
-			(symbol == "*" || source.Symbols.contains(symbol)) {
-			return true
+	for _, claim := range config.Claims {
+		for _, reference := range claim.References {
+			if reference.Type == artifactMarkdown &&
+				reference.Files.matches(path) &&
+				(symbol == "*" || reference.Symbols.contains(symbol)) {
+				return true
+			}
 		}
 	}
 	return false
