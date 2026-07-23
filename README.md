@@ -4,17 +4,45 @@
 
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/samchon/evidence-graph/blob/master/LICENSE) [![NPM Version](https://img.shields.io/npm/v/@samchon/evidence-graph.svg)](https://www.npmjs.com/package/@samchon/evidence-graph) [![NPM Downloads](https://img.shields.io/npm/dm/@samchon/evidence-graph.svg)](https://www.npmjs.com/package/@samchon/evidence-graph) [![Build Status](https://github.com/samchon/evidence-graph/workflows/CI/badge.svg)](https://github.com/samchon/evidence-graph/actions?query=workflow%3ACI) [![Discord Badge](https://img.shields.io/badge/discord-samchon-d91965?style=flat&labelColor=5866f2&logo=discord&logoColor=white&link=https://discord.gg/E94XhzrUCZ)](https://discord.gg/E94XhzrUCZ)
 
-An evidence graph for the AI coding era: the guardrail for goal mode.
+The evidence graph for the AI coding era: the guardrail for goal mode.
 
-Your spec is now a compile error. When Claude Code or Codex runs unattended, the build is the only reviewer left. This plugin puts the spec inside it.
+Your spec is now a compile error.
 
-Each `@evidence` citation names its target and states its reason. An agent cannot say "done" without showing where and why. **Silent omission is the one state that cannot exist:**
+When Claude Code or Codex works unattended, it can skip a requirement and still report "done." Evidence Graph makes every configured requirement demand an explicit acknowledgement from the code, test, or document that claims to satisfy it.
 
-- **Complete**: every spec section is implemented, or the build fails.
-- **Tested**: every export has a test that claims it by name.
-- **Documented**: every decision that reaches code reaches the docs, and the docs never fall behind.
-- **Honest**: "done" comes with receipts, or not at all.
-- **Integrity**: no citation outlives the thing it cites.
+Every acknowledgement names the exact target and states why it applies. The compiler does not decide whether that reason is true—it forces the agent to commit to a concrete claim. A fabricated reason can no longer hide inside a plausible diff; it sits beside the declaration and evidence it contradicts.
+
+**An agent can still lie. It cannot lie by omission:**
+
+- **Complete**: every configured obligation is accounted for, or the build fails.
+- **Tested**: every selected export is claimed by a test, by name.
+- **Documented**: decisions and code stay explicitly connected.
+- **Honest**: "done" comes with a target and a reason.
+- **Integrity**: no citation outlives its target.
+
+```tsx
+/**
+ * @evidence docs/discount.md#coupon-stacking Renders the combination limit defined by this rule.
+ */
+export function CouponStackingNotice() {
+  return <p>One seller coupon and one platform coupon may be combined.</p>;
+}
+```
+
+> Without the `@evidence` citation, the next build stops:
+>
+> ```bash
+> $ npx ttsc
+> error TS13830: [evidence-graph/index] Missing acknowledgement for
+>   'docs/discount.md#coupon-stacking' (Markdown H2 'Coupon Stacking' at docs/discount.md:3)
+>   in Claim 1 reference 1 (markdown, symbols: h2, h3).
+>
+>   Add '@evidence docs/discount.md#coupon-stacking <reason>' to a selected typescript host
+>   of this claim, or '@evidenceExclude docs/discount.md#coupon-stacking <reason>' when
+>   this claim intentionally does not use it.
+>
+> Found 1 error.
+> ```
 
 ## Setup
 
@@ -70,10 +98,10 @@ Violations surface in every `ttsc` build, every `--noEmit` check, and every `tts
 ```ts
 const graph: IEvidenceGraphConfig = {
   claims: [
-    // 1. architecture documents build on the requirements
+    // 1. feature documents build on the requirements
     {
       type: "markdown",
-      files: ["docs/architecture/**/*.md"],
+      files: ["docs/features/**/*.md"],
       reference: {
         type: "markdown",
         files: ["docs/requirements/**/*.md"],
@@ -115,7 +143,7 @@ const graph: IEvidenceGraphConfig = {
 
 A graph is one `claims` array, and every claim-reference pair is an independent obligation:
 
-1. Markdown can claim Markdown. The architecture documents must acknowledge every requirement they build on.
+1. Markdown can claim Markdown. The feature documents must acknowledge every requirement they build on.
 2. Every feature rule must be cited by a React component; a rule no component mirrors is a compile error naming that rule.
 3. A `reference` array is one obligation per element. The tests must verify every feature rule and claim every exported component, never one obligation borrowing the other's citation.
 
@@ -188,10 +216,10 @@ A Markdown document cites in an HTML comment, so rendered prose stays clean. A h
 ```md
 ## Editorial Terminology
 
-<!-- @evidenceExclude This section defines wording only; no artifact implements it. -->
+<!-- @evidenceExclude docs/requirements/coupons.md#coupon-stacking This section defines wording and intentionally does not implement coupon behavior. -->
 ```
 
-`@evidenceExclude` records an intentional non-use. It takes only a reason. Its position does not matter: it exempts its host without becoming a graph node.
+`@evidenceExclude target reason` records that a claim intentionally does not use one configured evidence unit. It must sit on a selected claim host, and it satisfies only that claim's obligation for the named target.
 
 In an agent workflow the tags cost nothing extra. The agent writes each citation as it implements. You review the stated reasons instead of reverse-engineering the diff. A misreading also surfaces in that review, because the reason sits beside the exact section it claims to honor.
 
