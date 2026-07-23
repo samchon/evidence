@@ -1,3 +1,5 @@
+/// <reference types="node" />
+
 import type { ITtscLintPlugin } from "@ttsc/lint";
 import path from "node:path";
 import type { IEvidenceGraphConfig } from "./structures/index";
