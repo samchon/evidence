@@ -6,7 +6,7 @@ import (
 )
 
 /**
- * Verifies reference independence: complementary partial reference groups
+ * Verifies citer independence: complementary partial citer groups
  * cannot pool their acknowledgements into one complete source.
  *
  * Each group sees the same two-unit denominator but acknowledges the opposite
@@ -17,7 +17,7 @@ import (
  *  2. Let each of two TypeScript groups acknowledge only one unit.
  *  3. Assert each group reports its own missing twin.
  */
-func TestReferenceGroupsCannotPoolPartialCoverage(t *testing.T) {
+func TestCiterGroupsCannotPoolPartialCoverage(t *testing.T) {
 	messages := runIndexRule(t, map[string]string{
 		"docs/spec.md": `## Create
 ## Cancel
@@ -34,30 +34,30 @@ export function cancel(): void {}
 		"type":"markdown",
 		"files":["docs/spec.md"],
 		"symbol":"h2",
-		"reference":[
+		"citedBy":[
 			{"type":"typescript","files":["src/a.ts"],"symbol":"function"},
 			{"type":"typescript","files":["src/b.ts"],"symbol":"function"}
 		]
 	}]}`)
 	if got := countProblemsContaining(messages, "Missing acknowledgement"); got != 2 {
-		t.Fatalf("partial reference groups produced %d missing findings:\n%s", got, strings.Join(messages, "\n"))
+		t.Fatalf("partial citer groups produced %d missing findings:\n%s", got, strings.Join(messages, "\n"))
 	}
 	assertProblemContains(t, messages, "'docs/spec.md#cancel'")
-	assertProblemContains(t, messages, "reference 1")
+	assertProblemContains(t, messages, "citer 1")
 	assertProblemContains(t, messages, "'docs/spec.md#create'")
-	assertProblemContains(t, messages, "reference 2")
+	assertProblemContains(t, messages, "citer 2")
 }
 
 /**
- * Verifies source independence: one source entry's complete reference group
+ * Verifies source independence: one source entry's complete citer group
  * does not discharge another source entry selecting the same artifact unit.
  *
  * The target text is deliberately identical in both sources. The only boundary
  * available is the owning configuration entry, so coverage must be stored under
- * source and reference indices rather than under target alone.
+ * source and citer indices rather than under target alone.
  *
  *  1. Select the same Markdown heading from two named sources.
- *  2. Acknowledge it only in the first source's reference files.
+ *  2. Acknowledge it only in the first source's citer files.
  *  3. Assert the second source remains incomplete.
  */
 func TestSourcesCannotShareAcknowledgementState(t *testing.T) {
@@ -74,14 +74,14 @@ export interface A {}
 			"name":"Population A",
 			"files":["docs/shared.md"],
 			"symbol":"h2",
-			"reference":{"type":"typescript","files":["src/a.ts"],"symbol":"type"}
+			"citedBy":{"type":"typescript","files":["src/a.ts"],"symbol":"type"}
 		},
 		{
 			"type":"markdown",
 			"name":"Population B",
 			"files":["docs/shared.md"],
 			"symbol":"h2",
-			"reference":{"type":"typescript","files":["src/b.ts"],"symbol":"type"}
+			"citedBy":{"type":"typescript","files":["src/b.ts"],"symbol":"type"}
 		}
 	]}`)
 	if got := countProblemsContaining(messages, "Missing acknowledgement"); got != 1 {
@@ -110,7 +110,7 @@ func TestSourceNameChangesDiagnosticsButNotGraphBehavior(t *testing.T) {
 export interface Ref {}
 `,
 	}
-	baseSource := `"type":"markdown","files":["docs/spec.md"],"symbol":"h2","reference":{"type":"typescript","files":["src/ref.ts"],"symbol":"type"}`
+	baseSource := `"type":"markdown","files":["docs/spec.md"],"symbol":"h2","citedBy":{"type":"typescript","files":["src/ref.ts"],"symbol":"type"}`
 	assertNoProblems(t, runIndexRule(t, files, `{"sources":[{`+baseSource+`}]}`))
 	assertNoProblems(t, runIndexRule(t, files, `{"sources":[{"name":"Friendly label",`+baseSource+`}]}`))
 

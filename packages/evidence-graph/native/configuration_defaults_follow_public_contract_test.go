@@ -12,9 +12,9 @@ import (
  *
  * Defaults differ by both artifact and role. Reusing one generic fallback would
  * silently turn TypeScript functions into source evidence or silently reject
- * valid reference hosts, so this test reads the decoded model directly.
+ * valid citer hosts, so this test reads the decoded model directly.
  *
- *  1. Omit every source and reference symbol selector.
+ *  1. Omit every source and citer symbol selector.
  *  2. Decode one Markdown source and one TypeScript source.
  *  3. Assert the four documented default sets independently.
  */
@@ -24,12 +24,12 @@ func TestConfigurationDefaultsFollowPublicContract(t *testing.T) {
 			{
 				"type": "markdown",
 				"files": ["docs/**"],
-				"reference": {"type": "typescript", "files": ["src/**"]}
+				"citedBy": {"type": "typescript", "files": ["src/**"]}
 			},
 			{
 				"type": "typescript",
 				"files": ["src/**"],
-				"reference": {"type": "markdown", "files": ["docs/**"]}
+				"citedBy": {"type": "markdown", "files": ["docs/**"]}
 			}
 		]
 	}`))
@@ -39,36 +39,36 @@ func TestConfigurationDefaultsFollowPublicContract(t *testing.T) {
 	if got := config.Sources[0].Symbols.names(); got != "file, h1, h2, h3, h4" {
 		t.Fatalf("Markdown source default = %q", got)
 	}
-	if got := config.Sources[0].References[0].Symbols.names(); got != "type, function, property" {
-		t.Fatalf("TypeScript reference default = %q", got)
+	if got := config.Sources[0].CitedBy[0].Symbols.names(); got != "type, function, property" {
+		t.Fatalf("TypeScript citer default = %q", got)
 	}
 	if got := config.Sources[1].Symbols.names(); got != "type" {
 		t.Fatalf("TypeScript source default = %q", got)
 	}
-	if got := config.Sources[1].References[0].Symbols.names(); got != "file, h1, h2, h3, h4" {
-		t.Fatalf("Markdown reference default = %q", got)
+	if got := config.Sources[1].CitedBy[0].Symbols.names(); got != "file, h1, h2, h3, h4" {
+		t.Fatalf("Markdown citer default = %q", got)
 	}
 }
 
 /**
  * Verifies singular-or-array configuration: symbol arrays form a union while
- * reference arrays remain independently indexed groups.
+ * citer arrays remain independently indexed groups.
  *
  * The two array shapes look alike in JSON but carry opposite graph semantics.
- * Pinning the decoded shape prevents a refactor from flattening reference
+ * Pinning the decoded shape prevents a refactor from flattening citer
  * groups into one pooled population.
  *
- *  1. Configure one symbol string, one symbol array, and two references.
+ *  1. Configure one symbol string, one symbol array, and two citers.
  *  2. Decode the public configuration.
- *  3. Assert symbol union and reference group boundaries survive.
+ *  3. Assert symbol union and citer group boundaries survive.
  */
-func TestConfigurationKeepsSymbolUnionAndReferenceGroupsDistinct(t *testing.T) {
+func TestConfigurationKeepsSymbolUnionAndCiterGroupsDistinct(t *testing.T) {
 	config, problems := decodeGraphConfig(json.RawMessage(`{
 		"sources": [{
 			"type": "typescript",
 			"files": ["src/**"],
 			"symbol": ["function", "property"],
-			"reference": [
+			"citedBy": [
 				{"type": "markdown", "files": ["docs/a/**"], "symbol": "h2"},
 				{"type": "markdown", "files": ["docs/b/**"], "symbol": ["file", "h1"]}
 			]
@@ -81,12 +81,12 @@ func TestConfigurationKeepsSymbolUnionAndReferenceGroupsDistinct(t *testing.T) {
 	if got := source.Symbols.names(); got != "function, property" {
 		t.Fatalf("symbol array did not form one union: %q", got)
 	}
-	if len(source.References) != 2 {
-		t.Fatalf("reference array collapsed to %d group(s)", len(source.References))
+	if len(source.CitedBy) != 2 {
+		t.Fatalf("citer array collapsed to %d group(s)", len(source.CitedBy))
 	}
-	if source.References[0].Symbols.names() != "h2" ||
-		source.References[1].Symbols.names() != "file, h1" {
-		t.Fatalf("reference selectors crossed group boundaries: %+v", source.References)
+	if source.CitedBy[0].Symbols.names() != "h2" ||
+		source.CitedBy[1].Symbols.names() != "file, h1" {
+		t.Fatalf("citer selectors crossed group boundaries: %+v", source.CitedBy)
 	}
 }
 
@@ -98,7 +98,7 @@ func TestConfigurationKeepsSymbolUnionAndReferenceGroupsDistinct(t *testing.T) {
  * real population. Accepting old fields or vacuous arrays would preserve the
  * superseded model as a silent compatibility path.
  *
- *  1. Decode a source with nested severity and an empty reference array.
+ *  1. Decode a source with nested severity and an empty citedBy array.
  *  2. Decode an empty source array separately.
  *  3. Assert every failure names the public repair boundary.
  */
@@ -108,15 +108,15 @@ func TestConfigurationRejectsObsoleteAndVacuousShapes(t *testing.T) {
 			"type": "markdown",
 			"files": ["docs/**"],
 			"severity": "error",
-			"reference": []
+			"citedBy": []
 		}]
 	}`))
 	joined := strings.Join(problems, "\n")
 	if !strings.Contains(joined, "severity belongs only in the outer") {
 		t.Fatalf("nested severity was not rejected: %s", joined)
 	}
-	if !strings.Contains(joined, "empty reference array") {
-		t.Fatalf("empty references were not rejected: %s", joined)
+	if !strings.Contains(joined, "empty citedBy array") {
+		t.Fatalf("empty citers were not rejected: %s", joined)
 	}
 
 	_, problems = decodeGraphConfig(json.RawMessage(`{"sources":[]}`))
@@ -159,7 +159,7 @@ func TestConfigurationRejectsMalformedPublicBoundaries(t *testing.T) {
 			raw: `{"sources":[{
 				"type":"prisma",
 				"files":["schema.prisma"],
-				"reference":{"type":"markdown","files":["docs/**"]}
+				"citedBy":{"type":"markdown","files":["docs/**"]}
 			}]}`,
 			want: "unsupported artifact type 'prisma'",
 		},
@@ -167,7 +167,7 @@ func TestConfigurationRejectsMalformedPublicBoundaries(t *testing.T) {
 			name: "missing files",
 			raw: `{"sources":[{
 				"type":"markdown",
-				"reference":{"type":"typescript","files":["src/**"]}
+				"citedBy":{"type":"typescript","files":["src/**"]}
 			}]}`,
 			want: "required project-relative glob array is missing",
 		},
@@ -176,7 +176,7 @@ func TestConfigurationRejectsMalformedPublicBoundaries(t *testing.T) {
 			raw: `{"sources":[{
 				"type":"markdown",
 				"files":[],
-				"reference":{"type":"typescript","files":["src/**"]}
+				"citedBy":{"type":"typescript","files":["src/**"]}
 			}]}`,
 			want: "at least one positive glob is required",
 		},
@@ -185,7 +185,7 @@ func TestConfigurationRejectsMalformedPublicBoundaries(t *testing.T) {
 			raw: `{"sources":[{
 				"type":"markdown",
 				"files":["!docs/private/**"],
-				"reference":{"type":"typescript","files":["src/**"]}
+				"citedBy":{"type":"typescript","files":["src/**"]}
 			}]}`,
 			want: "files array must contain at least one positive glob",
 		},
@@ -194,7 +194,7 @@ func TestConfigurationRejectsMalformedPublicBoundaries(t *testing.T) {
 			raw: `{"sources":[{
 				"type":"markdown",
 				"files":["/docs/spec.md"],
-				"reference":{"type":"typescript","files":["src/**"]}
+				"citedBy":{"type":"typescript","files":["src/**"]}
 			}]}`,
 			want: "every files pattern must be project-relative",
 		},
@@ -204,17 +204,26 @@ func TestConfigurationRejectsMalformedPublicBoundaries(t *testing.T) {
 				"type":"markdown",
 				"files":["docs/**"],
 				"symbol":[],
-				"reference":{"type":"typescript","files":["src/**"]}
+				"citedBy":{"type":"typescript","files":["src/**"]}
 			}]}`,
 			want: "empty symbol array selects no evidence units",
 		},
 		{
-			name: "missing reference",
+			name: "missing citer",
 			raw: `{"sources":[{
 				"type":"markdown",
 				"files":["docs/**"]
 			}]}`,
-			want: "required reference group is missing",
+			want: "required citedBy group is missing",
+		},
+		{
+			name: "renamed citer property",
+			raw: `{"sources":[{
+				"type":"markdown",
+				"files":["docs/**"],
+				"reference":{"type":"typescript","files":["src/**"]}
+			}]}`,
+			want: "renamed; declare the citer groups under 'citedBy'",
 		},
 		{
 			name: "unknown source property",
@@ -222,7 +231,7 @@ func TestConfigurationRejectsMalformedPublicBoundaries(t *testing.T) {
 				"type":"markdown",
 				"files":["docs/**"],
 				"documents":["legacy"],
-				"reference":{"type":"typescript","files":["src/**"]}
+				"citedBy":{"type":"typescript","files":["src/**"]}
 			}]}`,
 			want: "sources[0].documents: unknown property",
 		},

@@ -23,15 +23,15 @@ type graphConfig struct {
 }
 
 type sourceSpec struct {
-	Index      int
-	Type       artifactKind
-	Name       string
-	Files      globSet
-	Symbols    symbolSet
-	References []referenceSpec
+	Index   int
+	Type    artifactKind
+	Name    string
+	Files   globSet
+	Symbols symbolSet
+	CitedBy []citerSpec
 }
 
-type referenceSpec struct {
+type citerSpec struct {
 	Index   int
 	Type    artifactKind
 	Files   globSet
@@ -108,11 +108,11 @@ type sourceState struct {
 	Spec     sourceSpec
 	Units    []*evidenceUnit
 	UnitByID map[string]*evidenceUnit
-	Refs     []referenceState
+	Citers   []citerState
 }
 
-type referenceState struct {
-	Spec         referenceSpec
+type citerState struct {
+	Spec         citerSpec
 	Paths        []string
 	Declarations []*evidenceDeclaration
 }

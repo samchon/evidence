@@ -134,36 +134,36 @@ func TestGlobRejectsWindowsDrivePaths(t *testing.T) {
 }
 
 /**
- * Verifies empty glob matches: a source or reference population that selects no
+ * Verifies empty glob matches: a source or citer population that selects no
  * files produces a direct configuration diagnostic instead of vacuous success.
  *
  * An empty match is indistinguishable from a typo unless the rule says which
- * population failed. The source and reference cases are separate because each
+ * population failed. The source and citer cases are separate because each
  * has a different repair boundary.
  *
  *  1. Point a source glob at no Markdown file.
- *  2. Point a reference glob at no TypeScript file.
+ *  2. Point a citer glob at no TypeScript file.
  *  3. Assert both populations report their own empty match.
  */
-func TestGlobEmptyMatchesReportSourceAndReferencePopulation(t *testing.T) {
+func TestGlobEmptyMatchesReportSourceAndCiterPopulation(t *testing.T) {
 	sourceMessages := runIndexRule(t, map[string]string{
 		"src/ref.ts": "export interface Ref {}",
 	}, `{"sources":[{
 		"type":"markdown",
 		"files":["docs/**/*.md"],
 		"symbol":"h2",
-		"reference":{"type":"typescript","files":["src/**/*.ts"]}
+		"citedBy":{"type":"typescript","files":["src/**/*.ts"]}
 	}]}`)
 	assertProblemContains(t, sourceMessages, "Source 1 matched no markdown files")
 
-	referenceMessages := runIndexRule(t, map[string]string{
+	citerMessages := runIndexRule(t, map[string]string{
 		"docs/spec.md": "## Spec",
 	}, `{"sources":[{
 		"type":"markdown",
 		"files":["docs/**/*.md"],
 		"symbol":"h2",
-		"reference":{"type":"typescript","files":["src/**/*.ts"]}
+		"citedBy":{"type":"typescript","files":["src/**/*.ts"]}
 	}]}`)
-	assertProblemContains(t, referenceMessages, "reference 1")
-	assertProblemContains(t, referenceMessages, "matched no typescript files")
+	assertProblemContains(t, citerMessages, "citer 1")
+	assertProblemContains(t, citerMessages, "matched no typescript files")
 }

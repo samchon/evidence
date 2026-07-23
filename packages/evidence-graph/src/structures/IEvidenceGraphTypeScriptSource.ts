@@ -1,5 +1,5 @@
 import type { EvidenceGraphTypeScriptSymbol } from "../typings/EvidenceGraphTypeScriptSymbol";
-import type { IEvidenceGraphReference } from "./IEvidenceGraphReference";
+import type { IEvidenceGraphCiter } from "./IEvidenceGraphCiter";
 
 /**
  * A configured body of TypeScript evidence.
@@ -52,23 +52,23 @@ export interface IEvidenceGraphTypeScriptSource {
    * Omit this property to select exported interfaces and type aliases. A single
    * value selects one kind; a non-empty array selects the union of its kinds.
    * The exact declaration forms and qualified target identities are documented
-   * by {@link EvidenceGraphTypeScriptSymbol}. This is unlike `reference`: a
-   * symbol array expands one source's evidence units, whereas a reference array
-   * creates independently complete coverage obligations.
+   * by {@link EvidenceGraphTypeScriptSymbol}. This is unlike `citedBy`: a symbol
+   * array expands one source's evidence units, whereas a citer array creates
+   * independently complete coverage obligations.
    *
    * @default type
    */
   symbol?: EvidenceGraphTypeScriptSymbol | EvidenceGraphTypeScriptSymbol[];
 
   /**
-   * One file group or independently complete file groups that must acknowledge
-   * this source.
+   * One citer group or independently complete citer groups that must
+   * acknowledge this source.
    *
-   * A single reference requires its matching files to acknowledge every
+   * A single citer group requires its matching files to acknowledge every
    * evidence unit here. An array creates a separate 100% obligation for every
    * element: acknowledgements in one group never count toward another, and
    * partially covered groups cannot be pooled to satisfy this source. The array
    * must not be empty.
    */
-  reference: IEvidenceGraphReference | IEvidenceGraphReference[];
+  citedBy: IEvidenceGraphCiter | IEvidenceGraphCiter[];
 }

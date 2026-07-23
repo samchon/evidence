@@ -111,23 +111,23 @@ func materializeSourceStates(
 				sourceLabel(source)+" matched "+decimal(len(paths))+" file(s) but materialized no selected evidence units ("+source.Symbols.names()+"). Select symbol kinds present in those files or correct the source globs.",
 			)
 		}
-		for _, reference := range source.References {
-			referenceInventories := inventoriesOf(reference.Type, markdown, typescript)
-			referencePaths := matchingInventoryPaths(referenceInventories, reference.Files)
-			referenceState := referenceState{Spec: reference, Paths: referencePaths}
-			if len(referencePaths) == 0 {
+		for _, citer := range source.CitedBy {
+			citerInventories := inventoriesOf(citer.Type, markdown, typescript)
+			citerPaths := matchingInventoryPaths(citerInventories, citer.Files)
+			citerState := citerState{Spec: citer, Paths: citerPaths}
+			if len(citerPaths) == 0 {
 				problems = append(
 					problems,
-					sourceLabel(source)+" "+referenceLabel(reference)+" matched no "+string(reference.Type)+" files for "+describePatterns(reference.Files)+". Fix the reference globs; this independent coverage group cannot acknowledge evidence without files.",
+					sourceLabel(source)+" "+citerLabel(citer)+" matched no "+string(citer.Type)+" files for "+describePatterns(citer.Files)+". Fix the citer globs; this independent coverage group cannot acknowledge evidence without files.",
 				)
 			}
-			for _, path := range referencePaths {
-				referenceState.Declarations = append(
-					referenceState.Declarations,
-					referenceInventories[path].Declarations...,
+			for _, path := range citerPaths {
+				citerState.Declarations = append(
+					citerState.Declarations,
+					citerInventories[path].Declarations...,
 				)
 			}
-			state.Refs = append(state.Refs, referenceState)
+			state.Citers = append(state.Citers, citerState)
 		}
 		states = append(states, state)
 	}
@@ -155,8 +155,8 @@ func evaluateEvidenceGraph(states []sourceState) []string {
 
 	declarations := map[string]*evidenceDeclaration{}
 	for _, state := range states {
-		for _, reference := range state.Refs {
-			for _, declaration := range reference.Declarations {
+		for _, citer := range state.Citers {
+			for _, declaration := range citer.Declarations {
 				declarations[declaration.ID] = declaration
 			}
 		}
@@ -205,32 +205,32 @@ func evaluateEvidenceGraph(states []sourceState) []string {
 		if len(state.Units) == 0 {
 			continue
 		}
-		for _, reference := range state.Refs {
-			if len(reference.Paths) == 0 {
+		for _, citer := range state.Citers {
+			if len(citer.Paths) == 0 {
 				continue
 			}
 			acknowledged := map[string]*evidenceDeclaration{}
-			for _, declaration := range reference.Declarations {
+			for _, declaration := range citer.Declarations {
 				unitID := resolved[declaration.ID]
 				unit := state.UnitByID[unitID]
 				if unit == nil {
 					continue
 				}
-				if !reference.Spec.Symbols.contains(declaration.Host) {
+				if !citer.Spec.Symbols.contains(declaration.Host) {
 					host := declaration.Host
 					if host == "" {
 						host = "unsupported or non-exported declaration"
 					}
 					problems = append(
 						problems,
-						"Out-of-scope @"+string(declaration.Tag)+" host at "+declaration.location()+" for "+sourceLabel(state.Spec)+" "+referenceLabel(reference.Spec)+": host kind '"+host+"' is not selected ("+reference.Spec.Symbols.names()+"). Move the declaration to a selected host or widen this reference's symbol selector.",
+						"Out-of-scope @"+string(declaration.Tag)+" host at "+declaration.location()+" for "+sourceLabel(state.Spec)+" "+citerLabel(citer.Spec)+": host kind '"+host+"' is not selected ("+citer.Spec.Symbols.names()+"). Move the declaration to a selected host or widen this citer group's symbol selector.",
 					)
 					continue
 				}
 				if first := acknowledged[unitID]; first != nil {
 					problems = append(
 						problems,
-						"Duplicate acknowledgement for '"+unit.Target+"' in "+sourceLabel(state.Spec)+" "+referenceLabel(reference.Spec)+" at "+declaration.location()+"; the first is at "+first.location()+". Keep exactly one @evidence or @evidenceExclude declaration for this evidence unit in this reference group.",
+						"Duplicate acknowledgement for '"+unit.Target+"' in "+sourceLabel(state.Spec)+" "+citerLabel(citer.Spec)+" at "+declaration.location()+"; the first is at "+first.location()+". Keep exactly one @evidence or @evidenceExclude declaration for this evidence unit in this citer group.",
 					)
 					continue
 				}
@@ -242,7 +242,7 @@ func evaluateEvidenceGraph(states []sourceState) []string {
 				}
 				problems = append(
 					problems,
-					"Missing acknowledgement for '"+unit.Target+"' ("+unit.Readable+" at "+unit.location()+") in "+sourceLabel(state.Spec)+" "+referenceLabel(reference.Spec)+". Add '@evidence "+unit.Target+" <reason>' to a selected "+string(reference.Spec.Type)+" host, or '@evidenceExclude "+unit.Target+" <reason>' when this group intentionally does not use it.",
+					"Missing acknowledgement for '"+unit.Target+"' ("+unit.Readable+" at "+unit.location()+") in "+sourceLabel(state.Spec)+" "+citerLabel(citer.Spec)+". Add '@evidence "+unit.Target+" <reason>' to a selected "+string(citer.Spec.Type)+" host, or '@evidenceExclude "+unit.Target+" <reason>' when this group intentionally does not use it.",
 				)
 			}
 		}
@@ -310,8 +310,8 @@ func sourceLabel(source sourceSpec) string {
 	return label
 }
 
-func referenceLabel(reference referenceSpec) string {
-	return "reference " + decimal(reference.Index+1) + " (" + string(reference.Type) + ", symbols: " + reference.Symbols.names() + ")"
+func citerLabel(citer citerSpec) string {
+	return "citer " + decimal(citer.Index+1) + " (" + string(citer.Type) + ", symbols: " + citer.Symbols.names() + ")"
 }
 
 func reportProblems(ctx *rule.ProjectContext, problems []string) {
