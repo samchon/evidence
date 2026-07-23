@@ -22,8 +22,12 @@ import {
  * defended into a permanent hole, and rejecting it silently leaves them staring
  * at an error they thought they fixed.
  *
+ * The coverage scope deliberately uses directory shorthand. That pins the
+ * shared glob contract at this consumer boundary rather than trusting the
+ * matcher unit alone.
+ *
  * 1. Declare four sections: one cited, one uncited, one exempt with a reason, one
- *    exempt with a blank reason.
+ *    exempt with a blank reason under the `docs/` coverage scope.
  * 2. Cite exactly one of them from a declaration.
  * 3. Assert the uncited and blank-exempt sections are reported, and neither the
  *    cited nor the properly exempt one is.
@@ -36,7 +40,7 @@ export const test_evidence_coverage_reports_uncited_sections = (): void => {
       rules: {
         "evidence/index": ["error", { documents: ["docs/**/*.md"] }],
         "evidence/reference": "error",
-        "evidence/coverage": ["error", { documents: ["docs/**/*.md"] }],
+        "evidence/coverage": ["error", { documents: ["docs/"] }],
       },
     },
     files: {
