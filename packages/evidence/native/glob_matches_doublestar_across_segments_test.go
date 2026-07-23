@@ -2,7 +2,7 @@ package evidence
 
 import "testing"
 
-// TestGlobMatchesDoublestarAcrossSegments pins the folder-policy matcher.
+// TestGlobMatchesDoublestarAcrossSegments verifies the folder-policy matcher.
 //
 // This matcher is hand-rolled because ttsc resolves this package's imports from
 // @ttsc/lint's module graph, so doublestar is unavailable and path.Match is
@@ -12,7 +12,9 @@ import "testing"
 //
 //  1. `**` spans zero, one, and many segments.
 //  2. `*` and `?` stay inside one segment.
-//  3. An empty pattern set matches nothing rather than everything.
+//  3. A matched entry includes its descendants, with or without a trailing
+//     slash.
+//  4. An empty pattern set matches nothing rather than everything.
 func TestGlobMatchesDoublestarAcrossSegments(t *testing.T) {
 	cases := []struct {
 		pattern string
@@ -48,6 +50,16 @@ func TestGlobMatchesDoublestarAcrossSegments(t *testing.T) {
 
 		// Leading ./ is noise, not meaning.
 		{"./docs/*.md", "docs/spec.md", true},
+
+		// A pattern selects an entry and everything below it, matching the
+		// directory shorthand people know from gitignore and editor scopes.
+		{"src/providers", "src/providers/order.ts", true},
+		{"src/providers/", "src/providers/order.ts", true},
+		{"src/*", "src/providers/order.ts", true},
+
+		// Entry boundaries still matter: a similarly prefixed sibling is not a
+		// descendant.
+		{"src/providers", "src/providers-extra/order.ts", false},
 	}
 	for _, entry := range cases {
 		if got := matchGlob(entry.pattern, entry.name); got != entry.want {

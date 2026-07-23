@@ -61,7 +61,9 @@ declare module "@ttsc/lint" {
        *
        * Supports `**`, `*`, and `?`. Matching is case-sensitive even on a
        * case-insensitive filesystem, because a path has one true spelling and
-       * admitting another yields references the index cannot resolve.
+       * admitting another yields references the index cannot resolve. A
+       * directory entry includes everything below it, so `docs`, `docs/`, and
+       * `docs/**` all include `docs/spec.md`.
        *
        * `node_modules`, `.git`, `lib`, `dist`, and `coverage` are never walked:
        * they hold other people's markdown, and a citation resolving against a
@@ -139,15 +141,19 @@ declare module "@ttsc/lint" {
      */
     "evidence/coverage": {
       /**
-       * Documents whose sections must be cited. Defaults to every indexed
-       * document.
+       * Documents whose sections must be cited. Required and non-empty.
+       *
+       * Coverage cannot inherit the index rule's scope because project rules
+       * cannot read one another's options. An implicit whole-repository default
+       * would instead demand citations for unrelated READMEs and guides while
+       * appearing to share the index's scope.
        *
        * Narrow this rather than exempting sections one by one when a whole
        * document is reference material. Adoption is authorship: a small
        * demanded set that is honestly covered beats a large one cleared by
        * citations written to silence errors.
        */
-      documents?: readonly string[];
+      documents: readonly [string, ...string[]];
     };
   }
 
@@ -169,9 +175,10 @@ declare module "@ttsc/lint" {
 /**
  * One "declarations here must cite sections there" obligation.
  *
- * Both globs are project-relative and support `**`, `*`, and `?`. Matching is
- * case-sensitive even on a case-insensitive filesystem, because a path has one
- * true spelling.
+ * Both globs are project-relative and support `**`, `*`, and `?`. A directory
+ * entry includes everything below it, so `src/providers`, `src/providers/`, and
+ * `src/providers/**` govern the same subtree. Matching is case-sensitive even
+ * on a case-insensitive filesystem, because a path has one true spelling.
  */
 export interface IEvidencePolicy {
   /**

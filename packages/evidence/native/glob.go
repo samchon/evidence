@@ -16,11 +16,24 @@ import "strings"
 //	*    any run of characters within one segment
 //	?    exactly one character within one segment
 //
+// A pattern selects the matched entry and everything below it, so `docs`,
+// `docs/`, and `docs/**` all include `docs/spec.md`. This preserves exact-file
+// matches while making a directory scope behave like the spelling people use
+// in gitignore files and editors.
+//
 // Paths are compared case-sensitively. Case is identity: a case-insensitive
 // host still has one true spelling for a file, and matching `Docs/` against
 // `docs/` would silently admit a path the document index cannot resolve.
 func matchGlob(pattern string, name string) bool {
-	return matchSegments(splitPath(pattern), splitPath(name))
+	patternSegments := splitPath(pattern)
+	nameSegments := splitPath(name)
+	if matchSegments(patternSegments, nameSegments) {
+		return true
+	}
+	if len(patternSegments) == 0 {
+		return false
+	}
+	return matchSegments(append(patternSegments, "**"), nameSegments)
 }
 
 // matchAnyGlob reports whether name matches at least one pattern. An empty
@@ -38,6 +51,7 @@ func matchAnyGlob(patterns []string, name string) bool {
 func splitPath(value string) []string {
 	value = strings.ReplaceAll(value, "\\", "/")
 	value = strings.TrimPrefix(value, "./")
+	value = strings.TrimRight(value, "/")
 	if value == "" {
 		return nil
 	}
