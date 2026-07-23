@@ -273,7 +273,7 @@ func collectClassCallables(
 		case shimast.KindPropertyDeclaration:
 			property := member.AsPropertyDeclaration()
 			callable = isFunctionValue(property.Initializer) ||
-				(property.Type != nil && property.Type.Kind == shimast.KindFunctionType)
+				isDirectFunctionType(property.Type)
 		}
 		if !callable {
 			continue
@@ -313,6 +313,17 @@ func isFunctionValue(node *shimast.Node) bool {
 		}
 	}
 	return false
+}
+
+func isDirectFunctionType(node *shimast.Node) bool {
+	for node != nil && node.Kind == shimast.KindParenthesizedType {
+		parenthesized := node.AsParenthesizedTypeNode()
+		if parenthesized == nil {
+			return false
+		}
+		node = parenthesized.Type
+	}
+	return node != nil && node.Kind == shimast.KindFunctionType
 }
 
 func collectTypeScriptModule(
@@ -385,7 +396,7 @@ func addTypeScriptUnit(
 	symbol string,
 	target string,
 ) {
-	id := "typescript:" + inventory.Path + ":" + target
+	id := "typescript:" + inventory.Path + ":" + symbol + ":" + target
 	if unitIDs[id] {
 		return
 	}

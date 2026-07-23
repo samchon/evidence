@@ -46,6 +46,7 @@ export class Service {
   handler = (): void => {};
   static factory = function (): void {};
   declare callback: () => void;
+  declare wrapped: (() => void);
   declare static provider: () => void;
   protected hidden(): void {}
   private secret = (): void => {};
@@ -92,6 +93,7 @@ class Internal {
 		"Service.prototype.callback",
 		"Service.prototype.handler",
 		"Service.prototype.run",
+		"Service.prototype.wrapped",
 		"Shape",
 		"Shape.width",
 		"arrow",
@@ -324,4 +326,43 @@ func TestTypeScriptInventoryExcludesJavaScriptProgramFiles(t *testing.T) {
 	if inventories["api.js"] != nil {
 		t.Fatal("JavaScript Program file entered the TypeScript artifact inventory")
 	}
+}
+
+/**
+ * Verifies TypeScript's type and value namespaces do not collapse evidence
+ * units that share one public target text.
+ *
+ * An interface and a callable `const` may legally export the same name. A
+ * function-only source must retain the callable, while a source selecting both
+ * kinds must report that the unqualified declaration target is ambiguous.
+ *
+ *  1. Export an interface and arrow function named `Shared` from one file.
+ *  2. Select only `"function"` and assert `Shared` resolves to the callable.
+ *  3. Select both kinds and assert the shared target becomes ambiguous.
+ */
+func TestTypeScriptSymbolKindsDoNotCollapseSharedTargets(t *testing.T) {
+	files := map[string]string{
+		"src/contracts.ts": `
+export interface Shared {
+  value: string;
+}
+export const Shared = (): void => {};
+`,
+		"docs/ledger.md": "<!-- @evidence Shared The public callable is documented. -->\n",
+	}
+	functionOnly := runIndexRule(t, files, `{"sources":[{
+		"type":"typescript",
+		"files":["src/contracts.ts"],
+		"symbol":"function",
+		"reference":{"type":"markdown","files":["docs/ledger.md"],"symbol":"file"}
+	}]}`)
+	assertNoProblems(t, functionOnly)
+
+	bothKinds := runIndexRule(t, files, `{"sources":[{
+		"type":"typescript",
+		"files":["src/contracts.ts"],
+		"symbol":["type","function"],
+		"reference":{"type":"markdown","files":["docs/ledger.md"],"symbol":"file"}
+	}]}`)
+	assertProblemContains(t, bothKinds, "Ambiguous evidence target 'Shared'")
 }
