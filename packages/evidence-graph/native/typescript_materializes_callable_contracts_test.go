@@ -241,14 +241,15 @@ export interface Ref {}
 
 /**
  * Verifies the TypeScript source default: omitting symbol selects exported
- * interfaces and type aliases without charging callable or property units.
+ * interfaces, type aliases, and namespaces without charging callable or
+ * property units.
  *
  * The default is intentionally narrower than the claim default. A test that
  * merely inspects decoded options would miss a materializer that ignored the
  * selector and indexed every discovered declaration anyway.
  *
- *  1. Put types, properties, and callables in one source file.
- *  2. Acknowledge only the two type identities from Markdown.
+ *  1. Put types, a namespace, properties, and callables in one source file.
+ *  2. Acknowledge only the three type identities from Markdown.
  *  3. Assert the omitted source selector creates no additional obligation.
  */
 func TestTypeScriptSourceDefaultMaterializesOnlyTypes(t *testing.T) {
@@ -256,6 +257,10 @@ func TestTypeScriptSourceDefaultMaterializesOnlyTypes(t *testing.T) {
 		"src/contracts.ts": `
 export interface Shape { width: number; }
 export type Options = { enabled: boolean };
+export namespace Api {
+  export const state = "ready";
+  export function run(): void {}
+}
 export function draw(): void {}
 export const render = (): void => {};
 `,
@@ -263,6 +268,7 @@ export const render = (): void => {};
 <!--
 @evidence Shape Shape is documented here.
 @evidence Options Options are documented here.
+@evidence Api The namespace contract is documented here.
 -->
 `,
 	}, `{"claims":[{
