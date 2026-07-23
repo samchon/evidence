@@ -36,9 +36,16 @@ func (indexRule) Check(ctx *rule.ProjectContext) {
 	}
 
 	markdown, markdownProblems := loadMarkdownInventories(root, config)
+	swagger, swaggerProblems := loadSwaggerInventories(root, config)
 	typescript := loadTypeScriptInventories(root, ctx.Sources)
 	problems = append(problems, markdownProblems...)
-	states, stateProblems := materializeClaimStates(config, markdown, typescript)
+	problems = append(problems, swaggerProblems...)
+	states, stateProblems := materializeClaimStates(
+		config,
+		markdown,
+		swagger,
+		typescript,
+	)
 	problems = append(problems, stateProblems...)
 	problems = append(problems, evaluateEvidenceGraph(states)...)
 	reportProblems(ctx, problems)
@@ -69,12 +76,13 @@ func evidenceProjectRoot(identity rule.ProjectIdentity) string {
 func materializeClaimStates(
 	config graphConfig,
 	markdown map[string]*artifactInventory,
+	swagger map[string]*artifactInventory,
 	typescript map[string]*artifactInventory,
 ) ([]claimState, []string) {
 	states := make([]claimState, 0, len(config.Claims))
 	problems := []string{}
 	for _, claim := range config.Claims {
-		inventories := inventoriesOf(claim.Type, markdown, typescript)
+		inventories := inventoriesOf(claim.Type, markdown, swagger, typescript)
 		paths := matchingInventoryPaths(inventories, claim.Files)
 		state := claimState{Spec: claim, Paths: paths}
 		if len(paths) == 0 {
@@ -90,18 +98,33 @@ func materializeClaimStates(
 			)
 		}
 		for _, reference := range claim.References {
-			referenceInventories := inventoriesOf(reference.Type, markdown, typescript)
-			referencePaths := matchingInventoryPaths(referenceInventories, reference.Files)
+			referenceInventories := inventoriesOf(
+				reference.Type,
+				markdown,
+				swagger,
+				typescript,
+			)
+			referencePaths := matchingReferencePaths(
+				referenceInventories,
+				reference,
+			)
 			referenceState := referenceState{
 				Spec:         reference,
 				Paths:        referencePaths,
 				UnitsByScope: map[string][]*evidenceUnit{},
 			}
 			if len(referencePaths) == 0 {
-				problems = append(
-					problems,
-					claimLabel(claim)+" "+referenceLabel(reference)+" matched no "+string(reference.Type)+" files for "+describePatterns(reference.Files)+". Fix the reference globs; this obligation cannot materialize evidence units without files.",
-				)
+				if reference.Type == artifactSwagger {
+					problems = append(
+						problems,
+						claimLabel(claim)+" "+referenceLabel(reference)+" matched no swagger source for "+describeReferenceSources(reference)+". Fix the reference location; this obligation cannot materialize evidence units without a source.",
+					)
+				} else {
+					problems = append(
+						problems,
+						claimLabel(claim)+" "+referenceLabel(reference)+" matched no "+string(reference.Type)+" files for "+describePatterns(reference.Files)+". Fix the reference globs; this obligation cannot materialize evidence units without files.",
+					)
+				}
 			}
 			selectedInventoryProblem := false
 			availableUnits := map[string]*evidenceUnit{}
@@ -304,12 +327,32 @@ func declarationCandidates(
 func inventoriesOf(
 	kind artifactKind,
 	markdown map[string]*artifactInventory,
+	swagger map[string]*artifactInventory,
 	typescript map[string]*artifactInventory,
 ) map[string]*artifactInventory {
-	if kind == artifactMarkdown {
+	switch kind {
+	case artifactMarkdown:
 		return markdown
+	case artifactSwagger:
+		return swagger
+	case artifactTypeScript:
+		return typescript
+	default:
+		return map[string]*artifactInventory{}
 	}
-	return typescript
+}
+
+func matchingReferencePaths(
+	inventories map[string]*artifactInventory,
+	reference referenceSpec,
+) []string {
+	if reference.Type != artifactSwagger {
+		return matchingInventoryPaths(inventories, reference.Files)
+	}
+	if inventories[reference.Source] == nil {
+		return nil
+	}
+	return []string{reference.Source}
 }
 
 func matchingInventoryPaths(
@@ -344,6 +387,9 @@ func claimLabel(claim claimSpec) string {
 }
 
 func referenceLabel(reference referenceSpec) string {
+	if reference.Type == artifactSwagger {
+		return "reference " + decimal(reference.Index+1) + " (swagger operations)"
+	}
 	return "reference " + decimal(reference.Index+1) + " (" + string(reference.Type) + ", symbols: " + reference.Symbols.names() + ")"
 }
 

@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net/url"
+	"path"
 	"sort"
 	"strings"
 )
@@ -55,7 +57,7 @@ func decodeClaim(raw json.RawMessage, index int) (claimSpec, []string) {
 		[]string{"type", "name", "files", "symbol", "reference"},
 		path,
 	)
-	kind, kindProblem := decodeArtifactKind(object["type"], path+".type")
+	kind, kindProblem := decodeArtifactKind(object["type"], path+".type", false)
 	if kindProblem != "" {
 		problems = append(problems, kindProblem)
 	}
@@ -124,35 +126,145 @@ func decodeReference(raw json.RawMessage, index int, path string) (referenceSpec
 	if problem != "" {
 		return referenceSpec{}, []string{problem}
 	}
-	problems := rejectUnknownFields(object, []string{"type", "files", "symbol"}, path)
-	kind, kindProblem := decodeArtifactKind(object["type"], path+".type")
+	problems := rejectUnknownFields(
+		object,
+		[]string{"type", "file", "files", "symbol"},
+		path,
+	)
+	kind, kindProblem := decodeArtifactKind(object["type"], path+".type", true)
 	if kindProblem != "" {
 		problems = append(problems, kindProblem)
 	}
-	files, fileProblems := decodeFiles(object["files"], path+".files")
-	problems = append(problems, fileProblems...)
-	symbols, symbolProblems := decodeSymbols(object["symbol"], kind, true, path+".symbol")
-	problems = append(problems, symbolProblems...)
+	files := globSet{}
+	source := ""
+	symbols := symbolSet{}
+	if kind == artifactSwagger {
+		if _, exists := object["files"]; exists {
+			problems = append(
+				problems,
+				"Invalid evidence-graph/index configuration at "+path+".files: a Swagger reference owns one document; use singular 'file' and a reference array for multiple documents.",
+			)
+		}
+		if _, exists := object["symbol"]; exists {
+			problems = append(
+				problems,
+				"Invalid evidence-graph/index configuration at "+path+".symbol: Swagger references select every operation and do not accept a symbol selector.",
+			)
+		}
+		var sourceProblem string
+		source, sourceProblem = decodeSwaggerSource(object["file"], path+".file")
+		if sourceProblem != "" {
+			problems = append(problems, sourceProblem)
+		}
+		symbols["operation"] = true
+	} else {
+		if _, exists := object["file"]; exists {
+			problems = append(
+				problems,
+				"Invalid evidence-graph/index configuration at "+path+".file: singular 'file' is only supported by Swagger references; Markdown and TypeScript references use 'files' globs.",
+			)
+		}
+		var fileProblems []string
+		files, fileProblems = decodeFiles(object["files"], path+".files")
+		problems = append(problems, fileProblems...)
+		var symbolProblems []string
+		symbols, symbolProblems = decodeSymbols(object["symbol"], kind, true, path+".symbol")
+		problems = append(problems, symbolProblems...)
+	}
 	if len(problems) != 0 {
 		return referenceSpec{}, problems
 	}
-	return referenceSpec{Index: index, Type: kind, Files: files, Symbols: symbols}, nil
+	return referenceSpec{
+		Index:   index,
+		Type:    kind,
+		Files:   files,
+		Source:  source,
+		Symbols: symbols,
+	}, nil
 }
 
-func decodeArtifactKind(raw json.RawMessage, path string) (artifactKind, string) {
+func decodeArtifactKind(
+	raw json.RawMessage,
+	path string,
+	allowSwagger bool,
+) (artifactKind, string) {
 	if len(bytes.TrimSpace(raw)) == 0 {
 		return "", "Invalid evidence-graph/index configuration at " + path + ": the artifact discriminator is required."
 	}
 	var value string
 	if err := json.Unmarshal(raw, &value); err != nil {
-		return "", "Invalid evidence-graph/index configuration at " + path + ": expected 'markdown' or 'typescript'."
+		return "", "Invalid evidence-graph/index configuration at " + path + ": expected a supported artifact type string."
 	}
 	switch artifactKind(value) {
 	case artifactMarkdown, artifactTypeScript:
 		return artifactKind(value), ""
+	case artifactSwagger:
+		if allowSwagger {
+			return artifactSwagger, ""
+		}
+		return "", "Invalid evidence-graph/index configuration at " + path + ": Swagger is evidence-only and cannot be a claim; expected 'markdown' or 'typescript'."
 	default:
-		return "", "Invalid evidence-graph/index configuration at " + path + ": unsupported artifact type '" + value + "'; expected 'markdown' or 'typescript'."
+		expected := "'markdown' or 'typescript'"
+		if allowSwagger {
+			expected = "'markdown', 'swagger', or 'typescript'"
+		}
+		return "", "Invalid evidence-graph/index configuration at " + path + ": unsupported artifact type '" + value + "'; expected " + expected + "."
 	}
+}
+
+func decodeSwaggerSource(raw json.RawMessage, configPath string) (string, string) {
+	if len(bytes.TrimSpace(raw)) == 0 {
+		return "", "Invalid evidence-graph/index configuration at " + configPath + ": the required Swagger file path or URL is missing."
+	}
+	var value string
+	if err := json.Unmarshal(raw, &value); err != nil {
+		return "", "Invalid evidence-graph/index configuration at " + configPath + ": expected one exact project-relative file path or http(s) URL."
+	}
+	source, problem := normalizeSwaggerSource(value)
+	if problem != "" {
+		return "", "Invalid evidence-graph/index configuration at " + configPath + ": " + problem
+	}
+	return source, ""
+}
+
+func normalizeSwaggerSource(value string) (string, string) {
+	if value == "" {
+		return "", "Swagger sources must not be empty."
+	}
+	if strings.TrimSpace(value) != value {
+		return "", "Swagger sources must not have leading or trailing whitespace."
+	}
+	parsed, err := url.Parse(value)
+	if err != nil {
+		return "", "invalid Swagger source '" + value + "': " + err.Error() + "."
+	}
+	if parsed.Scheme != "" {
+		if parsed.Scheme != "http" && parsed.Scheme != "https" {
+			return "", "unsupported URL scheme '" + parsed.Scheme + "'; only http: and https: are supported."
+		}
+		if parsed.Host == "" {
+			return "", "Swagger URL '" + value + "' has no host."
+		}
+		if parsed.Fragment != "" {
+			return "", "Swagger URL '" + value + "' must not contain a fragment."
+		}
+		return value, ""
+	}
+	if strings.Contains(value, "://") {
+		return "", "invalid Swagger source URL '" + value + "'."
+	}
+	normalized := strings.ReplaceAll(value, "\\", "/")
+	if strings.HasPrefix(normalized, "/") || path.IsAbs(normalized) {
+		return "", "local Swagger paths must be project-relative."
+	}
+	normalized = path.Clean(normalized)
+	for strings.HasPrefix(normalized, "./") {
+		normalized = strings.TrimPrefix(normalized, "./")
+	}
+	if normalized == "." || normalized == ".." || strings.HasPrefix(normalized, "../") {
+		return "", "local Swagger paths must name a file below the project root."
+	}
+	return normalized, ""
 }
 
 func decodeFiles(raw json.RawMessage, path string) (globSet, []string) {
@@ -295,4 +407,11 @@ func describePatterns(globs globSet) string {
 		quoted = append(quoted, "'"+pattern.Raw+"'")
 	}
 	return "[" + strings.Join(quoted, ", ") + "]"
+}
+
+func describeReferenceSources(reference referenceSpec) string {
+	if reference.Type != artifactSwagger {
+		return describePatterns(reference.Files)
+	}
+	return "'" + displaySwaggerSource(reference.Source) + "'"
 }

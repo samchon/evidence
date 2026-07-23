@@ -3,6 +3,9 @@ packages:
   - 'packages/*'
   - 'tests/*'
 catalogs:
+  typia:
+    '@typia/interface': &typia ^13.2.0
+    '@typia/utils': *typia
   typescript:
     typescript: ^7.0.2
     ttsc: &ttsc ^0.20.0
@@ -10,3 +13,4 @@ catalogs:
   utils:
     '@types/node': ^25.3.0
     rimraf: ^6.1.2
+    yaml: ^2.9.0

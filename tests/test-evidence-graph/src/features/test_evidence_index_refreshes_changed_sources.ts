@@ -1,0 +1,152 @@
+import fs from "node:fs";
+import path from "node:path";
+
+import {
+  assertFailure,
+  assertIncludes,
+  assertStatus,
+  createProject,
+  runCheck,
+  type IEvidenceProject,
+} from "../internal/project.ts";
+
+/**
+ * Verifies repeated checks rebuild Markdown and TypeScript evidence
+ * inventories.
+ *
+ * The linked lint binary is cached, but artifact inventories must not be.
+ * Renaming a Markdown heading, namespace property, or class method between
+ * compiler invocations must invalidate the old target and demand the new one.
+ *
+ * 1. Check a complete graph containing Markdown, namespace, and class targets.
+ * 2. Rename each source target and assert the next check sees stale citations.
+ * 3. Update the citations and assert both graph directions become complete.
+ */
+export const test_evidence_index_refreshes_changed_sources = (): void => {
+  const project: IEvidenceProject = createProject({
+    name: "source-refresh",
+    lintConfig: [
+      'import evidenceGraph from "@samchon/evidence-graph";',
+      "",
+      "export default {",
+      '  plugins: { "evidence-graph": evidenceGraph },',
+      "  rules: {",
+      '    "evidence-graph/index": ["error", {',
+      "      claims: [",
+      "        {",
+      '          type: "typescript",',
+      '          files: ["src/implementation.ts"],',
+      '          symbol: "type",',
+      '          reference: { type: "markdown", files: ["docs/spec.md"], symbol: "h2" },',
+      "        },",
+      "        {",
+      '          type: "markdown",',
+      '          files: ["docs/ledger.md"],',
+      '          symbol: "file",',
+      '          reference: { type: "typescript", files: ["src/contracts.ts"], symbol: ["function", "property"] },',
+      "        },",
+      "      ],",
+      "    }],",
+      "  },",
+      "};",
+      "",
+    ].join("\n"),
+    files: {
+      "docs/spec.md": "## Alpha\n",
+      "src/implementation.ts": implementationFor("alpha"),
+      "src/contracts.ts": contractsFor("state", "run"),
+      "docs/ledger.md": ledgerFor("state", "run"),
+    },
+  });
+  try {
+    assertStatus(
+      runCheck(project.directory),
+      0,
+      "The initial graph must prove the fixture can pass before freshness is tested.",
+    );
+
+    write(project, "docs/spec.md", "## Beta\n");
+    const staleMarkdown = runCheck(project.directory);
+    assertFailure(
+      staleMarkdown,
+      "A renamed Markdown heading must invalidate its old citation on the next check.",
+    );
+    assertIncludes(
+      staleMarkdown,
+      "Unresolved evidence target 'docs/spec.md#alpha'",
+      "The second check must not retain the first Markdown inventory.",
+    );
+    assertIncludes(
+      staleMarkdown,
+      "Missing acknowledgement for 'docs/spec.md#beta'",
+      "The renamed Markdown unit must become the current obligation.",
+    );
+
+    write(project, "src/implementation.ts", implementationFor("beta"));
+    assertStatus(
+      runCheck(project.directory),
+      0,
+      "Updating the Markdown citation must restore the graph.",
+    );
+
+    write(project, "src/contracts.ts", contractsFor("status", "execute"));
+    const staleTypeScript = runCheck(project.directory);
+    assertFailure(
+      staleTypeScript,
+      "Renamed namespace and class members must invalidate old TypeScript targets.",
+    );
+    assertIncludes(
+      staleTypeScript,
+      "Unresolved evidence target 'Api.state'",
+      "The next Program must replace the old namespace property inventory.",
+    );
+    assertIncludes(
+      staleTypeScript,
+      "Missing acknowledgement for 'Service.prototype.execute'",
+      "The renamed class method must become a current callable obligation.",
+    );
+
+    write(project, "docs/ledger.md", ledgerFor("status", "execute"));
+    assertStatus(
+      runCheck(project.directory),
+      0,
+      "Updating the TypeScript citations must restore the refreshed graph.",
+    );
+  } finally {
+    project.cleanup();
+  }
+};
+
+const implementationFor = (anchor: string): string =>
+  [
+    `/** @evidence docs/spec.md#${anchor} Implements the current specification section. */`,
+    "export interface Implementation {}",
+    "",
+  ].join("\n");
+
+const contractsFor = (property: string, method: string): string =>
+  [
+    "export namespace Api {",
+    `  export const ${property} = "ready";`,
+    "}",
+    "",
+    "export class Service {",
+    `  ${method}(): void {}`,
+    "}",
+    "",
+  ].join("\n");
+
+const ledgerFor = (property: string, method: string): string =>
+  [
+    `<!-- @evidence Api.${property} Documents the current namespace state. -->`,
+    `<!-- @evidence Service.prototype.${method} Documents the current class operation. -->`,
+    "",
+  ].join("\n");
+
+const write = (
+  project: IEvidenceProject,
+  relative: string,
+  content: string,
+): void => {
+  fs.writeFileSync(path.join(project.directory, relative), content, "utf8");
+};

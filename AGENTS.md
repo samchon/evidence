@@ -1,6 +1,6 @@
 # AGENTS.md
 
-`@samchon/evidence-graph` is an evidence-graph lint contributor for `@ttsc/lint`. It makes provenance declarable with a JSDoc `@evidence` tag, resolvable against markdown sections and TypeScript symbols, and enforceable as a real compile error under rules the consumer configures in `lint.config.ts`.
+`@samchon/evidence-graph` is an evidence-graph lint contributor for `@ttsc/lint`. It makes provenance declarable with a JSDoc `@evidence` tag, resolvable against Markdown sections, Swagger/OpenAPI operations, and TypeScript symbols, and enforceable as a real compile error under rules the consumer configures in `lint.config.ts`.
 
 ## Attitude
 

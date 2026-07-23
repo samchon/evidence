@@ -9,8 +9,8 @@ description: Defines the @samchon/evidence-graph product contract, workspace lay
 
 `@samchon/evidence-graph` is an evidence-graph lint contributor for `@ttsc/lint`. It exists so that a claim made in code carries its proof, and so that a missing or dangling proof fails the build rather than waiting to be noticed in review.
 
-- **Declare.** A JSDoc `@evidence <target> <reason>` tag cites a markdown section or a TypeScript symbol as the grounds for a declaration.
-- **Resolve.** Targets resolve against a document index built from markdown on disk and against the TypeScript program's symbols.
+- **Declare.** A JSDoc `@evidence <target> <reason>` tag cites a Markdown section, Swagger/OpenAPI operation, or TypeScript symbol as the grounds for a declaration.
+- **Resolve.** Targets resolve against Markdown and Swagger/OpenAPI sources loaded from configured locations and against the TypeScript program's symbols.
 - **Enforce.** Violations surface as real compile errors, because `@ttsc/lint` runs in the check stage and the exit code sums lint and type diagnostics.
 - **Configure.** Which folders must cite what, which edges count toward coverage, and when a rule activates are the consumer's to declare in `lint.config.ts`.
 

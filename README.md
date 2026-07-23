@@ -152,6 +152,7 @@ A graph is one `claims` array, and every claim-reference pair is an independent 
 | Kind | `symbol` values | Default |
 | --- | --- | --- |
 | `"markdown"` | `"file"`, `"h1"`, `"h2"`, `"h3"`, `"h4"` | `["file", "h1", "h2", "h3", "h4"]` |
+| `"swagger"` | No `symbol` property; every operation under `paths` is selected | every operation |
 | `"typescript"` | `"type"`, `"function"`, `"property"` | all three for claims, `"type"` for references |
 
 For TypeScript, `"type"` selects exported interfaces, type aliases, and namespaces. `"function"` selects exported callables. `"property"` selects properties declared by exported type-level symbols and exported `const`, `let`, and `var` declarations at module or namespace scope; a `const` initialized with an arrow or function expression remains a function, while every other variable is a property. Qualified identities preserve their owner: `Orders.Input.id` is a property below `Orders.Input`, while `Orders.state` is namespace data.
@@ -160,14 +161,43 @@ A reference's `symbol` selects the evidence units one obligation covers, and an 
 
 A claim's `symbol` uses the same selector for the opposite side: it restricts which symbol kinds may host an `@evidence` tag. Namespaces are type hosts, exported data variables are property hosts, and a mixed variable statement can host either of its resident kinds. Omit either selector to accept its documented default.
 
+Swagger is reference-only. It cannot host declarations and has no `symbol` selector: each operation under the normalized document's `paths` object is one independent obligation.
+
 ### File patterns
 
-Every `files` property takes project-relative glob patterns, not regular expressions. `*` matches inside one path segment, `**` crosses segments, and `?` matches one character. A bare directory such as `docs` does not select its descendants; write `docs/**` for the subtree.
+Every Markdown or TypeScript `files` property takes project-relative glob patterns, not regular expressions. `*` matches inside one path segment, `**` crosses segments, and `?` matches one character. A bare directory such as `docs` does not select its descendants; write `docs/**` for the subtree.
 
 - `docs/**/*.md` selects every document below `docs`.
 - `backend/src/**/*.ts` selects every backend source file.
 - `frontend/src/components/**/*.tsx` selects every React component.
 - `test/features/**/*.ts` selects every feature test function.
+
+### Swagger API references
+
+A Swagger reference owns exactly one document through its singular `file` property:
+
+```ts
+const graph: IEvidenceGraphConfig = {
+  claims: [
+    {
+      type: "typescript",
+      files: ["src/controllers/**/*.ts"],
+      reference: {
+        type: "swagger",
+        file: "api/openapi.yaml",
+      },
+    },
+  ],
+};
+```
+
+`file` is either one exact project-relative path or one exact `http:`/`https:` URL; it is never a glob. Use a `reference` array when one claim owes separate coverage to several API documents.
+
+Swagger 2.0 and OpenAPI 3.0, 3.1, and 3.2 JSON or YAML documents are normalized through `@typia/utils` to `OpenApi.IDocument` before indexing. A local document is read and a remote document is fetched on every evidence-graph project evaluation; failures, non-2xx responses, invalid documents, 30-second remote timeouts, and documents larger than 16 MiB fail the build.
+
+Only operations under `paths` become evidence units. Webhooks and component schemas are outside this reference type. Standard and additional operation methods use the same target identity.
+
+One-shot checks always evaluate the current Markdown, TypeScript, and Swagger sources. The current `ttsc check --watch` host does not start a new cycle for a standalone Markdown or local Swagger edit, and its LSP invalidates external changes without immediately republishing project diagnostics; the next TypeScript-triggered cycle is fresh. Upstream tracking lives in [the external-input contract](https://github.com/samchon/ttsc/issues/971), [CLI watch integration](https://github.com/samchon/ttsc/issues/973), and [LSP diagnostic refresh](https://github.com/samchon/ttsc/issues/974).
 
 ## Evidence Tags
 
@@ -186,14 +216,17 @@ export interface IShoppingSale {
 
 A TypeScript declaration cites in its JSDoc. The tag is `@evidence target reason`: the target names one evidence unit as the root of an acknowledgement scope, and everything after it is the reason. The reason is required, because a citation that cannot say why it exists is filler.
 
-The target takes four forms:
+The target takes these forms:
 
 | Target | Cites |
 | --- | --- |
 | `docs/sales.md` | A Markdown document and every selected heading below it |
 | `docs/sales.md#sale-price` | A heading section and its selected subsection descendants; the heading declares its anchor with the `{#sale-price}` suffix |
+| `POST:/members` | One Swagger or OpenAPI operation |
 | `IShoppingSale` | An exported type, function, or namespace; types and namespaces cover selected descendants |
 | `IShoppingSale.price` | One property of an exported type |
+
+Every target is one whitespace-delimited token. Swagger operations therefore use `<UPPERCASE_METHOD>:<path>`: write `@evidence POST:/members Creates a member`, not `@evidence POST /members Creates a member`. The latter still means target `POST` with `/members Creates a member` as its reason, preserving the existing grammar for a TypeScript symbol named `POST`.
 
 ```tsx
 /**

@@ -36,7 +36,9 @@
     "provenance",
     "traceability",
     "jsdoc",
-    "typescript"
+    "typescript",
+    "openapi",
+    "swagger"
   ],
   "repository": {
     "type": "git",
@@ -56,5 +58,10 @@
     "rimraf": "catalog:utils",
     "ttsc": "catalog:typescript",
     "typescript": "catalog:typescript"
+  },
+  "dependencies": {
+    "@typia/interface": "catalog:typia",
+    "@typia/utils": "catalog:typia",
+    "yaml": "catalog:utils"
   }
 }

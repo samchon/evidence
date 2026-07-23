@@ -11,6 +11,7 @@ type artifactKind string
 
 const (
 	artifactMarkdown   artifactKind = "markdown"
+	artifactSwagger    artifactKind = "swagger"
 	artifactTypeScript artifactKind = "typescript"
 )
 
@@ -38,6 +39,7 @@ type referenceSpec struct {
 	Index   int
 	Type    artifactKind
 	Files   globSet
+	Source  string
 	Symbols symbolSet
 }
 
@@ -57,7 +59,7 @@ func (set symbolSet) intersects(other symbolSet) bool {
 }
 
 func (set symbolSet) names() string {
-	order := []string{"file", "h1", "h2", "h3", "h4", "type", "function", "property"}
+	order := []string{"file", "h1", "h2", "h3", "h4", "operation", "type", "function", "property"}
 	names := make([]string, 0, len(set))
 	known := map[string]bool{}
 	for _, name := range order {

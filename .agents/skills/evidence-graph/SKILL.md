@@ -24,6 +24,7 @@ The first whitespace-delimited token is the target; everything after it is prose
 
 ```ts
 /** @evidence docs/spec.md#pricing Sale price derives from this section. */
+/** @evidence POST:/members Member creation follows this API operation. */
 /** @evidence IShoppingSale The complete sale contract is mirrored here. */
 ```
 
@@ -31,18 +32,27 @@ The reason exists for review, not machine judgment. Do not add a rule that guess
 
 ## Units And Hierarchy
 
-Two artifact kinds materialize evidence units.
+Three artifact kinds materialize evidence units.
 
 - **Markdown** — a file addressed as `<path>` or an H1-H4 ATX section addressed as `<path>#<anchor>`.
+- **Swagger** — a reference-only Swagger/OpenAPI document whose operations under `paths` are addressed as `<UPPERCASE_METHOD>:<path>`.
 - **TypeScript** — an exported type, function, or property addressed by its qualified public name.
 
-Units form structural containment scopes. A Markdown file contains its heading outline; a heading contains lower-level headings until the next heading of equal or higher level. A TypeScript interface or object-shaped type alias contains its direct properties, and a namespace contains every nested public unit. Top-level TypeScript functions and properties have no aggregate file node.
+Units form structural containment scopes. A Markdown file contains its heading outline; a heading contains lower-level headings until the next heading of equal or higher level. A TypeScript interface or object-shaped type alias contains its direct properties, and a namespace contains every nested public unit. Top-level TypeScript functions and properties have no aggregate file node. Swagger operations are independent leaves with no document or path aggregate target.
 
 An `@evidence` or `@evidenceExclude` target acknowledges the selected target and every selected descendant. The reference's `symbol` selector defines the obligation denominator, not the only addressable targets: every structural ancestor of a selected unit remains resolvable as an aggregate scope.
 
 Keep selected obligations and resolvable scopes separate. Do not make every unselected unit resolvable; only actual ancestors belong to the scope closure, or an unrelated same-name declaration can create false ambiguity.
 
 Hierarchy is identity, not spelling. Store explicit parent unit IDs while materializing. Never infer TypeScript ancestry from a dotted-string prefix: literal names may contain dots, and `A.B` can mean one literal segment or two qualified segments.
+
+## Swagger Classification
+
+Swagger is reference-only. One `IEvidenceGraphSwaggerReference` owns one exact project-relative file path or HTTP(S) URL through its singular `file` property; multiple documents are separate reference-array obligations. It has no public `symbol` selector because every operation under the normalized document's `paths` object is selected.
+
+Normalize Swagger 2.0 and OpenAPI 3.x JSON/YAML inputs with `@typia/utils` to `@typia/interface`'s `OpenApi.IDocument` before materializing operations. Standard and additional operation methods become uppercase targets such as `POST:/members`; preserve the OpenAPI path exactly. Webhooks and component schemas are outside this artifact kind.
+
+Keep the target one whitespace-delimited token. Do not parse `POST /members` as a two-token target: the parser has no reference context, and doing so would reinterpret a TypeScript target `POST` whose reason begins with `/members`.
 
 ## TypeScript Classification
 
@@ -89,4 +99,5 @@ Most users meet this plugin only through an error message. State what is wrong, 
 - **Targets are exact tokens.** Prose is free, but target identity never depends on heading text beyond its generated or explicit anchor.
 - **Paths are case-sensitive identity on every host.** Case-insensitive comparison may improve a diagnostic but never decides equality.
 - **Markdown separators normalize only for Markdown targets.** Do not rewrite TypeScript literal symbol names.
+- **Swagger methods canonicalize to uppercase; Swagger paths do not normalize.** `POST:/members` and `POST:/Members` are distinct.
 - **Qualified TypeScript segments stay encoded internally.** This prevents a literal dot from collapsing into namespace or property qualification.
