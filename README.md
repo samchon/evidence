@@ -42,7 +42,7 @@ const graph: IEvidenceGraphConfig = {
       type: "markdown",
       files: ["docs/**/*.md"],
       symbol: ["h2", "h3"],
-      reference: {
+      citedBy: {
         type: "typescript",
         files: ["src/components/**/*.tsx"],
         symbol: "function",
@@ -70,12 +70,22 @@ Violations surface in every `ttsc` build, every `--noEmit` check, and every `tts
 ```ts
 const graph: IEvidenceGraphConfig = {
   sources: [
-    // 1. feature rules force components and tests
+    // 1. requirements force analysis and architecture documents
+    {
+      type: "markdown",
+      files: ["docs/requirements/**/*.md"],
+      symbol: ["h2", "h3"],
+      citedBy: [
+        { type: "markdown", files: ["docs/analysis/**/*.md"] },
+        { type: "markdown", files: ["docs/architecture/**/*.md"] },
+      ],
+    },
+    // 2. feature rules force components and tests
     {
       type: "markdown",
       files: ["docs/features/**/*.md"],
       symbol: ["h2", "h3"],
-      reference: [
+      citedBy: [
         {
           type: "typescript",
           files: ["src/components/**/*.tsx"],
@@ -88,23 +98,16 @@ const graph: IEvidenceGraphConfig = {
         },
       ],
     },
-    // 2. exported components force tests
+    // 3. exported components force tests
     {
       type: "typescript",
       files: ["src/components/**/*.tsx"],
       symbol: "function",
-      reference: {
+      citedBy: {
         type: "typescript",
         files: ["test/features/**/*.ts"],
         symbol: "function",
       },
-    },
-    // 3. requirements force architecture documents
-    {
-      type: "markdown",
-      files: ["docs/requirements/**/*.md"],
-      symbol: ["h2", "h3"],
-      reference: { type: "markdown", files: ["docs/architecture/**/*.md"] },
     },
   ],
 };
@@ -112,20 +115,20 @@ const graph: IEvidenceGraphConfig = {
 
 A graph is one `sources` array, and each entry adds an independent obligation:
 
-1. A `reference` array is one obligation per element. Every feature rule must be mirrored by a React component and verified by a test function, each on its own.
-2. TypeScript can owe TypeScript. Every exported component must be claimed by a test, per component instead of a coverage percentage.
-3. Markdown can owe Markdown. Architecture documents must acknowledge every requirement they build on.
+1. Markdown can owe Markdown. Every requirement must be acknowledged by the analysis documents and by the architecture documents, each population on its own.
+2. A `citedBy` array is one obligation per element. Every feature rule must be mirrored by a React component and verified by a test function, never one borrowing the other's citation.
+3. TypeScript can owe TypeScript. Every exported component must be claimed by a test, per component instead of a coverage percentage.
 
 ### Symbols
 
 | Kind | `symbol` values | Default |
 | --- | --- | --- |
 | `"markdown"` | `"file"`, `"h1"`, `"h2"`, `"h3"`, `"h4"` | `["file", "h1", "h2", "h3", "h4"]` |
-| `"typescript"` | `"type"`, `"function"`, `"property"` | `"type"` for sources, all three for references |
+| `"typescript"` | `"type"`, `"function"`, `"property"` | `"type"` for sources, all three for citers |
 
 For TypeScript, `"type"` selects exported interfaces and type aliases, `"function"` selects exported functions, and `"property"` selects properties declared by exported type-level symbols; a property's identity includes its declaring type. A `symbol` array widens what counts as evidence within one source, and it never creates a second obligation.
 
-A reference group uses the same selector to restrict which symbol kinds may host an `@evidence` tag. Omit `symbol` to allow every supported kind.
+A citer group uses the same selector to restrict which symbol kinds may host an `@evidence` tag. Omit `symbol` to allow every supported kind.
 
 ### File patterns
 
@@ -203,16 +206,13 @@ At most one seller coupon and one platform coupon may combine on a single order.
 ```
 
 ```text
-$ npx ttsc --noEmit
-docs/discount.md:3:1 - error TS18110: [evidence-graph/index] Section "docs/discount.md#coupon-stacking" has no citation in reference group "src/components/**/*.tsx".
+$ npx ttsc check
+error TS13830: [evidence-graph/index] Missing acknowledgement for 'docs/discount.md#coupon-stacking' (Markdown H2 'Coupon Stacking' at docs/discount.md:3) in Source 1 citer 1 (typescript, symbols: function). Add '@evidence docs/discount.md#coupon-stacking <reason>' to a selected typescript host, or '@evidenceExclude docs/discount.md#coupon-stacking <reason>' when this group intentionally does not use it.
 
-3 ## Coupon Stacking {#coupon-stacking}
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Found 1 error in docs/discount.md:3
+Found 1 error.
 ```
 
-The section exists in the spec, but no React component cites it, so the build fails. Two ways out, both visible in review: implement it and cite the section, or exempt it with an `@evidenceExclude` reason a reviewer can veto.
+The section exists in the spec, but no React component cites it, so the build fails. The diagnostic names the exact section, the citer group that owes it, and both repairs: implement it and cite the section, or exempt it with an `@evidenceExclude` reason a reviewer can veto.
 
 ## Concepts
 

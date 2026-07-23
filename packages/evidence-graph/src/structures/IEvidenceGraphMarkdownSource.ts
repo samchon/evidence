@@ -1,5 +1,5 @@
 import type { EvidenceGraphMarkdownSymbol } from "../typings/EvidenceGraphMarkdownSymbol";
-import type { IEvidenceGraphReference } from "./IEvidenceGraphReference";
+import type { IEvidenceGraphCiter } from "./IEvidenceGraphCiter";
 
 /**
  * A configured body of documentary evidence.
@@ -59,14 +59,14 @@ export interface IEvidenceGraphMarkdownSource {
   symbol?: EvidenceGraphMarkdownSymbol | EvidenceGraphMarkdownSymbol[];
 
   /**
-   * One file group or independently complete file groups that must acknowledge
-   * this source.
+   * One citer group or independently complete citer groups that must
+   * acknowledge this source.
    *
-   * A single reference requires its matching files to acknowledge every
+   * A single citer group requires its matching files to acknowledge every
    * evidence unit here. An array creates a separate 100% obligation for every
    * element: acknowledgements in one group never count toward another, and
    * partially covered groups cannot be pooled to satisfy this source. The array
    * must not be empty.
    */
-  reference: IEvidenceGraphReference | IEvidenceGraphReference[];
+  citedBy: IEvidenceGraphCiter | IEvidenceGraphCiter[];
 }

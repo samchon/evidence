@@ -206,8 +206,8 @@ func matchesConfiguredMarkdownFile(config graphConfig, path string) bool {
 		if source.Type == artifactMarkdown && source.Files.matches(path) {
 			return true
 		}
-		for _, reference := range source.References {
-			if reference.Type == artifactMarkdown && reference.Files.matches(path) {
+		for _, citer := range source.CitedBy {
+			if citer.Type == artifactMarkdown && citer.Files.matches(path) {
 				return true
 			}
 		}
@@ -221,9 +221,9 @@ func couldContainConfiguredMarkdown(config graphConfig, directory string) bool {
 			source.Files.couldMatchDescendant(directory) {
 			return true
 		}
-		for _, reference := range source.References {
-			if reference.Type == artifactMarkdown &&
-				reference.Files.couldMatchDescendant(directory) {
+		for _, citer := range source.CitedBy {
+			if citer.Type == artifactMarkdown &&
+				citer.Files.couldMatchDescendant(directory) {
 				return true
 			}
 		}

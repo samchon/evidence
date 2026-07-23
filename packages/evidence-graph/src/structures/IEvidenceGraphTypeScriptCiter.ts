@@ -11,10 +11,10 @@ import type { EvidenceGraphTypeScriptSymbol } from "../typings/EvidenceGraphType
  *
  * Both `@evidence <target> <reason>` and `@evidenceExclude <target> <reason>`
  * require a target and a non-empty explanation. An exclusion can move between
- * eligible declarations without changing which source unit this reference group
+ * eligible declarations without changing which source unit this citer group
  * excludes.
  */
-export interface IEvidenceGraphTypeScriptReference {
+export interface IEvidenceGraphTypeScriptCiter {
   /** Identifies the citing artifacts as TypeScript. */
   type: "typescript";
 
@@ -37,7 +37,7 @@ export interface IEvidenceGraphTypeScriptReference {
    * `scripts/check-?.ts` selects `check-a.ts` but not `check-ab.ts`.
    *
    * A bare directory such as `src` or `src/` does not include its children;
-   * write `src/**` when the whole subtree belongs to this reference group.
+   * write `src/**` when the whole subtree belongs to this citer group.
    */
   files: string[];
 

@@ -32,9 +32,9 @@ export const test_evidence_index_reports_declaration_failures = (): void => {
       '        type: "markdown",',
       '        files: ["docs/spec.md"],',
       '        symbol: "h2",',
-      "        reference: {",
+      "        citedBy: {",
       '          type: "typescript",',
-      '          files: ["src/references.ts"],',
+      '          files: ["src/citations.ts"],',
       '          symbol: "function",',
       "        },",
       "      }],",
@@ -45,7 +45,7 @@ export const test_evidence_index_reports_declaration_failures = (): void => {
     ].join("\n"),
     files: {
       "docs/spec.md": "## Required {#required}\n",
-      "src/references.ts": [
+      "src/citations.ts": [
         "/** @evidence docs/spec.md#required */",
         "export function missingReason(): void {}",
         "",
@@ -85,7 +85,7 @@ export const test_evidence_index_reports_declaration_failures = (): void => {
     assertIncludes(
       result,
       "Duplicate acknowledgement for 'docs/spec.md#required'",
-      "One reference group may acknowledge a source unit only once.",
+      "One citer group may acknowledge a source unit only once.",
     );
     assertIncludes(
       result,

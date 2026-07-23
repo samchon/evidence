@@ -13,7 +13,7 @@ import {
  * class APIs, and namespace APIs even though all of them are selected by the
  * public `"function"` contract. The fixture acknowledges each qualified target
  * from one Markdown file so a silently omitted unit cannot hide behind an
- * incomplete reference population.
+ * incomplete citer population.
  *
  * 1. Declare top-level, class, and namespace callables in one source file.
  * 2. Acknowledge every documented target identity from a Markdown file host.
@@ -34,7 +34,7 @@ export const test_evidence_index_materializes_all_callable_forms = (): void => {
       '        type: "typescript",',
       '        files: ["src/contracts.ts"],',
       '        symbol: "function",',
-      "        reference: {",
+      "        citedBy: {",
       '          type: "markdown",',
       '          files: ["docs/functions.md"],',
       '          symbol: "file",',
@@ -97,7 +97,7 @@ export const test_evidence_index_materializes_all_callable_forms = (): void => {
     assertExcludes(
       result,
       "Missing acknowledgement",
-      "The reference file acknowledges every callable unit.",
+      "The citing file acknowledges every callable unit.",
     );
   } finally {
     project.cleanup();

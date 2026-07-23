@@ -10,9 +10,9 @@ import {
  * Verifies the published consumer contract through a real `lint.config.ts`.
  *
  * The fixture imports both exported types, registers the shipped plugin object,
- * and uses the typed severity-plus-options tuple. Its reference is an exported
- * arrow-function `const`, so the same run also proves that this callable form
- * can host a JSDoc declaration.
+ * and uses the typed severity-plus-options tuple. Its citer group selects an
+ * exported arrow-function `const`, so the same run also proves that this
+ * callable form can host a JSDoc declaration.
  *
  * 1. Configure one Markdown H2 source through `IEvidenceGraphConfig`.
  * 2. Cite it from an exported arrow function selected as `"function"`.
@@ -31,7 +31,7 @@ export const test_evidence_index_accepts_typed_consumer_config = (): void => {
       '    name: "Order contract",',
       '    files: ["docs/**/*.md"],',
       '    symbol: "h2",',
-      "    reference: {",
+      "    citedBy: {",
       '      type: "typescript",',
       '      files: ["src/**/*.ts"],',
       '      symbol: "function",',

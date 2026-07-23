@@ -37,7 +37,7 @@ export interface Duplicate {}
 		"type":"markdown",
 		"files":["docs/spec.md"],
 		"symbol":"h2",
-		"reference":{"type":"typescript","files":["src/ref.ts"],"symbol":"type"}
+		"citedBy":{"type":"typescript","files":["src/ref.ts"],"symbol":"type"}
 	}]}`)
 	assertProblemContains(t, messages, "Malformed @evidence declaration")
 	assertProblemContains(t, messages, "Unresolved evidence target 'docs/spec.md#unknown'")
@@ -73,7 +73,7 @@ export function ref(): void {}
 		"type":"markdown",
 		"files":["docs/spec.md"],
 		"symbol":"h2",
-		"reference":{"type":"typescript","files":["src/ref.ts"],"symbol":"function"}
+		"citedBy":{"type":"typescript","files":["src/ref.ts"],"symbol":"function"}
 	}]}`)
 	assertProblemContains(t, messages, "Malformed @evidence declaration")
 	assertProblemContains(t, messages, "Missing acknowledgement")
@@ -103,7 +103,7 @@ func TestMarkdownDeclarationReasonMayBeginWithAtSign(t *testing.T) {
 		"type":"markdown",
 		"files":["docs/spec.md"],
 		"symbol":"h2",
-		"reference":{"type":"markdown","files":["docs/ref.md"],"symbol":"file"}
+		"citedBy":{"type":"markdown","files":["docs/ref.md"],"symbol":"file"}
 	}]}`)
 	assertNoProblems(t, messages)
 }
@@ -131,7 +131,7 @@ export interface Ref {}
 		"type":"markdown",
 		"files":["docs/spec.md"],
 		"symbol":"h2",
-		"reference":{"type":"typescript","files":["src/ref.ts"],"symbol":"type"}
+		"citedBy":{"type":"typescript","files":["src/ref.ts"],"symbol":"type"}
 	}]}`)
 	assertNoProblems(t, messages)
 }
@@ -152,7 +152,7 @@ export interface Ref {}
 func TestMarkdownDeclarationPreservesMultilineTagLocation(t *testing.T) {
 	messages := runIndexRule(t, map[string]string{
 		"docs/spec.md": "## Contract\n",
-		"docs/ref.md": `# Reference
+		"docs/ref.md": `# Citer
 <!--
 @evidence docs/spec.md#contract
 -->
@@ -161,7 +161,7 @@ func TestMarkdownDeclarationPreservesMultilineTagLocation(t *testing.T) {
 		"type":"markdown",
 		"files":["docs/spec.md"],
 		"symbol":"h2",
-		"reference":{"type":"markdown","files":["docs/ref.md"],"symbol":"h1"}
+		"citedBy":{"type":"markdown","files":["docs/ref.md"],"symbol":"h1"}
 	}]}`)
 	assertProblemContains(t, messages, "Malformed @evidence declaration at docs/ref.md:3")
 }
@@ -258,20 +258,20 @@ export interface SecondRef {}
  * of graph identity and silently redirect evidence.
  *
  *  1. Materialize `Shared` from two source files.
- *  2. Cite `Shared` from a Markdown reference.
+ *  2. Cite `Shared` from a Markdown citer.
  *  3. Assert the target is ambiguous and names both declarations.
  */
 func TestDeclarationsRejectAmbiguousTypeScriptTargets(t *testing.T) {
 	messages := runIndexRule(t, map[string]string{
 		"src/a.ts": "export interface Shared {}\n",
 		"src/b.ts": "export interface Shared {}\n",
-		"docs/ref.md": `# Reference
+		"docs/ref.md": `# Citer
 <!-- @evidence Shared This document relies on the shared type. -->
 `,
 	}, `{"sources":[{
 		"type":"typescript",
 		"files":["src/*.ts"],
-		"reference":{"type":"markdown","files":["docs/ref.md"],"symbol":"h1"}
+		"citedBy":{"type":"markdown","files":["docs/ref.md"],"symbol":"h1"}
 	}]}`)
 	assertProblemContains(t, messages, "Ambiguous evidence target 'Shared'")
 	assertProblemContains(t, messages, "src/a.ts")
@@ -303,7 +303,7 @@ export interface Ref {}
 		"type":"markdown",
 		"files":["docs/spec.md"],
 		"symbol":"h2",
-		"reference":{"type":"typescript","files":["src/ref.ts"],"symbol":"type"}
+		"citedBy":{"type":"typescript","files":["src/ref.ts"],"symbol":"type"}
 	}]}`)
 	assertProblemContains(t, messages, "Ambiguous evidence target 'docs/spec.md#shared'")
 	assertProblemContains(t, messages, "Markdown H2 'First'")
@@ -311,11 +311,11 @@ export interface Ref {}
 }
 
 /**
- * Verifies reference host scope: a resolvable declaration on an unselected
+ * Verifies citer host scope: a resolvable declaration on an unselected
  * symbol kind does not satisfy coverage.
  *
  * Resolution and host eligibility are separate checks. Treating every JSDoc
- * tag in a matched file as valid would make a property-only reference selector
+ * tag in a matched file as valid would make a property-only citer selector
  * indistinguishable from the all-symbol default.
  *
  *  1. Select only TypeScript property hosts.
@@ -333,7 +333,7 @@ export function ref(): void {}
 		"type":"markdown",
 		"files":["docs/spec.md"],
 		"symbol":"h2",
-		"reference":{"type":"typescript","files":["src/ref.ts"],"symbol":"property"}
+		"citedBy":{"type":"typescript","files":["src/ref.ts"],"symbol":"property"}
 	}]}`)
 	assertProblemContains(t, messages, "Out-of-scope @evidence host")
 	assertProblemContains(t, messages, "host kind 'function' is not selected")
@@ -341,18 +341,18 @@ export function ref(): void {}
 }
 
 /**
- * Verifies TypeScript reference defaults: type, function, and qualified
+ * Verifies TypeScript citer defaults: type, function, and qualified
  * property hosts all accept evidence declarations when symbol is omitted.
  *
- * The reference default is the union of all supported kinds, unlike the source
+ * The citer default is the union of all supported kinds, unlike the source
  * default. This complete graph proves each host can fire rather than trusting a
  * quiet rule with only one declaration shape.
  *
  *  1. Materialize three Markdown headings.
  *  2. Cite them from an interface, function, and interface property.
- *  3. Assert the omitted reference selector accepts every host kind.
+ *  3. Assert the omitted citer selector accepts every host kind.
  */
-func TestTypeScriptReferenceDefaultAcceptsEverySymbolKind(t *testing.T) {
+func TestTypeScriptCiterDefaultAcceptsEverySymbolKind(t *testing.T) {
 	messages := runIndexRule(t, map[string]string{
 		"docs/spec.md": `## Type
 ## Function
@@ -372,7 +372,7 @@ export function execute(): void {}
 		"type":"markdown",
 		"files":["docs/spec.md"],
 		"symbol":"h2",
-		"reference":{"type":"typescript","files":["src/ref.ts"]}
+		"citedBy":{"type":"typescript","files":["src/ref.ts"]}
 	}]}`)
 	assertNoProblems(t, messages)
 }

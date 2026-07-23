@@ -52,7 +52,7 @@ func decodeSource(raw json.RawMessage, index int) (sourceSpec, []string) {
 	}
 	problems := rejectUnknownFields(
 		object,
-		[]string{"type", "name", "files", "symbol", "reference"},
+		[]string{"type", "name", "files", "symbol", "citedBy"},
 		path,
 	)
 	kind, kindProblem := decodeArtifactKind(object["type"], path+".type")
@@ -69,24 +69,24 @@ func decodeSource(raw json.RawMessage, index int) (sourceSpec, []string) {
 	problems = append(problems, fileProblems...)
 	symbols, symbolProblems := decodeSymbols(object["symbol"], kind, true, path+".symbol")
 	problems = append(problems, symbolProblems...)
-	references, referenceProblems := decodeReferences(object["reference"], path+".reference")
-	problems = append(problems, referenceProblems...)
+	citers, citerProblems := decodeCiters(object["citedBy"], path+".citedBy")
+	problems = append(problems, citerProblems...)
 	if len(problems) != 0 {
 		return sourceSpec{}, problems
 	}
 	return sourceSpec{
-		Index:      index,
-		Type:       kind,
-		Name:       name,
-		Files:      files,
-		Symbols:    symbols,
-		References: references,
+		Index:   index,
+		Type:    kind,
+		Name:    name,
+		Files:   files,
+		Symbols: symbols,
+		CitedBy: citers,
 	}, nil
 }
 
-func decodeReferences(raw json.RawMessage, path string) ([]referenceSpec, []string) {
+func decodeCiters(raw json.RawMessage, path string) ([]citerSpec, []string) {
 	if len(bytes.TrimSpace(raw)) == 0 {
-		return nil, []string{"Invalid evidence-graph/index configuration at " + path + ": the required reference group is missing."}
+		return nil, []string{"Invalid evidence-graph/index configuration at " + path + ": the required citedBy group is missing."}
 	}
 	trimmed := bytes.TrimSpace(raw)
 	elements := []json.RawMessage{}
@@ -95,34 +95,34 @@ func decodeReferences(raw json.RawMessage, path string) ([]referenceSpec, []stri
 		elements = append(elements, raw)
 	case '[':
 		if err := json.Unmarshal(raw, &elements); err != nil {
-			return nil, []string{"Invalid evidence-graph/index configuration at " + path + ": expected one reference object or an array of reference objects."}
+			return nil, []string{"Invalid evidence-graph/index configuration at " + path + ": expected one citer group object or an array of citer group objects."}
 		}
 		if len(elements) == 0 {
-			return nil, []string{"Invalid evidence-graph/index configuration at " + path + ": an empty reference array creates no coverage obligation; provide at least one group."}
+			return nil, []string{"Invalid evidence-graph/index configuration at " + path + ": an empty citedBy array creates no coverage obligation; provide at least one citer group."}
 		}
 	default:
-		return nil, []string{"Invalid evidence-graph/index configuration at " + path + ": expected one reference object or an array of reference objects."}
+		return nil, []string{"Invalid evidence-graph/index configuration at " + path + ": expected one citer group object or an array of citer group objects."}
 	}
-	references := make([]referenceSpec, 0, len(elements))
+	citers := make([]citerSpec, 0, len(elements))
 	problems := []string{}
 	for index, element := range elements {
-		referencePath := path
+		citerPath := path
 		if len(elements) > 1 || trimmed[0] == '[' {
-			referencePath += "[" + decimal(index) + "]"
+			citerPath += "[" + decimal(index) + "]"
 		}
-		reference, referenceProblems := decodeReference(element, index, referencePath)
-		problems = append(problems, referenceProblems...)
-		if len(referenceProblems) == 0 {
-			references = append(references, reference)
+		citer, citerProblems := decodeCiter(element, index, citerPath)
+		problems = append(problems, citerProblems...)
+		if len(citerProblems) == 0 {
+			citers = append(citers, citer)
 		}
 	}
-	return references, problems
+	return citers, problems
 }
 
-func decodeReference(raw json.RawMessage, index int, path string) (referenceSpec, []string) {
+func decodeCiter(raw json.RawMessage, index int, path string) (citerSpec, []string) {
 	object, problem := decodeObject(raw, path)
 	if problem != "" {
-		return referenceSpec{}, []string{problem}
+		return citerSpec{}, []string{problem}
 	}
 	problems := rejectUnknownFields(object, []string{"type", "files", "symbol"}, path)
 	kind, kindProblem := decodeArtifactKind(object["type"], path+".type")
@@ -134,9 +134,9 @@ func decodeReference(raw json.RawMessage, index int, path string) (referenceSpec
 	symbols, symbolProblems := decodeSymbols(object["symbol"], kind, false, path+".symbol")
 	problems = append(problems, symbolProblems...)
 	if len(problems) != 0 {
-		return referenceSpec{}, problems
+		return citerSpec{}, problems
 	}
-	return referenceSpec{Index: index, Type: kind, Files: files, Symbols: symbols}, nil
+	return citerSpec{Index: index, Type: kind, Files: files, Symbols: symbols}, nil
 }
 
 func decodeArtifactKind(raw json.RawMessage, path string) (artifactKind, string) {
@@ -264,6 +264,13 @@ func rejectUnknownFields(
 			problems = append(
 				problems,
 				"Invalid evidence-graph/index configuration at "+path+".severity: severity belongs only in the outer @ttsc/lint rule setting.",
+			)
+			continue
+		}
+		if name == "reference" {
+			problems = append(
+				problems,
+				"Invalid evidence-graph/index configuration at "+path+".reference: this property was renamed; declare the citer groups under 'citedBy'.",
 			)
 			continue
 		}

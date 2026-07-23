@@ -11,9 +11,9 @@ import type { IEvidenceGraphSource } from "./IEvidenceGraphSource";
 export interface IEvidenceGraphConfig {
   /**
    * Source groups that contribute evidence units to this project's graph. Each
-   * source owns its reference obligations; coverage is never pooled across
-   * sources. Provide at least one source; an empty array is invalid because it
-   * would enable the rule without establishing any evidence obligation.
+   * source owns its citer obligations; coverage is never pooled across sources.
+   * Provide at least one source; an empty array is invalid because it would
+   * enable the rule without establishing any evidence obligation.
    */
   sources: IEvidenceGraphSource[];
 }

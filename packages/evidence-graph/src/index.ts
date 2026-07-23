@@ -26,7 +26,7 @@ export * from "./typings/index";
  *       {
  *         type: "markdown",
  *         files: ["docs/*.md"],
- *         reference: {
+ *         citedBy: {
  *           type: "typescript",
  *           files: ["src/**"],
  *         },
@@ -59,8 +59,8 @@ declare module "@ttsc/lint" {
     /**
      * Declares this project's evidence graph.
      *
-     * The sources define evidence units and the independently complete
-     * reference populations that must acknowledge them.
+     * The sources define evidence units and the independently complete citer
+     * populations that must acknowledge them.
      */
     "evidence-graph/index": IEvidenceGraphConfig;
   }

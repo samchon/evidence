@@ -7,15 +7,15 @@ import type { EvidenceGraphMarkdownSymbol } from "../typings/EvidenceGraphMarkdo
  * Both `@evidence <target> <reason>` and `@evidenceExclude <target> <reason>`
  * require a target and a non-empty explanation.
  *
- * An exclusion still has to appear in a selected reference file and on a
- * selected host kind. Its particular host is not part of the acknowledgement
- * identity, so moving it between eligible sections cannot change which source
- * unit the reference group excludes.
+ * An exclusion still has to appear in a selected citer file and on a selected
+ * host kind. Its particular host is not part of the acknowledgement identity,
+ * so moving it between eligible sections cannot change which source unit the
+ * citer group excludes.
  *
  * @example
  *   <!-- @evidence docs/orders.md#create-order This section adopts the creation contract. -->
  */
-export interface IEvidenceGraphMarkdownReference {
+export interface IEvidenceGraphMarkdownCiter {
   /** Identifies the citing artifacts as Markdown. */
   type: "markdown";
 
@@ -37,7 +37,7 @@ export interface IEvidenceGraphMarkdownReference {
    * while `specs/v?.md` selects names such as `v1.md` but not `v10.md`.
    *
    * A bare directory such as `docs` or `docs/` does not include its children;
-   * write `docs/**` when the whole subtree belongs to this reference group.
+   * write `docs/**` when the whole subtree belongs to this citer group.
    */
   files: string[];
 
