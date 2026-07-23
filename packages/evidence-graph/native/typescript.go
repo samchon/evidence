@@ -56,14 +56,15 @@ func scanTypeScriptInventory(
 	file *shimast.SourceFile,
 ) *artifactInventory {
 	inventory := &artifactInventory{Path: path, Type: artifactTypeScript}
-	supportedHosts := map[*shimast.Node]string{}
-	unitIDs := map[string]bool{}
+	supportedHosts := map[*shimast.Node]symbolSet{}
+	unitsByID := map[string]*evidenceUnit{}
 	collectTypeScriptStatements(
 		file.Statements,
 		nil,
+		"",
 		inventory,
 		supportedHosts,
-		unitIDs,
+		unitsByID,
 	)
 	collectTypeScriptDeclarations(file, path, inventory, supportedHosts)
 	sort.Slice(inventory.Units, func(left int, right int) bool {
@@ -78,9 +79,10 @@ func scanTypeScriptInventory(
 func collectTypeScriptStatements(
 	statements *shimast.NodeList,
 	prefix []string,
+	parentID string,
 	inventory *artifactInventory,
-	supportedHosts map[*shimast.Node]string,
-	unitIDs map[string]bool,
+	supportedHosts map[*shimast.Node]symbolSet,
+	unitsByID map[string]*evidenceUnit,
 ) {
 	if statements == nil {
 		return
@@ -100,16 +102,24 @@ func collectTypeScriptStatements(
 			if len(targets) == 0 {
 				continue
 			}
-			supportedHosts[statement] = "type"
+			addTypeScriptHost(supportedHosts, statement, "type")
 			for _, name := range targets {
 				identity := qualifyTypeScriptName(prefix, name)
-				addTypeScriptUnit(inventory, unitIDs, statement, "type", identity)
+				unit := addTypeScriptUnit(
+					inventory,
+					unitsByID,
+					statement,
+					"type",
+					identity,
+					parentID,
+				)
 				collectPropertyMembers(
 					statement.AsInterfaceDeclaration().Members,
 					identity,
+					unit.ID,
 					inventory,
 					supportedHosts,
-					unitIDs,
+					unitsByID,
 				)
 			}
 		case shimast.KindTypeAliasDeclaration:
@@ -121,18 +131,26 @@ func collectTypeScriptStatements(
 			if len(targets) == 0 {
 				continue
 			}
-			supportedHosts[statement] = "type"
+			addTypeScriptHost(supportedHosts, statement, "type")
 			alias := statement.AsTypeAliasDeclaration()
 			for _, name := range targets {
 				identity := qualifyTypeScriptName(prefix, name)
-				addTypeScriptUnit(inventory, unitIDs, statement, "type", identity)
+				unit := addTypeScriptUnit(
+					inventory,
+					unitsByID,
+					statement,
+					"type",
+					identity,
+					parentID,
+				)
 				if alias.Type != nil && alias.Type.Kind == shimast.KindTypeLiteral {
 					collectPropertyMembers(
 						alias.Type.AsTypeLiteralNode().Members,
 						identity,
+						unit.ID,
 						inventory,
 						supportedHosts,
-						unitIDs,
+						unitsByID,
 					)
 				}
 			}
@@ -145,28 +163,30 @@ func collectTypeScriptStatements(
 			if len(targets) == 0 {
 				continue
 			}
-			supportedHosts[statement] = "function"
+			addTypeScriptHost(supportedHosts, statement, "function")
 			for _, name := range targets {
 				addTypeScriptUnit(
 					inventory,
-					unitIDs,
+					unitsByID,
 					statement,
 					"function",
 					qualifyTypeScriptName(prefix, name),
+					parentID,
 				)
 			}
 		case shimast.KindVariableStatement:
-			if collectFunctionVariables(
+			for symbol := range collectTypeScriptVariables(
 				statement,
 				prefix,
+				parentID,
 				exports,
 				inventory,
 				supportedHosts,
-				unitIDs,
+				unitsByID,
 			) {
 				// TypeScript attaches the leading JSDoc of
-				// `export const fn = () => {}` to the statement wrapper.
-				supportedHosts[statement] = "function"
+				// a variable declaration to the statement wrapper.
+				addTypeScriptHost(supportedHosts, statement, symbol)
 			}
 		case shimast.KindClassDeclaration:
 			name := declarationName(statement.Name())
@@ -174,9 +194,10 @@ func collectTypeScriptStatements(
 				collectClassCallables(
 					statement,
 					qualifyTypeScriptName(prefix, publicName),
+					parentID,
 					inventory,
 					supportedHosts,
-					unitIDs,
+					unitsByID,
 				)
 			}
 		case shimast.KindModuleDeclaration:
@@ -185,44 +206,53 @@ func collectTypeScriptStatements(
 			if len(targets) == 0 {
 				continue
 			}
+			addTypeScriptHost(supportedHosts, statement, "type")
 			for _, publicName := range targets {
+				identity := qualifyTypeScriptName(prefix, publicName)
+				unit := addTypeScriptUnit(
+					inventory,
+					unitsByID,
+					statement,
+					"type",
+					identity,
+					parentID,
+				)
 				collectTypeScriptModule(
 					statement,
-					qualifyTypeScriptName(prefix, publicName),
+					identity,
+					unit.ID,
 					inventory,
 					supportedHosts,
-					unitIDs,
+					unitsByID,
 				)
 			}
 		}
 	}
 }
 
-func collectFunctionVariables(
+func collectTypeScriptVariables(
 	statement *shimast.Node,
 	prefix []string,
+	parentID string,
 	exports map[string][]exportedName,
 	inventory *artifactInventory,
-	supportedHosts map[*shimast.Node]string,
-	unitIDs map[string]bool,
-) bool {
+	supportedHosts map[*shimast.Node]symbolSet,
+	unitsByID map[string]*evidenceUnit,
+) symbolSet {
 	variable := statement.AsVariableStatement()
 	if variable.DeclarationList == nil {
-		return false
+		return nil
 	}
 	list := variable.DeclarationList.AsVariableDeclarationList()
 	if list.Declarations == nil {
-		return false
+		return nil
 	}
-	found := false
+	found := symbolSet{}
 	for _, declaration := range list.Declarations.Nodes {
-		if declaration == nil || !shimast.IsConst(declaration) {
+		if declaration == nil {
 			continue
 		}
 		value := declaration.AsVariableDeclaration()
-		if !isFunctionValue(value.Initializer) {
-			continue
-		}
 		name := declarationName(declaration.Name())
 		if name == "" {
 			continue
@@ -236,17 +266,22 @@ func collectFunctionVariables(
 		if len(targets) == 0 {
 			continue
 		}
-		supportedHosts[declaration] = "function"
+		symbol := "property"
+		if shimast.IsConst(declaration) && isFunctionValue(value.Initializer) {
+			symbol = "function"
+		}
+		addTypeScriptHost(supportedHosts, declaration, symbol)
 		for _, name := range targets {
 			addTypeScriptUnit(
 				inventory,
-				unitIDs,
+				unitsByID,
 				declaration,
-				"function",
+				symbol,
 				qualifyTypeScriptName(prefix, name),
+				parentID,
 			)
 		}
-		found = true
+		found[symbol] = true
 	}
 	return found
 }
@@ -254,9 +289,10 @@ func collectFunctionVariables(
 func collectClassCallables(
 	statement *shimast.Node,
 	classIdentity []string,
+	parentID string,
 	inventory *artifactInventory,
-	supportedHosts map[*shimast.Node]string,
-	unitIDs map[string]bool,
+	supportedHosts map[*shimast.Node]symbolSet,
+	unitsByID map[string]*evidenceUnit,
 ) {
 	class := statement.AsClassDeclaration()
 	if class.Members == nil {
@@ -286,8 +322,8 @@ func collectClassCallables(
 		if shimast.GetCombinedModifierFlags(member)&shimast.ModifierFlagsStatic != 0 {
 			identity = qualifyTypeScriptName(classIdentity, memberName)
 		}
-		addTypeScriptUnit(inventory, unitIDs, member, "function", identity)
-		supportedHosts[member] = "function"
+		addTypeScriptUnit(inventory, unitsByID, member, "function", identity, parentID)
+		addTypeScriptHost(supportedHosts, member, "function")
 	}
 }
 
@@ -329,9 +365,10 @@ func isDirectFunctionType(node *shimast.Node) bool {
 func collectTypeScriptModule(
 	node *shimast.Node,
 	qualified []string,
+	parentID string,
 	inventory *artifactInventory,
-	supportedHosts map[*shimast.Node]string,
-	unitIDs map[string]bool,
+	supportedHosts map[*shimast.Node]symbolSet,
+	unitsByID map[string]*evidenceUnit,
 ) {
 	if node == nil || node.Kind != shimast.KindModuleDeclaration {
 		return
@@ -345,21 +382,33 @@ func collectTypeScriptModule(
 		collectTypeScriptStatements(
 			module.Body.AsModuleBlock().Statements,
 			qualified,
+			parentID,
 			inventory,
 			supportedHosts,
-			unitIDs,
+			unitsByID,
 		)
 	case shimast.KindModuleDeclaration:
 		// `export namespace Outer.Inner {}` is represented as nested module
 		// declarations; the inner declaration inherits the outer export.
 		name := declarationName(module.Body.Name())
 		if name != "" {
+			identity := qualifyTypeScriptName(qualified, name)
+			addTypeScriptHost(supportedHosts, module.Body, "type")
+			unit := addTypeScriptUnit(
+				inventory,
+				unitsByID,
+				module.Body,
+				"type",
+				identity,
+				parentID,
+			)
 			collectTypeScriptModule(
 				module.Body,
-				qualifyTypeScriptName(qualified, name),
+				identity,
+				unit.ID,
 				inventory,
 				supportedHosts,
-				unitIDs,
+				unitsByID,
 			)
 		}
 	}
@@ -368,9 +417,10 @@ func collectTypeScriptModule(
 func collectPropertyMembers(
 	members *shimast.NodeList,
 	owner []string,
+	parentID string,
 	inventory *artifactInventory,
-	supportedHosts map[*shimast.Node]string,
-	unitIDs map[string]bool,
+	supportedHosts map[*shimast.Node]symbolSet,
+	unitsByID map[string]*evidenceUnit,
 ) {
 	if members == nil {
 		return
@@ -384,33 +434,51 @@ func collectPropertyMembers(
 			continue
 		}
 		identity := qualifyTypeScriptName(owner, name)
-		addTypeScriptUnit(inventory, unitIDs, member, "property", identity)
-		supportedHosts[member] = "property"
+		addTypeScriptUnit(inventory, unitsByID, member, "property", identity, parentID)
+		addTypeScriptHost(supportedHosts, member, "property")
 	}
 }
 
 func addTypeScriptUnit(
 	inventory *artifactInventory,
-	unitIDs map[string]bool,
+	unitsByID map[string]*evidenceUnit,
 	node *shimast.Node,
 	symbol string,
 	identity []string,
-) {
+	parentID string,
+) *evidenceUnit {
 	target := strings.Join(identity, ".")
 	id := "typescript:" + inventory.Path + ":" + symbol + ":" + encodeTypeScriptIdentity(identity)
-	if unitIDs[id] {
-		return
+	if unit := unitsByID[id]; unit != nil {
+		return unit
 	}
-	unitIDs[id] = true
-	inventory.Units = append(inventory.Units, &evidenceUnit{
+	unit := &evidenceUnit{
 		ID:       id,
+		ParentID: parentID,
 		Target:   target,
 		Type:     artifactTypeScript,
 		Symbol:   symbol,
 		Path:     inventory.Path,
 		Line:     lineAtNode(inventory.Path, node),
 		Readable: "TypeScript " + symbol + " '" + target + "'",
-	})
+	}
+	unitsByID[id] = unit
+	inventory.Units = append(inventory.Units, unit)
+	return unit
+}
+
+func addTypeScriptHost(
+	hosts map[*shimast.Node]symbolSet,
+	node *shimast.Node,
+	symbol string,
+) {
+	if node == nil {
+		return
+	}
+	if hosts[node] == nil {
+		hosts[node] = symbolSet{}
+	}
+	hosts[node][symbol] = true
 }
 
 // lineAtNode stores a byte offset until declarations are scanned against the
@@ -430,11 +498,11 @@ func collectTypeScriptDeclarations(
 	file *shimast.SourceFile,
 	path string,
 	inventory *artifactInventory,
-	supportedHosts map[*shimast.Node]string,
+	supportedHosts map[*shimast.Node]symbolSet,
 ) {
 	type docHost struct {
-		node *shimast.Node
-		host string
+		node  *shimast.Node
+		hosts symbolSet
 	}
 	docs := map[string]docHost{}
 	walkTypeScriptNode(file.AsNode(), func(node *shimast.Node) {
@@ -443,11 +511,19 @@ func collectTypeScriptDeclarations(
 				continue
 			}
 			key := decimal(doc.Pos()) + ":" + decimal(doc.End())
-			candidate := docHost{node: doc, host: supportedHosts[node]}
+			candidate := docHost{node: doc, hosts: supportedHosts[node]}
 			current, exists := docs[key]
-			if !exists || (current.host == "" && candidate.host != "") {
+			if !exists {
 				docs[key] = candidate
+				continue
 			}
+			for symbol := range candidate.hosts {
+				if current.hosts == nil {
+					current.hosts = symbolSet{}
+				}
+				current.hosts[symbol] = true
+			}
+			docs[key] = current
 		}
 	})
 	keys := make([]string, 0, len(docs))
@@ -477,7 +553,7 @@ func collectTypeScriptDeclarations(
 				Tag:      parsed.Tag,
 				Target:   parsed.Target,
 				Reason:   parsed.Reason,
-				Host:     entry.host,
+				Hosts:    entry.hosts,
 				Path:     path,
 				Line:     baseLine + parsed.LineOffset,
 				Sequence: sequence,

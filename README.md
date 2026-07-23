@@ -154,9 +154,11 @@ A graph is one `claims` array, and every claim-reference pair is an independent 
 | `"markdown"` | `"file"`, `"h1"`, `"h2"`, `"h3"`, `"h4"` | `["file", "h1", "h2", "h3", "h4"]` |
 | `"typescript"` | `"type"`, `"function"`, `"property"` | all three for claims, `"type"` for references |
 
-For TypeScript, `"type"` selects exported interfaces and type aliases, `"function"` selects exported functions, and `"property"` selects properties declared by exported type-level symbols; a property's identity includes its declaring type. A reference's `symbol` selects the evidence units one obligation covers, and an array widens that unit set without creating a second obligation.
+For TypeScript, `"type"` selects exported interfaces, type aliases, and namespaces. `"function"` selects exported callables. `"property"` selects properties declared by exported type-level symbols and exported `const`, `let`, and `var` declarations at module or namespace scope; a `const` initialized with an arrow or function expression remains a function, while every other variable is a property. Qualified identities preserve their owner: `Orders.Input.id` is a property below `Orders.Input`, while `Orders.state` is namespace data.
 
-A claim's `symbol` uses the same selector for the opposite side: it restricts which symbol kinds may host an `@evidence` tag. Omit either selector to accept its documented default.
+A reference's `symbol` selects the evidence units one obligation covers, and an array widens that unit set without creating a second obligation. The units retain their hierarchy: a Markdown file contains its heading outline, a TypeScript interface or object type contains its properties, and a namespace contains every nested public unit. A target acknowledges itself and every selected descendant. An ancestor remains addressable even when its own kind is omitted from the selector, so `symbol: "property"` can still be covered by one `@evidence IShoppingSale ...`.
+
+A claim's `symbol` uses the same selector for the opposite side: it restricts which symbol kinds may host an `@evidence` tag. Namespaces are type hosts, exported data variables are property hosts, and a mixed variable statement can host either of its resident kinds. Omit either selector to accept its documented default.
 
 ### File patterns
 
@@ -182,16 +184,16 @@ export interface IShoppingSale {
 }
 ```
 
-A TypeScript declaration cites in its JSDoc. The tag is `@evidence target reason`: the target names one evidence unit, and everything after it is the reason. The reason is required, because a citation that cannot say why it exists is filler.
+A TypeScript declaration cites in its JSDoc. The tag is `@evidence target reason`: the target names one evidence unit as the root of an acknowledgement scope, and everything after it is the reason. The reason is required, because a citation that cannot say why it exists is filler.
 
-The target takes four forms, one per evidence unit kind:
+The target takes four forms:
 
 | Target | Cites |
 | --- | --- |
-| `docs/sales.md` | A Markdown document |
-| `docs/sales.md#sale-price` | A heading section; the heading declares its anchor with the `{#sale-price}` suffix |
-| `IShoppingSale` | An exported type or function |
-| `IShoppingSale.price` | A property of an exported type |
+| `docs/sales.md` | A Markdown document and every selected heading below it |
+| `docs/sales.md#sale-price` | A heading section and its selected subsection descendants; the heading declares its anchor with the `{#sale-price}` suffix |
+| `IShoppingSale` | An exported type, function, or namespace; types and namespaces cover selected descendants |
+| `IShoppingSale.price` | One property of an exported type |
 
 ```tsx
 /**
@@ -203,7 +205,7 @@ export function SalePrice({ sale }: { sale: IShoppingSale }) {
 }
 ```
 
-A React component cites the same way, and one declaration stacks as many `@evidence` tags as the rules it honors. The screen that mirrors a rule names the rule it mirrors. That is how the obligation from `Configure` gets satisfied, one section at a time.
+A React component cites the same way, and one declaration stacks as many disjoint `@evidence` tags as the rules or scopes it honors. The screen that mirrors a rule names the rule it mirrors. A narrow target documents a narrow implementation; a parent target deliberately accepts responsibility for the complete selected subtree.
 
 ```md
 ## Sale Price {#sale-price}
@@ -219,7 +221,7 @@ A Markdown document cites in an HTML comment, so rendered prose stays clean. A h
 <!-- @evidenceExclude docs/requirements/coupons.md#coupon-stacking This section defines wording and intentionally does not implement coupon behavior. -->
 ```
 
-`@evidenceExclude target reason` records that a claim intentionally does not use one configured evidence unit. It must sit on a selected claim host, and it satisfies only that claim's obligation for the named target.
+`@evidenceExclude target reason` records that a claim intentionally does not use the target scope. It follows the same hierarchy as `@evidence`, so excluding an H2 also excludes its selected H3/H4 descendants, and excluding a type or namespace excludes its selected children. It must sit on a selected claim host and affects only that claim. Overlapping evidence and exclusion scopes are rejected because they state contradictory intent for the same unit.
 
 In an agent workflow the tags cost nothing extra. The agent writes each citation as it implements. You review the stated reasons instead of reverse-engineering the diff. A misreading also surfaces in that review, because the reason sits beside the exact section it claims to honor.
 

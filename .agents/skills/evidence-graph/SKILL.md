@@ -1,103 +1,92 @@
 ---
 name: evidence-graph
-description: Defines the evidence graph domain model for @samchon/evidence-graph — the tag grammar, node kinds, reference resolution, the three questions the rules ask (integrity, obligation, coverage), activation gates, and exemptions. Use before changing rule semantics, the tag grammar, the configuration surface, or a diagnostic message; do not use for the mechanics of the Go rule API, which the lint-rule-authoring skill owns.
+description: Defines the evidence graph domain model for @samchon/evidence-graph — the tag grammar, node kinds, hierarchy, reference resolution, obligation coverage, and exclusions. Use before changing rule semantics, the tag grammar, the configuration surface, or a diagnostic message; do not use for the mechanics of the Go rule API, which the lint-rule-authoring skill owns.
 ---
 
 # Evidence Graph
 
-## What The Product Claims
+## Product Contract
 
-An artifact that cites nothing has no proof it was needed. An artifact that cites a section nobody declared has proof of nothing. This plugin turns both into compile errors, under a graph the consumer defines in `lint.config.ts`.
+An artifact that cites nothing has no proof it was needed. An artifact that cites a target no configured source declares has proof of nothing. `evidence-graph/index` turns both states into compile errors under the graph the consumer defines in `lint.config.ts`.
 
-The prior art is `autobe-mcp`, which enforces the same idea with a hardcoded, domain-specific graph. Two things differ here, and both drive design:
+The graph is configurable. Claims select the files and declaration hosts that owe acknowledgements; references select the evidence populations they owe. Every claim-reference pair is an independently complete obligation, and every element of a reference array remains separate.
 
-- **The graph is configurable.** Node kinds, edge policies, and which folders must cite which are the consumer's to declare, not ours to hardcode.
-- **The carrier is a JSDoc tag, not a typed JSON field.** `autobe-mcp` puts evidence in schema fields validated by typia because its artifacts are LLM-authored JSON. Our subject is arbitrary TypeScript source, where a comment is the only attachment point available on every declaration. Lint is what makes a comment enforceable.
-
-Read `.wiki/references/autobe-mcp.md` before generalizing any rule from that prior art, and `.wiki/design/decisions.md` for the decisions already settled and their costs.
+Read `.wiki/references/autobe-mcp.md` before generalizing behavior from that prior art, and `.wiki/design/decisions.md` for settled repository decisions and their costs.
 
 ## Tag Grammar
 
-```
+```text
 @evidence <target> <reason>
+@evidenceExclude <target> <reason>
 ```
 
-The first whitespace-delimited token is the target; everything after it is prose. This is the ordinary JSDoc tag shape (`@param name description`), not an invention.
+The first whitespace-delimited token is the target; everything after it is prose. A declaration may carry any number of tags. Every tag requires a target and non-empty reason and is validated independently.
 
 ```ts
-/** @evidence docs/spec.md#pricing Sale price derives from the rule defined there. */
-/** @evidence IShoppingSale.IUpdate Mirrors the update payload shape exactly. */
+/** @evidence docs/spec.md#pricing Sale price derives from this section. */
+/** @evidence IShoppingSale The complete sale contract is mirrored here. */
 ```
 
-A tag with a target and no reason is an error. A reason exists so a reader learns why the citation holds; a bare pointer teaches nothing and cannot be reviewed.
+The reason exists for review, not machine judgment. Do not add a rule that guesses whether prose is sincere; it will teach authors to write filler that passes.
 
-**A declaration may carry any number of `@evidence` tags, and every one is validated independently.** More than one ground is the normal case, not an edge case. A walk that stopped at the first tag would leave the rest unchecked while still looking enforced, which is worse than not checking at all.
+## Units And Hierarchy
 
-**Target order is deliberate and costs something.** `autobe-mcp` requires the reason _before_ the section so an authoring LLM states its reasoning first and lets that reasoning steer which section it names. The JSDoc shape forbids that ordering, so the chain-of-thought steering is lost and an AI may pick a target first and rationalize it after. Do not add a rule that tries to judge whether a reason is "real"; a machine cannot settle that, and a rule that guesses will teach authors to write filler that passes.
+Two artifact kinds materialize evidence units.
 
-## Node And Edge Kinds
+- **Markdown** — a file addressed as `<path>` or an H1-H4 ATX section addressed as `<path>#<anchor>`.
+- **TypeScript** — an exported type, function, or property addressed by its qualified public name.
 
-Two node kinds exist.
+Units form structural containment scopes. A Markdown file contains its heading outline; a heading contains lower-level headings until the next heading of equal or higher level. A TypeScript interface or object-shaped type alias contains its direct properties, and a namespace contains every nested public unit. Top-level TypeScript functions and properties have no aggregate file node.
 
-- **Document sections** — a heading in a markdown file, addressed as `<path>#<anchor>`. **A section, never a whole document.** "The grounds are somewhere in this file" is not grounds: a reviewer cannot check it, and it survives every edit to the document, including the one that deletes the paragraph it meant. A whole-document citation resolves trivially — the path exists — so it must be refused explicitly or it becomes the path of least resistance.
-- **TypeScript symbols** — a declaration, addressed by its dotted name.
+An `@evidence` or `@evidenceExclude` target acknowledges the selected target and every selected descendant. The reference's `symbol` selector defines the obligation denominator, not the only addressable targets: every structural ancestor of a selected unit remains resolvable as an aggregate scope.
 
-Targets are discriminated by shape: a target containing `#` or ending in `.md` is a document reference; a dotted identifier is a symbol reference. This is a heuristic, so **every diagnostic must name which kind it resolved the target to**, letting a misclassification surface at the point of failure instead of hiding as a confusing "not found".
+Keep selected obligations and resolvable scopes separate. Do not make every unselected unit resolvable; only actual ancestors belong to the scope closure, or an unrelated same-name declaration can create false ambiguity.
 
-The default graph is **bipartite**: citers point at cited nodes, and cited nodes point at nothing. `autobe-mcp` gets cycle-freedom structurally from this shape and therefore needs no cycle detection. Symbol-to-symbol citation breaks that property, so it is opt-in, and enabling it enables cycle detection with it.
+Hierarchy is identity, not spelling. Store explicit parent unit IDs while materializing. Never infer TypeScript ancestry from a dotted-string prefix: literal names may contain dots, and `A.B` can mean one literal segment or two qualified segments.
 
-## Three Questions, Three Rules
+## TypeScript Classification
 
-The graph is interrogated from three sides. They look similar and are not, and collapsing any two produces a ledger that answers neither honestly. This separation is the most valuable idea inherited from the prior art, which keeps its own three mechanisms deliberately apart.
+Selectors classify public contracts semantically.
 
-| Rule | Side | Asks |
-| --- | --- | --- |
-| `evidence-graph/reference` | edge | Does this citation point at something real? |
-| `evidence-graph/require` | source | Does this declaration assert something while citing nothing? |
-| `evidence-graph/coverage` | target | Does anything claim to implement this section? |
+- `"type"` selects exported interfaces, type aliases, and namespaces. Classes and enums are not type units.
+- `"function"` selects exported function declarations, function-valued exported `const` declarations, public class callables, and namespace variants of those forms.
+- `"property"` selects direct properties of exported interfaces and object-shaped type aliases plus exported `const`, `let`, or `var` declarations at module or namespace scope. A `const` initialized with an arrow or function expression remains a function; every other variable, including a function-typed declaration or function-valued `let` or `var`, remains a property.
 
-Each is structurally blind to the others' question, and the blindness is why all three exist.
+Only public identities materialize. A top-level declaration needs an export modifier or local export-list alias; a namespace member needs to be exported from that namespace. Re-exports whose declarations live in another file do not create a second unit.
 
-- **Coverage counts sections with no citation, so it can never see a citation with no section.** A document renamed or a heading re-anchored strands every citation pointing at it, and only `evidence-graph/reference` can say so. Integrity's scope is deliberately wider for exactly this reason.
-- **Integrity never sees a declaration that simply has no tag** — there is no edge to inspect. That is `evidence-graph/require`'s question.
-- **A citation can satisfy one rule and fail another.** One that resolves but points outside a policy's required documents passes integrity and fails obligation. This is not a contradiction; they are different questions.
+A mixed variable statement can carry both function and property host kinds because TypeScript attaches one leading JSDoc block to the statement wrapper. Preserve the host set; choosing one kind makes the other selector spuriously out of scope.
 
-The prior art also splits edges into intent and realization so an unbuilt promise cannot turn the ledger green. That distinction is real, but it is a property of the artifact _kind_, which this plugin does not model — the tag grammar cannot express it. Do not invent a split the grammar cannot carry: a ledger whose numbers nobody can explain is worse than a coarser one everybody can.
+## Evaluation
 
-## Activation Gates
+`evidence-graph/index` evaluates the complete configured graph once per Program and answers three distinct questions.
 
-**A coverage rule that fires before its evidence is authorable corrupts the graph.** It does not merely annoy: it pushes the author toward a false citation or an invented exemption, and those outlive the moment.
+- **Resolution.** Does every declaration target resolve to exactly one selected unit or structural ancestor?
+- **Host eligibility.** Does the declaration live on a symbol kind selected by its claim?
+- **Coverage.** Does every selected reference unit have one acknowledgement in this claim?
 
-A rule therefore stays silent until its preconditions hold, and the precondition is a predicate over resident facts, not an `off` switch. Presence is the signal, not length — an empty index that exists proves the slot exists and the author is ready; an absent one proves nothing yet.
+Keep claim and reference state separate. A declaration that satisfies one claim or reference never leaks coverage into another, even when the physical target is the same.
 
-## Exemptions
+An acknowledgement scope may discharge many descendant units, but scopes within one claim-reference obligation must be disjoint. Report one duplicate diagnostic when a later scope overlaps an earlier one. This preserves the contradiction when `@evidence` and `@evidenceExclude` overlap without flooding one finding per descendant.
 
-A section excuses itself from coverage in the document, under its heading:
+## Exclusions
 
-```md
-## Naming Conventions
-
-<!-- evidence-exempt: describes a convention, not behavior anything implements -->
-```
+`@evidenceExclude` records that one claim intentionally does not use a target scope. It has the same hierarchy and coverage cardinality as `@evidence`; only its reviewed intent differs.
 
 Three properties are load-bearing.
 
-- **The reason is mandatory.** A marker with a blank reason is an error, not an exemption. A blank reason is not a reason, and accepting one turns a decision somebody made into a hole nobody has to defend. Reporting it also matters more than it looks: whoever wrote the marker believes they addressed the finding, so silently ignoring it leaves them staring at an error they think they fixed.
-- **It lives in the document**, because that is where the uncited thing lives. An HTML comment keeps it invisible in every renderer while leaving it plain text — and therefore reviewable — in the source.
-- **It is visible to the graph.** A lint disable comment would be cheaper and is wrong on every count: it sits in TypeScript while the uncited thing is a section, it suppresses every future diagnostic on that node rather than this one question, it demands no reason, and nothing can then answer "how many exemptions does this repository carry".
+- **The reason is mandatory.** A blank exclusion is not a decision anyone can review.
+- **It belongs to one claim.** Another claim referencing the same source still owes its own acknowledgement.
+- **It follows hierarchy.** Excluding a parent excludes every selected descendant, and an overlapping evidence scope is a duplicate rather than a silent override.
 
-Never auto-exempt, auto-retarget, or delete an artifact or citation to make a graph green. Repair is the author's, and every diagnostic must name the path that performs it.
+Never auto-exclude, auto-retarget, or delete an artifact or citation to make a graph green. Repair is the author's, and every diagnostic must name the path that performs it.
 
-## Diagnostic Messages Are The Product
+## Diagnostic Messages
 
-Most users meet this plugin only through an error message. A message that names a violation without naming the repair teaches the author to disable the rule.
+Most users meet this plugin only through an error message. State what is wrong, then what fixes it. Name the claim, reference, target, source location, and supported repair. Prefer one precise diagnostic to several descendant duplicates.
 
-- State what is wrong, then what fixes it. Name the file, the target, and the resolution kind.
-- Never blame the author for a state the rule created by firing too early. If that is possible, the gate is wrong; fix the gate.
-- Prefer one precise diagnostic to several overlapping ones.
+## Identity Rules
 
-## Identity Rules That Bite
-
-- **Token boundaries.** If a reference is matched as a token in text, `REQ-X-10` must not satisfy `REQ-X-1`. The ID grammar and the token-boundary character class must be derived together; letting configuration set one without the other reintroduces the substring bug the prior art already fixed.
-- **Prose is free; the token is the contract.** Reference identity must never depend on heading text, or every editorial fix silently breaks the graph.
-- **Paths are case-sensitive identity even on a case-insensitive host.** Compare segments exactly. Case-insensitive comparison is for producing a better error message, never for deciding identity.
+- **Targets are exact tokens.** Prose is free, but target identity never depends on heading text beyond its generated or explicit anchor.
+- **Paths are case-sensitive identity on every host.** Case-insensitive comparison may improve a diagnostic but never decides equality.
+- **Markdown separators normalize only for Markdown targets.** Do not rewrite TypeScript literal symbol names.
+- **Qualified TypeScript segments stay encoded internally.** This prevents a literal dot from collapsing into namespace or property qualification.

@@ -80,9 +80,11 @@ func scanMarkdownInventory(path string, content string) (*artifactInventory, []s
 	inventory := &artifactInventory{Path: path, Type: artifactMarkdown}
 	problems := []string{}
 	targetablePath := !containsWhitespace(path)
+	fileUnitID := ""
 	if targetablePath {
+		fileUnitID = "markdown:" + path + ":file"
 		inventory.Units = append(inventory.Units, &evidenceUnit{
-			ID:       "markdown:" + path + ":file",
+			ID:       fileUnitID,
 			Target:   path,
 			Type:     artifactMarkdown,
 			Symbol:   "file",
@@ -106,6 +108,7 @@ func scanMarkdownInventory(path string, content string) (*artifactInventory, []s
 	fenceMarker := rune(0)
 	fenceLength := 0
 	inHTMLComment := false
+	headingUnitIDs := [5]string{}
 	for index, rawLine := range lines {
 		line := strings.TrimSuffix(rawLine, "\r")
 		trimmed := strings.TrimLeft(line, " \t")
@@ -146,6 +149,11 @@ func scanMarkdownInventory(path string, content string) (*artifactInventory, []s
 		level, title, ok := markdownHeading(line)
 		if ok {
 			currentHost = "h" + decimal(level)
+			if level <= 4 {
+				for descendantLevel := level; descendantLevel <= 4; descendantLevel++ {
+					headingUnitIDs[descendantLevel] = ""
+				}
+			}
 			if level <= 4 && targetablePath {
 				title, anchor := markdownHeadingIdentity(title)
 				if anchor == "" {
@@ -158,15 +166,25 @@ func scanMarkdownInventory(path string, content string) (*artifactInventory, []s
 						Message: problems[len(problems)-1],
 					})
 				} else {
-					inventory.Units = append(inventory.Units, &evidenceUnit{
+					parentID := fileUnitID
+					for ancestorLevel := level - 1; ancestorLevel >= 1; ancestorLevel-- {
+						if headingUnitIDs[ancestorLevel] != "" {
+							parentID = headingUnitIDs[ancestorLevel]
+							break
+						}
+					}
+					unit := &evidenceUnit{
 						ID:       "markdown:" + path + ":" + currentHost + ":" + decimal(index+1),
+						ParentID: parentID,
 						Target:   path + "#" + anchor,
 						Type:     artifactMarkdown,
 						Symbol:   currentHost,
 						Path:     path,
 						Line:     index + 1,
 						Readable: "Markdown " + strings.ToUpper(currentHost) + " '" + title + "'",
-					})
+					}
+					inventory.Units = append(inventory.Units, unit)
+					headingUnitIDs[level] = unit.ID
 				}
 			}
 		}
@@ -191,7 +209,7 @@ func scanMarkdownInventory(path string, content string) (*artifactInventory, []s
 				Tag:      parsed.Tag,
 				Target:   parsed.Target,
 				Reason:   parsed.Reason,
-				Host:     hostAtLine[line-1],
+				Hosts:    symbolSet{hostAtLine[line-1]: true},
 				Path:     path,
 				Line:     line + parsed.LineOffset,
 				Sequence: sequence,

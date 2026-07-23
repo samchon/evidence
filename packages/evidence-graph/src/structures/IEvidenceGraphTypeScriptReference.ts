@@ -41,8 +41,13 @@ export interface IEvidenceGraphTypeScriptReference {
   /**
    * Symbol kind or kinds eligible to become evidence units.
    *
-   * Omit this property to select exported interfaces and type aliases. A single
-   * value selects one kind; a non-empty array selects the union of its kinds.
+   * Omit this property to select exported interfaces, type aliases, and
+   * namespaces. A single value selects one obligation kind; a non-empty array
+   * selects the union. Selected units remain independent obligations until an
+   * ancestor type or namespace target acknowledges their shared scope.
+   * Ancestors of selected units are addressable even when their own kind is
+   * omitted from this selector.
+   *
    * The exact declaration forms and qualified target identities are documented
    * by {@link EvidenceGraphTypeScriptSymbol}. This is unlike a claim's `symbol`,
    * which selects declaration hosts: a reference's symbol array expands the

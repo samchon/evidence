@@ -52,7 +52,7 @@ func TestMarkdownMaterializesFileAndHeadingKinds(t *testing.T) {
 	}
 	hosts := []string{}
 	for _, declaration := range inventory.Declarations {
-		hosts = append(hosts, declaration.Host)
+		hosts = append(hosts, declaration.Hosts.names())
 	}
 	if got := strings.Join(hosts, ","); got != "file,h1,h2,h3,h4,h5" {
 		t.Fatalf("Markdown declaration hosts = %q", got)
@@ -64,11 +64,11 @@ func TestMarkdownMaterializesFileAndHeadingKinds(t *testing.T) {
  * covers the file plus every resident H1-H4 unit.
  *
  * A quiet result is meaningful only when every default unit actually had to be
- * acknowledged. The fixture cites the file and one heading at each supported
- * level from correspondingly selected Markdown hosts.
+ * acknowledged. The fixture cites the file ancestor once so every resident
+ * default unit must participate in its scope.
  *
  *  1. Omit both Markdown symbol selectors.
- *  2. Acknowledge one file and four heading units.
+ *  2. Acknowledge the file containing four heading levels.
  *  3. Assert the complete default graph is green.
  */
 func TestMarkdownDefaultsSelectEverySupportedResidentKind(t *testing.T) {
@@ -79,14 +79,6 @@ func TestMarkdownDefaultsSelectEverySupportedResidentKind(t *testing.T) {
 #### Persist
 `,
 		"refs/ledger.md": `<!-- @evidence docs/spec.md The whole specification is adopted. -->
-# Product use
-<!-- @evidence docs/spec.md#product This section adopts the product contract. -->
-## Create use
-<!-- @evidence docs/spec.md#create This section adopts creation. -->
-### Validate use
-<!-- @evidence docs/spec.md#validate This section adopts validation. -->
-#### Persist use
-<!-- @evidence docs/spec.md#persist This section adopts persistence. -->
 `,
 	}, `{"claims":[{
 		"type":"markdown",

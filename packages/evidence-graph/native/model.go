@@ -1,6 +1,9 @@
 package evidence
 
-import "strings"
+import (
+	"sort"
+	"strings"
+)
 
 const indexRuleName = "evidence-graph/index"
 
@@ -44,19 +47,39 @@ func (set symbolSet) contains(symbol string) bool {
 	return set[symbol]
 }
 
+func (set symbolSet) intersects(other symbolSet) bool {
+	for symbol := range set {
+		if other[symbol] {
+			return true
+		}
+	}
+	return false
+}
+
 func (set symbolSet) names() string {
 	order := []string{"file", "h1", "h2", "h3", "h4", "type", "function", "property"}
 	names := make([]string, 0, len(set))
+	known := map[string]bool{}
 	for _, name := range order {
+		known[name] = true
 		if set[name] {
 			names = append(names, name)
 		}
 	}
+	other := []string{}
+	for name := range set {
+		if !known[name] {
+			other = append(other, name)
+		}
+	}
+	sort.Strings(other)
+	names = append(names, other...)
 	return strings.Join(names, ", ")
 }
 
 type evidenceUnit struct {
 	ID       string
+	ParentID string
 	Target   string
 	Type     artifactKind
 	Symbol   string
@@ -77,7 +100,7 @@ type evidenceDeclaration struct {
 	Tag      tagKind
 	Target   string
 	Reason   string
-	Host     string
+	Hosts    symbolSet
 	Path     string
 	Line     int
 	Sequence int
@@ -112,10 +135,11 @@ type claimState struct {
 }
 
 type referenceState struct {
-	Spec     referenceSpec
-	Paths    []string
-	Units    []*evidenceUnit
-	UnitByID map[string]*evidenceUnit
+	Spec         referenceSpec
+	Paths        []string
+	Units        []*evidenceUnit
+	Scopes       []*evidenceUnit
+	UnitsByScope map[string][]*evidenceUnit
 }
 
 func decimal(value int) string {

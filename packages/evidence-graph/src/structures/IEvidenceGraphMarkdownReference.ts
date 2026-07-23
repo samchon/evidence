@@ -3,11 +3,11 @@ import type { EvidenceGraphMarkdownSymbol } from "../typings/EvidenceGraphMarkdo
 /**
  * A population of documentary evidence that the owning claim must cite.
  *
- * A document is useful as evidence only when a reviewer can identify the unit
- * that supports a claim. This reference therefore makes the chosen documents
- * and heading levels explicit, rather than treating every passing mention of a
- * file as proof. Citations stay narrow enough that an editorial change cannot
- * silently preserve a claim whose grounds disappeared.
+ * A document is useful as evidence only when a reviewer can identify the scope
+ * that supports a claim. This reference makes the obligation levels explicit
+ * while allowing one file or heading target to acknowledge its selected
+ * descendants. Citations remain anchored in the outline, so an editorial change
+ * cannot silently preserve a claim whose grounds disappeared.
  */
 export interface IEvidenceGraphMarkdownReference {
   /** Identifies the evidence artifacts as Markdown. */
@@ -40,7 +40,11 @@ export interface IEvidenceGraphMarkdownReference {
    * Markdown node kind or kinds eligible to become evidence units.
    *
    * Omit this property to select documents and H1 through H4 sections. A single
-   * value selects one kind; a non-empty array selects the union of its kinds.
+   * value selects one obligation kind; a non-empty array selects the union.
+   * Selected units remain independent obligations until an ancestor target
+   * acknowledges their shared scope. Ancestors of selected units are
+   * addressable even when their own kind is omitted from this selector.
+   *
    * File units use the project-relative path as their target. Heading units use
    * `<path>#<anchor>` as documented by {@link EvidenceGraphMarkdownSymbol}.
    *

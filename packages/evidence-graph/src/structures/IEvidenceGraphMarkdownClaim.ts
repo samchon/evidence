@@ -10,8 +10,9 @@ import type { IEvidenceGraphReference } from "./IEvidenceGraphReference";
  *
  * An exclusion still has to appear in a selected claim file and on a selected
  * host kind. Its particular host is not part of the acknowledgement identity,
- * so moving it between eligible sections cannot change which evidence unit this
- * claim excludes.
+ * so moving it between eligible sections cannot change the target scope this
+ * claim excludes. The target scope, not the declaration's host position,
+ * determines which selected descendants are acknowledged.
  *
  * @example
  *   <!-- @evidence docs/orders.md#create-order This section adopts the creation contract. -->

@@ -80,12 +80,15 @@ class Internal {
 	}
 	sort.Strings(targets)
 	want := []string{
+		"Api",
 		"Api.Client.open",
 		"Api.Client.prototype.connect",
 		"Api.fetch",
 		"Api.send",
 		"Options",
 		"Options.enabled",
+		"Outer",
+		"Outer.Inner",
 		"Outer.Inner.nested",
 		"Service.create",
 		"Service.provider",
@@ -100,6 +103,7 @@ class Internal {
 		"asserted",
 		"declared",
 		"expression",
+		"mutable",
 		"parenthesized",
 		"satisfied",
 	}
@@ -237,14 +241,15 @@ export interface Ref {}
 
 /**
  * Verifies the TypeScript source default: omitting symbol selects exported
- * interfaces and type aliases without charging callable or property units.
+ * interfaces, type aliases, and namespaces without charging callable or
+ * property units.
  *
  * The default is intentionally narrower than the claim default. A test that
  * merely inspects decoded options would miss a materializer that ignored the
  * selector and indexed every discovered declaration anyway.
  *
- *  1. Put types, properties, and callables in one source file.
- *  2. Acknowledge only the two type identities from Markdown.
+ *  1. Put types, a namespace, properties, and callables in one source file.
+ *  2. Acknowledge only the three type identities from Markdown.
  *  3. Assert the omitted source selector creates no additional obligation.
  */
 func TestTypeScriptSourceDefaultMaterializesOnlyTypes(t *testing.T) {
@@ -252,6 +257,10 @@ func TestTypeScriptSourceDefaultMaterializesOnlyTypes(t *testing.T) {
 		"src/contracts.ts": `
 export interface Shape { width: number; }
 export type Options = { enabled: boolean };
+export namespace Api {
+  export const state = "ready";
+  export function run(): void {}
+}
 export function draw(): void {}
 export const render = (): void => {};
 `,
@@ -259,6 +268,7 @@ export const render = (): void => {};
 <!--
 @evidence Shape Shape is documented here.
 @evidence Options Options are documented here.
+@evidence Api The namespace contract is documented here.
 -->
 `,
 	}, `{"claims":[{
@@ -272,14 +282,15 @@ export const render = (): void => {};
 
 /**
  * Verifies every TypeScript selector as a graph source: types, callables, and
- * qualified properties each create an independent acknowledgement obligation.
+ * qualified properties each create an acknowledgement obligation, while a
+ * selected type scope covers its property descendants.
  *
  * Inventory inspection alone cannot prove that source filtering preserves all
  * three kinds. This complete graph acknowledges the exact targets after the
  * configured symbol union is applied.
  *
  *  1. Select `"type"`, `"function"`, and `"property"` from one source file.
- *  2. Acknowledge the interface, property, and arrow-function identities.
+ *  2. Acknowledge the interface scope and arrow-function identity.
  *  3. Assert the source selector materializes all three kinds.
  */
 func TestTypeScriptSourceAcceptsEverySymbolKind(t *testing.T) {
@@ -292,7 +303,6 @@ export const draw = (): void => {};
 `,
 		"docs/ledger.md": `<!--
 @evidence Shape The interface is documented.
-@evidence Shape.width The property is documented.
 @evidence draw The callable is documented.
 -->
 `,
@@ -323,6 +333,7 @@ interface LocalType {
 }
 const localFunction = (): void => {};
 const typeOnlyFunction = (): void => {};
+const localValue = 1;
 class LocalClass {
   run(): void {}
 }
@@ -332,6 +343,7 @@ namespace LocalNamespace {
 export {
   LocalType as PublicType,
   localFunction as publicFunction,
+  localValue as publicValue,
   LocalClass as PublicClass,
   LocalNamespace as PublicNamespace,
 };
@@ -354,12 +366,14 @@ export type {
 	sort.Strings(targets)
 	want := []string{
 		"PublicClass.prototype.run",
+		"PublicNamespace",
 		"PublicNamespace.act",
 		"PublicType",
 		"PublicType.field",
 		"TypeOnlyPublicType",
 		"TypeOnlyPublicType.field",
 		"publicFunction",
+		"publicValue",
 	}
 	sort.Strings(want)
 	if strings.Join(targets, "\n") != strings.Join(want, "\n") {

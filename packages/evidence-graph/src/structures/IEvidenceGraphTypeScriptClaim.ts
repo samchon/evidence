@@ -5,14 +5,14 @@ import type { IEvidenceGraphReference } from "./IEvidenceGraphReference";
  * A population of TypeScript declarations claiming its referenced evidence.
  *
  * JSDoc puts an evidence edge on the public declaration making the claim,
- * rather than on the file around it. Supported hosts are the exported types and
- * top-level callables, plus the public class and namespace forms documented by
+ * rather than on the file around it. Supported hosts are exported interfaces,
+ * type aliases, namespaces, functions, data variables, type properties, and the
+ * public class callable forms documented by
  * {@link EvidenceGraphTypeScriptSymbol}.
  *
  * Both `@evidence <target> <reason>` and `@evidenceExclude <target> <reason>`
  * require a target and a non-empty explanation. An exclusion can move between
- * eligible declarations without changing which evidence unit this claim
- * excludes.
+ * eligible declarations without changing the target scope this claim excludes.
  */
 export interface IEvidenceGraphTypeScriptClaim {
   /** Identifies the claiming artifacts as TypeScript. */
@@ -53,8 +53,9 @@ export interface IEvidenceGraphTypeScriptClaim {
    *
    * Omit this property to select exported type, function, and property symbols.
    * A single value selects one kind; a non-empty array selects the union of its
-   * kinds. A JSDoc block on an unsupported or unexported declaration does not
-   * satisfy the claim.
+   * kinds. A mixed variable statement containing callable and data declarations
+   * can host both function and property claims. A JSDoc block on an unsupported
+   * or unexported declaration does not satisfy the claim.
    *
    * @default ["type", "function", "property"]
    */
