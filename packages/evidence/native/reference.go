@@ -339,12 +339,6 @@ func boundedAnchorDistance(left []rune, right []rune, limit int) int {
 	}
 
 	for row := 1; row <= len(left); row++ {
-		for column := range current {
-			current[column] = unreachable
-		}
-		if row <= limit {
-			current[0] = row
-		}
 		first := row - limit
 		if first < 1 {
 			first = 1
@@ -352,6 +346,17 @@ func boundedAnchorDistance(left []rune, right []rune, limit int) int {
 		last := row + limit
 		if last > len(right) {
 			last = len(right)
+		}
+		if first > 1 {
+			// This row slice was used three iterations ago. Invalidate the
+			// cell immediately before the new band so insertion cannot walk
+			// in from a stale value.
+			current[first-1] = unreachable
+		}
+		if row <= limit {
+			current[0] = row
+		} else {
+			current[0] = unreachable
 		}
 		for column := first; column <= last; column++ {
 			substitutionCost := 1
@@ -376,6 +381,11 @@ func boundedAnchorDistance(left []rune, right []rune, limit int) int {
 				value = unreachable
 			}
 			current[column] = value
+		}
+		if last < len(right) {
+			// The next row may read one cell beyond this row's upper band as a
+			// deletion predecessor.
+			current[last+1] = unreachable
 		}
 		previousPrevious, previous, current = previous, current, previousPrevious
 	}
