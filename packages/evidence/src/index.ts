@@ -1,3 +1,16 @@
+import type { ITtscLintPlugin } from "@ttsc/lint";
+import type { TtscLintRuleSetting } from "@ttsc/lint";
+import path from "node:path";
+import type { IEvidenceCoverageOptions } from "./IEvidenceCoverageOptions";
+import type { IEvidenceIndexOptions } from "./IEvidenceIndexOptions";
+import type { IEvidenceRequireOptions } from "./IEvidenceRequireOptions";
+
+export type { IEvidenceCoverageOptions } from "./IEvidenceCoverageOptions";
+export type { IEvidenceIndexOptions } from "./IEvidenceIndexOptions";
+export type { IEvidencePolicy } from "./IEvidencePolicy";
+export type { IEvidenceRequireOptions } from "./IEvidenceRequireOptions";
+export type { TEvidenceDeclarationKind } from "./TEvidenceDeclarationKind";
+
 // `@samchon/evidence` — a `@ttsc/lint` rule contributor.
 //
 // This descriptor mirrors the shape of an ESLint flat-config plugin object
@@ -10,9 +23,6 @@
 // names here only powers TypeScript autocomplete for `evidence/*` keys in a
 // consumer's lint config, and a name listed here but never registered in Go
 // fails silently at runtime rather than loudly at build.
-import type { ITtscLintPlugin, TtscLintRuleSetting } from "@ttsc/lint";
-import path from "node:path";
-
 const plugin = {
   meta: {
     name: "@samchon/evidence",
@@ -41,120 +51,9 @@ const plugin = {
 
 declare module "@ttsc/lint" {
   interface ITtscLintRuleOptionsMap {
-    /**
-     * Builds the evidence index: the identity source every reference resolves
-     * against.
-     *
-     * This rule is project-scoped, so it must be configured in a config entry
-     * that has no `files` key; an entry with `files` is rejected even when
-     * empty or `off`.
-     *
-     * Turning it off is not a way to relax enforcement — it silences every
-     * other evidence rule, because without an index there is nothing to resolve
-     * against and a rule that reported anyway would be blaming authors for its
-     * own blindness.
-     */
-    "evidence/index": {
-      /**
-       * Project-relative globs of markdown to index. Defaults to
-       * `["**\/*.md"]`.
-       *
-       * Supports `**`, `*`, and `?`. Matching is case-sensitive even on a
-       * case-insensitive filesystem, because a path has one true spelling and
-       * admitting another yields references the index cannot resolve. A
-       * directory entry includes everything below it, so `docs`, `docs/`, and
-       * `docs/**` all include `docs/spec.md`.
-       *
-       * `node_modules`, `.git`, `lib`, `dist`, and `coverage` are never walked:
-       * they hold other people's markdown, and a citation resolving against a
-       * dependency's README proves nothing.
-       */
-      documents?: readonly string[];
-    };
-
-    /**
-     * Requires declarations in configured folders to cite a document section
-     * under configured folders.
-     *
-     * This is the source-side question, and it is a third question rather than
-     * a variant of the other two. `evidence/reference` asks whether a citation
-     * points at something real. A coverage rule would ask which declared
-     * section nothing has proven. This asks which declaration asserts something
-     * while citing nothing at all.
-     *
-     * **Configure this rule once, in a single entry, with every policy in the
-     * `policies` array.** Splitting policies across config entries does not
-     * accumulate and does not warn: a rule setting has no `files` key at all
-     * (`files` lives only on the top-level config object), a config file is one
-     * object rather than an array, and `extends` takes a single string — so one
-     * config file contributes at most one rules entry, and where two do match,
-     * the later entry's options replace the earlier outright.
-     *
-     * **Adoption is authorship, not configuration.** Enabling a broad policy on
-     * an existing codebase produces hundreds of errors at once, and the
-     * cheapest way to clear them is to write a plausible citation on each —
-     * which yields a graph that is fully covered, largely false, and
-     * permanently indistinguishable from a real one. Start from a folder small
-     * enough to cite honestly and widen the glob deliberately. The glob is the
-     * ratchet: it is diffable, reviewable, and states which folders are under
-     * discipline.
-     */
-    "evidence/require": {
-      /**
-       * Citation obligations. **Every** matching policy applies — these are
-       * demands, not allow/deny effects, so they compose rather than shadow. A
-       * declaration selected by two policies must satisfy both.
-       */
-      policies?: readonly IEvidencePolicy[];
-    };
-
-    /**
-     * Reports declared sections that nothing cites.
-     *
-     * This is the target-side question, the third of three.
-     * `evidence/reference` asks whether a citation points at something real;
-     * `evidence/require` asks whether a declaration asserts something while
-     * citing nothing; this asks which section of the design nothing in the code
-     * claims to implement.
-     *
-     * Its blindness is structural: it counts sections with no citation, so it
-     * can never see a citation with no section. That is `evidence/reference`'s
-     * job. Enabling one does not cover the other.
-     *
-     * Project-scoped, so it must be configured in an entry with no `files` key.
-     * Its findings name a markdown section and therefore carry no file and no
-     * line — a section has no TypeScript node to point at.
-     *
-     * A section that genuinely needs no citation says so in the document, under
-     * its heading:
-     *
-     * ```md
-     * ## Naming Conventions
-     *
-     * <!-- evidence-exempt: describes a convention, not behavior anything implements -->
-     * ```
-     *
-     * The reason is mandatory; a marker with a blank reason is an error rather
-     * than an exemption. The marker lives in the document because that is where
-     * the uncited thing lives, and it is an HTML comment so it stays invisible
-     * in every renderer while remaining reviewable in the source.
-     */
-    "evidence/coverage": {
-      /**
-       * Documents whose sections must be cited. Required and non-empty.
-       *
-       * Coverage cannot inherit the index rule's scope because project rules
-       * cannot read one another's options. An implicit whole-repository default
-       * would instead demand citations for unrelated READMEs and guides while
-       * appearing to share the index's scope.
-       *
-       * Narrow this rather than exempting sections one by one when a whole
-       * document is reference material. Adoption is authorship: a small
-       * demanded set that is honestly covered beats a large one cleared by
-       * citations written to silence errors.
-       */
-      documents: readonly [string, ...string[]];
-    };
+    "evidence/index": IEvidenceIndexOptions;
+    "evidence/require": IEvidenceRequireOptions;
+    "evidence/coverage": IEvidenceCoverageOptions;
   }
 
   interface ITtscLintContributorRules {
@@ -174,71 +73,6 @@ declare module "@ttsc/lint" {
      */
     "evidence/reference"?: TtscLintRuleSetting;
   }
-}
-
-/**
- * One "declarations here must cite sections there" obligation.
- *
- * Both globs are project-relative and support `**`, `*`, and `?`. A directory
- * entry includes everything below it, so `src/providers`, `src/providers/`, and
- * `src/providers/**` govern the same subtree. Matching is case-sensitive even
- * on a case-insensitive filesystem, because a path has one true spelling.
- */
-export interface IEvidencePolicy {
-  /**
-   * Source files this policy governs.
-   *
-   * An empty or missing list matches nothing, never everything. A policy that
-   * lost its globs goes quiet rather than placing the whole repository under
-   * obligation.
-   */
-  files: readonly string[];
-
-  /**
-   * Documents whose sections discharge this obligation.
-   *
-   * A declaration satisfies the policy when at least one of its `@evidence`
-   * tags cites a **section** of a document matching one of these globs.
-   *
-   * Only document sections count. A symbol citation is still checked for
-   * integrity by `evidence/reference`, but it cannot ground a declaration: a
-   * symbol both cites and is cited, so two declarations naming each other would
-   * satisfy every obligation between them while proving nothing. A section is
-   * terminal, which is what makes it grounds.
-   */
-  targets: readonly string[];
-
-  /**
-   * Declaration kinds under obligation.
-   *
-   * Defaults to `["interface", "type", "class", "function", "enum"]` — the
-   * declarations that carry a design decision. `variable` and `namespace` are
-   * opt-in because most are plumbing, and demanding grounds for every exported
-   * constant trains authors to write filler, which is worse than demanding
-   * nothing.
-   *
-   * Only exported, top-level declarations are ever obliged. A module-private
-   * declaration is an implementation detail of something already under
-   * obligation.
-   */
-  kinds?: readonly (
-    | "interface"
-    | "type"
-    | "class"
-    | "function"
-    | "enum"
-    | "variable"
-    | "namespace"
-  )[];
-
-  /**
-   * Replaces the default diagnostic.
-   *
-   * Prefer the default. It distinguishes "cited nothing" from "cited the wrong
-   * place" — two mistakes with the same symptom and different repairs — and a
-   * fixed string collapses them back together.
-   */
-  message?: string;
 }
 
 export default plugin;
