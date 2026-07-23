@@ -23,16 +23,12 @@ import evidenceGraph, {
 } from "@samchon/evidence-graph";
 
 const graph: IEvidenceGraphConfig = {
-  severity: "error",
   sources: [
     {
       type: "markdown",
       name: "Service specifications",
       files: ["docs/**/*.md"],
-      headings: {
-        minimum: 2,
-        maximum: 3,
-      },
+      symbol: ["file", "h1", "h2", "h3", "h4"],
       reference: [
         {
           type: "typescript",
@@ -67,8 +63,6 @@ export default {
 } satisfies ITtscLintConfig;
 ```
 
-`severity` is optional at every level. The effective severity is resolved from the narrowest declaration outward: reference, source, configuration, then `error` by default.
-
 ## Sources and references
 
 Every source owns its own coverage. Two source entries that select the same files are still two separate obligations; they are never merged into a single percentage.
@@ -82,20 +76,24 @@ References are themselves discriminated by `type`.
 | `"markdown"` | Markdown sections | Markdown files that must acknowledge the source |
 | `"typescript"` | TypeScript declarations | TypeScript files that must acknowledge the source |
 
+Every reference also has a `symbol` selector: it identifies the document or declaration kinds where `@evidence` may be written. Omit it to select every supported kind — `"file"`, `"h1"`, `"h2"`, `"h3"`, and `"h4"` for Markdown; `"type"`, `"function"`, and `"property"` for TypeScript.
+
 The separate source and reference types intentionally leave room for additional artifact languages, such as Prisma, without overloading Markdown or TypeScript semantics.
 
 ## Markdown sources
 
-A Markdown source selects files and an inclusive heading range. Heading levels are integers from `1` through `6`; `minimum` and `maximum` are both included. Select the level at which a document makes separately reviewable claims, rather than treating a whole file as undifferentiated proof.
+A Markdown source selects documents and heading sections from matching files. Omit `symbol` to select every supported kind: `"file"`, `"h1"`, `"h2"`, `"h3"`, and `"h4"`. A symbol array expands one source's evidence units; it does not create separate coverage obligations.
+
+| Symbol                | Selects                                         |
+| --------------------- | ----------------------------------------------- |
+| `"file"`              | The Markdown document itself                    |
+| `"h1"` through `"h4"` | Sections at the corresponding ATX heading level |
 
 ```ts
 {
   type: "markdown",
   files: ["docs/**/*.md"],
-  headings: {
-    minimum: 2,
-    maximum: 4,
-  },
+  symbol: ["h2", "h3"],
   reference: {
     type: "typescript",
     files: ["packages/*/src/**/*.ts"],
@@ -103,7 +101,7 @@ A Markdown source selects files and an inclusive heading range. Heading levels a
 }
 ```
 
-A Markdown citation belongs immediately below the heading it supports. An exclusion also belongs with that heading, so the reason that a section is intentionally not used remains visible in the document.
+A heading-level Markdown citation belongs immediately below the heading it supports. A file-level citation belongs at the document level. `@evidenceExclude` does not identify a graph node, so its location is irrelevant.
 
 ```md
 ## Sale Price {#sale-price}

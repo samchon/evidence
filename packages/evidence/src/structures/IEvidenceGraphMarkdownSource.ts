@@ -1,18 +1,17 @@
-import type { TtscLintSeverity } from "@ttsc/lint";
-import type { IEvidenceGraphHeadingRange } from "./IEvidenceGraphHeadingRange";
+import type { EvidenceGraphMarkdownSymbol } from "../typings/EvidenceGraphMarkdownSymbol";
 import type { IEvidenceGraphReference } from "./IEvidenceGraphReference";
 
 /**
  * A configured body of documentary evidence.
  *
- * A document is useful as evidence only when a reviewer can identify the
- * section that supports a claim. This source therefore treats selected heading
- * sections as graph nodes, rather than treating a passing mention of an entire
- * file as proof.
+ * A document is useful as evidence only when a reviewer can identify the unit
+ * that supports a claim. This source therefore makes the chosen document and
+ * heading levels explicit, rather than treating every passing mention of a file
+ * as proof.
  *
- * The distinction makes documentation accountable. Coverage can expose a
- * section no artifact relies on, while citations remain narrow enough that an
- * editorial change cannot silently preserve a claim whose grounds disappeared.
+ * The distinction makes documentation accountable. Coverage can expose a unit
+ * no artifact relies on, while citations remain narrow enough that an editorial
+ * change cannot silently preserve a claim whose grounds disappeared.
  */
 export interface IEvidenceGraphMarkdownSource {
   /** Identifies this source as Markdown. */
@@ -44,10 +43,14 @@ export interface IEvidenceGraphMarkdownSource {
   files: string[];
 
   /**
-   * Inclusive heading range whose sections become evidence units. Both
-   * endpoints are included, and `minimum` must not exceed `maximum`.
+   * Markdown node kind or kinds eligible to become evidence units.
+   *
+   * Omit this property to select documents and H1 through H4 sections. A single
+   * value selects one kind; an array selects the union of its kinds.
+   *
+   * @default ["file", "h1", "h2", "h3", "h4"]
    */
-  headings: IEvidenceGraphHeadingRange;
+  symbol?: EvidenceGraphMarkdownSymbol | EvidenceGraphMarkdownSymbol[];
 
   /**
    * One file group or independently complete file groups that must acknowledge
@@ -59,11 +62,4 @@ export interface IEvidenceGraphMarkdownSource {
    * partially covered groups cannot be pooled to satisfy this source.
    */
   reference: IEvidenceGraphReference | IEvidenceGraphReference[];
-
-  /**
-   * Optional severity for this source. It overrides
-   * `IEvidenceGraphConfig.severity`; a reference-level severity overrides this
-   * value for that one reference group.
-   */
-  severity?: TtscLintSeverity;
 }

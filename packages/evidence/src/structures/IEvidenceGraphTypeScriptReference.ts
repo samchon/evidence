@@ -1,4 +1,4 @@
-import type { TtscLintSeverity } from "@ttsc/lint";
+import type { EvidenceGraphTypeScriptSymbol } from "../typings/EvidenceGraphTypeScriptSymbol";
 
 /**
  * A population of TypeScript declarations that must acknowledge the owning
@@ -32,8 +32,13 @@ export interface IEvidenceGraphTypeScriptReference {
   files: string[];
 
   /**
-   * Optional severity for this reference group. It overrides the owning
-   * source's severity only here.
+   * TypeScript symbol kind or kinds eligible to declare evidence for this
+   * source.
+   *
+   * Omit this property to select exported type, function, and property symbols.
+   * A single value selects one kind; an array selects the union of its kinds.
+   *
+   * @default ["type", "function", "property"]
    */
-  severity?: TtscLintSeverity;
+  symbol?: EvidenceGraphTypeScriptSymbol | EvidenceGraphTypeScriptSymbol[];
 }

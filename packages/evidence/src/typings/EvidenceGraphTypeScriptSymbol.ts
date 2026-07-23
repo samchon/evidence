@@ -1,5 +1,6 @@
 /**
- * A TypeScript symbol kind that can become an evidence unit.
+ * A TypeScript symbol kind that can become an evidence unit or bear an evidence
+ * declaration.
  *
  * Evidence should cover public contracts, not indiscriminately turn every
  * implementation detail into a documentation obligation. This selector lets a

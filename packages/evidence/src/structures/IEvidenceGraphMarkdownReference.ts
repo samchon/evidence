@@ -1,13 +1,12 @@
-import type { TtscLintSeverity } from "@ttsc/lint";
+import type { EvidenceGraphMarkdownSymbol } from "../typings/EvidenceGraphMarkdownSymbol";
 
 /**
  * A population of Markdown claims that must acknowledge the owning source.
  *
- * Markdown needs an invisible but reviewable attachment point. An HTML-comment
- * `@evidence` tag immediately below a heading makes the citation belong to that
- * section without polluting rendered prose. `@evidenceExclude` records the
- * opposite decision with its reason, so intentional non-use remains visible to
- * the graph.
+ * Markdown needs an invisible but reviewable declaration host. An HTML-comment
+ * `@evidence` tag attaches to a selected document or heading without polluting
+ * rendered prose. `@evidenceExclude` is position-insensitive: it records an
+ * intentional non-use without making its host part of graph identity.
  */
 export interface IEvidenceGraphMarkdownReference {
   /** Identifies the citing artifacts as Markdown. */
@@ -33,8 +32,12 @@ export interface IEvidenceGraphMarkdownReference {
   files: string[];
 
   /**
-   * Optional severity for this reference group. It overrides the owning
-   * source's severity only here.
+   * Markdown node kind or kinds eligible to declare evidence for this source.
+   *
+   * Omit this property to select documents and H1 through H4 sections. A single
+   * value selects one kind; an array selects the union of its kinds.
+   *
+   * @default ["file", "h1", "h2", "h3", "h4"]
    */
-  severity?: TtscLintSeverity;
+  symbol?: EvidenceGraphMarkdownSymbol | EvidenceGraphMarkdownSymbol[];
 }

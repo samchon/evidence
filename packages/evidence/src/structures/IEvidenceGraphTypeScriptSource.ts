@@ -1,5 +1,4 @@
-import type { TtscLintSeverity } from "@ttsc/lint";
-import type { EvidenceGraphTypeScriptSymbol } from "./EvidenceGraphTypeScriptSymbol";
+import type { EvidenceGraphTypeScriptSymbol } from "../typings/EvidenceGraphTypeScriptSymbol";
 import type { IEvidenceGraphReference } from "./IEvidenceGraphReference";
 
 /**
@@ -66,11 +65,4 @@ export interface IEvidenceGraphTypeScriptSource {
    * partially covered groups cannot be pooled to satisfy this source.
    */
   reference: IEvidenceGraphReference | IEvidenceGraphReference[];
-
-  /**
-   * Optional severity for this source. It overrides
-   * `IEvidenceGraphConfig.severity`; a reference-level severity overrides this
-   * value for that one reference group.
-   */
-  severity?: TtscLintSeverity;
 }

@@ -1,4 +1,3 @@
-import type { TtscLintSeverity } from "@ttsc/lint";
 import type { IEvidenceGraphSource } from "./IEvidenceGraphSource";
 
 /**
@@ -10,13 +9,6 @@ import type { IEvidenceGraphSource } from "./IEvidenceGraphSource";
  * repository's folder layout or its notion of proof.
  */
 export interface IEvidenceGraphConfig {
-  /**
-   * Default severity for every evidence source.
-   *
-   * @default error
-   */
-  severity?: TtscLintSeverity;
-
   /**
    * Source groups that contribute evidence units to this project's graph. Each
    * source owns its reference obligations; coverage is never pooled across
