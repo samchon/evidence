@@ -60,6 +60,18 @@ export default {
 } satisfies ITtscLintConfig;
 ```
 
+## Editor completion
+
+With `ttsc` and `@ttsc/lint` 0.20.0 or newer, `evidence/index` publishes completion hints through the official [ttsc VS Code path](https://ttsc.dev/docs/lint/editor):
+
+| Typed                        | Offered                                       |
+| ---------------------------- | --------------------------------------------- |
+| `@evi`                       | `evidence`                                    |
+| `@evidence docs/sp`          | `docs/spec.md`                                |
+| `@evidence docs/spec.md#pri` | anchors from that document, such as `pricing` |
+
+The corpus follows the index rule's `documents` scope. Explicit `{#id}` anchors rank before derived anchors because an explicit identity survives a heading edit.
+
 ## The tag
 
 ```

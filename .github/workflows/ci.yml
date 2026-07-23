@@ -43,7 +43,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: samchon/ttsc
-          ref: v0.19.3
+          ref: v0.20.0
           path: samchon/ttsc
       - uses: actions/setup-go@v5
         with:

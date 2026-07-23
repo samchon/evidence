@@ -44,7 +44,7 @@
     "url": "https://github.com/samchon/evidence/issues"
   },
   "peerDependencies": {
-    "@ttsc/lint": ">=0.19.1"
+    "@ttsc/lint": ">=0.20.0"
   },
   "devDependencies": {
     "@ttsc/lint": "catalog:typescript",
