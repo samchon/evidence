@@ -1,0 +1,63 @@
+name: test
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: test-${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout evidence-graph
+        uses: actions/checkout@v4
+        with:
+          path: samchon/evidence-graph
+
+      - name: Checkout ttsc
+        uses: actions/checkout@v4
+        with:
+          repository: samchon/ttsc
+          ref: v0.20.0
+          path: samchon/ttsc
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.6.4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+          cache: pnpm
+          cache-dependency-path: samchon/evidence-graph/pnpm-lock.yaml
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: samchon/evidence-graph/packages/evidence-graph/go.mod
+          cache-dependency-path: samchon/evidence-graph/packages/evidence-graph/go.sum
+
+      - name: Install dependencies
+        working-directory: samchon/evidence-graph
+        run: pnpm install --frozen-lockfile
+
+      - name: Check Go formatting
+        working-directory: samchon/evidence-graph
+        shell: bash
+        run: |
+          unformatted="$(gofmt -l packages/evidence-graph/native)"
+          test -z "$unformatted" || {
+            echo "These files are not gofmt-clean:"
+            echo "$unformatted"
+            exit 1
+          }
+
+      - name: Run tests
+        working-directory: samchon/evidence-graph
+        run: pnpm test
