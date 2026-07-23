@@ -1,6 +1,6 @@
 # `@samchon/evidence-graph`
 
-![Logo](og.jpg)
+![Logo](https://raw.githubusercontent.com/samchon/evidence-graph/master/og.jpg)
 
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/samchon/evidence-graph/blob/master/LICENSE) [![NPM Version](https://img.shields.io/npm/v/@samchon/evidence-graph.svg)](https://www.npmjs.com/package/@samchon/evidence-graph) [![NPM Downloads](https://img.shields.io/npm/dm/@samchon/evidence-graph.svg)](https://www.npmjs.com/package/@samchon/evidence-graph) [![Build Status](https://github.com/samchon/evidence-graph/workflows/CI/badge.svg)](https://github.com/samchon/evidence-graph/actions?query=workflow%3ACI) [![Discord Badge](https://img.shields.io/badge/discord-samchon-d91965?style=flat&labelColor=5866f2&logo=discord&logoColor=white&link=https://discord.gg/E94XhzrUCZ)](https://discord.gg/E94XhzrUCZ)
 
@@ -37,15 +37,15 @@ import type { ITtscLintConfig } from "@ttsc/lint";
 import evidenceGraph, { type IEvidenceGraphConfig } from "@samchon/evidence-graph";
 
 const graph: IEvidenceGraphConfig = {
-  sources: [
+  claims: [
     {
-      type: "markdown",
-      files: ["docs/**/*.md"],
-      symbol: ["h2", "h3"],
-      citedBy: {
-        type: "typescript",
-        files: ["src/components/**/*.tsx"],
-        symbol: "function",
+      type: "typescript",
+      files: ["src/components/**/*.tsx"],
+      symbol: "function",
+      reference: {
+        type: "markdown",
+        files: ["docs/**/*.md"],
+        symbol: ["h2", "h3"],
       },
     },
   ],
@@ -61,7 +61,7 @@ export default {
 } satisfies ITtscLintConfig;
 ```
 
-Register the plugin in `lint.config.ts` and pass the graph declaration as the option of the `evidence-graph/index` rule. This graph reads as one sentence: every H2 and H3 section under `docs` must be cited by a React component under `src`.
+Register the plugin in `lint.config.ts` and pass the graph declaration as the option of the `evidence-graph/index` rule. This graph reads as one sentence: the React components under `src` claim to implement the docs, so every H2 and H3 section under `docs` must be cited by a component.
 
 Violations surface in every `ttsc` build, every `--noEmit` check, and every `ttsx` run. They arrive in the same stream as type errors. No separate CI job.
 
@@ -69,66 +69,66 @@ Violations surface in every `ttsc` build, every `--noEmit` check, and every `tts
 
 ```ts
 const graph: IEvidenceGraphConfig = {
-  sources: [
-    // 1. requirements force analysis and architecture documents
+  claims: [
+    // 1. architecture documents build on the requirements
     {
       type: "markdown",
-      files: ["docs/requirements/**/*.md"],
-      symbol: ["h2", "h3"],
-      citedBy: [
-        { type: "markdown", files: ["docs/analysis/**/*.md"] },
-        { type: "markdown", files: ["docs/architecture/**/*.md"] },
-      ],
+      files: ["docs/architecture/**/*.md"],
+      reference: {
+        type: "markdown",
+        files: ["docs/requirements/**/*.md"],
+        symbol: ["h2", "h3"],
+      },
     },
-    // 2. feature rules force components and tests
+    // 2. components implement the feature rules
     {
-      type: "markdown",
-      files: ["docs/features/**/*.md"],
-      symbol: ["h2", "h3"],
-      citedBy: [
+      type: "typescript",
+      files: ["src/components/**/*.tsx"],
+      symbol: "function",
+      reference: {
+        type: "markdown",
+        files: ["docs/features/**/*.md"],
+        symbol: ["h2", "h3"],
+      },
+    },
+    // 3. tests verify the feature rules and the components
+    {
+      type: "typescript",
+      files: ["test/features/**/*.ts"],
+      symbol: "function",
+      reference: [
+        {
+          type: "markdown",
+          files: ["docs/features/**/*.md"],
+          symbol: ["h2", "h3"],
+        },
         {
           type: "typescript",
           files: ["src/components/**/*.tsx"],
           symbol: "function",
         },
-        {
-          type: "typescript",
-          files: ["test/features/**/*.ts"],
-          symbol: "function",
-        },
       ],
-    },
-    // 3. exported components force tests
-    {
-      type: "typescript",
-      files: ["src/components/**/*.tsx"],
-      symbol: "function",
-      citedBy: {
-        type: "typescript",
-        files: ["test/features/**/*.ts"],
-        symbol: "function",
-      },
     },
   ],
 };
 ```
 
-A graph is one `sources` array, and each entry adds an independent obligation:
+A graph is one `claims` array, and every claim-reference pair is an independent obligation:
 
-1. Markdown can owe Markdown. Every requirement must be acknowledged by the analysis documents and by the architecture documents, each population on its own.
-2. A `citedBy` array is one obligation per element. Every feature rule must be mirrored by a React component and verified by a test function, never one borrowing the other's citation.
-3. TypeScript can owe TypeScript. Every exported component must be claimed by a test, per component instead of a coverage percentage.
+1. Markdown can claim Markdown. The architecture documents must acknowledge every requirement they build on.
+2. Every feature rule must be cited by a React component; a rule no component mirrors is a compile error naming that rule.
+3. A `reference` array is one obligation per element. The tests must verify every feature rule and claim every exported component, never one obligation borrowing the other's citation.
 
 ### Symbols
 
 | Kind | `symbol` values | Default |
 | --- | --- | --- |
 | `"markdown"` | `"file"`, `"h1"`, `"h2"`, `"h3"`, `"h4"` | `["file", "h1", "h2", "h3", "h4"]` |
-| `"typescript"` | `"type"`, `"function"`, `"property"` | `"type"` for sources, all three for citers |
+| `"typescript"` | `"type"`, `"function"`, `"property"` | all three for claims, `"type"` for references |
 
-For TypeScript, `"type"` selects exported interfaces and type aliases, `"function"` selects exported functions, and `"property"` selects properties declared by exported type-level symbols; a property's identity includes its declaring type. A `symbol` array widens what counts as evidence within one source, and it never creates a second obligation.
+For TypeScript, `"type"` selects exported interfaces and type aliases, `"function"` selects exported functions, and `"property"` selects properties declared by exported type-level symbols; a property's identity includes its declaring type. A reference's `symbol` selects the evidence units one obligation covers, and an array widens that unit set without creating a second obligation.
 
-A citer group uses the same selector to restrict which symbol kinds may host an `@evidence` tag. Omit `symbol` to allow every supported kind.
+A claim's `symbol` uses the same selector for the opposite side: it restricts which symbol kinds may host an `@evidence` tag. Omit either selector to accept its documented default.
 
 ### File patterns
 
@@ -207,12 +207,12 @@ At most one seller coupon and one platform coupon may combine on a single order.
 
 ```text
 $ npx ttsc check
-error TS13830: [evidence-graph/index] Missing acknowledgement for 'docs/discount.md#coupon-stacking' (Markdown H2 'Coupon Stacking' at docs/discount.md:3) in Source 1 citer 1 (typescript, symbols: function). Add '@evidence docs/discount.md#coupon-stacking <reason>' to a selected typescript host, or '@evidenceExclude docs/discount.md#coupon-stacking <reason>' when this group intentionally does not use it.
+error TS13830: [evidence-graph/index] Missing acknowledgement for 'docs/discount.md#coupon-stacking' (Markdown H2 'Coupon Stacking' at docs/discount.md:3) in Claim 1 reference 1 (markdown, symbols: h2, h3). Add '@evidence docs/discount.md#coupon-stacking <reason>' to a selected typescript host of this claim, or '@evidenceExclude docs/discount.md#coupon-stacking <reason>' when this claim intentionally does not use it.
 
 Found 1 error.
 ```
 
-The section exists in the spec, but no React component cites it, so the build fails. The diagnostic names the exact section, the citer group that owes it, and both repairs: implement it and cite the section, or exempt it with an `@evidenceExclude` reason a reviewer can veto.
+The section exists in the spec, but no React component cites it, so the build fails. The diagnostic names the exact section, the claim that owes it, and both repairs: implement it and cite the section, or exempt it with an `@evidenceExclude` reason a reviewer can veto.
 
 ## Concepts
 

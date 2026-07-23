@@ -19,19 +19,19 @@ const (
 )
 
 type graphConfig struct {
-	Sources []sourceSpec
+	Claims []claimSpec
 }
 
-type sourceSpec struct {
-	Index   int
-	Type    artifactKind
-	Name    string
-	Files   globSet
-	Symbols symbolSet
-	CitedBy []citerSpec
+type claimSpec struct {
+	Index      int
+	Type       artifactKind
+	Name       string
+	Files      globSet
+	Symbols    symbolSet
+	References []referenceSpec
 }
 
-type citerSpec struct {
+type referenceSpec struct {
 	Index   int
 	Type    artifactKind
 	Files   globSet
@@ -104,17 +104,18 @@ type inventoryProblem struct {
 	Message string
 }
 
-type sourceState struct {
-	Spec     sourceSpec
-	Units    []*evidenceUnit
-	UnitByID map[string]*evidenceUnit
-	Citers   []citerState
-}
-
-type citerState struct {
-	Spec         citerSpec
+type claimState struct {
+	Spec         claimSpec
 	Paths        []string
 	Declarations []*evidenceDeclaration
+	References   []referenceState
+}
+
+type referenceState struct {
+	Spec     referenceSpec
+	Paths    []string
+	Units    []*evidenceUnit
+	UnitByID map[string]*evidenceUnit
 }
 
 func decimal(value int) string {

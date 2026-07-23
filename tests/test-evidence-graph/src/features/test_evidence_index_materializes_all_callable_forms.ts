@@ -7,15 +7,15 @@ import {
 } from "../internal/project.ts";
 
 /**
- * Verifies every public callable form as a TypeScript evidence source.
+ * Verifies every public callable form as TypeScript evidence.
  *
  * Function declarations alone would miss ordinary exported arrow functions,
  * class APIs, and namespace APIs even though all of them are selected by the
  * public `"function"` contract. The fixture acknowledges each qualified target
- * from one Markdown file so a silently omitted unit cannot hide behind an
- * incomplete citer population.
+ * from one Markdown claim so a silently omitted unit cannot hide behind an
+ * incomplete claim.
  *
- * 1. Declare top-level, class, and namespace callables in one source file.
+ * 1. Declare top-level, class, and namespace callables in one referenced file.
  * 2. Acknowledge every documented target identity from a Markdown file host.
  * 3. Assert that the complete graph passes without unresolved or missing units.
  */
@@ -30,14 +30,14 @@ export const test_evidence_index_materializes_all_callable_forms = (): void => {
       '  plugins: { "evidence-graph": evidenceGraph },',
       "  rules: {",
       '    "evidence-graph/index": ["error", {',
-      "      sources: [{",
-      '        type: "typescript",',
-      '        files: ["src/contracts.ts"],',
-      '        symbol: "function",',
-      "        citedBy: {",
-      '          type: "markdown",',
-      '          files: ["docs/functions.md"],',
-      '          symbol: "file",',
+      "      claims: [{",
+      '        type: "markdown",',
+      '        files: ["docs/functions.md"],',
+      '        symbol: "file",',
+      "        reference: {",
+      '          type: "typescript",',
+      '          files: ["src/contracts.ts"],',
+      '          symbol: "function",',
       "        },",
       "      }],",
       "    }],",
@@ -97,7 +97,7 @@ export const test_evidence_index_materializes_all_callable_forms = (): void => {
     assertExcludes(
       result,
       "Missing acknowledgement",
-      "The citing file acknowledges every callable unit.",
+      "The claiming file acknowledges every callable unit.",
     );
   } finally {
     project.cleanup();

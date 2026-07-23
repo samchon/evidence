@@ -10,12 +10,13 @@ import {
  * Verifies the published consumer contract through a real `lint.config.ts`.
  *
  * The fixture imports both exported types, registers the shipped plugin object,
- * and uses the typed severity-plus-options tuple. Its citer group selects an
- * exported arrow-function `const`, so the same run also proves that this
- * callable form can host a JSDoc declaration.
+ * and uses the typed severity-plus-options tuple. Its claim selects an exported
+ * arrow-function `const`, so the same run also proves that this callable form
+ * can host a JSDoc declaration.
  *
- * 1. Configure one Markdown H2 source through `IEvidenceGraphConfig`.
- * 2. Cite it from an exported arrow function selected as `"function"`.
+ * 1. Configure one TypeScript claim over a Markdown H2 reference through
+ *    `IEvidenceGraphConfig`.
+ * 2. Cite the section from an exported arrow function selected as `"function"`.
  * 3. Assert that `ttsc check` accepts the typed project without a diagnostic.
  */
 export const test_evidence_index_accepts_typed_consumer_config = (): void => {
@@ -26,15 +27,15 @@ export const test_evidence_index_accepts_typed_consumer_config = (): void => {
       'import { evidenceGraph, type IEvidenceGraphConfig } from "@samchon/evidence-graph";',
       "",
       "const graph: IEvidenceGraphConfig = {",
-      "  sources: [{",
-      '    type: "markdown",',
+      "  claims: [{",
+      '    type: "typescript",',
       '    name: "Order contract",',
-      '    files: ["docs/**/*.md"],',
-      '    symbol: "h2",',
-      "    citedBy: {",
-      '      type: "typescript",',
-      '      files: ["src/**/*.ts"],',
-      '      symbol: "function",',
+      '    files: ["src/**/*.ts"],',
+      '    symbol: "function",',
+      "    reference: {",
+      '      type: "markdown",',
+      '      files: ["docs/**/*.md"],',
+      '      symbol: "h2",',
       "    },",
       "  }],",
       "};",

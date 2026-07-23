@@ -153,7 +153,7 @@ export const draw = (): void => {};
 }
 
 /**
- * Verifies TypeScript callable citer hosts: JSDoc on arrow constants,
+ * Verifies TypeScript callable claim hosts: JSDoc on arrow constants,
  * instance methods, static methods, and namespace functions is accepted.
  *
  * These declarations attach JSDoc to different AST shapes. Exercising them
@@ -162,9 +162,9 @@ export const draw = (): void => {};
  *
  *  1. Materialize four Markdown source headings.
  *  2. Cite one from each documented callable host form.
- *  3. Assert the function-only citer group is complete.
+ *  3. Assert the function-only claim group is complete.
  */
-func TestTypeScriptFunctionCiterAcceptsEveryCallableHost(t *testing.T) {
+func TestTypeScriptFunctionClaimAcceptsEveryCallableHost(t *testing.T) {
 	messages := runIndexRule(t, map[string]string{
 		"docs/spec.md": `## Arrow
 ## Instance
@@ -196,11 +196,11 @@ export namespace Api {
   export function send(): void {}
 }
 `,
-	}, `{"sources":[{
-		"type":"markdown",
-		"files":["docs/spec.md"],
-		"symbol":"h2",
-		"citedBy":{"type":"typescript","files":["src/api.ts"],"symbol":"function"}
+	}, `{"claims":[{
+		"type":"typescript",
+		"files":["src/api.ts"],
+		"symbol":"function",
+		"reference":{"type":"markdown","files":["docs/spec.md"],"symbol":"h2"}
 	}]}`)
 	assertNoProblems(t, messages)
 }
@@ -226,11 +226,11 @@ const 설명 = "다국어 선행 텍스트";
 /** @evidence docs/spec.md#contract 이 타입은 문서의 계약을 따른다. */
 export interface Ref {}
 `,
-	}, `{"sources":[{
-		"type":"markdown",
-		"files":["docs/spec.md"],
-		"symbol":"h2",
-		"citedBy":{"type":"typescript","files":["src/ref.ts"],"symbol":"type"}
+	}, `{"claims":[{
+		"type":"typescript",
+		"files":["src/ref.ts"],
+		"symbol":"type",
+		"reference":{"type":"markdown","files":["docs/spec.md"],"symbol":"h2"}
 	}]}`)
 	assertNoProblems(t, messages)
 }
@@ -239,7 +239,7 @@ export interface Ref {}
  * Verifies the TypeScript source default: omitting symbol selects exported
  * interfaces and type aliases without charging callable or property units.
  *
- * The default is intentionally narrower than the citer default. A test that
+ * The default is intentionally narrower than the claim default. A test that
  * merely inspects decoded options would miss a materializer that ignored the
  * selector and indexed every discovered declaration anyway.
  *
@@ -261,10 +261,11 @@ export const render = (): void => {};
 @evidence Options Options are documented here.
 -->
 `,
-	}, `{"sources":[{
-		"type":"typescript",
-		"files":["src/contracts.ts"],
-		"citedBy":{"type":"markdown","files":["docs/ledger.md"],"symbol":"h1"}
+	}, `{"claims":[{
+		"type":"markdown",
+		"files":["docs/ledger.md"],
+		"symbol":"h1",
+		"reference":{"type":"typescript","files":["src/contracts.ts"]}
 	}]}`)
 	assertNoProblems(t, messages)
 }
@@ -295,11 +296,11 @@ export const draw = (): void => {};
 @evidence draw The callable is documented.
 -->
 `,
-	}, `{"sources":[{
-		"type":"typescript",
-		"files":["src/contracts.ts"],
-		"symbol":["type","function","property"],
-		"citedBy":{"type":"markdown","files":["docs/ledger.md"],"symbol":"file"}
+	}, `{"claims":[{
+		"type":"markdown",
+		"files":["docs/ledger.md"],
+		"symbol":"file",
+		"reference":{"type":"typescript","files":["src/contracts.ts"],"symbol":["type","function","property"]}
 	}]}`)
 	assertNoProblems(t, messages)
 }
@@ -370,13 +371,13 @@ export type {
  * Verifies a callable exported through a local alias remains an eligible JSDoc
  * host, including for an exclusion acknowledgement.
  *
- * Source materialization and citer-host selection use the same public
+ * Source materialization and claim-host selection use the same public
  * export analysis. Testing only source targets could leave aliased callables
  * visible as evidence while rejecting declarations attached to them.
  *
  *  1. Attach an exclusion to a local arrow-function `const`.
  *  2. Export that declaration under a public alias.
- *  3. Assert the function-only citer group accepts the host and exclusion.
+ *  3. Assert the function-only claim group accepts the host and exclusion.
  */
 func TestTypeScriptExportAliasCanHostEvidenceExclusion(t *testing.T) {
 	messages := runIndexRule(t, map[string]string{
@@ -386,11 +387,11 @@ func TestTypeScriptExportAliasCanHostEvidenceExclusion(t *testing.T) {
 const local = (): void => {};
 export { local as publicAdapter };
 `,
-	}, `{"sources":[{
-		"type":"markdown",
-		"files":["docs/spec.md"],
-		"symbol":"h2",
-		"citedBy":{"type":"typescript","files":["src/ref.ts"],"symbol":"function"}
+	}, `{"claims":[{
+		"type":"typescript",
+		"files":["src/ref.ts"],
+		"symbol":"function",
+		"reference":{"type":"markdown","files":["docs/spec.md"],"symbol":"h2"}
 	}]}`)
 	assertNoProblems(t, messages)
 }
@@ -484,19 +485,19 @@ export const Shared = (): void => {};
 `,
 		"docs/ledger.md": "<!-- @evidence Shared The public callable is documented. -->\n",
 	}
-	functionOnly := runIndexRule(t, files, `{"sources":[{
-		"type":"typescript",
-		"files":["src/contracts.ts"],
-		"symbol":"function",
-		"citedBy":{"type":"markdown","files":["docs/ledger.md"],"symbol":"file"}
+	functionOnly := runIndexRule(t, files, `{"claims":[{
+		"type":"markdown",
+		"files":["docs/ledger.md"],
+		"symbol":"file",
+		"reference":{"type":"typescript","files":["src/contracts.ts"],"symbol":"function"}
 	}]}`)
 	assertNoProblems(t, functionOnly)
 
-	bothKinds := runIndexRule(t, files, `{"sources":[{
-		"type":"typescript",
-		"files":["src/contracts.ts"],
-		"symbol":["type","function"],
-		"citedBy":{"type":"markdown","files":["docs/ledger.md"],"symbol":"file"}
+	bothKinds := runIndexRule(t, files, `{"claims":[{
+		"type":"markdown",
+		"files":["docs/ledger.md"],
+		"symbol":"file",
+		"reference":{"type":"typescript","files":["src/contracts.ts"],"symbol":["type","function"]}
 	}]}`)
 	assertProblemContains(t, bothKinds, "Ambiguous evidence target 'Shared'")
 }
@@ -522,11 +523,11 @@ func TestTypeScriptIdentityPreservesLiteralSegmentBoundaries(t *testing.T) {
 }
 `,
 		"docs/ledger.md": "<!-- @evidence Service.prototype.run This target cannot choose a callable. -->\n",
-	}, `{"sources":[{
-		"type":"typescript",
-		"files":["src/contracts.ts"],
-		"symbol":"function",
-		"citedBy":{"type":"markdown","files":["docs/ledger.md"],"symbol":"file"}
+	}, `{"claims":[{
+		"type":"markdown",
+		"files":["docs/ledger.md"],
+		"symbol":"file",
+		"reference":{"type":"typescript","files":["src/contracts.ts"],"symbol":"function"}
 	}]}`)
 	assertProblemContains(t, messages, "Ambiguous evidence target 'Service.prototype.run'")
 	assertProblemContains(t, messages, "src/contracts.ts:2")
@@ -542,7 +543,7 @@ func TestTypeScriptIdentityPreservesLiteralSegmentBoundaries(t *testing.T) {
  * independently acknowledgeable.
  *
  *  1. Export slash and backslash static literal methods.
- *  2. Acknowledge each exact target from one Markdown citer group.
+ *  2. Acknowledge each exact target from one Markdown claim group.
  *  3. Assert both callable units resolve without collision.
  */
 func TestTypeScriptLiteralTargetsKeepExactSeparators(t *testing.T) {
@@ -557,11 +558,11 @@ func TestTypeScriptLiteralTargetsKeepExactSeparators(t *testing.T) {
 @evidence Service.a/b The slash-named callable is documented.
 -->
 `,
-	}, `{"sources":[{
-		"type":"typescript",
-		"files":["src/contracts.ts"],
-		"symbol":"function",
-		"citedBy":{"type":"markdown","files":["docs/ledger.md"],"symbol":"file"}
+	}, `{"claims":[{
+		"type":"markdown",
+		"files":["docs/ledger.md"],
+		"symbol":"file",
+		"reference":{"type":"typescript","files":["src/contracts.ts"],"symbol":"function"}
 	}]}`)
 	assertNoProblems(t, messages)
 }

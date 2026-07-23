@@ -33,11 +33,11 @@ export interface Unknown {}
 /** @evidenceExclude docs/spec.md#contract A second acknowledgement is still a duplicate. */
 export interface Duplicate {}
 `,
-	}, `{"sources":[{
-		"type":"markdown",
-		"files":["docs/spec.md"],
-		"symbol":"h2",
-		"citedBy":{"type":"typescript","files":["src/ref.ts"],"symbol":"type"}
+	}, `{"claims":[{
+		"type":"typescript",
+		"files":["src/ref.ts"],
+		"symbol":"type",
+		"reference":{"type":"markdown","files":["docs/spec.md"],"symbol":"h2"}
 	}]}`)
 	assertProblemContains(t, messages, "Malformed @evidence declaration")
 	assertProblemContains(t, messages, "Unresolved evidence target 'docs/spec.md#unknown'")
@@ -69,11 +69,11 @@ func TestDeclarationReasonStopsAtTheNextJSDocTag(t *testing.T) {
  */
 export function ref(): void {}
 `,
-	}, `{"sources":[{
-		"type":"markdown",
-		"files":["docs/spec.md"],
-		"symbol":"h2",
-		"citedBy":{"type":"typescript","files":["src/ref.ts"],"symbol":"function"}
+	}, `{"claims":[{
+		"type":"typescript",
+		"files":["src/ref.ts"],
+		"symbol":"function",
+		"reference":{"type":"markdown","files":["docs/spec.md"],"symbol":"h2"}
 	}]}`)
 	assertProblemContains(t, messages, "Malformed @evidence declaration")
 	assertProblemContains(t, messages, "Missing acknowledgement")
@@ -99,11 +99,11 @@ func TestMarkdownDeclarationReasonMayBeginWithAtSign(t *testing.T) {
 @architecture approved this adoption.
 -->
 `,
-	}, `{"sources":[{
+	}, `{"claims":[{
 		"type":"markdown",
-		"files":["docs/spec.md"],
-		"symbol":"h2",
-		"citedBy":{"type":"markdown","files":["docs/ref.md"],"symbol":"file"}
+		"files":["docs/ref.md"],
+		"symbol":"file",
+		"reference":{"type":"markdown","files":["docs/spec.md"],"symbol":"h2"}
 	}]}`)
 	assertNoProblems(t, messages)
 }
@@ -127,11 +127,11 @@ func TestMarkdownTargetsAcceptWindowsPathSeparators(t *testing.T) {
 /** @evidence docs\spec.md#contract This type adopts the portable document path. */
 export interface Ref {}
 `,
-	}, `{"sources":[{
-		"type":"markdown",
-		"files":["docs/spec.md"],
-		"symbol":"h2",
-		"citedBy":{"type":"typescript","files":["src/ref.ts"],"symbol":"type"}
+	}, `{"claims":[{
+		"type":"typescript",
+		"files":["src/ref.ts"],
+		"symbol":"type",
+		"reference":{"type":"markdown","files":["docs/spec.md"],"symbol":"h2"}
 	}]}`)
 	assertNoProblems(t, messages)
 }
@@ -152,16 +152,16 @@ export interface Ref {}
 func TestMarkdownDeclarationPreservesMultilineTagLocation(t *testing.T) {
 	messages := runIndexRule(t, map[string]string{
 		"docs/spec.md": "## Contract\n",
-		"docs/ref.md": `# Citer
+		"docs/ref.md": `# Claim
 <!--
 @evidence docs/spec.md#contract
 -->
 `,
-	}, `{"sources":[{
+	}, `{"claims":[{
 		"type":"markdown",
-		"files":["docs/spec.md"],
-		"symbol":"h2",
-		"citedBy":{"type":"markdown","files":["docs/ref.md"],"symbol":"h1"}
+		"files":["docs/ref.md"],
+		"symbol":"h1",
+		"reference":{"type":"markdown","files":["docs/spec.md"],"symbol":"h2"}
 	}]}`)
 	assertProblemContains(t, messages, "Malformed @evidence declaration at docs/ref.md:3")
 }
@@ -258,20 +258,21 @@ export interface SecondRef {}
  * of graph identity and silently redirect evidence.
  *
  *  1. Materialize `Shared` from two source files.
- *  2. Cite `Shared` from a Markdown citer.
+ *  2. Cite `Shared` from a Markdown claim.
  *  3. Assert the target is ambiguous and names both declarations.
  */
 func TestDeclarationsRejectAmbiguousTypeScriptTargets(t *testing.T) {
 	messages := runIndexRule(t, map[string]string{
 		"src/a.ts": "export interface Shared {}\n",
 		"src/b.ts": "export interface Shared {}\n",
-		"docs/ref.md": `# Citer
+		"docs/ref.md": `# Claim
 <!-- @evidence Shared This document relies on the shared type. -->
 `,
-	}, `{"sources":[{
-		"type":"typescript",
-		"files":["src/*.ts"],
-		"citedBy":{"type":"markdown","files":["docs/ref.md"],"symbol":"h1"}
+	}, `{"claims":[{
+		"type":"markdown",
+		"files":["docs/ref.md"],
+		"symbol":"h1",
+		"reference":{"type":"typescript","files":["src/*.ts"]}
 	}]}`)
 	assertProblemContains(t, messages, "Ambiguous evidence target 'Shared'")
 	assertProblemContains(t, messages, "src/a.ts")
@@ -299,11 +300,11 @@ func TestDeclarationsRejectDuplicateMarkdownAnchors(t *testing.T) {
 /** @evidence docs/spec.md#shared This target cannot choose a section. */
 export interface Ref {}
 `,
-	}, `{"sources":[{
-		"type":"markdown",
-		"files":["docs/spec.md"],
-		"symbol":"h2",
-		"citedBy":{"type":"typescript","files":["src/ref.ts"],"symbol":"type"}
+	}, `{"claims":[{
+		"type":"typescript",
+		"files":["src/ref.ts"],
+		"symbol":"type",
+		"reference":{"type":"markdown","files":["docs/spec.md"],"symbol":"h2"}
 	}]}`)
 	assertProblemContains(t, messages, "Ambiguous evidence target 'docs/spec.md#shared'")
 	assertProblemContains(t, messages, "Markdown H2 'First'")
@@ -311,11 +312,11 @@ export interface Ref {}
 }
 
 /**
- * Verifies citer host scope: a resolvable declaration on an unselected
+ * Verifies claim host scope: a resolvable declaration on an unselected
  * symbol kind does not satisfy coverage.
  *
  * Resolution and host eligibility are separate checks. Treating every JSDoc
- * tag in a matched file as valid would make a property-only citer selector
+ * tag in a matched file as valid would make a property-only claim selector
  * indistinguishable from the all-symbol default.
  *
  *  1. Select only TypeScript property hosts.
@@ -329,11 +330,11 @@ func TestDeclarationsRejectOutOfScopeSymbolHosts(t *testing.T) {
 /** @evidence docs/spec.md#contract This function is outside the selected host kind. */
 export function ref(): void {}
 `,
-	}, `{"sources":[{
-		"type":"markdown",
-		"files":["docs/spec.md"],
-		"symbol":"h2",
-		"citedBy":{"type":"typescript","files":["src/ref.ts"],"symbol":"property"}
+	}, `{"claims":[{
+		"type":"typescript",
+		"files":["src/ref.ts"],
+		"symbol":"property",
+		"reference":{"type":"markdown","files":["docs/spec.md"],"symbol":"h2"}
 	}]}`)
 	assertProblemContains(t, messages, "Out-of-scope @evidence host")
 	assertProblemContains(t, messages, "host kind 'function' is not selected")
@@ -341,18 +342,18 @@ export function ref(): void {}
 }
 
 /**
- * Verifies TypeScript citer defaults: type, function, and qualified
+ * Verifies TypeScript claim defaults: type, function, and qualified
  * property hosts all accept evidence declarations when symbol is omitted.
  *
- * The citer default is the union of all supported kinds, unlike the source
+ * The claim default is the union of all supported kinds, unlike the source
  * default. This complete graph proves each host can fire rather than trusting a
  * quiet rule with only one declaration shape.
  *
  *  1. Materialize three Markdown headings.
  *  2. Cite them from an interface, function, and interface property.
- *  3. Assert the omitted citer selector accepts every host kind.
+ *  3. Assert the omitted claim selector accepts every host kind.
  */
-func TestTypeScriptCiterDefaultAcceptsEverySymbolKind(t *testing.T) {
+func TestTypeScriptClaimDefaultAcceptsEverySymbolKind(t *testing.T) {
 	messages := runIndexRule(t, map[string]string{
 		"docs/spec.md": `## Type
 ## Function
@@ -368,11 +369,10 @@ export interface Ref {
 /** @evidence docs/spec.md#function The function adopts this section. */
 export function execute(): void {}
 `,
-	}, `{"sources":[{
-		"type":"markdown",
-		"files":["docs/spec.md"],
-		"symbol":"h2",
-		"citedBy":{"type":"typescript","files":["src/ref.ts"]}
+	}, `{"claims":[{
+		"type":"typescript",
+		"files":["src/ref.ts"],
+		"reference":{"type":"markdown","files":["docs/spec.md"],"symbol":"h2"}
 	}]}`)
 	assertNoProblems(t, messages)
 }
