@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "@samchon/evidence-graph-station",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Evidence-graph lint contributor for @ttsc/lint workspace.",
   "scripts": {
     "build": "pnpm --filter=./packages/* -r build",
