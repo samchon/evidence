@@ -6,404 +6,289 @@ import (
 	"sort"
 	"strings"
 
-	shimast "github.com/microsoft/typescript-go/shim/ast"
-
 	"github.com/samchon/ttsc/packages/lint/rule"
 )
 
-// indexRuleName is the project rule every file rule gates on.
-const indexRuleName = "evidence-graph/index"
-
-// evidenceIndex is the identity source for every reference.
-//
-// It is built once per Program by the project rule below and read by file rules
-// through Context.ProjectResult. It must be treated as IMMUTABLE after
-// construction: the host synchronizes the state wrapper but not its contents,
-// and file rules read it from a parallel walk.
-type evidenceIndex struct {
-	// Documents maps a project-relative slash path to its sections.
-	Documents map[string][]documentSection
-	// Symbols is the set of qualified declaration names in the Program.
-	Symbols map[string]bool
-	// DocumentPatterns records what was scanned, so a diagnostic can tell an
-	// author their document is simply not covered rather than missing.
-	DocumentPatterns []string
-	// Root is the resolved project root.
-	//
-	// It is published here because rule.Context carries no ProjectIdentity —
-	// only a project rule receives one. A file rule that needs to match its own
-	// path against a folder glob has no other way to learn what the path is
-	// relative to.
-	Root string
-}
-
-// relativePath converts an absolute source path into the project-relative,
-// slash-separated form that folder globs are written against.
-//
-// The second return is false when the path escapes the root, and the caller
-// must then stay silent rather than guess. The host relativizes its own `files:`
-// globs through an unexported helper that resolves symlinks and Windows 8.3
-// short names on both sides first; this package cannot reach that helper, so a
-// junction or short-name ancestor makes a plain Rel disagree with the host and
-// return a `..`-prefixed path. Matching a glob against that would be nonsense,
-// and reporting on it would blame an author for a path they never wrote.
-func (index *evidenceIndex) relativePath(absolute string) (string, bool) {
-	if index == nil || index.Root == "" || absolute == "" {
-		return "", false
-	}
-	relative, err := filepath.Rel(index.Root, absolute)
-	if err != nil {
-		return "", false
-	}
-	normalized := normalizePath(relative)
-	if normalized == ".." || strings.HasPrefix(normalized, "../") {
-		return "", false
-	}
-	return normalized, true
-}
-
-// anchors returns a document's anchor set, or nil when the path is unknown.
-func (index *evidenceIndex) anchors(path string) ([]documentSection, bool) {
-	if index == nil {
-		return nil, false
-	}
-	sections, ok := index.Documents[path]
-	return sections, ok
-}
-
-// hasSymbol reports whether a qualified name was declared in the Program.
-func (index *evidenceIndex) hasSymbol(name string) bool {
-	if index == nil {
-		return false
-	}
-	return index.Symbols[name]
-}
-
-// documentPaths returns the indexed paths in deterministic order, for
-// diagnostics that suggest what the author might have meant.
-func (index *evidenceIndex) documentPaths() []string {
-	paths := make([]string, 0, len(index.Documents))
-	for path := range index.Documents {
-		paths = append(paths, path)
-	}
-	sort.Strings(paths)
-	return paths
-}
-
-type indexOptions struct {
-	// Documents are globs of markdown to index, project-relative.
-	Documents []string `json:"documents"`
-}
-
-// defaultDocumentPatterns indexes every markdown file in the project.
-//
-// A permissive default is right here: indexing a document nobody cites costs
-// one file read, while failing to index a cited one produces a dangling
-// reference that looks like the author's mistake.
-var defaultDocumentPatterns = []string{"**/*.md"}
-
-// skippedDirectories are never walked. These hold other people's markdown, and
-// indexing them would let a reference resolve against a dependency's README.
-var skippedDirectories = map[string]bool{
-	"node_modules": true,
-	".git":         true,
-	"lib":          true,
-	"dist":         true,
-	"coverage":     true,
-}
-
-// indexRule builds the document and symbol index once per Program.
-//
-// It is a project rule for one hard reason: markdown cannot enter a ttsc
-// Program at all. The lint host filters source files to the eight TypeScript
-// and JavaScript extensions and constrains them to the tsconfig file list, so
-// there is no node to hang a markdown finding on and no file rule that would
-// ever be dispatched for a `.md` file. A project rule runs once per Program
-// with no such dispatch, and Go can read the filesystem directly, so the index
-// is built here and published for file rules to read.
 type indexRule struct{}
 
 func (indexRule) Name() string { return indexRuleName }
 
-// NeedsTypeChecker is false because this rule reads markdown from disk and
-// walks ctx.Sources syntactically. It never touches ctx.Checker.
-//
-// The marker does nothing on @ttsc/lint 0.19.1, where a declared project rule
-// sets the engine-wide checker flag unconditionally and so serializes the file
-// walk for every rule in the run. It is declared anyway: it is true, it costs
-// nothing, and it becomes effective the moment the host honors it. See
-// samchon/ttsc feat/lint-project-rule-checker-opt-out.
 func (indexRule) NeedsTypeChecker() bool { return false }
 
 func (indexRule) Check(ctx *rule.ProjectContext) {
 	if ctx == nil {
 		return
 	}
-	var options indexOptions
-	_ = ctx.DecodeOptions(&options)
-	patterns := options.Documents
-	if len(patterns) == 0 {
-		patterns = defaultDocumentPatterns
+	config, problems := decodeGraphConfig(ctx.Options)
+	if len(problems) != 0 {
+		reportProblems(ctx, problems)
+		return
 	}
-
-	root := projectRoot(ctx.Identity)
+	root := evidenceProjectRoot(ctx.Identity)
 	if root == "" {
-		// Without a root, every relative path is a guess. Publishing an empty
-		// index would make every reference dangle and blame the author for a
-		// host-side gap, so publish nothing and let the gate hold the file
-		// rules silent.
-		ctx.Report(
-			"Evidence index could not resolve the project root, so no document " +
-				"was indexed and every evidence rule stayed silent. This is a host " +
-				"integration gap rather than a source defect.",
-		)
+		ctx.Report("Evidence graph could not resolve the project root. Run ttsc with a project config or explicit project root so project-relative evidence globs have one stable base.")
+		return
+	}
+	info, err := os.Stat(root)
+	if err != nil || !info.IsDir() {
+		ctx.Report("Evidence graph project root '" + root + "' is not a readable directory. Fix the ttsc project identity before evaluating evidence globs.")
 		return
 	}
 
-	index := buildEvidenceIndex(root, patterns, ctx.Sources)
-	reportAmbiguousAnchors(ctx, index)
-
-	// Published even when empty. Presence is the signal, not length: an index
-	// that exists proves the scan ran, which is exactly what a file rule needs
-	// to know before it dares to report a dangling reference.
-	ctx.SetState(index)
+	markdown, markdownProblems := loadMarkdownInventories(root, config)
+	typescript := loadTypeScriptInventories(root, ctx.Sources)
+	problems = append(problems, markdownProblems...)
+	states, stateProblems := materializeSourceStates(config, markdown, typescript)
+	problems = append(problems, stateProblems...)
+	problems = append(problems, evaluateEvidenceGraph(states)...)
+	reportProblems(ctx, problems)
 }
 
-// buildEvidenceIndex scans the project's markdown and symbols.
-//
-// It is shared rather than owned by the index rule because project rules cannot
-// read one another's state — ProjectResultReader hangs off the file-rule
-// Context only. `evidence-graph/coverage` is therefore a project rule that must build
-// its own view, and the folder-to-node mapping must live in one function or the
-// two rules drift apart. That drift is exactly the duplicated-formula problem
-// this plugin exists to avoid, so the cost paid here is deliberate: the
-// markdown is scanned once per project rule rather than once per Program.
-// Duplicated work is recoverable; duplicated logic is not.
-func buildEvidenceIndex(
-	root string,
-	patterns []string,
-	sources []*shimast.SourceFile,
-) *evidenceIndex {
-	index := &evidenceIndex{
-		Documents:        map[string][]documentSection{},
-		Symbols:          map[string]bool{},
-		DocumentPatterns: patterns,
-		Root:             root,
-	}
-	collectDocuments(root, patterns, index)
-	collectSymbols(sources, index)
-	return index
+func init() {
+	rule.RegisterProject(indexRule{})
 }
 
-// projectRoot prefers the physical root because it is the filesystem identity
-// the compiler itself resolved, not the caller's spelling of it.
-func projectRoot(identity rule.ProjectIdentity) string {
+func evidenceProjectRoot(identity rule.ProjectIdentity) string {
 	for _, candidate := range []string{
 		identity.PhysicalProjectRoot,
 		identity.LogicalProjectRoot,
 		identity.ExplicitProjectRoot,
 		identity.InvocationCwd,
 	} {
-		if candidate != "" {
-			return candidate
+		if candidate == "" {
+			continue
+		}
+		absolute, err := filepath.Abs(candidate)
+		if err == nil {
+			return filepath.Clean(absolute)
 		}
 	}
 	return ""
 }
 
-// collectDocuments walks the project once and indexes every markdown file
-// matching a pattern.
-func collectDocuments(root string, patterns []string, index *evidenceIndex) {
-	_ = filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			// An unreadable subtree is not this rule's business to adjudicate;
-			// skipping it is better than failing a build over a permission
-			// quirk in a directory nobody cites.
-			return nil
+func materializeSourceStates(
+	config graphConfig,
+	markdown map[string]*artifactInventory,
+	typescript map[string]*artifactInventory,
+) ([]sourceState, []string) {
+	states := make([]sourceState, 0, len(config.Sources))
+	problems := []string{}
+	for _, source := range config.Sources {
+		inventories := inventoriesOf(source.Type, markdown, typescript)
+		paths := matchingInventoryPaths(inventories, source.Files)
+		state := sourceState{
+			Spec:     source,
+			UnitByID: map[string]*evidenceUnit{},
 		}
-		if info.IsDir() {
-			if skippedDirectories[info.Name()] {
-				return filepath.SkipDir
+		if len(paths) == 0 {
+			problems = append(
+				problems,
+				sourceLabel(source)+" matched no "+string(source.Type)+" files for "+describePatterns(source.Files)+". Fix the project-relative globs; '*' stays within one segment, '**' crosses segments, and a bare directory is not recursive.",
+			)
+		}
+		for _, path := range paths {
+			for _, unit := range inventories[path].Units {
+				if !source.Symbols.contains(unit.Symbol) || state.UnitByID[unit.ID] != nil {
+					continue
+				}
+				state.UnitByID[unit.ID] = unit
+				state.Units = append(state.Units, unit)
 			}
-			return nil
 		}
-		if !strings.HasSuffix(strings.ToLower(info.Name()), ".md") {
-			return nil
+		sortUnits(state.Units)
+		if len(paths) != 0 && len(state.Units) == 0 {
+			problems = append(
+				problems,
+				sourceLabel(source)+" matched "+decimal(len(paths))+" file(s) but materialized no selected evidence units ("+source.Symbols.names()+"). Select symbol kinds present in those files or correct the source globs.",
+			)
 		}
-		relative, relErr := filepath.Rel(root, path)
-		if relErr != nil {
-			return nil
+		for _, reference := range source.References {
+			referenceInventories := inventoriesOf(reference.Type, markdown, typescript)
+			referencePaths := matchingInventoryPaths(referenceInventories, reference.Files)
+			referenceState := referenceState{Spec: reference, Paths: referencePaths}
+			if len(referencePaths) == 0 {
+				problems = append(
+					problems,
+					sourceLabel(source)+" "+referenceLabel(reference)+" matched no "+string(reference.Type)+" files for "+describePatterns(reference.Files)+". Fix the reference globs; this independent coverage group cannot acknowledge evidence without files.",
+				)
+			}
+			for _, path := range referencePaths {
+				referenceState.Declarations = append(
+					referenceState.Declarations,
+					referenceInventories[path].Declarations...,
+				)
+			}
+			state.Refs = append(state.Refs, referenceState)
 		}
-		key := normalizePath(relative)
-		if !matchAnyGlob(patterns, key) {
-			return nil
-		}
-		content, readErr := os.ReadFile(path)
-		if readErr != nil {
-			return nil
-		}
-		index.Documents[key] = scanMarkdownSections(string(content))
-		return nil
-	})
+		states = append(states, state)
+	}
+	return states, problems
 }
 
-// reportAmbiguousAnchors fails the index when one document has two sections
-// with the same anchor.
-//
-// Two headings that slug alike make a reference ambiguous, and an ambiguous
-// reference silently resolves to whichever came first. GitHub disambiguates by
-// suffixing `-1`, but copying that would mean a citation's meaning depends on
-// heading ORDER — reorder the document and the citation now points elsewhere,
-// with nothing reported. Refusing is the honest option.
-func reportAmbiguousAnchors(ctx *rule.ProjectContext, index *evidenceIndex) {
-	for _, path := range index.documentPaths() {
-		seen := map[string]documentSection{}
-		for _, section := range index.Documents[path] {
-			previous, clash := seen[section.Anchor]
-			if !clash {
-				seen[section.Anchor] = section
-				continue
+func evaluateEvidenceGraph(states []sourceState) []string {
+	problems := []string{}
+	targets := map[string]map[string]*evidenceUnit{}
+	for _, state := range states {
+		for _, unit := range state.Units {
+			target := normalizeTarget(unit.Target)
+			if targets[target] == nil {
+				targets[target] = map[string]*evidenceUnit{}
 			}
-			ctx.Report(
-				"Ambiguous evidence anchor '" + section.Anchor + "' in " + path +
-					": line " + itoa(previous.Line) + " and line " + itoa(section.Line) +
-					" resolve to the same anchor, so a citation to it has no single " +
-					"meaning. Give one heading an explicit anchor, as in " +
-					"'## " + section.Title + " {#" + section.Anchor + "-2}'.",
+			targets[target][unit.ID] = unit
+		}
+	}
+
+	declarations := map[string]*evidenceDeclaration{}
+	for _, state := range states {
+		for _, reference := range state.Refs {
+			for _, declaration := range reference.Declarations {
+				declarations[declaration.ID] = declaration
+			}
+		}
+	}
+	declarationIDs := make([]string, 0, len(declarations))
+	for id := range declarations {
+		declarationIDs = append(declarationIDs, id)
+	}
+	sort.Strings(declarationIDs)
+
+	resolved := map[string]string{}
+	for _, id := range declarationIDs {
+		declaration := declarations[id]
+		if !declaration.valid() {
+			problems = append(
+				problems,
+				"Malformed @"+string(declaration.Tag)+" declaration at "+declaration.location()+": target and non-empty reason are mandatory. Write '@"+string(declaration.Tag)+" <target> <reason>'.",
+			)
+			continue
+		}
+		candidates := targets[declaration.Target]
+		switch len(candidates) {
+		case 0:
+			problems = append(
+				problems,
+				"Unresolved evidence target '"+declaration.Target+"' at "+declaration.location()+": no configured source materializes that evidence unit. Correct the target or the owning source files/symbol selection.",
+			)
+		case 1:
+			for unitID := range candidates {
+				resolved[id] = unitID
+			}
+		default:
+			descriptions := make([]string, 0, len(candidates))
+			for _, unit := range candidates {
+				descriptions = append(descriptions, unit.Readable+" at "+unit.location())
+			}
+			sort.Strings(descriptions)
+			problems = append(
+				problems,
+				"Ambiguous evidence target '"+declaration.Target+"' at "+declaration.location()+": it matches "+strings.Join(descriptions, "; ")+". Rename or qualify the source symbols so the target has exactly one meaning.",
 			)
 		}
 	}
-}
 
-// collectSymbols indexes every declaration name a reference could address,
-// including names nested in namespaces so `IShoppingSale.IUpdate` resolves.
-func collectSymbols(sources []*shimast.SourceFile, index *evidenceIndex) {
-	for _, file := range sources {
-		if file == nil {
+	for _, state := range states {
+		if len(state.Units) == 0 {
 			continue
 		}
-		collectSymbolsFromStatements(file.Statements, "", index)
-	}
-}
-
-func collectSymbolsFromStatements(
-	statements *shimast.NodeList,
-	prefix string,
-	index *evidenceIndex,
-) {
-	if statements == nil {
-		return
-	}
-	for _, statement := range statements.Nodes {
-		collectSymbolsFromStatement(statement, prefix, index)
-	}
-}
-
-func collectSymbolsFromStatement(
-	statement *shimast.Node,
-	prefix string,
-	index *evidenceIndex,
-) {
-	if statement == nil {
-		return
-	}
-	switch statement.Kind {
-	case shimast.KindInterfaceDeclaration,
-		shimast.KindTypeAliasDeclaration,
-		shimast.KindClassDeclaration,
-		shimast.KindFunctionDeclaration,
-		shimast.KindEnumDeclaration:
-		addSymbol(index, prefix, shimast.NodeText(statement.Name()))
-	case shimast.KindVariableStatement:
-		declarations := statement.AsVariableStatement()
-		if declarations == nil || declarations.DeclarationList == nil {
-			return
-		}
-		list := declarations.DeclarationList.AsVariableDeclarationList()
-		if list == nil || list.Declarations == nil {
-			return
-		}
-		for _, declaration := range list.Declarations.Nodes {
-			if declaration == nil {
+		for _, reference := range state.Refs {
+			if len(reference.Paths) == 0 {
 				continue
 			}
-			addSymbol(index, prefix, shimast.NodeText(declaration.Name()))
+			acknowledged := map[string]*evidenceDeclaration{}
+			for _, declaration := range reference.Declarations {
+				unitID := resolved[declaration.ID]
+				unit := state.UnitByID[unitID]
+				if unit == nil {
+					continue
+				}
+				if !reference.Spec.Symbols.contains(declaration.Host) {
+					host := declaration.Host
+					if host == "" {
+						host = "unsupported or non-exported declaration"
+					}
+					problems = append(
+						problems,
+						"Out-of-scope @"+string(declaration.Tag)+" host at "+declaration.location()+" for "+sourceLabel(state.Spec)+" "+referenceLabel(reference.Spec)+": host kind '"+host+"' is not selected ("+reference.Spec.Symbols.names()+"). Move the declaration to a selected host or widen this reference's symbol selector.",
+					)
+					continue
+				}
+				if first := acknowledged[unitID]; first != nil {
+					problems = append(
+						problems,
+						"Duplicate acknowledgement for '"+unit.Target+"' in "+sourceLabel(state.Spec)+" "+referenceLabel(reference.Spec)+" at "+declaration.location()+"; the first is at "+first.location()+". Keep exactly one @evidence or @evidenceExclude declaration for this evidence unit in this reference group.",
+					)
+					continue
+				}
+				acknowledged[unitID] = declaration
+			}
+			for _, unit := range state.Units {
+				if acknowledged[unit.ID] != nil {
+					continue
+				}
+				problems = append(
+					problems,
+					"Missing acknowledgement for '"+unit.Target+"' ("+unit.Readable+" at "+unit.location()+") in "+sourceLabel(state.Spec)+" "+referenceLabel(reference.Spec)+". Add '@evidence "+unit.Target+" <reason>' to a selected "+string(reference.Spec.Type)+" host, or '@evidenceExclude "+unit.Target+" <reason>' when this group intentionally does not use it.",
+				)
+			}
 		}
-	case shimast.KindModuleDeclaration:
-		collectSymbolsFromModule(statement, prefix, index)
 	}
+	return problems
 }
 
-// collectSymbolsFromModule indexes a namespace and everything it qualifies.
-//
-// `namespace Outer.Inner {}` is not one node with a dotted name. It parses as
-// ModuleDeclaration(Outer) whose Body is ModuleDeclaration(Inner) whose Body is
-// the block, so the dotted form must be walked one level at a time, each level
-// extending the qualifier.
-//
-// The Kind check before AsModuleBlock is load-bearing rather than defensive.
-// The shim's As* accessors are type assertions: given the wrong node they
-// PANIC, they do not return nil. Here that panic took out the whole index rule,
-// and since every file rule gates on a resident index, one dotted namespace
-// anywhere in a project silently disabled evidence checking everywhere.
-func collectSymbolsFromModule(
-	statement *shimast.Node,
-	prefix string,
-	index *evidenceIndex,
-) {
-	module := statement.AsModuleDeclaration()
-	if module == nil {
-		return
+func inventoriesOf(
+	kind artifactKind,
+	markdown map[string]*artifactInventory,
+	typescript map[string]*artifactInventory,
+) map[string]*artifactInventory {
+	if kind == artifactMarkdown {
+		return markdown
 	}
-	name := shimast.NodeText(statement.Name())
-	addSymbol(index, prefix, name)
-	if module.Body == nil || name == "" {
-		return
-	}
-	qualified := qualify(prefix, name)
-	switch module.Body.Kind {
-	case shimast.KindModuleBlock:
-		body := module.Body.AsModuleBlock()
-		if body == nil {
-			return
+	return typescript
+}
+
+func matchingInventoryPaths(
+	inventories map[string]*artifactInventory,
+	globs globSet,
+) []string {
+	paths := []string{}
+	for path := range inventories {
+		if globs.matches(path) {
+			paths = append(paths, path)
 		}
-		collectSymbolsFromStatements(body.Statements, qualified, index)
-	case shimast.KindModuleDeclaration:
-		// The `Outer.Inner` form: recurse, carrying `Outer` as the qualifier.
-		collectSymbolsFromModule(module.Body, qualified, index)
 	}
+	sort.Strings(paths)
+	return paths
 }
 
-func addSymbol(index *evidenceIndex, prefix string, name string) {
-	if name == "" {
-		return
-	}
-	index.Symbols[qualify(prefix, name)] = true
+func sortUnits(units []*evidenceUnit) {
+	sort.Slice(units, func(left int, right int) bool {
+		if units[left].Target != units[right].Target {
+			return units[left].Target < units[right].Target
+		}
+		return units[left].ID < units[right].ID
+	})
 }
 
-func qualify(prefix string, name string) string {
-	if prefix == "" {
-		return name
+func sourceLabel(source sourceSpec) string {
+	label := "Source " + decimal(source.Index+1)
+	if source.Name != "" {
+		label += " ('" + source.Name + "')"
 	}
-	return prefix + "." + name
+	return label
 }
 
-// itoa avoids pulling strconv in for one call site.
-func itoa(value int) string {
-	if value == 0 {
-		return "0"
+func referenceLabel(reference referenceSpec) string {
+	return "reference " + decimal(reference.Index+1) + " (" + string(reference.Type) + ", symbols: " + reference.Symbols.names() + ")"
+}
+
+func reportProblems(ctx *rule.ProjectContext, problems []string) {
+	sort.Strings(problems)
+	previous := ""
+	for _, problem := range problems {
+		if problem == "" || problem == previous {
+			continue
+		}
+		ctx.Report(problem)
+		previous = problem
 	}
-	negative := value < 0
-	if negative {
-		value = -value
-	}
-	digits := []byte{}
-	for value > 0 {
-		digits = append([]byte{byte('0' + value%10)}, digits...)
-		value /= 10
-	}
-	if negative {
-		return "-" + string(digits)
-	}
-	return string(digits)
 }

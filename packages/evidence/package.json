@@ -15,15 +15,16 @@
     "access": "public"
   },
   "files": [
+    "LICENSE",
     "README.md",
-    "go.mod",
     "lib",
-    "native",
-    "src"
+    "native/*.go",
+    "!native/*_test.go"
   ],
   "scripts": {
     "build": "rimraf lib && tsc",
-    "prepack": "pnpm run build"
+    "prepack": "node -e \"const fs = require('node:fs'); for (const file of ['LICENSE', 'README.md']) fs.copyFileSync('../../' + file, file)\" && pnpm run build",
+    "postpack": "node -e \"const fs = require('node:fs'); for (const file of ['LICENSE', 'README.md']) fs.rmSync(file, { force: true })\""
   },
   "keywords": [
     "ttsc",

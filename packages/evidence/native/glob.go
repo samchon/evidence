@@ -1,120 +1,207 @@
 package evidence
 
-import "strings"
+import (
+	"errors"
+	"path/filepath"
+	"strings"
+)
 
-// Glob matching over slash-separated, project-relative paths.
-//
-// Hand-rolled because ttsc supplies this package's dependencies from
-// @ttsc/lint's module graph, so a third-party matcher such as doublestar is not
-// importable no matter what this package's local go.mod says. Standard
-// path.Match cannot help either: it has no `**` and its `*` refuses to cross a
-// separator, which is the one thing a folder policy needs.
-//
-// Supported syntax, matching the common .gitignore/editor subset:
-//
-//	**   any number of path segments, including none
-//	*    any run of characters within one segment
-//	?    exactly one character within one segment
-//
-// A pattern selects the matched entry and everything below it, so `docs`,
-// `docs/`, and `docs/**` all include `docs/spec.md`. This preserves exact-file
-// matches while making a directory scope behave like the spelling people use
-// in gitignore files and editors.
-//
-// Paths are compared case-sensitively. Case is identity: a case-insensitive
-// host still has one true spelling for a file, and matching `Docs/` against
-// `docs/` would silently admit a path the document index cannot resolve.
-func matchGlob(pattern string, name string) bool {
-	patternSegments := splitPath(pattern)
-	nameSegments := splitPath(name)
-	if matchSegments(patternSegments, nameSegments) {
-		return true
-	}
-	if len(patternSegments) == 0 {
-		return false
-	}
-	return matchSegments(append(patternSegments, "**"), nameSegments)
+type globSet struct {
+	Patterns []globPattern
 }
 
-// matchAnyGlob reports whether name matches at least one pattern. An empty
-// pattern list matches nothing, never everything: a policy that lost its
-// patterns must go quiet rather than silently apply to the whole repository.
-func matchAnyGlob(patterns []string, name string) bool {
-	for _, pattern := range patterns {
-		if matchGlob(pattern, name) {
-			return true
+type globPattern struct {
+	Raw      string
+	Segments []string
+	Exclude  bool
+}
+
+func newGlobSet(patterns []string) (globSet, error) {
+	set := globSet{Patterns: make([]globPattern, 0, len(patterns))}
+	positive := false
+	for _, raw := range patterns {
+		pattern, err := compileGlob(raw)
+		if err != nil {
+			return globSet{}, err
 		}
+		if !pattern.Exclude {
+			positive = true
+		}
+		set.Patterns = append(set.Patterns, pattern)
+	}
+	if !positive {
+		return globSet{}, errors.New("at least one positive glob is required before exclusions")
+	}
+	return set, nil
+}
+
+func compileGlob(raw string) (globPattern, error) {
+	if strings.TrimSpace(raw) == "" {
+		return globPattern{}, errors.New("glob strings must not be empty")
+	}
+	exclude := strings.HasPrefix(raw, "!")
+	value := raw
+	if exclude {
+		value = strings.TrimPrefix(value, "!")
+	}
+	value = strings.ReplaceAll(value, "\\", "/")
+	for strings.HasPrefix(value, "./") {
+		value = strings.TrimPrefix(value, "./")
+	}
+	if value == "" {
+		return globPattern{}, errors.New("the exclusion marker '!' must be followed by a glob")
+	}
+	if filepath.IsAbs(value) ||
+		hasWindowsDrivePrefix(value) ||
+		strings.HasPrefix(value, "/") {
+		return globPattern{}, errors.New("glob '" + raw + "' is absolute; every files pattern must be project-relative")
+	}
+	value = strings.TrimSuffix(value, "/")
+	segments := strings.Split(value, "/")
+	for _, segment := range segments {
+		if segment == "" {
+			return globPattern{}, errors.New("glob '" + raw + "' contains an empty path segment")
+		}
+		if segment == ".." {
+			return globPattern{}, errors.New("glob '" + raw + "' escapes the project root through '..'")
+		}
+	}
+	return globPattern{Raw: raw, Segments: segments, Exclude: exclude}, nil
+}
+
+func hasWindowsDrivePrefix(value string) bool {
+	if len(value) < 2 || value[1] != ':' {
+		return false
+	}
+	letter := value[0]
+	return (letter >= 'A' && letter <= 'Z') ||
+		(letter >= 'a' && letter <= 'z')
+}
+
+func (set globSet) matches(path string) bool {
+	segments := splitProjectPath(path)
+	included := false
+	for _, pattern := range set.Patterns {
+		if !matchGlobSegments(pattern.Segments, segments) {
+			continue
+		}
+		if pattern.Exclude {
+			included = false
+		} else {
+			included = true
+		}
+	}
+	return included
+}
+
+func (set globSet) couldMatchDescendant(directory string) bool {
+	prefix := splitProjectPath(directory)
+	for _, pattern := range set.Patterns {
+		if pattern.Exclude || !couldMatchGlobBelow(pattern.Segments, prefix) {
+			continue
+		}
+		return true
 	}
 	return false
 }
 
-func splitPath(value string) []string {
+func couldMatchGlobBelow(pattern []string, prefix []string) bool {
+	type state struct{ pattern, prefix int }
+	memo := map[state]bool{}
+	known := map[state]bool{}
+	var match func(int, int) bool
+	match = func(patternIndex int, prefixIndex int) bool {
+		key := state{pattern: patternIndex, prefix: prefixIndex}
+		if known[key] {
+			return memo[key]
+		}
+		known[key] = true
+		result := false
+		switch {
+		case prefixIndex == len(prefix):
+			result = patternIndex < len(pattern)
+		case patternIndex == len(pattern):
+			result = false
+		case pattern[patternIndex] == "**":
+			result = match(patternIndex+1, prefixIndex) ||
+				match(patternIndex, prefixIndex+1)
+		case matchGlobSegment(pattern[patternIndex], prefix[prefixIndex]):
+			result = match(patternIndex+1, prefixIndex+1)
+		}
+		memo[key] = result
+		return result
+	}
+	return match(0, 0)
+}
+
+func splitProjectPath(value string) []string {
 	value = strings.ReplaceAll(value, "\\", "/")
-	value = strings.TrimPrefix(value, "./")
-	value = strings.TrimRight(value, "/")
+	for strings.HasPrefix(value, "./") {
+		value = strings.TrimPrefix(value, "./")
+	}
+	value = strings.Trim(value, "/")
 	if value == "" {
 		return nil
 	}
 	return strings.Split(value, "/")
 }
 
-// matchSegments walks pattern and name in lockstep. A `**` segment recurses
-// over every suffix of the remaining name, which keeps the "zero or more
-// segments" semantics exact at both ends without special-casing them.
-func matchSegments(pattern []string, name []string) bool {
-	if len(pattern) == 0 {
-		return len(name) == 0
-	}
-	if pattern[0] == "**" {
-		for index := 0; index <= len(name); index++ {
-			if matchSegments(pattern[1:], name[index:]) {
-				return true
-			}
+func matchGlobSegments(pattern []string, path []string) bool {
+	type state struct{ pattern, path int }
+	memo := map[state]bool{}
+	known := map[state]bool{}
+	var match func(int, int) bool
+	match = func(patternIndex int, pathIndex int) bool {
+		key := state{pattern: patternIndex, path: pathIndex}
+		if known[key] {
+			return memo[key]
 		}
-		return false
+		known[key] = true
+		result := false
+		switch {
+		case patternIndex == len(pattern):
+			result = pathIndex == len(path)
+		case pattern[patternIndex] == "**":
+			result = match(patternIndex+1, pathIndex)
+			if !result && pathIndex < len(path) {
+				result = match(patternIndex, pathIndex+1)
+			}
+		case pathIndex < len(path) && matchGlobSegment(pattern[patternIndex], path[pathIndex]):
+			result = match(patternIndex+1, pathIndex+1)
+		}
+		memo[key] = result
+		return result
 	}
-	if len(name) == 0 {
-		return false
-	}
-	if !matchSegment(pattern[0], name[0]) {
-		return false
-	}
-	return matchSegments(pattern[1:], name[1:])
+	return match(0, 0)
 }
 
-// matchSegment matches one path segment, where `*` and `?` never cross a
-// separator because the caller has already split on them.
-func matchSegment(pattern string, name string) bool {
-	// Index into pattern and name, plus the backtrack point of the most recent
-	// `*`. Iterative rather than recursive so a pathological pattern such as
-	// `*a*a*a*a*b` cannot blow the stack on hostile input; a rule that never
-	// returns is one of the few failures the lint host cannot recover from.
-	var (
-		patternIndex int
-		nameIndex    int
-		starPattern  = -1
-		starName     int
-	)
-	for nameIndex < len(name) {
+func matchGlobSegment(pattern string, value string) bool {
+	patternRunes := []rune(pattern)
+	valueRunes := []rune(value)
+	patternIndex := 0
+	valueIndex := 0
+	starPattern := -1
+	starValue := 0
+	for valueIndex < len(valueRunes) {
 		switch {
-		case patternIndex < len(pattern) && pattern[patternIndex] == '*':
+		case patternIndex < len(patternRunes) && patternRunes[patternIndex] == '*':
 			starPattern = patternIndex
-			starName = nameIndex
+			starValue = valueIndex
 			patternIndex++
-		case patternIndex < len(pattern) &&
-			(pattern[patternIndex] == '?' || pattern[patternIndex] == name[nameIndex]):
+		case patternIndex < len(patternRunes) &&
+			(patternRunes[patternIndex] == '?' || patternRunes[patternIndex] == valueRunes[valueIndex]):
 			patternIndex++
-			nameIndex++
+			valueIndex++
 		case starPattern >= 0:
 			patternIndex = starPattern + 1
-			starName++
-			nameIndex = starName
+			starValue++
+			valueIndex = starValue
 		default:
 			return false
 		}
 	}
-	for patternIndex < len(pattern) && pattern[patternIndex] == '*' {
+	for patternIndex < len(patternRunes) && patternRunes[patternIndex] == '*' {
 		patternIndex++
 	}
-	return patternIndex == len(pattern)
+	return patternIndex == len(patternRunes)
 }

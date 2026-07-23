@@ -5,6 +5,7 @@
     "moduleResolution": "bundler",
     "outDir": "lib",
     "rootDir": "src",
+    "sourceMap": false,
     "types": ["*"]
   },
   "include": ["src"]

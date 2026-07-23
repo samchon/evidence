@@ -16,7 +16,8 @@ export * from "./typings/index";
  *
  * @example <caption>Configure the plugin in `lint.config.ts`</caption>
  *   import type { ITtscLintConfig } from "@ttsc/lint";
- *   import evidenceGraph, {
+ *   import {
+ *     evidenceGraph,
  *     type IEvidenceGraphConfig,
  *   } from "@samchon/evidence-graph";
  *
@@ -24,10 +25,10 @@ export * from "./typings/index";
  *     sources: [
  *       {
  *         type: "markdown",
- *         files: ["docs/**\/*.md"],
+ *         files: ["docs/*.md"],
  *         reference: {
  *           type: "typescript",
- *           files: ["src/**\/*.ts"],
+ *           files: ["src/**"],
  *         },
  *       },
  *     ],
@@ -42,7 +43,7 @@ export * from "./typings/index";
  *     },
  *   } satisfies ITtscLintConfig;
  */
-const evidenceGraph = {
+export const evidenceGraph = {
   meta: {
     name: "@samchon/evidence-graph",
     namespace: "evidence-graph",
@@ -58,8 +59,8 @@ declare module "@ttsc/lint" {
     /**
      * Declares this project's evidence graph.
      *
-     * Its sources define the evidence units and independently complete
-     * reference populations that the project must keep connected.
+     * The sources define evidence units and the independently complete
+     * reference populations that must acknowledge them.
      */
     "evidence-graph/index": IEvidenceGraphConfig;
   }

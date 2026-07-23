@@ -1,0 +1,321 @@
+package evidence
+
+import (
+	"path/filepath"
+	"sort"
+	"strings"
+	"testing"
+
+	shimast "github.com/microsoft/typescript-go/shim/ast"
+	shimcore "github.com/microsoft/typescript-go/shim/core"
+	shimparser "github.com/microsoft/typescript-go/shim/parser"
+)
+
+/**
+ * Verifies TypeScript materialization: type, property, and every documented
+ * callable form receive stable public identities.
+ *
+ * Function syntax is deliberately broader than FunctionDeclaration. The
+ * negative twins exclude mutable variables, type-only methods, accessors,
+ * private/protected members, and non-exported classes.
+ *
+ *  1. Parse all supported and adjacent unsupported declaration forms.
+ *  2. Collect the inventory's unit targets.
+ *  3. Assert the exact public identity set.
+ */
+func TestTypeScriptMaterializesEveryDocumentedCallableForm(t *testing.T) {
+	source := `
+export interface Shape {
+  width: number;
+  draw(): void;
+}
+export type Options = {
+  enabled: boolean;
+  run(): void;
+};
+export function declared(): void {}
+export const arrow = (): void => {};
+export const expression = function (): void {};
+export let mutable = (): void => {};
+export class Service {
+  run(): void {}
+  static create(): void {}
+  handler = (): void => {};
+  static factory = function (): void {};
+  declare callback: () => void;
+  declare static provider: () => void;
+  protected hidden(): void {}
+  private secret = (): void => {};
+  get value(): number { return 1; }
+}
+export namespace Api {
+  export function fetch(): void {}
+  export const send = (): void => {};
+  export class Client {
+    connect(): void {}
+    static open(): void {}
+  }
+}
+export namespace Outer.Inner {
+  export const nested = (): void => {};
+}
+class Internal {
+  method(): void {}
+}
+`
+	absolute := filepath.ToSlash(filepath.Join(t.TempDir(), "api.ts"))
+	file := shimparser.ParseSourceFile(
+		shimast.SourceFileParseOptions{FileName: absolute},
+		source,
+		shimcore.ScriptKindTS,
+	)
+	inventory := scanTypeScriptInventory("src/api.ts", file)
+	targets := []string{}
+	for _, unit := range inventory.Units {
+		targets = append(targets, unit.Target)
+	}
+	sort.Strings(targets)
+	want := []string{
+		"Api.Client.open",
+		"Api.Client.prototype.connect",
+		"Api.fetch",
+		"Api.send",
+		"Options",
+		"Options.enabled",
+		"Outer.Inner.nested",
+		"Service.create",
+		"Service.provider",
+		"Service.factory",
+		"Service.prototype.callback",
+		"Service.prototype.handler",
+		"Service.prototype.run",
+		"Shape",
+		"Shape.width",
+		"arrow",
+		"declared",
+		"expression",
+	}
+	sort.Strings(want)
+	if strings.Join(targets, "\n") != strings.Join(want, "\n") {
+		t.Fatalf("TypeScript targets:\n%s\nwant:\n%s", strings.Join(targets, "\n"), strings.Join(want, "\n"))
+	}
+}
+
+/**
+ * Verifies TypeScript callable reference hosts: JSDoc on arrow constants,
+ * instance methods, static methods, and namespace functions is accepted.
+ *
+ * These declarations attach JSDoc to different AST shapes. Exercising them
+ * through the complete project rule prevents one syntactic form from becoming
+ * a source unit that can never bear a valid acknowledgement.
+ *
+ *  1. Materialize four Markdown source headings.
+ *  2. Cite one from each documented callable host form.
+ *  3. Assert the function-only reference group is complete.
+ */
+func TestTypeScriptFunctionReferenceAcceptsEveryCallableHost(t *testing.T) {
+	messages := runIndexRule(t, map[string]string{
+		"docs/spec.md": `## Arrow
+## Instance
+## Static
+## Field
+## Typed Field
+## Namespace
+`,
+		"src/api.ts": `
+/** @evidence docs/spec.md#arrow Arrow handler implements this section. */
+export const arrow = (): void => {};
+
+export class Service {
+  /** @evidence docs/spec.md#instance Instance method implements this section. */
+  run(): void {}
+
+  /** @evidence docs/spec.md#static Static method implements this section. */
+  static create(): void {}
+
+  /** @evidence docs/spec.md#field Function field implements this section. */
+  handler = (): void => {};
+
+  /** @evidence docs/spec.md#typed-field Function-typed field implements this section. */
+  callback!: () => void;
+}
+
+export namespace Api {
+  /** @evidence docs/spec.md#namespace Namespace function implements this section. */
+  export function send(): void {}
+}
+`,
+	}, `{"sources":[{
+		"type":"markdown",
+		"files":["docs/spec.md"],
+		"symbol":"h2",
+		"reference":{"type":"typescript","files":["src/api.ts"],"symbol":"function"}
+	}]}`)
+	assertNoProblems(t, messages)
+}
+
+/**
+ * Verifies the TypeScript source default: omitting symbol selects exported
+ * interfaces and type aliases without charging callable or property units.
+ *
+ * The default is intentionally narrower than the reference default. A test that
+ * merely inspects decoded options would miss a materializer that ignored the
+ * selector and indexed every discovered declaration anyway.
+ *
+ *  1. Put types, properties, and callables in one source file.
+ *  2. Acknowledge only the two type identities from Markdown.
+ *  3. Assert the omitted source selector creates no additional obligation.
+ */
+func TestTypeScriptSourceDefaultMaterializesOnlyTypes(t *testing.T) {
+	messages := runIndexRule(t, map[string]string{
+		"src/contracts.ts": `
+export interface Shape { width: number; }
+export type Options = { enabled: boolean };
+export function draw(): void {}
+export const render = (): void => {};
+`,
+		"docs/ledger.md": `# Contracts
+<!--
+@evidence Shape Shape is documented here.
+@evidence Options Options are documented here.
+-->
+`,
+	}, `{"sources":[{
+		"type":"typescript",
+		"files":["src/contracts.ts"],
+		"reference":{"type":"markdown","files":["docs/ledger.md"],"symbol":"h1"}
+	}]}`)
+	assertNoProblems(t, messages)
+}
+
+/**
+ * Verifies every TypeScript selector as a graph source: types, callables, and
+ * qualified properties each create an independent acknowledgement obligation.
+ *
+ * Inventory inspection alone cannot prove that source filtering preserves all
+ * three kinds. This complete graph acknowledges the exact targets after the
+ * configured symbol union is applied.
+ *
+ *  1. Select `"type"`, `"function"`, and `"property"` from one source file.
+ *  2. Acknowledge the interface, property, and arrow-function identities.
+ *  3. Assert the source selector materializes all three kinds.
+ */
+func TestTypeScriptSourceAcceptsEverySymbolKind(t *testing.T) {
+	messages := runIndexRule(t, map[string]string{
+		"src/contracts.ts": `
+export interface Shape {
+  width: number;
+}
+export const draw = (): void => {};
+`,
+		"docs/ledger.md": `<!--
+@evidence Shape The interface is documented.
+@evidence Shape.width The property is documented.
+@evidence draw The callable is documented.
+-->
+`,
+	}, `{"sources":[{
+		"type":"typescript",
+		"files":["src/contracts.ts"],
+		"symbol":["type","function","property"],
+		"reference":{"type":"markdown","files":["docs/ledger.md"],"symbol":"file"}
+	}]}`)
+	assertNoProblems(t, messages)
+}
+
+/**
+ * Verifies local export lists and aliases use the public export identity.
+ *
+ * An exported contract need not carry an `export` modifier on its declaration.
+ * When `export { Local as Public }` exposes it, evidence targets must use the
+ * public name; a type-only export must not expose runtime callable behavior.
+ *
+ *  1. Export local type, function, class, and namespace declarations by alias.
+ *  2. Export a second function through `export type` only.
+ *  3. Assert public aliases materialize and local/runtime-only names do not.
+ */
+func TestTypeScriptExportListsUsePublicAliases(t *testing.T) {
+	source := `
+interface LocalType {
+  field: string;
+}
+const localFunction = (): void => {};
+const typeOnlyFunction = (): void => {};
+class LocalClass {
+  run(): void {}
+}
+namespace LocalNamespace {
+  export const act = (): void => {};
+}
+export {
+  LocalType as PublicType,
+  localFunction as publicFunction,
+  LocalClass as PublicClass,
+  LocalNamespace as PublicNamespace,
+};
+export type {
+  LocalType as TypeOnlyPublicType,
+  typeOnlyFunction as TypeOnlyFunction,
+};
+`
+	absolute := filepath.ToSlash(filepath.Join(t.TempDir(), "exports.ts"))
+	file := shimparser.ParseSourceFile(
+		shimast.SourceFileParseOptions{FileName: absolute},
+		source,
+		shimcore.ScriptKindTS,
+	)
+	inventory := scanTypeScriptInventory("src/exports.ts", file)
+	targets := []string{}
+	for _, unit := range inventory.Units {
+		targets = append(targets, unit.Target)
+	}
+	sort.Strings(targets)
+	want := []string{
+		"PublicClass.prototype.run",
+		"PublicNamespace.act",
+		"PublicType",
+		"PublicType.field",
+		"TypeOnlyPublicType",
+		"TypeOnlyPublicType.field",
+		"publicFunction",
+	}
+	sort.Strings(want)
+	if strings.Join(targets, "\n") != strings.Join(want, "\n") {
+		t.Fatalf("export-list targets:\n%s\nwant:\n%s", strings.Join(targets, "\n"), strings.Join(want, "\n"))
+	}
+}
+
+/**
+ * Verifies the TypeScript artifact discriminator does not absorb JavaScript
+ * files merely because `allowJs` placed them in the compiler Program.
+ *
+ * SourceFile ASTs can represent both languages, but the public variant is
+ * explicitly `"typescript"`. Its file inventory therefore accepts TypeScript
+ * extensions and leaves JavaScript for a future artifact variant.
+ *
+ *  1. Parse equivalent `.ts` and `.js` source files under one project root.
+ *  2. Build the TypeScript inventory from both Program entries.
+ *  3. Assert only the TypeScript path is available to globs.
+ */
+func TestTypeScriptInventoryExcludesJavaScriptProgramFiles(t *testing.T) {
+	root := t.TempDir()
+	parse := func(name string, kind shimcore.ScriptKind) *shimast.SourceFile {
+		return shimparser.ParseSourceFile(
+			shimast.SourceFileParseOptions{
+				FileName: filepath.ToSlash(filepath.Join(root, name)),
+			},
+			"export function run(): void {}",
+			kind,
+		)
+	}
+	inventories := loadTypeScriptInventories(root, []*shimast.SourceFile{
+		parse("api.ts", shimcore.ScriptKindTS),
+		parse("api.js", shimcore.ScriptKindJS),
+	})
+	if inventories["api.ts"] == nil {
+		t.Fatal("TypeScript Program file was not indexed")
+	}
+	if inventories["api.js"] != nil {
+		t.Fatal("JavaScript Program file entered the TypeScript artifact inventory")
+	}
+}
