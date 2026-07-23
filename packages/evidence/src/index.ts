@@ -1,15 +1,19 @@
 import type { ITtscLintPlugin } from "@ttsc/lint";
-import type { TtscLintRuleSetting } from "@ttsc/lint";
 import path from "node:path";
-import type { IEvidenceCoverageOptions } from "./IEvidenceCoverageOptions";
-import type { IEvidenceIndexOptions } from "./IEvidenceIndexOptions";
-import type { IEvidenceRequireOptions } from "./IEvidenceRequireOptions";
+import type { ISamchonEvidenceConfig } from "./structures";
 
-export type { IEvidenceCoverageOptions } from "./IEvidenceCoverageOptions";
-export type { IEvidenceIndexOptions } from "./IEvidenceIndexOptions";
-export type { IEvidencePolicy } from "./IEvidencePolicy";
-export type { IEvidenceRequireOptions } from "./IEvidenceRequireOptions";
-export type { TEvidenceDeclarationKind } from "./TEvidenceDeclarationKind";
+export type {
+  ISamchonEvidenceConfig,
+  ISamchonEvidenceHeadingRange,
+  ISamchonEvidenceMarkdownReference,
+  ISamchonEvidenceMarkdownSource,
+  ISamchonEvidenceReference,
+  ISamchonEvidenceSource,
+  ISamchonEvidenceTypeScriptReference,
+  ISamchonEvidenceTypeScriptSource,
+  SamchonEvidenceTypeScriptSymbol,
+  TSamchonEvidenceHeadingLevel,
+} from "./structures";
 
 // `@samchon/evidence` — a `@ttsc/lint` rule contributor.
 //
@@ -48,31 +52,10 @@ const plugin = {
   // source directory shipped alongside the compiled JS.
   source: path.resolve(__dirname, "..", "native"),
 } satisfies ITtscLintPlugin;
+export default plugin;
 
 declare module "@ttsc/lint" {
   interface ITtscLintRuleOptionsMap {
-    "evidence/index": IEvidenceIndexOptions;
-    "evidence/require": IEvidenceRequireOptions;
-    "evidence/coverage": IEvidenceCoverageOptions;
-  }
-
-  interface ITtscLintContributorRules {
-    /**
-     * Requires every `@evidence <target> <reason>` tag to carry a reason and to
-     * resolve against the index.
-     *
-     * This is citation integrity, not coverage. Coverage asks which sections
-     * nothing has proven, and so can only ever see a section with no citation;
-     * it is structurally blind to a citation with no section. Renaming a
-     * document or re-anchoring a heading strands every citation pointing at it,
-     * and only this rule can say so.
-     *
-     * A dangling document anchor that closely resembles a declared one carries
-     * up to three editor quick fixes. Each replaces only the anchor token; an
-     * unrelated target remains a diagnostic without an invented repair.
-     */
-    "evidence/reference"?: TtscLintRuleSetting;
+    "evidence/index": ISamchonEvidenceConfig;
   }
 }
-
-export default plugin;
