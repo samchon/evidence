@@ -151,13 +151,15 @@ func checkDocumentReference(ctx *rule.Context, index *evidenceIndex, tag evidenc
 			return
 		}
 	}
-	ctx.ReportRange(
+	message := "Evidence target '" + tag.Target + "' refers to a section that " +
+		path + " does not declare." + suggestAnchors(sections) +
+		" An anchor is derived from the heading text unless the heading " +
+		"declares one explicitly with '{#id}'."
+	ctx.ReportRangeSuggestion(
 		targetPos,
 		targetEnd,
-		"Evidence target '"+tag.Target+"' refers to a section that "+path+
-			" does not declare."+suggestAnchors(sections)+
-			" An anchor is derived from the heading text unless the heading "+
-			"declares one explicitly with '{#id}'.",
+		message,
+		nearestAnchorSuggestions(tag, sections)...,
 	)
 }
 
@@ -214,6 +216,197 @@ func suggestAnchors(sections []documentSection) string {
 		anchors = append(anchors[:8], "...")
 	}
 	return " It declares: " + strings.Join(anchors, ", ") + "."
+}
+
+// nearestAnchorSuggestions turns a plausible anchor typo into editor choices.
+//
+// The diagnostic remains complete without them: Context degrades to a plain
+// report when its host has no SuggestionReporter or when this function returns
+// none. Suggestions are deliberately bounded and opt-in. An unrelated anchor
+// must not acquire a one-click rewrite merely because every finite set has a
+// mathematically nearest member.
+func nearestAnchorSuggestions(
+	tag evidenceTag,
+	sections []documentSection,
+) []rule.Suggestion {
+	if tag.Anchor == "" ||
+		tag.TargetEnd <= tag.TargetPos ||
+		tag.TargetEnd-tag.TargetPos != len(tag.Target) {
+		// locateTarget could not prove the token's exact source range. The
+		// diagnostic may safely fall back to the whole tag, but an edit may
+		// not: replacing an inferred range risks eating the reason beside it.
+		return nil
+	}
+
+	type candidate struct {
+		anchor   string
+		distance int
+		explicit bool
+	}
+	source := []rune(strings.ToLower(tag.Anchor))
+	ranked := []candidate{}
+	seen := map[string]bool{}
+	for _, section := range sections {
+		if section.Anchor == "" || seen[section.Anchor] {
+			continue
+		}
+		seen[section.Anchor] = true
+
+		target := []rune(strings.ToLower(section.Anchor))
+		limit := anchorDistanceLimit(len(source), len(target))
+		distance := boundedAnchorDistance(source, target, limit)
+		if distance > limit {
+			continue
+		}
+		ranked = append(ranked, candidate{
+			anchor:   section.Anchor,
+			distance: distance,
+			explicit: section.Explicit,
+		})
+	}
+	sort.Slice(ranked, func(a, b int) bool {
+		if ranked[a].distance != ranked[b].distance {
+			return ranked[a].distance < ranked[b].distance
+		}
+		if ranked[a].explicit != ranked[b].explicit {
+			// When two repairs are equally plausible, teach the stable identity
+			// before one derived from mutable heading text.
+			return ranked[a].explicit
+		}
+		return ranked[a].anchor < ranked[b].anchor
+	})
+	if len(ranked) > 3 {
+		ranked = ranked[:3]
+	}
+
+	anchorPos := tag.TargetEnd - len(tag.Anchor)
+	suggestions := make([]rule.Suggestion, 0, len(ranked))
+	for _, candidate := range ranked {
+		suggestions = append(suggestions, rule.Suggestion{
+			Title: "Change anchor to '#" + candidate.anchor + "'",
+			Edits: []rule.TextEdit{{
+				Pos:  anchorPos,
+				End:  tag.TargetEnd,
+				Text: candidate.anchor,
+			}},
+		})
+	}
+	return suggestions
+}
+
+// anchorDistanceLimit admits roughly one edit per four runes, up to four.
+//
+// The cap keeps a long, unrelated heading from becoming a candidate merely
+// because both strings are long. A one-rune allowance still repairs short
+// anchors, where one typo is necessarily a large fraction of the word.
+func anchorDistanceLimit(left int, right int) int {
+	longer := left
+	if right > longer {
+		longer = right
+	}
+	limit := (longer + 3) / 4
+	if limit < 1 {
+		return 1
+	}
+	if limit > 4 {
+		return 4
+	}
+	return limit
+}
+
+// boundedAnchorDistance is an optimal-string-alignment distance with an
+// adjacent-transposition edit, evaluated only inside the caller's narrow band.
+//
+// Anchor text is untrusted markdown. A full n×m matrix lets one enormous
+// heading turn a diagnostic into quadratic memory and work; the band makes the
+// cost O(limit × max(n, m)) while preserving every result within the threshold.
+func boundedAnchorDistance(left []rune, right []rune, limit int) int {
+	if anchorLengthDifference(len(left), len(right)) > limit {
+		return limit + 1
+	}
+
+	unreachable := limit + 1
+	previousPrevious := make([]int, len(right)+1)
+	previous := make([]int, len(right)+1)
+	current := make([]int, len(right)+1)
+	for index := range previousPrevious {
+		previousPrevious[index] = unreachable
+		previous[index] = unreachable
+		current[index] = unreachable
+	}
+	for column := 0; column <= len(right) && column <= limit; column++ {
+		previous[column] = column
+	}
+
+	for row := 1; row <= len(left); row++ {
+		first := row - limit
+		if first < 1 {
+			first = 1
+		}
+		last := row + limit
+		if last > len(right) {
+			last = len(right)
+		}
+		if first > 1 {
+			// This row slice was used three iterations ago. Invalidate the
+			// cell immediately before the new band so insertion cannot walk
+			// in from a stale value.
+			current[first-1] = unreachable
+		}
+		if row <= limit {
+			current[0] = row
+		} else {
+			current[0] = unreachable
+		}
+		for column := first; column <= last; column++ {
+			substitutionCost := 1
+			if left[row-1] == right[column-1] {
+				substitutionCost = 0
+			}
+			value := minimumAnchorCost(
+				previous[column]+1,
+				current[column-1]+1,
+				previous[column-1]+substitutionCost,
+			)
+			if row > 1 &&
+				column > 1 &&
+				left[row-1] == right[column-2] &&
+				left[row-2] == right[column-1] {
+				transposed := previousPrevious[column-2] + 1
+				if transposed < value {
+					value = transposed
+				}
+			}
+			if value > unreachable {
+				value = unreachable
+			}
+			current[column] = value
+		}
+		if last < len(right) {
+			// The next row may read one cell beyond this row's upper band as a
+			// deletion predecessor.
+			current[last+1] = unreachable
+		}
+		previousPrevious, previous, current = previous, current, previousPrevious
+	}
+	return previous[len(right)]
+}
+
+func anchorLengthDifference(left int, right int) int {
+	if left > right {
+		return left - right
+	}
+	return right - left
+}
+
+func minimumAnchorCost(first int, second int, third int) int {
+	if second < first {
+		first = second
+	}
+	if third < first {
+		return third
+	}
+	return first
 }
 
 // collectEvidenceTags walks every JSDoc comment in a file and returns each

@@ -167,6 +167,10 @@ declare module "@ttsc/lint" {
      * it is structurally blind to a citation with no section. Renaming a
      * document or re-anchoring a heading strands every citation pointing at it,
      * and only this rule can say so.
+     *
+     * A dangling document anchor that closely resembles a declared one carries
+     * up to three editor quick fixes. Each replaces only the anchor token; an
+     * unrelated target remains a diagnostic without an invented repair.
      */
     "evidence/reference"?: TtscLintRuleSetting;
   }
