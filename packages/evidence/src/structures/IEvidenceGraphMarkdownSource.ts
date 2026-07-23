@@ -25,17 +25,21 @@ export interface IEvidenceGraphMarkdownSource {
   name?: string;
 
   /**
-   * Project-relative glob patterns for Markdown documents in this source.
+   * Project-relative glob patterns for Markdown documents in this source. Every
+   * matching regular file is parsed as Markdown regardless of extension, so
+   * exclude images and other non-Markdown assets from the patterns.
    *
    * These are globs, not regular expressions. `*` matches within one path
    * segment, `**` crosses any number of path segments, and `?` matches one
-   * character.
+   * character. Both `/` and `\` are accepted as separators, while path identity
+   * remains case-sensitive on every operating system.
    *
-   * Examples:
+   * Patterns are evaluated from left to right. A pattern prefixed with `!`
+   * removes its matches; a later positive pattern can include them again. The
+   * array must contain at least one positive pattern.
    *
-   * - `docs/**\/*.md` selects every Markdown document below `docs`.
-   * - `packages/*\/design/**\/*.md` selects design documents in every package.
-   * - `specs/v?.md` selects one-character versioned specification files.
+   * For example, `docs/*.md` selects Markdown files directly under `docs`,
+   * while `specs/v?.md` selects names such as `v1.md` but not `v10.md`.
    *
    * A bare directory such as `docs` or `docs/` does not include its children;
    * write `docs/**` when the whole subtree belongs to this source group.
@@ -46,7 +50,9 @@ export interface IEvidenceGraphMarkdownSource {
    * Markdown node kind or kinds eligible to become evidence units.
    *
    * Omit this property to select documents and H1 through H4 sections. A single
-   * value selects one kind; an array selects the union of its kinds.
+   * value selects one kind; a non-empty array selects the union of its kinds.
+   * File units use the project-relative path as their target. Heading units use
+   * `<path>#<anchor>` as documented by {@link EvidenceGraphMarkdownSymbol}.
    *
    * @default ["file", "h1", "h2", "h3", "h4"]
    */
@@ -59,7 +65,8 @@ export interface IEvidenceGraphMarkdownSource {
    * A single reference requires its matching files to acknowledge every
    * evidence unit here. An array creates a separate 100% obligation for every
    * element: acknowledgements in one group never count toward another, and
-   * partially covered groups cannot be pooled to satisfy this source.
+   * partially covered groups cannot be pooled to satisfy this source. The array
+   * must not be empty.
    */
   reference: IEvidenceGraphReference | IEvidenceGraphReference[];
 }

@@ -17,8 +17,8 @@ export interface ICreateProjectProps {
   readonly name: string;
   /** File map, project-relative. Values are written verbatim. */
   readonly files: Readonly<Record<string, string>>;
-  /** `lint.config.json` contents. Plugins are named by specifier string. */
-  readonly lint: unknown;
+  /** Complete `lint.config.ts` source, evaluated by the real config loader. */
+  readonly lintConfig: string;
 }
 
 export interface IRunResult {
@@ -52,7 +52,11 @@ export const createProject = (props: ICreateProjectProps): IEvidenceProject => {
 
   write(
     "package.json",
-    JSON.stringify({ name: `fixture-${props.name}`, private: true }, null, 2),
+    JSON.stringify(
+      { name: `fixture-${props.name}`, private: true, type: "module" },
+      null,
+      2,
+    ),
   );
   write(
     "tsconfig.json",
@@ -62,17 +66,18 @@ export const createProject = (props: ICreateProjectProps): IEvidenceProject => {
           target: "esnext",
           module: "nodenext",
           moduleResolution: "nodenext",
+          esModuleInterop: true,
           strict: true,
           noEmit: true,
           plugins: [{ transform: "@ttsc/lint" }],
         },
-        include: ["src"],
+        include: ["src", "lint.config.ts"],
       },
       null,
       2,
     ),
   );
-  write("lint.config.json", JSON.stringify(props.lint, null, 2));
+  write("lint.config.ts", props.lintConfig);
   for (const [relative, content] of Object.entries(props.files))
     write(relative, content);
 
@@ -87,7 +92,7 @@ export const createProject = (props: ICreateProjectProps): IEvidenceProject => {
   fs.mkdirSync(path.join(modules, "@ttsc"), { recursive: true });
   linkDirectory(
     path.resolve(suiteRoot, "..", "..", "packages", "evidence"),
-    path.join(modules, "@samchon", "evidence"),
+    path.join(modules, "@samchon", "evidence-graph"),
   );
   linkDirectory(
     resolveDependency("@ttsc/lint"),
@@ -215,5 +220,25 @@ export const assertExcludes = (
   if (!result.output.includes(forbidden)) return;
   throw new Error(
     `${because}\n\nExpected output NOT to include:\n  ${forbidden}\n\nActual output:\n${result.output}`,
+  );
+};
+
+/** Fails when the real compiler exits with an unexpected status. */
+export const assertStatus = (
+  result: IRunResult,
+  expected: number,
+  because: string,
+): void => {
+  if (result.status === expected) return;
+  throw new Error(
+    `${because}\n\nExpected exit status: ${expected}\nActual exit status: ${String(result.status)}\n\nActual output:\n${result.output}`,
+  );
+};
+
+/** Fails unless the compiler rejected the project with a real exit status. */
+export const assertFailure = (result: IRunResult, because: string): void => {
+  if (result.status !== null && result.status !== 0) return;
+  throw new Error(
+    `${because}\n\nExpected a non-zero exit status.\nActual exit status: ${String(result.status)}\n\nActual output:\n${result.output}`,
   );
 };

@@ -6,7 +6,7 @@ import type { IEvidenceGraphReference } from "./IEvidenceGraphReference";
  *
  * An exported symbol expresses a contract that a program can check
  * mechanically. Treating selected symbols as graph nodes lets a document or
- * another declaration point to the exact contract it relies on instead of
+ * another declaration point to a named type, callable, or property instead of
  * citing a file as undifferentiated implementation.
  *
  * The selection keeps the evidence graph deliberate. It can cover public types
@@ -25,17 +25,21 @@ export interface IEvidenceGraphTypeScriptSource {
   name?: string;
 
   /**
-   * Project-relative glob patterns for candidate TypeScript files.
+   * Project-relative glob patterns for candidate TypeScript files in the active
+   * `ttsc` project. A matching file outside the project's `tsconfig` program is
+   * not available to the rule and does not count as a match.
    *
    * These are globs, not regular expressions. `*` matches within one path
    * segment, `**` crosses any number of path segments, and `?` matches one
-   * character.
+   * character. Both `/` and `\` are accepted as separators, while path identity
+   * remains case-sensitive on every operating system.
    *
-   * Examples:
+   * Patterns are evaluated from left to right. A pattern prefixed with `!`
+   * removes its matches; a later positive pattern can include them again. The
+   * array must contain at least one positive pattern.
    *
-   * - `packages/*\/src/**\/*.ts` selects source files in every package.
-   * - `tests/*\/src/**\/*.ts` selects source fixtures in every test package.
-   * - `scripts/check-?.ts` selects one-character suffixed check scripts.
+   * For example, `src/**` selects the complete source subtree, while
+   * `scripts/check-?.ts` selects `check-a.ts` but not `check-ab.ts`.
    *
    * A bare directory such as `src` or `src/` does not include its children;
    * write `src/**` when the whole subtree belongs to this source group.
@@ -46,10 +50,11 @@ export interface IEvidenceGraphTypeScriptSource {
    * Symbol kind or kinds eligible to become evidence units.
    *
    * Omit this property to select exported interfaces and type aliases. A single
-   * value selects one kind; an array selects the union of its kinds. This is
-   * unlike `reference`: a symbol array expands one source's evidence units,
-   * whereas a reference array creates independently complete coverage
-   * obligations.
+   * value selects one kind; a non-empty array selects the union of its kinds.
+   * The exact declaration forms and qualified target identities are documented
+   * by {@link EvidenceGraphTypeScriptSymbol}. This is unlike `reference`: a
+   * symbol array expands one source's evidence units, whereas a reference array
+   * creates independently complete coverage obligations.
    *
    * @default type
    */
@@ -62,7 +67,8 @@ export interface IEvidenceGraphTypeScriptSource {
    * A single reference requires its matching files to acknowledge every
    * evidence unit here. An array creates a separate 100% obligation for every
    * element: acknowledgements in one group never count toward another, and
-   * partially covered groups cannot be pooled to satisfy this source.
+   * partially covered groups cannot be pooled to satisfy this source. The array
+   * must not be empty.
    */
   reference: IEvidenceGraphReference | IEvidenceGraphReference[];
 }

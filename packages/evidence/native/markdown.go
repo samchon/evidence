@@ -1,346 +1,325 @@
 package evidence
 
 import (
+	"io/fs"
+	"os"
+	"path/filepath"
+	"regexp"
 	"strings"
 	"unicode"
 )
 
-// documentSection is one addressable node of the evidence graph: a heading in a
-// markdown document, reachable as `<path>#<anchor>`.
-type documentSection struct {
-	// Anchor is the identity. Prose is free to change; this is not.
-	Anchor string
-	// Title is the heading text as written, carried for diagnostics only. Never
-	// compare against it — see the evidence-graph skill.
-	Title string
-	// Line is 1-based, for a diagnostic that can point a reader at the heading.
-	Line int
-	// Explicit records whether the anchor came from a `{#id}` annotation rather
-	// than being derived from Title. An explicit anchor survives an edit to the
-	// heading text; a derived one does not.
-	Explicit bool
-	// Exemption is the stated reason this section needs no citation, or "" when
-	// it is not exempt.
-	//
-	// There is no separate "is exempt" flag on purpose. An exemption IS its
-	// reason: a blank reason is not a reason, and letting one through converts
-	// a decision somebody made into a hole nobody has to defend.
-	Exemption string
-	// ExemptionBlank marks an exemption marker written with no reason, so the
-	// scan can tell "not exempt" from "tried to exempt and said nothing".
-	ExemptionBlank bool
-}
+var markdownCommentPattern = regexp.MustCompile(`(?s)<!--(.*?)-->`)
+var explicitAnchorPattern = regexp.MustCompile(`\s*\{#([A-Za-z0-9][A-Za-z0-9._:-]*)\}\s*$`)
 
-// Exempt reports whether this section is excused from needing a citation.
-func (section documentSection) Exempt() bool {
-	return section.Exemption != ""
-}
-
-// scanMarkdownSections extracts every ATX heading from a markdown document.
-//
-// Two things this deliberately does NOT do:
-//
-// It does not parse markdown. A full AST buys nothing here — headings are the
-// only construct that matters, and a line-oriented scan cannot be broken by an
-// unsupported extension in the rest of the document.
-//
-// It does not treat Setext headings (underlined with === or ---) as sections.
-// They cannot carry an explicit `{#id}`, so every reference to one would be
-// hostage to its prose. Supporting them would silently hand users the fragile
-// half of the design.
-// exemptionMarker excuses the section it appears under from needing a citation.
-//
-// It is an HTML comment so it stays invisible in every renderer while remaining
-// plain text in the source — the exemption is a decision for reviewers of the
-// document, not a note for its readers.
-//
-// A lint disable comment on the citing side would be the cheaper mechanism and
-// is the wrong one: it lives in TypeScript while the uncited thing is a section,
-// it is invisible to the graph so nobody can ask how many exemptions a
-// repository carries, it suppresses every future diagnostic on that node rather
-// than this one question, and it demands no reason.
-const exemptionMarker = "<!-- evidence-exempt:"
-
-func scanMarkdownSections(content string) []documentSection {
-	sections := []documentSection{}
-	fence := ""
-	exemptionCommentOpen := false
-	exemptionSection := -1
-	exemptionReasonParts := []string{}
-	for index, line := range strings.Split(content, "\n") {
-		trimmed := strings.TrimRight(line, "\r")
-
-		if exemptionCommentOpen {
-			part := trimmed
-			if end := strings.Index(part, "-->"); end != -1 {
-				part = part[:end]
-				exemptionCommentOpen = false
-			}
-			if part = strings.TrimSpace(part); part != "" {
-				exemptionReasonParts = append(exemptionReasonParts, part)
-			}
-			if !exemptionCommentOpen {
-				if exemptionSection >= 0 {
-					reason := strings.Join(exemptionReasonParts, " ")
-					sections[exemptionSection].Exemption = reason
-					sections[exemptionSection].ExemptionBlank = reason == ""
+func loadMarkdownInventories(
+	root string,
+	config graphConfig,
+) (map[string]*artifactInventory, []string) {
+	inventories := map[string]*artifactInventory{}
+	problems := []string{}
+	err := filepath.WalkDir(root, func(path string, entry fs.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			relative, ok := relativeProjectPath(root, path)
+			relevant := ok &&
+				(matchesConfiguredMarkdownFile(config, relative) ||
+					couldContainConfiguredMarkdown(config, relative))
+			if !relevant {
+				if entry != nil && entry.IsDir() {
+					return filepath.SkipDir
 				}
-				exemptionSection = -1
-				exemptionReasonParts = nil
+				return nil
 			}
-			// Everything before the closing marker remains inside the HTML
-			// comment. It cannot declare a heading or change fence state.
-			continue
+			problems = append(problems, "Evidence graph could not inspect '"+path+"': "+walkErr.Error()+". Fix filesystem access so configured Markdown sources can be indexed.")
+			if entry != nil && entry.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
 		}
-
-		if reason, blank, found := exemptionOf(trimmed); found && fence == "" {
-			// The marker excuses the section it sits under, so it attaches to
-			// the most recent heading. One before any heading is inert rather
-			// than an error: a document-level note is a reasonable thing to
-			// write, and refusing it would be pedantry.
-			if len(sections) > 0 {
-				sections[len(sections)-1].Exemption = reason
-				sections[len(sections)-1].ExemptionBlank = blank
-			}
-			rest := strings.TrimPrefix(strings.TrimSpace(trimmed), exemptionMarker)
-			if !strings.Contains(rest, "-->") {
-				exemptionCommentOpen = true
-				exemptionSection = len(sections) - 1
-				if reason != "" {
-					exemptionReasonParts = []string{reason}
+		if entry.IsDir() {
+			if path != root {
+				relative, ok := relativeProjectPath(root, path)
+				if !ok || !couldContainConfiguredMarkdown(config, relative) {
+					return filepath.SkipDir
 				}
 			}
-			continue
+			return nil
 		}
-
-		// A fenced code block can hold anything, including `# not a heading`.
-		// Tracking the fence is what keeps a README's own examples out of the
-		// graph.
-		if fence == "" {
-			if marker := fenceMarker(trimmed); marker != "" {
-				fence = marker
-				continue
-			}
-		} else {
-			// Inside a code block. Only a pure fence run of the same character,
-			// at least as long as the opener, closes it — CommonMark forbids
-			// trailing text on a closing fence, so a code line that merely begins
-			// with the fence character (```stop) does not close the block.
-			// Honoring it would leak the code after it as headings and then
-			// desync every fence that follows.
-			if closesFence(trimmed, fence) {
-				fence = ""
-			}
-			continue
-		}
-
-		title, ok := atxHeadingText(trimmed)
+		relative, ok := relativeProjectPath(root, path)
 		if !ok {
-			continue
+			return nil
 		}
-		anchor, explicit := headingAnchor(title)
-		if anchor == "" {
-			// A heading of only punctuation or emoji slugs to nothing. It is
-			// unaddressable rather than erroneous, so it is not a section.
-			continue
+		if !matchesConfiguredMarkdownFile(config, relative) {
+			return nil
 		}
-		sections = append(sections, documentSection{
-			Anchor:   anchor,
-			Title:    strings.TrimSpace(stripExplicitAnchor(title)),
-			Line:     index + 1,
-			Explicit: explicit,
+		content, readErr := os.ReadFile(path)
+		if readErr != nil {
+			inventories[relative] = &artifactInventory{
+				Path: relative,
+				Type: artifactMarkdown,
+			}
+			problems = append(problems, "Evidence graph could not read Markdown file '"+relative+"': "+readErr.Error()+". Fix filesystem access or exclude the file from configured globs.")
+			return nil
+		}
+		inventory, _ := scanMarkdownInventory(relative, string(content))
+		inventories[relative] = inventory
+		for _, inventoryProblem := range inventory.Problems {
+			if selectedByMarkdownSource(config, relative, inventoryProblem.Symbol) {
+				problems = append(problems, inventoryProblem.Message)
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		problems = append(problems, "Evidence graph could not walk project root '"+root+"': "+err.Error()+".")
+	}
+	return inventories, problems
+}
+
+func scanMarkdownInventory(path string, content string) (*artifactInventory, []string) {
+	inventory := &artifactInventory{Path: path, Type: artifactMarkdown}
+	problems := []string{}
+	targetablePath := !containsWhitespace(path)
+	if targetablePath {
+		inventory.Units = append(inventory.Units, &evidenceUnit{
+			ID:       "markdown:" + path + ":file",
+			Target:   path,
+			Type:     artifactMarkdown,
+			Symbol:   "file",
+			Path:     path,
+			Line:     1,
+			Readable: "Markdown file",
+		})
+	} else {
+		problem := "Markdown file '" + path + "' cannot form an evidence target because its project-relative path contains whitespace. Rename the file so '@evidence <target> <reason>' can represent its path as one target token."
+		problems = append(problems, problem)
+		inventory.Problems = append(inventory.Problems, inventoryProblem{
+			Symbol:  "*",
+			Message: problem,
 		})
 	}
-	return sections
-}
 
-// exemptionOf reads an `<!-- evidence-exempt: reason -->` marker.
-//
-// Returns found=true even when the reason is blank, so the caller can report
-// the attempt rather than silently treating it as no marker at all. Someone who
-// wrote the marker meant to exempt something, and swallowing that intent would
-// leave them staring at an error they thought they had addressed.
-func exemptionOf(line string) (reason string, blank bool, found bool) {
-	trimmed := strings.TrimSpace(line)
-	if !strings.HasPrefix(trimmed, exemptionMarker) {
-		return "", false, false
-	}
-	rest := strings.TrimPrefix(trimmed, exemptionMarker)
-	end := strings.Index(rest, "-->")
-	if end == -1 {
-		// The comment does not close on this line — a multi-line exemption. The
-		// text present after the marker is a real reason; reporting it as blank
-		// would tell the author they wrote nothing when they wrote something, the
-		// exact "staring at an error they think they fixed" failure the design
-		// warns against. A marker alone with nothing after it is still blank.
-		reason = strings.TrimSpace(rest)
-		return reason, reason == "", true
-	}
-	reason = strings.TrimSpace(rest[:end])
-	return reason, reason == "", true
-}
-
-// fenceMarker returns the fence run that OPENS a code block, or "". An opening
-// fence is a run of three or more backticks or tildes; it may carry an info
-// string after the run (```ts), so trailing text is ignored here. Closing is a
-// stricter test — see closesFence.
-func fenceMarker(line string) string {
-	trimmed, eligible := fenceLine(line)
-	if !eligible {
-		return ""
-	}
-	for _, char := range []byte{'`', '~'} {
-		count := 0
-		for count < len(trimmed) && trimmed[count] == char {
-			count++
-		}
-		if count >= 3 {
-			if char == '`' && strings.Contains(trimmed[count:], "`") {
-				// CommonMark forbids a backtick in a backtick fence's info
-				// string because it would be indistinguishable from inline code.
-				// Treating this invalid opener as a fence would hide every real
-				// heading until another backtick run happened to appear.
-				return ""
+	lines := strings.Split(content, "\n")
+	hostAtLine := make([]string, len(lines))
+	fencedAtLine := make([]bool, len(lines))
+	currentHost := "file"
+	fenceMarker := rune(0)
+	fenceLength := 0
+	inHTMLComment := false
+	for index, rawLine := range lines {
+		line := strings.TrimSuffix(rawLine, "\r")
+		trimmed := strings.TrimLeft(line, " \t")
+		if marker, length, remainder, ok := markdownFence(line); ok {
+			fencedAtLine[index] = true
+			if fenceMarker == 0 {
+				fenceMarker = marker
+				fenceLength = length
+			} else if marker == fenceMarker &&
+				length >= fenceLength &&
+				strings.TrimSpace(remainder) == "" {
+				fenceMarker = 0
+				fenceLength = 0
 			}
-			return trimmed[:count]
+			hostAtLine[index] = currentHost
+			continue
+		}
+		if fenceMarker != 0 {
+			fencedAtLine[index] = true
+			hostAtLine[index] = currentHost
+			continue
+		}
+		if inHTMLComment {
+			if strings.Contains(trimmed, "-->") {
+				inHTMLComment = false
+			}
+			hostAtLine[index] = currentHost
+			continue
+		}
+		if strings.HasPrefix(trimmed, "<!--") {
+			remainder := strings.TrimPrefix(trimmed, "<!--")
+			if !strings.Contains(remainder, "-->") {
+				inHTMLComment = true
+			}
+			hostAtLine[index] = currentHost
+			continue
+		}
+		level, title, ok := markdownHeading(line)
+		if ok {
+			currentHost = "h" + decimal(level)
+			if level <= 4 && targetablePath {
+				title, anchor := markdownHeadingIdentity(title)
+				if anchor == "" {
+					problems = append(
+						problems,
+						"Markdown evidence unit at "+path+":"+decimal(index+1)+" has no resolvable anchor. Add a non-empty heading title or an explicit '{#anchor}' suffix.",
+					)
+					inventory.Problems = append(inventory.Problems, inventoryProblem{
+						Symbol:  currentHost,
+						Message: problems[len(problems)-1],
+					})
+				} else {
+					inventory.Units = append(inventory.Units, &evidenceUnit{
+						ID:       "markdown:" + path + ":" + currentHost + ":" + decimal(index+1),
+						Target:   path + "#" + anchor,
+						Type:     artifactMarkdown,
+						Symbol:   currentHost,
+						Path:     path,
+						Line:     index + 1,
+						Readable: "Markdown " + strings.ToUpper(currentHost) + " '" + title + "'",
+					})
+				}
+			}
+		}
+		hostAtLine[index] = currentHost
+	}
+
+	sequence := 0
+	for _, match := range markdownCommentPattern.FindAllStringSubmatchIndex(content, -1) {
+		if len(match) < 4 {
+			continue
+		}
+		commentStart := match[0]
+		line := lineAt(content, commentStart)
+		if line <= 0 || line > len(lines) || fencedAtLine[line-1] {
+			continue
+		}
+		comment := content[match[2]:match[3]]
+		for _, parsed := range parseDeclarations(comment) {
+			sequence++
+			inventory.Declarations = append(inventory.Declarations, &evidenceDeclaration{
+				ID:       "markdown:" + path + ":" + decimal(line+parsed.LineOffset) + ":" + decimal(sequence),
+				Tag:      parsed.Tag,
+				Target:   parsed.Target,
+				Reason:   parsed.Reason,
+				Host:     hostAtLine[line-1],
+				Path:     path,
+				Line:     line + parsed.LineOffset,
+				Sequence: sequence,
+			})
 		}
 	}
-	return ""
+	return inventory, problems
 }
 
-// closesFence reports whether line closes a code block opened with `fence`.
-//
-// CommonMark closes a fence only with a run of the SAME character as the opener,
-// at least as long, with nothing after it but optional whitespace. That last
-// clause is why fenceMarker cannot be reused: a code line like ```stop starts
-// with a fence run but is content, not a close. Treating it as a close would end
-// the block early, leak the code after it as headings, and flip fence parity so
-// every real heading later in the file is dropped.
-func closesFence(line, fence string) bool {
-	trimmed, eligible := fenceLine(line)
-	if !eligible {
-		return false
-	}
-	trimmed = strings.TrimRight(trimmed, " \t")
-	if len(trimmed) < len(fence) {
-		return false
-	}
-	for i := 0; i < len(trimmed); i++ {
-		if trimmed[i] != fence[0] {
-			return false
+func matchesConfiguredMarkdownFile(config graphConfig, path string) bool {
+	for _, source := range config.Sources {
+		if source.Type == artifactMarkdown && source.Files.matches(path) {
+			return true
+		}
+		for _, reference := range source.References {
+			if reference.Type == artifactMarkdown && reference.Files.matches(path) {
+				return true
+			}
 		}
 	}
-	return true
+	return false
 }
 
-// fenceLine removes the indentation CommonMark permits before an opening or
-// closing fence. Four spaces make an indented code block instead, so treating
-// that line as a fence would flip fence state and either invent headings from
-// code or hide real headings that follow it.
-func fenceLine(line string) (string, bool) {
+func couldContainConfiguredMarkdown(config graphConfig, directory string) bool {
+	for _, source := range config.Sources {
+		if source.Type == artifactMarkdown &&
+			source.Files.couldMatchDescendant(directory) {
+			return true
+		}
+		for _, reference := range source.References {
+			if reference.Type == artifactMarkdown &&
+				reference.Files.couldMatchDescendant(directory) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func selectedByMarkdownSource(
+	config graphConfig,
+	path string,
+	symbol string,
+) bool {
+	for _, source := range config.Sources {
+		if source.Type == artifactMarkdown &&
+			source.Files.matches(path) &&
+			(symbol == "*" || source.Symbols.contains(symbol)) {
+			return true
+		}
+	}
+	return false
+}
+
+func markdownFence(line string) (rune, int, string, bool) {
 	indent := 0
 	for indent < len(line) && line[indent] == ' ' {
 		indent++
 	}
 	if indent > 3 {
-		return "", false
+		return 0, 0, "", false
 	}
-	return line[indent:], true
+	runes := []rune(line[indent:])
+	if len(runes) < 3 || (runes[0] != '`' && runes[0] != '~') {
+		return 0, 0, "", false
+	}
+	count := 1
+	for count < len(runes) && runes[count] == runes[0] {
+		count++
+	}
+	if count < 3 {
+		return 0, 0, "", false
+	}
+	remainder := string(runes[count:])
+	if runes[0] == '`' && strings.Contains(remainder, "`") {
+		return 0, 0, "", false
+	}
+	return runes[0], count, remainder, true
 }
 
-// atxHeadingText returns the text of an ATX heading (`# Title`), with any
-// closing sequence (`## Title ##`) removed.
-func atxHeadingText(line string) (string, bool) {
-	trimmed := strings.TrimLeft(line, " ")
-	// Four spaces of indent makes an indented code block, not a heading.
-	if len(line)-len(trimmed) >= 4 {
-		return "", false
+func markdownHeading(line string) (int, string, bool) {
+	space := 0
+	for space < len(line) && line[space] == ' ' && space < 4 {
+		space++
+	}
+	if space > 3 || space >= len(line) || line[space] != '#' {
+		return 0, "", false
 	}
 	level := 0
-	for level < len(trimmed) && trimmed[level] == '#' {
+	for space+level < len(line) && line[space+level] == '#' {
 		level++
 	}
 	if level == 0 || level > 6 {
-		return "", false
+		return 0, "", false
 	}
-	rest := trimmed[level:]
-	if rest != "" && rest[0] != ' ' && rest[0] != '\t' {
-		// `#hashtag` is prose, not a heading.
-		return "", false
+	next := space + level
+	if next < len(line) && line[next] != ' ' && line[next] != '\t' {
+		return 0, "", false
 	}
-	rest = strings.TrimSpace(rest)
-	rest = strings.TrimRight(rest, "#")
-	return strings.TrimSpace(rest), true
+	title := strings.TrimSpace(line[next:])
+	trimmedHashes := strings.TrimRight(title, "#")
+	if trimmedHashes != title && (trimmedHashes == "" || strings.HasSuffix(trimmedHashes, " ") || strings.HasSuffix(trimmedHashes, "\t")) {
+		title = strings.TrimSpace(trimmedHashes)
+	}
+	return level, title, true
 }
 
-// headingAnchor derives a heading's anchor, preferring an explicit `{#id}`.
-//
-// The explicit form exists because anchor identity must be able to outlive the
-// prose. An anchor derived from heading text turns every editorial fix into a
-// broken reference, which teaches authors that the graph is a tax on writing.
-// The derived form exists because requiring an annotation on every heading is a
-// tax of its own. Authors pick per heading: annotate what is cited, leave the
-// rest alone.
-func headingAnchor(title string) (string, bool) {
-	if explicit := explicitAnchor(title); explicit != "" {
-		return explicit, true
+func markdownHeadingIdentity(title string) (string, string) {
+	if match := explicitAnchorPattern.FindStringSubmatch(title); len(match) == 2 {
+		cleanTitle := strings.TrimSpace(explicitAnchorPattern.ReplaceAllString(title, ""))
+		return cleanTitle, match[1]
 	}
-	return slugify(stripExplicitAnchor(title)), false
+	return title, markdownSlug(title)
 }
 
-// explicitAnchor reads a trailing `{#id}` annotation, the kramdown/pandoc form
-// that GitHub, Docusaurus, and most static site generators already honor.
-func explicitAnchor(title string) string {
-	trimmed := strings.TrimSpace(title)
-	if !strings.HasSuffix(trimmed, "}") {
-		return ""
-	}
-	open := strings.LastIndex(trimmed, "{#")
-	if open == -1 {
-		return ""
-	}
-	id := trimmed[open+2 : len(trimmed)-1]
-	if id == "" || strings.ContainsAny(id, " \t{}#") {
-		return ""
-	}
-	return id
-}
-
-func stripExplicitAnchor(title string) string {
-	trimmed := strings.TrimSpace(title)
-	if explicitAnchor(trimmed) == "" {
-		return trimmed
-	}
-	return strings.TrimSpace(trimmed[:strings.LastIndex(trimmed, "{#")])
-}
-
-// slugify derives a GitHub-compatible anchor from heading text: lowercase,
-// drop everything that is not a letter, digit, space, hyphen, or underscore,
-// then turn runs of spaces into single hyphens.
-//
-// Compatibility with GitHub matters more than elegance. A reader who clicks a
-// heading in the rendered document and pastes the fragment must land on a
-// working reference, or the two addressing schemes drift and the tool feels
-// broken even when it is right.
-func slugify(title string) string {
+func markdownSlug(title string) string {
 	var builder strings.Builder
-	for _, char := range strings.ToLower(strings.TrimSpace(title)) {
+	lastHyphen := false
+	for _, char := range strings.ToLower(title) {
 		switch {
-		case char >= 'a' && char <= 'z',
-			char >= '0' && char <= '9',
-			char == '-',
-			char == '_':
+		case unicode.IsLetter(char), unicode.IsNumber(char), char == '_':
 			builder.WriteRune(char)
-		case char == ' ':
-			builder.WriteByte('-')
-		case char > 127 && (unicode.IsLetter(char) || unicode.IsNumber(char)):
-			// Keep non-ASCII letters and digits — GitHub's slugger keeps them, so
-			// a heading in a non-English document stays addressable. Non-ASCII
-			// punctuation and symbols are dropped, which GitHub also does: a curly
-			// apostrophe, an em-dash, or an emoji left in would mint an anchor the
-			// rendered page never produces, so a citation copied from GitHub would
-			// dangle against a section that plainly exists.
-			builder.WriteRune(char)
+			lastHyphen = false
+		case char == '-' || unicode.IsSpace(char):
+			if builder.Len() > 0 && !lastHyphen {
+				builder.WriteRune('-')
+				lastHyphen = true
+			}
 		}
 	}
 	return strings.Trim(builder.String(), "-")
