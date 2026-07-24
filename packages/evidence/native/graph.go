@@ -190,7 +190,7 @@ func evaluateEvidenceGraph(
 	// Scoped targets are keyed by owning file as well as name, which is what
 	// makes import-scope resolution unambiguous: two modules exporting `get`
 	// never compete, because resolution already knows which file it landed in.
-	scopedTargets := map[string]*evidenceUnit{}
+	scopedTargets := map[string]map[string]*evidenceUnit{}
 	for _, state := range states {
 		for _, reference := range state.References {
 			for _, unit := range reference.Scopes {
@@ -205,7 +205,11 @@ func evaluateEvidenceGraph(
 					markdownTargets[unit.Target][unit.ID] = unit
 				}
 				if unit.Type == artifactTypeScript {
-					scopedTargets[scopedTargetKey(unit.Path, unit.Target)] = unit
+					key := scopedTargetKey(unit.Path, unit.Target)
+					if scopedTargets[key] == nil {
+						scopedTargets[key] = map[string]*evidenceUnit{}
+					}
+					scopedTargets[key][unit.ID] = unit
 				}
 			}
 		}
@@ -375,7 +379,7 @@ func resolveInlineLinkDeclaration(
 	declaration *evidenceDeclaration,
 	root string,
 	typescript map[string]*artifactInventory,
-	scopedTargets map[string]*evidenceUnit,
+	scopedTargets map[string]map[string]*evidenceUnit,
 ) (string, string) {
 	target := inlineLinkTarget(declaration.Target)
 	if declaration.Type != artifactTypeScript {
@@ -407,11 +411,27 @@ func resolveInlineLinkDeclaration(
 		return "", "Incomplete evidence target '" + displayTarget(declaration.Target) + "' at " + declaration.location() + ": a namespace import names a module rather than a unit. Name a symbol inside '" + binding.Specifier + "'."
 	}
 	name := strings.Join(remaining, ".")
-	unit := scopedTargets[scopedTargetKey(resolvedPath, name)]
-	if unit == nil {
+	candidates := scopedTargets[scopedTargetKey(resolvedPath, name)]
+	switch len(candidates) {
+	case 0:
 		return "", "Unreachable evidence target '" + displayTarget(declaration.Target) + "' at " + declaration.location() + ": '" + resolvedPath + "' declares no selected unit named '" + name + "'. Correct the target, or widen the reference's files and symbol selection so that unit is configured evidence."
+	case 1:
+		for _, unit := range candidates {
+			return unit.ID, ""
+		}
+		return "", ""
+	default:
+		// One module may spell one name in two declaration spaces — a type and a
+		// callable, say. Resolution landed in the right file and still cannot say
+		// which unit was meant, and picking one silently would acknowledge an
+		// obligation the author never cited.
+		descriptions := make([]string, 0, len(candidates))
+		for _, unit := range candidates {
+			descriptions = append(descriptions, unit.Readable+" at "+unit.location())
+		}
+		sort.Strings(descriptions)
+		return "", "Ambiguous evidence target '" + displayTarget(declaration.Target) + "' at " + declaration.location() + ": '" + resolvedPath + "' declares " + strings.Join(descriptions, "; ") + " under that name. Narrow the reference's symbol selection so the target has exactly one meaning."
 	}
-	return unit.ID, ""
 }
 
 func declarationCandidates(

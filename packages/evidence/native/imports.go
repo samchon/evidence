@@ -276,11 +276,10 @@ func exportsTypeEntry(raw json.RawMessage, key string) string {
 	if len(raw) == 0 {
 		return ""
 	}
+	// A bare-string exports map names the runtime entry only, and a citation
+	// addresses declarations, so there is nothing here to follow.
 	var direct string
 	if err := json.Unmarshal(raw, &direct); err == nil {
-		if key == "." {
-			return ""
-		}
 		return ""
 	}
 	object := map[string]json.RawMessage{}
