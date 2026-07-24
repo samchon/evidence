@@ -3,7 +3,7 @@ import {
   createProject,
   runCheck,
   type IEvidenceProject,
-} from "../internal/project.ts";
+} from "../internal/index.ts";
 
 /**
  * Verifies the README's TypeScript citation example against the real binary.
