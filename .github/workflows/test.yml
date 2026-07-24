@@ -1,6 +1,13 @@
 name: test
 
 on:
+  # Master runs the suite too, because a pull request only ever proves the
+  # branch agrees with the base it was cut from. Two changes that never touch
+  # the same lines merge clean and green while one deletes a module the other
+  # imports, and nothing notices until the next full run.
+  push:
+    branches:
+      - master
   pull_request:
   workflow_dispatch:
 
