@@ -65,7 +65,7 @@ importers:
         specifier: catalog:typescript
         version: 7.0.2
 
-  packages/evidence-graph:
+  packages/evidence:
     dependencies:
       '@typia/interface':
         specifier: catalog:typia
@@ -86,18 +86,15 @@ importers:
       rimraf:
         specifier: catalog:utils
         version: 6.1.3
-      ttsc:
-        specifier: catalog:typescript
-        version: 0.20.0
       typescript:
         specifier: catalog:typescript
         version: 7.0.2
 
-  tests/test-evidence-graph:
+  tests/test-evidence:
     devDependencies:
-      '@samchon/evidence-graph':
+      '@samchon/lint-plugin-evidence':
         specifier: workspace:*
-        version: link:../../packages/evidence-graph
+        version: link:../../packages/evidence
       '@ttsc/lint':
         specifier: catalog:typescript
         version: 0.20.0

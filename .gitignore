@@ -10,8 +10,8 @@ node_modules/
 lib/
 dist/
 coverage/
-/packages/evidence-graph/README.md
-/packages/evidence-graph/LICENSE
+/packages/evidence/README.md
+/packages/evidence/LICENSE
 
 # Local caches and package archives — includes tests/*/.cache/ttsc, the shared
 # plugin build cache the e2e harness pins so fixtures stop paying a cold Go link

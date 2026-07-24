@@ -1,8 +1,8 @@
 {
   "private": true,
-  "name": "@samchon/evidence-graph-config",
+  "name": "@samchon/lint-plugin-evidence-config",
   "version": "0.1.0",
-  "description": "Shared build configuration for @samchon/evidence-graph packages.",
+  "description": "Shared build configuration for @samchon/lint-plugin-evidence packages.",
   "devDependencies": {
     "typescript": "catalog:typescript"
   }

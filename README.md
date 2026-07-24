@@ -1,8 +1,8 @@
-# `@samchon/evidence-graph`
+# `@samchon/lint-plugin-evidence`
 
-![Logo](https://raw.githubusercontent.com/samchon/evidence-graph/master/og.jpg)
+![Logo](https://raw.githubusercontent.com/samchon/lint-plugin-evidence/master/og.jpg)
 
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/samchon/evidence-graph/blob/master/LICENSE) [![NPM Version](https://img.shields.io/npm/v/@samchon/evidence-graph.svg)](https://www.npmjs.com/package/@samchon/evidence-graph) [![NPM Downloads](https://img.shields.io/npm/dm/@samchon/evidence-graph.svg)](https://www.npmjs.com/package/@samchon/evidence-graph) [![Build Status](https://github.com/samchon/evidence-graph/workflows/CI/badge.svg)](https://github.com/samchon/evidence-graph/actions?query=workflow%3ACI) [![Discord Badge](https://img.shields.io/badge/discord-samchon-d91965?style=flat&labelColor=5866f2&logo=discord&logoColor=white&link=https://discord.gg/E94XhzrUCZ)](https://discord.gg/E94XhzrUCZ)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/samchon/lint-plugin-evidence/blob/master/LICENSE) [![NPM Version](https://img.shields.io/npm/v/@samchon/lint-plugin-evidence.svg)](https://www.npmjs.com/package/@samchon/lint-plugin-evidence) [![NPM Downloads](https://img.shields.io/npm/dm/@samchon/lint-plugin-evidence.svg)](https://www.npmjs.com/package/@samchon/lint-plugin-evidence) [![Build Status](https://github.com/samchon/lint-plugin-evidence/actions/workflows/build.yml/badge.svg)](https://github.com/samchon/lint-plugin-evidence/actions/workflows/build.yml) [![Discord Badge](https://img.shields.io/badge/discord-samchon-d91965?style=flat&labelColor=5866f2&logo=discord&logoColor=white&link=https://discord.gg/E94XhzrUCZ)](https://discord.gg/E94XhzrUCZ)
 
 The evidence graph for the AI coding era: the guardrail for goal mode.
 
@@ -33,7 +33,7 @@ export function CouponStackingNotice() {
 >
 > ```bash
 > $ npx ttsc
-> error TS13830: [evidence-graph/index] Missing acknowledgement for
+> error TS13830: [evidence/graph] Missing acknowledgement for
 >   'docs/discount.md#coupon-stacking' (Markdown H2 'Coupon Stacking' at docs/discount.md:3)
 >   in Claim 1 reference 1 (markdown, symbols: h2, h3).
 >
@@ -50,7 +50,7 @@ export function CouponStackingNotice() {
 
 ```bash
 npm install -D typescript ttsc @ttsc/lint
-npm install -D @samchon/evidence-graph
+npm install -D @samchon/lint-plugin-evidence
 ```
 
 This is a lint plugin for [`@ttsc/lint`](https://github.com/samchon/ttsc/tree/master/packages/lint). It runs on [`ttsc`](https://github.com/samchon/ttsc), not on stock `tsc` with ESLint. If your build does not run `ttsc` yet, adopt that toolchain first.
@@ -62,7 +62,7 @@ The first build can take several minutes; it links the rule into the lint binary
 ```ts
 // lint.config.ts
 import type { ITtscLintConfig } from "@ttsc/lint";
-import evidenceGraph, { type IEvidenceGraphConfig } from "@samchon/evidence-graph";
+import evidence, { type IEvidenceGraphConfig } from "@samchon/lint-plugin-evidence";
 
 const graph: IEvidenceGraphConfig = {
   claims: [
@@ -81,15 +81,15 @@ const graph: IEvidenceGraphConfig = {
 
 export default {
   plugins: {
-    "evidence-graph": evidenceGraph,
+    "evidence": evidence,
   },
   rules: {
-    "evidence-graph/index": ["error", graph],
+    "evidence/graph": ["error", graph],
   },
 } satisfies ITtscLintConfig;
 ```
 
-Register the plugin in `lint.config.ts` and pass the graph declaration as the option of the `evidence-graph/index` rule. This graph reads as one sentence: the React components under `src` claim to implement the docs, so every H2 and H3 section under `docs` must be cited by a component.
+Register the plugin in `lint.config.ts` and pass the graph declaration as the option of the `evidence/graph` rule. This graph reads as one sentence: the React components under `src` claim to implement the docs, so every H2 and H3 section under `docs` must be cited by a component.
 
 Violations surface in every `ttsc` build, every `--noEmit` check, and every `ttsx` run. They arrive in the same stream as type errors. No separate CI job.
 
@@ -272,7 +272,7 @@ At most one seller coupon and one platform coupon may combine on a single order.
 
 ```text
 $ npx ttsc check
-error TS13830: [evidence-graph/index] Missing acknowledgement for 'docs/discount.md#coupon-stacking' (Markdown H2 'Coupon Stacking' at docs/discount.md:3) in Claim 1 reference 1 (markdown, symbols: h2, h3). Add '@evidence docs/discount.md#coupon-stacking <reason>' to a selected typescript host of this claim, or '@evidenceExclude docs/discount.md#coupon-stacking <reason>' when this claim intentionally does not use it.
+error TS13830: [evidence/graph] Missing acknowledgement for 'docs/discount.md#coupon-stacking' (Markdown H2 'Coupon Stacking' at docs/discount.md:3) in Claim 1 reference 1 (markdown, symbols: h2, h3). Add '@evidence docs/discount.md#coupon-stacking <reason>' to a selected typescript host of this claim, or '@evidenceExclude docs/discount.md#coupon-stacking <reason>' when this claim intentionally does not use it.
 
 Found 1 error.
 ```
@@ -307,7 +307,7 @@ In an evidence graph a document is a set of claims that other artifacts point at
 
 Thanks for your support.
 
-Your [donation](https://github.com/sponsors/samchon) encourages `@samchon/evidence-graph` development.
+Your [donation](https://github.com/sponsors/samchon) encourages `@samchon/lint-plugin-evidence` development.
 
 ## References
 

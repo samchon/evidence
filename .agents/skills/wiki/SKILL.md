@@ -1,6 +1,6 @@
 ---
 name: wiki
-description: Defines the .wiki/ knowledge base for @samchon/evidence-graph — what belongs in it, its Korean and no-wrap writing rules, and the obligation to correct it the moment a claim proves false. Use when researching prior art, recording an architectural decision, or discovering that a wiki claim is wrong; do not use for user-facing documentation, which the documentation skill owns.
+description: Defines the .wiki/ knowledge base for @samchon/lint-plugin-evidence — what belongs in it, its Korean and no-wrap writing rules, and the obligation to correct it the moment a claim proves false. Use when researching prior art, recording an architectural decision, or discovering that a wiki claim is wrong; do not use for user-facing documentation, which the documentation skill owns.
 ---
 
 # Wiki
