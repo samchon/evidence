@@ -65,6 +65,9 @@ func scanTypeScriptInventory(
 		inventory,
 		supportedHosts,
 		unitsByID,
+		file.IsDeclarationFile,
+		false,
+		false,
 	)
 	collectTypeScriptDeclarations(file, path, inventory, supportedHosts)
 	sort.Slice(inventory.Units, func(left int, right int) bool {
@@ -83,6 +86,9 @@ func collectTypeScriptStatements(
 	inventory *artifactInventory,
 	supportedHosts map[*shimast.Node]symbolSet,
 	unitsByID map[string]*evidenceUnit,
+	ambientContext bool,
+	implicitlyExported bool,
+	typeOnlyProjection bool,
 ) {
 	if statements == nil {
 		return
@@ -98,7 +104,13 @@ func collectTypeScriptStatements(
 			if name == "" {
 				continue
 			}
-			targets := publicTypeScriptNames(statement, name, exports, true)
+			targets := publicTypeScriptNames(
+				statement,
+				name,
+				exports,
+				true,
+				implicitlyExported,
+			)
 			if len(targets) == 0 {
 				continue
 			}
@@ -127,7 +139,13 @@ func collectTypeScriptStatements(
 			if name == "" {
 				continue
 			}
-			targets := publicTypeScriptNames(statement, name, exports, true)
+			targets := publicTypeScriptNames(
+				statement,
+				name,
+				exports,
+				true,
+				implicitlyExported,
+			)
 			if len(targets) == 0 {
 				continue
 			}
@@ -155,11 +173,20 @@ func collectTypeScriptStatements(
 				}
 			}
 		case shimast.KindFunctionDeclaration:
+			if typeOnlyProjection {
+				continue
+			}
 			name := declarationName(statement.Name())
 			if name == "" {
 				continue
 			}
-			targets := publicTypeScriptNames(statement, name, exports, false)
+			targets := publicTypeScriptNames(
+				statement,
+				name,
+				exports,
+				false,
+				implicitlyExported,
+			)
 			if len(targets) == 0 {
 				continue
 			}
@@ -175,6 +202,9 @@ func collectTypeScriptStatements(
 				)
 			}
 		case shimast.KindVariableStatement:
+			if typeOnlyProjection {
+				continue
+			}
 			for symbol := range collectTypeScriptVariables(
 				statement,
 				prefix,
@@ -183,14 +213,24 @@ func collectTypeScriptStatements(
 				inventory,
 				supportedHosts,
 				unitsByID,
+				implicitlyExported,
 			) {
 				// TypeScript attaches the leading JSDoc of
 				// a variable declaration to the statement wrapper.
 				addTypeScriptHost(supportedHosts, statement, symbol)
 			}
 		case shimast.KindClassDeclaration:
+			if typeOnlyProjection {
+				continue
+			}
 			name := declarationName(statement.Name())
-			for _, publicName := range publicTypeScriptNames(statement, name, exports, false) {
+			for _, publicName := range publicTypeScriptNames(
+				statement,
+				name,
+				exports,
+				false,
+				implicitlyExported,
+			) {
 				collectClassCallables(
 					statement,
 					qualifyTypeScriptName(prefix, publicName),
@@ -202,13 +242,19 @@ func collectTypeScriptStatements(
 			}
 		case shimast.KindModuleDeclaration:
 			name := declarationName(statement.Name())
-			targets := publicTypeScriptNames(statement, name, exports, false)
+			targets := publicTypeScriptExports(
+				statement,
+				name,
+				exports,
+				true,
+				implicitlyExported,
+			)
 			if len(targets) == 0 {
 				continue
 			}
 			addTypeScriptHost(supportedHosts, statement, "type")
-			for _, publicName := range targets {
-				identity := qualifyTypeScriptName(prefix, publicName)
+			for _, target := range targets {
+				identity := qualifyTypeScriptName(prefix, target.Public)
 				unit := addTypeScriptUnit(
 					inventory,
 					unitsByID,
@@ -224,6 +270,8 @@ func collectTypeScriptStatements(
 					inventory,
 					supportedHosts,
 					unitsByID,
+					ambientContext,
+					typeOnlyProjection || target.TypeOnly,
 				)
 			}
 		}
@@ -238,6 +286,7 @@ func collectTypeScriptVariables(
 	inventory *artifactInventory,
 	supportedHosts map[*shimast.Node]symbolSet,
 	unitsByID map[string]*evidenceUnit,
+	implicitlyExported bool,
 ) symbolSet {
 	variable := statement.AsVariableStatement()
 	if variable.DeclarationList == nil {
@@ -253,35 +302,37 @@ func collectTypeScriptVariables(
 			continue
 		}
 		value := declaration.AsVariableDeclaration()
-		name := declarationName(declaration.Name())
-		if name == "" {
-			continue
-		}
-		targets := publicTypeScriptNames(
-			statement,
-			name,
-			exports,
-			false,
-		)
-		if len(targets) == 0 {
-			continue
-		}
 		symbol := "property"
-		if shimast.IsConst(declaration) && isFunctionValue(value.Initializer) {
+		if !shimast.IsBindingPattern(declaration.Name()) &&
+			shimast.IsConst(declaration) &&
+			isFunctionValue(value.Initializer) {
 			symbol = "function"
 		}
-		addTypeScriptHost(supportedHosts, declaration, symbol)
-		for _, name := range targets {
-			addTypeScriptUnit(
-				inventory,
-				unitsByID,
-				declaration,
-				symbol,
-				qualifyTypeScriptName(prefix, name),
-				parentID,
+		for _, binding := range bindingIdentifierNodes(declaration.Name()) {
+			name := declarationName(binding)
+			targets := publicTypeScriptNames(
+				statement,
+				name,
+				exports,
+				false,
+				implicitlyExported,
 			)
+			if len(targets) == 0 {
+				continue
+			}
+			addTypeScriptHost(supportedHosts, declaration, symbol)
+			for _, name := range targets {
+				addTypeScriptUnit(
+					inventory,
+					unitsByID,
+					binding,
+					symbol,
+					qualifyTypeScriptName(prefix, name),
+					parentID,
+				)
+			}
+			found[symbol] = true
 		}
-		found[symbol] = true
 	}
 	return found
 }
@@ -307,6 +358,9 @@ func collectClassCallables(
 		case shimast.KindMethodDeclaration:
 			callable = true
 		case shimast.KindPropertyDeclaration:
+			if member.ModifierFlags()&shimast.ModifierFlagsAccessor != 0 {
+				continue
+			}
 			property := member.AsPropertyDeclaration()
 			callable = isFunctionValue(property.Initializer) ||
 				isDirectFunctionType(property.Type)
@@ -369,6 +423,8 @@ func collectTypeScriptModule(
 	inventory *artifactInventory,
 	supportedHosts map[*shimast.Node]symbolSet,
 	unitsByID map[string]*evidenceUnit,
+	ambientContext bool,
+	typeOnlyProjection bool,
 ) {
 	if node == nil || node.Kind != shimast.KindModuleDeclaration {
 		return
@@ -379,6 +435,8 @@ func collectTypeScriptModule(
 	}
 	switch module.Body.Kind {
 	case shimast.KindModuleBlock:
+		moduleAmbient := ambientContext ||
+			shimast.GetCombinedModifierFlags(node)&shimast.ModifierFlagsAmbient != 0
 		collectTypeScriptStatements(
 			module.Body.AsModuleBlock().Statements,
 			qualified,
@@ -386,6 +444,9 @@ func collectTypeScriptModule(
 			inventory,
 			supportedHosts,
 			unitsByID,
+			moduleAmbient,
+			moduleAmbient,
+			typeOnlyProjection,
 		)
 	case shimast.KindModuleDeclaration:
 		// `export namespace Outer.Inner {}` is represented as nested module
@@ -409,6 +470,9 @@ func collectTypeScriptModule(
 				inventory,
 				supportedHosts,
 				unitsByID,
+				ambientContext ||
+					shimast.GetCombinedModifierFlags(node)&shimast.ModifierFlagsAmbient != 0,
+				typeOnlyProjection,
 			)
 		}
 	}
@@ -636,26 +700,55 @@ func publicTypeScriptNames(
 	local string,
 	exports map[string][]exportedName,
 	allowTypeOnly bool,
+	implicitlyExported bool,
 ) []string {
+	projected := publicTypeScriptExports(
+		node,
+		local,
+		exports,
+		allowTypeOnly,
+		implicitlyExported,
+	)
+	result := make([]string, 0, len(projected))
+	for _, exported := range projected {
+		result = append(result, exported.Public)
+	}
+	return result
+}
+
+func publicTypeScriptExports(
+	node *shimast.Node,
+	local string,
+	exports map[string][]exportedName,
+	allowTypeOnly bool,
+	implicitlyExported bool,
+) []exportedName {
 	if local == "" {
 		return nil
 	}
-	names := map[string]bool{}
-	if isSyntacticallyExported(node) {
-		names[local] = true
+	names := map[string]exportedName{}
+	if implicitlyExported || isSyntacticallyExported(node) {
+		names[local] = exportedName{Public: local}
 	}
 	for _, exported := range exports[local] {
 		if exported.TypeOnly && !allowTypeOnly {
 			continue
 		}
-		names[exported.Public] = true
+		current, exists := names[exported.Public]
+		if !exists || current.TypeOnly && !exported.TypeOnly {
+			names[exported.Public] = exported
+		}
 	}
 	result := make([]string, 0, len(names))
 	for name := range names {
 		result = append(result, name)
 	}
 	sort.Strings(result)
-	return result
+	projected := make([]exportedName, 0, len(result))
+	for _, name := range result {
+		projected = append(projected, names[name])
+	}
+	return projected
 }
 
 func isSyntacticallyExported(node *shimast.Node) bool {
@@ -678,6 +771,30 @@ func declarationName(node *shimast.Node) string {
 	default:
 		return ""
 	}
+}
+
+func bindingIdentifierNodes(node *shimast.Node) []*shimast.Node {
+	if node == nil {
+		return nil
+	}
+	if declarationName(node) != "" {
+		return []*shimast.Node{node}
+	}
+	if !shimast.IsBindingPattern(node) {
+		return nil
+	}
+	pattern := node.AsBindingPattern()
+	if pattern == nil || pattern.Elements == nil {
+		return nil
+	}
+	nodes := []*shimast.Node{}
+	for _, element := range pattern.Elements.Nodes {
+		if element == nil || element.Kind != shimast.KindBindingElement {
+			continue
+		}
+		nodes = append(nodes, bindingIdentifierNodes(element.Name())...)
+	}
+	return nodes
 }
 
 func qualifyTypeScriptName(prefix []string, names ...string) []string {

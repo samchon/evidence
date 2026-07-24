@@ -62,9 +62,9 @@ Selectors classify public contracts semantically.
 - `"function"` selects exported function declarations, function-valued exported `const` declarations, public class callables, and namespace variants of those forms.
 - `"property"` selects direct properties of exported interfaces and object-shaped type aliases plus exported `const`, `let`, or `var` declarations at module or namespace scope. A `const` initialized with an arrow or function expression remains a function; every other variable, including a function-typed declaration or function-valued `let` or `var`, remains a property.
 
-Only public identities materialize. A top-level declaration needs an export modifier or local export-list alias; a namespace member needs to be exported from that namespace. Re-exports whose declarations live in another file do not create a second unit.
+Only public identities materialize. A top-level declaration needs an export modifier or local export-list alias; a namespace member needs to be exported from that namespace unless ambient namespace semantics make it implicitly public. A type-only namespace alias projects only public namespaces, interfaces, type aliases, and their type properties, never value-space data or callables. Re-exports whose declarations live in another file do not create a second unit.
 
-A mixed variable statement can carry both function and property host kinds because TypeScript attaches one leading JSDoc block to the statement wrapper. Preserve the host set; choosing one kind makes the other selector spuriously out of scope.
+A mixed variable statement can carry both function and property host kinds because TypeScript attaches one leading JSDoc block to the statement wrapper. Every public leaf of an object or array binding pattern is a property under its local binding name. Preserve the host set; choosing one kind makes the other selector spuriously out of scope.
 
 ## Evaluation
 

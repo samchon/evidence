@@ -21,7 +21,8 @@
  *   and `var` declarations at module or namespace scope. A `const` initialized
  *   with an arrow or function expression remains a function; every other
  *   variable, including a function-typed declaration or function-valued `let`
- *   or `var`, is a property. Class fields and methods are not property units.
+ *   or `var`, is a property. Every exported leaf in an object or array binding
+ *   pattern is a property. Class fields and methods are not property units.
  *
  * TypeScript units form containment scopes. An interface or object-shaped type
  * alias contains its selected properties. A namespace contains every selected
@@ -35,13 +36,17 @@
  * qualified name, such as `Orders` or `Outer.Inner`. A local declaration
  * exposed as `export { Local as Public }` therefore uses `Public`. A named
  * default declaration keeps its declaration name; anonymous and default-only
- * aliases have no stable target and are not selected. Type properties use
- * `TypeName.property`. Static class callables use `ClassName.method`; instance
- * callables use `ClassName.prototype.method`. Computed names are not selected,
- * even when their expression is a literal. Literal names must be
- * whitespace-free because a declaration target is one whitespace-delimited
- * token. A dot inside a literal name is rendered unchanged; if that spelling
- * collides with qualification, the target is ambiguous.
+ * aliases have no stable target and are not selected. Members of an ambient
+ * namespace are public without their own `export` modifier. A type-only
+ * namespace alias exposes the namespace, its public type-space descendants, and
+ * their type properties without exposing data, functions, or class callables.
+ * Type properties use `TypeName.property`. Static class callables use
+ * `ClassName.method`; instance callables use `ClassName.prototype.method`.
+ * Computed names are not selected, even when their expression is a literal.
+ * Literal names must be whitespace-free because a declaration target is one
+ * whitespace-delimited token. A dot inside a literal name is rendered
+ * unchanged; if that spelling collides with qualification, the target is
+ * ambiguous.
  *
  * These targets deliberately omit file paths. If selected files expose the same
  * qualified target, a declaration using that target is ambiguous; rename or
