@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 // Minimal runner. Discovers `test_*` exports under `features/`, runs each, and
 // exits non-zero if any threw.
@@ -35,7 +35,7 @@ const main = async (): Promise<void> => {
   const failures: Error[] = [];
   for (const file of files) {
     const module: Record<string, unknown> = await import(
-      new URL(`file://${file.split(path.sep).join("/")}`).href
+      pathToFileURL(file).href
     );
     for (const [name, value] of Object.entries(module)) {
       if (!name.startsWith("test_") || typeof value !== "function") continue;
