@@ -161,8 +161,8 @@ func collectPublicSurface(file *shimast.SourceFile) publicSurface {
 		}
 		switch statement.Kind {
 		case shimast.KindExportDeclaration:
-			for local, public := range localExportAliases(statement) {
-				expose(local, public)
+			for _, alias := range localExportAliases(statement) {
+				expose(alias.Local, alias.Public)
 			}
 		case shimast.KindExportAssignment:
 			assignment := statement.AsExportAssignment()
@@ -273,10 +273,25 @@ func topLevelDeclaredNames(statement *shimast.Node) []declaredName {
 	}
 }
 
-// localExportAliases maps local names to the public names an export list gives
-// them, skipping any list that re-exports from another module.
-func localExportAliases(statement *shimast.Node) map[string]string {
-	aliases := map[string]string{}
+// exportAlias is one entry of an export list: the local declaration it names,
+// and the public name it gives that declaration.
+//
+// Public is empty for `export { x as default }`, which exposes `x` without
+// giving it an addressable name — the same state `export default x` produces.
+type exportAlias struct {
+	Local  string
+	Public string
+}
+
+// localExportAliases lists the exposures an export list creates, skipping any
+// list that re-exports from another module.
+//
+// The result is a slice rather than a local-keyed map because one local may be
+// exported under several names. Collapsing those to one would drop every name
+// but the last, and a file legitimately named after a dropped name would then
+// be reported.
+func localExportAliases(statement *shimast.Node) []exportAlias {
+	aliases := []exportAlias{}
 	declaration := statement.AsExportDeclaration()
 	if declaration == nil ||
 		declaration.ModuleSpecifier != nil ||
@@ -302,10 +317,13 @@ func localExportAliases(statement *shimast.Node) map[string]string {
 		}
 		local := declarationName(localNode)
 		public := declarationName(specifier.Name())
-		if local == "" || public == "" || public == "default" {
+		if local == "" || public == "" {
 			continue
 		}
-		aliases[local] = public
+		if public == "default" {
+			public = ""
+		}
+		aliases = append(aliases, exportAlias{Local: local, Public: public})
 	}
 	return aliases
 }

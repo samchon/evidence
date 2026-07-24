@@ -99,6 +99,47 @@ export default handler;
 }
 
 /**
+ * Verifies a local exported under two names keeps both addresses.
+ *
+ * Exporting one declaration twice is legal, and collapsing the pair to a single
+ * address would report a file legitimately named after the dropped one. That is
+ * a false positive, which is the failure mode that gets a rule disabled.
+ *
+ *  1. Export one local const under two public names.
+ *  2. Run the rule against a file named after each in turn.
+ *  3. Assert both are silent.
+ */
+func TestSingularKeepsEveryPublicAddressOfOneDeclaration(t *testing.T) {
+	source := `
+const value = 1;
+export { value as Alpha, value as Beta };
+`
+	assertSilent(t, runSingularRule(t, "src/Alpha.ts", source))
+	assertSilent(t, runSingularRule(t, "src/Beta.ts", source))
+}
+
+/**
+ * Verifies `export { x as default }` is the same exposure as `export default x`.
+ *
+ * Both forms expose one declaration under no addressable name. Treating the
+ * list form as no exposure at all would let the rule miss the file entirely,
+ * and a rule that silently sees nothing is indistinguishable from one that
+ * passed.
+ *
+ *  1. Expose a local declaration through an export list as `default`.
+ *  2. Run the rule against a file named after neither the declaration nor
+ *     `default`.
+ *  3. Assert the declared name is demanded.
+ */
+func TestSingularTreatsDefaultAliasAsExposureWithoutAddress(t *testing.T) {
+	messages := runSingularRule(t, "src/entry.ts", `
+const handler = (): void => {};
+export { handler as default };
+`)
+	assertReported(t, messages, "'entry.ts' declares 'handler'")
+}
+
+/**
  * Verifies extension handling: a `.tsx` component matches its base name.
  *
  * The comparison strips one extension, so a component file must match without
