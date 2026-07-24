@@ -10,14 +10,15 @@ import {
  * Verifies the packaged rule accepts exactly one block per merged identity.
  *
  * This is the idiom a consumer meets first, and the one `evidence/singular`
- * blesses by name. Each fixture carries its block on a different half on
- * purpose: the rule counts blocks per identity, never per declaration kind, so
- * which half holds it is the author's choice. Driving that through the real
- * binary is what proves the agreement between the two rules survives
+ * blesses by name. Every fixture carries its single block on the identity's
+ * first declaration, which is the only accepted position — and each reaches
+ * that position through a different fold: a type unit, a class that is no unit
+ * at all, an overload run, and an export assignment. Driving that through the
+ * real binary is what proves the agreement between the two rules survives
  * packaging.
  *
- * 1. Declare an interface, a class, and an overload set, each merged with a
- *    same-named namespace or signature run and documented on exactly one half.
+ * 1. Declare an interface, a class, an overload set, and a default export, each
+ *    documented once on its first declaration.
  * 2. Enable `evidence/documented` with the default selection.
  * 3. Assert a clean exit.
  */
@@ -53,8 +54,8 @@ export const test_evidence_documented_accepts_merged_identities = (): void => {
         "",
       ].join("\n"),
       "src/Something.ts": [
-        "export class Something {}",
         "/** The exported service. */",
+        "export class Something {}",
         "export namespace Something {",
         "  /** Current version. */",
         '  export const version = "1";',

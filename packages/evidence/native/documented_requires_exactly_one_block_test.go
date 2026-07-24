@@ -32,18 +32,19 @@ export namespace ISale {
 }
 
 /**
- * Verifies the same identity documented on the namespace half instead.
+ * Verifies a block on a later half of a merged identity is reported.
  *
- * The rule counts blocks per identity, never per declaration kind, so which
- * half carries the block is the author's choice. A rule that privileged the
- * interface would force a rewrite of every file that documents the companion.
+ * One block is not enough on its own: a reader looking for what an identity is
+ * should not have to guess which half of a merge carries it, and "the one that
+ * comes first" is the only convention that needs no further convention. It also
+ * makes the citation position predictable for an agent writing `@evidence`.
  *
  *  1. Document only the namespace half of a merged identity.
  *  2. Run the rule.
- *  3. Assert silence.
+ *  3. Assert a finding naming where the block is and where it belongs.
  */
-func TestDocumentedAcceptsAMergedIdentityDocumentedOnTheNamespace(t *testing.T) {
-	assertSilent(t, runDocumentedRule(t, "src/ISale.ts", `
+func TestDocumentedReportsAMergedIdentityDocumentedOnALaterHalf(t *testing.T) {
+	messages := runDocumentedRule(t, "src/ISale.ts", `
 export interface ISale {
   /** Identifier of the sale. */
   id: string;
@@ -56,7 +57,51 @@ export namespace ISale {
     id: string;
   }
 }
-`, ""))
+`, "")
+	assertReportedAmong(t, messages, "Misplaced JSDoc on exported type 'ISale'")
+	assertReportedAmong(t, messages, "the block is at line 6")
+	assertReportedAmong(t, messages, "first declared at line 2")
+}
+
+/**
+ * Verifies a class merged with a namespace, documented on the namespace half.
+ *
+ * The class comes first in source, so it owns the documentation site even
+ * though it is not itself a type unit. Without the fold, the block would be
+ * invisible and this file would be reported as undocumented instead.
+ *
+ *  1. Document only the namespace half of a merged class identity.
+ *  2. Run the rule.
+ *  3. Assert the misplacement is reported.
+ */
+func TestDocumentedReportsAMergedClassDocumentedOnTheNamespace(t *testing.T) {
+	assertReportedAmong(t, runDocumentedRule(t, "src/Something.ts", `
+export class Something {}
+/** The exported service. */
+export namespace Something {
+  /** Current version. */
+  export const version = "1";
+}
+`, ""), "Misplaced JSDoc on exported type 'Something'")
+}
+
+/**
+ * Verifies a default export documented instead of its const is reported.
+ *
+ * `const x` beside `export default x` has a natural first declaration — the
+ * const — so the same rule applies with no special case. The block belongs
+ * where the identity is declared, not where it is re-exposed.
+ *
+ *  1. Document only the default export of a local const.
+ *  2. Run the rule.
+ *  3. Assert the misplacement is reported.
+ */
+func TestDocumentedReportsADefaultExportDocumentedInsteadOfItsConst(t *testing.T) {
+	assertReportedAmong(t, runDocumentedRule(t, "src/evidence.ts", `
+export const evidence = { name: "evidence" };
+/** The exported plugin descriptor. */
+export default evidence;
+`, ""), "Misplaced JSDoc on exported property 'evidence'")
 }
 
 /**

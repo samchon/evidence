@@ -59,12 +59,22 @@ func (documentedRule) Check(ctx *rule.Context, node *shimast.Node) {
 		// host to underline the range it is built to skip past.
 		switch {
 		case len(blocks.Content) == 1:
-			continue
+			if blocks.Content[0].Owner == host.Node {
+				continue
+			}
+			ctx.Report(
+				host.Node,
+				"Misplaced JSDoc on "+host.describe()+
+					": the block is at "+describeLines(ctx.File, []*shimast.Node{blocks.Content[0].Block})+
+					", but this identity is first declared at line "+
+					decimal(identityDeclarationLine(ctx.File, host.Node))+
+					". A reader looking for what an identity is should not have to guess which half of a merge carries it. Move the block above the first declaration.",
+			)
 		case len(blocks.Content) > 1:
 			ctx.Report(
 				host.Node,
 				"Duplicate JSDoc on "+host.describe()+
-					": blocks at "+describeLines(ctx.File, blocks.Content)+
+					": blocks at "+describeLines(ctx.File, blockNodes(blocks.Content))+
 					". One identity documents itself in one place — the tag parser reads every block, so a citation split across two of them is provenance a reviewer has to go looking for. Keep one block and fold the rest into it.",
 			)
 		case len(blocks.Empty) != 0:
@@ -141,8 +151,18 @@ type documentedHost struct {
 // block keeps its own finding rather than pushing an identity into duplicate
 // territory for a comment that says nothing.
 type documentationBlocks struct {
-	Content []*shimast.Node
-	Empty   []*shimast.Node
+	Content []documentationBlock
+	Empty   []documentationBlock
+}
+
+// documentationBlock pairs a block with the declaration it sits above.
+//
+// The owner is what decides placement: a merged identity is documented at its
+// first declaration, so knowing a block exists is not enough — the rule has to
+// know which half of the merge it was written on.
+type documentationBlock struct {
+	Block *shimast.Node
+	Owner *shimast.Node
 }
 
 // documentation gathers every block that documents this identity.
@@ -171,10 +191,16 @@ func (host documentedHost) documentation(
 			}
 			seen[doc.Pos()] = true
 			if jsdocHasContent(content[doc.Pos():doc.End()]) {
-				blocks.Content = append(blocks.Content, doc)
+				blocks.Content = append(
+					blocks.Content,
+					documentationBlock{Block: doc, Owner: node},
+				)
 				continue
 			}
-			blocks.Empty = append(blocks.Empty, doc)
+			blocks.Empty = append(
+				blocks.Empty,
+				documentationBlock{Block: doc, Owner: node},
+			)
 		}
 	}
 	return blocks
@@ -194,6 +220,27 @@ func blockStart(content string, node *shimast.Node) int {
 		offset++
 	}
 	return offset
+}
+
+func blockNodes(blocks []documentationBlock) []*shimast.Node {
+	nodes := make([]*shimast.Node, 0, len(blocks))
+	for _, block := range blocks {
+		nodes = append(nodes, block.Block)
+	}
+	return nodes
+}
+
+// identityDeclarationLine names the line a declaration is written on.
+//
+// The name's end is preferred over the node's start because a node begins where
+// the previous token ended, which for a documented declaration is inside the
+// JSDoc block above it.
+func identityDeclarationLine(file *shimast.SourceFile, node *shimast.Node) int {
+	content := file.Text()
+	if name := node.Name(); name != nil && name.End() > 0 {
+		return lineAt(content, name.End()-1)
+	}
+	return lineAt(content, blockStart(content, node))
 }
 
 func describeLines(file *shimast.SourceFile, nodes []*shimast.Node) string {
@@ -257,7 +304,29 @@ func documentedHosts(file *shimast.SourceFile) []documentedHost {
 	sort.Slice(hosts, func(left int, right int) bool {
 		return hosts[left].Node.Pos() < hosts[right].Node.Pos()
 	})
-	return attachMergedDeclarations(file, mergeSharedBlockHosts(hosts))
+	return orderIdentityDeclarations(
+		attachMergedDeclarations(file, mergeSharedBlockHosts(hosts)),
+	)
+}
+
+// orderIdentityDeclarations puts each identity's declarations in source order.
+//
+// The collector records them as it walks, and the merged forms are folded in
+// afterwards, so the slice arrives in neither order. Placement is defined
+// against the declaration that comes first, so that has to be `Node` — and for
+// a variable the enclosing statement wins over its binding, which is where
+// TypeScript actually attaches the block.
+func orderIdentityDeclarations(hosts []documentedHost) []documentedHost {
+	for index := range hosts {
+		nodes := hosts[index].Nodes
+		sort.SliceStable(nodes, func(left int, right int) bool {
+			return nodes[left].Pos() < nodes[right].Pos()
+		})
+		if len(nodes) != 0 {
+			hosts[index].Node = nodes[0]
+		}
+	}
+	return hosts
 }
 
 // attachMergedDeclarations folds declarations that spell an identity without
