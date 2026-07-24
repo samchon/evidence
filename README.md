@@ -2,7 +2,7 @@
 
 ![Logo](https://raw.githubusercontent.com/samchon/lint-plugin-evidence/master/og.jpg)
 
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/samchon/lint-plugin-evidence/blob/master/LICENSE) [![NPM Version](https://img.shields.io/npm/v/@samchon/lint-plugin-evidence.svg)](https://www.npmjs.com/package/@samchon/lint-plugin-evidence) [![NPM Downloads](https://img.shields.io/npm/dm/@samchon/lint-plugin-evidence.svg)](https://www.npmjs.com/package/@samchon/lint-plugin-evidence) [![Build Status](https://github.com/samchon/lint-plugin-evidence/workflows/CI/badge.svg)](https://github.com/samchon/lint-plugin-evidence/actions?query=workflow%3ACI) [![Discord Badge](https://img.shields.io/badge/discord-samchon-d91965?style=flat&labelColor=5866f2&logo=discord&logoColor=white&link=https://discord.gg/E94XhzrUCZ)](https://discord.gg/E94XhzrUCZ)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/samchon/lint-plugin-evidence/blob/master/LICENSE) [![NPM Version](https://img.shields.io/npm/v/@samchon/lint-plugin-evidence.svg)](https://www.npmjs.com/package/@samchon/lint-plugin-evidence) [![NPM Downloads](https://img.shields.io/npm/dm/@samchon/lint-plugin-evidence.svg)](https://www.npmjs.com/package/@samchon/lint-plugin-evidence) [![Build Status](https://github.com/samchon/lint-plugin-evidence/actions/workflows/build.yml/badge.svg)](https://github.com/samchon/lint-plugin-evidence/actions/workflows/build.yml) [![Discord Badge](https://img.shields.io/badge/discord-samchon-d91965?style=flat&labelColor=5866f2&logo=discord&logoColor=white&link=https://discord.gg/E94XhzrUCZ)](https://discord.gg/E94XhzrUCZ)
 
 The evidence graph for the AI coding era: the guardrail for goal mode.
 
