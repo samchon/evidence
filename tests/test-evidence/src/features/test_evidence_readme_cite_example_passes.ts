@@ -34,7 +34,7 @@ export const test_evidence_readme_cite_example_passes = (): void => {
       "  claims: [",
       "    {",
       '      type: "typescript",',
-      '      files: ["src/ui/**"],',
+      '      files: ["src/*.ts"],',
       '      symbol: "function",',
       "      reference: {",
       '        type: "typescript",',
@@ -62,8 +62,8 @@ export const test_evidence_readme_cite_example_passes = (): void => {
         "}",
         "",
       ].join("\n"),
-      "src/ui/SalePrice.ts": [
-        'import type * as sales from "../contracts/IShoppingSale.js";',
+      "src/SalePrice.ts": [
+        'import type * as sales from "./contracts/IShoppingSale.js";',
         "",
         "/**",
         " * @evidence {@link sales.IShoppingSale} Renders the price exactly as the contract declares it.",

@@ -299,7 +299,9 @@ import type * as sales from "./contracts/IShoppingSale.js";
 /**
  * @evidence {@link sales.IShoppingSale} Renders the price exactly as the contract declares it.
  */
-export function SalePrice(): JSX.Element {}
+export function SalePrice(): null {
+  return null;
+}
 ```
 
 The braces are not decoration. They are what makes the import legitimate, and the import is what makes the citation a reference instead of a string.
