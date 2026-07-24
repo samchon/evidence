@@ -1,0 +1,86 @@
+import {
+  assertExcludes,
+  assertStatus,
+  createProject,
+  runCheck,
+  type IEvidenceProject,
+} from "../internal/project.ts";
+
+/**
+ * Verifies ambient namespace members through the packaged compiler boundary.
+ *
+ * Declaration-file members are implicitly exported even without member-level
+ * `export` keywords. The consumer import proves TypeScript exposes the same
+ * type, function, and property tree that the evidence graph materializes.
+ *
+ * 1. Declare and consume one exported ambient namespace.
+ * 2. Acknowledge its complete namespace scope from Markdown.
+ * 3. Assert the real compiler accepts every selected descendant.
+ */
+export const test_evidence_index_materializes_ambient_namespace_members =
+  (): void => {
+    const project: IEvidenceProject = createProject({
+      name: "ambient-namespace",
+      lintConfig: [
+        'import evidenceGraph from "@samchon/evidence-graph";',
+        "",
+        "export default {",
+        '  plugins: { "evidence-graph": evidenceGraph },',
+        "  rules: {",
+        '    "evidence-graph/index": ["error", {',
+        "      claims: [{",
+        '        type: "markdown",',
+        '        files: ["docs/contracts.md"],',
+        '        symbol: "file",',
+        "        reference: {",
+        '          type: "typescript",',
+        '          files: ["src/contracts.d.ts"],',
+        '          symbol: ["type", "function", "property"],',
+        "        },",
+        "      }],",
+        "    }],",
+        "  },",
+        "};",
+        "",
+      ].join("\n"),
+      files: {
+        "src/contracts.d.ts": [
+          "export namespace Ambient {",
+          "  interface Input { id: string; }",
+          "  function run(input: Input): void;",
+          "  const state: string;",
+          "  namespace Nested {",
+          "    function work(): void;",
+          "  }",
+          "}",
+          "",
+        ].join("\n"),
+        "src/use.ts": [
+          'import { Ambient } from "./contracts.js";',
+          "",
+          'const input: Ambient.Input = { id: "member" };',
+          "Ambient.run(input);",
+          "Ambient.Nested.work();",
+          "export const state: string = Ambient.state;",
+          "",
+        ].join("\n"),
+        "docs/contracts.md":
+          "<!-- @evidence Ambient Documents the complete ambient namespace contract. -->\n",
+      },
+    });
+    try {
+      const result = runCheck(project.directory);
+      assertStatus(
+        result,
+        0,
+        "The packaged rule must follow TypeScript's implicit ambient namespace visibility.",
+      );
+      assertExcludes(
+        result,
+        "Missing acknowledgement",
+        "The namespace scope must cover every implicit public descendant.",
+      );
+    } finally {
+      project.cleanup();
+    }
+  };

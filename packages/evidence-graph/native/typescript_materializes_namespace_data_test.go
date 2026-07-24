@@ -136,8 +136,9 @@ func TestMixedVariableStatementSupportsPropertyAndFunctionClaimHosts(t *testing.
 	files := map[string]string{
 		"docs/spec.md": "## Contract\n",
 		"src/ref.ts": `
+const source = { state: "ready" };
 /** @evidence docs/spec.md#contract The exported statement carries this contract. */
-export const state = "ready", run = (): void => {};
+export const { state } = source, run = (): void => {};
 `,
 	}
 	for _, symbol := range []string{"property", "function"} {
