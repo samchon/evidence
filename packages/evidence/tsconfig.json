@@ -6,8 +6,7 @@
     "outDir": "lib",
     "rootDir": "src",
     "sourceMap": false,
-    "types": ["*"],
-    "plugins": [{ "transform": "@ttsc/lint", "enabled": false }]
+    "types": ["*"]
   },
   "include": ["src"]
 }
