@@ -44,40 +44,6 @@ export function CouponStackingNotice() {
 > Found 1 error.
 > ```
 
-## Rules
-
-Three rules ship, enabled independently. They are one argument in three parts: a citation has to exist and stay true, it has to have somewhere to live, and its subject has to be findable by name.
-
-### `evidence/graph`
-
-The gate. Every configured obligation is acknowledged by name, and every acknowledgement resolves. This is the rule the rest of this document is about, and the only one that takes a graph declaration.
-
-### `evidence/documented`
-
-Every selected export carries a JSDoc block.
-
-```text
-$ npx ttsc check
-error TS13354: [evidence/documented] Missing JSDoc on exported function 'render'. An '@evidence' tag is only ever read from a JSDoc block, so without one this declaration can never cite anything. Add a '/** ... */' block above it.
-```
-
-This is the graph's precondition rather than a documentation preference. An `@evidence` tag is only ever read from a JSDoc block, so an export without one cannot cite anything — and because coverage is counted from the evidence side, the obligation it owed is silently discharged by whichever sibling does have a block. The rule checks presence and nothing else: a block holding only a citation passes, and only an absent or empty block is reported. What the prose says is a reviewer's judgment, never the compiler's.
-
-The cost is its default. `symbol` defaults to `["type", "function", "property"]` — every kind a claim can host — so turning it on in an existing project reports every undocumented interface property. Narrow it to adopt in stages.
-
-### `evidence/singular`
-
-A file declares exactly one public identity and takes that identity's name.
-
-```text
-$ npx ttsc check
-error TS12028: [evidence/singular] A file takes the name of its public identity, but 'utils.ts' declares 'parseInput'. Rename the file to 'parseInput.ts', or rename the identity to 'utils'.
-```
-
-A symbol's name then predicts its path and a path predicts its symbol, which is what makes an agent's citation mechanical instead of a search. The counted unit is an identity rather than an export, so declaration merging stays legal: `export interface ISomething` beside `export namespace ISomething`, `export class Something` beside `export namespace Something`, `export const something` beside `export default something`, and an overload set are each one identity. A file that only re-exports owns none, so a barrel needs no exemption.
-
-The cost is anonymous default exports. `export default { ... }` has no name for its file to take, which is the shape of most config files — though whether that fires depends on your `include`, since a config file outside the program is never linted.
-
 ## Setup
 
 ### Install
