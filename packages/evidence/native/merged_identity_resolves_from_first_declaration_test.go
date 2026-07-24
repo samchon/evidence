@@ -317,10 +317,12 @@ export namespace ISale {
  *
  * A class is not a type unit, so `namespace Sale` is the only declaration of
  * the unit `Sale` the graph knows; the class contributes `Sale.prototype.price`
- * instead. `evidence/singular` and `evidence/documented` do treat the pair as
- * one identity, and that asymmetry is a real difference between the source-level
- * notion of an identity and the graph's unit model. It is pinned here so the
- * next reader meets it as a decision rather than a surprise.
+ * instead. `evidence/documented` demands the block on that same namespace,
+ * having been narrowed to the declarations a citation can live on, so the two
+ * agree. `evidence/singular` still counts the pair as one identity, which is
+ * correct for a rule about a file's public surface rather than about where a
+ * tag may sit. The remaining difference is a decision, not an oversight, which
+ * is why it is pinned.
  *
  *  1. Declare a class and a namespace of one name.
  *  2. Materialize the inventory.
