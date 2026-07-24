@@ -33,7 +33,7 @@ export function CouponStackingNotice() {
 >
 > ```bash
 > $ npx ttsc
-> error TS13830: [evidence/graph] Missing acknowledgement for
+> error TS16411: [evidence/graph] Missing acknowledgement for
 >   'docs/discount.md#coupon-stacking' (Markdown H2 'Coupon Stacking' at docs/discount.md:3)
 >   in Claim 1 reference 1 (markdown, symbols: h2, h3).
 >
@@ -43,6 +43,40 @@ export function CouponStackingNotice() {
 >
 > Found 1 error.
 > ```
+
+## Rules
+
+Three rules ship, enabled independently. They are one argument in three parts: a citation has to exist and stay true, it has to have somewhere to live, and its subject has to be findable by name.
+
+### `evidence/graph`
+
+The gate. Every configured obligation is acknowledged by name, and every acknowledgement resolves. This is the rule the rest of this document is about, and the only one that takes a graph declaration.
+
+### `evidence/documented`
+
+Every selected export carries a JSDoc block.
+
+```text
+$ npx ttsc check
+error TS13354: [evidence/documented] Missing JSDoc on exported function 'render'. An '@evidence' tag is only ever read from a JSDoc block, so without one this declaration can never cite anything. Add a '/** ... */' block above it.
+```
+
+This is the graph's precondition rather than a documentation preference. An `@evidence` tag is only ever read from a JSDoc block, so an export without one cannot cite anything — and because coverage is counted from the evidence side, the obligation it owed is silently discharged by whichever sibling does have a block. The rule checks presence and nothing else: a block holding only a citation passes, and only an absent or empty block is reported. What the prose says is a reviewer's judgment, never the compiler's.
+
+The cost is its default. `symbol` defaults to `["type", "function", "property"]` — every kind a claim can host — so turning it on in an existing project reports every undocumented interface property. Narrow it to adopt in stages.
+
+### `evidence/singular`
+
+A file declares exactly one public identity and takes that identity's name.
+
+```text
+$ npx ttsc check
+error TS12028: [evidence/singular] A file takes the name of its public identity, but 'utils.ts' declares 'parseInput'. Rename the file to 'parseInput.ts', or rename the identity to 'utils'.
+```
+
+A symbol's name then predicts its path and a path predicts its symbol, which is what makes an agent's citation mechanical instead of a search. The counted unit is an identity rather than an export, so declaration merging stays legal: `export interface ISomething` beside `export namespace ISomething`, `export class Something` beside `export namespace Something`, `export const something` beside `export default something`, and an overload set are each one identity. A file that only re-exports owns none, so a barrel needs no exemption.
+
+The cost is anonymous default exports. `export default { ... }` has no name for its file to take, which is the shape of most config files — though whether that fires depends on your `include`, since a config file outside the program is never linted.
 
 ## Setup
 
@@ -85,12 +119,15 @@ export default {
   },
   rules: {
     "evidence/graph": ["error", graph],
+    "evidence/documented": "error",
     "evidence/singular": "error",
   },
 } satisfies ITtscLintConfig;
 ```
 
 Register the plugin in `lint.config.ts` and pass the graph declaration as the option of the `evidence/graph` rule. This graph reads as one sentence: the React components under `src` claim to implement the docs, so every H2 and H3 section under `docs` must be cited by a component.
+
+`evidence/graph` is project-scoped, so its entry must have no `files` selector; the host rejects one that does. Scope a file rule in its own entry when you need to.
 
 Violations surface in every `ttsc` build, every `--noEmit` check, and every `ttsx` run. They arrive in the same stream as type errors. No separate CI job.
 
@@ -175,6 +212,29 @@ Every Markdown or TypeScript `files` property takes project-relative glob patter
 - `frontend/src/components/**/*.tsx` selects every React component.
 - `test/features/**/*.ts` selects every feature test function.
 
+### TypeScript populations
+
+A TypeScript reference selects its population three ways, and the choice decides how its units are addressed.
+
+```ts
+// every exported type under src/contracts, addressed by its own name
+{ type: "typescript", files: ["src/contracts/**"] }
+
+// everything the entry exposes, addressed by its accessor path from that entry
+{ type: "typescript", file: "src/sdk/index.ts" }
+
+// the same, for a package a consumer installs
+{ type: "typescript", package: "@ORGANIZATION/PROJECT-api" }
+```
+
+`files` and `file` are mutually exclusive, and a local reference must set one of them; there is no implicit project entry.
+
+An entry-selected population is addressed the way a consumer reaches it, not the way the declaring file spells it: `export * as functional` nests a path segment, `export * from` flattens one, and `export { A as B }` addresses the symbol as `B`. That is what makes `api.functional.questions.get` nameable. Identity still belongs to the declaring file, so a symbol an entry exposes through two paths is one unit answering to two addresses — acknowledged once rather than owed twice.
+
+A `package` population is read from disk rather than from the `ttsc` program, which is the point: a symbol nothing imports is absent from the program by definition, and it is exactly the symbol an obligation needs to name. Without `file` or `files`, the package's declaration entry is the population, resolved through the `types` condition of its `exports` map, then `typesVersions`, then `types` or `typings` — never `main`, which names the JavaScript a consumer runs rather than the declarations a citation can address. With `files`, the globs are package-relative.
+
+The obligation set of a package reference belongs to whoever publishes it. A minor release that adds exports adds obligations, so pin the version or narrow the selection when the population is not yours.
+
 ### Swagger API references
 
 A Swagger reference owns exactly one document through its singular `file` property:
@@ -226,10 +286,32 @@ The target takes these forms:
 | `docs/sales.md` | A Markdown document and every selected heading below it |
 | `docs/sales.md#sale-price` | A heading section and its selected subsection descendants; the heading declares its anchor with the `{#sale-price}` suffix |
 | `POST:/members` | One Swagger or OpenAPI operation |
-| `IShoppingSale` | An exported type, function, or namespace; types and namespaces cover selected descendants |
-| `IShoppingSale.price` | One property of an exported type |
+| `{@link sales.IShoppingSale}` | An exported type, function, or namespace; types and namespaces cover selected descendants |
+| `{@link sales.IShoppingSale.price}` | One property of an exported type |
 
-Every target is one whitespace-delimited token. Swagger operations therefore use `<UPPERCASE_METHOD>:<path>`: write `@evidence POST:/members Creates a member`, not `@evidence POST /members Creates a member`. The latter still means target `POST` with `/members Creates a member` as its reason, preserving the existing grammar for a TypeScript symbol named `POST`.
+A path-addressed target is one whitespace-delimited token. Swagger operations therefore use `<UPPERCASE_METHOD>:<path>`: write `@evidence POST:/members Creates a member`, not `@evidence POST /members Creates a member`. The latter still means target `POST` with `/members Creates a member` as its reason, preserving the grammar for a TypeScript symbol named `POST`.
+
+A TypeScript target is written as an inline link and resolved through the citing module's imports:
+
+```ts
+import type * as sales from "./contracts/IShoppingSale.js";
+
+/**
+ * @evidence {@link sales.IShoppingSale} Renders the price exactly as the contract declares it.
+ */
+export function SalePrice(): JSX.Element {}
+```
+
+The braces are not decoration. They are what makes the import legitimate, and the import is what makes the citation a reference instead of a string.
+
+```text
+$ npx ttsc check
+error TS16411: [evidence/graph] Unimported evidence target '{@link contracts.ISale}' at src/ui/SalePrice.ts:2: 'contracts' is not imported by this module, so the citation names a symbol this file does not reference. Import it; 'import type' is enough and is erased at emit.
+```
+
+TypeScript counts a symbol referenced from `{@link}` as used, so an import that exists only to carry a citation survives `noUnusedLocals`. It does not resolve names inside an unknown tag, so a bare `@evidence sales.IShoppingSale` would leave that import unreferenced and raise `TS6133`. Use `import type`, which is erased at emit and adds no runtime edge.
+
+Resolving through the module's own imports also removes an ambiguity that has no fix. A generated SDK puts the same leaf name in many modules, so `get` alone names several symbols; resolved from one file's bindings, `{@link api.functional.questions.get}` names exactly one.
 
 ```tsx
 /**
@@ -250,6 +332,8 @@ A React component cites the same way, and one declaration stacks as many disjoin
 ```
 
 A Markdown document cites in an HTML comment, so rendered prose stays clean. A heading-level citation sits right below its heading. A file-level citation sits at the top of the document. The target here is a TypeScript symbol name; this is the shape a graph uses when documentation owes the citations.
+
+Markdown keeps the plain token for a TypeScript target, because a document has no imports to resolve through. That is the one edge where a name must be unique across the repository for the citation to land — which is also what `evidence/singular` is for.
 
 ```md
 ## Editorial Terminology
@@ -273,7 +357,7 @@ At most one seller coupon and one platform coupon may combine on a single order.
 
 ```text
 $ npx ttsc check
-error TS13830: [evidence/graph] Missing acknowledgement for 'docs/discount.md#coupon-stacking' (Markdown H2 'Coupon Stacking' at docs/discount.md:3) in Claim 1 reference 1 (markdown, symbols: h2, h3). Add '@evidence docs/discount.md#coupon-stacking <reason>' to a selected typescript host of this claim, or '@evidenceExclude docs/discount.md#coupon-stacking <reason>' when this claim intentionally does not use it.
+error TS16411: [evidence/graph] Missing acknowledgement for 'docs/discount.md#coupon-stacking' (Markdown H2 'Coupon Stacking' at docs/discount.md:3) in Claim 1 reference 1 (markdown, symbols: h2, h3). Add '@evidence docs/discount.md#coupon-stacking <reason>' to a selected typescript host of this claim, or '@evidenceExclude docs/discount.md#coupon-stacking <reason>' when this claim intentionally does not use it.
 
 Found 1 error.
 ```
