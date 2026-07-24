@@ -35,6 +35,14 @@ Record later findings — CI fixes, a design issue you noticed after opening, an
 
 Push, then watch the checks. A red check is yours to fix or explain before asking for review; leaving it for the reviewer to discover wastes their pass.
 
+## Re-Check A Base That Moved
+
+A green check proves the branch agrees with the base it was cut from, never with the base it lands on. When the target branch has moved since the last run, update the branch and let the checks run again before merging.
+
+Textual mergeability is not semantic mergeability. Two changes conflict in git only when they edit the same lines, so a branch that adds a file importing a module another branch deleted merges clean, reports green, and breaks the target — the compiler is the first thing to notice, and only after the merge.
+
+This matters most when several pull requests are open at once, which is exactly when the temptation to merge a still-green check is strongest.
+
 ## Self-Review Before Merge
 
 A merge is gated on one clean Overall Self-Review, a solo pass you perform yourself over the whole change. Do not delegate it, and do not treat a green check as a substitute — CI proves the tests that exist pass, not that the change is right.
