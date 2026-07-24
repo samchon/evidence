@@ -47,7 +47,7 @@ func (graphRule) Check(ctx *rule.ProjectContext) {
 		typescript,
 	)
 	problems = append(problems, stateProblems...)
-	problems = append(problems, evaluateEvidenceGraph(states)...)
+	problems = append(problems, evaluateEvidenceGraph(states, root, typescript)...)
 	reportProblems(ctx, problems)
 }
 
@@ -179,10 +179,18 @@ func materializeClaimStates(
 	return states, problems
 }
 
-func evaluateEvidenceGraph(states []claimState) []string {
+func evaluateEvidenceGraph(
+	states []claimState,
+	root string,
+	typescript map[string]*artifactInventory,
+) []string {
 	problems := []string{}
 	targets := map[string]map[string]*evidenceUnit{}
 	markdownTargets := map[string]map[string]*evidenceUnit{}
+	// Scoped targets are keyed by owning file as well as name, which is what
+	// makes import-scope resolution unambiguous: two modules exporting `get`
+	// never compete, because resolution already knows which file it landed in.
+	scopedTargets := map[string]map[string]*evidenceUnit{}
 	for _, state := range states {
 		for _, reference := range state.References {
 			for _, unit := range reference.Scopes {
@@ -195,6 +203,13 @@ func evaluateEvidenceGraph(states []claimState) []string {
 						markdownTargets[unit.Target] = map[string]*evidenceUnit{}
 					}
 					markdownTargets[unit.Target][unit.ID] = unit
+				}
+				if unit.Type == artifactTypeScript {
+					key := scopedTargetKey(unit.Path, unit.Target)
+					if scopedTargets[key] == nil {
+						scopedTargets[key] = map[string]*evidenceUnit{}
+					}
+					scopedTargets[key][unit.ID] = unit
 				}
 			}
 		}
@@ -219,6 +234,28 @@ func evaluateEvidenceGraph(states []claimState) []string {
 			problems = append(
 				problems,
 				"Malformed @"+string(declaration.Tag)+" declaration at "+declaration.location()+": target and non-empty reason are mandatory. Write '@"+string(declaration.Tag)+" <target> <reason>'.",
+			)
+			continue
+		}
+		if isInlineLinkTarget(declaration.Target) {
+			unitID, problem := resolveInlineLinkDeclaration(
+				declaration,
+				root,
+				typescript,
+				scopedTargets,
+			)
+			if problem != "" {
+				problems = append(problems, problem)
+				continue
+			}
+			resolved[id] = unitID
+			continue
+		}
+		if declaration.Type == artifactTypeScript &&
+			looksLikeTypeScriptTarget(declaration.Target, targets, markdownTargets) {
+			problems = append(
+				problems,
+				"Unbraced TypeScript evidence target '"+declaration.Target+"' at "+declaration.location()+": a target naming a symbol is now written as an inline link, so the citing module's import is what resolves it. Write '@"+string(declaration.Tag)+" {@link "+declaration.Target+"} <reason>' and import the symbol; 'import type' is enough.",
 			)
 			continue
 		}
@@ -304,6 +341,97 @@ func evaluateEvidenceGraph(states []claimState) []string {
 		}
 	}
 	return problems
+}
+
+func scopedTargetKey(path string, target string) string {
+	return path + "\x00" + target
+}
+
+// looksLikeTypeScriptTarget reports whether an unbraced target names a symbol.
+//
+// The migration diagnostic has to be told apart from an ordinary typo, and the
+// signal is that the same spelling still materializes as a TypeScript unit
+// somewhere in the configured graph. A Markdown path or a Swagger operation
+// never does, so neither is mistaken for a symbol that lost its braces.
+func looksLikeTypeScriptTarget(
+	target string,
+	targets map[string]map[string]*evidenceUnit,
+	markdownTargets map[string]map[string]*evidenceUnit,
+) bool {
+	if len(markdownTargets[target]) != 0 {
+		return false
+	}
+	for _, unit := range targets[target] {
+		if unit.Type == artifactTypeScript {
+			return true
+		}
+	}
+	return false
+}
+
+// resolveInlineLinkDeclaration resolves a braced target through the citing
+// module's imports, the way TypeScript resolves the same name.
+//
+// Every failure gets its own diagnostic. A single "unresolved" would leave the
+// author guessing which of four independent things went wrong, and three of
+// them are repaired in completely different places.
+func resolveInlineLinkDeclaration(
+	declaration *evidenceDeclaration,
+	root string,
+	typescript map[string]*artifactInventory,
+	scopedTargets map[string]map[string]*evidenceUnit,
+) (string, string) {
+	target := inlineLinkTarget(declaration.Target)
+	if declaration.Type != artifactTypeScript {
+		return "", "Inline link target '" + displayTarget(declaration.Target) + "' at " + declaration.location() + ": only a TypeScript declaration can cite through an inline link, because resolution runs through the citing module's imports and Markdown has none. Write the symbol as a plain target here."
+	}
+	inventory := typescript[declaration.Path]
+	if inventory == nil {
+		return "", "Inline link target '" + displayTarget(declaration.Target) + "' at " + declaration.location() + ": the citing file is not part of the TypeScript program, so it has no import scope to resolve against."
+	}
+	segments := strings.Split(target, ".")
+	binding, imported := inventory.Imports[segments[0]]
+	if !imported {
+		return "", "Unimported evidence target '" + displayTarget(declaration.Target) + "' at " + declaration.location() + ": '" + segments[0] + "' is not imported by this module, so the citation names a symbol this file does not reference. Import it; 'import type' is enough and is erased at emit."
+	}
+	resolvedPath := resolveModuleSpecifier(
+		root,
+		declaration.Path,
+		binding.Specifier,
+		typescript,
+	)
+	if resolvedPath == "" {
+		return "", "Unresolved module '" + binding.Specifier + "' for evidence target '" + displayTarget(declaration.Target) + "' at " + declaration.location() + ": the specifier resolves to no TypeScript file reachable from this project. Correct the import, or add the module to the program."
+	}
+	remaining := segments[1:]
+	if !binding.Namespace {
+		remaining = append([]string{binding.Imported}, remaining...)
+	}
+	if len(remaining) == 0 {
+		return "", "Incomplete evidence target '" + displayTarget(declaration.Target) + "' at " + declaration.location() + ": a namespace import names a module rather than a unit. Name a symbol inside '" + binding.Specifier + "'."
+	}
+	name := strings.Join(remaining, ".")
+	candidates := scopedTargets[scopedTargetKey(resolvedPath, name)]
+	switch len(candidates) {
+	case 0:
+		return "", "Unreachable evidence target '" + displayTarget(declaration.Target) + "' at " + declaration.location() + ": '" + resolvedPath + "' declares no selected unit named '" + name + "'. Correct the target, or widen the reference's files and symbol selection so that unit is configured evidence."
+	case 1:
+		for _, unit := range candidates {
+			return unit.ID, ""
+		}
+		return "", ""
+	default:
+		// One module may spell one name in two declaration spaces — a type and a
+		// callable, say. Resolution landed in the right file and still cannot say
+		// which unit was meant, and picking one silently would acknowledge an
+		// obligation the author never cited.
+		descriptions := make([]string, 0, len(candidates))
+		for _, unit := range candidates {
+			descriptions = append(descriptions, unit.Readable+" at "+unit.location())
+		}
+		sort.Strings(descriptions)
+		return "", "Ambiguous evidence target '" + displayTarget(declaration.Target) + "' at " + declaration.location() + ": '" + resolvedPath + "' declares " + strings.Join(descriptions, "; ") + " under that name. Narrow the reference's symbol selection so the target has exactly one meaning."
+	}
 }
 
 func declarationCandidates(

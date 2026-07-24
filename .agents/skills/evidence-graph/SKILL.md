@@ -20,13 +20,19 @@ Read `.wiki/references/autobe-mcp.md` before generalizing behavior from that pri
 @evidenceExclude <target> <reason>
 ```
 
-The first whitespace-delimited token is the target; everything after it is prose. A declaration may carry any number of tags. Every tag requires a target and non-empty reason and is validated independently.
+The target is one whitespace-delimited token, except that a target opening with `{@link`, `{@linkcode`, or `{@linkplain` runs to its closing brace. Everything after the target is prose. A declaration may carry any number of tags. Every tag requires a target and non-empty reason and is validated independently.
 
 ```ts
 /** @evidence docs/spec.md#pricing Sale price derives from this section. */
 /** @evidence POST:/members Member creation follows this API operation. */
-/** @evidence IShoppingSale The complete sale contract is mirrored here. */
+/** @evidence {@link ISale} The complete sale contract is mirrored here. */
 ```
+
+The two forms are two resolvers, and the token itself says which. A path address resolves against configured sources; an inline link resolves through the citing module's imports, so the citation is a real reference rather than a string that spells a symbol's name.
+
+**The braces are load-bearing, not decoration.** TypeScript resolves a name inside an inline link and counts it as a use, so an import that exists only to support a citation survives `noUnusedLocals`. It does not resolve names inside an unknown tag, so an unbraced symbol target leaves the import unreferenced and raises `TS6133`. Recommend `import type` for a citation-only import: it is erased at emit, creating no runtime dependency or cycle. A consumer also running `@typescript-eslint/no-unused-vars` still sees a false positive there, because that rule does not count JSDoc usage.
+
+Keeping the discrimination in the token is what preserves the parser's independence from reference context. Without a boundary character, `POST /members` would have to be guessed at, which is why a path target stays one token and only a code target may spend braces to buy one.
 
 The reason exists for review, not machine judgment. Do not add a rule that guesses whether prose is sincere; it will teach authors to write filler that passes.
 

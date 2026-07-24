@@ -86,10 +86,20 @@ func declarationLine(line string) (tagKind, string, bool) {
 	return "", "", false
 }
 
+// inlineLinkTags are the JSDoc inline link forms a TypeScript target may use.
+//
+// TypeScript resolves the name inside one of these and counts it as a use,
+// which is the only reason a citation-only import survives `noUnusedLocals`.
+// No other tag earns that, so no other tag may open a target.
+var inlineLinkTags = []string{"{@linkcode", "{@linkplain", "{@link"}
+
 func splitDeclarationBody(body string) (string, string) {
 	body = strings.TrimSpace(body)
 	if body == "" {
 		return "", ""
+	}
+	if target, reason, found := splitInlineLinkBody(body); found {
+		return target, reason
 	}
 	for index, char := range body {
 		if unicode.IsSpace(char) {
@@ -97,6 +107,61 @@ func splitDeclarationBody(body string) (string, string) {
 		}
 	}
 	return body, ""
+}
+
+// splitInlineLinkBody consumes a braced target through its closing brace.
+//
+// The brace supplies the boundary a whitespace-delimited token cannot, so the
+// grammar stays self-discriminating: the parser decides which resolver applies
+// from the token alone, with no reference context. That is what keeps the
+// `POST /members` hazard from recurring in a new form.
+func splitInlineLinkBody(body string) (string, string, bool) {
+	marker := ""
+	for _, candidate := range inlineLinkTags {
+		if strings.HasPrefix(body, candidate) {
+			marker = candidate
+			break
+		}
+	}
+	if marker == "" {
+		return "", "", false
+	}
+	closing := strings.IndexByte(body, '}')
+	if closing < 0 {
+		// An unterminated link is a malformed declaration rather than a plain
+		// token: reporting it as the target `{@link` would name a repair the
+		// author cannot make.
+		return "", "", false
+	}
+	inner := strings.TrimSpace(body[len(marker):closing])
+	reason := strings.TrimSpace(body[closing+1:])
+	if inner == "" || containsWhitespace(inner) {
+		return "", "", false
+	}
+	return inlineLinkPrefix + inner, reason, true
+}
+
+// inlineLinkPrefix marks a parsed target as import-scope resolved.
+//
+// Carrying the discrimination in the value keeps every downstream consumer —
+// resolution, diagnostics, duplicate detection — reading one field instead of
+// re-parsing the comment to recover what the parser already knew.
+const inlineLinkPrefix = "\x00link:"
+
+func isInlineLinkTarget(target string) bool {
+	return strings.HasPrefix(target, inlineLinkPrefix)
+}
+
+func inlineLinkTarget(target string) string {
+	return strings.TrimPrefix(target, inlineLinkPrefix)
+}
+
+// displayTarget renders a target the way its author wrote it.
+func displayTarget(target string) string {
+	if isInlineLinkTarget(target) {
+		return "{@link " + inlineLinkTarget(target) + "}"
+	}
+	return target
 }
 
 func normalizeMarkdownTarget(target string) string {

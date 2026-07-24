@@ -55,7 +55,11 @@ func scanTypeScriptInventory(
 	path string,
 	file *shimast.SourceFile,
 ) *artifactInventory {
-	inventory := &artifactInventory{Path: path, Type: artifactTypeScript}
+	inventory := &artifactInventory{
+		Path:    path,
+		Type:    artifactTypeScript,
+		Imports: collectImportBindings(file),
+	}
 	supportedHosts := map[*shimast.Node]symbolSet{}
 	unitsByID := map[string]*evidenceUnit{}
 	collectTypeScriptStatements(
@@ -614,6 +618,7 @@ func collectTypeScriptDeclarations(
 			sequence++
 			inventory.Declarations = append(inventory.Declarations, &evidenceDeclaration{
 				ID:       "typescript:" + path + ":" + decimal(baseLine+parsed.LineOffset) + ":" + decimal(sequence),
+				Type:     artifactTypeScript,
 				Tag:      parsed.Tag,
 				Target:   parsed.Target,
 				Reason:   parsed.Reason,

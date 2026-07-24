@@ -16,6 +16,11 @@ import {
  * path end to end: one requirement is acknowledged with `@evidenceExclude`, so
  * a green run proves an exclusion satisfies exactly its own claim.
  *
+ * The code-to-code edge here also carries its own weight: the test file cites
+ * the component through an inline link backed by a real `import type`, which is
+ * the only form that resolves now that a TypeScript target is resolved through
+ * the citing module's imports.
+ *
  * 1. Declare four claims: analysis and architecture docs each citing the
  *    requirements, components citing feature rules, and tests citing both
  *    feature rules and components through one reference array.
@@ -25,6 +30,10 @@ import {
 export const test_evidence_graph_composes_multi_claim_graphs = (): void => {
   const project: IEvidenceProject = createProject({
     name: "composed-graph",
+    // The test file now imports the component it cites, and that import crosses
+    // into a `.tsx`, which the compiler refuses to resolve without `--jsx`.
+    // `preserve` is enough: nothing here writes JSX syntax.
+    compilerOptions: { jsx: "preserve" },
     lintConfig: [
       'import type { ITtscLintConfig } from "@ttsc/lint";',
       'import { evidence, type IEvidenceGraphConfig } from "@samchon/lint-plugin-evidence";',
@@ -92,9 +101,11 @@ export const test_evidence_graph_composes_multi_claim_graphs = (): void => {
         "",
       ].join("\n"),
       "src/features/cart_badge.ts": [
+        'import type { CartBadge } from "../components/CartBadge.js";',
+        "",
         "/**",
         " * @evidence docs/features.md#cart-badge Verifies the badge follows the feature rule.",
-        " * @evidence CartBadge Claims the exported component contract.",
+        " * @evidence {@link CartBadge} Claims the exported component contract.",
         " */",
         "export function test_cart_badge(): void {}",
         "",

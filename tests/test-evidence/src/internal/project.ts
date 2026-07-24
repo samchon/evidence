@@ -28,6 +28,14 @@ export interface ICreateProjectProps {
    * the config file in the program.
    */
   readonly include?: readonly string[];
+  /**
+   * Extra `compilerOptions` merged over the generated defaults.
+   *
+   * A consumer's compiler settings are part of what a rule has to survive, not
+   * a fixture detail: `noUnusedLocals` decides whether an import that exists
+   * only to support a citation is legal at all.
+   */
+  readonly compilerOptions?: Readonly<Record<string, unknown>>;
 }
 
 export interface IRunResult {
@@ -79,6 +87,7 @@ export const createProject = (props: ICreateProjectProps): IEvidenceProject => {
           strict: true,
           noEmit: true,
           plugins: [{ transform: "@ttsc/lint" }],
+          ...(props.compilerOptions ?? {}),
         },
         include: props.include ?? ["src", "lint.config.ts"],
       },

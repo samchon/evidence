@@ -101,6 +101,7 @@ func (unit *evidenceUnit) location() string {
 
 type evidenceDeclaration struct {
 	ID       string
+	Type     artifactKind
 	Tag      tagKind
 	Target   string
 	Reason   string
@@ -124,6 +125,10 @@ type artifactInventory struct {
 	Units        []*evidenceUnit
 	Declarations []*evidenceDeclaration
 	Problems     []inventoryProblem
+	// Imports indexes the local names a TypeScript module brings into scope, so
+	// an inline-link target can be resolved the way TypeScript resolves a name:
+	// from the citing file's own bindings rather than from a global table.
+	Imports map[string]importBinding
 }
 
 type inventoryProblem struct {
