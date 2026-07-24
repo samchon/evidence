@@ -72,7 +72,7 @@ func TestHintsFollowThePassingGate(t *testing.T) {
  *  2. Run it.
  *  3. Assert it reports and publishes no corpus.
  */
-func TestHintsArePublishedForNoUndecodableConfiguration(t *testing.T) {
+func TestHintsAreWithheldFromAnUndecodableConfiguration(t *testing.T) {
 	hints, messages := runGraphHints(t, map[string]string{
 		"docs/pricing.md": "## Sale Price {#sale-price}\n",
 	}, `{"claims":[{"type":"nonsense","files":["docs/**"]}]}`)

@@ -159,19 +159,32 @@ func TestHintsPublishForBothTagPositions(t *testing.T) {
  * pinned rather than trusted — dropping the space would silently merge the two
  * corpora.
  *
- *  1. Take the published triggers.
+ *  1. Take the triggers this package actually publishes.
  *  2. Apply the host's matching rule to each tag line.
- *  3. Assert neither trigger matches the other's line.
+ *  3. Assert each trigger matches its own line and neither matches the other's.
  */
 func TestHintsKeepTheTwoTriggersApart(t *testing.T) {
-	if strings.Contains(" * @evidenceExclude ", "@evidence ") {
-		t.Fatal("the citation trigger must not occur inside an exclusion line")
+	// Read from the published triggers rather than from literals retyped here.
+	// A copy of the strings would keep passing after the trailing space was
+	// dropped from the corpus, which is the one change this case exists to
+	// catch.
+	lines := map[string]string{}
+	for _, trigger := range evidenceHintTriggers {
+		lines[trigger.After] = " * " + strings.TrimSuffix(trigger.After, " ") + " "
 	}
-	if !strings.Contains(" * @evidenceExclude ", "@evidenceExclude ") {
-		t.Fatal("the exclusion trigger must occur inside an exclusion line")
+	if len(lines) != 2 {
+		t.Fatalf("expected two distinct triggers, got %d", len(lines))
 	}
-	if strings.Contains(" * @evidence ", "@evidenceExclude ") {
-		t.Fatal("the exclusion trigger must not occur inside a citation line")
+	for _, trigger := range evidenceHintTriggers {
+		for after, line := range lines {
+			matched := strings.LastIndex(line, trigger.After) >= 0
+			if after == trigger.After && !matched {
+				t.Fatalf("trigger %q must match its own line %q", trigger.After, line)
+			}
+			if after != trigger.After && matched {
+				t.Fatalf("trigger %q must not match line %q", trigger.After, line)
+			}
+		}
 	}
 }
 
