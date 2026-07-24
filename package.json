@@ -1,26 +1,26 @@
 {
   "private": true,
-  "name": "@samchon/evidence-graph-station",
+  "name": "@samchon/lint-plugin-evidence-station",
   "version": "0.1.0",
   "description": "Evidence-graph lint contributor for @ttsc/lint workspace.",
   "scripts": {
     "build": "pnpm --filter=./packages/* -r build",
     "format": "prettier --write \"**/*.ts\" \"**/*.md\" && pnpm run format:go",
-    "format:go": "gofmt -w packages/evidence-graph/native",
+    "format:go": "gofmt -w packages/evidence/native",
     "test": "pnpm run build && pnpm run test:go && pnpm run test:features",
-    "test:go": "pnpm --filter @samchon/evidence-graph exec go test ./native/",
+    "test:go": "pnpm --filter @samchon/lint-plugin-evidence exec go test ./native/",
     "test:features": "pnpm --filter=./tests/test-* -r --workspace-concurrency=1 start",
-    "package:latest": "pnpm --filter @samchon/evidence-graph publish --tag latest --access public",
+    "package:latest": "pnpm --filter @samchon/lint-plugin-evidence publish --tag latest --access public",
     "release": "bumpp -r"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/samchon/evidence-graph"
+    "url": "https://github.com/samchon/lint-plugin-evidence"
   },
   "author": "Jeongho Nam",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/samchon/evidence-graph/issues"
+    "url": "https://github.com/samchon/lint-plugin-evidence/issues"
   },
   "packageManager": "pnpm@10.6.4",
   "devDependencies": {

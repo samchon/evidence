@@ -1,6 +1,6 @@
 ---
 name: development
-description: Defines @samchon/evidence-graph implementation rules, testing standards, validation, consequence analysis, and change integrity. Use before writing or modifying source, tests, workflows, package wiring, fixtures, or algorithms.
+description: Defines @samchon/lint-plugin-evidence implementation rules, testing standards, validation, consequence analysis, and change integrity. Use before writing or modifying source, tests, workflows, package wiring, fixtures, or algorithms.
 ---
 
 # Development

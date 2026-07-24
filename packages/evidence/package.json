@@ -1,0 +1,67 @@
+{
+  "name": "@samchon/lint-plugin-evidence",
+  "version": "0.1.0",
+  "description": "Evidence-graph lint contributor for @ttsc/lint: declare provenance with a JSDoc @evidence tag and fail the build when it is missing or dangling.",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public",
+    "main": "lib/index.js",
+    "exports": {
+      ".": {
+        "types": "./lib/index.d.ts",
+        "default": "./lib/index.js"
+      },
+      "./package.json": "./package.json"
+    }
+  },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "lib",
+    "native/*.go",
+    "!native/*_test.go"
+  ],
+  "scripts": {
+    "build": "rimraf lib && ttsc",
+    "prepack": "pnpm run build && node build/prepack.js"
+  },
+  "keywords": [
+    "ttsc",
+    "lint",
+    "evidence",
+    "provenance",
+    "traceability",
+    "jsdoc",
+    "typescript",
+    "openapi",
+    "swagger"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/samchon/lint-plugin-evidence"
+  },
+  "author": "Jeongho Nam",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/samchon/lint-plugin-evidence/issues"
+  },
+  "peerDependencies": {
+    "@ttsc/lint": ">=0.20.0"
+  },
+  "devDependencies": {
+    "@ttsc/lint": "catalog:typescript",
+    "@types/node": "catalog:utils",
+    "rimraf": "catalog:utils",
+    "ttsc": "catalog:typescript",
+    "typescript": "catalog:typescript"
+  },
+  "dependencies": {
+    "@typia/interface": "catalog:typia",
+    "@typia/utils": "catalog:typia",
+    "yaml": "catalog:utils"
+  }
+}

@@ -5,13 +5,21 @@ on:
   workflow_dispatch:
 
 jobs:
-  Ubuntu:
-    runs-on: ubuntu-latest
+  Test:
+    name: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+    runs-on: ${{ matrix.os }}
     steps:
-      - name: Checkout evidence-graph
+      - name: Checkout lint-plugin-evidence
         uses: actions/checkout@v4
         with:
-          path: samchon/evidence-graph
+          path: samchon/lint-plugin-evidence
 
       - name: Checkout ttsc
         uses: actions/checkout@v4
@@ -33,9 +41,9 @@ jobs:
           version: 10.6.4
 
       - name: Install Dependencies
-        working-directory: samchon/evidence-graph
+        working-directory: samchon/lint-plugin-evidence
         run: pnpm install --frozen-lockfile
 
       - name: Run Tests
-        working-directory: samchon/evidence-graph
+        working-directory: samchon/lint-plugin-evidence
         run: pnpm test

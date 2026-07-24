@@ -1,13 +1,13 @@
 ---
 name: evidence-graph
-description: Defines the evidence graph domain model for @samchon/evidence-graph — the tag grammar, node kinds, hierarchy, reference resolution, obligation coverage, and exclusions. Use before changing rule semantics, the tag grammar, the configuration surface, or a diagnostic message; do not use for the mechanics of the Go rule API, which the lint-rule-authoring skill owns.
+description: Defines the evidence graph domain model for @samchon/lint-plugin-evidence — the tag grammar, node kinds, hierarchy, reference resolution, obligation coverage, and exclusions. Use before changing rule semantics, the tag grammar, the configuration surface, or a diagnostic message; do not use for the mechanics of the Go rule API, which the lint-rule-authoring skill owns.
 ---
 
 # Evidence Graph
 
 ## Product Contract
 
-An artifact that cites nothing has no proof it was needed. An artifact that cites a target no configured source declares has proof of nothing. `evidence-graph/index` turns both states into compile errors under the graph the consumer defines in `lint.config.ts`.
+An artifact that cites nothing has no proof it was needed. An artifact that cites a target no configured source declares has proof of nothing. `evidence/graph` turns both states into compile errors under the graph the consumer defines in `lint.config.ts`.
 
 The graph is configurable. Claims select the files and declaration hosts that owe acknowledgements; references select the evidence populations they owe. Every claim-reference pair is an independently complete obligation, and every element of a reference array remains separate.
 
@@ -68,7 +68,7 @@ A mixed variable statement can carry both function and property host kinds becau
 
 ## Evaluation
 
-`evidence-graph/index` evaluates the complete configured graph once per Program and answers three distinct questions.
+`evidence/graph` evaluates the complete configured graph once per Program and answers three distinct questions.
 
 - **Resolution.** Does every declaration target resolve to exactly one selected unit or structural ancestor?
 - **Host eligibility.** Does the declaration live on a symbol kind selected by its claim?

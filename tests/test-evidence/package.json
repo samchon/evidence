@@ -1,0 +1,17 @@
+{
+  "private": true,
+  "name": "test-evidence",
+  "version": "0.1.0",
+  "description": "End-to-end feature tests for @samchon/lint-plugin-evidence, driving the real ttsc binary.",
+  "type": "module",
+  "scripts": {
+    "start": "ttsx --no-plugins src/index.ts"
+  },
+  "devDependencies": {
+    "@samchon/lint-plugin-evidence": "workspace:*",
+    "@ttsc/lint": "catalog:typescript",
+    "@types/node": "catalog:utils",
+    "ttsc": "catalog:typescript",
+    "typescript": "catalog:typescript"
+  }
+}
