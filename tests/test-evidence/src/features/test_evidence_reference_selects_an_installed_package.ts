@@ -5,7 +5,7 @@ import {
   createProject,
   runCheck,
   type IEvidenceProject,
-} from "../internal/project.ts";
+} from "../internal/index.ts";
 
 const lintConfig: string = [
   'import type { ITtscLintConfig } from "@ttsc/lint";',
