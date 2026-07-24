@@ -4,7 +4,7 @@ import {
   createProject,
   runCheck,
   type IEvidenceProject,
-} from "../internal/project.ts";
+} from "../internal/index.ts";
 
 /**
  * Verifies the packaged singular rule fails a build on a second identity and on

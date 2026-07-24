@@ -4,7 +4,7 @@ import {
   createProject,
   runCheck,
   type IEvidenceProject,
-} from "../internal/project.ts";
+} from "../internal/index.ts";
 
 /**
  * Verifies the packaged rule fails a build when only a later half of a merged

@@ -6,7 +6,7 @@ import {
   createProject,
   runCheck,
   type IEvidenceProject,
-} from "../internal/project.ts";
+} from "../internal/index.ts";
 
 /**
  * Verifies HTTP Swagger references through the packaged native-to-Node bridge.
