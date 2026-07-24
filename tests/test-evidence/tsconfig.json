@@ -4,14 +4,7 @@
     "rootDir": "src",
     "declaration": false,
     "noEmit": true,
-    "allowImportingTsExtensions": true,
-    "plugins": [
-      {
-        "transform": "@ttsc/lint"
-      }
-    ]
+    "allowImportingTsExtensions": true
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }

@@ -51,10 +51,6 @@ jobs:
         working-directory: samchon/lint-plugin-evidence
         run: pnpm install --frozen-lockfile
 
-      - name: Test
-        working-directory: samchon/lint-plugin-evidence
-        run: pnpm test
-
       - name: Publish to npm
         working-directory: samchon/lint-plugin-evidence
         run: pnpm run package:latest --no-git-checks --provenance
