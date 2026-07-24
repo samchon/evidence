@@ -21,7 +21,7 @@ func decodeGraphConfig(raw json.RawMessage) (graphConfig, []string) {
 	if problem != "" {
 		return config, []string{problem}
 	}
-	problems := rejectUnknownFields(object, []string{"claims"}, "configuration")
+	problems := rejectUnknownFields(object, []string{"claims"}, graphRuleName, "configuration")
 	claimRaw, exists := object["claims"]
 	if !exists {
 		problems = append(problems, "Invalid evidence/graph configuration at claims: the required claim array is missing.")
@@ -55,6 +55,7 @@ func decodeClaim(raw json.RawMessage, index int) (claimSpec, []string) {
 	problems := rejectUnknownFields(
 		object,
 		[]string{"type", "name", "files", "symbol", "reference"},
+		graphRuleName,
 		path,
 	)
 	kind, kindProblem := decodeArtifactKind(object["type"], path+".type", false)
@@ -69,7 +70,7 @@ func decodeClaim(raw json.RawMessage, index int) (claimSpec, []string) {
 	}
 	files, fileProblems := decodeFiles(object["files"], path+".files")
 	problems = append(problems, fileProblems...)
-	symbols, symbolProblems := decodeSymbols(object["symbol"], kind, false, path+".symbol")
+	symbols, symbolProblems := decodeSymbols(object["symbol"], kind, false, graphRuleName, path+".symbol")
 	problems = append(problems, symbolProblems...)
 	references, referenceProblems := decodeReferences(object["reference"], path+".reference")
 	problems = append(problems, referenceProblems...)
@@ -129,6 +130,7 @@ func decodeReference(raw json.RawMessage, index int, path string) (referenceSpec
 	problems := rejectUnknownFields(
 		object,
 		[]string{"type", "package", "file", "files", "symbol"},
+		graphRuleName,
 		path,
 	)
 	kind, kindProblem := decodeArtifactKind(object["type"], path+".type", true)
@@ -155,7 +157,7 @@ func decodeReference(raw json.RawMessage, index int, path string) (referenceSpec
 		entry = reference.Entry
 		packageName = reference.Package
 		var symbolProblems []string
-		symbols, symbolProblems = decodeSymbols(object["symbol"], kind, true, path+".symbol")
+		symbols, symbolProblems = decodeSymbols(object["symbol"], kind, true, graphRuleName, path+".symbol")
 		problems = append(problems, symbolProblems...)
 	} else if kind == artifactSwagger {
 		if _, exists := object["files"]; exists {
@@ -187,7 +189,7 @@ func decodeReference(raw json.RawMessage, index int, path string) (referenceSpec
 		files, fileProblems = decodeFiles(object["files"], path+".files")
 		problems = append(problems, fileProblems...)
 		var symbolProblems []string
-		symbols, symbolProblems = decodeSymbols(object["symbol"], kind, true, path+".symbol")
+		symbols, symbolProblems = decodeSymbols(object["symbol"], kind, true, graphRuleName, path+".symbol")
 		problems = append(problems, symbolProblems...)
 	}
 	if len(problems) != 0 {
@@ -417,6 +419,7 @@ func decodeSymbols(
 	raw json.RawMessage,
 	kind artifactKind,
 	unit bool,
+	ruleName string,
 	path string,
 ) (symbolSet, []string) {
 	if kind == "" {
@@ -438,18 +441,18 @@ func decodeSymbols(
 		case '"':
 			var value string
 			if err := json.Unmarshal(raw, &value); err != nil {
-				return nil, []string{"Invalid evidence/graph configuration at " + path + ": expected a supported symbol string or array."}
+				return nil, []string{configurationProblem(ruleName, path, "expected a supported symbol string or array.")}
 			}
 			values = []string{value}
 		case '[':
 			if err := json.Unmarshal(raw, &values); err != nil {
-				return nil, []string{"Invalid evidence/graph configuration at " + path + ": expected a supported symbol string or array."}
+				return nil, []string{configurationProblem(ruleName, path, "expected a supported symbol string or array.")}
 			}
 			if len(values) == 0 {
-				return nil, []string{"Invalid evidence/graph configuration at " + path + ": an empty symbol array selects no evidence units or declaration hosts."}
+				return nil, []string{configurationProblem(ruleName, path, "an empty symbol array selects no evidence units or declaration hosts.")}
 			}
 		default:
-			return nil, []string{"Invalid evidence/graph configuration at " + path + ": expected a supported symbol string or array."}
+			return nil, []string{configurationProblem(ruleName, path, "expected a supported symbol string or array.")}
 		}
 	}
 	allowed := map[string]bool{}
@@ -466,7 +469,7 @@ func decodeSymbols(
 	problems := []string{}
 	for _, value := range values {
 		if !allowed[value] {
-			problems = append(problems, "Invalid evidence/graph configuration at "+path+": symbol '"+value+"' is not supported for "+string(kind)+".")
+			problems = append(problems, configurationProblem(ruleName, path, "symbol '"+value+"' is not supported for "+string(kind)+"."))
 			continue
 		}
 		set[value] = true
@@ -482,9 +485,21 @@ func decodeObject(raw json.RawMessage, path string) (map[string]json.RawMessage,
 	return object, ""
 }
 
+// configurationProblem opens a configuration diagnostic with the rule that owns
+// the setting.
+//
+// The owning rule is a parameter because two rules share these decoders. A
+// message naming a rule the reader did not configure sends them to edit a
+// setting that is not wrong, and with several rules enabled it is not even
+// obvious which one lied.
+func configurationProblem(ruleName string, path string, message string) string {
+	return "Invalid " + ruleName + " configuration at " + path + ": " + message
+}
+
 func rejectUnknownFields(
 	object map[string]json.RawMessage,
 	allowed []string,
+	ruleName string,
 	path string,
 ) []string {
 	known := map[string]bool{}
@@ -501,30 +516,37 @@ func rejectUnknownFields(
 	problems := make([]string, 0, len(unknown))
 	for _, name := range unknown {
 		if name == "severity" {
-			problems = append(
-				problems,
-				"Invalid evidence/graph configuration at "+path+".severity: severity belongs only in the outer @ttsc/lint rule setting.",
-			)
+			problems = append(problems, configurationProblem(
+				ruleName,
+				path+".severity",
+				"severity belongs only in the outer @ttsc/lint rule setting.",
+			))
 			continue
 		}
-		if name == "sources" {
-			problems = append(
-				problems,
-				"Invalid evidence/graph configuration at "+path+".sources: the graph is now declared from the claiming side; declare 'claims', each citing its evidence under 'reference'.",
-			)
+		// The inverted-relation hints below name properties that only ever
+		// existed on the graph, so offering them elsewhere would invite a
+		// reader to migrate a setting their rule never had.
+		if name == "sources" && ruleName == graphRuleName {
+			problems = append(problems, configurationProblem(
+				ruleName,
+				path+".sources",
+				"the graph is now declared from the claiming side; declare 'claims', each citing its evidence under 'reference'.",
+			))
 			continue
 		}
-		if name == "citedBy" {
-			problems = append(
-				problems,
-				"Invalid evidence/graph configuration at "+path+".citedBy: this relation was inverted; declare the evidence this claim cites under 'reference'.",
-			)
+		if name == "citedBy" && ruleName == graphRuleName {
+			problems = append(problems, configurationProblem(
+				ruleName,
+				path+".citedBy",
+				"this relation was inverted; declare the evidence this claim cites under 'reference'.",
+			))
 			continue
 		}
-		problems = append(
-			problems,
-			"Invalid evidence/graph configuration at "+path+"."+name+": unknown property; expected only "+strings.Join(allowed, ", ")+".",
-		)
+		problems = append(problems, configurationProblem(
+			ruleName,
+			path+"."+name,
+			"unknown property; expected only "+strings.Join(allowed, ", ")+".",
+		))
 	}
 	return problems
 }

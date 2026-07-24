@@ -94,6 +94,7 @@ func decodeDocumentedOptions(raw json.RawMessage) (symbolSet, []string) {
 		options.Symbol,
 		artifactTypeScript,
 		false,
+		documentedRuleName,
 		"symbol",
 	)
 	if len(problems) != 0 {
@@ -109,7 +110,12 @@ func rejectUnknownDocumentedFields(raw json.RawMessage) []string {
 			"Invalid evidence/documented configuration: expected an IEvidenceDocumentedConfig object, or a bare severity for the default selection.",
 		}
 	}
-	return rejectUnknownFields(object, []string{"symbol"}, "configuration")
+	return rejectUnknownFields(
+		object,
+		[]string{"symbol"},
+		documentedRuleName,
+		"configuration",
+	)
 }
 
 // documentedHost is one public identity that must carry a JSDoc block.
