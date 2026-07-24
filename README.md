@@ -280,45 +280,6 @@ Found 1 error.
 
 The section exists in the spec, but no React component cites it, so the build fails. The diagnostic names the exact section, the claim that owes it, and both repairs: implement it and cite the section, or exempt it with an `@evidenceExclude` reason a reviewer can veto.
 
-## File Identity
-
-`evidence/singular` requires one public identity per TypeScript file, named after the file. It takes no options.
-
-```ts
-// lint.config.ts
-export default {
-  plugins: {
-    "evidence": evidence,
-  },
-  files: ["src/**"],
-  rules: {
-    "evidence/singular": "error",
-  },
-} satisfies ITtscLintConfig;
-```
-
-A symbol's name then predicts its path, and a path predicts its symbol. That matters most to the agent doing the work: locating `IShoppingSale` stops being a search, and citing it stops being a discovery step.
-
-The counted unit is an identity, not an export. Declaration merging exposes one name through several declarations, and every merged form below is one identity:
-
-| Form                                                          | Identity     |
-| ------------------------------------------------------------- | ------------ |
-| `export interface ISomething` + `export namespace ISomething` | `ISomething` |
-| `export class Something` + `export namespace Something`       | `Something`  |
-| `export const something` + `export default something`         | `something`  |
-| Overload signatures + implementation                          | the function |
-
-A file that only re-exports owns no identity, so a barrel is never reported — it needs no exemption, because `export * from "./sale"` declares nothing here. An `index` file is exempt from the name match, since no identifier can be named `index`, while still limited to one identity of its own.
-
-```text
-$ npx ttsc check
-error TS12028: [evidence/singular] A file takes the name of its public identity, but 'utils.ts' declares 'parseInput'. Rename the file to 'parseInput.ts', or rename the identity to 'utils'.
-
-Found 1 error.
-```
-
-The trade-off is anonymous default exports. `export default { ... }` has no name for its file to take, so the rule reports it — the shape of nearly every config file. Keep config files out of the project's `include`, or name what they export.
-
 ## Concepts
 
 ### Why agents need a gate
