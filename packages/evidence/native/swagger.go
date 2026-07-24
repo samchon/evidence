@@ -84,19 +84,44 @@ func loadSwaggerInventories(
 		return inventories, nil
 	}
 
-	result, err := normalizeSwaggerSources(root, sources)
-	if err != nil {
-		message := "Evidence graph could not run its Swagger normalizer: " + err.Error() + ". Swagger references require Node.js and the installed @typia/interface, @typia/utils, and yaml dependencies."
-		for _, inventory := range inventories {
-			inventory.Problems = append(inventory.Problems, inventoryProblem{
-				Symbol:  "operation",
-				Message: message,
-			})
+	// Normalizing a document costs a Node process, and the process start
+	// dominates the parse — a three-operation document and a
+	// two-hundred-operation one pay nearly the same. A resident host repeats
+	// this every cycle, so an unchanged document is re-normalized on every
+	// TypeScript keystroke that triggers a rebuild.
+	digests := swaggerContentDigests(root, sources)
+	pending := []string{}
+	cached := map[string][]swaggerOperation{}
+	for _, source := range sources {
+		digest := digests[source]
+		if digest == "" {
+			pending = append(pending, source)
+			continue
 		}
-		return inventories, []string{message}
+		operations, hit := swaggerDocuments.lookup(digest)
+		if !hit {
+			pending = append(pending, source)
+			continue
+		}
+		cached[source] = operations
+	}
+	problems := swaggerUnitsFromCache(inventories, cached)
+	if len(pending) == 0 {
+		return inventories, problems
 	}
 
-	problems := []string{}
+	result, err := normalizeSwaggerSources(root, pending)
+	if err != nil {
+		message := "Evidence graph could not run its Swagger normalizer: " + err.Error() + ". Swagger references require Node.js and the installed @typia/interface, @typia/utils, and yaml dependencies."
+		for _, source := range pending {
+			inventories[source].Problems = append(
+				inventories[source].Problems,
+				inventoryProblem{Symbol: "operation", Message: message},
+			)
+		}
+		return inventories, append(problems, message)
+	}
+
 	seen := map[string]bool{}
 	for _, document := range result.Documents {
 		inventory := inventories[document.Source]
@@ -115,6 +140,7 @@ func loadSwaggerInventories(
 			continue
 		}
 		seen[document.Source] = true
+		clean := true
 		for _, operation := range document.Operations {
 			unit, problem := swaggerOperationUnit(document.Source, operation)
 			if problem != "" {
@@ -123,11 +149,15 @@ func loadSwaggerInventories(
 					Message: problem,
 				})
 				problems = append(problems, problem)
+				clean = false
 				continue
 			}
 			inventory.Units = append(inventory.Units, unit)
 		}
 		sortUnits(inventory.Units)
+		if clean {
+			rememberSwaggerDocument(root, document, digests[document.Source])
+		}
 	}
 	for _, problem := range result.Problems {
 		inventory := inventories[problem.Source]
@@ -146,7 +176,7 @@ func loadSwaggerInventories(
 		})
 		problems = append(problems, message)
 	}
-	for _, source := range sources {
+	for _, source := range pending {
 		if seen[source] {
 			continue
 		}
