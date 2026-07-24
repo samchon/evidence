@@ -81,8 +81,10 @@ export const createProject = (props: ICreateProjectProps): IEvidenceProject => {
   for (const [relative, content] of Object.entries(props.files))
     write(relative, content);
 
-  // Link rather than install: the workspace copy is what is under test, and an
-  // npm-resolved copy would be testing whatever was last published.
+  // Link rather than install: the workspace build is what is under test, and an
+  // npm-resolved copy would be testing whatever was last published. Materialize
+  // the package's publishConfig entry points instead of exposing its
+  // development-only TypeScript source entry to the consumer.
   //
   // `typescript` is linked too because ttsc refuses to start without the native
   // compiler resolvable from the consuming project — it is a real consumer
@@ -90,10 +92,7 @@ export const createProject = (props: ICreateProjectProps): IEvidenceProject => {
   const modules: string = path.join(directory, "node_modules");
   fs.mkdirSync(path.join(modules, "@samchon"), { recursive: true });
   fs.mkdirSync(path.join(modules, "@ttsc"), { recursive: true });
-  linkDirectory(
-    path.resolve(suiteRoot, "..", "..", "packages", "evidence"),
-    path.join(modules, "@samchon", "lint-plugin-evidence"),
-  );
+  linkEvidencePackage(modules);
   linkDirectory(
     resolveDependency("@ttsc/lint"),
     path.join(modules, "@ttsc", "lint"),
@@ -189,6 +188,52 @@ const cacheDirectory = (): string => {
 const linkDirectory = (target: string, location: string): void => {
   if (fs.existsSync(location)) return;
   fs.symlinkSync(target, location, "junction");
+};
+
+const linkEvidencePackage = (modules: string): void => {
+  const source: string = path.resolve(
+    suiteRoot,
+    "..",
+    "..",
+    "packages",
+    "evidence",
+  );
+  const manifest = JSON.parse(
+    fs.readFileSync(path.join(source, "package.json"), "utf8"),
+  ) as Record<string, unknown>;
+  const publishConfig: unknown = manifest.publishConfig;
+  if (
+    typeof publishConfig !== "object" ||
+    publishConfig === null ||
+    Array.isArray(publishConfig)
+  )
+    throw new Error(
+      "@samchon/lint-plugin-evidence must declare publishConfig before its consumer fixture can reproduce the published entry points.",
+    );
+
+  const destination: string = path.join(
+    modules,
+    "@samchon",
+    "lint-plugin-evidence",
+  );
+  fs.mkdirSync(destination, { recursive: true });
+  fs.writeFileSync(
+    path.join(destination, "package.json"),
+    JSON.stringify(
+      { ...manifest, ...(publishConfig as Record<string, unknown>) },
+      null,
+      2,
+    ),
+    "utf8",
+  );
+  for (const directory of ["lib", "native"]) {
+    const target: string = path.join(source, directory);
+    if (!fs.existsSync(target))
+      throw new Error(
+        `@samchon/lint-plugin-evidence ${directory} is missing; run the workspace build before the feature suite.`,
+      );
+    linkDirectory(target, path.join(destination, directory));
+  }
 };
 
 const resolveDependency = (specifier: string): string => {
