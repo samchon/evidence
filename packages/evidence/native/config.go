@@ -128,7 +128,7 @@ func decodeReference(raw json.RawMessage, index int, path string) (referenceSpec
 	}
 	problems := rejectUnknownFields(
 		object,
-		[]string{"type", "file", "files", "symbol"},
+		[]string{"type", "package", "file", "files", "symbol"},
 		path,
 	)
 	kind, kindProblem := decodeArtifactKind(object["type"], path+".type", true)
@@ -137,8 +137,27 @@ func decodeReference(raw json.RawMessage, index int, path string) (referenceSpec
 	}
 	files := globSet{}
 	source := ""
+	entry := ""
+	packageName := ""
 	symbols := symbolSet{}
-	if kind == artifactSwagger {
+	if kind != artifactTypeScript {
+		if _, exists := object["package"]; exists {
+			problems = append(
+				problems,
+				"Invalid evidence/graph configuration at "+path+".package: only a TypeScript reference can select an installed package; Markdown and Swagger evidence lives in this project.",
+			)
+		}
+	}
+	if kind == artifactTypeScript {
+		reference, referenceProblems := decodeTypeScriptReference(object, path)
+		problems = append(problems, referenceProblems...)
+		files = reference.Files
+		entry = reference.Entry
+		packageName = reference.Package
+		var symbolProblems []string
+		symbols, symbolProblems = decodeSymbols(object["symbol"], kind, true, path+".symbol")
+		problems = append(problems, symbolProblems...)
+	} else if kind == artifactSwagger {
 		if _, exists := object["files"]; exists {
 			problems = append(
 				problems,
@@ -179,8 +198,117 @@ func decodeReference(raw json.RawMessage, index int, path string) (referenceSpec
 		Type:    kind,
 		Files:   files,
 		Source:  source,
+		Entry:   entry,
+		Package: packageName,
 		Symbols: symbols,
 	}, nil
+}
+
+// decodeTypeScriptReference reads the four ways a TypeScript population is
+// selected: local or package, by entry module or by glob.
+//
+// Every combination reduces to "produce a file set, then materialize its
+// exported symbols"; only the selection differs. `package` moves the base the
+// other two resolve against, so it composes with either rather than replacing
+// them.
+func decodeTypeScriptReference(
+	object map[string]json.RawMessage,
+	path string,
+) (referenceSpec, []string) {
+	problems := []string{}
+	reference := referenceSpec{}
+	if raw, exists := object["package"]; exists {
+		var value string
+		if err := json.Unmarshal(raw, &value); err != nil {
+			problems = append(problems, "Invalid evidence/graph configuration at "+path+".package: expected an installed package name.")
+		} else if name, problem := normalizePackageName(value); problem != "" {
+			problems = append(problems, "Invalid evidence/graph configuration at "+path+".package: "+problem)
+		} else {
+			reference.Package = name
+		}
+	}
+	_, hasEntry := object["file"]
+	_, hasFiles := object["files"]
+	if hasEntry && hasFiles {
+		problems = append(
+			problems,
+			"Invalid evidence/graph configuration at "+path+": 'file' and 'files' select the same population two different ways; keep the entry module or the globs, not both.",
+		)
+		return reference, problems
+	}
+	if hasEntry {
+		entry, problem := decodeEntryModule(object["file"], path+".file")
+		if problem != "" {
+			problems = append(problems, problem)
+		}
+		reference.Entry = entry
+		return reference, problems
+	}
+	if hasFiles {
+		files, fileProblems := decodeFiles(object["files"], path+".files")
+		problems = append(problems, fileProblems...)
+		reference.Files = files
+		return reference, problems
+	}
+	if reference.Package == "" {
+		problems = append(
+			problems,
+			"Invalid evidence/graph configuration at "+path+": a local TypeScript reference needs 'file' for an entry module or 'files' for globs. There is no implicit project entry.",
+		)
+	}
+	// A package with neither selector falls back to its own declaration entry,
+	// which is the only selection a package can make on the consumer's behalf.
+	return reference, problems
+}
+
+func decodeEntryModule(raw json.RawMessage, configPath string) (string, string) {
+	var value string
+	if err := json.Unmarshal(raw, &value); err != nil {
+		return "", "Invalid evidence/graph configuration at " + configPath + ": expected one project-relative entry module path."
+	}
+	if value == "" {
+		return "", "Invalid evidence/graph configuration at " + configPath + ": the entry module path must not be empty."
+	}
+	if strings.TrimSpace(value) != value {
+		return "", "Invalid evidence/graph configuration at " + configPath + ": the entry module path must not have leading or trailing whitespace."
+	}
+	normalized := strings.ReplaceAll(value, "\\", "/")
+	if strings.HasPrefix(normalized, "/") || path.IsAbs(normalized) {
+		return "", "Invalid evidence/graph configuration at " + configPath + ": entry module paths must be relative."
+	}
+	normalized = path.Clean(normalized)
+	for strings.HasPrefix(normalized, "./") {
+		normalized = strings.TrimPrefix(normalized, "./")
+	}
+	if normalized == "." || normalized == ".." || strings.HasPrefix(normalized, "../") {
+		return "", "Invalid evidence/graph configuration at " + configPath + ": entry module paths must name a file below their base directory."
+	}
+	return normalized, ""
+}
+
+func normalizePackageName(value string) (string, string) {
+	if value == "" {
+		return "", "the package name must not be empty."
+	}
+	if strings.TrimSpace(value) != value {
+		return "", "the package name must not have leading or trailing whitespace."
+	}
+	normalized := strings.ReplaceAll(value, "\\", "/")
+	if strings.HasPrefix(normalized, ".") || strings.HasPrefix(normalized, "/") {
+		return "", "'" + value + "' is a path rather than a package name; use 'file' or 'files' for a local population."
+	}
+	segments := strings.Split(normalized, "/")
+	limit := 1
+	if strings.HasPrefix(segments[0], "@") {
+		limit = 2
+	}
+	if len(segments) > limit {
+		return "", "'" + value + "' names a path inside a package; select the package and narrow it with 'file' or 'files'."
+	}
+	if len(segments) < limit {
+		return "", "'" + value + "' is an incomplete scoped package name."
+	}
+	return normalized, ""
 }
 
 func decodeArtifactKind(

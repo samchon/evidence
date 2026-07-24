@@ -116,43 +116,13 @@ var typeScriptModuleExtensions = []string{
 	".d.cts",
 }
 
-// resolveModuleSpecifier maps an import specifier to a project-relative path.
-//
-// Relative specifiers resolve against the importing file; bare specifiers
-// resolve as an installed package. The `.js` rewrite is not a convenience: under
-// `nodenext` a TypeScript source must spell its sibling as `./x.js`, so refusing
-// to map it back would make the correct import form unresolvable.
-func resolveModuleSpecifier(
-	root string,
-	from string,
-	specifier string,
-	inventories map[string]*artifactInventory,
-) string {
-	if strings.HasPrefix(specifier, "./") || strings.HasPrefix(specifier, "../") {
-		return resolveRelativeSpecifier(from, specifier, inventories)
-	}
-	if strings.HasPrefix(specifier, "/") {
-		return ""
-	}
-	return resolvePackageSpecifier(root, specifier, inventories)
-}
-
-func resolveRelativeSpecifier(
-	from string,
-	specifier string,
-	inventories map[string]*artifactInventory,
-) string {
-	base := path.Join(path.Dir(from), specifier)
-	base = path.Clean(base)
-	for _, candidate := range moduleCandidates(base) {
-		if inventories[candidate] != nil {
-			return candidate
-		}
-	}
-	return ""
-}
-
+// splitPackageSpecifier separates a package name from a deep-import subpath,
+// keeping the leading segment of a scoped name attached to its scope.
 // moduleCandidates lists the files a specifier may denote, most specific first.
+//
+// The `.js` rewrite is not a convenience: under `nodenext` a TypeScript source
+// must spell its sibling as `./x.js`, so refusing to map it back would make the
+// correct import form unresolvable.
 func moduleCandidates(base string) []string {
 	candidates := []string{base}
 	stripped := base
@@ -171,40 +141,6 @@ func moduleCandidates(base string) []string {
 	return candidates
 }
 
-// resolvePackageSpecifier finds the declaration entry of an installed package.
-//
-// The entry comes from the `types` condition of an `exports` map, then
-// `typesVersions`, then the `types` or `typings` field — never from `main`,
-// which names the JavaScript a consumer runs rather than the declarations a
-// citation can address.
-func resolvePackageSpecifier(
-	root string,
-	specifier string,
-	inventories map[string]*artifactInventory,
-) string {
-	name, subpath := splitPackageSpecifier(specifier)
-	if name == "" {
-		return ""
-	}
-	directory := path.Join("node_modules", name)
-	manifest := readPackageManifest(root, path.Join(directory, "package.json"))
-	entry := packageTypeEntry(manifest, subpath)
-	if entry == "" {
-		if subpath == "" {
-			return ""
-		}
-		entry = subpath
-	}
-	for _, candidate := range moduleCandidates(path.Join(directory, entry)) {
-		if inventories[candidate] != nil {
-			return candidate
-		}
-	}
-	return ""
-}
-
-// splitPackageSpecifier separates a package name from a deep-import subpath,
-// keeping the leading segment of a scoped name attached to its scope.
 func splitPackageSpecifier(specifier string) (string, string) {
 	segments := strings.Split(specifier, "/")
 	if len(segments) == 0 || segments[0] == "" {

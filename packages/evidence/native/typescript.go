@@ -59,6 +59,7 @@ func scanTypeScriptInventory(
 		Path:    path,
 		Type:    artifactTypeScript,
 		Imports: collectImportBindings(file),
+		Exports: collectModuleExports(file),
 	}
 	supportedHosts := map[*shimast.Node]symbolSet{}
 	unitsByID := map[string]*evidenceUnit{}
@@ -533,6 +534,7 @@ func addTypeScriptUnit(
 		ID:       id,
 		ParentID: parentID,
 		Target:   target,
+		Identity: append([]string{}, identity...),
 		Type:     artifactTypeScript,
 		Symbol:   symbol,
 		Path:     inventory.Path,

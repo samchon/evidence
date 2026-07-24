@@ -241,13 +241,13 @@ func TestSwaggerOperationsParticipateInCoverage(t *testing.T) {
 			},
 		},
 		map[string]*artifactInventory{"src/ref.ts": claimInventory},
+		newTypeScriptLoader("", map[string]*artifactInventory{"src/ref.ts": claimInventory}),
 	)
 	problems := append(
 		stateProblems,
 		evaluateEvidenceGraph(
 			states,
-			"",
-			map[string]*artifactInventory{"src/ref.ts": claimInventory},
+			newTypeScriptLoader("", map[string]*artifactInventory{"src/ref.ts": claimInventory}),
 		)...,
 	)
 	joined := strings.Join(problems, "\n")

@@ -68,7 +68,14 @@ Selectors classify public contracts semantically.
 - `"function"` selects exported function declarations, function-valued exported `const` declarations, public class callables, and namespace variants of those forms.
 - `"property"` selects direct properties of exported interfaces and object-shaped type aliases plus exported `const`, `let`, or `var` declarations at module or namespace scope. A `const` initialized with an arrow or function expression remains a function; every other variable, including a function-typed declaration or function-valued `let` or `var`, remains a property.
 
-Only public identities materialize. A top-level declaration needs an export modifier or local export-list alias; a namespace member needs to be exported from that namespace unless ambient namespace semantics make it implicitly public. A type-only namespace alias projects only public namespaces, interfaces, type aliases, and their type properties, never value-space data or callables. Re-exports whose declarations live in another file do not create a second unit.
+Only public identities materialize. A top-level declaration needs an export modifier or local export-list alias; a namespace member needs to be exported from that namespace unless ambient namespace semantics make it implicitly public. A type-only namespace alias projects only public namespaces, interfaces, type aliases, and their type properties, never value-space data or callables.
+
+**A re-export decides reachability, never identity.** The rule splits in two, and both halves are load-bearing.
+
+- **Identity stays with the declaring file.** A re-export whose declaration lives in another file creates no second unit. A symbol exposed through two barrels is one unit with one ID, acknowledged once — this is what stops a barrel from doubling every obligation beneath it.
+- **Reachability comes from the entry.** Under entry selection, traversal follows `export *`, `export * as ns`, and `export { A as B }` to decide _membership_ in the population, and gives each reached symbol its accessor path from the entry. `export * as functional` nests a segment, `export * from` flattens one, and an alias is addressed by its public name.
+
+A symbol reached by two paths therefore answers to two addresses and still owes one acknowledgement. Build those addresses from identity segments rather than by rewriting a joined target, or a literal dot inside a name collapses into qualification.
 
 A mixed variable statement can carry both function and property host kinds because TypeScript attaches one leading JSDoc block to the statement wrapper. Every public leaf of an object or array binding pattern is a property under its local binding name. Preserve the host set; choosing one kind makes the other selector spuriously out of scope.
 

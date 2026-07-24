@@ -2,6 +2,7 @@ package evidence
 
 import (
 	"os"
+	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -40,14 +41,16 @@ func (graphRule) Check(ctx *rule.ProjectContext) {
 	typescript := loadTypeScriptInventories(root, ctx.Sources)
 	problems = append(problems, markdownProblems...)
 	problems = append(problems, swaggerProblems...)
+	loader := newTypeScriptLoader(root, typescript)
 	states, stateProblems := materializeClaimStates(
 		config,
 		markdown,
 		swagger,
 		typescript,
+		loader,
 	)
 	problems = append(problems, stateProblems...)
-	problems = append(problems, evaluateEvidenceGraph(states, root, typescript)...)
+	problems = append(problems, evaluateEvidenceGraph(states, loader)...)
 	reportProblems(ctx, problems)
 }
 
@@ -78,6 +81,7 @@ func materializeClaimStates(
 	markdown map[string]*artifactInventory,
 	swagger map[string]*artifactInventory,
 	typescript map[string]*artifactInventory,
+	loader *typeScriptLoader,
 ) ([]claimState, []string) {
 	states := make([]claimState, 0, len(config.Claims))
 	problems := []string{}
@@ -104,6 +108,26 @@ func materializeClaimStates(
 				swagger,
 				typescript,
 			)
+			if reference.Type == artifactTypeScript && reference.entrySelected() {
+				entryState, entryProblems := materializeEntryReference(
+					claim,
+					reference,
+					loader,
+				)
+				problems = append(problems, entryProblems...)
+				state.References = append(state.References, entryState)
+				continue
+			}
+			if reference.Type == artifactTypeScript && reference.Package != "" {
+				packageState, packageProblems := materializePackageGlobReference(
+					claim,
+					reference,
+					loader,
+				)
+				problems = append(problems, packageProblems...)
+				state.References = append(state.References, packageState)
+				continue
+			}
 			referencePaths := matchingReferencePaths(
 				referenceInventories,
 				reference,
@@ -181,8 +205,7 @@ func materializeClaimStates(
 
 func evaluateEvidenceGraph(
 	states []claimState,
-	root string,
-	typescript map[string]*artifactInventory,
+	loader *typeScriptLoader,
 ) []string {
 	problems := []string{}
 	targets := map[string]map[string]*evidenceUnit{}
@@ -193,11 +216,20 @@ func evaluateEvidenceGraph(
 	scopedTargets := map[string]map[string]*evidenceUnit{}
 	for _, state := range states {
 		for _, reference := range state.References {
+			// An entry-selected address is valid in the module that exposes it,
+			// not in the one that declares the symbol. Identity still belongs to
+			// the declaring file; only reachability moves.
+			addressPath := ""
+			if reference.Spec.entrySelected() && len(reference.Paths) == 1 {
+				addressPath = reference.Paths[0]
+			}
 			for _, unit := range reference.Scopes {
-				if targets[unit.Target] == nil {
-					targets[unit.Target] = map[string]*evidenceUnit{}
+				for _, address := range append([]string{unit.Target}, unit.Aliases...) {
+					if targets[address] == nil {
+						targets[address] = map[string]*evidenceUnit{}
+					}
+					targets[address][unit.ID] = unit
 				}
-				targets[unit.Target][unit.ID] = unit
 				if unit.Type == artifactMarkdown {
 					if markdownTargets[unit.Target] == nil {
 						markdownTargets[unit.Target] = map[string]*evidenceUnit{}
@@ -205,11 +237,20 @@ func evaluateEvidenceGraph(
 					markdownTargets[unit.Target][unit.ID] = unit
 				}
 				if unit.Type == artifactTypeScript {
-					key := scopedTargetKey(unit.Path, unit.Target)
-					if scopedTargets[key] == nil {
-						scopedTargets[key] = map[string]*evidenceUnit{}
+					owner := unit.Path
+					if addressPath != "" {
+						owner = addressPath
 					}
-					scopedTargets[key][unit.ID] = unit
+					// Every address the unit answers to indexes the same unit, so
+					// a symbol an entry exposes by two paths is one obligation
+					// acknowledged once rather than two competing candidates.
+					for _, address := range append([]string{unit.Target}, unit.Aliases...) {
+						key := scopedTargetKey(owner, address)
+						if scopedTargets[key] == nil {
+							scopedTargets[key] = map[string]*evidenceUnit{}
+						}
+						scopedTargets[key][unit.ID] = unit
+					}
 				}
 			}
 		}
@@ -240,8 +281,7 @@ func evaluateEvidenceGraph(
 		if isInlineLinkTarget(declaration.Target) {
 			unitID, problem := resolveInlineLinkDeclaration(
 				declaration,
-				root,
-				typescript,
+				loader,
 				scopedTargets,
 			)
 			if problem != "" {
@@ -335,12 +375,187 @@ func evaluateEvidenceGraph(
 				}
 				problems = append(
 					problems,
-					"Missing acknowledgement for '"+unit.Target+"' ("+unit.Readable+" at "+unit.location()+") in "+claimLabel(state.Spec)+" "+referenceLabel(reference.Spec)+". Add '@evidence "+unit.Target+" <reason>' to a selected "+string(state.Spec.Type)+" host of this claim, or '@evidenceExclude "+unit.Target+" <reason>' when this claim intentionally does not use it.",
+					"Missing acknowledgement for '"+unit.Target+"' ("+unit.Readable+" at "+unit.location()+") in "+claimLabel(state.Spec)+" "+referenceLabel(reference.Spec)+". Add '@evidence "+acknowledgementForm(unit, state.Spec)+" <reason>' to a selected "+string(state.Spec.Type)+" host of this claim, or '@evidenceExclude "+acknowledgementForm(unit, state.Spec)+" <reason>' when this claim intentionally does not use it.",
 				)
 			}
 		}
 	}
 	return problems
+}
+
+// materializeEntryReference builds a population by walking an entry module's
+// export graph rather than by matching paths.
+//
+// The entry is what a consumer can actually import, so the population is the
+// public contract instead of whatever files a glob happened to sweep in. It is
+// also the only selection that can reach a package symbol nothing imports,
+// because such a symbol is absent from the Program by definition.
+func materializeEntryReference(
+	claim claimSpec,
+	reference referenceSpec,
+	loader *typeScriptLoader,
+) (referenceState, []string) {
+	state := referenceState{
+		Spec:         reference,
+		UnitsByScope: map[string][]*evidenceUnit{},
+	}
+	entry, problem := resolveReferenceEntry(claim, reference, loader)
+	if problem != "" {
+		return state, []string{problem}
+	}
+	state.Paths = []string{entry}
+	state.Units = materializeEntryUnits(loader, entry, reference.Symbols)
+	if len(state.Units) == 0 {
+		return state, []string{
+			claimLabel(claim) + " " + referenceLabel(reference) + " reached no selected evidence units (" + reference.Symbols.names() + ") from entry '" + entry + "'. Select symbol kinds the entry exposes, or point the entry at the module that declares them.",
+		}
+	}
+	sortUnits(state.Units)
+	for _, unit := range state.Units {
+		state.Scopes = append(state.Scopes, unit)
+		state.UnitsByScope[unit.ID] = append(state.UnitsByScope[unit.ID], unit)
+	}
+	// An entry-selected population is flat by address rather than by file, so a
+	// parent type still has to cover the properties it owns. Walking addresses
+	// keeps that cascade without reintroducing file-shaped hierarchy.
+	for _, unit := range state.Units {
+		for _, other := range state.Units {
+			if other.ID == unit.ID || !addressContains(unit.Identity, other.Identity) {
+				continue
+			}
+			state.UnitsByScope[unit.ID] = append(state.UnitsByScope[unit.ID], other)
+		}
+	}
+	return state, nil
+}
+
+// materializePackageGlobReference narrows an installed package with globs that
+// resolve against the package root.
+//
+// Narrowing a large SDK to one area is what makes the obligation adoptable at
+// all. The globs are written as a consumer thinks of the package — `lib/api/**`
+// — rather than carrying the `node_modules` prefix, which is an installation
+// detail rather than part of the package's shape.
+func materializePackageGlobReference(
+	claim claimSpec,
+	reference referenceSpec,
+	loader *typeScriptLoader,
+) (referenceState, []string) {
+	state := referenceState{
+		Spec:         reference,
+		UnitsByScope: map[string][]*evidenceUnit{},
+	}
+	base := referenceBase(reference)
+	available := map[string]*evidenceUnit{}
+	for _, candidate := range loader.walk(base) {
+		relative := strings.TrimPrefix(strings.TrimPrefix(candidate, base), "/")
+		if !reference.Files.matches(relative) {
+			continue
+		}
+		inventory := loader.inventory(candidate)
+		if inventory == nil {
+			continue
+		}
+		state.Paths = append(state.Paths, candidate)
+		for _, unit := range inventory.Units {
+			available[unit.ID] = unit
+		}
+	}
+	if len(state.Paths) == 0 {
+		return state, []string{
+			claimLabel(claim) + " " + referenceLabel(reference) + " matched no files inside package '" + reference.Package + "' for " + describePatterns(reference.Files) + ". Fix the package-relative globs; they resolve against the package root, not the project root.",
+		}
+	}
+	collectReferenceUnits(&state, reference, available)
+	if len(state.Units) == 0 {
+		return state, []string{
+			claimLabel(claim) + " " + referenceLabel(reference) + " matched " + decimal(len(state.Paths)) + " file(s) inside package '" + reference.Package + "' but materialized no selected evidence units (" + reference.Symbols.names() + "). Select symbol kinds present in those files or correct the globs.",
+		}
+	}
+	return state, nil
+}
+
+// collectReferenceUnits selects units and rebuilds the scope hierarchy over
+// them, so an ancestor target still covers the descendants it owns.
+func collectReferenceUnits(
+	state *referenceState,
+	reference referenceSpec,
+	available map[string]*evidenceUnit,
+) {
+	selected := map[string]bool{}
+	for _, unit := range available {
+		if !reference.Symbols.contains(unit.Symbol) || selected[unit.ID] {
+			continue
+		}
+		selected[unit.ID] = true
+		state.Units = append(state.Units, unit)
+	}
+	sortUnits(state.Units)
+	scopesByID := map[string]*evidenceUnit{}
+	for _, unit := range state.Units {
+		for scope := unit; scope != nil; scope = available[scope.ParentID] {
+			state.UnitsByScope[scope.ID] = append(state.UnitsByScope[scope.ID], unit)
+			if scopesByID[scope.ID] == nil {
+				scopesByID[scope.ID] = scope
+				state.Scopes = append(state.Scopes, scope)
+			}
+			if scope.ParentID == "" {
+				break
+			}
+		}
+	}
+	sortUnits(state.Scopes)
+}
+
+func resolveReferenceEntry(
+	claim claimSpec,
+	reference referenceSpec,
+	loader *typeScriptLoader,
+) (string, string) {
+	base := referenceBase(reference)
+	if reference.Entry != "" {
+		candidate := reference.Entry
+		if base != "" {
+			candidate = path.Join(base, reference.Entry)
+		}
+		for _, option := range moduleCandidates(candidate) {
+			if loader.exists(option) {
+				return option, ""
+			}
+		}
+		return "", claimLabel(claim) + " " + referenceLabel(reference) + " found no entry module at '" + candidate + "'. Correct the entry path; this obligation cannot materialize evidence units without one."
+	}
+	entry := loader.packageEntryModule(reference.Package)
+	if entry == "" {
+		return "", claimLabel(claim) + " " + referenceLabel(reference) + " could not resolve the declaration entry of package '" + reference.Package + "'. Install it, or name its entry with 'file'; the entry is read from the 'types' condition of 'exports', then 'typesVersions', then 'types'."
+	}
+	return entry, ""
+}
+
+// addressContains reports whether one entry-relative address encloses another.
+func addressContains(owner []string, candidate []string) bool {
+	if len(candidate) <= len(owner) {
+		return false
+	}
+	for index, segment := range owner {
+		if candidate[index] != segment {
+			return false
+		}
+	}
+	return true
+}
+
+// acknowledgementForm spells the citation a claim would actually have to write.
+//
+// A TypeScript unit is cited through an inline link resolved by the citing
+// module's imports, so suggesting the bare name would name the one form the
+// rule now rejects. Markdown claims keep the plain token, because Markdown has
+// no import scope to resolve one against.
+func acknowledgementForm(unit *evidenceUnit, claim claimSpec) string {
+	if unit.Type != artifactTypeScript || claim.Type != artifactTypeScript {
+		return unit.Target
+	}
+	return "{@link " + unit.Target + "}"
 }
 
 func scopedTargetKey(path string, target string) string {
@@ -377,15 +592,14 @@ func looksLikeTypeScriptTarget(
 // them are repaired in completely different places.
 func resolveInlineLinkDeclaration(
 	declaration *evidenceDeclaration,
-	root string,
-	typescript map[string]*artifactInventory,
+	loader *typeScriptLoader,
 	scopedTargets map[string]map[string]*evidenceUnit,
 ) (string, string) {
 	target := inlineLinkTarget(declaration.Target)
 	if declaration.Type != artifactTypeScript {
 		return "", "Inline link target '" + displayTarget(declaration.Target) + "' at " + declaration.location() + ": only a TypeScript declaration can cite through an inline link, because resolution runs through the citing module's imports and Markdown has none. Write the symbol as a plain target here."
 	}
-	inventory := typescript[declaration.Path]
+	inventory := loader.inventory(declaration.Path)
 	if inventory == nil {
 		return "", "Inline link target '" + displayTarget(declaration.Target) + "' at " + declaration.location() + ": the citing file is not part of the TypeScript program, so it has no import scope to resolve against."
 	}
@@ -394,12 +608,10 @@ func resolveInlineLinkDeclaration(
 	if !imported {
 		return "", "Unimported evidence target '" + displayTarget(declaration.Target) + "' at " + declaration.location() + ": '" + segments[0] + "' is not imported by this module, so the citation names a symbol this file does not reference. Import it; 'import type' is enough and is erased at emit."
 	}
-	resolvedPath := resolveModuleSpecifier(
-		root,
-		declaration.Path,
-		binding.Specifier,
-		typescript,
-	)
+	// Resolution goes through the same loader the population uses, so a citation
+	// can reach a package entry that never entered the Program — which is the
+	// only way an import of an installed SDK resolves at all.
+	resolvedPath := loader.resolve(declaration.Path, binding.Specifier)
 	if resolvedPath == "" {
 		return "", "Unresolved module '" + binding.Specifier + "' for evidence target '" + displayTarget(declaration.Target) + "' at " + declaration.location() + ": the specifier resolves to no TypeScript file reachable from this project. Correct the import, or add the module to the program."
 	}

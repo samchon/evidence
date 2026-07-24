@@ -42,11 +42,24 @@ type claimSpec struct {
 }
 
 type referenceSpec struct {
-	Index   int
-	Type    artifactKind
-	Files   globSet
-	Source  string
+	Index  int
+	Type   artifactKind
+	Files  globSet
+	Source string
+	// Entry names a module whose public export graph defines the population.
+	// Reachability from it decides membership; identity still belongs to the
+	// file that declares the symbol.
+	Entry string
+	// Package moves the base that Entry and Files resolve against from the
+	// project to an installed package, so the two selections compose rather
+	// than competing.
+	Package string
 	Symbols symbolSet
+}
+
+// entrySelected reports whether this reference materializes by traversal.
+func (reference referenceSpec) entrySelected() bool {
+	return reference.Entry != "" || (reference.Package != "" && len(reference.Files.Patterns) == 0)
 }
 
 type symbolSet map[string]bool
@@ -89,6 +102,14 @@ type evidenceUnit struct {
 	ID       string
 	ParentID string
 	Target   string
+	// Identity is Target before joining, kept so an entry-relative address can
+	// be rebuilt segment by segment. Rewriting the joined string instead would
+	// let a literal dot inside a name collapse into qualification.
+	Identity []string
+	// Aliases are the additional addresses this unit answers to when an entry
+	// exposes it by more than one path. They resolve to this same unit, so a
+	// symbol reachable twice is still one obligation acknowledged once.
+	Aliases  []string
 	Type     artifactKind
 	Symbol   string
 	Path     string
@@ -133,6 +154,10 @@ type artifactInventory struct {
 	// an inline-link target can be resolved the way TypeScript resolves a name:
 	// from the citing file's own bindings rather than from a global table.
 	Imports map[string]importBinding
+	// Exports is the module's public surface as importers see it, which is what
+	// an entry traversal follows. It records reachability only; a re-export
+	// still creates no unit of its own.
+	Exports []moduleExport
 	// UnitNodes maps a unit ID to every declaration node that spells it.
 	//
 	// A unit is an identity, not a declaration: declaration merging and overload
