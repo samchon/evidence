@@ -28,3 +28,5 @@ Use a file-backed body with `gh pr create --body-file`. Push only the topic bran
 After a push, monitor every relevant check on that exact head until it settles. Inspect failed job logs, fix verified defects in the same branch, rerun affected local checks, and push the correction. Do not treat a previous head's green result as acceptance for the current head.
 
 Report the PR URL, what changed, and the local/CI result. If a runner, permission, or external service blocks validation, state the actual limitation. Merge only when explicitly requested or already included in a standing mandate, after its required checks and review gates pass. Never bypass branch protection to complete a request.
+
+Always use squash merge. When merging is authorized, use `gh pr merge --squash --match-head-commit <reviewed-head>` so the merged change is the exact commit that passed review and checks.

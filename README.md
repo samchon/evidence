@@ -1,46 +1,130 @@
 # @samchon/evidence
 
-An Evidence Graph connects specifications, engineering principles, public code contracts, and tests through explicit citations. `@samchon/evidence` is the standalone, cross-language successor to [`@ttsc/evidence`](https://github.com/samchon/ttsc/tree/master/packages/evidence).
+An Evidence Graph connects specifications, engineering principles, public code contracts, and tests through explicit citations. `@samchon/evidence` checks that every selected requirement has evidence or a permitted exclusion, and that every citation names a valid target and explains its relationship.
 
-The project is under development. This repository currently provides the pnpm workspace, package build, CLI bootstrap, and logic unit-test setup. Graph types, configuration loading, language adapters, and evidence checking are tracked in the [implementation roadmap](https://github.com/samchon/evidence/issues/31).
+The configuration and graph semantics follow [`@ttsc/evidence`](https://github.com/samchon/ttsc/tree/master/packages/evidence), with programming-language declarations selected from files through Tree-sitter.
 
 ## Installation
-
-The consumer installation contract for a published release is:
 
 ```bash
 pnpm i -D typescript ttsc @samchon/evidence
 ```
 
-`typescript` and `ttsc` are required peers supplied by the consumer. The `ttsx` executable comes from `ttsc`; there is no separate `ttsx` package to install.
+`typescript` and `ttsc` are required peers supplied by the consumer. The `ttsx` executable comes from `ttsc` and evaluates `evidence.config.ts`.
 
-The current CLI supports:
+## Configuration
 
-```bash
-pnpm exec evidence --help
-pnpm exec evidence --version
+Create `evidence.config.ts` at the project root:
+
+```ts
+import type { IEvidenceConfig } from "@samchon/evidence";
+
+const config: IEvidenceConfig = {
+  severity: "error",
+  claims: [
+    {
+      type: "typescript",
+      files: ["src/**"],
+      reference: {
+        type: "markdown",
+        files: ["docs/requirements.md"],
+        symbol: "h2",
+      },
+    },
+    {
+      type: "typescript",
+      files: ["test/**"],
+      symbol: "function",
+      reference: {
+        type: "typescript",
+        files: ["src/**"],
+        symbol: "function",
+        noEvidenceExclude: true,
+      },
+    },
+  ],
+};
+
+export default config;
 ```
 
-Running `evidence`, `evidence check`, or another unavailable command exits with status 2 and states that no project was checked.
+A **claim** selects the files and declarations that must cite evidence. Its **reference** selects what must be covered. Each claim and each element of its reference array has an independent coverage obligation; partial coverage from separate obligations is never pooled.
+
+Use `type` to select the source language, such as `"typescript"`, `"cpp"`, or `"rust"`, and `files` to select its files with globs. `EvidenceProgrammingType` defines programming-language identifiers; `EvidenceDatabaseType` defines database schema languages such as `"prisma"`, `"sql"`, and `"dbml"`. File names distinguish syntax variants such as TSX. No separate `language` setting or TypeScript compiler Program is required.
+
+Globs resolve from the directory containing `evidence.config.ts`, or from the population's `root`. Patterns are applied in order: `!` excludes matches, and a later positive pattern can include them again. Use `src/**` to select a directory's contents.
+
+Run the checker from the project root:
+
+```bash
+pnpm exec evidence
+```
+
+## Artifacts and symbol selectors
+
+| Artifact | Claim | Reference | Symbol selectors | Default claim / reference |
+| --- | --- | --- | --- | --- |
+| Programming | Yes | Yes | `type`, `function`, `property` | All / `type` |
+| Markdown | Yes | Yes | `file`, `h1`, `h2`, `h3`, `h4` | All / all |
+| Database schemas | Yes | Yes | `model`, `column`, `relation` | All / `model` |
+| Swagger / OpenAPI | No | Yes | Operations | Every operation |
+
+A `symbol` accepts one selector or a nonempty array. Programming `type` symbols include classes, interfaces, type aliases, and namespaces. Database `model` symbols describe record structures, `column` symbols describe data fields, and `relation` symbols describe connections between models. A foreign-key value is a column; the declaration describing its connection is a relation.
+
+All database schema languages use `IEvidenceDatabaseClaim` and `IEvidenceDatabaseReference`. Their `type` distinguishes Prisma, SQL dialects, and DBML. Select the source schema language rather than the database server: MongoDB models written in Prisma use `type: "prisma"`.
+
+Markdown preserves its document outline, and Prisma preserves its schema structure. Swagger references use `file` for an exact local JSON/YAML path or an HTTP(S) URL, with an optional `root` for local paths.
 
 ## Evidence declarations
 
-The planned source-language target syntax names a file and one of its public symbols:
+Write `@evidence <target> <reason>` in a declaration's documentation comment. Code targets name a file relative to the citing file, followed by `#` and a public symbol:
 
 ```ts
-/** @evidence ../calculator.ts#add Implements the addition contract. */
+/** @evidence ../calculator.ts#add Verifies the addition contract. */
 /** @evidence ../SomeClass.ts#SomeClass.member Supplies the public static member. */
 /** @evidence ../SomeClass.ts#SomeClass Represents the class contract. */
 /** @evidence ../SomeNamespace.ts#SomeNamespace.property Supplies the namespace value. */
 ```
 
-The checker will read `evidence.config.ts`, typechecked and evaluated through `ttsx`. Source-language parsing will use upstream `web-tree-sitter` and bundled, lazily loaded grammar WASM. Each supported language will also have its own public-symbol and documentation adapter. No language adapters or grammar binaries are shipped by this scaffold yet.
+TypeScript instance members use `SomeClass.prototype.member`. File-qualified targets identify declarations without compiler import-scoped `{@link Symbol}` lookup.
 
-Markdown, Prisma, and Swagger/OpenAPI support will preserve the existing Evidence behavior. A configured graph will require each selected obligation to have evidence or a permitted exclusion, with optional per-host skill checklists and content-sensitive reviews. The checker validates those declarations; reviewers still judge whether their reasons are true.
+| Target                | Example                            |
+| --------------------- | ---------------------------------- |
+| Code symbol           | `../calculator.ts#add`             |
+| Markdown document     | `docs/requirements.md`             |
+| Markdown heading      | `docs/requirements.md#pricing`     |
+| Prisma model or field | `prisma:Sale`, `prisma:Sale.price` |
+| Swagger operation     | `POST:/sales`                      |
+
+Markdown paths resolve from the reference population's root. Markdown claims place tags in HTML comments; Prisma claims place them in documentation comments attached to schema declarations.
+
+A citation to a containing type, namespace, document section, or model covers its selected descendants. `@evidenceExclude <target> <reason>` records why a selected obligation does not apply, subject to the reference's policy. The checker validates the declaration and its target; reviewers judge whether the explanation is true.
+
+## Coverage policies
+
+Set policies on each reference:
+
+| Option | Obligation |
+| --- | --- |
+| `noEvidenceExclude` | Require positive evidence; exclusions do not provide coverage. |
+| `uniqueEvidence` | Allow at most one distinct claim host to cite each selected unit. |
+| `singleEvidencePerSymbol` | Require every selected claim host to cite exactly one selected unit. |
+| `requireReview` | Require a matching review with the current target content fingerprint. |
+| `checklist` | For Markdown references, require every selected claim host to answer every selected item. |
+
+A checklist's positive citation answers only the named item. It cannot combine with `uniqueEvidence` or `singleEvidencePerSymbol`.
+
+A claim's `evidenceExcludeCarriers` globs restrict where exclusions may be written within its selected files. They cannot combine with a checklist that accepts exclusions.
+
+The root configuration accepts an optional `severity: "off" | "warning" | "error"`, defaulting to `"error"`. Claims and references may override it with their own optional `severity`: a claim inherits the root level, and a reference inherits its claim's level. A claim can also set `disabled: true`.
+
+## Public types
+
+The package exports `IEvidenceConfig`, `IEvidenceClaim`, `IEvidenceReference`, and their shared base interfaces. Claims share `IEvidenceClaimBase<Type, SymbolKind>` and specialize into programming, database, and Markdown populations. References use the same families, plus Swagger operations.
+
+`EvidenceProgrammingType` and `EvidenceDatabaseType` define source-language identifiers. `EvidenceProgrammingSymbol`, `EvidenceDatabaseSymbol`, and `EvidenceMarkdownSymbol` define symbol selectors; `EvidenceSeverity` defines diagnostic levels. `IEvidenceDocumentedConfig` selects programming symbols that must carry documentation comments.
 
 ## Development
-
-Use the pnpm version pinned in `package.json`:
 
 ```bash
 pnpm install --frozen-lockfile
@@ -49,37 +133,11 @@ pnpm test
 pnpm check:format
 ```
 
-| Path | Purpose |
-| --- | --- |
-| `packages/evidence` | Published package and `evidence` executable |
-| `test` | Private workspace for logic unit tests |
-| `config` | Shared strict TypeScript settings and compiler-enforced lint rules |
-| `scripts` | Plain JavaScript package-maintenance scripts |
-| `.agents/skills` | Project, development, documentation, and delivery workflows |
+The pnpm workspace contains the published library in `packages/evidence` and logic unit tests in `test`. `pnpm build` compiles through `ttsc` with strict `@ttsc/lint` rules. `pnpm test` runs exported unit-test functions directly through `ttsx` and `@nestia/e2e`'s `DynamicExecutor`.
 
-`pnpm build` runs `ttsc` across `packages/*` and emits their JavaScript and declarations. Type errors and every enabled lint rule fail the build. There is no separate typecheck command. `@ttsc/lint` is a development dependency. Each package and the test workspace have a `lint.config.ts` extending `config/lint.config.ts`. Its shared rules reject explicit `any`, unsafe type operations, unhandled promises, non-null assertions, ambiguous conditions, and runtime correctness problems. Prettier owns formatting.
+Dependency versions are centralized in the family catalogs in `pnpm-workspace.yaml`. Each package and the test workspace extend the shared configuration under `config`. VS Code uses Prettier on save through `.vscode/settings.json`.
 
-`pnpm test` runs `test/src/index.ts` directly through `ttsx`, which checks the source before execution. Following AutoMovie, `@nestia/e2e`'s `DynamicExecutor` discovers exported `test_` functions in `test/src/features/<category>/test_*.ts`; the functions call logic directly and assert results with `TestValidator`. The initial unit test covers command selection, including unsupported and extra arguments. Dependency and peer versions come from the `samchon`, `typescript`, and `utils` catalogs in `pnpm-workspace.yaml`.
-
-CI has two independent Ubuntu workflows: `build.yml` runs `pnpm build`, and `test.yml` runs `pnpm test`. Tests run from TypeScript source and require no preceding package build.
-
-## Package preparation
-
-The package uses CommonJS. Its workspace `main` and `exports` point directly to `./src/index.ts`. JavaScript entry points, declaration paths, and the installed `evidence` executable are defined only in `publishConfig`; pnpm applies these overrides when packing or publishing.
-
-Edit this root README. The package's `prepack` hook builds the library, then runs `scripts/copy-readme-and-license.js` with Node to copy the root `README.md` and `LICENSE` into `packages/evidence` whenever the package is packed or published. The generated documentation copies are ignored by Git. Dependency installation does not build the library.
-
-```bash
-pnpm --dir packages/evidence pack
-```
-
-The tarball contains the compiled entry points, declarations, package metadata, README, and license. The asset allowlist is ready for future grammar WASM and its license notices. Source, test fixtures, and repository skills stay out of the package.
-
-## Contributing
-
-Start with [AGENTS.md](https://github.com/samchon/evidence/blob/master/AGENTS.md) and the relevant repository skills. Follow the execution order in the [roadmap](https://github.com/samchon/evidence/issues/31); issue numbers are identifiers, not implementation priority.
-
-The workspace and agent workflows are adapted from [`samchon/ttsc`](https://github.com/samchon/ttsc), with the test layout and execution pattern from [`samchon/AutoMovie`](https://github.com/samchon/AutoMovie). The Evidence domain contract remains the behavioral reference for the forthcoming implementation.
+The root README and LICENSE are authoritative. During package preparation, `scripts/copy-readme-and-license.js` copies them into `packages/evidence`. Workspace imports resolve to TypeScript source; `publishConfig` supplies the compiled entry points, declarations, and CLI.
 
 ## License
 

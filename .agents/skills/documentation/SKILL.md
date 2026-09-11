@@ -7,11 +7,11 @@ description: Defines Evidence README, guide, issue, and agent-instruction writin
 
 ## Readers And Ownership
 
-Start with what the package does, its current availability, installation, and the smallest working path. Distinguish the released/implemented surface from the roadmap. Do not show an unavailable CLI command as working setup.
+Write README as the completed product's user guide: purpose, installation, configuration, and usage. Do not include issue or roadmap links, implementation progress, or milestone commentary. Keep delivery status and validation results in the PR.
 
 The root `README.md` is the only editable package README. `scripts/copy-readme-and-license.js` copies it and LICENSE to the package during `prepack`. Keep repository links usable from npm as well as GitHub. Review the copy script when changing documentation preparation; do not introduce package-installation tests.
 
-Keep detailed future guides organized by their reader and task. Do not invent a website tree or claim that ttsc's website is this package's documentation host. Link to upstream for the compatibility baseline and explain standalone differences where they affect an author.
+Organize guides by their reader and task. Do not invent a website tree or claim that ttsc's website is this package's documentation host. Link to upstream for the compatibility baseline and explain standalone differences where they affect an author.
 
 ## Operational Instructions
 
@@ -19,10 +19,14 @@ Keep global attitude and routing in AGENTS.md, the core procedure in SKILL.md, a
 
 State requirements with enough context to act. Keep one owner for each rule, and remove repetition rather than necessary reasons, boundaries, or failure handling. A skill does not grant permission to publish, push, merge, or contact others beyond the user's existing request.
 
+Skills contain actionable rules only. Do not add failure stories, work chronology, personal reflections, or incidental commentary.
+
 ## Writing
 
 Write repository documents, issues, and PRs in English. Use plain language, concrete names, and active voice. Avoid emoji, em dashes, filler adjectives, and closing sentences that only repeat the paragraph.
 
+Apply these principles to source comments and JSDoc as well. Describe purpose, defaults, and necessary constraints concisely. Preserve classification rules, exclusions, and target semantics when shortening comments; use nested lists where they make those rules easier to scan. Omit essays, repetition, and implementation history.
+
 Write each Markdown paragraph on one source line; separate distinct ideas with blank lines. Preserve structural line breaks in lists, tables, and code. The formatter uses `proseWrap: never` and leaves fenced examples unchanged.
 
-Use lists for sequential steps or parallel checks and tables for repeated mappings. Include exact commands only when supported by the repository. Read the final diff/rendered output and run executable examples when their behavior is part of the change.
+Use lists for sequential steps or parallel checks and tables for repeated mappings. Keep README commands aligned with the product contract and report their implementation status in the PR. Read the final diff/rendered output and run executable examples when their behavior is part of the implementation change.

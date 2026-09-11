@@ -7,7 +7,7 @@ description: Defines Evidence units, target grammar, coverage, exclusions, revie
 
 ## Baseline And Scope
 
-The behavioral baseline is the [pinned original domain contract](https://github.com/samchon/ttsc/blob/14a22f077caf23f1bfb8a97b3d9db765912074ef/.agents/skills/project/evidence/SKILL.md) and its linked code/regressions. Read the relevant original section before porting behavior. This repository currently contains the package scaffold; this skill describes the intended contract, not completed features.
+The behavioral baseline is the [pinned original domain contract](https://github.com/samchon/ttsc/blob/14a22f077caf23f1bfb8a97b3d9db765912074ef/.agents/skills/project/evidence/SKILL.md) and its linked code/regressions. Read the relevant original section before porting behavior. Public configuration, claim, and reference types follow `D:/github/samchon/ttsc/packages/evidence`, generalized into the families defined by the [project skill](../SKILL.md). Verify runtime behavior in the implementation rather than inferring availability from a type declaration.
 
 Reuse or port Markdown, Prisma, and Swagger behavior. Replace compiler Program discovery with file snapshots and TypeScript language adapters over upstream `web-tree-sitter`. Keep original semantics and intentional migration differences explicit.
 

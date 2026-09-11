@@ -1,0 +1,25 @@
+import type { EvidenceDatabaseSymbol } from "../typings/EvidenceDatabaseSymbol";
+import type { EvidenceDatabaseType } from "../typings/EvidenceDatabaseType";
+import type { IEvidenceClaimBase } from "./IEvidenceClaimBase";
+
+/**
+ * Database schema declarations that cite evidence in documentation comments.
+ * The type selects the schema language; files and symbol select its declarations.
+ *
+ * Prisma host rules:
+ *
+ * - Matching files form one schema regardless of extension. A physical file
+ *   reached by multiple populations is parsed once.
+ * - Triple-slash and block documentation comments attach to the next declaration.
+ *   Ordinary double-slash comments do not host tags.
+ * - A blank line before a top-level block detaches the comment. Comments above
+ *   block attributes or closing braces also have no declaration host.
+ * - Evidence and exclusions require a target and nonempty reason. Invalid or
+ *   detached declarations are reported.
+ * - An unattached top-level triple-slash run may carry a file-level exclusion,
+ *   independently of the symbol selector. It cannot carry ordinary evidence.
+ */
+export interface IEvidenceDatabaseClaim extends IEvidenceClaimBase<
+  EvidenceDatabaseType,
+  EvidenceDatabaseSymbol
+> {}

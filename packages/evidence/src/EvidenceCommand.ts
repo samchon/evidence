@@ -1,3 +1,5 @@
+import type { IPackageManifest } from "./internal/IPackageManifest";
+
 /** Runs the bootstrap CLI while graph checking is under development. */
 export namespace EvidenceCommand {
   /** Selects a supported operation from a complete argument list. */
@@ -15,9 +17,7 @@ export namespace EvidenceCommand {
   export const main = (args: readonly string[]): void => {
     const operation = parse(args);
     if (operation === "version") {
-      const manifest = require("../package.json") as {
-        version: string;
-      };
+      const manifest = require("../package.json") as IPackageManifest;
       process.stdout.write(`${manifest.version}\n`);
       return;
     }
