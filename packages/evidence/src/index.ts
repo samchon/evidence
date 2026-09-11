@@ -4,6 +4,7 @@ export { EvidenceConfigLoader } from "./EvidenceConfigLoader";
 export { EvidenceDocumentation } from "./EvidenceDocumentation";
 export { EvidenceInventory } from "./EvidenceInventory";
 export { EvidenceLanguageRegistry } from "./EvidenceLanguageRegistry";
+export { EvidenceMarkdownAdapter } from "./EvidenceMarkdownAdapter";
 export { EvidenceParser } from "./EvidenceParser";
 export { EvidenceParserError } from "./EvidenceParserError";
 export type { EvidenceParseSession } from "./EvidenceParseSession";

@@ -54,3 +54,13 @@ Markers begin a documentation line and end at a space, tab, or line boundary. Re
 A review fingerprint is exactly seven lowercase hexadecimal characters after `#`. Other `#`-prefixed tokens followed by prose remain part of the description. Missing targets, blank prose, unsupported compiler inline links, malformed targets, and unsupported or unattached hosts produce actionable diagnostics. Retain these findings and merge valid declarations, reviews, and withdrawals into their separate inventory records. Review pairing and content freshness belong to graph evaluation, after target resolution.
 
 Accessor examples include `Class.prototype.member`, `Namespace["member.with.dots"]`, and `Tuple[0]`. Quoted bracket segments use JSON strings; paths containing whitespace use percent encoding. Compiler import-scoped `{@link Symbol}` targets require migration to explicit file-qualified targets.
+
+## Markdown inventories
+
+`EvidenceMarkdownAdapter` materializes one file unit and each ATX H1-H4 section. Setext headings and H5/H6 do not form units. A deeper or unaddressable heading still opens a source region: its content belongs to the nearest real ancestor, while annotations in that region are unsupported until another H1-H4 host opens.
+
+Prefer a valid trailing `{#anchor}`; otherwise derive the anchor from the heading by retaining Unicode letters, numbers, and underscores, removing punctuation, and collapsing whitespace or hyphens. Keep duplicate anchors as distinct identities with the same public address so resolution reports ambiguity. Every selected logical file alias contributes an address, but an alias containing whitespace contributes a diagnostic because the authored target grammar cannot represent it as one token.
+
+HTML comments are the only Markdown documentation hosts. Register a real comment even when it has no Evidence tag, attach it to the unit active on its opening line, and parse it with `tagBoundaries: false` and `allowWithdrawal: false`. Report a line-start tag rendered as ordinary prose, including list and quote forms. Ignore tag-shaped examples in fences, indented code, `<pre>` blocks, and MDX template code.
+
+Partition a section's own content into original source ranges. Include heading lines, ordinary body text, deeper unsupported headings, and fenced examples. Exclude full HTML-comment lines; retain surrounding prose when a comment appears mid-line so later fingerprinting can remove only the registered comment span. Preserve the source snapshot's completeness and diagnostics before normalizing the inventory.
