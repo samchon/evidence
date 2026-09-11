@@ -87,8 +87,10 @@ export async function test_source_failures(): Promise<void> {
       );
       TestValidator.equals(
         "valid neighbor retained",
-        malformed.files[0]?.addresses[0]?.relative,
-        "docs/valid.md",
+        malformed.files.flatMap((file) =>
+          file.addresses.map((address) => address.relative),
+        ),
+        ["docs/valid.md"],
       );
 
       // Excluded files are not opened, so excluded malformed bytes do not poison discovery.

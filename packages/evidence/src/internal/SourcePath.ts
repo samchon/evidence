@@ -28,7 +28,8 @@ export namespace SourcePath {
   }
 
   export function display(base: string, absolute: string): string {
-    return slash(path.relative(base, absolute)) || ".";
+    const relative = slash(path.relative(base, absolute));
+    return relative === "" ? "." : relative;
   }
 
   /** Test both logical and resolved physical paths when bounding reexports. */
@@ -51,6 +52,7 @@ export namespace SourcePath {
       /^[A-Za-z]:/.test(normalized) || normalized.startsWith("//")
         ? path.win32
         : path.posix;
-    return slash(flavor.normalize(normalized)).replace(/\/+$/, "") || "/";
+    const result = slash(flavor.normalize(normalized)).replace(/\/+$/, "");
+    return result === "" ? "/" : result;
   }
 }

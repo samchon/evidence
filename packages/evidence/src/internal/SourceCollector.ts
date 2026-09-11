@@ -16,7 +16,7 @@ import type { IEvidenceSourceDiagnostic } from "../structures/IEvidenceSourceDia
 import type { IEvidenceSourceFile } from "../structures/IEvidenceSourceFile";
 import type { IEvidenceSourceRoot } from "../structures/IEvidenceSourceRoot";
 import type { IEvidenceSourceSnapshot } from "../structures/IEvidenceSourceSnapshot";
-import { FileGlob } from "./FileGlob";
+import type { FileGlob } from "./FileGlob";
 import { SourceFailure } from "./SourceFailure";
 import { SourcePath } from "./SourcePath";
 

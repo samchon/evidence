@@ -48,7 +48,9 @@ export async function test_source_links(): Promise<void> {
       TestValidator.equals("one physical schema", snapshot.files.length, 1);
       TestValidator.equals(
         "all selected aliases",
-        snapshot.files[0]?.addresses.map((address) => address.relative),
+        snapshot.files.flatMap((file) =>
+          file.addresses.map((address) => address.relative),
+        ),
         ["alias/model.prisma", "chain/model.prisma", "hard.prisma"],
       );
       for (const dependency of ["schema", "project/alias", "project/chain"])
@@ -69,8 +71,10 @@ export async function test_source_links(): Promise<void> {
       TestValidator.predicate("linked root complete", linkedRoot.complete);
       TestValidator.equals(
         "linked root address",
-        linkedRoot.files[0]?.addresses[0]?.relative,
-        "model.prisma",
+        linkedRoot.files.flatMap((file) =>
+          file.addresses.map((address) => address.relative),
+        ),
+        ["model.prisma"],
       );
       TestValidator.equals(
         "shared physical identity",

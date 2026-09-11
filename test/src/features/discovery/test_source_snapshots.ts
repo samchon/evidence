@@ -88,8 +88,10 @@ export async function test_source_snapshots(): Promise<void> {
       );
       TestValidator.equals(
         "exact path display",
-        changed.files[0]?.addresses[0]?.display,
-        "../shared/a.md",
+        changed.files.flatMap((file) =>
+          file.addresses.map((address) => address.display),
+        ),
+        ["../shared/a.md"],
       );
 
       // Discovery retains unknown extensions for explicit adapter acceptance or rejection.
@@ -104,8 +106,10 @@ export async function test_source_snapshots(): Promise<void> {
       );
       TestValidator.equals(
         "unclassified inventory",
-        unclassified.files[0]?.addresses[0]?.relative,
-        "custom.unknown",
+        unclassified.files.flatMap((file) =>
+          file.addresses.map((address) => address.relative),
+        ),
+        ["custom.unknown"],
       );
     },
   );
