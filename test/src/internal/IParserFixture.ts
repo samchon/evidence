@@ -1,0 +1,8 @@
+import type { IEvidenceParserInput } from "../../../packages/evidence/src/structures/IEvidenceParserInput";
+
+/** A real declaration and its expected capture under one shipped syntax variant. */
+export interface IParserFixture extends IEvidenceParserInput {
+  grammar: string;
+  query: string;
+  name: string;
+}

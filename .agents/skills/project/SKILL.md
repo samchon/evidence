@@ -21,7 +21,7 @@ The [roadmap](https://github.com/samchon/evidence/issues/31) owns execution orde
 | `packages/evidence/src/structures` | Configuration, claim, reference, and base interfaces |
 | `packages/evidence/src/typings` | Language identifiers, symbol selectors, and diagnostic severity |
 | `packages/evidence/src/executable` | Small Node CLI bootstraps |
-| `packages/evidence/assets` | Future packaged grammar WASM and license notices |
+| `packages/evidence/assets` | Pinned upstream grammar WASM, provenance manifest, and licenses |
 | `test/src/index.ts` | DynamicExecutor unit-test entry point |
 | `test/src/features/<category>` | Exported logic unit-test functions |
 | `config/package.json` | Private workspace with dependencies for shared configuration |
@@ -32,13 +32,13 @@ The [roadmap](https://github.com/samchon/evidence/issues/31) owns execution orde
 
 ## Dependencies And Distribution
 
-Use the root `packageManager` version. Keep `pnpm-workspace.yaml` to package globs and family catalogs: `samchon`, `typescript`, and `utils`. Dependency and peer versions belong there; package manifests use named `catalog:<family>` or `workspace:` references. Do not add pnpm policy options. Consumers explicitly install `typescript`, `ttsc`, and `@samchon/evidence`; the first two remain required peers. `ttsx` is an executable in `ttsc`, not another dependency. `@ttsc/lint` is a development dependency. Each package and the test workspace have their own `lint.config.ts` extending `config/lint.config.ts`; keep shared rules in that common file.
+Use the root `packageManager` version. Keep `pnpm-workspace.yaml` to package globs and family catalogs: `samchon`, `typescript`, `tree-sitter`, and `utils`. Dependency and peer versions belong there; package manifests use named `catalog:<family>` or `workspace:` references. Do not add pnpm policy options. Consumers explicitly install `typescript`, `ttsc`, and `@samchon/evidence`; the first two remain required peers. `ttsx` is an executable in `ttsc`, not another dependency. `@ttsc/lint` is a development dependency. Each package and the test workspace have their own `lint.config.ts` extending `config/lint.config.ts`; keep shared rules in that common file.
 
 Use `typia` for runtime type checks and `@typia/utils` for `dedent`. Keep both in the `samchon` catalog. Register the development-only `@ttsc/evidence` contributor in each project's lint config and enable `evidence/singular` at error severity in the shared rules.
 
 Keep compiler dependencies in the workspaces that use them, including `config` for its typed lint configuration. The repository root only needs the formatter. Build scripts invoke `ttsc` with its default `tsconfig.json`; shared compiler settings do not declare plugins already discovered from package dependencies.
 
-The application and adapters are authored in TypeScript. Future parser support uses official `web-tree-sitter` and packaged upstream grammars. A language needs an adapter and certification as well as a grammar. Read [the domain skill](evidence/SKILL.md) for the completeness boundary.
+The application and adapters are authored in TypeScript. `EvidenceParser` uses official `web-tree-sitter` and packaged upstream grammars. A language needs an adapter and certification as well as a grammar. Read [the domain skill](evidence/SKILL.md) for the completeness boundary and [the asset guide](../../../docs/development/parser-assets.md) before changing grammar pins or acquisition. Preserve upstream asset bytes through the repository's Git attributes; checksum verification includes the license files.
 
 Use CommonJS; do not add `type: "module"` or an unsupported Node engine constraint. The public module must remain inert on import. Workspace `main` and `exports` point directly to `./src/index.ts`. JavaScript entry points, declaration paths, and the installed CLI bin belong only in `publishConfig`. CLI bootstrap belongs in `src/executable`; reusable behavior belongs outside it. Compiled package files go to ignored `lib` directories. Run TypeScript tests with `ttsx`. Keep maintenance scripts as plain JavaScript run by Node, without a tsconfig or lint.config under `scripts`. Root README and LICENSE are authoritative and copied by `prepack`; never maintain the generated package copies independently.
 

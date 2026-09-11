@@ -10,17 +10,19 @@
   "files": [
     "lib",
     "assets/**/*.wasm",
+    "assets/grammars.json",
     "assets/**/LICENSE*",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
     "build": "rimraf lib && ttsc",
-    "prepack": "pnpm run build && node ../../scripts/copy-readme-and-license.js"
+    "prepack": "pnpm run build && node ../../scripts/prepare-parser-assets.js --check && node ../../scripts/copy-readme-and-license.js"
   },
   "dependencies": {
     "@typia/utils": "catalog:samchon",
-    "typia": "catalog:samchon"
+    "typia": "catalog:samchon",
+    "web-tree-sitter": "catalog:tree-sitter"
   },
   "peerDependencies": {
     "ttsc": "catalog:typescript",
