@@ -8,4 +8,11 @@ export interface IEvidenceSourceAddress {
 
   /** Path relative to the configuration directory, or absolute across volumes. */
   display: string;
+
+  /**
+   * False when the adapter loaded this address only to analyze a selected dependency.
+   *
+   * @default true
+   */
+  selected?: boolean;
 }

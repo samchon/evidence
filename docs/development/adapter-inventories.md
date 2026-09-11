@@ -33,6 +33,14 @@ Host `origins` retain the original paths used for relative citations; omitting t
 
 `snapshot()` returns ordinary data with `schemaVersion: 1`; `serialize()` writes schema-order JSON with deterministic collection order for consistent inputs. Conflicting identities, missing parents, cycles, unowned hosts, or incorrect source coordinates mark analysis incomplete. Preserve upstream source failures in the adapter result as well. A healthy empty inventory is complete; failed analysis must never become a passing empty population. Annotation diagnostics can coexist with complete discovery, so inspect diagnostics as well as the completeness flag.
 
+## File-qualified targets
+
+`EvidenceFileTarget.parse(target, origin)` decodes the path, resolves it from the citing file, and retains each accessor segment. `format(address)` produces canonical text by percent-encoding reserved path characters and using dotted identifiers or JSON-string brackets for members. Equivalent encoded paths therefore reach the same absolute address, while `A.B` and `A["B.C"]` remain different.
+
+`EvidenceTargetResolver` accepts reference inventories, a target-bearing acknowledgement or review, its claim host, and the reference's selected unit IDs. It tries every retained host origin, queries only the exact file addresses in the selected structural scope, and unifies aliases by semantic unit ID. It never searches another file for a matching display name.
+
+Resolution distinguishes malformed targets, missing files, existing files outside the reference, missing or unselected public members, withdrawn identities, ambiguous addresses, unsupported hosts, and incomplete inventories. An incomplete export graph prevents an otherwise valid address from resolving. An adapter may load an address only for dependency analysis by setting `IEvidenceSourceAddress.selected` to `false`; such a file can supply a selected barrel export but cannot be cited directly. TypeScript reexports must remain inside both the logical and resolved physical population roots.
+
 ## Documentation and tags
 
 Identify real documentation through the artifact parser and establish its semantic host before reading tags. Pass known comment delimiters to `EvidenceDocumentation.read(content, hostId, range, syntax)`. JSDoc-style comments use their own delimiter and line prefix; Prisma documentation can use `///`; Markdown HTML comments have no foreign-tag field boundaries. The helper preserves a source map through prefix removal and CRLF normalization.

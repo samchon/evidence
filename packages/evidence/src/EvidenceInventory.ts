@@ -350,9 +350,7 @@ export class EvidenceInventory {
       (source) => source.id,
     );
     for (const source of this.data.sources)
-      source.addresses = InventoryMerge.unique(source.addresses, (address) =>
-        JSON.stringify([address.absolute, address.relative, address.display]),
-      );
+      source.addresses = InventoryMerge.sourceAddresses(source.addresses);
     this.data.units = InventoryMerge.unique(this.data.units, (unit) => unit.id);
     for (const unit of this.data.units) {
       unit.sites = InventoryMerge.unique(unit.sites, (site) => site.id);

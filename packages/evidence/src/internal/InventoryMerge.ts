@@ -2,6 +2,7 @@ import typia from "typia";
 
 import type { IEvidenceHost } from "../structures/IEvidenceHost";
 import type { IEvidenceInventory } from "../structures/IEvidenceInventory";
+import type { IEvidenceSourceAddress } from "../structures/IEvidenceSourceAddress";
 import type { IEvidenceSourceFile } from "../structures/IEvidenceSourceFile";
 import type { IEvidenceUnit } from "../structures/IEvidenceUnit";
 import type { IEvidenceUnitSite } from "../structures/IEvidenceUnitSite";
@@ -123,6 +124,27 @@ export namespace InventoryMerge {
 
   export function compare(x: string, y: string): number {
     return x < y ? -1 : x > y ? 1 : 0;
+  }
+
+  /** A direct selection wins when another population loaded the same address as a dependency. */
+  export function sourceAddresses(
+    values: IEvidenceSourceAddress[],
+  ): IEvidenceSourceAddress[] {
+    const records = new Map<string, IEvidenceSourceAddress>();
+    for (const value of values) {
+      const key = JSON.stringify([
+        value.absolute,
+        value.relative,
+        value.display,
+      ]);
+      const previous = records.get(key);
+      if (previous === undefined) records.set(key, value);
+      else if (previous.selected === false && value.selected !== false)
+        delete previous.selected;
+    }
+    return Array.from(records)
+      .sort(([x], [y]) => compare(x, y))
+      .map(([, value]) => value);
   }
 
   export function siteKey(site: IEvidenceUnitSite): string {

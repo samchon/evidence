@@ -36,6 +36,13 @@ export async function test_inventory_serialization(): Promise<void> {
     location: { file: host.file },
   });
   const second = structuredClone(input);
+  const dependencySource = second.sources[0];
+  if (dependencySource === undefined)
+    throw new Error("Missing fixture source.");
+  const dependencyAddress = dependencySource.addresses[0];
+  if (dependencyAddress === undefined)
+    throw new Error("Missing fixture source address.");
+  dependencyAddress.selected = false;
   second.addresses.push({
     unitId: "box",
     file: "/project/barrel.ts",
@@ -61,6 +68,15 @@ export async function test_inventory_serialization(): Promise<void> {
     "deterministic serialization",
     forward.serialize(),
     reverse.serialize(),
+  );
+  const mergedSource = forward.snapshot().sources[0];
+  if (mergedSource === undefined) throw new Error("Missing merged source.");
+  const mergedAddress = mergedSource.addresses[0];
+  if (mergedAddress === undefined) throw new Error("Missing merged address.");
+  TestValidator.equals(
+    "direct selection wins dependency loading",
+    mergedAddress.selected,
+    undefined,
   );
   TestValidator.equals(
     "reviews cannot add acknowledgements",
