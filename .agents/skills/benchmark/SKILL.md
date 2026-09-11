@@ -9,7 +9,7 @@ description: Defines Evidence benchmark workload integrity, parser/package footp
 
 Name the product revision, runtime, platform, hardware, corpus, supported language set, enabled policies, cache state, and measured phase. Separate config evaluation, discovery, parsing, resolution, graph evaluation, and output when attributing cost.
 
-The scaffold has no performance harness or language adapters yet. Do not claim a parser benchmark or coverage result from package smoke tests. Add a benchmark only for an authorized measurement goal.
+The scaffold has no performance harness or language adapters yet. Do not claim a parser benchmark or coverage result from bootstrap logic unit tests. Add a benchmark only for an authorized measurement goal.
 
 ## Integrity
 
@@ -17,7 +17,7 @@ Measure the real product and the same complete workload across comparisons. A fa
 
 Keep cold start and warm reuse separate. Record repeated observations and variability rather than presenting the best sample alone. For watch tests include file creation/deletion and dependency invalidation, not just edits to an already-cached leaf.
 
-Report compressed tarball size, unpacked package size, grammar assets, and the full dependency installation separately. Cite exact versions. A grammar-only footprint does not represent the required `typescript`/`ttsc` installation.
+When footprint measurement is explicitly requested, distinguish grammar assets, package artifacts, and dependency metadata. Cite exact versions. A grammar-only footprint does not represent the whole dependency set. Do not create package-installation experiments.
 
 Treat a surprising result as a reason to inspect raw data and completeness before explaining it. Do not add fixture-specific branches, expected-answer checks, or benchmark-only restrictions that change ordinary product behavior.
 

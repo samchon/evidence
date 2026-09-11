@@ -1,17 +1,27 @@
-import { createRequire } from "node:module";
-
 /** Runs the bootstrap CLI while graph checking is under development. */
 export namespace EvidenceCommand {
+  /** Selects a supported operation from a complete argument list. */
+  export const parse = (
+    args: readonly string[],
+  ): "help" | "version" | "unavailable" => {
+    if (args.length !== 1) return "unavailable";
+    const [argument] = args;
+    if (argument === "--version" || argument === "-v") return "version";
+    if (argument === "--help" || argument === "-h") return "help";
+    return "unavailable";
+  };
+
   /** Prints package information or fails explicitly for unavailable commands. */
   export const main = (args: readonly string[]): void => {
-    if (args.length === 1 && ["--version", "-v"].includes(args[0]!)) {
-      const manifest = createRequire(import.meta.url)("../package.json") as {
+    const operation = parse(args);
+    if (operation === "version") {
+      const manifest = require("../package.json") as {
         version: string;
       };
       process.stdout.write(`${manifest.version}\n`);
       return;
     }
-    if (args.length === 1 && ["--help", "-h"].includes(args[0]!)) {
+    if (operation === "help") {
       process.stdout.write(
         [
           "Usage: evidence [--help | --version]",

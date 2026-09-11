@@ -2,14 +2,14 @@ packages:
   - packages/*
   - test
 
-# Consumers supply the required peers explicitly.
-autoInstallPeers: false
-strictPeerDependencies: true
-
-catalog:
-  "@types/node": 22.20.2
-  prettier: 3.9.6
-  rimraf: 6.1.3
-  tar: 7.5.22
-  ttsc: 0.30.0
-  typescript: 7.0.2
+catalogs:
+  samchon:
+    "@nestia/e2e": ^13.0.2
+  typescript:
+    ttsc: &ttsc ^0.30.0
+    "@ttsc/lint": *ttsc
+    typescript: ^7.0.2
+    prettier: ^3.9.6
+  utils:
+    "@types/node": ^22.20.2
+    rimraf: ^6.1.3

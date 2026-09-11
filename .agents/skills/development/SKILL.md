@@ -11,7 +11,8 @@ Read the project skill and inspect a nearby peer before introducing a new file o
 
 - Fix general behavior rather than special-casing a consumer, fixture, or expected answer. Do not monkey-patch dependencies to make a test pass.
 - Treat repeated symptom fixes as evidence that the cause or design needs another investigation.
-- Keep authored implementation and maintenance scripts in TypeScript. Maintenance scripts executed by Node's type stripping must use erasable syntax and pass `scripts/tsconfig.json`.
+- Keep authored implementation, tests, and maintenance scripts in TypeScript. Execute TypeScript with `ttsx`; do not substitute Node type stripping or another runner. `pnpm build` checks maintenance scripts through `scripts/tsconfig.json`.
+- Run compilation through `ttsc` with the shared `@ttsc/lint` configuration. Keep enabled rules at error severity across implementation, tests, and scripts; fix violations instead of weakening the configuration to pass a build.
 - Keep executable files small and free of reusable logic. Public imports must not start the CLI, scan a project, or evaluate configuration.
 - Use upstream grammars through the common adapter contract. Do not fork the parser engine or import a language compiler just to cover an unsupported syntax case without a product decision.
 - Update documentation with behavior changes. Run `pnpm format` before an ordinary commit and inspect what it changed.
@@ -22,15 +23,15 @@ Trace each verified change through callers, public types, serialization, package
 
 ## Testing
 
-Keep one behavior-focused Node test per `*.test.ts` file under `test/src/features` or `test/src/package`. Name the file for the behavior. Shared helpers belong in `test/src/internal`; substantial future fixture layouts belong under `test` rather than a second `tests` tree.
+Follow AutoMovie's unit-test structure: one exported `test_<behavior>` function per `test/src/features/<category>/test_<behavior>.ts` file. The entry point uses `@nestia/e2e`'s `DynamicExecutor` to discover the functions, and tests use `TestValidator` assertions. Keep the test workspace in `test`, not a second `tests` tree.
 
-Open a regression with a doc comment explaining what it verifies, why the behavior matters, and the short scenario. Exercise observable behavior through public exports, actual executable entry points, or packed consumers. Give changed predicates a negative counterpart and boundary cases where they add meaningful confidence.
+Open a regression with a doc comment explaining what it verifies, why the behavior matters, and the short scenario. Call the logic directly. Give changed predicates a negative counterpart and meaningful boundary cases. Tests are exclusively logic unit tests: do not add installation experiments, tarball verification, CLI subprocess tests, or a Node test-runner framework.
 
 Take expected inventories and semantics from the contract, not the current parser output. Avoid tests that merely assert a particular implementation spelling. Do not create speculative tests for every reversible documentation change.
 
 ## Validation
 
-Run the narrowest proving check first. Broaden when shared behavior or distribution changed. Use `pnpm typecheck`, `pnpm test`, and `pnpm verify:package` according to the project skill. Verify from the real tarball for changes that workspace links might conceal.
+Use `pnpm build` and the affected logic unit tests according to the project skill. Build owns type and lint validation; do not add a separate typecheck command. Inspect package metadata and preparation scripts directly without creating installation experiments.
 
 Do not silently skip failed validation, change baselines to hide a regression, or represent unavailable analysis as a successful check. Report exact commands and any platform/tooling limitation. Once the relevant checks pass, rerun them only for new changes or unresolved concerns.
 

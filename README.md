@@ -2,7 +2,7 @@
 
 An Evidence Graph connects specifications, engineering principles, public code contracts, and tests through explicit citations. `@samchon/evidence` is the standalone, cross-language successor to [`@ttsc/evidence`](https://github.com/samchon/ttsc/tree/master/packages/evidence).
 
-The project is under development. This repository currently provides the pnpm workspace, package build, CLI bootstrap, and package-installation checks. Graph types, configuration loading, language adapters, and evidence checking are tracked in the [implementation roadmap](https://github.com/samchon/evidence/issues/31).
+The project is under development. This repository currently provides the pnpm workspace, package build, CLI bootstrap, and logic unit-test setup. Graph types, configuration loading, language adapters, and evidence checking are tracked in the [implementation roadmap](https://github.com/samchon/evidence/issues/31).
 
 ## Installation
 
@@ -12,7 +12,7 @@ The consumer installation contract for a published release is:
 pnpm i -D typescript ttsc @samchon/evidence
 ```
 
-Node.js 22.15.0 or newer is required. `typescript` and `ttsc` are required peers supplied by the consumer. The `ttsx` executable comes from `ttsc`; there is no separate `ttsx` package to install.
+`typescript` and `ttsc` are required peers supplied by the consumer. The `ttsx` executable comes from `ttsc`; there is no separate `ttsx` package to install.
 
 The current CLI supports:
 
@@ -45,25 +45,28 @@ Use the pnpm version pinned in `package.json`:
 ```bash
 pnpm install --frozen-lockfile
 pnpm build
-pnpm typecheck
 pnpm test
-pnpm verify:package
 pnpm check:format
 ```
 
 | Path | Purpose |
 | --- | --- |
 | `packages/evidence` | Published package and `evidence` executable |
-| `test` | Private workspace for public-import, CLI, and installed-package verification |
+| `test` | Private workspace for logic unit tests |
 | `config` | Shared strict TypeScript settings |
+| `lint.config.ts` | Shared compiler-enforced lint rules |
 | `scripts` | TypeScript package-maintenance scripts |
 | `.agents/skills` | Project, development, documentation, and delivery workflows |
 
-`pnpm build` builds workspaces in dependency order. `pnpm typecheck` first builds the package declarations consumed by the test workspace, then checks both workspaces and the maintenance scripts. `pnpm test` runs the bootstrap behavior tests. `pnpm verify:package` packs the real package, inspects its contents, and installs it with its required peers into an isolated consumer using the local pnpm cache.
+`pnpm build` runs `ttsc` across the package, tests, lint configuration, and maintenance scripts. It emits the package's JavaScript and declarations; the test and maintenance projects are checked without emitting. Type errors and every enabled lint rule fail the build. There is no separate typecheck command. `@ttsc/lint` is a development dependency, with one root configuration shared by all projects. Its rules reject explicit `any`, unsafe type operations, unhandled promises, non-null assertions, ambiguous conditions, and runtime correctness problems. Prettier owns formatting.
+
+`pnpm test` builds the test project and runs `test/src/index.ts` through `ttsx`. Following AutoMovie, `@nestia/e2e`'s `DynamicExecutor` discovers exported `test_` functions in `test/src/features/<category>/test_*.ts`; the functions call logic directly and assert results with `TestValidator`. The initial unit test covers command selection, including unsupported and extra arguments. Dependency and peer versions come from the `samchon`, `typescript`, and `utils` catalogs in `pnpm-workspace.yaml`.
 
 ## Package preparation
 
-Edit this root README. The package's `prepack` hook copies the root `README.md` and `LICENSE` into `packages/evidence` whenever the package is packed or published. Its `prepare` hook builds the library during installation and packaging. The generated documentation copies are ignored by Git.
+The package uses CommonJS. Its workspace `main` and `exports` point directly to `./src/index.ts`. JavaScript entry points, declaration paths, and the installed `evidence` executable are defined only in `publishConfig`; pnpm applies these overrides when packing or publishing.
+
+Edit this root README. The package's `prepack` hook runs the TypeScript preparation script through `ttsx` to copy the root `README.md` and `LICENSE` into `packages/evidence` whenever the package is packed or published. Its `prepare` hook builds the library during installation and packaging. The generated documentation copies are ignored by Git.
 
 ```bash
 pnpm --dir packages/evidence pack
@@ -75,7 +78,7 @@ The tarball contains the compiled entry points, declarations, package metadata, 
 
 Start with [AGENTS.md](https://github.com/samchon/evidence/blob/master/AGENTS.md) and the relevant repository skills. Follow the execution order in the [roadmap](https://github.com/samchon/evidence/issues/31); issue numbers are identifiers, not implementation priority.
 
-The workspace and agent workflows are adapted from [`samchon/ttsc`](https://github.com/samchon/ttsc). The Evidence domain contract remains the behavioral reference for the forthcoming implementation.
+The workspace and agent workflows are adapted from [`samchon/ttsc`](https://github.com/samchon/ttsc), with the test layout and execution pattern from [`samchon/AutoMovie`](https://github.com/samchon/AutoMovie). The Evidence domain contract remains the behavioral reference for the forthcoming implementation.
 
 ## License
 

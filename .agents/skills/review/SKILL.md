@@ -19,11 +19,11 @@ Complete a review round before repairing its findings. Collect the supported fin
 - Can aliases, merged declarations, or host positions duplicate or lose an obligation?
 - Can a review be counted as evidence or invalidate its own fingerprint?
 - Can cwd, Unicode, case, symlinks, or CRLF change target identity unexpectedly?
-- Does the packed package contain everything its exports, bin, and asset registry promise?
+- Do the source entry points, publishConfig overrides, and package allowlist agree?
 - Do docs and skills describe actual commands and current implementation status?
 - Do tests exercise the failure direction as well as the happy path?
 
-For the scaffold, concentrate on explicit failure for unavailable checks, inert imports, peer resolution, root README propagation, clean builds, and independent-consumer installation. Do not invent missing graph features as defects in a foundation-only PR.
+For the scaffold, inspect command-selection logic, inert imports, family catalog references, README preparation, and build configuration. Run logic unit tests only; do not create installation, tarball, or CLI process experiments. Do not invent missing graph features as defects in a foundation-only PR.
 
 ## Reporting
 

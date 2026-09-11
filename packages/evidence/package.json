@@ -2,19 +2,10 @@
   "name": "@samchon/evidence",
   "version": "0.1.0",
   "description": "Explicit evidence obligations for specifications, skills, code, and tests across languages.",
-  "type": "module",
-  "main": "./lib/index.js",
-  "types": "./lib/index.d.ts",
+  "main": "./src/index.ts",
   "exports": {
-    ".": {
-      "types": "./lib/index.d.ts",
-      "import": "./lib/index.js",
-      "default": "./lib/index.js"
-    },
+    ".": "./src/index.ts",
     "./package.json": "./package.json"
-  },
-  "bin": {
-    "evidence": "./lib/executable/evidence.js"
   },
   "files": [
     "lib",
@@ -24,26 +15,35 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "rimraf lib && tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "rimraf lib && ttsc -p tsconfig.json",
     "prepare": "pnpm run build",
-    "prepack": "node --experimental-strip-types ../../scripts/prepare-package.mts"
+    "prepack": "ttsx ../../scripts/prepare-package.ts"
   },
   "peerDependencies": {
-    "ttsc": "^0.30.0",
-    "typescript": "^7.0.2"
+    "ttsc": "catalog:typescript",
+    "typescript": "catalog:typescript"
   },
   "devDependencies": {
-    "@types/node": "catalog:",
-    "rimraf": "catalog:",
-    "ttsc": "catalog:",
-    "typescript": "catalog:"
-  },
-  "engines": {
-    "node": ">=22.15.0"
+    "@ttsc/lint": "catalog:typescript",
+    "@types/node": "catalog:utils",
+    "rimraf": "catalog:utils",
+    "ttsc": "catalog:typescript",
+    "typescript": "catalog:typescript"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "main": "./lib/index.js",
+    "types": "./lib/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./lib/index.d.ts",
+        "default": "./lib/index.js"
+      },
+      "./package.json": "./package.json"
+    },
+    "bin": {
+      "evidence": "./lib/executable/evidence.js"
+    }
   },
   "repository": {
     "type": "git",

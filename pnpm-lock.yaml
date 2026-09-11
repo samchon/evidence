@@ -1,91 +1,102 @@
 lockfileVersion: '9.0'
 
 settings:
-  autoInstallPeers: false
+  autoInstallPeers: true
   excludeLinksFromLockfile: false
 
 catalogs:
-  default:
-    '@types/node':
-      specifier: 22.20.2
-      version: 22.20.2
+  samchon:
+    '@nestia/e2e':
+      specifier: ^13.0.2
+      version: 13.0.2
+  typescript:
+    '@ttsc/lint':
+      specifier: ^0.30.0
+      version: 0.30.0
     prettier:
-      specifier: 3.9.6
+      specifier: ^3.9.6
       version: 3.9.6
-    rimraf:
-      specifier: 6.1.3
-      version: 6.1.3
-    tar:
-      specifier: 7.5.22
-      version: 7.5.22
     ttsc:
-      specifier: 0.30.0
+      specifier: ^0.30.0
       version: 0.30.0
     typescript:
-      specifier: 7.0.2
+      specifier: ^7.0.2
       version: 7.0.2
+  utils:
+    '@types/node':
+      specifier: ^22.20.2
+      version: 22.20.2
+    rimraf:
+      specifier: ^6.1.3
+      version: 6.1.3
 
 importers:
 
   .:
     devDependencies:
+      '@ttsc/lint':
+        specifier: catalog:typescript
+        version: 0.30.0
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:utils
         version: 22.20.2
       prettier:
-        specifier: 'catalog:'
+        specifier: catalog:typescript
         version: 3.9.6
       rimraf:
-        specifier: 'catalog:'
+        specifier: catalog:utils
         version: 6.1.3
       ttsc:
-        specifier: 'catalog:'
+        specifier: catalog:typescript
         version: 0.30.0
       typescript:
-        specifier: 'catalog:'
+        specifier: catalog:typescript
         version: 7.0.2
 
   packages/evidence:
     devDependencies:
+      '@ttsc/lint':
+        specifier: catalog:typescript
+        version: 0.30.0
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:utils
         version: 22.20.2
       rimraf:
-        specifier: 'catalog:'
+        specifier: catalog:utils
         version: 6.1.3
       ttsc:
-        specifier: 'catalog:'
+        specifier: catalog:typescript
         version: 0.30.0
       typescript:
-        specifier: 'catalog:'
+        specifier: catalog:typescript
         version: 7.0.2
 
   test:
-    devDependencies:
+    dependencies:
+      '@nestia/e2e':
+        specifier: catalog:samchon
+        version: 13.0.2
       '@samchon/evidence':
         specifier: workspace:*
         version: link:../packages/evidence
+    devDependencies:
+      '@ttsc/lint':
+        specifier: catalog:typescript
+        version: 0.30.0
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:utils
         version: 22.20.2
-      rimraf:
-        specifier: 'catalog:'
-        version: 6.1.3
-      tar:
-        specifier: 'catalog:'
-        version: 7.5.22
       ttsc:
-        specifier: 'catalog:'
+        specifier: catalog:typescript
         version: 0.30.0
       typescript:
-        specifier: 'catalog:'
+        specifier: catalog:typescript
         version: 7.0.2
 
 packages:
 
-  '@isaacs/fs-minipass@4.0.1':
-    resolution: {integrity: sha512-wgm9Ehl2jpeqP3zw/7mo3kRHFp5MEDhqAdwy1fTGkHAwnkGOVsgpvQhL8B5n1qlb01jV3n/bI0ZfZp5lWA1k4w==}
-    engines: {node: '>=18.0.0'}
+  '@nestia/e2e@13.0.2':
+    resolution: {integrity: sha512-8GGKYrViSgcKcgYoZWxVmPCHNiwQSacp2k9nq0fOEJQ5bmPqFyCz/LCdzfCPNYzFJOF9bCnJasJctJvxxCyNrw==}
 
   '@ttsc/darwin-arm64@0.30.0':
     resolution: {integrity: sha512-e9prFj0QQoGXpWL3saSvf2Qm6RjZevMxRjbf/klqZ/TDcqyBII0Jsf5DDtFHxiejwWHeqx39yxE4lUAFWkpG1w==}
@@ -96,6 +107,9 @@ packages:
     resolution: {integrity: sha512-Cb0z4CMlpOiUDp3ys19soGiqS+kF4XnYGcMyz05lg3ih/gjA62CxjcP8kR87ryiQWuNW9hDKZHZKR/aOfZ0DZw==}
     cpu: [x64]
     os: [darwin]
+
+  '@ttsc/lint@0.30.0':
+    resolution: {integrity: sha512-GmS++ZJkhDKHesuXDRMYlM9KU3AJdjepVt4+TL22yNeDrm3DcuPT5Xt/90FAzyIz3M4lKY0b+VYaLZHn46lrsA==}
 
   '@ttsc/linux-arm64@0.30.0':
     resolution: {integrity: sha512-gtgmqhU7YecxwAgQxY0dE4e5mv8UvLbofT4jKHftVIXJYgi0GpnFapTIZGc4sZ8lMggaggB0Svl+9MlNvach3A==}
@@ -258,10 +272,6 @@ packages:
     resolution: {integrity: sha512-ScQ4IuvIEF1TMlP7Zt+vjJ//9zlPb2SDcxWxM3bk8s6t6GGdJ7KO1dCcTidOPJKePW30LE/2cT7wCyPho9/Wxg==}
     engines: {node: 20 || >=22}
 
-  chownr@3.0.0:
-    resolution: {integrity: sha512-+IxzY9BZOQd/XuYPRmrvEVjF/nqj5kgT4kEq7VofrDoM1MxoRjEWkrCC3EtLi59TVawxTAn+orJwFQcrqEN1+g==}
-    engines: {node: '>=18'}
-
   cjs-module-lexer@2.2.1:
     resolution: {integrity: sha512-Ca8swihM+/4yKecYHY52kgJd300hi2lADU/a1RxNTRe+RJ9jvqQlESpbz9DnG9mowez8qwXHB8qYdIUw9e+F5Q==}
 
@@ -281,10 +291,6 @@ packages:
     resolution: {integrity: sha512-tEBHqDnIoM/1rXME1zgka9g6Q2lcoCkxHLuc7ODJ5BxbP5d4c2Z5cGgtXAku59200Cx7diuHTOYfSBD8n6mm8A==}
     engines: {node: '>=16 || 14 >=14.17'}
 
-  minizlib@3.1.0:
-    resolution: {integrity: sha512-KZxYo1BUkWD2TVFLr0MQoM8vUUigWD3LlD83a/75BqC+4qE0Hb1Vo5v1FgcfaNXvfXzr+5EhQ6ing/CaBijTlw==}
-    engines: {node: '>= 18'}
-
   package-json-from-dist@1.0.1:
     resolution: {integrity: sha512-UEZIS3/by4OC8vL3P2dTXRETpebLI2NiI5vIrjaD/5UtrkFX/tNbwjTSRAGC/+7CAo2pIcBaRgWmcBBHcsaCIw==}
 
@@ -302,10 +308,6 @@ packages:
     engines: {node: 20 || >=22}
     hasBin: true
 
-  tar@7.5.22:
-    resolution: {integrity: sha512-MFO/QzvtAOmJbkhOaCTvbGcFN9L9b+JunIsDwaKljSOdcLMea3NJ1k9Usz/rjdfSXTq4dfzfeS7W4p4YOAAHeA==}
-    engines: {node: '>=18'}
-
   ttsc@0.30.0:
     resolution: {integrity: sha512-nbhN73nprJ5oZ5L/nkTXJA8oe2eS9TAJC7Ax8V6d+VxY8HGCrqW/b2JeuBdbuEPTlI5h5Kr9jyP+F04CZYCZlA==}
     engines: {node: '>=22.15.0'}
@@ -319,21 +321,17 @@ packages:
   undici-types@6.21.0:
     resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
 
-  yallist@5.0.0:
-    resolution: {integrity: sha512-YgvUTfwqyc7UXVMrB+SImsVYSmTS8X/tSrtdNZMImM+n7+QTriRXyXim0mBrTXNeqzVF0KWGgHPeiyViFFrNDw==}
-    engines: {node: '>=18'}
-
 snapshots:
 
-  '@isaacs/fs-minipass@4.0.1':
-    dependencies:
-      minipass: 7.1.3
+  '@nestia/e2e@13.0.2': {}
 
   '@ttsc/darwin-arm64@0.30.0':
     optional: true
 
   '@ttsc/darwin-x64@0.30.0':
     optional: true
+
+  '@ttsc/lint@0.30.0': {}
 
   '@ttsc/linux-arm64@0.30.0':
     optional: true
@@ -422,8 +420,6 @@ snapshots:
     dependencies:
       balanced-match: 4.0.4
 
-  chownr@3.0.0: {}
-
   cjs-module-lexer@2.2.1: {}
 
   glob@13.0.6:
@@ -440,10 +436,6 @@ snapshots:
 
   minipass@7.1.3: {}
 
-  minizlib@3.1.0:
-    dependencies:
-      minipass: 7.1.3
-
   package-json-from-dist@1.0.1: {}
 
   path-scurry@2.0.2:
@@ -457,14 +449,6 @@ snapshots:
     dependencies:
       glob: 13.0.6
       package-json-from-dist: 1.0.1
-
-  tar@7.5.22:
-    dependencies:
-      '@isaacs/fs-minipass': 4.0.1
-      chownr: 3.0.0
-      minipass: 7.1.3
-      minizlib: 3.1.0
-      yallist: 5.0.0
 
   ttsc@0.30.0:
     dependencies:
@@ -503,5 +487,3 @@ snapshots:
       '@typescript/typescript-win32-x64': 7.0.2
 
   undici-types@6.21.0: {}
-
-  yallist@5.0.0: {}
