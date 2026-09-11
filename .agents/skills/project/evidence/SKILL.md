@@ -7,7 +7,7 @@ description: Defines Evidence units, target grammar, coverage, exclusions, revie
 
 ## Baseline And Scope
 
-The behavioral baseline is the [pinned original domain contract](https://github.com/samchon/ttsc/blob/14a22f077caf23f1bfb8a97b3d9db765912074ef/.agents/skills/project/evidence/SKILL.md) and its linked code/regressions. Read the relevant original section before porting behavior. This repository currently contains the package scaffold; this skill describes the intended contract, not completed features.
+The behavioral baseline is the [pinned original domain contract](https://github.com/samchon/ttsc/blob/14a22f077caf23f1bfb8a97b3d9db765912074ef/.agents/skills/project/evidence/SKILL.md) and its linked code/regressions. Read the relevant original section before porting behavior. Public configuration, claim, and reference types follow `D:/github/samchon/ttsc/packages/evidence`, generalized into the families defined by the [project skill](../SKILL.md). Verify runtime behavior in the implementation rather than inferring availability from a type declaration.
 
 Reuse or port Markdown, Prisma, and Swagger behavior. Replace compiler Program discovery with file snapshots and TypeScript language adapters over upstream `web-tree-sitter`. Keep original semantics and intentional migration differences explicit.
 
@@ -17,7 +17,7 @@ Keep semantic units, public addresses, declaration positions, eligible hosts, se
 
 Store explicit parent identities and segmented accessors. A dotted string is not a containment test: literal member names can contain dots. Only selected units and their real structural ancestors enter the resolvable scope closure.
 
-Every claim/reference pair is an independent obligation, including repeated reference-array elements. Names label diagnostics; they do not merge coverage. Start from complete selected populations, including hosts without tags.
+Every artifact family supports both Claim and Reference roles, and every claim can reference any family. Every claim/reference pair is an independent obligation, including repeated reference-array elements. Names label diagnostics; they do not merge coverage. Start from complete selected populations, including hosts without tags.
 
 ## Tags And Hosts
 
@@ -29,7 +29,7 @@ Every claim/reference pair is an independent obligation, including repeated refe
 @evidenceExcludeReview <target> [#<fingerprint>] <description>
 ```
 
-Require a target and nonempty prose. Parse supported documentation spans attached to eligible hosts, not arbitrary source text. Strings and fenced examples create no acknowledgements. Unsupported or unattached declarations inside configured populations need actionable findings.
+Require a target and nonempty prose. Parse supported documentation spans attached to eligible hosts, not arbitrary source text. Swagger operation descriptions are eligible documentation; other strings and fenced examples create no acknowledgements. Unsupported or unattached declarations inside configured populations need actionable findings.
 
 Code paths resolve from the citing file, such as `../calculator.ts#add`. Keep segmented accessors and escaped literal names unambiguous. TypeScript static members use `Class.member`; its instance members use `Class.prototype.member`. Other languages publish their own explicit member-address policy. The standalone engine does not inherit compiler import-scoped `{@link Symbol}` resolution.
 
@@ -50,7 +50,7 @@ Keep reviews in a separate type from acknowledgements. They never discharge cove
 
 A fingerprint belongs to the cited identity and structural subtree, independent of reference selectors and public alias projections. Keep cache digests separate from per-unit digests. Exclude accepted annotation spans so writing a review cannot invalidate itself. Preserve meaningful semantic changes and normalize line endings consistently.
 
-Prisma's parser determines model/column/relation identity; a position scan cannot change its denominator. Swagger remains reference-only with exact `METHOD:/path` operation identities and normalized operation/component content. Markdown retains file/H1-H4 outlines and its own path/anchor rules.
+Prisma's parser determines model/column/relation identity; a position scan cannot change its denominator. Swagger uses exact `METHOD:/path` operation identities and normalized operation/component content. Its claims select local JSON/YAML files and extract evidence, exclusion, and review tags from each operation's description. Keep operations without descriptions in the selected host population. Markdown retains file/H1-H4 outlines and its own path/anchor rules.
 
 Grammar availability alone is not language support. Certify declarations, kinds, public visibility, ownership, comment attachment, aliases, addressability, and negative cases. A parse error, inaccessible root, unresolved relevant export, or unsupported surface-changing construct must not become a passing smaller inventory.
 

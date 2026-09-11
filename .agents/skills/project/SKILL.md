@@ -7,7 +7,9 @@ description: Defines the Evidence workspace, current implementation status, prod
 
 ## Product
 
-`@samchon/evidence` will enforce explicit acknowledgements between specifications, skills, public declarations, and tests. The package scaffold currently provides an inert public entry point and a CLI with help/version. Checking is unavailable and exits 2. Do not describe planned adapters, config evaluation, or policies as shipped behavior.
+`@samchon/evidence` enforces explicit acknowledgements between specifications, skills, public declarations, and tests. Public configuration types follow `@ttsc/evidence`: Config, Claim, Reference, shared bases, and artifact selectors. Use `Programming` and `Database` for type families. The `type` discriminator names the source language, such as `typescript`, `cpp`, `rust`, `prisma`, `sql`, or `dbml`; do not add a separate `language` setting. Files are selected directly with globs.
+
+Keep programming and database language identifiers in `EvidenceProgrammingType` and `EvidenceDatabaseType`. Database languages share one Claim and one Reference interface. Use `model`, `column`, and `relation` as the common database selectors, and `type`, `function`, and `property` for programming declarations. Classes belong to `type`.
 
 The [roadmap](https://github.com/samchon/evidence/issues/31) owns execution order. Package setup precedes common type declarations and configuration loading. GitHub issue numbers are stable identifiers; adjust ordering in the roadmap instead of moving issue contents between numbers.
 
@@ -16,6 +18,8 @@ The [roadmap](https://github.com/samchon/evidence/issues/31) owns execution orde
 | Path | Owner |
 | --- | --- |
 | `packages/evidence/src` | Library and reusable CLI implementation |
+| `packages/evidence/src/structures` | Configuration, claim, reference, and base interfaces |
+| `packages/evidence/src/typings` | Language identifiers, symbol selectors, and diagnostic severity |
 | `packages/evidence/src/executable` | Small Node CLI bootstraps |
 | `packages/evidence/assets` | Future packaged grammar WASM and license notices |
 | `test/src/index.ts` | DynamicExecutor unit-test entry point |

@@ -1,5 +1,3 @@
-/**
- * The public entry point is intentionally empty until the graph types land.
- * Importing the package must not start the executable or evaluate a project.
- */
-export {};
+/** Public data contracts. Importing the package performs no project work. */
+export type * from "./structures";
+export type * from "./typings";
