@@ -9,7 +9,16 @@ catalogs:
     '@nestia/e2e':
       specifier: ^13.0.2
       version: 13.0.2
+    '@typia/utils':
+      specifier: ^14.0.6
+      version: 14.0.6
+    typia:
+      specifier: ^14.0.6
+      version: 14.0.6
   typescript:
+    '@ttsc/evidence':
+      specifier: ^0.30.0
+      version: 0.30.0
     '@ttsc/lint':
       specifier: ^0.30.0
       version: 0.30.0
@@ -34,6 +43,9 @@ importers:
 
   .:
     devDependencies:
+      '@ttsc/evidence':
+        specifier: catalog:typescript
+        version: 0.30.0(@ttsc/lint@0.30.0)
       '@ttsc/lint':
         specifier: catalog:typescript
         version: 0.30.0
@@ -54,7 +66,17 @@ importers:
         version: 7.0.2
 
   packages/evidence:
+    dependencies:
+      '@typia/utils':
+        specifier: catalog:samchon
+        version: 14.0.6
+      typia:
+        specifier: catalog:samchon
+        version: 14.0.6(ttsc@0.30.0)
     devDependencies:
+      '@ttsc/evidence':
+        specifier: catalog:typescript
+        version: 0.30.0(@ttsc/lint@0.30.0)
       '@ttsc/lint':
         specifier: catalog:typescript
         version: 0.30.0
@@ -80,23 +102,35 @@ importers:
         specifier: workspace:*
         version: link:../packages/evidence
     devDependencies:
+      '@ttsc/evidence':
+        specifier: catalog:typescript
+        version: 0.30.0(@ttsc/lint@0.30.0)
       '@ttsc/lint':
         specifier: catalog:typescript
         version: 0.30.0
       '@types/node':
         specifier: catalog:utils
         version: 22.20.2
+      '@typia/utils':
+        specifier: catalog:samchon
+        version: 14.0.6
       ttsc:
         specifier: catalog:typescript
         version: 0.30.0
       typescript:
         specifier: catalog:typescript
         version: 7.0.2
+      typia:
+        specifier: catalog:samchon
+        version: 14.0.6(ttsc@0.30.0)
 
 packages:
 
   '@nestia/e2e@13.0.2':
     resolution: {integrity: sha512-8GGKYrViSgcKcgYoZWxVmPCHNiwQSacp2k9nq0fOEJQ5bmPqFyCz/LCdzfCPNYzFJOF9bCnJasJctJvxxCyNrw==}
+
+  '@prisma/prisma-schema-wasm@7.10.0-2.d0368e25c88e68caa4d283b5f2d88d1b76ed9356':
+    resolution: {integrity: sha512-loEbWBr+xUSqtIYaoJCrIuDeVs/fSY29Efshp+3rrTgQtyEqJ2iGuLTt9XnRZYBUE+eWC8ps0nOblyckgBehJQ==}
 
   '@ttsc/darwin-arm64@0.30.0':
     resolution: {integrity: sha512-e9prFj0QQoGXpWL3saSvf2Qm6RjZevMxRjbf/klqZ/TDcqyBII0Jsf5DDtFHxiejwWHeqx39yxE4lUAFWkpG1w==}
@@ -107,6 +141,11 @@ packages:
     resolution: {integrity: sha512-Cb0z4CMlpOiUDp3ys19soGiqS+kF4XnYGcMyz05lg3ih/gjA62CxjcP8kR87ryiQWuNW9hDKZHZKR/aOfZ0DZw==}
     cpu: [x64]
     os: [darwin]
+
+  '@ttsc/evidence@0.30.0':
+    resolution: {integrity: sha512-K+pskimNZ0NCJlGd/74MNIbJ4vJYPoN5NMuKIiy5a/YpihWJU3Std05bWYuPF4Z0/zHDfdSKpyJWvXeZuX/Wcw==}
+    peerDependencies:
+      '@ttsc/lint': '>0.28.6'
 
   '@ttsc/lint@0.30.0':
     resolution: {integrity: sha512-GmS++ZJkhDKHesuXDRMYlM9KU3AJdjepVt4+TL22yNeDrm3DcuPT5Xt/90FAzyIz3M4lKY0b+VYaLZHn46lrsA==}
@@ -259,6 +298,12 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@typia/interface@14.0.6':
+    resolution: {integrity: sha512-Ct4cW8vt1OfZNFlRBrVFeWZZrM/KvNUg4bmeIU4amXgYYp1sZkY71h+6GdrL+ApdF0KNnRxZ92hrrlbDodsjNg==}
+
+  '@typia/utils@14.0.6':
+    resolution: {integrity: sha512-g1LLQiOdPNyFR6dEQKsaa8HQnpZAAW+XAG0tVQ3/fVCARR5n4Yn59jBSI1UcNEv4F9DaM7vzHZi0b4iS+liajw==}
+
   acorn@8.16.0:
     resolution: {integrity: sha512-UVJyE9MttOsBQIDKw1skb9nAwQuR5wuGD3+82K6JgJlm/Y+KI92oNsMNGZCYdDsVtRHSak0pcV5Dno5+4jh9sw==}
     engines: {node: '>=0.4.0'}
@@ -274,6 +319,10 @@ packages:
 
   cjs-module-lexer@2.2.1:
     resolution: {integrity: sha512-Ca8swihM+/4yKecYHY52kgJd300hi2lADU/a1RxNTRe+RJ9jvqQlESpbz9DnG9mowez8qwXHB8qYdIUw9e+F5Q==}
+
+  drange@1.1.1:
+    resolution: {integrity: sha512-pYxfDYpued//QpnLIm4Avk7rsNtAtQkUES2cwAYSvD/wd2pKD71gN2Ebj3e7klzXwjocvE8c5vx/1fxwpqmSxA==}
+    engines: {node: '>=4'}
 
   glob@13.0.6:
     resolution: {integrity: sha512-Wjlyrolmm8uDpm/ogGyXZXb1Z+Ca2B8NbJwqBVg0axK9GbBeoS7yGV6vjXnYdGm6X53iehEuxxbyiKp8QmN4Vw==}
@@ -303,6 +352,14 @@ packages:
     engines: {node: '>=14'}
     hasBin: true
 
+  randexp@0.5.3:
+    resolution: {integrity: sha512-U+5l2KrcMNOUPYvazA3h5ekF80FHTUG+87SEAmHZmolh1M+i/WyTCxVzmi+tidIa1tM4BSe8g2Y/D3loWDjj+w==}
+    engines: {node: '>=4'}
+
+  ret@0.2.2:
+    resolution: {integrity: sha512-M0b3YWQs7R3Z917WRQy1HHA7Ba7D8hvZg6UE5mLykJxQVE2ju0IXbGlaHPPlkY+WN7wFP+wUMXmBFA0aV6vYGQ==}
+    engines: {node: '>=4'}
+
   rimraf@6.1.3:
     resolution: {integrity: sha512-LKg+Cr2ZF61fkcaK1UdkH2yEBBKnYjTyWzTJT6KNPcSPaiT7HSdhtMXQuN5wkTX0Xu72KQ1l8S42rlmexS2hSA==}
     engines: {node: 20 || >=22}
@@ -318,18 +375,41 @@ packages:
     engines: {node: '>=16.20.0'}
     hasBin: true
 
+  typia@14.0.6:
+    resolution: {integrity: sha512-dWtC9sMgmlR26yms6BAHWO0/P4Vzfw/cs1Mg+ZRYFlGub1CXRnF343EVgoZcxQdzoaPh50nTOtgd2Oaym73pIg==}
+    peerDependencies:
+      ttsc: '>=0.19.2'
+    peerDependenciesMeta:
+      ttsc:
+        optional: true
+
   undici-types@6.21.0:
     resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
+
+  yaml@2.9.0:
+    resolution: {integrity: sha512-2AvhNX3mb8zd6Zy7INTtSpl1F15HW6Wnqj0srWlkKLcpYl/gMIMJiyuGq2KeI2YFxUPjdlB+3Lc10seMLtL4cA==}
+    engines: {node: '>= 14.6'}
+    hasBin: true
 
 snapshots:
 
   '@nestia/e2e@13.0.2': {}
+
+  '@prisma/prisma-schema-wasm@7.10.0-2.d0368e25c88e68caa4d283b5f2d88d1b76ed9356': {}
 
   '@ttsc/darwin-arm64@0.30.0':
     optional: true
 
   '@ttsc/darwin-x64@0.30.0':
     optional: true
+
+  '@ttsc/evidence@0.30.0(@ttsc/lint@0.30.0)':
+    dependencies:
+      '@prisma/prisma-schema-wasm': 7.10.0-2.d0368e25c88e68caa4d283b5f2d88d1b76ed9356
+      '@ttsc/lint': 0.30.0
+      '@typia/interface': 14.0.6
+      '@typia/utils': 14.0.6
+      yaml: 2.9.0
 
   '@ttsc/lint@0.30.0': {}
 
@@ -412,6 +492,12 @@ snapshots:
   '@typescript/typescript-win32-x64@7.0.2':
     optional: true
 
+  '@typia/interface@14.0.6': {}
+
+  '@typia/utils@14.0.6':
+    dependencies:
+      '@typia/interface': 14.0.6
+
   acorn@8.16.0: {}
 
   balanced-match@4.0.4: {}
@@ -421,6 +507,8 @@ snapshots:
       balanced-match: 4.0.4
 
   cjs-module-lexer@2.2.1: {}
+
+  drange@1.1.1: {}
 
   glob@13.0.6:
     dependencies:
@@ -444,6 +532,13 @@ snapshots:
       minipass: 7.1.3
 
   prettier@3.9.6: {}
+
+  randexp@0.5.3:
+    dependencies:
+      drange: 1.1.1
+      ret: 0.2.2
+
+  ret@0.2.2: {}
 
   rimraf@6.1.3:
     dependencies:
@@ -486,4 +581,14 @@ snapshots:
       '@typescript/typescript-win32-arm64': 7.0.2
       '@typescript/typescript-win32-x64': 7.0.2
 
+  typia@14.0.6(ttsc@0.30.0):
+    dependencies:
+      '@typia/interface': 14.0.6
+      '@typia/utils': 14.0.6
+      randexp: 0.5.3
+    optionalDependencies:
+      ttsc: 0.30.0
+
   undici-types@6.21.0: {}
+
+  yaml@2.9.0: {}

@@ -60,6 +60,10 @@ Run the checker from the project root:
 pnpm exec evidence
 ```
 
+For programmatic loading, import `EvidenceConfigLoader` from `@samchon/evidence` and call `await EvidenceConfigLoader.load("evidence.config.ts")`. It returns an `IEvidenceConfig` and defaults to `evidence.config.ts` in the current working directory. Supported extensions are `.ts`, `.cts`, and `.mts`.
+
+The loader checks the configuration and its imports through the consumer's `ttsx`, then applies `typia.assert<IEvidenceConfig>` to the default export. Compiler and runtime failures reject the promise, and evaluator logs go to stderr. Returned settings retain their authored paths and optional values.
+
 ## Artifacts and symbol selectors
 
 | Artifact | Claim | Reference | Symbol selectors | Default claim / reference |
@@ -148,7 +152,7 @@ pnpm test
 pnpm check:format
 ```
 
-The pnpm workspace contains the published library in `packages/evidence` and logic unit tests in `test`. `pnpm build` compiles through `ttsc` with strict `@ttsc/lint` rules. `pnpm test` runs exported unit-test functions directly through `ttsx` and `@nestia/e2e`'s `DynamicExecutor`.
+The pnpm workspace contains the published library in `packages/evidence` and logic unit tests in `test`. `pnpm build` compiles through `ttsc` with strict `@ttsc/lint` rules, including `@ttsc/evidence`'s `evidence/singular` rule. `pnpm test` runs exported unit-test functions directly through `ttsx` and `@nestia/e2e`'s `DynamicExecutor`.
 
 Dependency versions are centralized in the family catalogs in `pnpm-workspace.yaml`. Each package and the test workspace extend the shared configuration under `config`. VS Code uses Prettier on save through `.vscode/settings.json`.
 

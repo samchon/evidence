@@ -11,6 +11,7 @@
     "check:format": "prettier --check ."
   },
   "devDependencies": {
+    "@ttsc/evidence": "catalog:typescript",
     "@ttsc/lint": "catalog:typescript",
     "@types/node": "catalog:utils",
     "prettier": "catalog:typescript",
