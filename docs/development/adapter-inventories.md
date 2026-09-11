@@ -7,11 +7,13 @@ Implement `IEvidenceAdapter.analyze(snapshot)` to translate source snapshots int
 | Record | Meaning |
 | --- | --- |
 | `IEvidenceUnit` | One semantic identity, its selector, explicit parent, declaration sites, and retained withdrawal markers. |
+| `IEvidenceUnit.contentDigest` | An optional adapter-supplied digest of that unit's own normalized semantic content. |
 | `IEvidencePublicAddress` | A file and literal accessor segments that expose a unit. Several addresses can expose the same identity. |
 | `IEvidenceUnitSite` | One declaration position and the content ranges belonging to this unit. |
 | `IEvidenceHost` | A position that can carry documentation, its attachment status, declaration site, and semantic owners. |
 | `IEvidenceDeclaration` | A positive acknowledgement or an exclusion with a target and reason. |
 | `IEvidenceReview` | A verification statement paired by acknowledgement kind, host, and target; it supplies no coverage. |
+| `IEvidenceInventory.annotationRanges` | Every parser-recognized annotation span that fingerprinting must remove from semantic content. |
 
 Assign globally unambiguous IDs from physical source identity and language-established declaration identity. Merge overloads, declaration fragments, or reopened containers only when the language establishes that they are one identity. Never merge unrelated declarations by display name. Keep public module addresses independent of the defining file and identity.
 
@@ -20,6 +22,8 @@ Store literal accessor segments separately. `A["B.C"]` contains two segments; it
 Use half-open original source spans with zero-based UTF-16 offsets and one-based lines and UTF-16 columns. Preserve CRLF and Unicode in source snapshots. Every attached host names a site owned by each listed unit. Register eligible hosts even when they contain no annotations. An operation without a description or a declaration without a comment must not vanish from policies that inspect every selected host.
 
 A multi-variable statement can give two units the same site and documentation host. Give each unit its own content ranges so changing one initializer does not necessarily change its sibling's fingerprint. Keep all declaration sites when several declarations form one semantic identity.
+
+Fingerprint input comes from an adapter-supplied `contentDigest` or the source slices in each site's `content` ranges. Keep a source snapshot digest as a cache key only; it cannot substitute for a unit digest. Register every recognized annotation range, including comments on hidden or unsupported declarations, so editing a review cannot invalidate the scope it reviews.
 
 ## Combining and selecting
 
@@ -50,6 +54,12 @@ Supply only the claim declarations whose target grammar applies to a reference i
 An accepted acknowledgement covers the selected target and selected descendants reached through explicit `parentId` links. The resulting edge retains the declaration, its documentation position, its semantic host identities, the exact target, and every selected unit covered by the scope. Repeating positive evidence on the same semantic host and exact target is a duplicate. Overlapping exclusions and opposite positive/exclusion intent each produce one finding for the later declaration, regardless of the number of descendants in the overlap. Positive evidence from different semantic hosts remains valid.
 
 Cardinality policies count semantic identities rather than documentation positions. `uniqueEvidence` permits at most one distinct positive claim host for each selected reference unit. `singleEvidencePerSymbol` requires each selected claim host, including hosts with no tags, to cite exactly one distinct selected reference unit. Aggregate targets count every selected descendant, while exclusions contribute no positive host or unit count.
+
+Supply applicable review target results in `reviewResolutions`. Review pairing uses acknowledgement kind, exact resolved target identity, and overlapping semantic host identity. This lets merged declaration positions review the same host while keeping unrelated declarations separate. A review at an unattached position falls back to its exact physical host. Duplicate reviews at one documentation position, orphan reviews, and reviews of the opposite acknowledgement kind receive distinct diagnostics. A real acknowledgement refused by another policy still prevents its review from being mislabeled as orphan; neither record enters coverage.
+
+`requireReview` adds freshness checks to accepted acknowledgement edges. Each edge exposes the same seven-character value returned by `EvidenceFingerprint.inspect`. A missing review, a review without a fingerprint, and a stale fingerprint are mutually exclusive findings, and each repair names the current value. Review resolution that is incomplete makes the obligation incomplete and suppresses those derivative findings. Explicit resolved reviews are still audited for structural pairing when freshness is not required.
+
+Fingerprint version 1 hashes the exact declaring identity, symbol kind, normalized own content, retained withdrawal kinds, and every explicit descendant linked by `parentId`. It removes registered annotations, normalizes CRLF and CR to LF, trims trailing horizontal whitespace, and ignores trailing blank lines. It does not depend on the selected public alias or reference projection. Changing the digest algorithm requires a fingerprint-version increment; consumers then inspect the new value and re-review affected scopes rather than mechanically accepting the migration.
 
 A Markdown `checklist` creates one obligation for every selected claim host and selected Markdown item. Positive evidence answers only the selected item it names. Exclusions retain descendant coverage for their own host. An unselected positive aggregate produces one direct diagnostic and records its selected descendants as explained, so the same host does not receive derivative missing-item diagnostics for that mistake. The obligation's `hostCoverage` retains each host's covered, missing, and explained units; its top-level covered units are those answered by every host. Configuration validation rejects checklists on other artifact kinds, incompatible cardinality options, and gathered exclusion carriers unless exclusions are disabled for that reference.
 

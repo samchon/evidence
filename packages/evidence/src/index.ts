@@ -3,6 +3,7 @@ export { EvidenceAccessor } from "./EvidenceAccessor";
 export { EvidenceConfigLoader } from "./EvidenceConfigLoader";
 export { EvidenceDocumentation } from "./EvidenceDocumentation";
 export { EvidenceFileTarget } from "./EvidenceFileTarget";
+export { EvidenceFingerprint } from "./EvidenceFingerprint";
 export { EvidenceGraph } from "./EvidenceGraph";
 export { EvidenceInventory } from "./EvidenceInventory";
 export { EvidenceLanguageRegistry } from "./EvidenceLanguageRegistry";

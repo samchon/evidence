@@ -2,7 +2,10 @@ import typia from "typia";
 
 import { EvidenceFileTarget } from "./EvidenceFileTarget";
 import { EvidenceInventory } from "./EvidenceInventory";
+import { EvidenceFingerprintIndex } from "./internal/EvidenceFingerprintIndex";
+import type { IEvidenceResolvedAcknowledgement } from "./internal/IEvidenceResolvedAcknowledgement";
 import { InventoryMerge } from "./internal/InventoryMerge";
+import type { IEvidenceResolvedReview } from "./internal/IEvidenceResolvedReview";
 import type { IEvidenceUnhostedChecklist } from "./internal/IEvidenceUnhostedChecklist";
 import type { IEvidenceDeclaration } from "./structures/IEvidenceDeclaration";
 import type { IEvidenceDiagnostic } from "./structures/IEvidenceDiagnostic";
@@ -13,11 +16,14 @@ import type { IEvidenceGraphHostCoverage } from "./structures/IEvidenceGraphHost
 import type { IEvidenceGraphInput } from "./structures/IEvidenceGraphInput";
 import type { IEvidenceGraphObligation } from "./structures/IEvidenceGraphObligation";
 import type { IEvidenceGraphReference } from "./structures/IEvidenceGraphReference";
+import type { IEvidenceGraphReviewResolution } from "./structures/IEvidenceGraphReviewResolution";
 import type { IEvidenceGraphResolution } from "./structures/IEvidenceGraphResolution";
 import type { IEvidenceGraphResult } from "./structures/IEvidenceGraphResult";
 import type { IEvidenceInventory } from "./structures/IEvidenceInventory";
 import type { IEvidencePopulation } from "./structures/IEvidencePopulation";
+import type { IEvidenceTargetStatement } from "./structures/IEvidenceTargetStatement";
 import type { IEvidenceUnit } from "./structures/IEvidenceUnit";
+import type { EvidenceAcknowledgementKind } from "./typings/EvidenceAcknowledgementKind";
 import type { EvidenceSeverity } from "./typings/EvidenceSeverity";
 
 /** Evaluates independent claim/reference coverage over materialized inventories. */
@@ -185,6 +191,12 @@ class GraphEvaluator {
       claimIndex,
       referenceIndex,
     );
+    const reviewResolutions = this.reviewResolutions(
+      claimInventory,
+      reference,
+      claimIndex,
+      referenceIndex,
+    );
     for (const entry of resolutions)
       this.diagnostics.push(
         ...entry.resolution.diagnostics.map((diagnostic) =>
@@ -196,10 +208,32 @@ class GraphEvaluator {
           ),
         ),
       );
-    if (resolutions.some((entry) => entry.resolution.status === "incomplete")) {
+    for (const entry of reviewResolutions)
+      this.diagnostics.push(
+        ...entry.resolution.diagnostics.map((diagnostic) =>
+          this.context(
+            diagnostic,
+            reference.severity,
+            claimIndex,
+            referenceIndex,
+          ),
+        ),
+      );
+    const incomplete = [
+      ...resolutions.map((entry) => entry.resolution.status),
+      ...reviewResolutions.map((entry) => entry.resolution.status),
+    ].includes("incomplete");
+    if (incomplete) {
       for (const entry of resolutions)
         if (entry.resolution.status === "incomplete")
           this.uncertainDeclarations.add(entry.declarationId);
+      if (
+        reviewResolutions.some(
+          (entry) => entry.resolution.status === "incomplete",
+        )
+      )
+        for (const declaration of claimInventory.declarations)
+          this.uncertainDeclarations.add(declaration.id);
       return this.obligation(
         claimIndex,
         referenceIndex,
@@ -220,6 +254,7 @@ class GraphEvaluator {
       snapshot,
       population,
       resolutions,
+      reviewResolutions,
     );
   }
 
@@ -233,6 +268,7 @@ class GraphEvaluator {
     referenceInventory: IEvidenceInventory,
     referencePopulation: IEvidencePopulation,
     resolutions: IEvidenceGraphResolution[],
+    reviewResolutions: IEvidenceGraphReviewResolution[],
   ): IEvidenceGraphObligation {
     const declarations = new Map(
       claimInventory.declarations.map((declaration) => [
@@ -259,6 +295,7 @@ class GraphEvaluator {
     const selectedUnits = referencePopulation.units;
     const selectedUnitIds = new Set(selectedUnits.map((unit) => unit.id));
     const scopeIds = new Set(referencePopulation.scopes.map((unit) => unit.id));
+    const fingerprints = new EvidenceFingerprintIndex(referenceInventory);
     const checklist = reference.checklist === true;
     const explainedByHost = new Map<string, Set<string>>();
     const covered = new Set<string>();
@@ -409,10 +446,22 @@ class GraphEvaluator {
         kind: declaration.kind,
         targetUnitId: target.id,
         unitIds,
+        fingerprint: fingerprints.inspect(target.id).fingerprint,
       });
       this.answeredDeclarations.add(declaration.id);
       if (!checklist) for (const id of unitIds) covered.add(id);
     }
+    this.evaluateReviews(
+      claimInventory,
+      claimIndex,
+      reference,
+      referenceIndex,
+      referenceInventory,
+      referencePopulation,
+      resolutions,
+      reviewResolutions,
+      edges,
+    );
     if (checklist)
       return this.checklistObligation(
         claimInventory,
@@ -678,6 +727,230 @@ class GraphEvaluator {
     }
   }
 
+  private evaluateReviews(
+    claimInventory: IEvidenceInventory,
+    claimIndex: number,
+    reference: IEvidenceGraphReference,
+    referenceIndex: number,
+    referenceInventory: IEvidenceInventory,
+    referencePopulation: IEvidencePopulation,
+    declarationResolutions: IEvidenceGraphResolution[],
+    reviewResolutions: IEvidenceGraphReviewResolution[],
+    edges: IEvidenceGraphEdge[],
+  ): void {
+    const declarations = new Map(
+      claimInventory.declarations.map((declaration) => [
+        declaration.id,
+        declaration,
+      ]),
+    );
+    const reviews = new Map(
+      claimInventory.reviews.map((review) => [review.id, review]),
+    );
+    const hosts = new Map(claimInventory.hosts.map((host) => [host.id, host]));
+    const scopeIds = new Set(referencePopulation.scopes.map((unit) => unit.id));
+    const acknowledgements: IEvidenceResolvedAcknowledgement[] = [];
+    for (const entry of declarationResolutions) {
+      const declaration = declarations.get(entry.declarationId);
+      const target = entry.resolution.units[0];
+      if (
+        declaration === undefined ||
+        entry.resolution.status !== "resolved" ||
+        target === undefined ||
+        entry.resolution.units.length !== 1 ||
+        !scopeIds.has(target.id)
+      )
+        continue;
+      const host = hosts.get(declaration.hostId);
+      acknowledgements.push({
+        declaration,
+        hostUnitIds: host?.attachment === "attached" ? host.unitIds : [],
+        targetUnitId: target.id,
+      });
+    }
+    const records: IEvidenceResolvedReview[] = [];
+    const duplicateKeys = new Set<string>();
+    for (const entry of reviewResolutions) {
+      const review = reviews.get(entry.reviewId);
+      if (review === undefined) {
+        this.diagnostics.push(
+          this.problem(
+            "graph-review-resolution-review",
+            reference.severity,
+            `Review resolution '${entry.reviewId}' has no claim review statement.`,
+            "Rebuild review target resolutions from this claim inventory before evaluating the graph.",
+            claimIndex,
+            referenceIndex,
+          ),
+        );
+        continue;
+      }
+      if (entry.resolution.status !== "resolved") continue;
+      const target = entry.resolution.units[0];
+      if (
+        target === undefined ||
+        entry.resolution.units.length !== 1 ||
+        !scopeIds.has(target.id)
+      ) {
+        this.diagnostics.push(
+          this.problem(
+            "graph-review-resolution-scope",
+            reference.severity,
+            `Resolved review target '${review.target}' is outside this reference's selected structural scopes.`,
+            "Resolve the review with this reference's exact selected unit IDs.",
+            claimIndex,
+            referenceIndex,
+            review,
+          ),
+        );
+        continue;
+      }
+      const host = hosts.get(review.hostId);
+      const hostUnitIds = host?.attachment === "attached" ? host.unitIds : [];
+      const key = JSON.stringify([review.hostId, review.reviews, target.id]);
+      if (duplicateKeys.has(key)) {
+        this.diagnostics.push(
+          this.problem(
+            "graph-duplicate-review",
+            reference.severity,
+            `The same documentation position repeats ${this.reviewMarker(review.reviews)} for '${review.target}'.`,
+            "Keep the review that states what was checked and remove the other.",
+            claimIndex,
+            referenceIndex,
+            review,
+          ),
+        );
+        continue;
+      }
+      duplicateKeys.add(key);
+      records.push({ review, hostUnitIds, targetUnitId: target.id });
+    }
+    for (const record of records) {
+      const matching = acknowledgements.some(
+        (acknowledgement) =>
+          acknowledgement.declaration.kind === record.review.reviews &&
+          acknowledgement.targetUnitId === record.targetUnitId &&
+          this.reviewHostMatches(
+            record,
+            acknowledgement.declaration.hostId,
+            acknowledgement.hostUnitIds,
+          ),
+      );
+      if (matching) continue;
+      const opposite = acknowledgements.find(
+        (acknowledgement) =>
+          acknowledgement.declaration.kind !== record.review.reviews &&
+          acknowledgement.targetUnitId === record.targetUnitId &&
+          this.reviewHostMatches(
+            record,
+            acknowledgement.declaration.hostId,
+            acknowledgement.hostUnitIds,
+          ),
+      );
+      this.diagnostics.push(
+        opposite === undefined
+          ? this.problem(
+              "graph-orphan-review",
+              reference.severity,
+              `${this.reviewMarker(record.review.reviews)} for '${record.review.target}' has no matching acknowledgement on its semantic host.`,
+              `Correct the target, add @${record.review.reviews} when this host answers it, or remove the review.`,
+              claimIndex,
+              referenceIndex,
+              record.review,
+            )
+          : this.problem(
+              "graph-review-kind",
+              reference.severity,
+              `${this.reviewMarker(record.review.reviews)} for '${record.review.target}' cannot review @${opposite.declaration.kind}.`,
+              `Rewrite it as ${this.reviewMarker(opposite.declaration.kind)}, or correct the acknowledgement kind.`,
+              claimIndex,
+              referenceIndex,
+              record.review,
+            ),
+      );
+    }
+    if (reference.requireReview !== true) return;
+    for (const edge of edges) {
+      const candidates = records.filter(
+        (record) =>
+          record.review.reviews === edge.kind &&
+          record.targetUnitId === edge.targetUnitId &&
+          this.reviewHostMatches(record, edge.hostId, edge.hostUnitIds),
+      );
+      const review = candidates[0]?.review;
+      const marker = this.reviewMarker(edge.kind);
+      const declaration = claimInventory.declarations.find(
+        (candidate) => candidate.id === edge.declarationId,
+      );
+      if (review === undefined) {
+        const wrongKind = records.some(
+          (record) =>
+            record.review.reviews !== edge.kind &&
+            record.targetUnitId === edge.targetUnitId &&
+            this.reviewHostMatches(record, edge.hostId, edge.hostUnitIds),
+        );
+        if (wrongKind) continue;
+        this.diagnostics.push(
+          this.problem(
+            "graph-missing-review",
+            reference.severity,
+            `@${edge.kind} for '${declaration?.target ?? this.displayUnit(referenceInventory, edge.targetUnitId)}' has no matching ${marker}; the current scope fingerprint is '#${edge.fingerprint}'.`,
+            `Add '${marker} ${declaration?.target ?? "<target>"} #${edge.fingerprint} <what you checked>' on the same semantic host.`,
+            claimIndex,
+            referenceIndex,
+            declaration,
+          ),
+        );
+        continue;
+      }
+      if (review.fingerprint === undefined) {
+        this.diagnostics.push(
+          this.problem(
+            "graph-missing-review-fingerprint",
+            reference.severity,
+            `${marker} for '${review.target}' has no fingerprint; the current scope fingerprint is '#${edge.fingerprint}'.`,
+            `Write '#${edge.fingerprint}' after the review target so later content changes can expire it.`,
+            claimIndex,
+            referenceIndex,
+            review,
+          ),
+        );
+        continue;
+      }
+      if (review.fingerprint !== edge.fingerprint)
+        this.diagnostics.push(
+          this.problem(
+            "graph-stale-review",
+            reference.severity,
+            `${marker} for '${review.target}' names '#${review.fingerprint}', but the current scope fingerprint is '#${edge.fingerprint}'.`,
+            `Review the cited content again and replace the fingerprint with '#${edge.fingerprint}', or correct the acknowledgement if it no longer applies.`,
+            claimIndex,
+            referenceIndex,
+            review,
+          ),
+        );
+    }
+  }
+
+  private reviewHostMatches(
+    review: IEvidenceResolvedReview,
+    hostId: string,
+    hostUnitIds: string[],
+  ): boolean {
+    return review.hostUnitIds.length === 0
+      ? review.review.hostId === hostId
+      : this.overlaps(review.hostUnitIds, hostUnitIds);
+  }
+
+  private reviewMarker(kind: EvidenceAcknowledgementKind): string {
+    return kind === "evidence" ? "@evidenceReview" : "@evidenceExcludeReview";
+  }
+
+  private displayUnit(inventory: IEvidenceInventory, id: string): string {
+    const unit = inventory.units.find((candidate) => candidate.id === id);
+    return unit === undefined ? id : this.display(inventory, unit);
+  }
+
   private resolutions(
     inventory: IEvidenceInventory,
     reference: IEvidenceGraphReference,
@@ -716,7 +989,7 @@ class GraphEvaluator {
       } else records.set(entry.declarationId, entry);
     }
     return Array.from(records.values()).sort((x, y) =>
-      this.compareDeclarations(
+      this.compareStatements(
         declarations.get(x.declarationId),
         declarations.get(y.declarationId),
         x.declarationId,
@@ -725,9 +998,53 @@ class GraphEvaluator {
     );
   }
 
-  private compareDeclarations(
-    x: IEvidenceDeclaration | undefined,
-    y: IEvidenceDeclaration | undefined,
+  private reviewResolutions(
+    inventory: IEvidenceInventory,
+    reference: IEvidenceGraphReference,
+    claimIndex: number,
+    referenceIndex: number,
+  ): IEvidenceGraphReviewResolution[] {
+    const reviews = new Map(
+      inventory.reviews.map((review) => [review.id, review]),
+    );
+    const records = new Map<string, IEvidenceGraphReviewResolution>();
+    const conflicts = new Set<string>();
+    for (const entry of reference.reviewResolutions ?? []) {
+      if (conflicts.has(entry.reviewId)) continue;
+      const previous = records.get(entry.reviewId);
+      if (
+        previous !== undefined &&
+        typia.json.stringify(previous.resolution) !==
+          typia.json.stringify(entry.resolution)
+      ) {
+        this.diagnostics.push(
+          this.problem(
+            "graph-conflicting-review-resolution",
+            reference.severity,
+            `Review '${entry.reviewId}' has conflicting target resolutions.`,
+            "Resolve each review once per reference population.",
+            claimIndex,
+            referenceIndex,
+            reviews.get(entry.reviewId),
+          ),
+        );
+        records.delete(entry.reviewId);
+        conflicts.add(entry.reviewId);
+      } else records.set(entry.reviewId, entry);
+    }
+    return Array.from(records.values()).sort((x, y) =>
+      this.compareStatements(
+        reviews.get(x.reviewId),
+        reviews.get(y.reviewId),
+        x.reviewId,
+        y.reviewId,
+      ),
+    );
+  }
+
+  private compareStatements(
+    x: IEvidenceTargetStatement | undefined,
+    y: IEvidenceTargetStatement | undefined,
     xId: string,
     yId: string,
   ): number {
@@ -817,7 +1134,7 @@ class GraphEvaluator {
     repair: string,
     claim: number,
     reference: number,
-    declaration?: IEvidenceDeclaration,
+    statement?: IEvidenceTargetStatement,
     unit?: IEvidenceUnit,
   ): IEvidenceDiagnostic {
     if (severity === "off")
@@ -830,14 +1147,14 @@ class GraphEvaluator {
       repair,
       claim,
       reference,
-      ...(declaration === undefined
+      ...(statement === undefined
         ? site === undefined
           ? {}
           : { location: { file: site.file, range: site.range } }
         : {
-            location: declaration.location,
-            hostId: declaration.hostId,
-            target: declaration.target,
+            location: statement.location,
+            hostId: statement.hostId,
+            target: statement.target,
           }),
     };
   }

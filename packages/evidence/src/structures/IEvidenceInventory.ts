@@ -5,12 +5,15 @@ import type { IEvidencePublicAddress } from "./IEvidencePublicAddress";
 import type { IEvidenceReview } from "./IEvidenceReview";
 import type { IEvidenceSourceDependency } from "./IEvidenceSourceDependency";
 import type { IEvidenceSourceFile } from "./IEvidenceSourceFile";
+import type { IEvidenceSourceLocation } from "./IEvidenceSourceLocation";
 import type { IEvidenceUnit } from "./IEvidenceUnit";
 
 /** Language-neutral adapter output, containing no live parser or compiler objects. */
 export interface IEvidenceInventory {
   schemaVersion: 1;
   sources: IEvidenceSourceFile[];
+  /** Full parser-recognized annotation positions excluded from content digests. */
+  annotationRanges: IEvidenceSourceLocation[];
   units: IEvidenceUnit[];
   addresses: IEvidencePublicAddress[];
   hosts: IEvidenceHost[];

@@ -18,6 +18,7 @@ export class EvidenceMarkdownAdapter implements IEvidenceAdapter {
     const inventory: IEvidenceInventory = {
       schemaVersion: 1,
       sources: input.files,
+      annotationRanges: [],
       units: [],
       addresses: [],
       hosts: [],

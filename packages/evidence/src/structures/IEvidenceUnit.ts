@@ -13,6 +13,8 @@ export interface IEvidenceUnit {
   /** Literal accessor segments; dots inside a segment never imply ownership. */
   identity: string[];
   name: string;
+  /** Adapter-supplied digest of this unit's own normalized semantic content. */
+  contentDigest?: string;
   sites: IEvidenceUnitSite[];
   withdrawals: IEvidenceWithdrawal[];
 }

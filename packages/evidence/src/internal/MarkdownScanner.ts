@@ -351,6 +351,10 @@ export class MarkdownScanner {
   private materializeComments(): void {
     const origins = this.source.addresses.map((address) => address.absolute);
     for (const comment of this.comments) {
+      this.inventory.annotationRanges.push({
+        file: this.source.physicalPath,
+        range: this.text.range(comment.start, comment.end),
+      });
       const unitId = this.hostUnits[comment.startLine];
       const siteId = this.hostSites[comment.startLine];
       const problem = this.hostProblems[comment.startLine];

@@ -1,5 +1,6 @@
 import type { EvidenceSeverity } from "../typings/EvidenceSeverity";
 import type { IEvidenceGraphResolution } from "./IEvidenceGraphResolution";
+import type { IEvidenceGraphReviewResolution } from "./IEvidenceGraphReviewResolution";
 import type { IEvidenceInventory } from "./IEvidenceInventory";
 
 /** One reference population and the claim declarations applicable to it. */
@@ -10,6 +11,8 @@ export interface IEvidenceGraphReference {
   unitIds: string[];
   /** Resolutions for declarations whose target syntax belongs to this reference. */
   resolutions: IEvidenceGraphResolution[];
+  /** Resolutions for reviews whose target syntax belongs to this reference. */
+  reviewResolutions?: IEvidenceGraphReviewResolution[];
   /** Refuse exclusions for this reference. */
   noEvidenceExclude?: boolean;
   /** Allow at most one distinct positive claim host per selected unit. */
@@ -18,4 +21,6 @@ export interface IEvidenceGraphReference {
   singleEvidencePerSymbol?: boolean;
   /** Require each selected claim host to answer every selected Markdown item. */
   checklist?: boolean;
+  /** Require each accepted acknowledgement to carry a current matching review. */
+  requireReview?: boolean;
 }

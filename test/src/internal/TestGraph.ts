@@ -1,5 +1,7 @@
+import { EvidenceTargetResolver } from "../../../packages/evidence/src/EvidenceTargetResolver";
 import type { IEvidenceDeclaration } from "../../../packages/evidence/src/structures/IEvidenceDeclaration";
 import type { IEvidenceGraphResolution } from "../../../packages/evidence/src/structures/IEvidenceGraphResolution";
+import type { IEvidenceGraphReviewResolution } from "../../../packages/evidence/src/structures/IEvidenceGraphReviewResolution";
 import type { IEvidenceGraphHostCoverage } from "../../../packages/evidence/src/structures/IEvidenceGraphHostCoverage";
 import type { IEvidenceGraphObligation } from "../../../packages/evidence/src/structures/IEvidenceGraphObligation";
 import type { IEvidenceGraphResult } from "../../../packages/evidence/src/structures/IEvidenceGraphResult";
@@ -64,6 +66,42 @@ export namespace TestGraph {
     };
   }
 
+  export async function resolveDeclarations(
+    claim: IEvidenceInventory,
+    reference: IEvidenceInventory,
+    unitIds: string[],
+  ): Promise<IEvidenceGraphResolution[]> {
+    const resolver = new EvidenceTargetResolver([reference]);
+    return Promise.all(
+      claim.declarations.map(async (declaration) => ({
+        declarationId: declaration.id,
+        resolution: await resolver.resolve(
+          declaration,
+          host(claim, declaration.hostId),
+          unitIds,
+        ),
+      })),
+    );
+  }
+
+  export async function resolveReviews(
+    claim: IEvidenceInventory,
+    reference: IEvidenceInventory,
+    unitIds: string[],
+  ): Promise<IEvidenceGraphReviewResolution[]> {
+    const resolver = new EvidenceTargetResolver([reference]);
+    return Promise.all(
+      claim.reviews.map(async (review) => ({
+        reviewId: review.id,
+        resolution: await resolver.resolve(
+          review,
+          host(claim, review.hostId),
+          unitIds,
+        ),
+      })),
+    );
+  }
+
   export function obligation(
     result: IEvidenceGraphResult,
     claim: number,
@@ -89,5 +127,11 @@ export namespace TestGraph {
     if (coverage === undefined)
       throw new Error(`Missing graph host coverage: ${hostUnitId}`);
     return coverage;
+  }
+
+  function host(inventory: IEvidenceInventory, id: string): IEvidenceHost {
+    const found = inventory.hosts.find((candidate) => candidate.id === id);
+    if (found === undefined) throw new Error(`Missing graph host: ${id}`);
+    return found;
   }
 }

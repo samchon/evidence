@@ -15,6 +15,7 @@ export namespace InventoryMerge {
     const output: IEvidenceInventory = {
       schemaVersion: 1,
       sources: [],
+      annotationRanges: [],
       units: [],
       addresses: [],
       hosts: [],
@@ -29,6 +30,7 @@ export namespace InventoryMerge {
     const hosts = new Map<string, IEvidenceHost>();
     for (const input of inputs) {
       output.diagnostics.push(...input.diagnostics);
+      output.annotationRanges.push(...input.annotationRanges);
       for (const source of input.sources) {
         const previous = sources.get(source.id);
         if (previous === undefined) sources.set(source.id, source);
@@ -45,6 +47,17 @@ export namespace InventoryMerge {
         else if (unitKey(previous) !== unitKey(unit))
           conflict(output, "unit", unit.id);
         else {
+          if (
+            previous.contentDigest !== undefined &&
+            unit.contentDigest !== undefined &&
+            previous.contentDigest !== unit.contentDigest
+          )
+            conflict(output, "unit content digest", unit.id);
+          else if (
+            previous.contentDigest === undefined &&
+            unit.contentDigest !== undefined
+          )
+            previous.contentDigest = unit.contentDigest;
           for (const site of unit.sites) {
             const existing = previous.sites.find(
               (candidate) => candidate.id === site.id,
