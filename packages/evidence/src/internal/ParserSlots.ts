@@ -17,9 +17,10 @@ export class ParserSlots {
       ++this.active;
       return;
     }
-    await new Promise<void>((resolve) => {
+    const pending: Promise<void> = new Promise((resolve) => {
       this.queue.push(resolve);
     });
+    await pending;
   }
 
   public release(): void {
@@ -34,8 +35,9 @@ export class ParserSlots {
   public async close(): Promise<void> {
     this.closed = true;
     if (this.active === 0) return;
-    await new Promise<void>((resolve) => {
+    const pending: Promise<void> = new Promise((resolve) => {
       this.drains.push(resolve);
     });
+    await pending;
   }
 }

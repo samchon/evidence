@@ -126,9 +126,9 @@ export class EvidenceParser {
       session = new EvidenceParseSession(tree, input.file);
       return await closure(session);
     } finally {
-      session?.dispose();
-      tree?.delete();
-      parser?.delete();
+      if (session !== undefined) session.dispose();
+      if (tree !== null) tree.delete();
+      if (parser !== undefined) parser.delete();
       this.slots.release();
     }
   }

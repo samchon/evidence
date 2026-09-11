@@ -20,6 +20,8 @@ node scripts/prepare-parser-assets.js
 
 The restore command verifies downloaded bytes before writing them. A changed existing file fails checksum validation; it is not silently replaced. The package's `prepack` hook runs the offline check. Consumers do not run either maintenance command.
 
+For reproducible asset footprint data, run `node scripts/report-parser-footprint.js`. It reports actual byte lengths and independent gzip-level-9 sizes for every pinned grammar, the binding's core WASM, and its loaded CommonJS file, together with checksums and runtime versions. These asset sizes exclude package archives, declarations, maps, licenses, other dependencies, and process memory; the compressed sum is not a tarball size.
+
 ## Update a grammar
 
 1. Select an upstream release with a precompiled WASM asset and resolve its tag to a full source commit.

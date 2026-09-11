@@ -4,7 +4,7 @@ export class TestSignal {
   public readonly wait: Promise<void>;
 
   public constructor() {
-    this.wait = new Promise<void>((resolve) => {
+    this.wait = new Promise((resolve) => {
       this.resolve = resolve;
     });
   }
