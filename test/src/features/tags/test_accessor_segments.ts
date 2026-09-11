@@ -10,6 +10,7 @@ export async function test_accessor_segments(): Promise<void> {
     ["SomeClass", "space name"],
     ["한글", 'a"b\\c'],
     ["Tuple", "0"],
+    ["$scope_2", "e\u0301"],
     ["", "😀"],
   ];
   for (const segments of cases)
@@ -41,6 +42,8 @@ export async function test_accessor_segments(): Promise<void> {
     'A["unterminated]',
     "A[true]",
     "A[0]B",
+    "2startsWithDigit",
+    "\u0301startsWithMark",
   ])
     await TestValidator.error("malformed accessor", async () =>
       EvidenceAccessor.parse(text),

@@ -12,6 +12,9 @@ export async function test_tag_diagnostics(): Promise<void> {
      * @evidence ../source.ts#value
      * @evidence ../source.ts#A.[0] Invalid accessor.
      * @evidence ../bad%ZZ.ts#value Invalid percent encoding.
+     * @evidence ../bad%00.ts#value Invalid NUL path.
+     * @evidence ../bad%0D.ts#value Invalid carriage return.
+     * @evidence ../bad%0A.ts#value Invalid line feed.
      * @evidence {@link Symbol} Compiler-only lookup.
      * @evidence {@linkplain Symbol} Compiler-only lookup.
      * @evidenceReview docs/spec.md#rule #A3F9C1D
@@ -30,6 +33,9 @@ export async function test_tag_diagnostics(): Promise<void> {
     [
       "malformed-target",
       "missing-evidence-reason",
+      "malformed-target",
+      "malformed-target",
+      "malformed-target",
       "malformed-target",
       "malformed-target",
       "unsupported-inline-link",

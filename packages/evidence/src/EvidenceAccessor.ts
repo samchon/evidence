@@ -71,6 +71,6 @@ export namespace EvidenceAccessor {
   }
 
   function identifier(value: string): boolean {
-    return /^[$_\p{L}][$_\p{L}\p{Nd}\p{M}]*$/u.test(value);
+    return /^(?:[$_]|\p{L})(?:[$_]|\p{L}|\p{Nd}|\p{M})*$/u.test(value);
   }
 }

@@ -35,7 +35,11 @@ export namespace EvidenceTargetBody {
     }
     const file = target.slice(0, hash);
     const decoded = decodeURIComponent(file);
-    if (/[\u0000\r\n]/u.test(decoded))
+    if (
+      decoded.includes("\0") ||
+      decoded.includes("\r") ||
+      decoded.includes("\n")
+    )
       throw new Error("Target paths cannot contain NUL or line breaks.");
     // Markdown anchors and operation paths retain their own token grammar.
     if (
