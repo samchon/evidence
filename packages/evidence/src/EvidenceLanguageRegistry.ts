@@ -109,6 +109,19 @@ export namespace EvidenceLanguageRegistry {
       type: "go",
       name: "Go",
       grammars: [{ id: "go", extensions: [".go"], filenames: [] }],
+      adapter: {
+        entry: "EvidenceGoAdapter",
+        symbols: ["type", "function", "property"],
+        publicSurface:
+          "Selected exported Go package declarations with package-wide receiver ownership.",
+        comments: ["adjacent // or block documentation comment"],
+        unsupported: [
+          "GOOS and GOARCH evaluation",
+          "promoted members",
+          "dependency-derived members",
+          "generated declarations absent from selected source",
+        ],
+      },
     },
     {
       type: "rust",

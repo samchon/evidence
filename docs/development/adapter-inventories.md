@@ -157,6 +157,30 @@ An actual class or function docstring is an eligible documentation carrier. A co
 
 Conditional module declarations/imports, conditional class declarations, dynamic `__all__`, and unresolved local imports are explicit incomplete-analysis boundaries. Dynamic module attributes, `globals()`, `getattr`, module `__getattr__`, decorators, and application initialization are never executed or used to fabricate units.
 
+## Go inventories
+
+`EvidenceGoAdapter` parses `.go` snapshots with the packaged Go grammar and groups physical files by directory and package. It inventories the selected declared source without invoking the Go toolchain.
+
+Classify supported declarations as follows:
+
+| Source form                                  | Symbol and address         |
+| -------------------------------------------- | -------------------------- |
+| Exported defined type or type alias          | `type` at `Name`           |
+| Exported package function                    | `function` at `Name`       |
+| Exported receiver method or interface method | `function` at `Owner.Name` |
+| Exported package constant or variable        | `property` at `Name`       |
+| Exported named or embedded struct field      | `property` at `Owner.Name` |
+
+Apply Go's Unicode uppercase rule to the first rune of every published name. Retain generic defined types, grouped declarations, pointer and value receivers, multiple-name specifications, and direct named, pointer, qualified, or generic embedded fields. A type alias to an explicitly written anonymous struct or interface owns those declared members. An embedded field forms its own property unit; do not synthesize promoted members. Embedded interface elements do not form units.
+
+Resolve a receiver against a selected local defined type in the same directory and package. A method has one semantic identity and publishes addresses through both its declaration file and every selected declaration file for its owner type. Missing receiver types and alias-only method receivers make analysis incomplete. Package functions, values, types, and fields publish addresses through their declaration files.
+
+Treat the configured files as the exact source set. Do not evaluate `//go:build`, legacy build tags, `GOOS`, `GOARCH`, or filename platform suffixes. If selected alternatives declare the same identity, retain their sites and mark the inventory incomplete. Include selected `_test.go` files; keep an ordinary package, its same-package tests, and the matching external `_test` package under their distinct package identities. Incompatible package clauses in one directory are incomplete.
+
+Attach consecutive same-column `//` comments and block comments only when they immediately precede a supported declaration without a blank line. A comment before a grouped declaration attaches to every supported specification in that group; a specification or member comment attaches only to that declaration. Detached comments, function-body comments, interpreted and raw strings, and commented-out declarations are unsupported annotation hosts. Register accepted documentation and tag-bearing unsupported carriers as annotation ranges so Evidence metadata does not move semantic fingerprints.
+
+Do not run generators or import external package declarations. Generated declarations participate only when their `.go` source is already present in the selected snapshot. Unreadable ownership, duplicate selected declarations, incompatible packages, and parser failures must leave the inventory incomplete instead of reducing its public population.
+
 ## Prisma inventories
 
 `EvidencePrismaAdapter` parses all selected physical files as one schema with `@prisma/prisma-schema-wasm`. Prefer a parser resolvable from the project root, then use the package's pinned fallback. Deduplicate physical sources before parsing and retain every logical address on the resulting source snapshot. A rejected schema makes the inventory incomplete and produces no guessed units.
