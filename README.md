@@ -67,13 +67,15 @@ pnpm exec evidence
 | Programming | Yes | Yes | `type`, `function`, `property` | All / `type` |
 | Markdown | Yes | Yes | `file`, `h1`, `h2`, `h3`, `h4` | All / all |
 | Database schemas | Yes | Yes | `model`, `column`, `relation` | All / `model` |
-| Swagger / OpenAPI | No | Yes | Operations | Every operation |
+| Swagger / OpenAPI | Yes | Yes | `operation` | Every operation / every operation |
+
+Every artifact family can cite every other family, including its own. Markdown can cite programming declarations or Swagger operations, and Swagger operations can cite Markdown, programming declarations, database schemas, or other operations.
 
 A `symbol` accepts one selector or a nonempty array. Programming `type` symbols include classes, interfaces, type aliases, and namespaces. Database `model` symbols describe record structures, `column` symbols describe data fields, and `relation` symbols describe connections between models. A foreign-key value is a column; the declaration describing its connection is a relation.
 
 All database schema languages use `IEvidenceDatabaseClaim` and `IEvidenceDatabaseReference`. Their `type` distinguishes Prisma, SQL dialects, and DBML. Select the source schema language rather than the database server: MongoDB models written in Prisma use `type: "prisma"`.
 
-Markdown preserves its document outline, and Prisma preserves its schema structure. Swagger references use `file` for an exact local JSON/YAML path or an HTTP(S) URL, with an optional `root` for local paths.
+Markdown preserves its document outline, and Prisma preserves its schema structure. Swagger claims select local JSON/YAML documents with `files` globs. Swagger references use `file` for an exact local JSON/YAML path or an HTTP(S) URL, with an optional `root` for local paths.
 
 ## Evidence declarations
 
@@ -98,6 +100,19 @@ TypeScript instance members use `SomeClass.prototype.member`. File-qualified tar
 
 Markdown paths resolve from the reference population's root. Markdown claims place tags in HTML comments; Prisma claims place them in documentation comments attached to schema declarations.
 
+Swagger claims read tags from each operation's `description`. For example, an operation can cite a Markdown requirement:
+
+```yaml
+paths:
+  /sales:
+    post:
+      description: |
+        Creates a sale.
+        @evidence docs/requirements.md#sales Exposes the required sale creation operation.
+```
+
+Fenced examples and other JSON/YAML string fields do not host tags. Operations without descriptions remain selected hosts for coverage policies.
+
 A citation to a containing type, namespace, document section, or model covers its selected descendants. `@evidenceExclude <target> <reason>` records why a selected obligation does not apply, subject to the reference's policy. The checker validates the declaration and its target; reviewers judge whether the explanation is true.
 
 ## Coverage policies
@@ -120,7 +135,7 @@ The root configuration accepts an optional `severity: "off" | "warning" | "error
 
 ## Public types
 
-The package exports `IEvidenceConfig`, `IEvidenceClaim`, `IEvidenceReference`, and their shared base interfaces. Claims share `IEvidenceClaimBase<Type, SymbolKind>` and specialize into programming, database, and Markdown populations. References use the same families, plus Swagger operations.
+The package exports `IEvidenceConfig`, `IEvidenceClaim`, `IEvidenceReference`, and their shared base interfaces. `IEvidenceClaimBase<Type, SymbolKind>` and `IEvidenceReferenceBase<Type, SymbolKind>` own their common settings and symbol selectors. Both specialize into programming, database, Markdown, and Swagger populations. `IEvidenceSwaggerClaim` selects operations and reads evidence declarations from their descriptions.
 
 `EvidenceProgrammingType` and `EvidenceDatabaseType` define source-language identifiers. `EvidenceProgrammingSymbol`, `EvidenceDatabaseSymbol`, and `EvidenceMarkdownSymbol` define symbol selectors; `EvidenceSeverity` defines diagnostic levels. `IEvidenceDocumentedConfig` selects programming symbols that must carry documentation comments.
 

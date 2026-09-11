@@ -1,11 +1,13 @@
 import type { EvidenceSeverity } from "../typings/EvidenceSeverity";
 
 /**
- * Coverage policies for one independently evaluated reference.
- * Ordinary evidence and permitted exclusions cover selected targets and descendants.
- * Repeated references to the same files still have independent obligations.
+ * Coverage policies for one independent reference. Ordinary evidence and
+ * permitted exclusions cover selected targets and descendants.
  */
-export interface IEvidenceReferenceBase<Type extends string> {
+export interface IEvidenceReferenceBase<
+  Type extends string,
+  SymbolKind extends string,
+> {
   /** Artifact type of the referenced evidence. */
   type: Type;
 
@@ -20,6 +22,18 @@ export interface IEvidenceReferenceBase<Type extends string> {
    *   Prisma model addresses do not contain paths.
    */
   root?: string;
+
+  /**
+   * Evidence symbol kinds; accepts one kind or a nonempty array. Defaults by family:
+   *
+   * - Programming: type.
+   * - Database: model.
+   * - Markdown: file, h1, h2, h3, h4.
+   * - Swagger: operation.
+   *
+   * Unselected structural ancestors remain addressable as aggregate targets.
+   */
+  symbol?: SymbolKind | SymbolKind[];
 
   /**
    * Overrides the claim severity. Omit or use `undefined` to inherit.

@@ -10,4 +10,5 @@ export type * from "./IEvidenceProgrammingClaim";
 export type * from "./IEvidenceProgrammingReference";
 export type * from "./IEvidenceReference";
 export type * from "./IEvidenceReferenceBase";
+export type * from "./IEvidenceSwaggerClaim";
 export type * from "./IEvidenceSwaggerReference";

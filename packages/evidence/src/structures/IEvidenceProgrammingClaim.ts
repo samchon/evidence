@@ -5,7 +5,6 @@ import type { IEvidenceClaimBase } from "./IEvidenceClaimBase";
 /**
  * Public programming declarations that cite evidence in documentation comments.
  *
- * - The type selects the language; globs select files directly from disk.
  * - Evidence needs a target, a nonempty reason, and a selected declaration host.
  * - Exclusions may use any supported public declaration in a selected file,
  *   regardless of the claim's symbol selector.

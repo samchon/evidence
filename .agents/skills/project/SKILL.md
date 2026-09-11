@@ -19,7 +19,7 @@ The [roadmap](https://github.com/samchon/evidence/issues/31) owns execution orde
 | --- | --- |
 | `packages/evidence/src` | Library and reusable CLI implementation |
 | `packages/evidence/src/structures` | Configuration, claim, reference, and base interfaces |
-| `packages/evidence/src/typings` | Symbol selectors and diagnostic severity |
+| `packages/evidence/src/typings` | Language identifiers, symbol selectors, and diagnostic severity |
 | `packages/evidence/src/executable` | Small Node CLI bootstraps |
 | `packages/evidence/assets` | Future packaged grammar WASM and license notices |
 | `test/src/index.ts` | DynamicExecutor unit-test entry point |

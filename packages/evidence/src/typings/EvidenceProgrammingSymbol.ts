@@ -7,8 +7,7 @@
  *
  * TypeScript classification:
  *
- * - Types include exported classes, interfaces, type aliases, and namespaces.
- *   Enums are excluded.
+ * - Type declarations must be exported; enums are excluded.
  * - Functions include:
  *   - Exported functions and consts initialized with arrow/function expressions,
  *     including parentheses and type-only wrappers.
@@ -54,7 +53,6 @@
  *
  * Types and namespaces contain their declared descendants. Ordinary citations
  * and permitted exclusions cover selected descendants, and unselected ancestors
- * remain addressable. Any supported public declaration in a claim file may
- * carry an exclusion even when its kind is omitted from the claim selector.
+ * remain addressable.
  */
 export type EvidenceProgrammingSymbol = "type" | "function" | "property";

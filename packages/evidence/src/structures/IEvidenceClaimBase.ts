@@ -56,6 +56,7 @@ export interface IEvidenceClaimBase<
    * - Programming: type, function, property.
    * - Database: model, column, relation.
    * - Markdown: file, h1, h2, h3, h4.
+   * - Swagger: operation.
    *
    * This selects claim hosts; each reference selects the units they must cover.
    */
@@ -73,8 +74,9 @@ export interface IEvidenceClaimBase<
   evidenceExcludeCarriers?: string[];
 
   /**
-   * One reference or a nonempty array. Each reference requires complete coverage
-   * independently; coverage is never pooled between references.
+   * One reference or a nonempty array, with any artifact family allowed for every
+   * claim. Each reference requires complete coverage independently; coverage is
+   * never pooled between references.
    */
   reference: IEvidenceReference | IEvidenceReference[];
 }

@@ -4,7 +4,6 @@ import type { IEvidenceClaimBase } from "./IEvidenceClaimBase";
 
 /**
  * Database schema declarations that cite evidence in documentation comments.
- * The type selects the schema language; files and symbol select its declarations.
  *
  * Prisma host rules:
  *

@@ -2,21 +2,15 @@ import type { EvidenceMarkdownSymbol } from "../typings/EvidenceMarkdownSymbol";
 import type { IEvidenceReferenceBase } from "./IEvidenceReferenceBase";
 
 /** Markdown documents and sections that the owning claim must cite. */
-export interface IEvidenceMarkdownReference extends IEvidenceReferenceBase<"markdown"> {
+export interface IEvidenceMarkdownReference extends IEvidenceReferenceBase<
+  "markdown",
+  EvidenceMarkdownSymbol
+> {
   /**
-   * Required Markdown file globs relative to root, using the ordered include and
-   * exclude rules of claim file globs. Every matching regular file
-   * is parsed regardless of extension; exclude non-Markdown assets explicitly.
+   * Markdown file globs relative to root, using claim glob rules. Every matching
+   * regular file is parsed regardless of extension; exclude non-Markdown assets.
    */
   files: string[];
-
-  /**
-   * Evidence node kinds; accepts one kind or a nonempty array. Unselected
-   * ancestors remain addressable as aggregate targets.
-   *
-   * @default ["file", "h1", "h2", "h3", "h4"]
-   */
-  symbol?: EvidenceMarkdownSymbol | EvidenceMarkdownSymbol[];
 
   /**
    * Require every selected claim host to answer every selected Markdown item.
