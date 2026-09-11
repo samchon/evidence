@@ -27,8 +27,8 @@ export async function test_graph_review_self_reference(): Promise<void> {
       Re-read a cited rule when its content changes.
 
       <!--
-      @evidence ./rules.md#["review-discipline"] Enforces this rule on its own section.
-      @evidenceReview ./rules.md#["review-discipline"] #${expected} Read the section and checked the self-reference.
+      @evidence ./rules.md#review-discipline Enforces this rule on its own section.
+      @evidenceReview ./rules.md#review-discipline #${expected} Read the section and checked the self-reference.
       -->
     `,
   );
@@ -74,7 +74,12 @@ export async function test_graph_review_self_reference(): Promise<void> {
 
 async function analyze(content: string): Promise<IEvidenceInventory> {
   return new EvidenceMarkdownAdapter().analyze(
-    TestSourceSnapshot.create("docs/rules.md", content),
+    TestSourceSnapshot.create(
+      "rules.md",
+      content,
+      ["rules.md"],
+      "/project/docs",
+    ),
   );
 }
 

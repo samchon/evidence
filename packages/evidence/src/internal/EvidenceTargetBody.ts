@@ -25,15 +25,15 @@ export namespace EvidenceTargetBody {
   export function check(target: string, forcedFile: boolean): void {
     if (target === "")
       throw new Error("Name the target before explaining the acknowledgement.");
+    if (!forcedFile) return;
     const hash = target.indexOf("#");
     if (hash < 0) {
-      if (forcedFile)
-        throw new Error(
-          "Write a file path followed by '#' and a public accessor, such as ../calculator.ts#add.",
-        );
-      return;
+      throw new Error(
+        "Write a file path followed by '#' and a public accessor, such as ../calculator.ts#add.",
+      );
     }
     const file = target.slice(0, hash);
+    if (file === "") throw new Error("Name the file before '#'.");
     const decoded = decodeURIComponent(file);
     if (
       decoded.includes("\0") ||
@@ -41,13 +41,6 @@ export namespace EvidenceTargetBody {
       decoded.includes("\n")
     )
       throw new Error("Target paths cannot contain NUL or line breaks.");
-    // Markdown anchors and operation paths retain their own token grammar.
-    if (
-      !forcedFile &&
-      (/\.(?:md|markdown|mdx)$/i.test(decoded) || /^[A-Z]+:\//.test(decoded))
-    )
-      return;
-    if (file === "") throw new Error("Name the file before '#'.");
     EvidenceAccessor.parse(target.slice(hash + 1));
   }
 }

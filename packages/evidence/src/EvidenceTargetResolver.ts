@@ -4,6 +4,7 @@ import { EvidenceAccessor } from "./EvidenceAccessor";
 import { EvidenceFileTarget } from "./EvidenceFileTarget";
 import { EvidenceInventory } from "./EvidenceInventory";
 import { InventoryMerge } from "./internal/InventoryMerge";
+import { MarkdownTarget } from "./internal/MarkdownTarget";
 import type { IEvidenceTargetCandidate } from "./internal/IEvidenceTargetCandidate";
 import type { IEvidenceAddress } from "./structures/IEvidenceAddress";
 import type { IEvidenceDiagnostic } from "./structures/IEvidenceDiagnostic";
@@ -22,6 +23,7 @@ export class EvidenceTargetResolver {
   private readonly selectedFiles = new Set<string>();
   private readonly physicalFiles = new Set<string>();
   private readonly publicFiles = new Map<string, Set<string>>();
+  private readonly markdownFiles = new Map<string, Set<string>>();
 
   public constructor(inventories: IEvidenceInventory[]) {
     this.index = new EvidenceInventory(inventories);
@@ -42,6 +44,29 @@ export class EvidenceTargetResolver {
         this.publicFiles.set(file, spellings);
       }
       spellings.add(address.file);
+    }
+    const markdownSources = new Set(
+      this.inventory.units
+        .filter((unit) => unit.type === "markdown")
+        .flatMap((unit) =>
+          unit.sites.map((site) => EvidenceFileTarget.normalize(site.file)),
+        ),
+    );
+    for (const source of this.inventory.sources) {
+      if (
+        !markdownSources.has(EvidenceFileTarget.normalize(source.physicalPath))
+      )
+        continue;
+      for (const address of source.addresses) {
+        if (address.selected === false) continue;
+        const relative = MarkdownTarget.normalize(address.relative);
+        let files = this.markdownFiles.get(relative);
+        if (files === undefined) {
+          files = new Set<string>();
+          this.markdownFiles.set(relative, files);
+        }
+        files.add(address.absolute);
+      }
     }
   }
 
@@ -70,14 +95,35 @@ export class EvidenceTargetResolver {
         ),
       );
 
-    const origins = InventoryMerge.unique(
-      host.origins ?? [host.file],
-      (origin) => EvidenceFileTarget.normalize(origin),
-    );
     const addresses: IEvidenceAddress[] = [];
     try {
-      for (const origin of origins)
-        addresses.push(EvidenceFileTarget.parse(statement.target, origin));
+      if (this.markdownReference(ids)) {
+        const target = MarkdownTarget.parse(statement.target);
+        for (const file of this.markdownFiles.get(target.file) ?? [])
+          addresses.push({ file, segments: target.segments });
+        if (addresses.length === 0) {
+          if (!this.inventory.complete) return this.incomplete(statement, []);
+          return this.failure(
+            "missing-file",
+            [],
+            [],
+            [],
+            this.diagnostic(
+              statement,
+              "target-missing-file",
+              `Markdown target file '${target.file}' is not among the selected reference files.`,
+              "Correct the root-relative Markdown path or include that file in the reference.",
+            ),
+          );
+        }
+      } else {
+        const origins = InventoryMerge.unique(
+          host.origins ?? [host.file],
+          (origin) => EvidenceFileTarget.normalize(origin),
+        );
+        for (const origin of origins)
+          addresses.push(EvidenceFileTarget.parse(statement.target, origin));
+      }
     } catch (cause) {
       return this.failure(
         "malformed",
@@ -98,21 +144,7 @@ export class EvidenceTargetResolver {
       JSON.stringify([address.file, address.segments]),
     );
     if (!this.inventory.complete)
-      return {
-        status: "incomplete",
-        addresses: uniqueAddresses,
-        units: [],
-        withdrawals: [],
-        diagnostics: [
-          ...this.inventory.diagnostics,
-          this.diagnostic(
-            statement,
-            "target-incomplete",
-            "The target cannot be trusted because its reference inventory is incomplete.",
-            "Resolve the reference inventory diagnostics before evaluating this citation.",
-          ),
-        ],
-      };
+      return this.incomplete(statement, uniqueAddresses);
     const candidates: IEvidenceTargetCandidate[] = [];
     for (const address of uniqueAddresses) {
       const file = EvidenceFileTarget.normalize(address.file);
@@ -252,6 +284,27 @@ export class EvidenceTargetResolver {
     };
   }
 
+  private incomplete(
+    statement: IEvidenceTargetStatement,
+    addresses: IEvidenceAddress[],
+  ): IEvidenceTargetResolution {
+    return {
+      status: "incomplete",
+      addresses,
+      units: [],
+      withdrawals: [],
+      diagnostics: [
+        ...this.inventory.diagnostics,
+        this.diagnostic(
+          statement,
+          "target-incomplete",
+          "The target cannot be trusted because its reference inventory is incomplete.",
+          "Resolve the reference inventory diagnostics before evaluating this citation.",
+        ),
+      ],
+    };
+  }
+
   private diagnostic(
     statement: IEvidenceTargetStatement,
     code: string,
@@ -278,6 +331,17 @@ export class EvidenceTargetResolver {
       const code = this.errorCode(cause);
       return code === "ENOENT" || code === "ENOTDIR" ? "missing" : "incomplete";
     }
+  }
+
+  private markdownReference(ids: string[]): boolean {
+    const selected = new Set(ids);
+    let found = false;
+    for (const unit of this.inventory.units) {
+      if (!selected.has(unit.id)) continue;
+      if (unit.type !== "markdown") return false;
+      found = true;
+    }
+    return found;
   }
 
   private errorCode(cause: unknown): string | undefined {

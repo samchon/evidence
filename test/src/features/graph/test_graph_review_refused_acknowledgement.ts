@@ -29,8 +29,8 @@ export async function test_graph_review_refused_acknowledgement(): Promise<void>
       "src/pricing.ts",
       dedent`
         /**
-         * @evidence ../docs/rules.md Implements all rules.
-         * @evidenceReview ../docs/rules.md Reviewed the aggregate statement.
+         * @evidence docs/rules.md Implements all rules.
+         * @evidenceReview docs/rules.md Reviewed the aggregate statement.
          */
         export function priceSale(): void {}
       `,

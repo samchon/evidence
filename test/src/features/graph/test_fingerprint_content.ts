@@ -11,7 +11,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_fingerprint_content(): Promise<void> {
   const baseline = dedent`
     export interface Sale {
-      /** @evidenceReview ../docs/rules.md#price #abcdef0 Read the price rule. */
+      /** @evidenceReview docs/rules.md#price #abcdef0 Read the price rule. */
       price: /* Currency amount. */ number;
     }
 

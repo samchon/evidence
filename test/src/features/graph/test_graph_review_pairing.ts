@@ -40,29 +40,29 @@ export async function test_graph_review_pairing(): Promise<void> {
     TestSourceSnapshot.create(
       "src/pairing.ts",
       dedent`
-        /** @evidence ../docs/spec.md#pricing Implements the pricing rule. */
+        /** @evidence docs/spec.md#pricing Implements the pricing rule. */
         export interface Merged {
           price: number;
         }
 
-        /** @evidenceReview ../docs/spec.md#pricing #${pricingFingerprint} Checked both halves of the merged contract. */
+        /** @evidenceReview docs/spec.md#pricing #${pricingFingerprint} Checked both halves of the merged contract. */
         export namespace Merged {
           export const category = "retail";
         }
 
         /**
-         * @evidenceExclude ../docs/spec.md#tax The tax service owns this rule.
-         * @evidenceReview ../docs/spec.md#tax #${taxFingerprint} Filed under the wrong question.
+         * @evidenceExclude docs/spec.md#tax The tax service owns this rule.
+         * @evidenceReview docs/spec.md#tax #${taxFingerprint} Filed under the wrong question.
          */
         export function wrongKind(): void {}
 
-        /** @evidenceReview ../docs/spec.md#pricing #${pricingFingerprint} Reviewed another host's citation. */
+        /** @evidenceReview docs/spec.md#pricing #${pricingFingerprint} Reviewed another host's citation. */
         export function orphan(): void {}
 
         /**
-         * @evidence ../docs/spec.md#pricing Implements the pricing rule.
-         * @evidenceReview ../docs/spec.md#pricing #${pricingFingerprint} Checked the cap once.
-         * @evidenceReview ../docs/spec.md#pricing #${pricingFingerprint} Checked the cap twice.
+         * @evidence docs/spec.md#pricing Implements the pricing rule.
+         * @evidenceReview docs/spec.md#pricing #${pricingFingerprint} Checked the cap once.
+         * @evidenceReview docs/spec.md#pricing #${pricingFingerprint} Checked the cap twice.
          */
         export function duplicate(): void {}
       `,

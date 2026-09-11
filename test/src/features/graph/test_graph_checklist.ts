@@ -40,12 +40,12 @@ export async function test_graph_checklist(): Promise<void> {
       "src/checks.ts",
       dedent`
         /**
-         * @evidence ../docs/rules.md#["no-hardcoding"] Uses injected policy.
-         * @evidence ../docs/rules.md#["no-whack-a-mole"] Repairs the shared cause.
+         * @evidence docs/rules.md#no-hardcoding Uses injected policy.
+         * @evidence docs/rules.md#no-whack-a-mole Repairs the shared cause.
          */
         export function thorough(): void {}
 
-        /** @evidence ../docs/rules.md#["no-hardcoding"] Uses injected policy. */
+        /** @evidence docs/rules.md#no-hardcoding Uses injected policy. */
         export function partial(): void {}
 
         export function empty(): void {}
@@ -109,7 +109,7 @@ export async function test_graph_checklist(): Promise<void> {
     TestSourceSnapshot.create(
       "src/file-check.ts",
       dedent`
-        /** @evidence ../docs/rules.md Answers only the document item. */
+        /** @evidence docs/rules.md Answers only the document item. */
         export function checksFile(): void {}
       `,
     ),
@@ -193,10 +193,10 @@ export async function test_graph_checklist(): Promise<void> {
     TestSourceSnapshot.create(
       "src/exclusions.ts",
       dedent`
-        /** @evidenceExclude ../docs/rules.md No checklist rule applies here. */
+        /** @evidenceExclude docs/rules.md No checklist rule applies here. */
         export function excluded(): void {}
 
-        /** @evidence ../docs/rules.md#["no-hardcoding"] Uses injected policy. */
+        /** @evidence docs/rules.md#no-hardcoding Uses injected policy. */
         export function localEvidence(): void {}
       `,
     ),
@@ -248,14 +248,14 @@ export async function test_graph_checklist(): Promise<void> {
       "src/local-rules.ts",
       dedent`
         /**
-         * @evidence ../docs/rules.md#["no-hardcoding"] Applies here.
-         * @evidenceExclude ../docs/rules.md#["no-hardcoding"] Does not apply here.
+         * @evidence docs/rules.md#no-hardcoding Applies here.
+         * @evidenceExclude docs/rules.md#no-hardcoding Does not apply here.
          */
         export function conflict(): void {}
 
         /**
-         * @evidenceExclude ../docs/rules.md No rules apply here.
-         * @evidenceExclude ../docs/rules.md#["no-hardcoding"] This rule also does not apply.
+         * @evidenceExclude docs/rules.md No rules apply here.
+         * @evidenceExclude docs/rules.md#no-hardcoding This rule also does not apply.
          */
         export function duplicate(): void {}
       `,
@@ -336,7 +336,7 @@ export async function test_graph_checklist(): Promise<void> {
       dedent`
         export function owing(): void {}
 
-        /** @evidenceExclude ../docs/rules.md#["no-hardcoding"] Shared exclusion. */
+        /** @evidenceExclude docs/rules.md#no-hardcoding Shared exclusion. */
         export const carrier = true;
       `,
     ),
@@ -494,7 +494,7 @@ export async function test_graph_checklist(): Promise<void> {
       dedent`
         export function owesAggregate(): void {}
 
-        /** @evidence ../docs/rules.md Answers every rule at once. */
+        /** @evidence docs/rules.md Answers every rule at once. */
         export const aggregateCarrier = true;
       `,
     ),

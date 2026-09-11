@@ -142,7 +142,7 @@ TypeScript instance members use `SomeClass.prototype.member`. File-qualified tar
 | Prisma model or field | `prisma:Sale`, `prisma:Sale.price` |
 | Swagger operation     | `POST:/sales`                      |
 
-Markdown paths resolve from the reference population's root. Markdown claims place tags in HTML comments; Prisma claims place them in documentation comments attached to schema declarations.
+Markdown paths resolve from the reference population's root. Backslashes are accepted as portable separators and leading `./` is ignored, while case and percent signs remain literal. The text after `#` is one exact Markdown anchor, so `docs/spec.md#price.v2` does not mean nested members. Markdown claims place tags in HTML comments; Prisma claims place them in documentation comments attached to schema declarations.
 
 Swagger claims read tags from each operation's `description`. For example, an operation can cite a Markdown requirement:
 
@@ -165,8 +165,8 @@ Set `requireReview: true` on a reference when every accepted acknowledgement mus
 
 ```ts
 /**
- * @evidence ../requirements.md#pricing Implements the pricing rule.
- * @evidenceReview ../requirements.md#pricing #4c0e8e1 Read the rule and exercised its boundary cases.
+ * @evidence docs/requirements.md#pricing Implements the pricing rule.
+ * @evidenceReview docs/requirements.md#pricing #4c0e8e1 Read the rule and exercised its boundary cases.
  */
 export function calculatePrice(): number {
   return 0;
