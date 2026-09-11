@@ -12,6 +12,7 @@ export { EvidenceMarkdownAdapter } from "./EvidenceMarkdownAdapter";
 export { EvidenceParser } from "./EvidenceParser";
 export { EvidenceParserError } from "./EvidenceParserError";
 export { EvidencePrismaAdapter } from "./EvidencePrismaAdapter";
+export { EvidencePythonAdapter } from "./EvidencePythonAdapter";
 export type { EvidenceParseSession } from "./EvidenceParseSession";
 export { EvidenceSourceLoader } from "./EvidenceSourceLoader";
 export { EvidenceSwaggerAdapter } from "./EvidenceSwaggerAdapter";

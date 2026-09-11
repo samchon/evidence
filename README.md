@@ -96,7 +96,7 @@ try {
 
 The runtime reads checksum-verified packaged grammars lazily and performs no grammar downloads or native compilation. Each parse owns its parser, tree, and query cache. `concurrency` limits live sessions and defaults to four; `close()` waits for accepted callbacks and prevents new requests. A callback must not await another parse or close on the same runtime. Syntax errors, missing tokens, incompatible queries, and truncated query results throw `EvidenceParserError` with a stable `code` instead of returning incomplete captures. `session.range(node)` produces a half-open span with zero-based UTF-16 offsets and one-based lines and UTF-16 columns in the original source string.
 
-`EvidenceLanguageRegistry.list()` reports syntax variants separately from certified Evidence adapter capabilities. TypeScript and JavaScript entries include adapter metadata; grammar-only entries omit it. `select(type, file)` uses the configured language and case-sensitive logical file name, so `.h` follows `c` or `cpp`, and `.tsx` selects the TSX grammar within TypeScript. `parser.grammars()` reports pinned asset provenance without loading WASM; `parser.state()` exposes the instance's loaded grammar IDs and active/queued session counts. Grammar metadata alone does not establish public export resolution or graph coverage.
+`EvidenceLanguageRegistry.list()` reports syntax variants separately from certified Evidence adapter capabilities. TypeScript, JavaScript, and Python entries include adapter metadata; grammar-only entries omit it. `select(type, file)` uses the configured language and case-sensitive logical file name, so `.h` follows `c` or `cpp`, and `.tsx` selects the TSX grammar within TypeScript. `parser.grammars()` reports pinned asset provenance without loading WASM; `parser.state()` exposes the instance's loaded grammar IDs and active/queued session counts. Grammar metadata alone does not establish public export resolution or graph coverage.
 
 For adapter development, `IEvidenceAdapter.analyze(snapshot)` returns an ordinary `IEvidenceInventory`. `new EvidenceInventory(inventories)` combines adapter-established identities, checks declaration ownership and original source coordinates, and reconciles withdrawal across merged declarations. `select(ids)` returns an independent population with its structural ancestors and eligible hosts; `resolve({ file, segments }, ids)` looks up an exact public address inside that scope. Check `complete` and `diagnostics` before using a population. Reviews have a separate collection and never supply acknowledgements.
 
@@ -127,6 +127,12 @@ JavaScript ESM follows direct exports, aliases, defaults, imported bindings that
 
 Only attached JSDoc carries JavaScript evidence, exclusions, or reviews. JSX text, strings, templates, regular expressions, line comments, ordinary block comments, and detached JSDoc do not create evidence edges. Exported declarations without JSDoc remain policy hosts.
 
+`EvidencePythonAdapter` parses `.py` and `.pyi` with the packaged Python grammar. Module classes and explicit type aliases are `type` units; functions, async functions, and methods are `function` units; simple module/class assignments and direct `self.name` assignments in `__init__` are `property` units. Nested classes retain their owners. Static and class methods use `Class.member`; ordinary methods, property-decorated methods, and instance fields use `Class.prototype.member`. Leading-underscore class members and special methods are excluded. An underscored module declaration can still be exported explicitly through `__all__`.
+
+A static `__all__` accepts literal string lists or tuples, `+` composition, and top-level `+=` additions. Without `__all__`, supported module declarations and statically resolved imported bindings are public unless their local name starts with an underscore. Relative imports resolve from the importing package directory; absolute imports resolve from the configured population root. Resolution follows local `.py`, `.pyi`, and package `__init__` modules already present in the source snapshot, including aliases, namespace imports, star imports, and finite cycles. Missing local sources, unresolved explicit names, conditional public declarations, and dynamic `__all__` mutation leave analysis incomplete.
+
+Python evidence can live in a real class or function docstring, or in a same-indent `#` comment run immediately before a supported declaration. A comment before decorators attaches across the decorator list. Assigned and otherwise arbitrary strings, module docstrings, detached comments, and local nested helpers do not become public evidence hosts. Decorators, imports, metaclasses, module initialization, and dynamic attribute hooks are never executed; members they generate remain outside the declared-source guarantee.
+
 Markdown preserves its document outline, and Prisma preserves its schema structure. Swagger claims select local JSON/YAML documents with `files` globs. Swagger references use `file` for an exact local JSON/YAML path or an HTTP(S) URL, with an optional `root` for local paths.
 
 Markdown section anchors prefer a valid trailing `{#anchor}`. Otherwise, the adapter lowercases the heading, retains Unicode letters, numbers, and underscores, removes punctuation, and collapses whitespace or hyphens. Repeated anchors remain distinct sections and make the shared target ambiguous until the author supplies unique anchors.
@@ -142,15 +148,17 @@ Write `@evidence <target> <reason>` in a declaration's documentation comment. Co
 /** @evidence ../SomeNamespace.ts#SomeNamespace.property Supplies the namespace value. */
 ```
 
-TypeScript instance members use `SomeClass.prototype.member`. File-qualified targets identify declarations without compiler import-scoped `{@link Symbol}` lookup.
+TypeScript and Python instance members use `SomeClass.prototype.member`. File-qualified targets identify declarations without compiler import-scoped `{@link Symbol}` lookup.
 
-| Target                | Example                            |
-| --------------------- | ---------------------------------- |
-| Code symbol           | `../calculator.ts#add`             |
-| Markdown document     | `docs/requirements.md`             |
-| Markdown heading      | `docs/requirements.md#pricing`     |
-| Prisma model or field | `prisma:Sale`, `prisma:Sale.price` |
-| Swagger operation     | `POST:/sales`                      |
+| Target                 | Example                            |
+| ---------------------- | ---------------------------------- |
+| Code symbol            | `../calculator.ts#add`             |
+| Python symbol          | `../calculator.py#add`             |
+| Python instance member | `../sale.py#Sale.prototype.total`  |
+| Markdown document      | `docs/requirements.md`             |
+| Markdown heading       | `docs/requirements.md#pricing`     |
+| Prisma model or field  | `prisma:Sale`, `prisma:Sale.price` |
+| Swagger operation      | `POST:/sales`                      |
 
 Markdown paths resolve from the reference population's root. Backslashes are accepted as portable separators and leading `./` is ignored, while case and percent signs remain literal. The text after `#` is one exact Markdown anchor, so `docs/spec.md#price.v2` does not mean nested members. Markdown claims place tags in HTML comments. Prisma claims use `///` or block documentation attached to models and members; an unattached top-level `///` run may carry exclusions only.
 
