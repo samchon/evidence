@@ -15,7 +15,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "rimraf lib && ttsc -p tsconfig.json",
+    "build": "rimraf lib && ttsc",
     "prepack": "pnpm run build && node ../../scripts/copy-readme-and-license.js"
   },
   "dependencies": {

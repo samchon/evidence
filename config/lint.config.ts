@@ -1,3 +1,4 @@
+import type {} from "@ttsc/evidence";
 import type { ITtscLintConfig } from "@ttsc/lint";
 
 /**

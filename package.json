@@ -11,13 +11,7 @@
     "check:format": "prettier --check ."
   },
   "devDependencies": {
-    "@ttsc/evidence": "catalog:typescript",
-    "@ttsc/lint": "catalog:typescript",
-    "@types/node": "catalog:utils",
-    "prettier": "catalog:typescript",
-    "rimraf": "catalog:utils",
-    "ttsc": "catalog:typescript",
-    "typescript": "catalog:typescript"
+    "prettier": "catalog:typescript"
   },
   "repository": {
     "type": "git",
