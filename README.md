@@ -96,7 +96,7 @@ try {
 
 The runtime reads checksum-verified packaged grammars lazily and performs no grammar downloads or native compilation. Each parse owns its parser, tree, and query cache. `concurrency` limits live sessions and defaults to four; `close()` waits for accepted callbacks and prevents new requests. A callback must not await another parse or close on the same runtime. Syntax errors, missing tokens, incompatible queries, and truncated query results throw `EvidenceParserError` with a stable `code` instead of returning incomplete captures. `session.range(node)` produces a half-open span with zero-based UTF-16 offsets and one-based lines and UTF-16 columns in the original source string.
 
-`EvidenceLanguageRegistry.list()` reports syntax variants separately from certified Evidence adapter capabilities. TypeScript, JavaScript, Python, Go, and Rust entries include adapter metadata; grammar-only entries omit it. `select(type, file)` uses the configured language and case-sensitive logical file name, so `.h` follows `c` or `cpp`, and `.tsx` selects the TSX grammar within TypeScript. `parser.grammars()` reports pinned asset provenance without loading WASM; `parser.state()` exposes the instance's loaded grammar IDs and active/queued session counts. Grammar metadata alone does not establish public export resolution or graph coverage.
+`EvidenceLanguageRegistry.list()` reports syntax variants separately from certified Evidence adapter capabilities. TypeScript, JavaScript, Python, Go, Rust, and Java entries include adapter metadata; grammar-only entries omit it. `select(type, file)` uses the configured language and case-sensitive logical file name, so `.h` follows `c` or `cpp`, and `.tsx` selects the TSX grammar within TypeScript. `parser.grammars()` reports pinned asset provenance without loading WASM; `parser.state()` exposes the instance's loaded grammar IDs and active/queued session counts. Grammar metadata alone does not establish public export resolution or graph coverage.
 
 For adapter development, `IEvidenceAdapter.analyze(snapshot)` returns an ordinary `IEvidenceInventory`. `new EvidenceInventory(inventories)` combines adapter-established identities, checks declaration ownership and original source coordinates, and reconciles withdrawal across merged declarations. `select(ids)` returns an independent population with its structural ancestors and eligible hosts; `resolve({ file, segments }, ids)` looks up an exact public address inside that scope. Check `complete` and `diagnostics` before using a population. Reviews have a separate collection and never supply acknowledgements.
 
@@ -143,6 +143,12 @@ Unrestricted `pub` establishes the external surface; restricted visibility does 
 
 Rust evidence attaches to outer or inner doc comments and static `#[doc = "..."]` attributes. The adapter does not run Cargo, rustc, build scripts, or macros. Missing or ambiguous module files, `#[path]`, unresolved public reexports, item-position macros, expansion attributes, `cfg` alternatives, blanket or external impl ownership, and syntax failures leave the inventory incomplete. Expression macros inside function bodies do not affect declaration completeness.
 
+`EvidenceJavaAdapter` parses selected `.java` files as one source-public population with `tree-sitter-java` v0.23.5. Public classes, interfaces, enums, annotations, records, and publicly reachable nested types are `type` units. Public methods, including interface default and static methods, are `function` units. Public fields, interface constants, record components, enum constants, and annotation elements are `property` units. Constructors and compiler-generated record or enum methods do not form units.
+
+Package names and nested owners establish semantic identity, while a file target begins with the top-level type, such as `Sale.java#Sale.calculate`. Methods with the same owner and name form one overload-family unit with every declaration site. A field and method may share a target spelling; the reference's `symbol` selection disambiguates them, while selecting both makes the target ambiguous. Imports and inherited members do not create units. The adapter applies Java source visibility independently of JPMS exports and does not execute annotation processors; generated source participates only when selected explicitly.
+
+Only Javadoc immediately attached to a supported public declaration carries Java evidence, exclusions, reviews, or withdrawal. Attachment survives intervening declaration annotations and modifiers. Tags inside `{@code ...}`, `{@literal ...}`, `{@snippet ...}`, `<code>...</code>`, and `<pre>...</pre>` examples stay inert. Ordinary comments, strings, text blocks, and Javadoc on unpublished declarations do not create evidence edges. Conflicting selected identities and syntax failures leave the inventory incomplete.
+
 Markdown preserves its document outline, and Prisma preserves its schema structure. Swagger claims select local JSON/YAML documents with `files` globs. Swagger references use `file` for an exact local JSON/YAML path or an HTTP(S) URL, with an optional `root` for local paths.
 
 Markdown section anchors prefer a valid trailing `{#anchor}`. Otherwise, the adapter lowercases the heading, retains Unicode letters, numbers, and underscores, removes punctuation, and collapses whitespace or hyphens. Repeated anchors remain distinct sections and make the shared target ambiguous until the author supplies unique anchors.
@@ -158,7 +164,7 @@ Write `@evidence <target> <reason>` in a declaration's documentation comment. Co
 /** @evidence ../SomeNamespace.ts#SomeNamespace.property Supplies the namespace value. */
 ```
 
-TypeScript and Python instance members use `SomeClass.prototype.member`; Go receiver and Rust inherent members use `SomeType.member`. Rust trait impl members use a quoted `impl Trait` segment. File-qualified targets identify declarations without compiler import-scoped `{@link Symbol}` lookup.
+TypeScript and Python instance members use `SomeClass.prototype.member`; Go receiver, Rust inherent, and Java members use `SomeType.member`. Rust trait impl members use a quoted `impl Trait` segment. File-qualified targets identify declarations without compiler import-scoped `{@link Symbol}` lookup.
 
 | Target                 | Example                               |
 | ---------------------- | ------------------------------------- |
@@ -166,6 +172,8 @@ TypeScript and Python instance members use `SomeClass.prototype.member`; Go rece
 | Go receiver method     | `../sale.go#Sale.Calculate`           |
 | Rust inherent method   | `../sale.rs#Sale.calculate`           |
 | Rust trait impl method | `../sale.rs#Sale["impl Service"].run` |
+| Java overload family   | `../Sale.java#Sale.calculate`         |
+| Java record component  | `../Point.java#Point.x`               |
 | Python symbol          | `../calculator.py#add`                |
 | Python instance member | `../sale.py#Sale.prototype.total`     |
 | Markdown document      | `docs/requirements.md`                |

@@ -146,6 +146,20 @@ export namespace EvidenceLanguageRegistry {
       type: "java",
       name: "Java",
       grammars: [{ id: "java", extensions: [".java"], filenames: [] }],
+      adapter: {
+        entry: "EvidenceJavaAdapter",
+        symbols: ["type", "function", "property"],
+        publicSurface:
+          "Java source-public declarations recognized by tree-sitter-java v0.23.5, independent of JPMS exports.",
+        comments: ["attached Javadoc"],
+        unsupported: [
+          "JPMS package export enforcement",
+          "annotation processor execution",
+          "compiler-generated record and enum methods",
+          "inherited members",
+          "generated declarations absent from selected source",
+        ],
+      },
     },
     {
       type: "csharp",
