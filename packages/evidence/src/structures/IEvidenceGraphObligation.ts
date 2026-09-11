@@ -1,4 +1,5 @@
 import type { IEvidenceGraphEdge } from "./IEvidenceGraphEdge";
+import type { IEvidenceGraphHostCoverage } from "./IEvidenceGraphHostCoverage";
 
 /** Coverage ledger for one claim/reference pair. */
 export interface IEvidenceGraphObligation {
@@ -10,4 +11,6 @@ export interface IEvidenceGraphObligation {
   coveredUnitIds: string[];
   missingUnitIds: string[];
   edges: IEvidenceGraphEdge[];
+  /** Per-host checklist coverage; otherwise empty. */
+  hostCoverage: IEvidenceGraphHostCoverage[];
 }

@@ -8,11 +8,11 @@ import { EvidenceAccessor } from "./EvidenceAccessor";
 export namespace EvidenceFileTarget {
   export function parse(target: string, origin: string): IEvidenceAddress {
     const hash = target.indexOf("#");
-    if (hash < 0 || hash === target.length - 1)
+    if (hash === target.length - 1)
       throw new Error(
-        "Write a file path followed by '#' and a public accessor, such as ../calculator.ts#add.",
+        "Name a public accessor after '#', or omit '#' when citing the file unit itself.",
       );
-    const encoded = target.slice(0, hash);
+    const encoded = hash < 0 ? target : target.slice(0, hash);
     if (encoded === "") throw new Error("Name the file before '#'.");
     let decoded: string;
     try {
@@ -30,7 +30,7 @@ export namespace EvidenceFileTarget {
       throw new Error("Target paths cannot contain NUL or line breaks.");
     return {
       file: resolve(origin, decoded),
-      segments: EvidenceAccessor.parse(target.slice(hash + 1)),
+      segments: hash < 0 ? [] : EvidenceAccessor.parse(target.slice(hash + 1)),
     };
   }
 
@@ -39,7 +39,9 @@ export namespace EvidenceFileTarget {
     const encoded = encodeURIComponent(normalize(address.file))
       .replaceAll("%2F", "/")
       .replace(/^([A-Za-z])%3A\//u, "$1:/");
-    return encoded + "#" + EvidenceAccessor.format(address.segments);
+    return address.segments.length === 0
+      ? encoded
+      : encoded + "#" + EvidenceAccessor.format(address.segments);
   }
 
   /** Normalizes separators and dot segments without consulting the filesystem. */

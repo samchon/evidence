@@ -35,6 +35,22 @@ export async function test_target_paths(): Promise<void> {
     "D:/project/src/calculator.ts#add",
   );
 
+  // Omitting the accessor addresses an artifact's file unit directly.
+  const file = EvidenceFileTarget.parse(
+    "../docs/requirements.md",
+    "/project/src/calculator.ts",
+  );
+
+  TestValidator.equals("file unit target", file, {
+    file: "/project/docs/requirements.md",
+    segments: [],
+  });
+  TestValidator.equals(
+    "canonical file unit target",
+    EvidenceFileTarget.format(file),
+    "/project/docs/requirements.md",
+  );
+
   // Malformed percent escapes and drive-relative paths cannot depend on process state.
   await TestValidator.error("invalid percent escape", async () =>
     EvidenceFileTarget.parse("../bad%2.ts#value", "/project/docs/review.md"),

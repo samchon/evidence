@@ -1,5 +1,6 @@
 import type { IEvidenceDeclaration } from "../../../packages/evidence/src/structures/IEvidenceDeclaration";
 import type { IEvidenceGraphResolution } from "../../../packages/evidence/src/structures/IEvidenceGraphResolution";
+import type { IEvidenceGraphHostCoverage } from "../../../packages/evidence/src/structures/IEvidenceGraphHostCoverage";
 import type { IEvidenceGraphObligation } from "../../../packages/evidence/src/structures/IEvidenceGraphObligation";
 import type { IEvidenceGraphResult } from "../../../packages/evidence/src/structures/IEvidenceGraphResult";
 import type { IEvidenceHost } from "../../../packages/evidence/src/structures/IEvidenceHost";
@@ -74,5 +75,19 @@ export namespace TestGraph {
     const obligation = claimResult.obligations[reference];
     if (obligation === undefined) throw new Error("Missing graph obligation.");
     return obligation;
+  }
+
+  export function hostCoverage(
+    result: IEvidenceGraphResult,
+    claim: number,
+    reference: number,
+    hostUnitId: string,
+  ): IEvidenceGraphHostCoverage {
+    const coverage = obligation(result, claim, reference).hostCoverage.find(
+      (candidate) => candidate.hostUnitId === hostUnitId,
+    );
+    if (coverage === undefined)
+      throw new Error(`Missing graph host coverage: ${hostUnitId}`);
+    return coverage;
   }
 }
