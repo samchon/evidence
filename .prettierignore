@@ -1,0 +1,8 @@
+pnpm-lock.yaml
+node_modules/
+lib/
+coverage/
+packages/evidence/README.md
+packages/evidence/LICENSE
+.wiki/
+.discussions/

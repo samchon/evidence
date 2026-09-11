@@ -1,0 +1,32 @@
+{
+  "name": "@samchon/evidence-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Standalone cross-language Evidence Graph workspace.",
+  "type": "module",
+  "packageManager": "pnpm@11.17.0",
+  "engines": {
+    "node": ">=22.15.0"
+  },
+  "scripts": {
+    "build": "pnpm -r run build",
+    "typecheck": "pnpm --filter @samchon/evidence run build && pnpm -r run typecheck && tsc -p scripts/tsconfig.json",
+    "test": "pnpm build && pnpm --filter @samchon/evidence-test run test",
+    "verify:package": "pnpm build && pnpm --filter @samchon/evidence-test run verify:package",
+    "format": "prettier --write .",
+    "check:format": "prettier --check ."
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "prettier": "catalog:",
+    "rimraf": "catalog:",
+    "ttsc": "catalog:",
+    "typescript": "catalog:"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/samchon/evidence.git"
+  },
+  "author": "Jeongho Nam",
+  "license": "MIT"
+}

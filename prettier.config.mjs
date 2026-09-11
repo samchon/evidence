@@ -1,0 +1,8 @@
+export default {
+  printWidth: 80,
+  semi: true,
+  tabWidth: 2,
+  trailingComma: "all",
+  proseWrap: "never",
+  embeddedLanguageFormatting: "off",
+};

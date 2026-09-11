@@ -1,0 +1,20 @@
+{
+  "name": "@samchon/evidence-test",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "rimraf lib && tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --test lib/features/*.test.js",
+    "verify:package": "node --test lib/package/*.test.js"
+  },
+  "devDependencies": {
+    "@samchon/evidence": "workspace:*",
+    "@types/node": "catalog:",
+    "rimraf": "catalog:",
+    "tar": "catalog:",
+    "ttsc": "catalog:",
+    "typescript": "catalog:"
+  }
+}
