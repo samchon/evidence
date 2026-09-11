@@ -20,6 +20,7 @@
     "prepack": "pnpm run build && node ../../scripts/prepare-parser-assets.js --check && node ../../scripts/copy-readme-and-license.js"
   },
   "dependencies": {
+    "@prisma/prisma-schema-wasm": "catalog:prisma",
     "@typia/utils": "catalog:samchon",
     "typia": "catalog:samchon",
     "web-tree-sitter": "catalog:tree-sitter"

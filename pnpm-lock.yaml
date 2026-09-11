@@ -5,6 +5,10 @@ settings:
   excludeLinksFromLockfile: false
 
 catalogs:
+  prisma:
+    '@prisma/prisma-schema-wasm':
+      specifier: 7.10.0-2.d0368e25c88e68caa4d283b5f2d88d1b76ed9356
+      version: 7.10.0-2.d0368e25c88e68caa4d283b5f2d88d1b76ed9356
   samchon:
     '@nestia/e2e':
       specifier: ^13.0.2
@@ -71,6 +75,9 @@ importers:
 
   packages/evidence:
     dependencies:
+      '@prisma/prisma-schema-wasm':
+        specifier: catalog:prisma
+        version: 7.10.0-2.d0368e25c88e68caa4d283b5f2d88d1b76ed9356
       '@typia/utils':
         specifier: catalog:samchon
         version: 14.0.6

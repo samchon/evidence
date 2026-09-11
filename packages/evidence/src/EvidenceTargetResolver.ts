@@ -5,6 +5,7 @@ import { EvidenceFileTarget } from "./EvidenceFileTarget";
 import { EvidenceInventory } from "./EvidenceInventory";
 import { InventoryMerge } from "./internal/InventoryMerge";
 import { MarkdownTarget } from "./internal/MarkdownTarget";
+import { PrismaTarget } from "./internal/PrismaTarget";
 import type { IEvidenceTargetCandidate } from "./internal/IEvidenceTargetCandidate";
 import type { IEvidenceAddress } from "./structures/IEvidenceAddress";
 import type { IEvidenceDiagnostic } from "./structures/IEvidenceDiagnostic";
@@ -14,9 +15,10 @@ import type { IEvidenceTargetResolution } from "./structures/IEvidenceTargetReso
 import type { IEvidenceTargetStatement } from "./structures/IEvidenceTargetStatement";
 import type { IEvidenceUnit } from "./structures/IEvidenceUnit";
 import type { IEvidenceWithdrawal } from "./structures/IEvidenceWithdrawal";
+import type { EvidenceArtifactType } from "./typings/EvidenceArtifactType";
 import type { EvidenceTargetResolutionStatus } from "./typings/EvidenceTargetResolutionStatus";
 
-/** Resolves file-qualified citations against one selected reference population. */
+/** Resolves artifact targets against one selected reference population. */
 export class EvidenceTargetResolver {
   private readonly index: EvidenceInventory;
   private readonly inventory: IEvidenceInventory;
@@ -70,7 +72,7 @@ export class EvidenceTargetResolver {
     }
   }
 
-  /** Resolves all logical origins of one host without searching unrelated files by name. */
+  /** Resolves one target without searching unrelated files by name. */
   public async resolve(
     statement: IEvidenceTargetStatement,
     host: IEvidenceHost,
@@ -95,9 +97,10 @@ export class EvidenceTargetResolver {
         ),
       );
 
+    const type = this.referenceType(ids);
     const addresses: IEvidenceAddress[] = [];
     try {
-      if (this.markdownReference(ids)) {
+      if (type === "markdown") {
         const target = MarkdownTarget.parse(statement.target);
         for (const file of this.markdownFiles.get(target.file) ?? [])
           addresses.push({ file, segments: target.segments });
@@ -116,6 +119,8 @@ export class EvidenceTargetResolver {
             ),
           );
         }
+      } else if (type === "prisma") {
+        addresses.push(PrismaTarget.parse(statement.target));
       } else {
         const origins = InventoryMerge.unique(
           host.origins ?? [host.file],
@@ -145,6 +150,15 @@ export class EvidenceTargetResolver {
     );
     if (!this.inventory.complete)
       return this.incomplete(statement, uniqueAddresses);
+    if (type === "prisma") {
+      const candidates: IEvidenceTargetCandidate[] = uniqueAddresses.map(
+        (address) => ({
+          address,
+          resolution: this.index.resolve(address, ids),
+        }),
+      );
+      return this.resolveCandidates(statement, uniqueAddresses, candidates);
+    }
     const candidates: IEvidenceTargetCandidate[] = [];
     for (const address of uniqueAddresses) {
       const file = EvidenceFileTarget.normalize(address.file);
@@ -254,6 +268,7 @@ export class EvidenceTargetResolver {
         diagnostics: [],
       };
     }
+    const prisma = addresses.every((address) => address.file === "prisma:");
     return this.failure(
       "missing-member",
       addresses,
@@ -262,8 +277,12 @@ export class EvidenceTargetResolver {
       this.diagnostic(
         statement,
         "target-missing-member",
-        `Selected target file '${this.files(addresses)}' has no public selected address '${this.accessor(addresses)}'.`,
-        "Correct the accessor, export a supported public declaration, or include its symbol kind in this reference.",
+        prisma
+          ? `The selected Prisma schema has no public selected address '${statement.target}'.`
+          : `Selected target file '${this.files(addresses)}' has no public selected address '${this.accessor(addresses)}'.`,
+        prisma
+          ? "Correct the model or member name, or include its symbol kind in this reference."
+          : "Correct the accessor, export a supported public declaration, or include its symbol kind in this reference.",
       ),
     );
   }
@@ -333,15 +352,14 @@ export class EvidenceTargetResolver {
     }
   }
 
-  private markdownReference(ids: string[]): boolean {
+  private referenceType(ids: string[]): EvidenceArtifactType | undefined {
     const selected = new Set(ids);
-    let found = false;
+    const types = new Set<EvidenceArtifactType>();
     for (const unit of this.inventory.units) {
       if (!selected.has(unit.id)) continue;
-      if (unit.type !== "markdown") return false;
-      found = true;
+      types.add(unit.type);
     }
-    return found;
+    return types.size === 1 ? types.values().next().value : undefined;
   }
 
   private errorCode(cause: unknown): string | undefined {

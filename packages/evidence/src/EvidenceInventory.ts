@@ -239,10 +239,16 @@ export class EvidenceInventory {
     for (const host of this.data.hosts) {
       this.checkLocation(host, sources);
       if (host.attachment === "attached") {
-        if (host.unitIds.length === 0)
+        if (host.unitIds.length === 0 && host.siteId !== undefined)
           this.problem(
             "inventory-host",
-            `Attached host ${host.id} has no semantic owner.`,
+            `Attached semantic host ${host.id} has no semantic owner.`,
+            host,
+          );
+        if (host.unitIds.length !== 0 && host.siteId === undefined)
+          this.problem(
+            "inventory-host",
+            `Attached semantic host ${host.id} has no declaration site.`,
             host,
           );
         for (const id of host.unitIds) {

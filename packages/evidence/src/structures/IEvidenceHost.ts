@@ -7,9 +7,10 @@ export interface IEvidenceHost {
   range: IEvidenceSourceRange;
   /** Source paths for relative citations; omitted means file. Merging preserves every origin. */
   origins?: string[];
-  /** An attached host names a declaration site owned by every listed unit. */
+  /** Declaration site for a semantic host; absent on exclusion-only carriers. */
   siteId?: string;
   unitIds: string[];
+  /** Attached carriers may have no unit IDs when the artifact permits only exclusions. */
   attachment: "attached" | "unattached" | "unsupported";
   /** Explanation for an unsupported documentation position, supplied by its adapter. */
   problem?: string;
