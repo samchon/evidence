@@ -24,6 +24,7 @@ The [roadmap](https://github.com/samchon/evidence/issues/31) owns execution orde
 | `packages/evidence/assets` | Future packaged grammar WASM and license notices |
 | `test/src/index.ts` | DynamicExecutor unit-test entry point |
 | `test/src/features/<category>` | Exported logic unit-test functions |
+| `config/package.json` | Private workspace with dependencies for shared configuration |
 | `config/tsconfig.json` | Shared strict Node/TypeScript settings |
 | `config/lint.config.ts` | Shared lint rules extended by each project |
 | `scripts` | Plain CommonJS JavaScript maintenance scripts |
@@ -32,6 +33,10 @@ The [roadmap](https://github.com/samchon/evidence/issues/31) owns execution orde
 ## Dependencies And Distribution
 
 Use the root `packageManager` version. Keep `pnpm-workspace.yaml` to package globs and family catalogs: `samchon`, `typescript`, and `utils`. Dependency and peer versions belong there; package manifests use named `catalog:<family>` or `workspace:` references. Do not add pnpm policy options. Consumers explicitly install `typescript`, `ttsc`, and `@samchon/evidence`; the first two remain required peers. `ttsx` is an executable in `ttsc`, not another dependency. `@ttsc/lint` is a development dependency. Each package and the test workspace have their own `lint.config.ts` extending `config/lint.config.ts`; keep shared rules in that common file.
+
+Use `typia` for runtime type checks and `@typia/utils` for `dedent`. Keep both in the `samchon` catalog. Register the development-only `@ttsc/evidence` contributor in each project's lint config and enable `evidence/singular` at error severity in the shared rules.
+
+Keep compiler dependencies in the workspaces that use them, including `config` for its typed lint configuration. The repository root only needs the formatter. Build scripts invoke `ttsc` with its default `tsconfig.json`; shared compiler settings do not declare plugins already discovered from package dependencies.
 
 The application and adapters are authored in TypeScript. Future parser support uses official `web-tree-sitter` and packaged upstream grammars. A language needs an adapter and certification as well as a grammar. Read [the domain skill](evidence/SKILL.md) for the completeness boundary.
 

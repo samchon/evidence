@@ -1,3 +1,4 @@
+import type {} from "@ttsc/evidence";
 import type { ITtscLintConfig } from "@ttsc/lint";
 
 /**
@@ -9,6 +10,8 @@ import type { ITtscLintConfig } from "@ttsc/lint";
  */
 export default {
   rules: {
+    "evidence/singular": "error",
+
     // Runtime correctness and unambiguous control flow.
     "default-param-last": "error",
     eqeqeq: "error",

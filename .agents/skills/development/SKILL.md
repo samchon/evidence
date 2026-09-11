@@ -12,6 +12,8 @@ Read the project skill and inspect a nearby peer before introducing a new file o
 - Fix general behavior rather than special-casing a consumer, fixture, or expected answer. Do not monkey-patch dependencies to make a test pass.
 - Treat repeated symptom fixes as evidence that the cause or design needs another investigation.
 - Keep implementation and tests in TypeScript and execute TypeScript with `ttsx`. Keep `scripts` as plain CommonJS JavaScript executed with Node, without a tsconfig or lint.config in that directory.
+- Declare named functions with `function`, including `export async function` for asynchronous public functions. Use asynchronous filesystem and process APIs when available; keep pure computation synchronous.
+- Delegate runtime type checks to `typia` instead of hand-written shape validators. Test project logic, not `typia.assert` or other dependency validators.
 - Base Evidence types on `D:/github/samchon/ttsc/packages/evidence` and its existing contracts. Follow its named base-interface and artifact-specific interface structure. Every object shape must have its own named interface in a separate file. Anonymous object type literals are forbidden without exception, including union members, intersections, property/parameter/return annotations, generic arguments, and assertions. Union aliases reference named object types; never inline an object shape to shorten a declaration.
 - Run compilation through `ttsc`. Each package and the test workspace extend `config/lint.config.ts` from their own lint configuration. Keep enabled rules at error severity across implementation and tests; fix violations instead of weakening the configuration to pass a build.
 - Keep executable files small and free of reusable logic. Public imports must not start the CLI, scan a project, or evaluate configuration.
@@ -26,9 +28,11 @@ Trace each verified change through callers, public types, serialization, package
 
 Follow AutoMovie's unit-test structure: one exported `test_<behavior>` function per `test/src/features/<category>/test_<behavior>.ts` file. The entry point uses `@nestia/e2e`'s `DynamicExecutor` to discover the functions, and tests use `TestValidator` assertions. Keep the test workspace in `test`, not a second `tests` tree.
 
-Open a regression with a doc comment explaining what it verifies, why the behavior matters, and the short scenario. Call the logic directly. Give changed predicates a negative counterpart and meaningful boundary cases. Tests are exclusively logic unit tests: do not add installation experiments, tarball verification, CLI subprocess tests, or a Node test-runner framework.
+Open a regression with a doc comment explaining what it verifies, why the behavior matters, and the short scenario. Separate setup, execution, and assertions with blank lines, and comment each scenario's purpose. Call the logic directly. Give changed predicates a negative counterpart and meaningful boundary cases. Tests are exclusively logic unit tests: do not add installation experiments, tarball verification, CLI subprocess tests, or a Node test-runner framework.
 
 Take expected inventories and semantics from the contract, not the current parser output. Avoid tests that merely assert a particular implementation spelling. Do not create speculative tests for every reversible documentation change.
+
+Use `TestFileSystem.experiment(location, records, closure)` for disposable file trees, with `save` for scenario updates and `erase` for explicit cleanup. Write multiline fixture and generated source text with `dedent` from `@typia/utils`.
 
 ## Validation
 

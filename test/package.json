@@ -5,7 +5,7 @@
   "description": "Evidence logic unit tests.",
   "main": "src/index.ts",
   "scripts": {
-    "build": "ttsc -p tsconfig.json --noEmit",
+    "build": "ttsc",
     "start": "ttsx -P tsconfig.json src/index.ts"
   },
   "dependencies": {
@@ -13,9 +13,12 @@
     "@nestia/e2e": "catalog:samchon"
   },
   "devDependencies": {
+    "@ttsc/evidence": "catalog:typescript",
     "@ttsc/lint": "catalog:typescript",
     "@types/node": "catalog:utils",
+    "@typia/utils": "catalog:samchon",
     "ttsc": "catalog:typescript",
-    "typescript": "catalog:typescript"
+    "typescript": "catalog:typescript",
+    "typia": "catalog:samchon"
   }
 }

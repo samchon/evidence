@@ -1,7 +1,7 @@
 import { DynamicExecutor } from "@nestia/e2e";
 import { join } from "node:path";
 
-const main = async (): Promise<void> => {
+async function main(): Promise<void> {
   const report = await DynamicExecutor.validate({
     prefix: "test_",
     location: join(__dirname, "features"),
@@ -26,7 +26,7 @@ const main = async (): Promise<void> => {
     for (const failure of failures) console.error(failure.error);
     process.exitCode = 1;
   }
-};
+}
 
 main().catch((error: unknown) => {
   console.error(error);

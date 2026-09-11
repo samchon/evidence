@@ -15,14 +15,19 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "rimraf lib && ttsc -p tsconfig.json",
+    "build": "rimraf lib && ttsc",
     "prepack": "pnpm run build && node ../../scripts/copy-readme-and-license.js"
+  },
+  "dependencies": {
+    "@typia/utils": "catalog:samchon",
+    "typia": "catalog:samchon"
   },
   "peerDependencies": {
     "ttsc": "catalog:typescript",
     "typescript": "catalog:typescript"
   },
   "devDependencies": {
+    "@ttsc/evidence": "catalog:typescript",
     "@ttsc/lint": "catalog:typescript",
     "@types/node": "catalog:utils",
     "rimraf": "catalog:utils",
