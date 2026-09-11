@@ -96,6 +96,10 @@ The runtime reads checksum-verified packaged grammars lazily and performs no gra
 
 `EvidenceLanguageRegistry.list()` reports syntax variants separately from certified Evidence adapter capabilities. `select(type, file)` uses the configured language and case-sensitive logical file name, so `.h` follows `c` or `cpp`, and `.tsx` selects the TSX grammar within TypeScript. `parser.grammars()` reports pinned asset provenance without loading WASM; `parser.state()` exposes the instance's loaded grammar IDs and active/queued session counts. Grammar metadata alone does not establish public export resolution or graph coverage.
 
+For adapter development, `IEvidenceAdapter.analyze(snapshot)` returns an ordinary `IEvidenceInventory`. `new EvidenceInventory(inventories)` combines adapter-established identities, checks declaration ownership and original source coordinates, and reconciles withdrawal across merged declarations. `select(ids)` returns an independent population with its structural ancestors and eligible hosts; `resolve({ file, segments }, ids)` looks up an exact public address inside that scope. Check `complete` and `diagnostics` before using a population. Reviews have a separate collection and never supply acknowledgements.
+
+`EvidenceDocumentation.read()` maps a classified comment into its original source, and `EvidenceTagParser.parse()` reads acknowledgements, exclusions, reviews, and withdrawal markers from that mapped text. Adapters establish comment identity and attachment before invoking these helpers. `EvidenceAccessor.parse()` and `format()` preserve literal member segments such as `SomeClass["field.name"]`. See the [adapter inventory guide](https://github.com/samchon/evidence/blob/master/docs/development/adapter-inventories.md) for ownership, completeness, and documentation contracts.
+
 ## Artifacts and symbol selectors
 
 | Artifact | Claim | Reference | Symbol selectors | Default claim / reference |
