@@ -127,6 +127,20 @@ export namespace EvidenceLanguageRegistry {
       type: "rust",
       name: "Rust",
       grammars: [{ id: "rust", extensions: [".rs"], filenames: [] }],
+      adapter: {
+        entry: "EvidenceRustAdapter",
+        symbols: ["type", "function", "property"],
+        publicSurface:
+          "Selected Rust crate modules, public reexports, and local nominal impl members.",
+        comments: ["outer or inner documentation", "static doc attribute"],
+        unsupported: [
+          "Cargo feature evaluation",
+          "macro expansion",
+          "custom module paths",
+          "external type ownership",
+          "generated declarations absent from selected source",
+        ],
+      },
     },
     {
       type: "java",

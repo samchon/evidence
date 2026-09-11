@@ -96,7 +96,7 @@ try {
 
 The runtime reads checksum-verified packaged grammars lazily and performs no grammar downloads or native compilation. Each parse owns its parser, tree, and query cache. `concurrency` limits live sessions and defaults to four; `close()` waits for accepted callbacks and prevents new requests. A callback must not await another parse or close on the same runtime. Syntax errors, missing tokens, incompatible queries, and truncated query results throw `EvidenceParserError` with a stable `code` instead of returning incomplete captures. `session.range(node)` produces a half-open span with zero-based UTF-16 offsets and one-based lines and UTF-16 columns in the original source string.
 
-`EvidenceLanguageRegistry.list()` reports syntax variants separately from certified Evidence adapter capabilities. TypeScript, JavaScript, Python, and Go entries include adapter metadata; grammar-only entries omit it. `select(type, file)` uses the configured language and case-sensitive logical file name, so `.h` follows `c` or `cpp`, and `.tsx` selects the TSX grammar within TypeScript. `parser.grammars()` reports pinned asset provenance without loading WASM; `parser.state()` exposes the instance's loaded grammar IDs and active/queued session counts. Grammar metadata alone does not establish public export resolution or graph coverage.
+`EvidenceLanguageRegistry.list()` reports syntax variants separately from certified Evidence adapter capabilities. TypeScript, JavaScript, Python, Go, and Rust entries include adapter metadata; grammar-only entries omit it. `select(type, file)` uses the configured language and case-sensitive logical file name, so `.h` follows `c` or `cpp`, and `.tsx` selects the TSX grammar within TypeScript. `parser.grammars()` reports pinned asset provenance without loading WASM; `parser.state()` exposes the instance's loaded grammar IDs and active/queued session counts. Grammar metadata alone does not establish public export resolution or graph coverage.
 
 For adapter development, `IEvidenceAdapter.analyze(snapshot)` returns an ordinary `IEvidenceInventory`. `new EvidenceInventory(inventories)` combines adapter-established identities, checks declaration ownership and original source coordinates, and reconciles withdrawal across merged declarations. `select(ids)` returns an independent population with its structural ancestors and eligible hosts; `resolve({ file, segments }, ids)` looks up an exact public address inside that scope. Check `complete` and `diagnostics` before using a population. Reviews have a separate collection and never supply acknowledgements.
 
@@ -137,6 +137,12 @@ Python evidence can live in a real class or function docstring, or in a same-ind
 
 Adjacent `//` runs and block comments are Go documentation hosts. A comment on a grouped declaration can host all declarations in the group, while a comment on one specification or member remains local to it. Detached comments, function-body comments, strings, raw strings, and commented-out declarations do not supply evidence. The adapter reads only selected source: it does not run the Go toolchain, evaluate build tags or filename platform constraints, promote embedded members, or fabricate generated declarations absent from the snapshot. Conflicting declarations across selected build variants and missing receiver owners make the inventory incomplete. Same-package `_test.go` files join their package, while external `_test` packages remain distinct.
 
+`EvidenceRustAdapter` parses selected `.rs` files as static crate and module graphs. Public modules, structs, enums, traits, and type aliases are `type` units. Public free functions, inherent methods, and trait methods are `function` units. Public fields, tuple fields, constants, statics, enum variants, and associated constants are `property` units; trait associated types and their impl realizations are `type` units. Tuple fields use numeric segments such as `Pair[0]`.
+
+Unrestricted `pub` establishes the external surface; restricted visibility does not. Conventional `mod name;` files, inline modules, named/grouped/wildcard `pub use` declarations, private-module reexports, and finite reexport chains preserve one originating identity across public aliases. Inherent members use `Type.member`. Trait implementation members use an explicit qualifier such as `Sale["impl crate::Service"].run`, so they cannot collide with inherent members.
+
+Rust evidence attaches to outer or inner doc comments and static `#[doc = "..."]` attributes. The adapter does not run Cargo, rustc, build scripts, or macros. Missing or ambiguous module files, `#[path]`, unresolved public reexports, item-position macros, expansion attributes, `cfg` alternatives, blanket or external impl ownership, and syntax failures leave the inventory incomplete. Expression macros inside function bodies do not affect declaration completeness.
+
 Markdown preserves its document outline, and Prisma preserves its schema structure. Swagger claims select local JSON/YAML documents with `files` globs. Swagger references use `file` for an exact local JSON/YAML path or an HTTP(S) URL, with an optional `root` for local paths.
 
 Markdown section anchors prefer a valid trailing `{#anchor}`. Otherwise, the adapter lowercases the heading, retains Unicode letters, numbers, and underscores, removes punctuation, and collapses whitespace or hyphens. Repeated anchors remain distinct sections and make the shared target ambiguous until the author supplies unique anchors.
@@ -152,18 +158,20 @@ Write `@evidence <target> <reason>` in a declaration's documentation comment. Co
 /** @evidence ../SomeNamespace.ts#SomeNamespace.property Supplies the namespace value. */
 ```
 
-TypeScript and Python instance members use `SomeClass.prototype.member`; Go receiver members use `SomeType.member`. File-qualified targets identify declarations without compiler import-scoped `{@link Symbol}` lookup.
+TypeScript and Python instance members use `SomeClass.prototype.member`; Go receiver and Rust inherent members use `SomeType.member`. Rust trait impl members use a quoted `impl Trait` segment. File-qualified targets identify declarations without compiler import-scoped `{@link Symbol}` lookup.
 
-| Target                 | Example                            |
-| ---------------------- | ---------------------------------- |
-| Code symbol            | `../calculator.ts#add`             |
-| Go receiver method     | `../sale.go#Sale.Calculate`        |
-| Python symbol          | `../calculator.py#add`             |
-| Python instance member | `../sale.py#Sale.prototype.total`  |
-| Markdown document      | `docs/requirements.md`             |
-| Markdown heading       | `docs/requirements.md#pricing`     |
-| Prisma model or field  | `prisma:Sale`, `prisma:Sale.price` |
-| Swagger operation      | `POST:/sales`                      |
+| Target                 | Example                               |
+| ---------------------- | ------------------------------------- |
+| Code symbol            | `../calculator.ts#add`                |
+| Go receiver method     | `../sale.go#Sale.Calculate`           |
+| Rust inherent method   | `../sale.rs#Sale.calculate`           |
+| Rust trait impl method | `../sale.rs#Sale["impl Service"].run` |
+| Python symbol          | `../calculator.py#add`                |
+| Python instance member | `../sale.py#Sale.prototype.total`     |
+| Markdown document      | `docs/requirements.md`                |
+| Markdown heading       | `docs/requirements.md#pricing`        |
+| Prisma model or field  | `prisma:Sale`, `prisma:Sale.price`    |
+| Swagger operation      | `POST:/sales`                         |
 
 Markdown paths resolve from the reference population's root. Backslashes are accepted as portable separators and leading `./` is ignored, while case and percent signs remain literal. The text after `#` is one exact Markdown anchor, so `docs/spec.md#price.v2` does not mean nested members. Markdown claims place tags in HTML comments. Prisma claims use `///` or block documentation attached to models and members; an unattached top-level `///` run may carry exclusions only.
 

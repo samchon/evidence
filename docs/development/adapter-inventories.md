@@ -181,6 +181,33 @@ Attach consecutive same-column `//` comments and block comments only when they i
 
 Do not run generators or import external package declarations. Generated declarations participate only when their `.go` source is already present in the selected snapshot. Unreadable ownership, duplicate selected declarations, incompatible packages, and parser failures must leave the inventory incomplete instead of reducing its public population.
 
+## Rust inventories
+
+`EvidenceRustAdapter` parses `.rs` snapshots with the packaged Rust grammar. It constructs a static crate and module graph from the selected source and never invokes Cargo, rustc, build scripts, or application macros.
+
+Classify supported declarations as follows:
+
+| Source form | Symbol and address |
+| --- | --- |
+| Public module, struct, enum, trait, or type alias | `type` at its module path and name |
+| Public free function | `function` at its module path and name |
+| Public named or tuple struct field | `property` at `Owner.name` or `Owner[0]` |
+| Enum variant | `property` at `Enum.Variant` |
+| Trait method or inherent public method | `function` at `Owner.name` |
+| Trait or trait-impl associated constant | `property` below its owner or qualified impl |
+| Trait associated type or trait-impl realization | `type` below its owner or qualified impl |
+| Public constant or static | `property` at its module path and name |
+
+Treat unrestricted `pub` as externally visible and exclude `pub(crate)`, `pub(super)`, `pub(self)`, `pub(in ...)`, and private declarations from the default public population. Trait items and enum variants inherit their public owner's reachability. Named struct fields retain their own visibility; tuple fields use zero-based numeric accessor segments. An owner must itself be reachable before its fields or associated items can form public units.
+
+Resolve inline modules and conventional file modules through `name.rs` or `name/mod.rs`. A selected file not claimed by another selected module starts an independent crate root. Follow named, aliased, grouped, and wildcard `pub use` paths through selected modules to a fixed point. A private module can carry a public declaration reexported from the crate root. Every alias publishes another address for the originating unit; it does not create another semantic identity. Missing or dual module files, multiple owners, unresolved exports, ambiguous names, and recursive module aliases make the inventory incomplete. `#[path]` remains unsupported.
+
+Associate impl blocks only with one selected local struct or enum. Inherent public members use `Owner.member`. Trait impl members use a literal qualifier segment such as `Owner["impl crate::Trait"].member`, preserving a distinct address when an inherent member has the same name. A selected local trait must also be publicly reachable before its implementation members become units. An explicitly external trait path can qualify members of a local owner, but generic blanket impls, unresolved explicitly local traits, and external nominal owners make analysis incomplete.
+
+Attach outer `///` and `/** */` documentation to the following supported declaration. Attach inner `//!` and `/*! */` documentation to its inline or file-backed module. Accept static outer or inner `#[doc = "..."]` strings with the same ownership rules. Rustdoc controls such as `#[doc(hidden)]` and `#[doc(alias = "...")]` do not become hosts; a nonstatic `#[doc = ...]` value makes documentation analysis incomplete. Attributes remain part of the declaration site and semantic fingerprint while recognized annotation ranges are removed. Ordinary comments, body comments, strings, raw strings, and commented-out declarations are unsupported annotation hosts.
+
+The adapter inventories explicit selected source rather than the feature-resolved compiled crate. Report `cfg` and `cfg_attr`, item-position macro invocations, exported macros, and unrecognized expansion attributes as incomplete because they can change the public declaration set. Ignore expression macros contained within a supported function body for declaration completeness. Generated declarations participate only when their expanded `.rs` source is selected directly.
+
 ## Prisma inventories
 
 `EvidencePrismaAdapter` parses all selected physical files as one schema with `@prisma/prisma-schema-wasm`. Prefer a parser resolvable from the project root, then use the package's pinned fallback. Deduplicate physical sources before parsing and retain every logical address on the resulting source snapshot. A rejected schema makes the inventory incomplete and produces no guessed units.
