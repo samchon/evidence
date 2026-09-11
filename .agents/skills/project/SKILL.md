@@ -43,4 +43,8 @@ pnpm format
 pnpm check:format
 ```
 
-`build` is the single type and lint gate: it emits the package and checks the test project without emitting it. Their lint configurations extend the shared rules. Do not add a separate typecheck command. `test` builds the test workspace and runs `ttsx -P tsconfig.json src/index.ts`. Follow AutoMovie's DynamicExecutor and exported `test_` function convention. Tests cover logic directly; do not add package-installation experiments, tarball tests, or CLI process tests.
+`build` compiles and lints `packages/*`. Do not add a separate typecheck command. `test` directly runs `ttsx -P tsconfig.json src/index.ts`, which checks and executes source without a preceding build. Follow AutoMovie's DynamicExecutor and exported `test_` function convention. Tests cover logic directly; do not add package-installation experiments, tarball tests, or CLI process tests.
+
+Keep CI as independent, single-Ubuntu workflows: `build.yml` runs only the build after dependency setup; `test.yml` runs only tests after dependency setup. Do not add an OS matrix, make tests depend on the build workflow, or prepend a build to `pnpm test`. Keep package compilation in `build` and `prepack`, not an installation-time `prepare` hook.
+
+Both workflows cache `node_modules/.cache/ttsc` after dependency installation and before compilation or tests, using the runner OS and `pnpm-workspace.yaml` hash as the shared cache key.

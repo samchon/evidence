@@ -57,15 +57,17 @@ pnpm check:format
 | `scripts` | Plain JavaScript package-maintenance scripts |
 | `.agents/skills` | Project, development, documentation, and delivery workflows |
 
-`pnpm build` runs `ttsc` across the package and tests. It emits the package's JavaScript and declarations; the test project is checked without emitting. Type errors and every enabled lint rule fail the build. There is no separate typecheck command. `@ttsc/lint` is a development dependency. Each package and the test workspace have a `lint.config.ts` extending `config/lint.config.ts`. Its shared rules reject explicit `any`, unsafe type operations, unhandled promises, non-null assertions, ambiguous conditions, and runtime correctness problems. Prettier owns formatting.
+`pnpm build` runs `ttsc` across `packages/*` and emits their JavaScript and declarations. Type errors and every enabled lint rule fail the build. There is no separate typecheck command. `@ttsc/lint` is a development dependency. Each package and the test workspace have a `lint.config.ts` extending `config/lint.config.ts`. Its shared rules reject explicit `any`, unsafe type operations, unhandled promises, non-null assertions, ambiguous conditions, and runtime correctness problems. Prettier owns formatting.
 
-`pnpm test` builds the test project and runs `test/src/index.ts` through `ttsx`. Following AutoMovie, `@nestia/e2e`'s `DynamicExecutor` discovers exported `test_` functions in `test/src/features/<category>/test_*.ts`; the functions call logic directly and assert results with `TestValidator`. The initial unit test covers command selection, including unsupported and extra arguments. Dependency and peer versions come from the `samchon`, `typescript`, and `utils` catalogs in `pnpm-workspace.yaml`.
+`pnpm test` runs `test/src/index.ts` directly through `ttsx`, which checks the source before execution. Following AutoMovie, `@nestia/e2e`'s `DynamicExecutor` discovers exported `test_` functions in `test/src/features/<category>/test_*.ts`; the functions call logic directly and assert results with `TestValidator`. The initial unit test covers command selection, including unsupported and extra arguments. Dependency and peer versions come from the `samchon`, `typescript`, and `utils` catalogs in `pnpm-workspace.yaml`.
+
+CI has two independent Ubuntu workflows: `build.yml` runs `pnpm build`, and `test.yml` runs `pnpm test`. Tests run from TypeScript source and require no preceding package build.
 
 ## Package preparation
 
 The package uses CommonJS. Its workspace `main` and `exports` point directly to `./src/index.ts`. JavaScript entry points, declaration paths, and the installed `evidence` executable are defined only in `publishConfig`; pnpm applies these overrides when packing or publishing.
 
-Edit this root README. The package's `prepack` hook runs `scripts/copy-readme-and-license.js` with Node to copy the root `README.md` and `LICENSE` into `packages/evidence` whenever the package is packed or published. Its `prepare` hook builds the library during installation and packaging. The generated documentation copies are ignored by Git.
+Edit this root README. The package's `prepack` hook builds the library, then runs `scripts/copy-readme-and-license.js` with Node to copy the root `README.md` and `LICENSE` into `packages/evidence` whenever the package is packed or published. The generated documentation copies are ignored by Git. Dependency installation does not build the library.
 
 ```bash
 pnpm --dir packages/evidence pack

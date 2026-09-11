@@ -1,4 +1,4 @@
-name: build
+name: test
 
 on:
   push:
@@ -9,11 +9,11 @@ permissions:
   contents: read
 
 concurrency:
-  group: build-${{ github.workflow }}-${{ github.ref }}
+  group: test-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -29,5 +29,5 @@ jobs:
         with:
           path: node_modules/.cache/ttsc
           key: ttsc-${{ runner.os }}-${{ hashFiles('pnpm-workspace.yaml') }}
-      - name: Build packages
-        run: pnpm build
+      - name: Run logic unit tests
+        run: pnpm test
