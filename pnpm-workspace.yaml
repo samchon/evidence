@@ -1,0 +1,15 @@
+packages:
+  - packages/*
+  - test
+
+catalogs:
+  samchon:
+    "@nestia/e2e": ^13.0.2
+  typescript:
+    ttsc: &ttsc ^0.30.0
+    "@ttsc/lint": *ttsc
+    typescript: ^7.0.2
+    prettier: ^3.9.6
+  utils:
+    "@types/node": ^22.20.2
+    rimraf: ^6.1.3

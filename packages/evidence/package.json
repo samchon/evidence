@@ -1,0 +1,64 @@
+{
+  "name": "@samchon/evidence",
+  "version": "0.1.0",
+  "description": "Explicit evidence obligations for specifications, skills, code, and tests across languages.",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "assets/**/*.wasm",
+    "assets/**/LICENSE*",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "rimraf lib && ttsc -p tsconfig.json",
+    "prepack": "pnpm run build && node ../../scripts/copy-readme-and-license.js"
+  },
+  "peerDependencies": {
+    "ttsc": "catalog:typescript",
+    "typescript": "catalog:typescript"
+  },
+  "devDependencies": {
+    "@ttsc/lint": "catalog:typescript",
+    "@types/node": "catalog:utils",
+    "rimraf": "catalog:utils",
+    "ttsc": "catalog:typescript",
+    "typescript": "catalog:typescript"
+  },
+  "publishConfig": {
+    "access": "public",
+    "main": "./lib/index.js",
+    "types": "./lib/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./lib/index.d.ts",
+        "default": "./lib/index.js"
+      },
+      "./package.json": "./package.json"
+    },
+    "bin": {
+      "evidence": "./lib/executable/evidence.js"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/samchon/evidence.git",
+    "directory": "packages/evidence"
+  },
+  "bugs": {
+    "url": "https://github.com/samchon/evidence/issues"
+  },
+  "homepage": "https://github.com/samchon/evidence#readme",
+  "keywords": [
+    "evidence",
+    "traceability",
+    "tree-sitter",
+    "specifications"
+  ],
+  "author": "Jeongho Nam",
+  "license": "MIT"
+}
