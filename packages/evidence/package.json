@@ -21,9 +21,11 @@
   },
   "dependencies": {
     "@prisma/prisma-schema-wasm": "catalog:prisma",
+    "@typia/interface": "catalog:samchon",
     "@typia/utils": "catalog:samchon",
     "typia": "catalog:samchon",
-    "web-tree-sitter": "catalog:tree-sitter"
+    "web-tree-sitter": "catalog:tree-sitter",
+    "yaml": "catalog:utils"
   },
   "peerDependencies": {
     "ttsc": "catalog:typescript",

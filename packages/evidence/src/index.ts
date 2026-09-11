@@ -13,6 +13,7 @@ export { EvidenceParserError } from "./EvidenceParserError";
 export { EvidencePrismaAdapter } from "./EvidencePrismaAdapter";
 export type { EvidenceParseSession } from "./EvidenceParseSession";
 export { EvidenceSourceLoader } from "./EvidenceSourceLoader";
+export { EvidenceSwaggerAdapter } from "./EvidenceSwaggerAdapter";
 export { EvidenceTagParser } from "./EvidenceTagParser";
 export { EvidenceTargetResolver } from "./EvidenceTargetResolver";
 export { EvidenceTypeScriptAdapter } from "./EvidenceTypeScriptAdapter";
