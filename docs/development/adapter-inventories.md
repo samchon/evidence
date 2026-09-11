@@ -113,6 +113,18 @@ Named type-only exports and reexports retain only units available in type space,
 
 Only attached JSDoc is an eligible TypeScript documentation host. A variable statement can host all of its declarators, while a JSDoc block on an individual declarator belongs only to that declarator. Overloads and merged declarations share semantic identity and retain every declaration site. Withdrawal on any declaration hides the merged identity and its descendants. Tag-bearing line comments, ordinary block comments, detached JSDoc, local declarations, and excluded declaration forms produce unsupported-host findings instead of evidence edges.
 
+## JavaScript inventories
+
+Share the ECMAScript declaration, JSDoc, and ESM export model with TypeScript, but select the JavaScript grammar and emit `javascript` identities. Recognize `.mjs` as ESM and `.cjs` as CommonJS. Resolve `.js` and `.jsx` from the nearest `package.json` along the logical file path, defaulting to CommonJS when none exists. Record checked package paths as exact dependencies. Conflicting aliases or invalid metadata make the inventory incomplete.
+
+Use the same `type`, `function`, and `property` classification for JavaScript classes, callable declarations, and values. Preserve static and prototype ownership, literal names, anonymous defaults, async and generator forms, and JSX bodies. Constructors, accessors, private fields, and computed members remain outside the unit set.
+
+Run the shared static ESM resolver over direct exports, local and imported aliases, defaults, named and star reexports, namespace exports, shadowing, ambiguity, and cycles. JavaScript resolution accepts only JavaScript extensions and relative or absolute files already present in the snapshot.
+
+For CommonJS, process unconditional top-level initialization in source order. Support direct static properties with local declaration values, static object replacement, and one local default replacement. Clear prior names and detach `exports` when `module.exports` is replaced; reconnect it only through `exports = module.exports`. Mark computed keys, control-flow changes, dynamic or inline replacement values, binding shadowing, and escaped aliases incomplete. Do not inspect deferred function or class bodies as module initialization.
+
+Attach only JSDoc that immediately precedes a supported declaration. Retain unsupported tag-bearing comments as findings, and exclude all registered annotation ranges from semantic fingerprints. Literal and JSX tag examples never become comment hosts.
+
 ## Prisma inventories
 
 `EvidencePrismaAdapter` parses all selected physical files as one schema with `@prisma/prisma-schema-wasm`. Prefer a parser resolvable from the project root, then use the package's pinned fallback. Deduplicate physical sources before parsing and retain every logical address on the resulting source snapshot. A rejected schema makes the inventory incomplete and produces no guessed units.

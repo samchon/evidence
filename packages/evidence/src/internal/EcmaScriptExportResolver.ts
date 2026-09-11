@@ -4,27 +4,29 @@ import type { IEvidenceInventory } from "../structures/IEvidenceInventory";
 import type { IEvidencePublicAddress } from "../structures/IEvidencePublicAddress";
 import type { IEvidenceSourceFile } from "../structures/IEvidenceSourceFile";
 import type { IEvidenceSourceRoot } from "../structures/IEvidenceSourceRoot";
-import type { ITypeScriptBinding } from "./ITypeScriptBinding";
-import type { ITypeScriptFileAnalysis } from "./ITypeScriptFileAnalysis";
-import type { ITypeScriptModule } from "./ITypeScriptModule";
-import type { ITypeScriptResolution } from "./ITypeScriptResolution";
+import type { IEcmaScriptBinding } from "./IEcmaScriptBinding";
+import type { IEcmaScriptFileAnalysis } from "./IEcmaScriptFileAnalysis";
+import type { IEcmaScriptModule } from "./IEcmaScriptModule";
+import type { IEcmaScriptResolution } from "./IEcmaScriptResolution";
+import type { EcmaScriptType } from "./EcmaScriptType";
 import { SourcePath } from "./SourcePath";
 
-/** Resolves static exports across the complete TypeScript source snapshot. */
-export class TypeScriptExportResolver {
-  private readonly modules = new Map<string, ITypeScriptModule>();
+/** Resolves static exports across one ECMAScript-family source snapshot. */
+export class EcmaScriptExportResolver {
+  private readonly modules = new Map<string, IEcmaScriptModule>();
   private readonly locations = new Map<string, Set<string>>();
   private readonly targets = new Map<string, string | undefined>();
-  private readonly resolutions = new Map<string, ITypeScriptResolution>();
+  private readonly resolutions = new Map<string, IEcmaScriptResolution>();
   private readonly reported = new Set<string>();
 
   public constructor(
-    analyses: ITypeScriptFileAnalysis[],
+    analyses: IEcmaScriptFileAnalysis[],
     private readonly inventory: IEvidenceInventory,
     private readonly root: IEvidenceSourceRoot,
+    private readonly type: EcmaScriptType,
   ) {
     for (const analysis of analyses) {
-      const module: ITypeScriptModule = {
+      const module: IEcmaScriptModule = {
         source: analysis.source,
         units: analysis.units,
         excludedRoots: new Set(analysis.excludedRoots),
@@ -103,7 +105,7 @@ export class TypeScriptExportResolver {
     }
   }
 
-  private resolve(sourceId: string, name: string): ITypeScriptResolution {
+  private resolve(sourceId: string, name: string): IEcmaScriptResolution {
     const key = JSON.stringify([sourceId, name]);
     const cached = this.resolutions.get(key);
     if (cached !== undefined) return cached;
@@ -116,7 +118,7 @@ export class TypeScriptExportResolver {
     sourceId: string,
     name: string,
     visited: Set<string>,
-  ): ITypeScriptResolution {
+  ): IEcmaScriptResolution {
     const key = JSON.stringify([sourceId, name]);
     if (visited.has(key))
       return { bindings: [], excluded: false, cyclic: true };
@@ -124,7 +126,7 @@ export class TypeScriptExportResolver {
     if (module === undefined)
       return { bindings: [], excluded: false, cyclic: false };
     visited.add(key);
-    const output: ITypeScriptResolution = {
+    const output: IEcmaScriptResolution = {
       bindings: [],
       excluded: false,
       cyclic: false,
@@ -238,7 +240,7 @@ export class TypeScriptExportResolver {
 
   private publishBinding(
     entry: IEvidenceSourceFile,
-    binding: ITypeScriptBinding,
+    binding: IEcmaScriptBinding,
     prefix: string[],
     visited: Set<string>,
     published: Set<string>,
@@ -282,8 +284,8 @@ export class TypeScriptExportResolver {
   }
 
   private addBinding(
-    output: ITypeScriptBinding[],
-    binding: ITypeScriptBinding,
+    output: IEcmaScriptBinding[],
+    binding: IEcmaScriptBinding,
   ): void {
     const previous = output.find(
       (entry) =>
@@ -295,8 +297,8 @@ export class TypeScriptExportResolver {
   }
 
   private mergeState(
-    output: ITypeScriptResolution,
-    resolved: ITypeScriptResolution,
+    output: IEcmaScriptResolution,
+    resolved: IEcmaScriptResolution,
   ): void {
     output.excluded ||= resolved.excluded;
     output.cyclic ||= resolved.cyclic;
@@ -402,6 +404,7 @@ export class TypeScriptExportResolver {
   }
 
   private candidates(base: string): string[] {
+    if (this.type === "javascript") return this.javaScriptCandidates(base);
     const extension = path.posix.extname(base).toLowerCase();
     const without = extension === "" ? base : base.slice(0, -extension.length);
     const files =
@@ -432,6 +435,24 @@ export class TypeScriptExportResolver {
     return Array.from(new Set(files.map((file) => this.locationKey(file))));
   }
 
+  private javaScriptCandidates(base: string): string[] {
+    const extension = path.posix.extname(base).toLowerCase();
+    const files =
+      extension === ""
+        ? [
+            base + ".js",
+            base + ".jsx",
+            base + ".mjs",
+            base + ".cjs",
+            path.posix.join(base, "index.js"),
+            path.posix.join(base, "index.jsx"),
+            path.posix.join(base, "index.mjs"),
+            path.posix.join(base, "index.cjs"),
+          ]
+        : [base];
+    return files.map((file) => this.locationKey(file));
+  }
+
   private problem(
     source: IEvidenceSourceFile,
     message: string,
@@ -442,7 +463,7 @@ export class TypeScriptExportResolver {
     this.reported.add(key);
     this.inventory.complete = false;
     this.inventory.diagnostics.push({
-      code: "typescript-export",
+      code: `${this.type}-export`,
       severity: "error",
       message,
       repair,

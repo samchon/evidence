@@ -1,5 +1,5 @@
 /** One semantic declaration position to which a JSDoc block may attach. */
-export interface ITypeScriptCommentAttachment {
+export interface IEcmaScriptCommentAttachment {
   positionId?: string;
   siteId: string;
   unitId: string;
