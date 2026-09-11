@@ -1,3 +1,5 @@
-# Preserve pinned upstream bytes, including license line endings and trailing blank lines.
-packages/evidence/assets/**/*.wasm binary
+* text=auto eol=lf
+*.wasm binary
+
+# Preserve pinned upstream license bytes, including trailing blank lines.
 packages/evidence/assets/**/LICENSE* -text whitespace=-blank-at-eof
