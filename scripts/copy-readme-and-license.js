@@ -1,5 +1,5 @@
-import { copyFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+const { copyFileSync } = require("node:fs");
+const { join, resolve } = require("node:path");
 
 // Resolve from this script so direct package packing works from any cwd.
 const repository = resolve(__dirname, "..");

@@ -1,7 +1,7 @@
 import type { ITtscLintConfig } from "@ttsc/lint";
 
 /**
- * Repository-wide compile errors for implementation, tests, and maintenance.
+ * Shared compile errors inherited by each project's lint.config.ts.
  *
  * Adapted from samchon/ttsc's Evidence benchmark shared configuration, with
  * additional restrictions on any, assertions, unsafe values, and conditions.
@@ -97,7 +97,7 @@ export default {
     "security/detect-pseudoRandomBytes": "error",
     "security/detect-unsafe-regex": "error",
 
-    // Type-aware checks also apply to tests and scripts, with no weaker preset.
+    // Type-aware checks also apply to tests, with no weaker preset.
     "typescript/adjacent-overload-signatures": "error",
     "typescript/await-thenable": "error",
     "typescript/ban-ts-comment": "error",

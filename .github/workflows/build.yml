@@ -31,7 +31,7 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Check formatting
         run: pnpm check:format
-      - name: Build and lint workspaces, configuration, and maintenance scripts
+      - name: Build and lint workspaces
         run: pnpm build
       - name: Run logic unit tests
         run: pnpm --filter @samchon/evidence-test start

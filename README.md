@@ -53,12 +53,11 @@ pnpm check:format
 | --- | --- |
 | `packages/evidence` | Published package and `evidence` executable |
 | `test` | Private workspace for logic unit tests |
-| `config` | Shared strict TypeScript settings |
-| `lint.config.ts` | Shared compiler-enforced lint rules |
-| `scripts` | TypeScript package-maintenance scripts |
+| `config` | Shared strict TypeScript settings and compiler-enforced lint rules |
+| `scripts` | Plain JavaScript package-maintenance scripts |
 | `.agents/skills` | Project, development, documentation, and delivery workflows |
 
-`pnpm build` runs `ttsc` across the package, tests, lint configuration, and maintenance scripts. It emits the package's JavaScript and declarations; the test and maintenance projects are checked without emitting. Type errors and every enabled lint rule fail the build. There is no separate typecheck command. `@ttsc/lint` is a development dependency, with one root configuration shared by all projects. Its rules reject explicit `any`, unsafe type operations, unhandled promises, non-null assertions, ambiguous conditions, and runtime correctness problems. Prettier owns formatting.
+`pnpm build` runs `ttsc` across the package and tests. It emits the package's JavaScript and declarations; the test project is checked without emitting. Type errors and every enabled lint rule fail the build. There is no separate typecheck command. `@ttsc/lint` is a development dependency. Each package and the test workspace have a `lint.config.ts` extending `config/lint.config.ts`. Its shared rules reject explicit `any`, unsafe type operations, unhandled promises, non-null assertions, ambiguous conditions, and runtime correctness problems. Prettier owns formatting.
 
 `pnpm test` builds the test project and runs `test/src/index.ts` through `ttsx`. Following AutoMovie, `@nestia/e2e`'s `DynamicExecutor` discovers exported `test_` functions in `test/src/features/<category>/test_*.ts`; the functions call logic directly and assert results with `TestValidator`. The initial unit test covers command selection, including unsupported and extra arguments. Dependency and peer versions come from the `samchon`, `typescript`, and `utils` catalogs in `pnpm-workspace.yaml`.
 
@@ -66,7 +65,7 @@ pnpm check:format
 
 The package uses CommonJS. Its workspace `main` and `exports` point directly to `./src/index.ts`. JavaScript entry points, declaration paths, and the installed `evidence` executable are defined only in `publishConfig`; pnpm applies these overrides when packing or publishing.
 
-Edit this root README. The package's `prepack` hook runs the TypeScript preparation script through `ttsx` to copy the root `README.md` and `LICENSE` into `packages/evidence` whenever the package is packed or published. Its `prepare` hook builds the library during installation and packaging. The generated documentation copies are ignored by Git.
+Edit this root README. The package's `prepack` hook runs `scripts/copy-readme-and-license.js` with Node to copy the root `README.md` and `LICENSE` into `packages/evidence` whenever the package is packed or published. Its `prepare` hook builds the library during installation and packaging. The generated documentation copies are ignored by Git.
 
 ```bash
 pnpm --dir packages/evidence pack

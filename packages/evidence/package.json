@@ -17,7 +17,7 @@
   "scripts": {
     "build": "rimraf lib && ttsc -p tsconfig.json",
     "prepare": "pnpm run build",
-    "prepack": "ttsx ../../scripts/prepare-package.ts"
+    "prepack": "node ../../scripts/copy-readme-and-license.js"
   },
   "peerDependencies": {
     "ttsc": "catalog:typescript",

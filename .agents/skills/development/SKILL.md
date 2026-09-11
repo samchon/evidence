@@ -11,8 +11,8 @@ Read the project skill and inspect a nearby peer before introducing a new file o
 
 - Fix general behavior rather than special-casing a consumer, fixture, or expected answer. Do not monkey-patch dependencies to make a test pass.
 - Treat repeated symptom fixes as evidence that the cause or design needs another investigation.
-- Keep authored implementation, tests, and maintenance scripts in TypeScript. Execute TypeScript with `ttsx`; do not substitute Node type stripping or another runner. `pnpm build` checks maintenance scripts through `scripts/tsconfig.json`.
-- Run compilation through `ttsc` with the shared `@ttsc/lint` configuration. Keep enabled rules at error severity across implementation, tests, and scripts; fix violations instead of weakening the configuration to pass a build.
+- Keep implementation and tests in TypeScript and execute TypeScript with `ttsx`. Keep `scripts` as plain CommonJS JavaScript executed with Node, without a tsconfig or lint.config in that directory.
+- Run compilation through `ttsc`. Each package and the test workspace extend `config/lint.config.ts` from their own lint configuration. Keep enabled rules at error severity across implementation and tests; fix violations instead of weakening the configuration to pass a build.
 - Keep executable files small and free of reusable logic. Public imports must not start the CLI, scan a project, or evaluate configuration.
 - Use upstream grammars through the common adapter contract. Do not fork the parser engine or import a language compiler just to cover an unsupported syntax case without a product decision.
 - Update documentation with behavior changes. Run `pnpm format` before an ordinary commit and inspect what it changed.

@@ -9,7 +9,7 @@ description: Defines Evidence README, guide, issue, and agent-instruction writin
 
 Start with what the package does, its current availability, installation, and the smallest working path. Distinguish the released/implemented surface from the roadmap. Do not show an unavailable CLI command as working setup.
 
-The root `README.md` is the only editable package README. `scripts/prepare-package.ts` copies it and LICENSE to the package during `prepack`. Keep repository links usable from npm as well as GitHub. Review the copy script when changing documentation preparation; do not introduce package-installation tests.
+The root `README.md` is the only editable package README. `scripts/copy-readme-and-license.js` copies it and LICENSE to the package during `prepack`. Keep repository links usable from npm as well as GitHub. Review the copy script when changing documentation preparation; do not introduce package-installation tests.
 
 Keep detailed future guides organized by their reader and task. Do not invent a website tree or claim that ttsc's website is this package's documentation host. Link to upstream for the compatibility baseline and explain standalone differences where they affect an author.
 
