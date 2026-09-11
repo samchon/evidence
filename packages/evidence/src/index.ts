@@ -10,5 +10,6 @@ export { EvidenceParserError } from "./EvidenceParserError";
 export type { EvidenceParseSession } from "./EvidenceParseSession";
 export { EvidenceSourceLoader } from "./EvidenceSourceLoader";
 export { EvidenceTagParser } from "./EvidenceTagParser";
+export { EvidenceTypeScriptAdapter } from "./EvidenceTypeScriptAdapter";
 export type * from "./structures";
 export type * from "./typings";
