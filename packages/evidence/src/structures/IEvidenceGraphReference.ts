@@ -5,6 +5,8 @@ import type { IEvidenceInventory } from "./IEvidenceInventory";
 
 /** One reference population and the claim declarations applicable to it. */
 export interface IEvidenceGraphReference {
+  /** Original zero-based position in the claim; defaults to the array position. */
+  index?: number;
   severity: EvidenceSeverity;
   inventory: IEvidenceInventory;
   /** Semantic identities that form this reference's denominator. */

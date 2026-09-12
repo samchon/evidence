@@ -4,6 +4,8 @@ import type { IEvidenceInventory } from "./IEvidenceInventory";
 
 /** One claim population prepared for graph evaluation. */
 export interface IEvidenceGraphClaim {
+  /** Original zero-based configuration position; defaults to the array position. */
+  index?: number;
   name?: string;
   severity: EvidenceSeverity;
   inventory: IEvidenceInventory;
