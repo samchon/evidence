@@ -8,3 +8,4 @@ export type * from "./EvidenceParserErrorCode";
 export type * from "./EvidenceProgrammingSymbol";
 export type * from "./EvidenceProgrammingType";
 export type * from "./EvidenceSeverity";
+export type * from "./EvidenceTargetResolutionStatus";

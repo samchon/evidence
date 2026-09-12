@@ -1,13 +1,9 @@
 import type { EvidenceAcknowledgementKind } from "../typings/EvidenceAcknowledgementKind";
-import type { IEvidenceSourceLocation } from "./IEvidenceSourceLocation";
+import type { IEvidenceTargetStatement } from "./IEvidenceTargetStatement";
 
 /** One positive citation or exclusion, before population-specific target resolution. */
-export interface IEvidenceDeclaration {
+export interface IEvidenceDeclaration extends IEvidenceTargetStatement {
   id: string;
-  hostId: string;
   kind: EvidenceAcknowledgementKind;
-  /** Authored target token; resolution preserves the artifact's address rules. */
-  target: string;
   reason: string;
-  location: IEvidenceSourceLocation;
 }

@@ -58,6 +58,7 @@ export class EvidenceTypeScriptAdapter implements IEvidenceAdapter {
       const published = new TypeScriptExportResolver(
         analyses,
         inventory,
+        input.root,
       ).publish();
       inventory.units = inventory.units.filter((unit) =>
         published.has(unit.id),

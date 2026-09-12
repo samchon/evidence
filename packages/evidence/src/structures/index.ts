@@ -12,6 +12,8 @@ export type * from "./IEvidenceResolution";
 export type * from "./IEvidenceReview";
 export type * from "./IEvidenceSourceLocation";
 export type * from "./IEvidenceTagParseResult";
+export type * from "./IEvidenceTargetResolution";
+export type * from "./IEvidenceTargetStatement";
 export type * from "./IEvidenceUnit";
 export type * from "./IEvidenceUnitSite";
 export type * from "./IEvidenceWithdrawal";

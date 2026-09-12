@@ -1,13 +1,10 @@
 import type { EvidenceAcknowledgementKind } from "../typings/EvidenceAcknowledgementKind";
-import type { IEvidenceSourceLocation } from "./IEvidenceSourceLocation";
+import type { IEvidenceTargetStatement } from "./IEvidenceTargetStatement";
 
 /** A verification statement; it cannot structurally substitute for an acknowledgement. */
-export interface IEvidenceReview {
+export interface IEvidenceReview extends IEvidenceTargetStatement {
   id: string;
-  hostId: string;
   reviews: EvidenceAcknowledgementKind;
-  target: string;
   fingerprint?: string;
   description: string;
-  location: IEvidenceSourceLocation;
 }

@@ -3,10 +3,12 @@ import path from "node:path";
 import type { IEvidenceInventory } from "../structures/IEvidenceInventory";
 import type { IEvidencePublicAddress } from "../structures/IEvidencePublicAddress";
 import type { IEvidenceSourceFile } from "../structures/IEvidenceSourceFile";
+import type { IEvidenceSourceRoot } from "../structures/IEvidenceSourceRoot";
 import type { ITypeScriptBinding } from "./ITypeScriptBinding";
 import type { ITypeScriptFileAnalysis } from "./ITypeScriptFileAnalysis";
 import type { ITypeScriptModule } from "./ITypeScriptModule";
 import type { ITypeScriptResolution } from "./ITypeScriptResolution";
+import { SourcePath } from "./SourcePath";
 
 /** Resolves static exports across the complete TypeScript source snapshot. */
 export class TypeScriptExportResolver {
@@ -19,6 +21,7 @@ export class TypeScriptExportResolver {
   public constructor(
     analyses: ITypeScriptFileAnalysis[],
     private readonly inventory: IEvidenceInventory,
+    private readonly root: IEvidenceSourceRoot,
   ) {
     for (const analysis of analyses) {
       const module: ITypeScriptModule = {
@@ -322,6 +325,7 @@ export class TypeScriptExportResolver {
       return undefined;
     }
     const found = new Set<string>();
+    let outside = false;
     for (const location of this.sourceLocations(source)) {
       const base = this.absolute(request)
         ? this.locationKey(request)
@@ -329,22 +333,49 @@ export class TypeScriptExportResolver {
             path.posix.join(path.posix.dirname(location), request),
           );
       for (const candidate of this.candidates(base))
-        for (const id of this.locations.get(candidate) ?? []) found.add(id);
+        for (const id of this.locations.get(candidate) ?? []) {
+          const dependency = this.modules.get(id)?.source;
+          if (
+            !SourcePath.contains(
+              this.locationKey(this.root.absolute),
+              candidate,
+            ) ||
+            (dependency !== undefined && !this.insidePhysicalRoot(dependency))
+          )
+            outside = true;
+          else found.add(id);
+        }
     }
     const target = found.size === 1 ? Array.from(found)[0] : undefined;
-    if (target === undefined)
+    const escaped = found.size === 0 && outside;
+    if (escaped)
       this.problem(
         source,
-        found.size === 0
-          ? `Module '${specifier}' is absent from the complete source snapshot.`
-          : `Module '${specifier}' resolves to more than one physical source.`,
-        found.size === 0
-          ? "Include the dependency in the configured source population or repair the module path."
-          : "Remove the ambiguous source aliases or use one unambiguous module path.",
+        `Module '${specifier}' leaves the declared source root.`,
+        "Move the dependency inside the configured root or declare a reference rooted at its actual source tree.",
         key,
       );
+    if (target === undefined)
+      if (!escaped)
+        this.problem(
+          source,
+          found.size === 0
+            ? `Module '${specifier}' is absent from the complete source snapshot.`
+            : `Module '${specifier}' resolves to more than one physical source.`,
+          found.size === 0
+            ? "Include the dependency in the configured source population or repair the module path."
+            : "Remove the ambiguous source aliases or use one unambiguous module path.",
+          key,
+        );
     this.targets.set(key, target);
     return target;
+  }
+
+  private insidePhysicalRoot(source: IEvidenceSourceFile): boolean {
+    return (
+      this.root.physical === undefined ||
+      SourcePath.contains(this.root.physical, source.physicalPath)
+    );
   }
 
   private sourceLocations(source: IEvidenceSourceFile): string[] {
