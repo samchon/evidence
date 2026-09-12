@@ -68,6 +68,34 @@ For direct local source access, `EvidenceSourceLoader.glob(configFile, { root, f
 
 Source snapshots retain UTF-8 contents, byte digests, physical file identities, every selected logical address, and filesystem dependencies for detecting changes. Directory links and hard links share physical files without losing their addresses. Always inspect `complete` and `diagnostics`: a healthy empty selection is complete, while an inaccessible root, cyclic link, or unreadable file makes the snapshot incomplete. Invalid root or glob syntax rejects the promise. Discovery retains all selected formats for adapter processing; filesystem completeness alone does not establish parser support or evidence coverage.
 
+For direct syntax analysis, use `EvidenceParser.parse(input, callback)`. The callback receives a borrowed tree and query helpers; copy extracted values into ordinary data before it returns:
+
+```ts
+import { EvidenceParser } from "@samchon/evidence";
+
+const parser = new EvidenceParser();
+try {
+  const names = await parser.parse(
+    {
+      type: "typescript",
+      file: "calculator.ts",
+      content: "export function add(a: number, b: number) { return a + b; }",
+    },
+    (session) =>
+      session
+        .captures("(function_declaration name: (identifier) @name)")
+        .map((capture) => capture.node.text),
+  );
+  console.log(names);
+} finally {
+  await parser.close();
+}
+```
+
+The runtime reads checksum-verified packaged grammars lazily and performs no grammar downloads or native compilation. Each parse owns its parser, tree, and query cache. `concurrency` limits live sessions and defaults to four; `close()` waits for accepted callbacks and prevents new requests. A callback must not await another parse or close on the same runtime. Syntax errors, missing tokens, incompatible queries, and truncated query results throw `EvidenceParserError` with a stable `code` instead of returning incomplete captures. `session.range(node)` produces a half-open span with zero-based UTF-16 offsets and one-based lines and UTF-16 columns in the original source string.
+
+`EvidenceLanguageRegistry.list()` reports syntax variants separately from certified Evidence adapter capabilities. `select(type, file)` uses the configured language and case-sensitive logical file name, so `.h` follows `c` or `cpp`, and `.tsx` selects the TSX grammar within TypeScript. `parser.grammars()` reports pinned asset provenance without loading WASM; `parser.state()` exposes the instance's loaded grammar IDs and active/queued session counts. Grammar metadata alone does not establish public export resolution or graph coverage.
+
 ## Artifacts and symbol selectors
 
 | Artifact | Claim | Reference | Symbol selectors | Default claim / reference |
