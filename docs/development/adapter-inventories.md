@@ -238,6 +238,37 @@ Mask `{@code ...}`, `{@literal ...}`, `{@snippet ...}`, `<code>...</code>`, and 
 
 Apply source visibility independently of Java Platform Module System exports. A selected `module-info.java` contributes no units and does not restrict public packages. Do not execute annotation processors; a generated declaration participates only when its `.java` file is selected explicitly. Syntax errors, unreadable selected sources, and conflicting identities leave the inventory incomplete rather than reducing the public denominator.
 
+## C# inventories
+
+`EvidenceCSharpAdapter` parses `.cs` snapshots with the packaged `tree-sitter-c-sharp` v0.23.5 grammar. It inventories explicit source declarations without invoking the .NET SDK, loading assemblies, executing source generators, or running application code.
+
+Classify supported declarations as follows:
+
+| Source form | Symbol and address |
+| --- | --- |
+| Public class, struct, interface, record, enum, or delegate | `type` at `Namespace.Type` |
+| Publicly reachable nested type | `type` at `Namespace.Owner.Nested` |
+| Public method | `function` at `Namespace.Owner.name` |
+| Public field, property, or event | `property` at `Namespace.Owner.name` |
+| Enum member | `property` at `Namespace.Enum.Name` |
+| Indexer | `property` at `Namespace.Owner["this[]"]` |
+| Operator | `function` at a literal segment such as `Namespace.Owner["operator +"]` |
+| Conversion operator | `function` at a source-spelled segment such as `Namespace.Owner["implicit operator int"]` |
+
+Apply accessibility after partial type declarations are grouped. A top-level type or a type nested in a class or struct must have `public` accessibility, and each containing type must also be public. A type nested in an interface is public when it omits an accessibility modifier. A partial type may declare accessibility on one part; conflicting explicit accessibilities make the inventory incomplete. Interface methods, fields, properties, indexers, events, operators, constants, and nested types are public when they omit an accessibility modifier, including members with implementations. Exclude `internal`, `file`, `private`, `protected`, `protected internal`, and `private protected` declarations from the external population.
+
+Include block and file-scoped namespaces and nested owners in both semantic identity and public address. A target therefore uses `Sale.cs#Shop.Sale.Total`, even when the file already sits below a `Shop` directory. Static and instance members share the declared-owner address model. Constructors and explicit interface implementations do not create units. The public interface declaration supplies the contract for an explicit implementation; the implementing class does not gain an independently callable public member.
+
+Encode generic type arity in its exact identity segment: `Box<T>` uses ``Box`1``, formatted as ``Shop["Box`1"]``. Also publish the source name `Shop.Box` as a convenient alias. One generic arity can own the alias; multiple generic arities make it ambiguous, and a selected nongeneric `Box` takes precedence over generic aliases. Exact arity addresses remain distinct. Group methods by owner and source name, so generic and non-generic method overloads contribute sites to one name-addressed function family. Group indexer and operator overloads by their documented literal segment. Conversion operator segments retain the normalized source spelling of their destination type because the adapter performs no compiler type resolution.
+
+Treat one configured source snapshot as one logical C# compilation boundary. Include its normalized root display in unit IDs without adding it to author-facing identities or target segments. Compatible partial classes, structs, interfaces, and records share one unit with every declaration site. C# 13 partial properties and indexers also retain both declaring and implementing sites. A withdrawal on any part hides the merged unit; withdrawing a type hides its descendants. Duplicate non-partial types, incompatible partial forms or owners, and conflicting public member identities make analysis incomplete. Configure unrelated projects with separate roots so matching namespace and type names cannot merge.
+
+Attach consecutive same-indent `///` comments or an immediately preceding `/** */` XML documentation block to the following supported declaration. Attributes belong to the declaration and do not break attachment. One comment on a multi-variable field or event declaration hosts every public variable at that site. Mask `<c>`, `<code>`, `<example>`, and `<pre>` elements before parsing graph tags; XML wrapper lines such as `<summary>` remain available around tag lines. Retain tag-bearing ordinary comments, string literals, raw strings, interpolated strings, and XML documentation on unpublished declarations as unsupported hosts.
+
+Report declaration-position preprocessor conditionals as incomplete because Tree-sitter identifies both syntax branches but cannot choose build symbols. Generated declarations participate only when their `.cs` files are selected explicitly. Positional record properties, delegate `Invoke`, inherited declarations, and other compiler-synthesized members remain outside the explicit source surface. Syntax errors and unreadable selected sources also preserve an incomplete inventory instead of silently shrinking the denominator.
+
+The classification follows the C# reference for [accessibility levels](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/accessibility-levels), [interface members](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/interface), [XML documentation formats](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/xmldoc/), and [partial properties and indexers](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-13.0/partial-properties). Syntax support comes from the pinned [tree-sitter-c-sharp](https://github.com/tree-sitter/tree-sitter-c-sharp) release.
+
 ## Prisma inventories
 
 `EvidencePrismaAdapter` parses all selected physical files as one schema with `@prisma/prisma-schema-wasm`. Prefer a parser resolvable from the project root, then use the package's pinned fallback. Deduplicate physical sources before parsing and retain every logical address on the resulting source snapshot. A rejected schema makes the inventory incomplete and produces no guessed units.

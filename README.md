@@ -96,7 +96,7 @@ try {
 
 The runtime reads checksum-verified packaged grammars lazily and performs no grammar downloads or native compilation. Each parse owns its parser, tree, and query cache. `concurrency` limits live sessions and defaults to four; `close()` waits for accepted callbacks and prevents new requests. A callback must not await another parse or close on the same runtime. Syntax errors, missing tokens, incompatible queries, and truncated query results throw `EvidenceParserError` with a stable `code` instead of returning incomplete captures. `session.range(node)` produces a half-open span with zero-based UTF-16 offsets and one-based lines and UTF-16 columns in the original source string.
 
-`EvidenceLanguageRegistry.list()` reports syntax variants separately from certified Evidence adapter capabilities. TypeScript, JavaScript, Python, Go, Rust, and Java entries include adapter metadata; grammar-only entries omit it. `select(type, file)` uses the configured language and case-sensitive logical file name, so `.h` follows `c` or `cpp`, and `.tsx` selects the TSX grammar within TypeScript. `parser.grammars()` reports pinned asset provenance without loading WASM; `parser.state()` exposes the instance's loaded grammar IDs and active/queued session counts. Grammar metadata alone does not establish public export resolution or graph coverage.
+`EvidenceLanguageRegistry.list()` reports syntax variants separately from certified Evidence adapter capabilities. TypeScript, JavaScript, Python, Go, Rust, Java, and C# entries include adapter metadata; grammar-only entries omit it. `select(type, file)` uses the configured language and case-sensitive logical file name, so `.h` follows `c` or `cpp`, and `.tsx` selects the TSX grammar within TypeScript. `parser.grammars()` reports pinned asset provenance without loading WASM; `parser.state()` exposes the instance's loaded grammar IDs and active/queued session counts. Grammar metadata alone does not establish public export resolution or graph coverage.
 
 For adapter development, `IEvidenceAdapter.analyze(snapshot)` returns an ordinary `IEvidenceInventory`. `new EvidenceInventory(inventories)` combines adapter-established identities, checks declaration ownership and original source coordinates, and reconciles withdrawal across merged declarations. `select(ids)` returns an independent population with its structural ancestors and eligible hosts; `resolve({ file, segments }, ids)` looks up an exact public address inside that scope. Check `complete` and `diagnostics` before using a population. Reviews have a separate collection and never supply acknowledgements.
 
@@ -149,6 +149,14 @@ Package names and nested owners establish semantic identity, while a file target
 
 Only Javadoc immediately attached to a supported public declaration carries Java evidence, exclusions, reviews, or withdrawal. Attachment survives intervening declaration annotations and modifiers. Tags inside `{@code ...}`, `{@literal ...}`, `{@snippet ...}`, `<code>...</code>`, and `<pre>...</pre>` examples stay inert. Ordinary comments, strings, text blocks, and Javadoc on unpublished declarations do not create evidence edges. Conflicting selected identities and syntax failures leave the inventory incomplete.
 
+`EvidenceCSharpAdapter` parses selected `.cs` files with `tree-sitter-c-sharp` v0.23.5. Public classes, structs, interfaces, records, enums, delegates, and reachable nested types are `type` units. Public methods and operators are `function` units. Public fields, properties, events, enum members, and indexers are `property` units. Constructors, explicit interface implementations, positional record properties, inherited members, and other compiler-generated members do not form units.
+
+C# semantic identity and target addresses include block or file-scoped namespaces: `Sale.cs#Shop.Sale`, `#Shop.Sale.Total`, and `#Shop.Sale.Calculate`. Methods with the same owner and name form one overload family. Indexers use `Owner["this[]"]`; operators use literal segments such as `Owner["operator +"]` and `Owner["implicit operator int"]`. Static and instance members both use their declared owner because C# does not permit them to establish independent same-name member identities.
+
+Generic type identity includes arity. ``Shop["Box`1"]`` selects `Box<T>` exactly. `Shop.Box` is a source-name alias: one generic arity can own it, multiple generic arities make it ambiguous, and a declared nongeneric `Box` takes precedence. The configured source snapshot is the partial-type compilation boundary. Compatible partial declarations share one unit and retain every site; the normalized configured root participates in the unit ID so separate project roots remain distinct. Conflicting forms, accessibilities, or non-partial duplicate types leave analysis incomplete.
+
+Only externally reachable declarations enter the population. Top-level types require `public`; nested types require `public` except that a type declared in an interface is public by default. Every containing type must also be public. Interface members are public when they omit an accessibility modifier, including members with implementations. `internal`, `file`, `private`, `protected`, `protected internal`, and `private protected` declarations stay outside the population. Attached `///` and `/** */` XML documentation carries evidence across attributes. Tags inside `<c>`, `<code>`, `<example>`, and `<pre>` stay inert. Other comments and string forms are unsupported hosts. Declaration-position conditional compilation makes the inventory incomplete because the adapter does not evaluate build symbols. It does not run the .NET SDK, source generators, or application code; generated `.cs` participates only when selected directly.
+
 Markdown preserves its document outline, and Prisma preserves its schema structure. Swagger claims select local JSON/YAML documents with `files` globs. Swagger references use `file` for an exact local JSON/YAML path or an HTTP(S) URL, with an optional `root` for local paths.
 
 Markdown section anchors prefer a valid trailing `{#anchor}`. Otherwise, the adapter lowercases the heading, retains Unicode letters, numbers, and underscores, removes punctuation, and collapses whitespace or hyphens. Repeated anchors remain distinct sections and make the shared target ambiguous until the author supplies unique anchors.
@@ -164,7 +172,7 @@ Write `@evidence <target> <reason>` in a declaration's documentation comment. Co
 /** @evidence ../SomeNamespace.ts#SomeNamespace.property Supplies the namespace value. */
 ```
 
-TypeScript and Python instance members use `SomeClass.prototype.member`; Go receiver, Rust inherent, and Java members use `SomeType.member`. Rust trait impl members use a quoted `impl Trait` segment. File-qualified targets identify declarations without compiler import-scoped `{@link Symbol}` lookup.
+TypeScript and Python instance members use `SomeClass.prototype.member`; Go receiver, Rust inherent, Java, and C# members use `SomeType.member`. Rust trait impl members use a quoted `impl Trait` segment. C# targets include their namespace. File-qualified targets identify declarations without compiler import-scoped `{@link Symbol}` lookup.
 
 | Target                 | Example                               |
 | ---------------------- | ------------------------------------- |
@@ -174,6 +182,9 @@ TypeScript and Python instance members use `SomeClass.prototype.member`; Go rece
 | Rust trait impl method | `../sale.rs#Sale["impl Service"].run` |
 | Java overload family   | `../Sale.java#Sale.calculate`         |
 | Java record component  | `../Point.java#Point.x`               |
+| C# namespaced property | `../Sale.cs#Shop.Sale.Total`          |
+| C# generic type        | ``../Box.cs#Shop["Box`1"]``           |
+| C# indexer family      | `../Sale.cs#Shop.Sale["this[]"]`      |
 | Python symbol          | `../calculator.py#add`                |
 | Python instance member | `../sale.py#Sale.prototype.total`     |
 | Markdown document      | `docs/requirements.md`                |

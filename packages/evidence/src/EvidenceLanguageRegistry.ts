@@ -165,6 +165,20 @@ export namespace EvidenceLanguageRegistry {
       type: "csharp",
       name: "C#",
       grammars: [{ id: "c-sharp", extensions: [".cs"], filenames: [] }],
+      adapter: {
+        entry: "EvidenceCSharpAdapter",
+        symbols: ["type", "function", "property"],
+        publicSurface:
+          "C# source-public declarations recognized by tree-sitter-c-sharp v0.23.5 within one configured source snapshot.",
+        comments: ["attached /// or /** */ XML documentation"],
+        unsupported: [
+          "conditional-compilation evaluation",
+          "explicit interface implementation units",
+          "source-generator execution",
+          "compiler-generated record members",
+          "inherited members",
+        ],
+      },
     },
     {
       type: "c",
