@@ -97,3 +97,6 @@ export type * from "./IEvidenceListReport";
 export type * from "./IEvidenceQueryScope";
 export type * from "./IEvidenceSupportedLanguage";
 export type * from "./IEvidenceVersionCommand";
+export type * from "./IEvidenceWatchCheckCycle";
+export type * from "./IEvidenceWatchFailureCycle";
+export type * from "./IEvidenceWatchOptions";

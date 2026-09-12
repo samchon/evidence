@@ -65,6 +65,7 @@ pnpm exec evidence
 ```bash
 pnpm exec evidence init
 pnpm exec evidence check --format json --output reports/evidence.json
+pnpm exec evidence check --watch
 pnpm exec evidence list --language typescript --kind function
 pnpm exec evidence inspect 'src/calculator.ts#add' --format json
 pnpm exec evidence graph --format mermaid --output reports/evidence.mmd
@@ -82,7 +83,19 @@ pnpm exec evidence languages
 | `--kind <symbol>` | list | Keep only rows with one common symbol kind. |
 | `-h, --help` | all | Print help without loading a config or project. |
 | `-v, --version` | root | Print the package version without loading a config or project. |
-| `-w, --watch` | check | Reserved; the current command rejects it explicitly. |
+| `-w, --watch` | check | Run an initial check, then recheck after active dependencies change. |
+
+### Watch mode
+
+Run `pnpm exec evidence check --watch` or use `-w` while authoring. The watcher publishes an initial cycle, polls active filesystem dependencies every 250 milliseconds, waits for a 100-millisecond quiet period after a change, and serializes complete reevaluations. Each published result comes from a fresh configuration load, source inventory, parse, and graph evaluation. If a dependency changes during that work or the new analysis discovers an additional dependency, the superseded result is discarded and reevaluated before publication.
+
+The active set includes `evidence.config.ts`, its static runtime import/export chain, configured glob directories and matching files, module metadata and re-export inputs reported by adapters, exact Markdown, Prisma, and local Swagger inputs, and logical and physical link paths. Missing files and roots remain dependencies so their creation can repair a cycle. A failed config keeps the last active set plus every dependency found in the current config scan; it never reuses the old config value. Disabled claims, effective `off` claims, and `off` references create no artifact reads or watch inputs.
+
+Configuration dependency discovery accepts static import/export specifiers and literal `import()` or `require()` calls. A computed runtime module specifier cannot be watched completely and produces a failed watch cycle until it is made static. Each local filesystem change also refetches enabled remote Swagger references during the fresh check. Remote URLs are not polled independently, so a remote-only change does not create a cycle.
+
+Text output prints every cycle and keeps failures visible until another dependency change triggers recovery. JSON output is NDJSON: each line is one compact `schemaVersion: 1` object with `watch: true`, a sequential `cycle`, status, exit code, and either the complete check report or an operational failure. `--output` truncates its destination once when watch starts and appends each framed cycle. Cycle exit codes describe that result while the process stays alive; Ctrl+C requests cleanup and exits 0, and an output or watcher failure exits 2.
+
+`EvidenceWatcher` exposes the same loop for embedding. Its optional `pollIntervalMilliseconds` and `debounceMilliseconds` settings change the two default intervals, `watch(callback)` awaits asynchronous publication, `dependencies()` returns the current active set, and `close()` requests shutdown. The watcher retains no syntax tree, inventory, graph, or fingerprint cache between cycles. Tree-sitter grammar modules remain immutable process-wide assets, while each analysis releases its bounded parsers, trees, and queries.
 
 `evidence list` prints every selected unit and addressable aggregate ancestor in each configured claim/reference scope. Every row carries its stable semantic identity, canonical target, public aliases, symbol kind, and declaration locations. `--language` and `--kind` filter these rows after the complete graph has been evaluated, so they do not change any coverage denominator or check result.
 

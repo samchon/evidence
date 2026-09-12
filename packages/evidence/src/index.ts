@@ -33,5 +33,7 @@ export { EvidenceSwaggerAdapter } from "./EvidenceSwaggerAdapter";
 export { EvidenceTagParser } from "./EvidenceTagParser";
 export { EvidenceTargetResolver } from "./EvidenceTargetResolver";
 export { EvidenceTypeScriptAdapter } from "./EvidenceTypeScriptAdapter";
+export { EvidenceWatcher } from "./EvidenceWatcher";
+export { EvidenceWatchReporter } from "./EvidenceWatchReporter";
 export type * from "./structures";
 export type * from "./typings";
