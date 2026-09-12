@@ -1,0 +1,105 @@
+import { TestValidator } from "@nestia/e2e";
+import { dedent } from "@typia/utils";
+
+import { EvidenceCAdapter } from "../../../../packages/evidence/src/EvidenceCAdapter";
+import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+
+/** Keeps C declaration families inside their selected physical file boundary. */
+export async function test_c_boundaries(): Promise<void> {
+  const inventory = await new EvidenceCAdapter().analyze(
+    TestSourceSnapshot.combine([
+      TestSourceSnapshot.create(
+        "include/contracts.h",
+        dedent`
+          #ifndef CONTRACTS_H
+          #define CONTRACTS_H
+
+          #include "cycle.h"
+
+          struct Contract;
+          struct Contract {
+              int value;
+          };
+
+          int run(int value);
+          int run(int value);
+
+          #endif
+        ` + "\n",
+      ),
+      TestSourceSnapshot.create(
+        "include/cycle.h",
+        dedent`
+          #pragma once
+          #include "contracts.h"
+        ` + "\n",
+      ),
+      TestSourceSnapshot.create(
+        "src/contracts.c",
+        dedent`
+          #include "../include/contracts.h"
+
+          struct Contract {
+              int value;
+          };
+
+          int run(int value) {
+              return value;
+          }
+        ` + "\n",
+      ),
+    ]),
+  );
+
+  TestValidator.equals("complete C file boundaries", inventory.diagnostics, []);
+
+  // A forward declaration and definition merge inside the header.
+  const headerTypes = inventory.units.filter(
+    (unit) =>
+      unit.identity.join(".") === "struct Contract" &&
+      unit.sites.some((site) => site.file.endsWith("/include/contracts.h")),
+  );
+  TestValidator.equals("header C tag family", headerTypes.length, 1);
+  const headerType = headerTypes[0];
+  if (headerType === undefined) throw new Error("Missing header C tag family.");
+  TestValidator.equals(
+    "C forward and definition sites",
+    headerType.sites.length,
+    2,
+  );
+
+  const headerFunctions = inventory.units.filter(
+    (unit) =>
+      unit.identity.join(".") === "run" &&
+      unit.sites.some((site) => site.file.endsWith("/include/contracts.h")),
+  );
+  TestValidator.equals("header C function family", headerFunctions.length, 1);
+  const headerFunction = headerFunctions[0];
+  if (headerFunction === undefined)
+    throw new Error("Missing header C function family.");
+  TestValidator.equals(
+    "repeated C prototype sites",
+    headerFunction.sites.length,
+    2,
+  );
+
+  // Header and source declarations retain separate semantic IDs.
+  TestValidator.equals(
+    "separate C type file identities",
+    new Set(
+      inventory.units
+        .filter((unit) => unit.identity.join(".") === "struct Contract")
+        .map((unit) => unit.id),
+    ).size,
+    2,
+  );
+  TestValidator.equals(
+    "separate C function file identities",
+    new Set(
+      inventory.units
+        .filter((unit) => unit.identity.join(".") === "run")
+        .map((unit) => unit.id),
+    ).size,
+    2,
+  );
+}

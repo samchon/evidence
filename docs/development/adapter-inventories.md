@@ -269,6 +269,36 @@ Report declaration-position preprocessor conditionals as incomplete because Tree
 
 The classification follows the C# reference for [accessibility levels](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/accessibility-levels), [interface members](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/interface), [XML documentation formats](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/xmldoc/), and [partial properties and indexers](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-13.0/partial-properties). Syntax support comes from the pinned [tree-sitter-c-sharp](https://github.com/tree-sitter/tree-sitter-c-sharp) release.
 
+## C inventories
+
+`EvidenceCAdapter` parses `.c` and `.h` snapshots with the packaged `tree-sitter-c` v0.24.2 grammar. It inventories explicit declarations without invoking a preprocessor, compiler, build system, linker, application, or native toolchain.
+
+Classify supported declarations as follows:
+
+| Source form | Symbol and address |
+| --- | --- |
+| Named struct, union, or enum tag | `type` at a literal segment such as `["struct Sale"]` |
+| Direct typedef of a named or anonymous tag | An additional canonical address for the same `type` unit |
+| Other typedef | `type` at its ordinary identifier |
+| Non-static function declaration or definition | `function` at its ordinary identifier |
+| Non-static external object declaration, tentative definition, or definition | `property` at its ordinary identifier |
+| Named struct or union field | `property` below its aggregate type |
+| Enumerator of a named or directly typedef-named enum | `property` below its enum type |
+
+Treat every selected physical file as an independent declaration boundary. Merge compatible forward declarations, prototypes, tentative definitions, and definitions by symbol and identity only inside that file, retaining every declaration site. Permit at most one explicit aggregate, enum, or function definition in a family. Keep the same spelling in a header and implementation file as separate units, even when an include would place both in one preprocessed translation unit. This prevents unrelated translation units from merging when the adapter has no compile command, include search path, macro environment, or linker export map.
+
+Follow the declarator path from the declared name outward. The innermost effective function wrapper makes `int add(int)` and `int *make(void)` functions; an intervening pointer or array makes `int (*callback)(int)` and `int (*callbacks[2])(int)` objects. Apply the same structural rule through parentheses, qualifiers, attributes, initializers, and multi-declarator statements. Exclude file-scope `static` functions and objects. Do not inventory locals or function-body declarations.
+
+C's tag namespace supplies exact identities such as `struct Sale`, `union Payload`, and `enum State`. Publish the exact tag segment and a convenient source-name alias. A direct typedef alias is canonical and belongs to the same semantic unit as its tag; other typedef declarators establish their own type units. Suppress a tag's convenient alias and all addresses below it when a canonical ordinary declaration owns that prefix. The exact tag address remains available. This allows `Sale.h#["struct Sale"].total` in every case and `Sale.h#Sale.total` when the source spelling is safe.
+
+An anonymous struct, union, or enum forms a type unit only when one or more direct typedef declarators name it. Multiple direct aliases address the same anonymous type. An anonymous struct or union member without its own declarator promotes its explicit fields into the containing aggregate. A field that names an anonymous aggregate remains one field unit; its nested representation does not invent separately addressable members. Anonymous enums without a direct typedef remain outside the unit set.
+
+Attach consecutive leading `///` or `//!` comments, leading `/** */` or `/*! */` blocks, and same-line trailing `///<`, `//!<`, `/**< */`, or `/*!< */` Doxygen to the supported declaration. One carrier on a multi-declarator statement hosts every unit at that site. Mask Doxygen `@code` or `\code` blocks and HTML `code` or `pre` elements before parsing tags. Retain tag-bearing ordinary comments, strings, function-body comments, detached Doxygen, and Doxygen attached only to excluded declarations as unsupported hosts. Withdrawal on a type hides its declared fields and enumerators.
+
+Do not follow `#include` directives; every selected file is analyzed once, so include cycles cannot recurse. Unwrap a conventional whole-file `#ifndef NAME` and matching `#define NAME` include guard, and ignore `#pragma once`, `#line`, and `#undef` because these forms do not select declarations in the physical-file model. Macro definitions alone contribute no units. Report other conditional preprocessing, declaration-position macro invocations, and declaration-affecting directives such as packing pragmas as incomplete. Generated or preprocessed source participates when selected explicitly. Syntax errors, conflicting tag kinds, incompatible same-name declarations, and multiple definitions also leave the inventory incomplete.
+
+The declaration model follows the [C declarator grammar](https://github.com/tree-sitter/tree-sitter-c/tree/v0.24.2) and [Doxygen documentation block forms](https://www.doxygen.nl/manual/docblocks.html) supported by the pinned syntax tree.
+
 ## Prisma inventories
 
 `EvidencePrismaAdapter` parses all selected physical files as one schema with `@prisma/prisma-schema-wasm`. Prefer a parser resolvable from the project root, then use the package's pinned fallback. Deduplicate physical sources before parsing and retain every logical address on the resulting source snapshot. A rejected schema makes the inventory incomplete and produces no guessed units.

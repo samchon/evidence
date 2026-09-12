@@ -1,5 +1,6 @@
 /** Public API. Importing the package performs no project work. */
 export { EvidenceAccessor } from "./EvidenceAccessor";
+export { EvidenceCAdapter } from "./EvidenceCAdapter";
 export { EvidenceConfigLoader } from "./EvidenceConfigLoader";
 export { EvidenceCSharpAdapter } from "./EvidenceCSharpAdapter";
 export { EvidenceDocumentation } from "./EvidenceDocumentation";
