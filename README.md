@@ -64,6 +64,10 @@ For programmatic loading, import `EvidenceConfigLoader` from `@samchon/evidence`
 
 The loader checks the configuration and its imports through the consumer's `ttsx`, then applies `typia.assert<IEvidenceConfig>` to the default export. Compiler and runtime failures reject the promise, and evaluator logs go to stderr. Returned settings retain their authored paths and optional values.
 
+For direct local source access, `EvidenceSourceLoader.glob(configFile, { root, files })` loads an enabled population, and `EvidenceSourceLoader.file(configFile, file, root)` loads one exact local path. Relative roots resolve from the configuration file's directory; file globs run left to right, including exclusions and later reinclusions. A bare directory selects no children; use `directory/**`.
+
+Source snapshots retain UTF-8 contents, byte digests, physical file identities, every selected logical address, and filesystem dependencies for detecting changes. Directory links and hard links share physical files without losing their addresses. Always inspect `complete` and `diagnostics`: a healthy empty selection is complete, while an inaccessible root, cyclic link, or unreadable file makes the snapshot incomplete. Invalid root or glob syntax rejects the promise. Discovery retains all selected formats for adapter processing; filesystem completeness alone does not establish parser support or evidence coverage.
+
 ## Artifacts and symbol selectors
 
 | Artifact | Claim | Reference | Symbol selectors | Default claim / reference |

@@ -1,0 +1,82 @@
+import { TestValidator } from "@nestia/e2e";
+
+import { FileGlob } from "../../../../packages/evidence/src/internal/FileGlob";
+
+/** Prunes impossible or fully excluded subtrees while preserving later reinclusion. */
+export function test_glob_pruning(): void {
+  // Directory names have no implicit ignore policy.
+  const scoped = new FileGlob(["lib/contracts/**"]);
+  const broad = new FileGlob(["**/*.md"]);
+
+  TestValidator.predicate(
+    "selected ancestor",
+    scoped.couldMatchDescendant("lib"),
+  );
+  TestValidator.predicate(
+    "selected directory",
+    scoped.couldMatchDescendant("lib/contracts"),
+  );
+  TestValidator.predicate(
+    "unselected neighbor",
+    !scoped.couldMatchDescendant("lib/other"),
+  );
+  TestValidator.predicate(
+    "explicit dependency folder",
+    broad.couldMatchDescendant("node_modules/package"),
+  );
+  TestValidator.predicate(
+    "bare directory has no descendants",
+    !new FileGlob(["src"]).couldMatchDescendant("src"),
+  );
+
+  // A subtree-wide exclusion can prune; a later positive restores only viable prefixes.
+  const excluded = new FileGlob(["**/*.md", "!private/**"]);
+  const restored = new FileGlob([
+    "**/*.md",
+    "!private/**",
+    "private/public/spec.md",
+  ]);
+  const partial = new FileGlob(["**/*", "!private/*.md"]);
+
+  TestValidator.predicate(
+    "excluded directory",
+    !excluded.couldMatchDescendant("private"),
+  );
+  TestValidator.predicate(
+    "excluded descendant",
+    !excluded.couldMatchDescendant("private/nested"),
+  );
+  TestValidator.predicate(
+    "reincluded parent",
+    restored.couldMatchDescendant("private"),
+  );
+  TestValidator.predicate(
+    "reincluded descendant",
+    restored.couldMatchDescendant("private/public"),
+  );
+  TestValidator.predicate(
+    "reinclusion stays narrow",
+    !restored.couldMatchDescendant("private/secret"),
+  );
+  TestValidator.predicate(
+    "partial exclusion keeps traversal",
+    partial.couldMatchDescendant("private"),
+  );
+
+  // A later exclusion still overrides a previously restored selection.
+  const removedAgain = new FileGlob([
+    "**/*",
+    "!private/**",
+    "private/public/**",
+    "!private/**",
+  ]);
+
+  TestValidator.predicate(
+    "last pattern wins for traversal",
+    !removedAgain.couldMatchDescendant("private"),
+  );
+  TestValidator.predicate(
+    "last pattern wins for files",
+    !removedAgain.matches("private/public/spec.md"),
+  );
+}
