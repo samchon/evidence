@@ -18,6 +18,7 @@ import type { IEvidenceConfigPlan } from "./structures/IEvidenceConfigPlan";
 import type { IEvidenceConfigPlanClaim } from "./structures/IEvidenceConfigPlanClaim";
 import type { IEvidenceDiagnostic } from "./structures/IEvidenceDiagnostic";
 import type { IEvidenceGraphClaim } from "./structures/IEvidenceGraphClaim";
+import type { IEvidenceGraphInput } from "./structures/IEvidenceGraphInput";
 import type { IEvidenceGraphReference } from "./structures/IEvidenceGraphReference";
 import type { IEvidenceGraphResolution } from "./structures/IEvidenceGraphResolution";
 import type { IEvidenceGraphResult } from "./structures/IEvidenceGraphResult";
@@ -29,11 +30,18 @@ import type { EvidenceSymbol } from "./typings/EvidenceSymbol";
 
 /** Runs the complete standalone configuration-to-graph pipeline. */
 export namespace EvidenceChecker {
+  /** Loads a configuration and returns the complete materialized analysis. */
+  export async function analyze(
+    configFile: string = "evidence.config.ts",
+  ): Promise<IEvidenceCheckAnalysis> {
+    return evaluate(await EvidenceConfigLoader.plan(configFile));
+  }
+
   /** Loads a configuration and evaluates every enabled obligation. */
   export async function check(
     configFile: string = "evidence.config.ts",
   ): Promise<IEvidenceCheckReport> {
-    return (await evaluate(await EvidenceConfigLoader.plan(configFile))).report;
+    return (await analyze(configFile)).report;
   }
 
   /** Materializes and evaluates an already validated configuration plan. */
@@ -44,10 +52,12 @@ export namespace EvidenceChecker {
     const claims = await Promise.all(
       plan.claims.map((claim) => materializeClaim(plan.configFile, claim)),
     );
-    const graph = EvidenceGraph.evaluate({
+    const graphInput: IEvidenceGraphInput = {
       claims: await Promise.all(claims.map(prepareClaim)),
-    });
+    };
+    const graph = EvidenceGraph.evaluate(graphInput);
     return {
+      graphInput,
       graph,
       report: report(plan, graph),
     };
@@ -210,7 +220,10 @@ async function prepareReference(
   declarations: Map<string, Set<number>>,
   reviews: Map<string, Set<number>>,
 ): Promise<IEvidenceGraphReference> {
-  const resolver = new EvidenceTargetResolver([materialized.inventory]);
+  const resolver = new EvidenceTargetResolver(
+    [materialized.inventory],
+    materialized.plan.population.type,
+  );
   const resolutions: IEvidenceGraphResolution[] = await Promise.all(
     claim.declarations.flatMap((declaration) =>
       selected(declarations, declaration.id, position)

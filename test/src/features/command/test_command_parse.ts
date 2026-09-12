@@ -58,9 +58,69 @@ export function test_command_parse(): void {
       config: "config/custom.ts",
     },
   );
+  TestValidator.equals(
+    "list filters",
+    EvidenceCommand.parse([
+      "list",
+      "--language",
+      "typescript",
+      "--kind",
+      "property",
+      "--format",
+      "json",
+    ]),
+    {
+      operation: "list",
+      cwd: ".",
+      config: "evidence.config.ts",
+      format: "json",
+      language: "typescript",
+      kind: "property",
+    },
+  );
+  TestValidator.equals(
+    "inspect target",
+    EvidenceCommand.parse([
+      "inspect",
+      "src/contract.ts#Contract.member",
+      "--cwd",
+      "project",
+    ]),
+    {
+      operation: "inspect",
+      target: "src/contract.ts#Contract.member",
+      cwd: "project",
+      config: "evidence.config.ts",
+      format: "text",
+    },
+  );
+  TestValidator.equals(
+    "graph format",
+    EvidenceCommand.parse(["graph", "--format", "dot"]),
+    {
+      operation: "graph",
+      cwd: ".",
+      config: "evidence.config.ts",
+      format: "dot",
+    },
+  );
+  TestValidator.equals(
+    "languages without config",
+    EvidenceCommand.parse(["languages", "--format", "json"]),
+    {
+      operation: "languages",
+      cwd: ".",
+      format: "json",
+    },
+  );
 
   // Help and version are selected without any project option processing.
-  for (const args of [["--help"], ["-h"], ["check", "--help"]])
+  for (const args of [
+    ["--help"],
+    ["-h"],
+    ["check", "--help"],
+    ["inspect", "--help"],
+  ])
     TestValidator.equals(
       `help arguments: ${args.join(" ")}`,
       EvidenceCommand.parse(args),
@@ -83,6 +143,14 @@ export function test_command_parse(): void {
     ["--format", "yaml"],
     ["init", "--format", "json"],
     ["init", "--output", "report.txt"],
+    ["languages", "--config", "evidence.config.ts"],
+    ["graph", "--format", "text"],
+    ["inspect"],
+    ["inspect", "one.ts#A", "two.ts#B"],
+    ["inspect", "one.ts#A", "--kind", "type"],
+    ["list", "--language", "kotlin"],
+    ["list", "--kind", "namespace"],
+    ["check", "--language", "typescript"],
     ["--help", "--format", "json"],
     ["check", "--version"],
     ["--watch"],

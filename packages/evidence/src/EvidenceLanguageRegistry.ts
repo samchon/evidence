@@ -60,6 +60,8 @@ export namespace EvidenceLanguageRegistry {
         symbols: ["type", "function", "property"],
         publicSurface:
           "Static TypeScript module exports and declaration files within the selected snapshot.",
+        addressing:
+          "File-qualified export accessors; instance members include prototype while static members do not.",
         comments: ["JSDoc"],
         unsupported: [
           "package exports",
@@ -85,6 +87,8 @@ export namespace EvidenceLanguageRegistry {
         symbols: ["type", "function", "property"],
         publicSurface:
           "Static ESM exports and bounded CommonJS initialization.",
+        addressing:
+          "File-qualified export accessors; instance members include prototype while static members do not.",
         comments: ["JSDoc"],
         unsupported: [
           "dynamic CommonJS exports",
@@ -102,6 +106,8 @@ export namespace EvidenceLanguageRegistry {
         symbols: ["type", "function", "property"],
         publicSurface:
           "Statically declared Python module exports with bounded local import and __all__ resolution.",
+        addressing:
+          "File-qualified module accessors; instance members include prototype while class members do not.",
         comments: ["docstring", "adjacent # comment"],
         unsupported: [
           "executed module discovery",
@@ -120,6 +126,8 @@ export namespace EvidenceLanguageRegistry {
         symbols: ["type", "function", "property"],
         publicSurface:
           "Selected exported Go package declarations with package-wide receiver ownership.",
+        addressing:
+          "File-qualified package declarations with receiver and interface members under their owner type.",
         comments: ["adjacent // or block documentation comment"],
         unsupported: [
           "GOOS and GOARCH evaluation",
@@ -138,6 +146,8 @@ export namespace EvidenceLanguageRegistry {
         symbols: ["type", "function", "property"],
         publicSurface:
           "Selected Rust crate modules, public reexports, and local nominal impl members.",
+        addressing:
+          "File-qualified public paths; trait implementations add an explicit quoted impl segment.",
         comments: ["outer or inner documentation", "static doc attribute"],
         unsupported: [
           "Cargo feature evaluation",
@@ -157,6 +167,8 @@ export namespace EvidenceLanguageRegistry {
         symbols: ["type", "function", "property"],
         publicSurface:
           "Java source-public declarations recognized by tree-sitter-java v0.23.5, independent of JPMS exports.",
+        addressing:
+          "File-qualified top-level and nested type accessors with methods grouped by owner and name.",
         comments: ["attached Javadoc"],
         unsupported: [
           "JPMS package export enforcement",
@@ -176,6 +188,8 @@ export namespace EvidenceLanguageRegistry {
         symbols: ["type", "function", "property"],
         publicSurface:
           "C# source-public declarations recognized by tree-sitter-c-sharp v0.23.5 within one configured source snapshot.",
+        addressing:
+          "File-qualified namespace and owner accessors with quoted segments for generic arity, indexers, and operators.",
         comments: ["attached /// or /** */ XML documentation"],
         unsupported: [
           "conditional-compilation evaluation",
@@ -195,6 +209,8 @@ export namespace EvidenceLanguageRegistry {
         symbols: ["type", "function", "property"],
         publicSurface:
           "Explicit external declarations, tags, typedefs, aggregate fields, and enumerators recognized by tree-sitter-c v0.24.2 within each selected physical file.",
+        addressing:
+          "File-qualified declarations with exact quoted tag names and unambiguous typedef or source-name aliases.",
         comments: ["attached Doxygen"],
         unsupported: [
           "preprocessor branch evaluation",
@@ -239,6 +255,8 @@ export namespace EvidenceLanguageRegistry {
         symbols: ["type", "function", "property"],
         publicSurface:
           "Explicit namespaces, public types and members, external declarations, templates, and bounded aliases recognized by tree-sitter-cpp v0.23.4 across the selected snapshot.",
+        addressing:
+          "File-qualified namespace and owner accessors with quoted segments for template arity and operators.",
         comments: ["attached Doxygen"],
         unsupported: [
           "preprocessor branch evaluation",
@@ -265,6 +283,8 @@ export namespace EvidenceLanguageRegistry {
         symbols: ["type", "function", "property"],
         publicSurface:
           "Explicit classes and modules, public instance and singleton methods, constants, literal attributes, bounded aliases, and reopenings recognized by tree-sitter-ruby v0.23.1 across the selected snapshot.",
+        addressing:
+          "File-qualified constant paths; instance members use their owner directly and singleton members add self.",
         comments: ["adjacent Ruby line or embedded RDoc comments"],
         unsupported: [
           "runtime load order",
