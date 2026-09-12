@@ -91,6 +91,19 @@ export namespace EvidenceLanguageRegistry {
       type: "python",
       name: "Python",
       grammars: [{ id: "python", extensions: [".py", ".pyi"], filenames: [] }],
+      adapter: {
+        entry: "EvidencePythonAdapter",
+        symbols: ["type", "function", "property"],
+        publicSurface:
+          "Statically declared Python module exports with bounded local import and __all__ resolution.",
+        comments: ["docstring", "adjacent # comment"],
+        unsupported: [
+          "executed module discovery",
+          "dynamic __all__ mutation",
+          "decorator-generated members",
+          "metaclass-generated members",
+        ],
+      },
     },
     {
       type: "go",

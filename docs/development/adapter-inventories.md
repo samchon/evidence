@@ -125,6 +125,38 @@ For CommonJS, process unconditional top-level initialization in source order. Su
 
 Attach only JSDoc that immediately precedes a supported declaration. Retain unsupported tag-bearing comments as findings, and exclude all registered annotation ranges from semantic fingerprints. Literal and JSX tag examples never become comment hosts.
 
+## Python inventories
+
+`EvidencePythonAdapter` parses `.py` and `.pyi` snapshots with the packaged Python grammar. It inventories the statically declared source surface and never imports or executes the analyzed application.
+
+Classify supported declarations as follows:
+
+| Source form | Symbol and address |
+| --- | --- |
+| Module class or explicit `type Alias = ...` / `Alias: TypeAlias = ...` | `type` at `Name` |
+| Module `def` or `async def` | `function` at `name` |
+| Simple module assignment | `property` at `name` |
+| Nested class | `type` at `Owner.Nested` |
+| Simple class assignment | `property` at `Owner.name` |
+| `@staticmethod` or `@classmethod` method | `function` at `Owner.name` |
+| Ordinary method | `function` at `Owner.prototype.name` |
+| `@property`, `@cached_property`, getter, setter, or deleter method | `property` at `Owner.prototype.name` |
+| Direct `receiver.name` assignment in `__init__` | `property` at `Owner.prototype.name` |
+
+The constructor receiver is its first declared parameter; it need not be spelled `self`. Scan only assignments directly in the constructor body. A conditional or otherwise nested public receiver assignment makes analysis incomplete. Simple annotated and unannotated assignments are supported. Destructuring public bindings are not guessed. Stub overload declarations with the same identity retain all sites. A class-side and instance-side member with the same spelling remain distinct through the `prototype` segment.
+
+Leading-underscore class members, constructors, and special methods do not form units. Module declarations are retained before export selection so a literal `__all__` can explicitly publish an underscored name. Local helpers nested inside functions never become module units. Decorators contribute to declaration fingerprints but are not executed; dataclass, descriptor, decorator, and metaclass generated members remain outside the declared-source guarantee.
+
+Evaluate `__all__` in source order. Accept lists and tuples of ordinary or `u`-prefixed literal names without escapes or newlines, binary `+` composition of those sequences, and top-level `+=` with another supported sequence. A supported assignment replaces the previous value and `+=` appends. Any other assignment, method mutation, deletion, or conditional modification marks the inventory incomplete. Retain statically known names and the ordinary public declaration set after a dynamic mutation so an unresolved export cannot erase existing obligations.
+
+Without `__all__`, publish supported module declarations and statically resolved import bindings whose local names do not start with `_`. An explicit `__all__` selects exactly its names. Resolve named aliases, namespace imports, and star imports through local source modules. A named import may reach a declaration that its defining module omits from its own `__all__`; a star import observes that module's public names. Imports never create units from captured identifiers by themselves.
+
+Resolve relative imports from the importing file's package directory. Resolve absolute dotted imports from the configured population root. Recognize `.py`, `.pyi`, and `__init__.py`/`__init__.pyi` candidates already present in the snapshot, retain reexport identity, and terminate finite cycles. Missing, outside-root, ambiguous, declaration-free cyclic, and unresolved explicit exports make analysis incomplete. This bounded resolver does not model environment-dependent `sys.path`, installed packages, or `from . import submodule` fallback loading.
+
+An actual class or function docstring is an eligible documentation carrier. A consecutive same-indent `#` comment run attaches only when it immediately precedes a supported declaration without a blank line; a run before a decorated definition attaches across the decorators. Property assignments can use the same adjacent-comment form. Module docstrings, assigned strings, other arbitrary string expressions, detached comments, and comments on unpublished declarations remain unsupported annotation hosts. Register attached documentation and tag-bearing unsupported carriers as annotation ranges so Evidence metadata does not move semantic fingerprints.
+
+Conditional module declarations/imports, conditional class declarations, dynamic `__all__`, and unresolved local imports are explicit incomplete-analysis boundaries. Dynamic module attributes, `globals()`, `getattr`, module `__getattr__`, decorators, and application initialization are never executed or used to fabricate units.
+
 ## Prisma inventories
 
 `EvidencePrismaAdapter` parses all selected physical files as one schema with `@prisma/prisma-schema-wasm`. Prefer a parser resolvable from the project root, then use the package's pinned fallback. Deduplicate physical sources before parsing and retain every logical address on the resulting source snapshot. A rejected schema makes the inventory incomplete and produces no guessed units.
