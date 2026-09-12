@@ -18,11 +18,13 @@ import { deserialize } from "node:v8";
 import typia from "typia";
 
 import type { IConfigPackageScope } from "./IConfigPackageScope";
+import type { IEvaluateTypeScriptConfigOptions } from "./IEvaluateTypeScriptConfigOptions";
 import type { ITtsxManifest } from "./ITtsxManifest";
 
 /** Typechecks and evaluates a config in an isolated project through its own ttsx. */
 export async function evaluateTypeScriptConfig(
   configFile: string,
+  options: IEvaluateTypeScriptConfigOptions = {},
 ): Promise<unknown> {
   const requireFromConfig = createRequire(configFile);
   let launcher: string;
@@ -132,19 +134,23 @@ export async function evaluateTypeScriptConfig(
         2,
       ),
     );
-    await runEvaluator(configFile, [
-      launcher,
-      "--binary",
-      compiler,
-      "--project",
-      project,
-      "--cwd",
-      directory,
-      "--no-plugins",
-      "--cache-dir",
-      path.join(temporary, "cache"),
-      entry,
-    ]);
+    await runEvaluator(
+      configFile,
+      [
+        launcher,
+        "--binary",
+        compiler,
+        "--project",
+        project,
+        "--cwd",
+        directory,
+        "--no-plugins",
+        "--cache-dir",
+        path.join(temporary, "cache"),
+        entry,
+      ],
+      options.writeDiagnostic ?? writeProcessDiagnostic,
+    );
     if (!(await exists(resultFile)))
       throw new Error(
         `Config evaluator for ${configFile} exited without returning its default export.`,
@@ -167,13 +173,21 @@ export async function evaluateTypeScriptConfig(
   }
 }
 
-function runEvaluator(configFile: string, args: string[]): Promise<void> {
+function runEvaluator(
+  configFile: string,
+  args: string[],
+  writeDiagnostic: (content: string) => void,
+): Promise<void> {
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, args, {
       cwd: path.dirname(configFile),
-      stdio: ["ignore", 2, 2],
+      stdio: ["ignore", "pipe", "pipe"],
       windowsHide: true,
     });
+    child.stdout.setEncoding("utf8");
+    child.stderr.setEncoding("utf8");
+    child.stdout.on("data", writeDiagnostic);
+    child.stderr.on("data", writeDiagnostic);
     child.once("error", (cause) => {
       reject(
         new Error(`Could not start the config evaluator for ${configFile}.`, {
@@ -191,6 +205,10 @@ function runEvaluator(configFile: string, args: string[]): Promise<void> {
         );
     });
   });
+}
+
+function writeProcessDiagnostic(content: string): void {
+  process.stderr.write(content);
 }
 
 /** Uses Node's nearest package boundary without inheriting application tsconfig settings. */
