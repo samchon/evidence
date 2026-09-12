@@ -7,4 +7,6 @@ export interface IEvidenceCheckCommand {
   config: string;
   format: EvidenceReportFormat;
   output?: string;
+  /** Keep checking after the initial result and publish filesystem-driven cycles. */
+  watch?: true;
 }

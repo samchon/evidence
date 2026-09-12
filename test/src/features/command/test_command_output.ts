@@ -71,6 +71,14 @@ export async function test_command_output(): Promise<void> {
         missing.stdout.includes('"exitCode": 2'),
       );
 
+      // Buffered embedding directs infinite watch use to the public streaming API.
+      const watch = await EvidenceCommand.run(["--watch"], directory);
+      TestValidator.equals("buffered watch exit", watch.exitCode, 2);
+      TestValidator.predicate(
+        "buffered watch guidance",
+        watch.stderr.includes("Use EvidenceWatcher for embedding"),
+      );
+
       // A destination that is itself a directory reports its failed write on stderr.
       const unwritable = await EvidenceCommand.run(
         ["--config", "missing.config.ts", "--output", ".", "--format", "json"],

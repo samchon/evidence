@@ -20,6 +20,17 @@ export function test_command_parse(): void {
     EvidenceCommand.parse(["check"]),
     defaults,
   );
+  TestValidator.equals(
+    "watch aliases",
+    [
+      EvidenceCommand.parse(["--watch"]),
+      EvidenceCommand.parse(["check", "-w"]),
+    ],
+    [
+      { ...defaults, watch: true },
+      { ...defaults, watch: true },
+    ],
+  );
 
   // Both spellings preserve authored paths until execution resolves --cwd.
   TestValidator.equals(
@@ -133,7 +144,7 @@ export function test_command_parse(): void {
       { operation: "version" },
     );
 
-  // Typos, duplicates, bad formats, incompatible flags, and watch all fail loudly.
+  // Typos, duplicates, bad formats, and incompatible flags all fail loudly.
   for (const args of [
     ["unknown"],
     ["--unknown"],
@@ -153,7 +164,8 @@ export function test_command_parse(): void {
     ["check", "--language", "typescript"],
     ["--help", "--format", "json"],
     ["check", "--version"],
-    ["--watch"],
+    ["--watch", "-w"],
+    ["list", "--watch"],
   ])
     assert.throws(
       () => EvidenceCommand.parse(args),

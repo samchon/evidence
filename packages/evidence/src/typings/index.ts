@@ -21,3 +21,5 @@ export type * from "./EvidencePopulationRole";
 export type * from "./EvidenceQueryReport";
 export type * from "./EvidenceReportFormat";
 export type * from "./EvidenceUnitSelection";
+export type * from "./EvidenceWatchCycle";
+export type * from "./EvidenceWatchPublisher";

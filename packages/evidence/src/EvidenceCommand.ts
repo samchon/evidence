@@ -1,5 +1,5 @@
 import { dedent } from "@typia/utils";
-import { readFile, writeFile } from "node:fs/promises";
+import { appendFile, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import typia from "typia";
 
@@ -9,6 +9,8 @@ import { EvidenceGraphReporter } from "./EvidenceGraphReporter";
 import { EvidenceQuery } from "./EvidenceQuery";
 import { EvidenceQueryReporter } from "./EvidenceQueryReporter";
 import { EvidenceReporter } from "./EvidenceReporter";
+import { EvidenceWatcher } from "./EvidenceWatcher";
+import { EvidenceWatchReporter } from "./EvidenceWatchReporter";
 import { EvidenceArtifactTypes } from "./internal/EvidenceArtifactTypes";
 import type { IPackageManifest } from "./internal/IPackageManifest";
 import type { IEvidenceCheckCommand } from "./structures/IEvidenceCheckCommand";
@@ -49,6 +51,7 @@ export namespace EvidenceCommand {
 
     const values = new Map<string, string>();
     let target: string | undefined;
+    let watch = false;
     for (let index = 0; index < tokens.length; index++) {
       const token = tokens[index];
       if (token === undefined)
@@ -60,9 +63,10 @@ export namespace EvidenceCommand {
           throw new EvidenceCommandError(
             `${token} is available only to evidence check.`,
           );
-        throw new EvidenceCommandError(
-          "Evidence watch mode is reserved but not implemented. Run evidence check without --watch.",
-        );
+        if (watch)
+          throw new EvidenceCommandError("The watch flag was provided twice.");
+        watch = true;
+        continue;
       }
       if (!token.startsWith("-")) {
         if (operation !== "inspect")
@@ -162,6 +166,7 @@ export namespace EvidenceCommand {
       config,
       format: reportFormat(values.get("format")),
       ...optionalOutput(values),
+      ...(watch ? { watch: true } : {}),
     };
   }
 
@@ -191,6 +196,11 @@ export namespace EvidenceCommand {
     }
     if (parsed.operation === "init") return runInit(parsed, baseCwd);
     if (parsed.operation === "languages") return runLanguages(parsed, baseCwd);
+    if (parsed.operation === "check" && parsed.watch === true)
+      return failureResult(
+        new Error("Buffered EvidenceCommand.run cannot execute watch mode."),
+        "Use EvidenceWatcher for embedding or the evidence executable for streamed watch output.",
+      );
     return runAnalysis(parsed, baseCwd);
   }
 
@@ -198,7 +208,16 @@ export namespace EvidenceCommand {
   export async function main(
     args: readonly string[],
   ): Promise<EvidenceCommandExitCode> {
-    const result = await run(args);
+    let parsed: IEvidenceCommand | undefined;
+    try {
+      parsed = parse(args);
+    } catch {
+      // The buffered path owns the established command-error rendering.
+    }
+    const result =
+      parsed?.operation === "check" && parsed.watch === true
+        ? await runWatch(parsed, process.cwd())
+        : await run(args);
     if (result.stdout !== "") process.stdout.write(result.stdout);
     if (result.stderr !== "") process.stderr.write(result.stderr);
     return result.exitCode;
@@ -219,6 +238,59 @@ export namespace EvidenceCommand {
       throw cause;
     }
   }
+}
+
+async function runWatch(
+  command: IEvidenceCheckCommand,
+  baseCwd: string,
+): Promise<IEvidenceCommandResult> {
+  const cwd = path.resolve(baseCwd, command.cwd);
+  const configFile = path.resolve(cwd, command.config);
+  const destination =
+    command.output === undefined
+      ? undefined
+      : path.resolve(cwd, command.output);
+  try {
+    if (destination !== undefined) await writeFile(destination, "", "utf8");
+  } catch (cause) {
+    return failureResult(
+      new Error(
+        `Could not initialize Evidence watch output '${String(destination)}': ${errorMessage(cause)}`,
+      ),
+      "Correct the output path or its permissions and run the command again.",
+    );
+  }
+
+  const watcher = new EvidenceWatcher(configFile);
+  const interrupt = (): void => {
+    void watcher.close();
+  };
+  process.once("SIGINT", interrupt);
+  try {
+    await watcher.watch(async (cycle) => {
+      const content = EvidenceWatchReporter.render(cycle, command.format);
+      if (destination === undefined) await writeStandardOutput(content);
+      else await appendFile(destination, content, "utf8");
+    });
+    return { exitCode: 0, stdout: "", stderr: "" };
+  } catch (cause) {
+    return failureResult(
+      cause,
+      "Correct the watch output or dependency failure and start the command again.",
+    );
+  } finally {
+    process.removeListener("SIGINT", interrupt);
+    await watcher.close();
+  }
+}
+
+async function writeStandardOutput(content: string): Promise<void> {
+  await new Promise<undefined>((resolve, reject) => {
+    process.stdout.write(content, (cause) => {
+      if (cause === null || cause === undefined) resolve(undefined);
+      else reject(cause);
+    });
+  });
 }
 
 async function runAnalysis(
@@ -487,18 +559,21 @@ const HELP = dedent`
     -o, --output <path>   Write command output to a file.
         --language <type> Filter evidence list by artifact type.
         --kind <symbol>   Filter evidence list by symbol kind.
-    -w, --watch           Reserved for a future watch command.
+    -w, --watch           Recheck whenever an active dependency changes.
     -h, --help            Show this help without loading configuration.
     -v, --version         Show the package version without loading configuration.
 
   Formats:
     check, list, inspect, languages  text (default), json
     graph                           json (default), mermaid, dot
+    check --watch                   text blocks (default), NDJSON
 
   Exit codes:
     0  Complete analysis without error-severity findings.
     1  Complete analysis with Evidence violations or an unresolved inspection.
     2  Invalid command/configuration or incomplete analysis.
+
+  Watch stays active across cycle exit codes. Ctrl+C cleans up and exits 0.
 `;
 
 const INITIAL_CONFIG = dedent`
