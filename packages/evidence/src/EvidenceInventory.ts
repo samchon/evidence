@@ -359,7 +359,10 @@ export class EvidenceInventory {
       for (const site of unit.sites)
         site.content = InventoryMerge.unique(site.content, (range) =>
           JSON.stringify([range.start.offset, range.end.offset]),
-        );
+        ).sort((x, y) => {
+          const start = x.start.offset - y.start.offset;
+          return start !== 0 ? start : x.end.offset - y.end.offset;
+        });
       unit.withdrawals = InventoryMerge.unique(unit.withdrawals, (withdrawal) =>
         typia.json.stringify(withdrawal),
       );

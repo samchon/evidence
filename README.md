@@ -68,6 +68,8 @@ For direct local source access, `EvidenceSourceLoader.glob(configFile, { root, f
 
 Source snapshots retain UTF-8 contents, byte digests, physical file identities, every selected logical address, and filesystem dependencies for detecting changes. Directory links and hard links share physical files without losing their addresses. Always inspect `complete` and `diagnostics`: a healthy empty selection is complete, while an inaccessible root, cyclic link, or unreadable file makes the snapshot incomplete. Invalid root or glob syntax rejects the promise. Discovery retains all selected formats for adapter processing; filesystem completeness alone does not establish parser support or evidence coverage.
 
+`EvidenceMarkdownAdapter.analyze(snapshot)` turns a Markdown snapshot into file and ATX H1-H4 units, public file/anchor addresses, section ownership, HTML-comment hosts, acknowledgements, and reviews. It retains discovery failures and reports whitespace paths, unresolved heading anchors, annotations below H5/H6, and tag lines rendered as prose. Fenced, indented, HTML `<pre>`, and MDX template examples do not produce annotations.
+
 For direct syntax analysis, use `EvidenceParser.parse(input, callback)`. The callback receives a borrowed tree and query helpers; copy extracted values into ordinary data before it returns:
 
 ```ts
@@ -116,6 +118,8 @@ A `symbol` accepts one selector or a nonempty array. Programming `type` symbols 
 All database schema languages use `IEvidenceDatabaseClaim` and `IEvidenceDatabaseReference`. Their `type` distinguishes Prisma, SQL dialects, and DBML. Select the source schema language rather than the database server: MongoDB models written in Prisma use `type: "prisma"`.
 
 Markdown preserves its document outline, and Prisma preserves its schema structure. Swagger claims select local JSON/YAML documents with `files` globs. Swagger references use `file` for an exact local JSON/YAML path or an HTTP(S) URL, with an optional `root` for local paths.
+
+Markdown section anchors prefer a valid trailing `{#anchor}`. Otherwise, the adapter lowercases the heading, retains Unicode letters, numbers, and underscores, removes punctuation, and collapses whitespace or hyphens. Repeated anchors remain distinct sections and make the shared target ambiguous until the author supplies unique anchors.
 
 ## Evidence declarations
 
