@@ -18,7 +18,7 @@ The [roadmap](https://github.com/samchon/evidence/issues/31) owns execution orde
 | Path | Owner |
 | --- | --- |
 | `packages/evidence/src` | Library and reusable CLI implementation |
-| `packages/evidence/src/structures` | Configuration, claim, reference, and base interfaces |
+| `packages/evidence/src/structures` | Configuration, parser, source, and semantic inventory interfaces |
 | `packages/evidence/src/typings` | Language identifiers, symbol selectors, and diagnostic severity |
 | `packages/evidence/src/executable` | Small Node CLI bootstraps |
 | `packages/evidence/assets` | Pinned upstream grammar WASM, provenance manifest, and licenses |
@@ -39,6 +39,8 @@ Use `typia` for runtime type checks and `@typia/utils` for `dedent`. Keep both i
 Keep compiler dependencies in the workspaces that use them, including `config` for its typed lint configuration. The repository root only needs the formatter. Build scripts invoke `ttsc` with its default `tsconfig.json`; shared compiler settings do not declare plugins already discovered from package dependencies.
 
 The application and adapters are authored in TypeScript. `EvidenceParser` uses official `web-tree-sitter` and packaged upstream grammars. A language needs an adapter and certification as well as a grammar. Read [the domain skill](evidence/SKILL.md) for the completeness boundary and [the asset guide](../../../docs/development/parser-assets.md) before changing grammar pins or acquisition. Preserve upstream asset bytes through the repository's Git attributes; checksum verification includes the license files.
+
+Adapters implement `IEvidenceAdapter` and return serializable inventories. `EvidenceInventory` reconciles identities, validates ownership, and projects independent populations. `EvidenceTagParser` consumes mapped documentation after the adapter establishes attachment. Follow the [adapter inventory guide](../../../docs/development/adapter-inventories.md) when adding extraction or host records.
 
 Use CommonJS; do not add `type: "module"` or an unsupported Node engine constraint. The public module must remain inert on import. Workspace `main` and `exports` point directly to `./src/index.ts`. JavaScript entry points, declaration paths, and the installed CLI bin belong only in `publishConfig`. CLI bootstrap belongs in `src/executable`; reusable behavior belongs outside it. Compiled package files go to ignored `lib` directories. Run TypeScript tests with `ttsx`. Keep maintenance scripts as plain JavaScript run by Node, without a tsconfig or lint.config under `scripts`. Root README and LICENSE are authoritative and copied by `prepack`; never maintain the generated package copies independently.
 

@@ -1,3 +1,6 @@
+export type * from "./EvidenceAcknowledgementKind";
+export type * from "./EvidenceArtifactType";
+export type * from "./EvidenceSymbol";
 export type * from "./EvidenceDatabaseSymbol";
 export type * from "./EvidenceDatabaseType";
 export type * from "./EvidenceMarkdownSymbol";

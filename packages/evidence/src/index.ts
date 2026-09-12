@@ -1,9 +1,13 @@
 /** Public API. Importing the package performs no project work. */
+export { EvidenceAccessor } from "./EvidenceAccessor";
 export { EvidenceConfigLoader } from "./EvidenceConfigLoader";
+export { EvidenceDocumentation } from "./EvidenceDocumentation";
+export { EvidenceInventory } from "./EvidenceInventory";
 export { EvidenceLanguageRegistry } from "./EvidenceLanguageRegistry";
 export { EvidenceParser } from "./EvidenceParser";
 export { EvidenceParserError } from "./EvidenceParserError";
 export type { EvidenceParseSession } from "./EvidenceParseSession";
 export { EvidenceSourceLoader } from "./EvidenceSourceLoader";
+export { EvidenceTagParser } from "./EvidenceTagParser";
 export type * from "./structures";
 export type * from "./typings";
