@@ -254,6 +254,20 @@ export namespace EvidenceLanguageRegistry {
           filenames: ["Gemfile", "Rakefile"],
         },
       ],
+      adapter: {
+        entry: "EvidenceRubyAdapter",
+        symbols: ["type", "function", "property"],
+        publicSurface:
+          "Explicit classes and modules, public instance and singleton methods, constants, literal attributes, bounded aliases, and reopenings recognized by tree-sitter-ruby v0.23.1 across the selected snapshot.",
+        comments: ["adjacent Ruby line or embedded RDoc comments"],
+        unsupported: [
+          "runtime load order",
+          "dynamic method and constant generation",
+          "mixin and refinement expansion",
+          "eval-created declarations",
+          "inherited members",
+        ],
+      },
     },
   ];
 }

@@ -19,6 +19,7 @@ export { EvidenceParserError } from "./EvidenceParserError";
 export { EvidencePrismaAdapter } from "./EvidencePrismaAdapter";
 export { EvidencePythonAdapter } from "./EvidencePythonAdapter";
 export type { EvidenceParseSession } from "./EvidenceParseSession";
+export { EvidenceRubyAdapter } from "./EvidenceRubyAdapter";
 export { EvidenceRustAdapter } from "./EvidenceRustAdapter";
 export { EvidenceSourceLoader } from "./EvidenceSourceLoader";
 export { EvidenceSwaggerAdapter } from "./EvidenceSwaggerAdapter";
