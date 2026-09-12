@@ -10,6 +10,7 @@ export { EvidenceLanguageRegistry } from "./EvidenceLanguageRegistry";
 export { EvidenceMarkdownAdapter } from "./EvidenceMarkdownAdapter";
 export { EvidenceParser } from "./EvidenceParser";
 export { EvidenceParserError } from "./EvidenceParserError";
+export { EvidencePrismaAdapter } from "./EvidencePrismaAdapter";
 export type { EvidenceParseSession } from "./EvidenceParseSession";
 export { EvidenceSourceLoader } from "./EvidenceSourceLoader";
 export { EvidenceTagParser } from "./EvidenceTagParser";

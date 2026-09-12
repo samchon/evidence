@@ -19,7 +19,7 @@ Assign globally unambiguous IDs from physical source identity and language-estab
 
 Store literal accessor segments separately. `A["B.C"]` contains two segments; it does not establish a parent named `A.B`. Set `parentId` explicitly, including container relationships that are not represented by a textual prefix.
 
-Use half-open original source spans with zero-based UTF-16 offsets and one-based lines and UTF-16 columns. Preserve CRLF and Unicode in source snapshots. Every attached host names a site owned by each listed unit. Register eligible hosts even when they contain no annotations. An operation without a description or a declaration without a comment must not vanish from policies that inspect every selected host.
+Use half-open original source spans with zero-based UTF-16 offsets and one-based lines and UTF-16 columns. Preserve CRLF and Unicode in source snapshots. An attached semantic host names a site owned by each listed unit. An artifact may also define an attached exclusion-only carrier with no site or semantic unit; positive evidence on that carrier must be rejected. Register eligible hosts even when they contain no annotations. An operation without a description or a declaration without a comment must not vanish from policies that inspect every selected host.
 
 A multi-variable statement can give two units the same site and documentation host. Give each unit its own content ranges so changing one initializer does not necessarily change its sibling's fingerprint. Keep all declaration sites when several declarations form one semantic identity.
 
@@ -42,6 +42,8 @@ Host `origins` retain the original paths used for relative citations; omitting t
 `EvidenceFileTarget.parse(target, origin)` handles file-qualified programming targets. It decodes the path, resolves it from the citing file, and retains each accessor segment. Omitting `#` addresses the artifact's file unit; a trailing `#` is invalid. `format(address)` produces canonical text by percent-encoding reserved path characters and using dotted identifiers or JSON-string brackets for members. Equivalent encoded paths therefore reach the same absolute address, while `A.B` and `A["B.C"]` remain different.
 
 Markdown keeps its original target grammar. Its file path is relative to the reference population root, `\` becomes `/`, and repeated leading `./` is ignored. Case, percent signs, and other path text remain literal. The text after `#` is one literal anchor segment, including dots, colons, and hyphens. Do not percent-decode Markdown paths or parse their anchors as programming accessors.
+
+Prisma targets contain no file path. Parse `prisma:Model` and `prisma:Model.member` into the virtual `prisma:` address plus one or two identifier segments. Model identity belongs to the whole selected schema, so moving its declaration between selected files cannot change its target.
 
 `EvidenceTargetResolver` accepts reference inventories, a target-bearing acknowledgement or review, its claim host, and the reference's selected unit IDs. For Markdown it matches root-relative logical source addresses. For other file-qualified artifacts it tries every retained claim-host origin. It queries only exact public addresses in the selected structural scope, unifies aliases by semantic unit ID, and never searches another file for a matching display name.
 
@@ -110,3 +112,13 @@ Local declaration identity remains separate from each exported address. The adap
 Named type-only exports and reexports retain only units available in type space, and that restriction travels through later value barrels. The pinned upstream grammar does not parse the TypeScript 5.0 `export type *` or `export type * as` spellings; encountering either produces a parse-incomplete diagnostic instead of a reduced population. Package exports, path aliases, ambient modules, global augmentations, UMD namespace exports, and CommonJS `export =` also remain explicit incomplete-analysis boundaries.
 
 Only attached JSDoc is an eligible TypeScript documentation host. A variable statement can host all of its declarators, while a JSDoc block on an individual declarator belongs only to that declarator. Overloads and merged declarations share semantic identity and retain every declaration site. Withdrawal on any declaration hides the merged identity and its descendants. Tag-bearing line comments, ordinary block comments, detached JSDoc, local declarations, and excluded declaration forms produce unsupported-host findings instead of evidence edges.
+
+## Prisma inventories
+
+`EvidencePrismaAdapter` parses all selected physical files as one schema with `@prisma/prisma-schema-wasm`. Prefer a parser resolvable from the project root, then use the package's pinned fallback. Deduplicate physical sources before parsing and retain every logical address on the resulting source snapshot. A rejected schema makes the inventory incomplete and produces no guessed units.
+
+Use the parser's `models` collection as the denominator. Materialize models and views as `model`, non-object fields as `column`, and object fields as `relation`; this includes relation back-references without a local `@relation` attribute. Enums, composite types, indexes, generators, and datasources remain outside the unit set. The position scanner may attach source sites to parser-established identities, but a missed position must retain the unit with a file-level fallback.
+
+Assign each unit the canonical digest of its parsed declaration without documentation. Exclude fields from a model's own digest because each field is a child unit; the model scope fingerprint composes those children. The whole ordered schema set has a separate content digest for parser-result caching.
+
+Attach `///`, plain block, and JSDoc-style block documentation to the next Prisma declaration. A top-level blank line detaches a run; a blank line inside a model does not. Ordinary `//`, comments above block attributes or closing braces, extra leading slashes, and comments on unsupported declaration kinds produce diagnostics. An unattached top-level `///` run is an exclusion-only carrier, including in explicitly selected files with nonstandard extensions. Withdrawal on a model hides its descendants.
