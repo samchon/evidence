@@ -1,21 +1,22 @@
 import { EvidenceLanguageRegistry } from "../EvidenceLanguageRegistry";
+import type { EvidenceArtifactType } from "../typings/EvidenceArtifactType";
 
 /** Runtime registry of artifact types backed by certified adapters. */
 export namespace EvidenceArtifactTypes {
-  export function isSupported(type: string): boolean {
-    return SUPPORTED.has(type);
+  export function isSupported(type: string): type is EvidenceArtifactType {
+    return SUPPORTED.some((supported) => supported === type);
   }
 
-  export function supported(): string[] {
-    return Array.from(SUPPORTED);
+  export function supported(): EvidenceArtifactType[] {
+    return [...SUPPORTED];
   }
 }
 
-const SUPPORTED = new Set<string>([
+const SUPPORTED: EvidenceArtifactType[] = [
   "markdown",
   "prisma",
   "swagger",
   ...EvidenceLanguageRegistry.list()
     .filter((language) => language.adapter !== undefined)
     .map((language) => language.type),
-]);
+];

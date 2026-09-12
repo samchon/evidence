@@ -23,14 +23,19 @@ import type { EvidenceTargetResolutionStatus } from "./typings/EvidenceTargetRes
 export class EvidenceTargetResolver {
   private readonly index: EvidenceInventory;
   private readonly inventory: IEvidenceInventory;
+  private readonly type: EvidenceArtifactType | undefined;
   private readonly selectedFiles = new Set<string>();
   private readonly physicalFiles = new Set<string>();
   private readonly publicFiles = new Map<string, Set<string>>();
   private readonly markdownFiles = new Map<string, Set<string>>();
 
-  public constructor(inventories: IEvidenceInventory[]) {
+  public constructor(
+    inventories: IEvidenceInventory[],
+    type?: EvidenceArtifactType,
+  ) {
     this.index = new EvidenceInventory(inventories);
     this.inventory = this.index.snapshot();
+    this.type = type;
     for (const source of this.inventory.sources) {
       this.physicalFiles.add(EvidenceFileTarget.normalize(source.physicalPath));
       for (const address of source.addresses)
@@ -367,6 +372,7 @@ export class EvidenceTargetResolver {
       if (!selected.has(unit.id)) continue;
       types.add(unit.type);
     }
+    if (types.size === 0) return this.type;
     return types.size === 1 ? types.values().next().value : undefined;
   }
 

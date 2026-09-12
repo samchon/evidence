@@ -5,6 +5,7 @@ export interface IEvidenceLanguageAdapter {
   entry: string;
   symbols: EvidenceProgrammingSymbol[];
   publicSurface: string;
+  addressing: string;
   comments: string[];
   unsupported: string[];
 }

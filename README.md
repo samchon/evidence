@@ -65,17 +65,32 @@ pnpm exec evidence
 ```bash
 pnpm exec evidence init
 pnpm exec evidence check --format json --output reports/evidence.json
+pnpm exec evidence list --language typescript --kind function
+pnpm exec evidence inspect 'src/calculator.ts#add' --format json
+pnpm exec evidence graph --format mermaid --output reports/evidence.mmd
+pnpm exec evidence languages
 ```
 
-| Option | Behavior |
-| --- | --- |
-| `-c, --config <path>` | Select a config instead of `evidence.config.ts`. |
-| `--cwd <path>` | Resolve CLI paths from another directory. Population roots still resolve from the config file. |
-| `--format text\|json` | Select human-readable or versioned machine output. |
-| `-o, --output <path>` | Write the report to an explicit path instead of stdout. |
-| `-h, --help` | Print help without loading a config or project. |
-| `-v, --version` | Print the package version without loading a config or project. |
-| `-w, --watch` | Reserved; the current command rejects it explicitly. |
+| Option | Commands | Behavior |
+| --- | --- | --- |
+| `-c, --config <path>` | check, list, inspect, graph, init | Select a config instead of `evidence.config.ts`. |
+| `--cwd <path>` | check, list, inspect, graph, languages, init | Resolve CLI paths from another directory. Population roots still resolve from the config file. |
+| `--format text\|json` | check, list, inspect, languages | Select human-readable or versioned machine output. |
+| `--format json\|mermaid\|dot` | graph | Select the lossless graph report or a visual graph syntax. |
+| `-o, --output <path>` | check, list, inspect, graph, languages | Write command output to an explicit path instead of stdout. |
+| `--language <type>` | list | Keep only rows from one certified artifact type. |
+| `--kind <symbol>` | list | Keep only rows with one common symbol kind. |
+| `-h, --help` | all | Print help without loading a config or project. |
+| `-v, --version` | root | Print the package version without loading a config or project. |
+| `-w, --watch` | check | Reserved; the current command rejects it explicitly. |
+
+`evidence list` prints every selected unit and addressable aggregate ancestor in each configured claim/reference scope. Every row carries its stable semantic identity, canonical target, public aliases, symbol kind, and declaration locations. `--language` and `--kind` filter these rows after the complete graph has been evaluated, so they do not change any coverage denominator or check result.
+
+`evidence inspect <target>` resolves the target with the same inventories and exact resolver used by checking. It reports ambiguity, withdrawal, or incomplete analysis instead of guessing; a resolved identity includes aliases, children, obligation state, incoming acknowledgements and exclusions, reviews, host provenance, and its current fingerprint. Code paths entered at the command line and printed by list are relative to `--cwd`. Paths inside source `@evidence` and review annotations remain relative to their own citing file.
+
+`evidence graph` preserves each claim/reference obligation as an independent boundary. Its edges retain acknowledgement kind, while reviews remain separate relations. JSON is the authoritative lossless format. Mermaid and DOT use generated node identifiers and escape source-controlled labels so paths, quotes, line breaks, and graph operators remain label data.
+
+`evidence languages` reads the shipped language registry without loading `evidence.config.ts`. It reports grammar file patterns, symbol coverage, public-surface and documentation policies, and unsupported capabilities for certified adapters. Grammar-only candidates are omitted.
 
 Text and JSON contain the same deterministic findings and coverage counts. JSON reports use `schemaVersion: 1`, identify the config and original claim/reference indexes, and distinguish `complete`, `incomplete`, and operationally `failed` analysis. Config output and operational messages use stderr, so JSON stdout remains parseable. When `--output` is present, stdout stays empty; an unwritable destination is an explicit command failure.
 
@@ -83,7 +98,7 @@ The process exits with 0 after complete analysis without error-severity findings
 
 For programmatic loading, import `EvidenceConfigLoader` from `@samchon/evidence` and call `await EvidenceConfigLoader.load("evidence.config.ts")`. It returns the validated `IEvidenceConfig` with authored optional values intact. `EvidenceConfigLoader.plan()` additionally resolves severity and symbol defaults into an `IEvidenceConfigPlan` containing only populations that may load artifacts. Both methods default to `evidence.config.ts` in the current working directory. Supported extensions are `.ts`, `.cts`, and `.mts`.
 
-`EvidenceChecker.check(configFile)` runs configuration loading, source discovery, adapter analysis, target resolution, and graph evaluation, then returns `IEvidenceCheckReport`. `EvidenceChecker.evaluate(plan)` accepts an already validated plan and also returns the materialized `IEvidenceGraphResult`, which is useful for integrations that need accepted edges. `EvidenceReporter.text(report)` and `EvidenceReporter.json(report)` render the command's two output forms.
+`EvidenceChecker.check(configFile)` runs configuration loading, source discovery, adapter analysis, target resolution, and graph evaluation, then returns `IEvidenceCheckReport`. `EvidenceChecker.analyze(configFile)` returns the report together with its exact `IEvidenceGraphInput` and materialized `IEvidenceGraphResult`; `EvidenceChecker.evaluate(plan)` provides the same analysis for an already validated plan. `EvidenceQuery` derives list, inspection, language, and graph reports from that model. `EvidenceReporter`, `EvidenceQueryReporter`, and `EvidenceGraphReporter` render the corresponding output forms.
 
 The loader checks the configuration and its imports through the consumer's `ttsx`, then applies `typia.assert<IEvidenceConfig>` to the default export. Compiler and runtime failures reject the promise, and evaluator logs go to stderr. Every declaration is validated before activation, so `disabled` and `off` cannot conceal a malformed population. A disabled claim, a claim whose effective severity is `off`, and a claim with no enabled reference are absent from the plan; an `off` reference is absent from its claim.
 
