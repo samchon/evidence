@@ -60,7 +60,30 @@ Run the checker from the project root:
 pnpm exec evidence
 ```
 
+`evidence` and `evidence check` evaluate the same complete graph. Use `evidence init` to create a small typed starter configuration; it refuses to overwrite an existing file and changes no other project file.
+
+```bash
+pnpm exec evidence init
+pnpm exec evidence check --format json --output reports/evidence.json
+```
+
+| Option | Behavior |
+| --- | --- |
+| `-c, --config <path>` | Select a config instead of `evidence.config.ts`. |
+| `--cwd <path>` | Resolve CLI paths from another directory. Population roots still resolve from the config file. |
+| `--format text\|json` | Select human-readable or versioned machine output. |
+| `-o, --output <path>` | Write the report to an explicit path instead of stdout. |
+| `-h, --help` | Print help without loading a config or project. |
+| `-v, --version` | Print the package version without loading a config or project. |
+| `-w, --watch` | Reserved; the current command rejects it explicitly. |
+
+Text and JSON contain the same deterministic findings and coverage counts. JSON reports use `schemaVersion: 1`, identify the config and original claim/reference indexes, and distinguish `complete`, `incomplete`, and operationally `failed` analysis. Config output and operational messages use stderr, so JSON stdout remains parseable. When `--output` is present, stdout stays empty; an unwritable destination is an explicit command failure.
+
+The process exits with 0 after complete analysis without error-severity findings, including a warning-only result. It exits with 1 after complete analysis with Evidence errors, and 2 for invalid CLI/configuration or incomplete source and parser analysis. `severity: "off"` and `disabled: true` populations are skipped before source loading; they do not count as completed coverage.
+
 For programmatic loading, import `EvidenceConfigLoader` from `@samchon/evidence` and call `await EvidenceConfigLoader.load("evidence.config.ts")`. It returns the validated `IEvidenceConfig` with authored optional values intact. `EvidenceConfigLoader.plan()` additionally resolves severity and symbol defaults into an `IEvidenceConfigPlan` containing only populations that may load artifacts. Both methods default to `evidence.config.ts` in the current working directory. Supported extensions are `.ts`, `.cts`, and `.mts`.
+
+`EvidenceChecker.check(configFile)` runs configuration loading, source discovery, adapter analysis, target resolution, and graph evaluation, then returns `IEvidenceCheckReport`. `EvidenceChecker.evaluate(plan)` accepts an already validated plan and also returns the materialized `IEvidenceGraphResult`, which is useful for integrations that need accepted edges. `EvidenceReporter.text(report)` and `EvidenceReporter.json(report)` render the command's two output forms.
 
 The loader checks the configuration and its imports through the consumer's `ttsx`, then applies `typia.assert<IEvidenceConfig>` to the default export. Compiler and runtime failures reject the promise, and evaluator logs go to stderr. Every declaration is validated before activation, so `disabled` and `off` cannot conceal a malformed population. A disabled claim, a claim whose effective severity is `off`, and a claim with no enabled reference are absent from the plan; an `off` reference is absent from its claim.
 

@@ -13,3 +13,6 @@ export type * from "./EvidenceProgrammingSymbol";
 export type * from "./EvidenceProgrammingType";
 export type * from "./EvidenceSeverity";
 export type * from "./EvidenceTargetResolutionStatus";
+export type * from "./EvidenceCheckStatus";
+export type * from "./EvidenceCommandExitCode";
+export type * from "./EvidenceReportFormat";

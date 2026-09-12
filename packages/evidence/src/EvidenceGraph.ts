@@ -73,7 +73,7 @@ class GraphEvaluator {
   ): IEvidenceGraphClaimResult {
     if (claim.severity === "off")
       return {
-        claim: claimIndex,
+        claim: this.claimIndex(claimIndex),
         active: false,
         complete: true,
         obligations: claim.references.map((reference, referenceIndex) =>
@@ -93,7 +93,7 @@ class GraphEvaluator {
         this.uncertainDeclarations.add(declaration.id);
     if (snapshot.complete && population.units.length === 0)
       return {
-        claim: claimIndex,
+        claim: this.claimIndex(claimIndex),
         active: false,
         complete: true,
         obligations: claim.references.map((reference, referenceIndex) =>
@@ -113,7 +113,7 @@ class GraphEvaluator {
         : this.incompleteObligation(claimIndex, referenceIndex, reference),
     );
     return {
-      claim: claimIndex,
+      claim: this.claimIndex(claimIndex),
       active: true,
       complete: snapshot.complete,
       obligations,
@@ -1122,8 +1122,10 @@ class GraphEvaluator {
       ...diagnostic,
       severity,
       message: `${this.label(claim, reference)}: ${diagnostic.message}`,
-      claim,
-      ...(reference === undefined ? {} : { reference }),
+      claim: this.claimIndex(claim),
+      ...(reference === undefined
+        ? {}
+        : { reference: this.referenceIndex(claim, reference) }),
     };
   }
 
@@ -1145,8 +1147,8 @@ class GraphEvaluator {
       severity,
       message: `${this.label(claim, reference)}: ${message}`,
       repair,
-      claim,
-      reference,
+      claim: this.claimIndex(claim),
+      reference: this.referenceIndex(claim, reference),
       ...(statement === undefined
         ? site === undefined
           ? {}
@@ -1160,14 +1162,27 @@ class GraphEvaluator {
   }
 
   private label(claim: number, reference?: number): string {
-    const name = this.input.claims[claim]?.name;
+    const input = this.input.claims[claim];
+    const name = input?.name;
+    const configuredClaim = this.claimIndex(claim);
     const label =
       name === undefined || name.length === 0
-        ? `Claim ${claim + 1}`
-        : `Claim ${claim + 1} ('${name}')`;
+        ? `Claim ${configuredClaim + 1}`
+        : `Claim ${configuredClaim + 1} ('${name}')`;
     return reference === undefined
       ? label
-      : `${label} reference ${reference + 1}`;
+      : `${label} reference ${this.referenceIndex(claim, reference) + 1}`;
+  }
+
+  private claimIndex(position: number): number {
+    return this.input.claims[position]?.index ?? position;
+  }
+
+  private referenceIndex(claim: number, position: number): number {
+    const input = this.input.claims[claim];
+    return input === undefined
+      ? position
+      : (input.references[position]?.index ?? position);
   }
 
   private validateReferencePolicy(
@@ -1282,8 +1297,8 @@ class GraphEvaluator {
     hostCoverage: IEvidenceGraphHostCoverage[] = [],
   ): IEvidenceGraphObligation {
     return {
-      claim,
-      reference,
+      claim: this.claimIndex(claim),
+      reference: this.referenceIndex(claim, reference),
       active,
       complete,
       unitIds,
