@@ -7,6 +7,7 @@ export { EvidenceFingerprint } from "./EvidenceFingerprint";
 export { EvidenceGoAdapter } from "./EvidenceGoAdapter";
 export { EvidenceGraph } from "./EvidenceGraph";
 export { EvidenceInventory } from "./EvidenceInventory";
+export { EvidenceJavaAdapter } from "./EvidenceJavaAdapter";
 export { EvidenceJavaScriptAdapter } from "./EvidenceJavaScriptAdapter";
 export { EvidenceLanguageRegistry } from "./EvidenceLanguageRegistry";
 export { EvidenceMarkdownAdapter } from "./EvidenceMarkdownAdapter";

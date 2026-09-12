@@ -208,6 +208,36 @@ Attach outer `///` and `/** */` documentation to the following supported declara
 
 The adapter inventories explicit selected source rather than the feature-resolved compiled crate. Report `cfg` and `cfg_attr`, item-position macro invocations, exported macros, and unrecognized expansion attributes as incomplete because they can change the public declaration set. Ignore expression macros contained within a supported function body for declaration completeness. Generated declarations participate only when their expanded `.rs` source is selected directly.
 
+## Java inventories
+
+`EvidenceJavaAdapter` parses `.java` snapshots with the packaged `tree-sitter-java` v0.23.5 grammar. It inventories the declared source-public surface without invoking `javac`, a build tool, application code, or annotation processors.
+
+Classify supported declarations as follows:
+
+| Source form | Symbol and address |
+| --- | --- |
+| Public class, interface, enum, annotation, or record | `type` at `TopLevel` |
+| Publicly reachable nested type | `type` at `Owner.Nested` |
+| Public class, record, or enum method | `function` at `Owner.name` |
+| Non-private interface method, including default and static methods | `function` at `Owner.name` |
+| Public field | `property` at `Owner.name` |
+| Interface constant | `property` at `Owner.name` |
+| Record component | `property` at `Record.name` |
+| Enum constant | `property` at `Enum.NAME` |
+| Annotation element | `property` at `Annotation.name` |
+
+Require an explicit `public` modifier on top-level types. A nested declaration must have a public enclosing type; members of interfaces and annotations use Java's implicit public visibility unless declared private, while class-like nested declarations and class, record, or enum members require explicit public visibility. Constructors, compact constructors, initializers, package-private members, protected members, private members, and local declarations do not form units. Compiler-generated record accessors and enum methods, inherited members, and imported declarations remain outside the selected source surface.
+
+Include the package and every nested owner in semantic identity. Public addresses omit the package because the target file already selects the compilation unit: `src/com/example/Sale.java#Sale`, `#Sale.total`, and `#Sale.Metadata.label` address identities such as `com.example.Sale.total`. Every logical address of one selected physical file publishes the same units. Java imports do not create aliases or exports.
+
+Group methods by package, owner, and method name. Every overload contributes a declaration site to one `function` unit, so `Sale.java#Sale.calculate` covers the complete overload family. Constructors remain excluded even when their spelling matches the owning type. A field and method may legally share one accessor spelling; selecting one symbol kind disambiguates that target, while selecting both makes the target ambiguous. A duplicate non-method identity makes analysis incomplete.
+
+Attach only a Javadoc block immediately preceding a supported declaration. Modifiers and annotations belong to the declaration and do not break attachment. One Javadoc block on a multi-variable field declaration hosts every public variable from that source site; Javadoc on each overload hosts the shared overload family at that declaration site. Withdrawal on any overload hides the merged family, and withdrawal on a type hides its descendants.
+
+Mask `{@code ...}`, `{@literal ...}`, `{@snippet ...}`, `<code>...</code>`, and `<pre>...</pre>` regions before parsing tags so documentation examples cannot create graph statements. Retain tag-bearing ordinary comments, strings, text blocks, and Javadoc attached only to unpublished declarations as unsupported hosts. Register every recognized carrier range so Evidence metadata does not move semantic fingerprints.
+
+Apply source visibility independently of Java Platform Module System exports. A selected `module-info.java` contributes no units and does not restrict public packages. Do not execute annotation processors; a generated declaration participates only when its `.java` file is selected explicitly. Syntax errors, unreadable selected sources, and conflicting identities leave the inventory incomplete rather than reducing the public denominator.
+
 ## Prisma inventories
 
 `EvidencePrismaAdapter` parses all selected physical files as one schema with `@prisma/prisma-schema-wasm`. Prefer a parser resolvable from the project root, then use the package's pinned fallback. Deduplicate physical sources before parsing and retain every logical address on the resulting source snapshot. A rejected schema makes the inventory incomplete and produces no guessed units.
