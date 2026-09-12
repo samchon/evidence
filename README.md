@@ -12,6 +12,17 @@ pnpm i -D typescript ttsc @samchon/evidence
 
 `typescript` and `ttsc` are required peers supplied by the consumer. The `ttsx` executable comes from `ttsc` and evaluates `evidence.config.ts`.
 
+Follow the [getting-started guide](https://github.com/samchon/evidence/blob/master/docs/getting-started.md) to create one failing obligation, repair it with a real citation, and add an implementation-to-test edge.
+
+## Guides
+
+- [Evidence Graph contract](https://github.com/samchon/evidence/blob/master/docs/evidence-graph.md)
+- [Configuration reference](https://github.com/samchon/evidence/blob/master/docs/configuration.md)
+- [Tags and targets](https://github.com/samchon/evidence/blob/master/docs/tags-and-targets.md)
+- [CLI reference](https://github.com/samchon/evidence/blob/master/docs/cli.md)
+- [Certified languages](https://github.com/samchon/evidence/blob/master/docs/languages.md)
+- [Migration from `@ttsc/evidence`](https://github.com/samchon/evidence/blob/master/docs/migration-from-ttsc.md)
+
 ## Configuration
 
 Create `evidence.config.ts` at the project root:
@@ -50,7 +61,7 @@ export default config;
 
 A **claim** selects the files and declarations that must cite evidence. Its **reference** selects what must be covered. Each claim and each element of its reference array has an independent coverage obligation; partial coverage from separate obligations is never pooled.
 
-Use `type` to select the source language, such as `"typescript"`, `"cpp"`, or `"rust"`, and `files` to select its files with globs. `EvidenceProgrammingType` defines programming-language identifiers; `EvidenceDatabaseType` defines database schema languages such as `"prisma"`, `"sql"`, and `"dbml"`. File names distinguish syntax variants such as TSX. No separate `language` setting or TypeScript compiler Program is required.
+Use `type` to select the source language, such as `"typescript"`, `"cpp"`, or `"rust"`, and `files` to select its files with globs. File names distinguish syntax variants such as TSX. No separate `language` setting or TypeScript compiler Program is required. `EvidenceDatabaseType` reserves a shared database type family, but Prisma is the only certified database adapter in this release; SQL dialect and DBML identifiers are rejected until their adapters are implemented and certified.
 
 Globs resolve from the directory containing `evidence.config.ts`, or from the population's `root`. Patterns are applied in order: `!` excludes matches, and a later positive pattern can include them again. Use `src/**` to select a directory's contents.
 
@@ -84,6 +95,8 @@ pnpm exec evidence languages
 | `-h, --help` | all | Print help without loading a config or project. |
 | `-v, --version` | root | Print the package version without loading a config or project. |
 | `-w, --watch` | check | Run an initial check, then recheck after active dependencies change. |
+
+The [CLI reference](https://github.com/samchon/evidence/blob/master/docs/cli.md) gives each command's accepted options, output contract, and failure status.
 
 ### Watch mode
 
@@ -159,14 +172,14 @@ For adapter development, `IEvidenceAdapter.analyze(snapshot)` returns an ordinar
 | --- | --- | --- | --- | --- |
 | Programming | Yes | Yes | `type`, `function`, `property` | All / `type` |
 | Markdown | Yes | Yes | `file`, `h1`, `h2`, `h3`, `h4` | All / all |
-| Database schemas | Yes | Yes | `model`, `column`, `relation` | All / `model` |
+| Prisma | Yes | Yes | `model`, `column`, `relation` | All / `model` |
 | Swagger / OpenAPI | Yes | Yes | `operation` | Every operation / every operation |
 
 Every artifact family can cite every other family, including its own. Markdown can cite programming declarations or Swagger operations, and Swagger operations can cite Markdown, programming declarations, database schemas, or other operations.
 
 A `symbol` accepts one selector or a nonempty array. Programming `type` symbols include classes, interfaces, type aliases, and namespaces. Database `model` symbols describe record structures, `column` symbols describe data fields, and `relation` symbols describe connections between models. A foreign-key value is a column; the declaration describing its connection is a relation.
 
-All database schema languages use `IEvidenceDatabaseClaim` and `IEvidenceDatabaseReference`. Their `type` distinguishes Prisma, SQL dialects, and DBML. Select the source schema language rather than the database server: MongoDB models written in Prisma use `type: "prisma"`.
+Database schema typings share `IEvidenceDatabaseClaim` and `IEvidenceDatabaseReference`. Prisma is the implemented database adapter. Select the schema language rather than the database server: MongoDB models written in Prisma use `type: "prisma"`.
 
 Prisma files selected for one population are parsed together with `@prisma/prisma-schema-wasm`, which ships with this package. Evidence first uses a parser version visible from the project root and falls back to its pinned copy, so consumers do not install a separate Prisma parser. Parser output decides whether a member is a column or relation; the source scanner only supplies locations and documentation attachment. Views are model units, while enums, composite types, indexes, generators, and datasources do not form units.
 
