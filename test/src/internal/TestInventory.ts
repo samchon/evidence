@@ -21,6 +21,7 @@ export namespace TestInventory {
     `;
     return {
       schemaVersion: 1,
+      annotationRanges: [],
       complete: true,
       sources: [
         {

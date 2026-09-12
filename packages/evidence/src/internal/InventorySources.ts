@@ -41,6 +41,7 @@ export namespace InventorySources {
     for (const input of inputs) {
       for (const source of input.sources)
         source.physicalPath = canonical.get(source.id) ?? source.physicalPath;
+      for (const annotation of input.annotationRanges) locate(annotation);
       for (const unit of input.units) {
         for (const site of unit.sites) locate(site);
         for (const withdrawal of unit.withdrawals) locate(withdrawal.location);

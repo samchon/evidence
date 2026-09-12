@@ -30,6 +30,7 @@ export class EvidenceTypeScriptAdapter implements IEvidenceAdapter {
     const inventory: IEvidenceInventory = {
       schemaVersion: 1,
       sources: input.files,
+      annotationRanges: [],
       units: [],
       addresses: [],
       hosts: [],
@@ -51,6 +52,14 @@ export class EvidenceTypeScriptAdapter implements IEvidenceAdapter {
         input.files.map((source) => this.scan(parser, source)),
       );
       for (const analysis of analyses) {
+        inventory.annotationRanges.push(
+          ...analysis.comments
+            .filter((comment) => comment.syntax.opening === "/**")
+            .map((comment) => ({
+              file: analysis.source.physicalPath,
+              range: comment.range,
+            })),
+        );
         inventory.units.push(...analysis.units.map((entry) => entry.unit));
         inventory.diagnostics.push(...analysis.diagnostics);
         inventory.complete &&= analysis.complete;

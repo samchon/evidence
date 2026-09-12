@@ -159,6 +159,26 @@ Fenced examples and other JSON/YAML string fields do not host tags. Operations w
 
 A citation to a containing type, namespace, document section, or model covers its selected descendants. `@evidenceExclude <target> <reason>` records why a selected obligation does not apply, subject to the reference's policy. The checker validates the declaration and its target; reviewers judge whether the explanation is true.
 
+## Reviews
+
+Set `requireReview: true` on a reference when every accepted acknowledgement must carry a current review. Pair `@evidence` with `@evidenceReview`, and pair `@evidenceExclude` with `@evidenceExcludeReview`, on the same semantic claim host and resolved target:
+
+```ts
+/**
+ * @evidence ../requirements.md#pricing Implements the pricing rule.
+ * @evidenceReview ../requirements.md#pricing #4c0e8e1 Read the rule and exercised its boundary cases.
+ */
+export function calculatePrice(): number {
+  return 0;
+}
+```
+
+The seven-character fingerprint represents the cited identity and its full structural subtree. It is independent of the reference selector and public alias used to reach that identity. Evidence annotations, checkout line endings, and trailing whitespace do not change it; semantic content, descendants, declaring identity, and withdrawal decisions do.
+
+`EvidenceFingerprint.inspect(inventory, unitId)` returns the fingerprint version, the unit's content digest, the full scope digest, and the presented seven-character value. It refuses incomplete inventories. Source snapshot digests remain separate cache identities.
+
+Fingerprint version changes are review migrations. Inspect the new value, review the cited scope again, and update the tag only after that review. The checker reports the expected current value but does not write approving prose or renew reviews automatically.
+
 ## Coverage policies
 
 Set policies on each reference:

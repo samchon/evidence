@@ -10,4 +10,6 @@ export interface IEvidenceGraphEdge {
   kind: EvidenceAcknowledgementKind;
   targetUnitId: string;
   unitIds: string[];
+  /** Current seven-character fingerprint of the exact cited scope. */
+  fingerprint: string;
 }

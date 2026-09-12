@@ -156,6 +156,8 @@ export class EvidenceInventory {
       }
     }
     const sites = new Map<string, IEvidenceUnitSite>();
+    for (const annotation of this.data.annotationRanges)
+      this.checkLocation(annotation, sources);
     for (const unit of this.data.units) {
       if (unit.sites.length === 0)
         this.problem(
@@ -351,6 +353,10 @@ export class EvidenceInventory {
     );
     for (const source of this.data.sources)
       source.addresses = InventoryMerge.sourceAddresses(source.addresses);
+    this.data.annotationRanges = InventoryMerge.unique(
+      this.data.annotationRanges,
+      (location) => typia.json.stringify(location),
+    );
     this.data.units = InventoryMerge.unique(this.data.units, (unit) => unit.id);
     for (const unit of this.data.units) {
       unit.sites = InventoryMerge.unique(unit.sites, (site) => site.id);
