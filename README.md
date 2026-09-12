@@ -169,6 +169,12 @@ C++ identities retain namespaces, nested owners, and template arity. ``shop["Box
 
 Only declarations reachable through public owners enter the population. Class members default to private, struct and union members default to public, and namespace-scope `static`, plain `const`, `constexpr`, and anonymous-namespace declarations stay outside the external surface. Attached leading or trailing Doxygen carries graph tags. The adapter does not run a preprocessor, compiler, build system, template instantiator, module resolver, or linker; conditional declarations, specializations, inheritance, friends, unresolved aliases, and other semantic boundaries leave the inventory incomplete.
 
+`EvidenceRubyAdapter` parses selected `.rb`, `.rake`, and `.gemspec` files, plus `Gemfile` and `Rakefile`, with `tree-sitter-ruby` v0.23.1. Classes and modules are `type` units. Public instance and singleton methods and bounded aliases are `function` units. Public constants and literal `attr_reader`, `attr_writer`, and `attr_accessor` declarations are `property` units. A reader and writer for the same attribute share one property identity while retaining both declaration sites.
+
+Ruby instance methods use `Shop.Sale.total`; singleton methods use `Shop.Sale.self.find`. Setters and operators preserve their Ruby spelling through quoted segments such as `Shop.Sale["price="]` and `Shop.Sale["[]"]`. Lexical `public`, `private`, and `protected` state and literal named visibility calls control publication. `module_function` publishes the singleton copy and removes its private instance copy from the public population. Compatible class and module reopenings retain all sites, while class/module mismatches, superclass conflicts, method or constant replacements, and ambiguous public addresses leave analysis incomplete.
+
+Adjacent same-indent `#` runs and embedded `=begin`/`=end` RDoc attach to supported declarations. Tags in detached comments, method bodies, strings, heredocs, or documentation on unpublished declarations remain unsupported hosts. Top-level methods do not form Ruby export units. The adapter does not execute Ruby, resolve load order, expand inheritance or mixins, or evaluate `define_method`, `class_eval`, refinements, and generated class or module bodies; detectable changes across those boundaries leave the inventory incomplete.
+
 Markdown preserves its document outline, and Prisma preserves its schema structure. Swagger claims select local JSON/YAML documents with `files` globs. Swagger references use `file` for an exact local JSON/YAML path or an HTTP(S) URL, with an optional `root` for local paths.
 
 Markdown section anchors prefer a valid trailing `{#anchor}`. Otherwise, the adapter lowercases the heading, retains Unicode letters, numbers, and underscores, removes punctuation, and collapses whitespace or hyphens. Repeated anchors remain distinct sections and make the shared target ambiguous until the author supplies unique anchors.
@@ -184,7 +190,7 @@ Write `@evidence <target> <reason>` in a declaration's documentation comment. Co
 /** @evidence ../SomeNamespace.ts#SomeNamespace.property Supplies the namespace value. */
 ```
 
-TypeScript and Python instance members use `SomeClass.prototype.member`; Go receiver, Rust inherent, Java, C#, C++, and C aggregate members use `SomeType.member`. Rust trait impl members use a quoted `impl Trait` segment. C# and C++ targets include their namespace. C exact tag targets quote a segment such as `["struct Sale"]`. File-qualified targets identify declarations without compiler import-scoped `{@link Symbol}` lookup.
+TypeScript and Python instance members use `SomeClass.prototype.member`; Ruby instance members use `SomeClass.member`, and Ruby singleton members use `SomeClass.self.member`. Go receiver, Rust inherent, Java, C#, C++, and C aggregate members use `SomeType.member`. Rust trait impl members use a quoted `impl Trait` segment. C# and C++ targets include their namespace. C exact tag targets quote a segment such as `["struct Sale"]`. File-qualified targets identify declarations without compiler import-scoped `{@link Symbol}` lookup.
 
 | Target                 | Example                               |
 | ---------------------- | ------------------------------------- |
@@ -203,6 +209,9 @@ TypeScript and Python instance members use `SomeClass.prototype.member`; Go rece
 | C typedef field        | `../sale.h#Sale.total`                |
 | Python symbol          | `../calculator.py#add`                |
 | Python instance member | `../sale.py#Sale.prototype.total`     |
+| Ruby instance method   | `../sale.rb#Shop.Sale.total`          |
+| Ruby singleton method  | `../sale.rb#Shop.Sale.self.find`      |
+| Ruby setter method     | `../sale.rb#Shop.Sale["price="]`      |
 | Markdown document      | `docs/requirements.md`                |
 | Markdown heading       | `docs/requirements.md#pricing`        |
 | Prisma model or field  | `prisma:Sale`, `prisma:Sale.price`    |

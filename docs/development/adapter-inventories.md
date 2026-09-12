@@ -330,6 +330,32 @@ Unwrap a conventional whole-file `#ifndef NAME` and matching `#define NAME` incl
 
 The declaration model follows the pinned [tree-sitter-cpp](https://github.com/tree-sitter/tree-sitter-cpp/tree/v0.23.4) syntax and the [Doxygen documentation block forms](https://www.doxygen.nl/manual/docblocks.html) recognized by the scanner.
 
+## Ruby inventories
+
+`EvidenceRubyAdapter` parses `.rb`, `.rake`, and `.gemspec` snapshots, plus `Gemfile` and `Rakefile`, with the packaged `tree-sitter-ruby` v0.23.1 grammar. It inventories explicit declarations without starting Ruby, loading the application, or choosing runtime file order.
+
+Classify supported declarations as follows:
+
+| Source form | Symbol and address |
+| --- | --- |
+| Named class or module | `type` at its constant path |
+| Public instance method or bounded alias | `function` directly below its class or module |
+| Public singleton method | `function` below the explicit `self` segment |
+| Public constant assignment | `property` at its constant path |
+| Literal `attr_reader`, `attr_writer`, or `attr_accessor` name | `property` below its class or module, or below `self` in a singleton class |
+
+An ordinary method on `Shop::Sale` uses `Shop.Sale.total`; `def self.find` and an ordinary `def find` inside `class << self` use `Shop.Sale.self.find`. Preserve setters, predicates, bang methods, and operators as literal method-name segments, using bracket notation when punctuation requires it. One attribute property retains separate reader and writer declaration capabilities. If a method, attribute, constant, or container would own the same public file address as another unit, report the ambiguity and keep the inventory incomplete.
+
+Apply lexical `public`, `private`, and `protected` defaults to subsequent supported methods and attributes. Support literal named visibility calls, including `private_class_method`, `public_class_method`, `private_constant`, and `public_constant`, when they identify a prior declaration in the same selected file. A bare visibility directive ends bare `module_function` mode. In a module, `module_function` with literal names or subsequent method definitions makes the instance copy private and publishes a singleton copy. Exclude top-level methods and declarations reachable only through a private constant owner.
+
+Merge compatible class and module reopenings by constant path across the selected snapshot and retain every site. Permit an explicit superclass on one reopening and compatible omissions elsewhere. A class/module kind mismatch or conflicting explicit superclass leaves analysis incomplete. A repeated method, constant assignment, attribute capability, alias destination, or module-function copy is a runtime replacement rather than an overload and retains its sites under an incomplete unit. Qualified containers and singleton declarations require a selected explicit owner.
+
+Resolve `alias` and literal `alias_method` only against one prior method in the same selected file and owner side. Do not infer inherited alias targets or choose between competing definitions. Inherited members remain outside the explicit declared-source population. Detect direct `define_method`, `define_singleton_method`, `class_eval`, `module_eval`, `include`, `prepend`, `extend`, refinements, constant mutation calls, method removal, generated class or module constants, and conditional surface declarations as incomplete. Arbitrary application DSL calls and indirect reflection require a future capability decision.
+
+Attach a consecutive same-indent `#` run or adjacent embedded `=begin`/`=end` RDoc to the following supported declaration without crossing a blank line. One comment on a multi-name attribute declaration hosts every resulting property. Retain tag-bearing detached comments, method-body comments, strings, heredocs, and documentation attached only to unpublished declarations as unsupported hosts. Withdrawal on any reopening hides the merged unit; withdrawing a class or module hides its descendants.
+
+The declaration and visibility model follows the [Ruby module and class syntax](https://ruby-doc.org/3.4.1/syntax/modules_and_classes_rdoc.html), [Module visibility and module-function behavior](https://ruby-doc.org/3.4.1/Module.html), and the pinned [tree-sitter-ruby](https://github.com/tree-sitter/tree-sitter-ruby/tree/v0.23.1) syntax.
+
 ## Prisma inventories
 
 `EvidencePrismaAdapter` parses all selected physical files as one schema with `@prisma/prisma-schema-wasm`. Prefer a parser resolvable from the project root, then use the package's pinned fallback. Deduplicate physical sources before parsing and retain every logical address on the resulting source snapshot. A rejected schema makes the inventory incomplete and produces no guessed units.
