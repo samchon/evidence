@@ -23,7 +23,7 @@ jobs:
           node-version: 24.x
           cache: pnpm
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --trust-lockfile
       - name: Cache ttsc
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
