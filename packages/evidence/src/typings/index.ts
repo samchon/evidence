@@ -1,5 +1,8 @@
 export type * from "./EvidenceAcknowledgementKind";
 export type * from "./EvidenceArtifactType";
+export type * from "./EvidenceGrammarWasmAvailability";
+export type * from "./EvidenceLanguageCandidateId";
+export type * from "./EvidenceLanguageCandidateKind";
 export type * from "./EvidenceSymbol";
 export type * from "./EvidenceDatabaseSymbol";
 export type * from "./EvidenceDatabaseType";

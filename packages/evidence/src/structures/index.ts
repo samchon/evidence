@@ -38,6 +38,7 @@ export type * from "./IEvidenceGraphResolution";
 export type * from "./IEvidenceGraphResult";
 export type * from "./IEvidenceLanguage";
 export type * from "./IEvidenceLanguageAdapter";
+export type * from "./IEvidenceLanguageCandidate";
 export type * from "./IEvidenceLanguageGrammar";
 export type * from "./IEvidenceMarkdownClaim";
 export type * from "./IEvidenceMarkdownReference";
