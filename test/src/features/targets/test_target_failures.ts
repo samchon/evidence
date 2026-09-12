@@ -49,6 +49,33 @@ export async function test_target_failures(): Promise<void> {
       );
       TestValidator.equals("missing file", missing.status, "missing-file");
 
+      // Programming target syntax is validated after the reference kind is known.
+      const malformedPercent = await resolver.resolve(
+        createStatement("../src/bad%ZZ.ts#value", root),
+        host,
+        ids,
+      );
+      const malformedAccessor = await resolver.resolve(
+        createStatement("../src/selected.ts#A.[0]", root),
+        host,
+        ids,
+      );
+      const malformedNul = await resolver.resolve(
+        createStatement("../src/bad%00.ts#value", root),
+        host,
+        ids,
+      );
+
+      TestValidator.equals(
+        "malformed programming targets",
+        [
+          malformedPercent.status,
+          malformedAccessor.status,
+          malformedNul.status,
+        ],
+        ["malformed", "malformed", "malformed"],
+      );
+
       // An unsupported documentation position cannot manufacture an edge.
       const unsupported = structuredClone(host);
       unsupported.attachment = "unsupported";

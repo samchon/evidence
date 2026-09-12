@@ -4,7 +4,7 @@ import { dedent } from "@typia/utils";
 import { EvidenceTagParser } from "../../../../packages/evidence/src/EvidenceTagParser";
 import { TestDocumentation } from "../../internal/TestDocumentation";
 
-/** Missing prose, malformed targets, and compiler-only links are reported without producing evidence. */
+/** Reports common tag failures while deferring reference-specific target syntax. */
 export async function test_tag_diagnostics(): Promise<void> {
   const fixture = TestDocumentation.create(dedent`
     /**
@@ -33,18 +33,23 @@ export async function test_tag_diagnostics(): Promise<void> {
     [
       "malformed-target",
       "missing-evidence-reason",
-      "malformed-target",
-      "malformed-target",
-      "malformed-target",
-      "malformed-target",
-      "malformed-target",
       "unsupported-inline-link",
       "unsupported-inline-link",
       "malformed-fingerprint",
       "missing-review-description",
     ],
   );
-  TestValidator.equals("invalid tags add no evidence", result.declarations, []);
+  TestValidator.equals(
+    "artifact-specific targets survive for their resolver",
+    result.declarations.map((declaration) => declaration.target),
+    [
+      "../source.ts#A.[0]",
+      "../bad%ZZ.ts#value",
+      "../bad%00.ts#value",
+      "../bad%0D.ts#value",
+      "../bad%0A.ts#value",
+    ],
+  );
   TestValidator.equals("invalid reviews add no reviews", result.reviews, []);
 
   for (const attachment of ["unattached", "unsupported"] as const) {

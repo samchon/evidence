@@ -32,24 +32,24 @@ export async function test_graph_review_policy(): Promise<void> {
     TestSourceSnapshot.create(
       "src/reviews.ts",
       dedent`
-        /** @evidence ../docs/spec.md#pricing Implements the pricing rule. */
+        /** @evidence docs/spec.md#pricing Implements the pricing rule. */
         export function missing(): void {}
 
         /**
-         * @evidence ../docs/spec.md#pricing Implements the pricing rule.
-         * @evidenceReview ../docs/spec.md#pricing Checked the cap.
+         * @evidence docs/spec.md#pricing Implements the pricing rule.
+         * @evidenceReview docs/spec.md#pricing Checked the cap.
          */
         export function unfingerprinted(): void {}
 
         /**
-         * @evidence ../docs/spec.md#pricing Implements the pricing rule.
-         * @evidenceReview ../docs/spec.md#pricing #0000000 Checked the old cap.
+         * @evidence docs/spec.md#pricing Implements the pricing rule.
+         * @evidenceReview docs/spec.md#pricing #0000000 Checked the old cap.
          */
         export function stale(): void {}
 
         /**
-         * @evidence ../docs/spec.md#pricing Implements the pricing rule.
-         * @evidenceReview ../docs/spec.md#pricing #${expected} Read the cap and exercised the clamp.
+         * @evidence docs/spec.md#pricing Implements the pricing rule.
+         * @evidenceReview docs/spec.md#pricing #${expected} Read the cap and exercised the clamp.
          */
         export function current(): void {}
       `,

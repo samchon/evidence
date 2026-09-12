@@ -39,8 +39,8 @@ export async function test_graph_review_selectors(): Promise<void> {
       "src/sale.ts",
       dedent`
         /**
-         * @evidence ../docs/spec.md#pricing Implements the whole pricing scope.
-         * @evidenceReview ../requirements/spec.md#pricing #${expected} Read the pricing and coupon rules.
+         * @evidence docs/spec.md#pricing Implements the whole pricing scope.
+         * @evidenceReview requirements/spec.md#pricing #${expected} Read the pricing and coupon rules.
          */
         export function price(): void {}
       `,

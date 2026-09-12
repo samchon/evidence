@@ -31,7 +31,7 @@ export async function test_graph_chain(): Promise<void> {
       "src/calculator.ts",
       dedent`
         export class Calculator {
-          /** @evidence ../docs/requirements.md#rounding Implements exact addition. */
+          /** @evidence docs/requirements.md#rounding Implements exact addition. */
           public add(x: number, y: number): number {
             return x + y;
           }
