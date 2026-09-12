@@ -1,4 +1,5 @@
 export type * from "./EvidenceAcknowledgementKind";
+export type * from "./EvidenceActiveSeverity";
 export type * from "./EvidenceArtifactType";
 export type * from "./EvidenceGrammarWasmAvailability";
 export type * from "./EvidenceLanguageCandidateId";

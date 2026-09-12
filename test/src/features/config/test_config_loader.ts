@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
 import { EvidenceConfigLoader } from "../../../../packages/evidence/src/EvidenceConfigLoader";
+import { evaluateTypeScriptConfig } from "../../../../packages/evidence/src/internal/evaluateTypeScriptConfig";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
 /** Loads imported config data in isolation and propagates evaluator failures. */
@@ -56,6 +57,91 @@ export async function test_config_loader(): Promise<void> {
         );
       }
 
+      // Evaluator stdout and stderr share the diagnostic sink instead of process stdout.
+      await TestFileSystem.save(directory, {
+        "evidence.config.ts": dedent`
+          console.log("config-output-token");
+          console.error("config-error-token");
+          export default { claims: [] };
+        `,
+      });
+      const diagnostics: string[] = [];
+      function writeDiagnostic(content: string): void {
+        diagnostics.push(content);
+      }
+
+      await evaluateTypeScriptConfig(join(directory, "evidence.config.ts"), {
+        writeDiagnostic,
+      });
+
+      const diagnosticOutput = diagnostics.join("");
+      TestValidator.predicate(
+        "config stdout isolation",
+        diagnosticOutput.includes("config-output-token"),
+      );
+      TestValidator.predicate(
+        "config stderr preservation",
+        diagnosticOutput.includes("config-error-token"),
+      );
+
+      // Unsupported artifact identifiers fail with their exact configuration path.
+      await TestFileSystem.save(directory, {
+        "evidence.config.ts": dedent`
+          export default {
+            claims: [
+              {
+                type: "graphql",
+                files: ["schema/**"],
+                reference: { type: "markdown", files: ["docs/**"] },
+              },
+            ],
+          };
+        `,
+      });
+      const unsupported = await failure(() =>
+        EvidenceConfigLoader.load(join(directory, "evidence.config.ts")),
+      );
+
+      TestValidator.predicate(
+        "unsupported artifact path",
+        unsupported.includes(
+          "claims[0].type: artifact type 'graphql' has no certified Evidence adapter",
+        ),
+      );
+
+      // A disabled population is validated and planned without touching its missing root.
+      await TestFileSystem.save(directory, {
+        "evidence.config.ts": dedent`
+          import type { IEvidenceConfig } from "@samchon/evidence";
+
+          export default {
+            claims: [
+              {
+                type: "typescript",
+                disabled: true,
+                root: "missing-source",
+                files: ["**/*.ts"],
+                reference: {
+                  type: "swagger",
+                  file: "missing-openapi.json",
+                },
+              },
+            ],
+          } satisfies IEvidenceConfig;
+        `,
+      });
+
+      const inactive = await EvidenceConfigLoader.plan(
+        join(directory, "evidence.config.ts"),
+      );
+
+      TestValidator.equals(
+        "configuration plan anchor",
+        inactive.configFile,
+        join(directory, "evidence.config.ts"),
+      );
+      TestValidator.equals("inactive populations", inactive.claims, []);
+
       // Runtime exceptions reject the loader promise instead of returning data.
       await TestFileSystem.save(directory, {
         "evidence.config.ts": dedent`
@@ -81,4 +167,14 @@ export async function test_config_loader(): Promise<void> {
       );
     },
   );
+}
+
+async function failure(closure: () => Promise<unknown>): Promise<string> {
+  try {
+    await closure();
+  } catch (cause) {
+    if (cause instanceof Error) return cause.message;
+    throw cause;
+  }
+  throw new Error("Expected Evidence configuration loading to fail.");
 }
