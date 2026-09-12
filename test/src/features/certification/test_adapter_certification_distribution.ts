@@ -62,14 +62,13 @@ export async function test_adapter_certification_distribution(): Promise<void> {
     );
   }
 
-  // The publish allowlist carries the manifest, every WASM file, and every license.
-  for (const pattern of [
+  // The exact allowlist ships runtime output and parser assets without development trees.
+  TestValidator.equals("published package allowlist", manifest.files, [
+    "lib",
     "assets/**/*.wasm",
     "assets/grammars.json",
     "assets/**/LICENSE*",
-  ])
-    TestValidator.predicate(
-      `published package includes ${pattern}`,
-      manifest.files.includes(pattern),
-    );
+    "README.md",
+    "LICENSE",
+  ]);
 }

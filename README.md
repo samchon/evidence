@@ -2,7 +2,7 @@
 
 An Evidence Graph connects specifications, engineering principles, public code contracts, and tests through explicit citations. `@samchon/evidence` checks that every selected requirement has evidence or a permitted exclusion, and that every citation names a valid target and explains its relationship.
 
-The configuration and graph semantics follow [`@ttsc/evidence`](https://github.com/samchon/ttsc/tree/master/packages/evidence), with programming-language declarations selected from files through Tree-sitter.
+The configuration and graph semantics follow [`@ttsc/evidence`](https://github.com/samchon/ttsc/tree/14a22f077caf23f1bfb8a97b3d9db765912074ef/packages/evidence), with programming-language declarations selected from files through Tree-sitter. The [compatibility ledger](https://github.com/samchon/evidence/blob/master/docs/development/compatibility.md) records preserved behavior, standalone translations, and compiler-dependent boundaries.
 
 ## Installation
 
