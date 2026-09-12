@@ -1,7 +1,7 @@
 import type { IEvidenceSourceRange } from "../structures/IEvidenceSourceRange";
 
-/** One declaration position eligible to host TypeScript documentation. */
-export interface ITypeScriptHostPosition {
+/** One declaration position eligible to host JSDoc. */
+export interface IEcmaScriptHostPosition {
   id: string;
   siteId: string;
   range: IEvidenceSourceRange;

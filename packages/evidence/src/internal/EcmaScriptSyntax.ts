@@ -2,8 +2,8 @@ import type { Node } from "web-tree-sitter";
 
 import type { IEvidenceCommentSyntax } from "../structures/IEvidenceCommentSyntax";
 
-/** Tree-sitter TypeScript spelling checks shared by extraction and exports. */
-export namespace TypeScriptSyntax {
+/** Tree-sitter spelling checks shared by TypeScript and JavaScript extraction. */
+export namespace EcmaScriptSyntax {
   export function token(node: Node, value: string): boolean {
     return node.children.some(
       (child) => !child.isNamed && child.type === value,
@@ -44,15 +44,34 @@ export namespace TypeScriptSyntax {
   }
 
   export function publicMember(node: Node): boolean {
-    const member = name(
-      node.childForFieldName("name") ?? node.childForFieldName("pattern"),
-    );
+    const member = memberName(node);
     return (
       member !== undefined &&
       !modifier(node, "private") &&
       !modifier(node, "protected") &&
       !modifier(node, "accessor")
     );
+  }
+
+  export function memberName(node: Node): string | undefined {
+    return name(
+      node.childForFieldName("name") ??
+        node.childForFieldName("pattern") ??
+        node.childForFieldName("property"),
+    );
+  }
+
+  export function specifierName(node: Node): string | undefined {
+    const named = name(node.childForFieldName("name"));
+    if (named !== undefined) return named;
+    return token(node, "default") ? "default" : undefined;
+  }
+
+  export function specifierAlias(node: Node): string | undefined {
+    const alias = name(node.childForFieldName("alias"));
+    if (alias !== undefined) return alias;
+    const source = name(node.childForFieldName("name"));
+    return source !== undefined && token(node, "default") ? "default" : source;
   }
 
   export function functionValue(node: Node | null): boolean {

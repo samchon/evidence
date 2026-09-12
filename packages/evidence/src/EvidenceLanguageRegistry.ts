@@ -49,6 +49,20 @@ export namespace EvidenceLanguageRegistry {
         },
         { id: "tsx", extensions: [".tsx"], filenames: [] },
       ],
+      adapter: {
+        entry: "EvidenceTypeScriptAdapter",
+        symbols: ["type", "function", "property"],
+        publicSurface:
+          "Static TypeScript module exports and declaration files within the selected snapshot.",
+        comments: ["JSDoc"],
+        unsupported: [
+          "package exports",
+          "path aliases",
+          "ambient modules",
+          "global augmentations",
+          "CommonJS export assignment",
+        ],
+      },
     },
     {
       type: "javascript",
@@ -60,6 +74,18 @@ export namespace EvidenceLanguageRegistry {
           filenames: [],
         },
       ],
+      adapter: {
+        entry: "EvidenceJavaScriptAdapter",
+        symbols: ["type", "function", "property"],
+        publicSurface:
+          "Static ESM exports and bounded CommonJS initialization.",
+        comments: ["JSDoc"],
+        unsupported: [
+          "dynamic CommonJS exports",
+          "computed CommonJS keys",
+          "unsafe CommonJS aliases",
+        ],
+      },
     },
     {
       type: "python",

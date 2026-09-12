@@ -1,5 +1,5 @@
-/** Ownership and visibility inherited while walking TypeScript statement lists. */
-export interface ITypeScriptStatementContext {
+/** Ownership and visibility inherited while walking declaration lists. */
+export interface IEcmaScriptStatementContext {
   semanticPrefix: string[];
   publicPrefix: string[];
   root?: string;
