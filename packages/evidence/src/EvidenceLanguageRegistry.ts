@@ -184,6 +184,20 @@ export namespace EvidenceLanguageRegistry {
       type: "c",
       name: "C",
       grammars: [{ id: "c", extensions: [".c", ".h"], filenames: [] }],
+      adapter: {
+        entry: "EvidenceCAdapter",
+        symbols: ["type", "function", "property"],
+        publicSurface:
+          "Explicit external declarations, tags, typedefs, aggregate fields, and enumerators recognized by tree-sitter-c v0.24.2 within each selected physical file.",
+        comments: ["attached Doxygen"],
+        unsupported: [
+          "preprocessor branch evaluation",
+          "macro expansion",
+          "include traversal",
+          "linker export policy",
+          "generated declarations absent from selected source",
+        ],
+      },
     },
     {
       type: "cpp",
