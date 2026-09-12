@@ -96,7 +96,7 @@ try {
 
 The runtime reads checksum-verified packaged grammars lazily and performs no grammar downloads or native compilation. Each parse owns its parser, tree, and query cache. `concurrency` limits live sessions and defaults to four; `close()` waits for accepted callbacks and prevents new requests. A callback must not await another parse or close on the same runtime. Syntax errors, missing tokens, incompatible queries, and truncated query results throw `EvidenceParserError` with a stable `code` instead of returning incomplete captures. `session.range(node)` produces a half-open span with zero-based UTF-16 offsets and one-based lines and UTF-16 columns in the original source string.
 
-`EvidenceLanguageRegistry.list()` reports syntax variants separately from certified Evidence adapter capabilities. TypeScript, JavaScript, and Python entries include adapter metadata; grammar-only entries omit it. `select(type, file)` uses the configured language and case-sensitive logical file name, so `.h` follows `c` or `cpp`, and `.tsx` selects the TSX grammar within TypeScript. `parser.grammars()` reports pinned asset provenance without loading WASM; `parser.state()` exposes the instance's loaded grammar IDs and active/queued session counts. Grammar metadata alone does not establish public export resolution or graph coverage.
+`EvidenceLanguageRegistry.list()` reports syntax variants separately from certified Evidence adapter capabilities. TypeScript, JavaScript, Python, and Go entries include adapter metadata; grammar-only entries omit it. `select(type, file)` uses the configured language and case-sensitive logical file name, so `.h` follows `c` or `cpp`, and `.tsx` selects the TSX grammar within TypeScript. `parser.grammars()` reports pinned asset provenance without loading WASM; `parser.state()` exposes the instance's loaded grammar IDs and active/queued session counts. Grammar metadata alone does not establish public export resolution or graph coverage.
 
 For adapter development, `IEvidenceAdapter.analyze(snapshot)` returns an ordinary `IEvidenceInventory`. `new EvidenceInventory(inventories)` combines adapter-established identities, checks declaration ownership and original source coordinates, and reconciles withdrawal across merged declarations. `select(ids)` returns an independent population with its structural ancestors and eligible hosts; `resolve({ file, segments }, ids)` looks up an exact public address inside that scope. Check `complete` and `diagnostics` before using a population. Reviews have a separate collection and never supply acknowledgements.
 
@@ -133,6 +133,10 @@ A static `__all__` accepts literal string lists or tuples, `+` composition, and 
 
 Python evidence can live in a real class or function docstring, or in a same-indent `#` comment run immediately before a supported declaration. A comment before decorators attaches across the decorator list. Assigned and otherwise arbitrary strings, module docstrings, detached comments, and local nested helpers do not become public evidence hosts. Decorators, imports, metaclasses, module initialization, and dynamic attribute hooks are never executed; members they generate remain outside the declared-source guarantee.
 
+`EvidenceGoAdapter` parses selected `.go` files as directory-and-package populations. Exported defined types and aliases are `type` units; exported package functions, receiver methods, and interface methods are `function` units; exported constants, variables, and explicit struct fields, including embedded fields, are `property` units. Go's Unicode uppercase rule decides visibility. Receiver methods use `Type.Method` and can be addressed through either their declaration file or the selected file that declares their owner type.
+
+Adjacent `//` runs and block comments are Go documentation hosts. A comment on a grouped declaration can host all declarations in the group, while a comment on one specification or member remains local to it. Detached comments, function-body comments, strings, raw strings, and commented-out declarations do not supply evidence. The adapter reads only selected source: it does not run the Go toolchain, evaluate build tags or filename platform constraints, promote embedded members, or fabricate generated declarations absent from the snapshot. Conflicting declarations across selected build variants and missing receiver owners make the inventory incomplete. Same-package `_test.go` files join their package, while external `_test` packages remain distinct.
+
 Markdown preserves its document outline, and Prisma preserves its schema structure. Swagger claims select local JSON/YAML documents with `files` globs. Swagger references use `file` for an exact local JSON/YAML path or an HTTP(S) URL, with an optional `root` for local paths.
 
 Markdown section anchors prefer a valid trailing `{#anchor}`. Otherwise, the adapter lowercases the heading, retains Unicode letters, numbers, and underscores, removes punctuation, and collapses whitespace or hyphens. Repeated anchors remain distinct sections and make the shared target ambiguous until the author supplies unique anchors.
@@ -148,11 +152,12 @@ Write `@evidence <target> <reason>` in a declaration's documentation comment. Co
 /** @evidence ../SomeNamespace.ts#SomeNamespace.property Supplies the namespace value. */
 ```
 
-TypeScript and Python instance members use `SomeClass.prototype.member`. File-qualified targets identify declarations without compiler import-scoped `{@link Symbol}` lookup.
+TypeScript and Python instance members use `SomeClass.prototype.member`; Go receiver members use `SomeType.member`. File-qualified targets identify declarations without compiler import-scoped `{@link Symbol}` lookup.
 
 | Target                 | Example                            |
 | ---------------------- | ---------------------------------- |
 | Code symbol            | `../calculator.ts#add`             |
+| Go receiver method     | `../sale.go#Sale.Calculate`        |
 | Python symbol          | `../calculator.py#add`             |
 | Python instance member | `../sale.py#Sale.prototype.total`  |
 | Markdown document      | `docs/requirements.md`             |
