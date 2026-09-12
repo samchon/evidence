@@ -165,6 +165,8 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
             inventory: failedReference,
             unitIds: [target.id],
             resolutions: [],
+            uniqueEvidence: true,
+            singleEvidencePerSymbol: true,
           },
         ],
       },
@@ -187,6 +189,15 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
     "no derivative empty finding",
     failed.diagnostics.filter(
       (diagnostic) => diagnostic.code === "graph-empty-reference",
+    ),
+    [],
+  );
+  TestValidator.equals(
+    "no derivative cardinality finding",
+    failed.diagnostics.filter((diagnostic) =>
+      ["graph-single-evidence-per-symbol", "graph-unique-evidence"].includes(
+        diagnostic.code,
+      ),
     ),
     [],
   );
@@ -242,6 +253,8 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
             inventory: TestInventory.create(),
             unitIds: [],
             resolutions: [],
+            uniqueEvidence: true,
+            singleEvidencePerSymbol: true,
           },
         ],
       },
@@ -258,6 +271,15 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
   TestValidator.equals(
     "empty reference has no missing units",
     TestGraph.obligation(empty, 0, 0).missingUnitIds,
+    [],
+  );
+  TestValidator.equals(
+    "empty reference has no cardinality finding",
+    empty.diagnostics.filter((diagnostic) =>
+      ["graph-single-evidence-per-symbol", "graph-unique-evidence"].includes(
+        diagnostic.code,
+      ),
+    ),
     [],
   );
 }

@@ -28,6 +28,7 @@ export type * from "./IEvidenceGrammarAsset";
 export type * from "./IEvidenceGraphClaim";
 export type * from "./IEvidenceGraphClaimResult";
 export type * from "./IEvidenceGraphEdge";
+export type * from "./IEvidenceGraphHostCoverage";
 export type * from "./IEvidenceGraphInput";
 export type * from "./IEvidenceGraphObligation";
 export type * from "./IEvidenceGraphReference";

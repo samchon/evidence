@@ -35,7 +35,7 @@ Host `origins` retain the original paths used for relative citations; omitting t
 
 ## File-qualified targets
 
-`EvidenceFileTarget.parse(target, origin)` decodes the path, resolves it from the citing file, and retains each accessor segment. `format(address)` produces canonical text by percent-encoding reserved path characters and using dotted identifiers or JSON-string brackets for members. Equivalent encoded paths therefore reach the same absolute address, while `A.B` and `A["B.C"]` remain different.
+`EvidenceFileTarget.parse(target, origin)` decodes the path, resolves it from the citing file, and retains each accessor segment. Omitting `#` addresses the artifact's file unit; a trailing `#` is invalid. `format(address)` produces canonical text by percent-encoding reserved path characters and using dotted identifiers or JSON-string brackets for members. Equivalent encoded paths therefore reach the same absolute address, while `A.B` and `A["B.C"]` remain different.
 
 `EvidenceTargetResolver` accepts reference inventories, a target-bearing acknowledgement or review, its claim host, and the reference's selected unit IDs. It tries every retained host origin, queries only the exact file addresses in the selected structural scope, and unifies aliases by semantic unit ID. It never searches another file for a matching display name.
 
@@ -49,7 +49,11 @@ Supply only the claim declarations whose target grammar applies to a reference i
 
 An accepted acknowledgement covers the selected target and selected descendants reached through explicit `parentId` links. The resulting edge retains the declaration, its documentation position, its semantic host identities, the exact target, and every selected unit covered by the scope. Repeating positive evidence on the same semantic host and exact target is a duplicate. Overlapping exclusions and opposite positive/exclusion intent each produce one finding for the later declaration, regardless of the number of descendants in the overlap. Positive evidence from different semantic hosts remains valid.
 
-Incomplete claim, reference, or target analysis leaves its active obligation incomplete and suppresses derivative empty-population and missing-coverage findings. A healthy empty reference emits one population finding. `success` requires every active obligation to be complete and the deterministic diagnostic list to be empty.
+Cardinality policies count semantic identities rather than documentation positions. `uniqueEvidence` permits at most one distinct positive claim host for each selected reference unit. `singleEvidencePerSymbol` requires each selected claim host, including hosts with no tags, to cite exactly one distinct selected reference unit. Aggregate targets count every selected descendant, while exclusions contribute no positive host or unit count.
+
+A Markdown `checklist` creates one obligation for every selected claim host and selected Markdown item. Positive evidence answers only the selected item it names. Exclusions retain descendant coverage for their own host. An unselected positive aggregate produces one direct diagnostic and records its selected descendants as explained, so the same host does not receive derivative missing-item diagnostics for that mistake. The obligation's `hostCoverage` retains each host's covered, missing, and explained units; its top-level covered units are those answered by every host. Configuration validation rejects checklists on other artifact kinds, incompatible cardinality options, and gathered exclusion carriers unless exclusions are disabled for that reference.
+
+Incomplete claim, reference, or target analysis leaves its active obligation incomplete and suppresses derivative empty-population and missing-coverage findings. It also withholds a deferred unhosted-checklist finding when the failed obligation could have consumed that declaration. A healthy empty reference emits one population finding and does not create that uncertainty. `success` requires every active obligation to be complete and the deterministic diagnostic list to be empty.
 
 ## Documentation and tags
 

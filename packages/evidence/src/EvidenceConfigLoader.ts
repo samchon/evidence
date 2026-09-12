@@ -3,6 +3,7 @@ import { extname, resolve } from "node:path";
 import typia from "typia";
 
 import { evaluateTypeScriptConfig } from "./internal/evaluateTypeScriptConfig";
+import { validateEvidenceConfig } from "./internal/validateEvidenceConfig";
 import type { IEvidenceConfig } from "./structures/IEvidenceConfig";
 
 /** Loads a TypeScript configuration through the consumer's ttsx. */
@@ -23,8 +24,10 @@ export namespace EvidenceConfigLoader {
       );
     if (!(await stat(filename)).isFile())
       throw new Error(`Evidence configuration must be a file: ${filename}`);
-    return typia.assert<IEvidenceConfig>(
+    const config = typia.assert<IEvidenceConfig>(
       await evaluateTypeScriptConfig(filename),
     );
+    validateEvidenceConfig(config);
+    return config;
   }
 }

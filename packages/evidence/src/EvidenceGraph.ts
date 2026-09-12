@@ -3,11 +3,13 @@ import typia from "typia";
 import { EvidenceFileTarget } from "./EvidenceFileTarget";
 import { EvidenceInventory } from "./EvidenceInventory";
 import { InventoryMerge } from "./internal/InventoryMerge";
+import type { IEvidenceUnhostedChecklist } from "./internal/IEvidenceUnhostedChecklist";
 import type { IEvidenceDeclaration } from "./structures/IEvidenceDeclaration";
 import type { IEvidenceDiagnostic } from "./structures/IEvidenceDiagnostic";
 import type { IEvidenceGraphClaim } from "./structures/IEvidenceGraphClaim";
 import type { IEvidenceGraphClaimResult } from "./structures/IEvidenceGraphClaimResult";
 import type { IEvidenceGraphEdge } from "./structures/IEvidenceGraphEdge";
+import type { IEvidenceGraphHostCoverage } from "./structures/IEvidenceGraphHostCoverage";
 import type { IEvidenceGraphInput } from "./structures/IEvidenceGraphInput";
 import type { IEvidenceGraphObligation } from "./structures/IEvidenceGraphObligation";
 import type { IEvidenceGraphReference } from "./structures/IEvidenceGraphReference";
@@ -26,7 +28,13 @@ export namespace EvidenceGraph {
 }
 
 class GraphEvaluator {
+  private readonly answeredDeclarations = new Set<string>();
   private readonly diagnostics: IEvidenceDiagnostic[] = [];
+  private readonly uncertainDeclarations = new Set<string>();
+  private readonly unhostedChecklists = new Map<
+    string,
+    IEvidenceUnhostedChecklist
+  >();
 
   public constructor(private readonly input: IEvidenceGraphInput) {}
 
@@ -34,6 +42,7 @@ class GraphEvaluator {
     const claims = this.input.claims.map((claim, index) =>
       this.evaluateClaim(claim, index),
     );
+    this.reportUnhostedChecklists();
     const diagnostics = InventoryMerge.unique(this.diagnostics, (diagnostic) =>
       typia.json.stringify(diagnostic),
     );
@@ -73,6 +82,9 @@ class GraphEvaluator {
         this.context(diagnostic, claim.severity, claimIndex),
       ),
     );
+    if (!snapshot.complete)
+      for (const declaration of snapshot.declarations)
+        this.uncertainDeclarations.add(declaration.id);
     if (snapshot.complete && population.units.length === 0)
       return {
         claim: claimIndex,
@@ -115,6 +127,13 @@ class GraphEvaluator {
     const inventory = new EvidenceInventory([reference.inventory]);
     const snapshot = inventory.snapshot();
     const population = inventory.select(reference.unitIds);
+    this.validateReferencePolicy(
+      claim,
+      reference,
+      population,
+      claimIndex,
+      referenceIndex,
+    );
     this.diagnostics.push(
       ...snapshot.diagnostics.map((diagnostic) =>
         this.context(
@@ -125,6 +144,9 @@ class GraphEvaluator {
         ),
       ),
     );
+    if (!snapshot.complete)
+      for (const declaration of claimInventory.declarations)
+        this.uncertainDeclarations.add(declaration.id);
     const unitIds = population.units.map((unit) => unit.id);
     if (!snapshot.complete)
       return this.obligation(
@@ -174,7 +196,10 @@ class GraphEvaluator {
           ),
         ),
       );
-    if (resolutions.some((entry) => entry.resolution.status === "incomplete"))
+    if (resolutions.some((entry) => entry.resolution.status === "incomplete")) {
+      for (const entry of resolutions)
+        if (entry.resolution.status === "incomplete")
+          this.uncertainDeclarations.add(entry.declarationId);
       return this.obligation(
         claimIndex,
         referenceIndex,
@@ -184,6 +209,7 @@ class GraphEvaluator {
         [],
         [],
       );
+    }
     return this.cover(
       claim,
       claimInventory,
@@ -231,7 +257,10 @@ class GraphEvaluator {
       referenceInventory.units.map((unit) => [unit.id, unit]),
     );
     const selectedUnits = referencePopulation.units;
+    const selectedUnitIds = new Set(selectedUnits.map((unit) => unit.id));
     const scopeIds = new Set(referencePopulation.scopes.map((unit) => unit.id));
+    const checklist = reference.checklist === true;
+    const explainedByHost = new Map<string, Set<string>>();
     const covered = new Set<string>();
     const edges: IEvidenceGraphEdge[] = [];
     for (const entry of resolutions) {
@@ -269,16 +298,29 @@ class GraphEvaluator {
         );
         continue;
       }
-      const unitIds = selectedUnits
+      let unitIds = selectedUnits
         .filter((unit) => this.descends(unit, target.id, units))
         .map((unit) => unit.id);
       if (unitIds.length === 0) continue;
       const hostUnitIds = selectedHosts.get(declaration.hostId) ?? [];
-      const eligible =
-        declaration.kind === "evidence"
-          ? hostUnitIds.length !== 0
-          : exclusionHosts.has(declaration.hostId);
-      if (!eligible) {
+      if (
+        declaration.kind === "evidence" &&
+        hostUnitIds.length === 0 &&
+        checklist
+      ) {
+        this.recordUnhostedChecklist(
+          declaration,
+          reference.severity,
+          claimIndex,
+          referenceIndex,
+        );
+        continue;
+      }
+      if (
+        (declaration.kind === "evidence" && hostUnitIds.length === 0) ||
+        (declaration.kind === "evidenceExclude" &&
+          !exclusionHosts.has(declaration.hostId))
+      ) {
         this.diagnostics.push(
           this.problem(
             "graph-out-of-scope-host",
@@ -311,6 +353,43 @@ class GraphEvaluator {
         );
         continue;
       }
+      if (checklist && hostUnitIds.length === 0) {
+        this.recordUnhostedChecklist(
+          declaration,
+          reference.severity,
+          claimIndex,
+          referenceIndex,
+        );
+        continue;
+      }
+      if (
+        checklist &&
+        declaration.kind === "evidence" &&
+        !selectedUnitIds.has(target.id)
+      ) {
+        this.answeredDeclarations.add(declaration.id);
+        this.diagnostics.push(
+          this.problem(
+            "graph-checklist-aggregate",
+            reference.severity,
+            `Positive checklist target '${declaration.target}' names an unselected aggregate containing ${unitIds.length} selected item(s).`,
+            "Cite each selected checklist item this host answers, or exclude the aggregate when none of it applies.",
+            claimIndex,
+            referenceIndex,
+            declaration,
+          ),
+        );
+        for (const hostUnitId of hostUnitIds) {
+          let explained = explainedByHost.get(hostUnitId);
+          if (explained === undefined) {
+            explained = new Set<string>();
+            explainedByHost.set(hostUnitId, explained);
+          }
+          for (const unitId of unitIds) explained.add(unitId);
+        }
+        continue;
+      }
+      if (checklist && declaration.kind === "evidence") unitIds = [target.id];
       this.conflicts(
         declaration,
         target.id,
@@ -321,6 +400,7 @@ class GraphEvaluator {
         reference.severity,
         claimIndex,
         referenceIndex,
+        checklist,
       );
       edges.push({
         declarationId: declaration.id,
@@ -330,8 +410,31 @@ class GraphEvaluator {
         targetUnitId: target.id,
         unitIds,
       });
-      for (const id of unitIds) covered.add(id);
+      this.answeredDeclarations.add(declaration.id);
+      if (!checklist) for (const id of unitIds) covered.add(id);
     }
+    if (checklist)
+      return this.checklistObligation(
+        claimInventory,
+        claimPopulation,
+        claimIndex,
+        reference,
+        referenceIndex,
+        referenceInventory,
+        selectedUnits,
+        edges,
+        explainedByHost,
+      );
+    this.cardinality(
+      claimInventory,
+      claimPopulation,
+      claimIndex,
+      reference,
+      referenceIndex,
+      referenceInventory,
+      selectedUnits,
+      edges,
+    );
     const coveredUnitIds = selectedUnits
       .filter((unit) => covered.has(unit.id))
       .map((unit) => unit.id);
@@ -363,6 +466,142 @@ class GraphEvaluator {
     );
   }
 
+  private checklistObligation(
+    claimInventory: IEvidenceInventory,
+    claimPopulation: IEvidencePopulation,
+    claimIndex: number,
+    reference: IEvidenceGraphReference,
+    referenceIndex: number,
+    referenceInventory: IEvidenceInventory,
+    selectedUnits: IEvidenceUnit[],
+    edges: IEvidenceGraphEdge[],
+    explainedByHost: Map<string, Set<string>>,
+  ): IEvidenceGraphObligation {
+    const coveredByHost = new Map<string, Set<string>>(
+      claimPopulation.units.map((unit) => [unit.id, new Set<string>()]),
+    );
+    for (const edge of edges)
+      for (const hostUnitId of edge.hostUnitIds) {
+        const covered = coveredByHost.get(hostUnitId);
+        if (covered === undefined) continue;
+        for (const unitId of edge.unitIds) covered.add(unitId);
+      }
+    const hostCoverage: IEvidenceGraphHostCoverage[] =
+      claimPopulation.units.map((host) => {
+        const covered = coveredByHost.get(host.id) ?? new Set<string>();
+        const explained = explainedByHost.get(host.id) ?? new Set<string>();
+        const coveredUnitIds = selectedUnits
+          .filter((unit) => covered.has(unit.id))
+          .map((unit) => unit.id);
+        const missingUnits = selectedUnits.filter(
+          (unit) => !covered.has(unit.id),
+        );
+        const explainedUnitIds = missingUnits
+          .filter((unit) => explained.has(unit.id))
+          .map((unit) => unit.id);
+        const reportable = missingUnits.filter(
+          (unit) => !explained.has(unit.id),
+        );
+        if (reportable.length !== 0)
+          this.diagnostics.push(
+            this.problem(
+              "graph-checklist-missing",
+              reference.severity,
+              `Host '${this.display(claimInventory, host)}' has not acknowledged ${reportable.length} of ${selectedUnits.length} checklist item(s): ${reportable
+                .map((unit) => `'${this.display(referenceInventory, unit)}'`)
+                .join(", ")}.`,
+              reference.noEvidenceExclude === true
+                ? "Cite every missing checklist item from this host with positive @evidence."
+                : "Cite every missing checklist item from this host, or exclude the scope that does not apply.",
+              claimIndex,
+              referenceIndex,
+              undefined,
+              host,
+            ),
+          );
+        return {
+          hostUnitId: host.id,
+          coveredUnitIds,
+          missingUnitIds: missingUnits.map((unit) => unit.id),
+          explainedUnitIds,
+        };
+      });
+    const coveredUnitIds = selectedUnits
+      .filter((unit) =>
+        hostCoverage.every((host) => host.coveredUnitIds.includes(unit.id)),
+      )
+      .map((unit) => unit.id);
+    const covered = new Set(coveredUnitIds);
+    return this.obligation(
+      claimIndex,
+      referenceIndex,
+      true,
+      true,
+      selectedUnits.map((unit) => unit.id),
+      coveredUnitIds,
+      selectedUnits
+        .filter((unit) => !covered.has(unit.id))
+        .map((unit) => unit.id),
+      edges,
+      hostCoverage,
+    );
+  }
+
+  private cardinality(
+    claimInventory: IEvidenceInventory,
+    claimPopulation: IEvidencePopulation,
+    claimIndex: number,
+    reference: IEvidenceGraphReference,
+    referenceIndex: number,
+    referenceInventory: IEvidenceInventory,
+    selectedUnits: IEvidenceUnit[],
+    edges: IEvidenceGraphEdge[],
+  ): void {
+    const evidence = edges.filter((edge) => edge.kind === "evidence");
+    if (reference.singleEvidencePerSymbol === true)
+      for (const host of claimPopulation.units) {
+        const cited = new Set(
+          evidence
+            .filter((edge) => edge.hostUnitIds.includes(host.id))
+            .flatMap((edge) => edge.unitIds),
+        );
+        if (cited.size === 1) continue;
+        this.diagnostics.push(
+          this.problem(
+            "graph-single-evidence-per-symbol",
+            reference.severity,
+            `Host '${this.display(claimInventory, host)}' cites ${cited.size} distinct selected evidence unit(s); singleEvidencePerSymbol requires exactly 1.`,
+            "Keep positive @evidence on this semantic host to exactly one selected unit.",
+            claimIndex,
+            referenceIndex,
+            undefined,
+            host,
+          ),
+        );
+      }
+    if (reference.uniqueEvidence === true)
+      for (const unit of selectedUnits) {
+        const hosts = new Set(
+          evidence
+            .filter((edge) => edge.unitIds.includes(unit.id))
+            .flatMap((edge) => edge.hostUnitIds),
+        );
+        if (hosts.size <= 1) continue;
+        this.diagnostics.push(
+          this.problem(
+            "graph-unique-evidence",
+            reference.severity,
+            `Evidence unit '${this.display(referenceInventory, unit)}' has ${hosts.size} distinct positive evidence host(s); uniqueEvidence allows at most 1.`,
+            "Keep one selected semantic host for this unit and remove the other positive citations.",
+            claimIndex,
+            referenceIndex,
+            undefined,
+            unit,
+          ),
+        );
+      }
+  }
+
   private conflicts(
     declaration: IEvidenceDeclaration,
     targetUnitId: string,
@@ -373,6 +612,7 @@ class GraphEvaluator {
     severity: EvidenceSeverity,
     claimIndex: number,
     referenceIndex: number,
+    checklist: boolean,
   ): void {
     if (declaration.kind === "evidence") {
       const duplicate = edges.find(
@@ -396,7 +636,9 @@ class GraphEvaluator {
     }
     const opposite = edges.find(
       (edge) =>
-        edge.kind !== declaration.kind && this.overlaps(edge.unitIds, unitIds),
+        edge.kind !== declaration.kind &&
+        this.overlaps(edge.unitIds, unitIds) &&
+        (!checklist || this.overlaps(edge.hostUnitIds, hostUnitIds)),
     );
     if (opposite !== undefined) {
       const previous = declarations.get(opposite.declarationId);
@@ -418,7 +660,8 @@ class GraphEvaluator {
       const duplicate = edges.find(
         (edge) =>
           edge.kind === "evidenceExclude" &&
-          this.overlaps(edge.unitIds, unitIds),
+          this.overlaps(edge.unitIds, unitIds) &&
+          (!checklist || this.overlaps(edge.hostUnitIds, hostUnitIds)),
       );
       if (duplicate !== undefined)
         this.diagnostics.push(
@@ -610,6 +853,74 @@ class GraphEvaluator {
       : `${label} reference ${reference + 1}`;
   }
 
+  private validateReferencePolicy(
+    claim: IEvidenceGraphClaim,
+    reference: IEvidenceGraphReference,
+    population: IEvidencePopulation,
+    claimIndex: number,
+    referenceIndex: number,
+  ): void {
+    if (reference.checklist !== true) return;
+    if (
+      reference.uniqueEvidence === true ||
+      reference.singleEvidencePerSymbol === true
+    )
+      throw new Error(
+        `${this.label(claimIndex, referenceIndex)} combines checklist with an incompatible cardinality policy.`,
+      );
+    if (
+      (claim.exclusionHostIds?.length ?? 0) !== 0 &&
+      reference.noEvidenceExclude !== true
+    )
+      throw new Error(
+        `${this.label(claimIndex, referenceIndex)} combines checklist with gathered exclusion carriers.`,
+      );
+    if (population.units.some((unit) => unit.type !== "markdown"))
+      throw new Error(
+        `${this.label(claimIndex, referenceIndex)} applies checklist to a non-Markdown reference population.`,
+      );
+  }
+
+  private recordUnhostedChecklist(
+    declaration: IEvidenceDeclaration,
+    severity: EvidenceSeverity,
+    claim: number,
+    reference: number,
+  ): void {
+    const previous = this.unhostedChecklists.get(declaration.id);
+    if (
+      previous === undefined ||
+      (previous.severity === "warning" && severity === "error")
+    )
+      this.unhostedChecklists.set(declaration.id, {
+        declaration,
+        severity,
+        claim,
+        reference,
+      });
+  }
+
+  private reportUnhostedChecklists(): void {
+    for (const record of this.unhostedChecklists.values()) {
+      if (
+        this.answeredDeclarations.has(record.declaration.id) ||
+        this.uncertainDeclarations.has(record.declaration.id)
+      )
+        continue;
+      this.diagnostics.push(
+        this.problem(
+          "graph-unhosted-checklist",
+          record.severity,
+          `@${record.declaration.kind} for '${record.declaration.target}' is not attached to a selected checklist host.`,
+          "Move the acknowledgement onto a selected semantic host that owes this checklist item.",
+          record.claim,
+          record.reference,
+          record.declaration,
+        ),
+      );
+    }
+  }
+
   private inactiveObligation(
     claim: number,
     reference: number,
@@ -651,6 +962,7 @@ class GraphEvaluator {
     coveredUnitIds: string[],
     missingUnitIds: string[],
     edges: IEvidenceGraphEdge[] = [],
+    hostCoverage: IEvidenceGraphHostCoverage[] = [],
   ): IEvidenceGraphObligation {
     return {
       claim,
@@ -661,6 +973,7 @@ class GraphEvaluator {
       coveredUnitIds,
       missingUnitIds,
       edges,
+      hostCoverage,
     };
   }
 }
