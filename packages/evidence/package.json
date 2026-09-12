@@ -16,7 +16,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "rimraf lib && ttsc",
+    "build": "rimraf lib && ttsc && node ../../scripts/verify-evidence-build-output.js",
     "prepack": "pnpm run build && node ../../scripts/prepare-parser-assets.js --check && node ../../scripts/copy-readme-and-license.js"
   },
   "dependencies": {
