@@ -41,6 +41,16 @@ Host `origins` retain the original paths used for relative citations; omitting t
 
 Resolution distinguishes malformed targets, missing files, existing files outside the reference, missing or unselected public members, withdrawn identities, ambiguous addresses, unsupported hosts, and incomplete inventories. An incomplete export graph prevents an otherwise valid address from resolving. An adapter may load an address only for dependency analysis by setting `IEvidenceSourceAddress.selected` to `false`; such a file can supply a selected barrel export but cannot be cited directly. TypeScript reexports must remain inside both the logical and resolved physical population roots.
 
+## Graph evaluation
+
+`EvidenceGraph.evaluate(input)` consumes fully materialized inventories and target resolutions without reading files. Each configured claim and each element of its reference array remains a separate indexed obligation; an optional claim name only labels its diagnostics. A disabled claim or a healthy claim with no selected semantic host is inactive; an incomplete claim remains active because failed discovery cannot prove that its population is empty.
+
+Supply only the claim declarations whose target grammar applies to a reference in that reference's `resolutions`. The evaluator first accepts an exact resolved target in the reference's structural scope, then checks its claim host. Positive evidence must belong to a selected semantic claim host. An exclusion may use any attached claim host unless `exclusionHostIds` narrows the carrier set, and `noEvidenceExclude` refuses every exclusion. Reviews never enter the coverage ledger.
+
+An accepted acknowledgement covers the selected target and selected descendants reached through explicit `parentId` links. The resulting edge retains the declaration, its documentation position, its semantic host identities, the exact target, and every selected unit covered by the scope. Repeating positive evidence on the same semantic host and exact target is a duplicate. Overlapping exclusions and opposite positive/exclusion intent each produce one finding for the later declaration, regardless of the number of descendants in the overlap. Positive evidence from different semantic hosts remains valid.
+
+Incomplete claim, reference, or target analysis leaves its active obligation incomplete and suppresses derivative empty-population and missing-coverage findings. A healthy empty reference emits one population finding. `success` requires every active obligation to be complete and the deterministic diagnostic list to be empty.
+
 ## Documentation and tags
 
 Identify real documentation through the artifact parser and establish its semantic host before reading tags. Pass known comment delimiters to `EvidenceDocumentation.read(content, hostId, range, syntax)`. JSDoc-style comments use their own delimiter and line prefix; Prisma documentation can use `///`; Markdown HTML comments have no foreign-tag field boundaries. The helper preserves a source map through prefix removal and CRLF normalization.
