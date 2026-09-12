@@ -159,6 +159,10 @@ paths:
 
 Fenced examples and other JSON/YAML string fields do not host tags. Operations without descriptions remain selected hosts for coverage policies.
 
+Swagger 2.0 and supported OpenAPI 3.x JSON/YAML documents are normalized into standard and additional operations under `paths`. Paths keep their exact case, spelling, and trailing slash; methods become uppercase. Components, path items, webhooks, and the whole document do not become aggregate units. Each operation fingerprint includes its normalized content and recursively referenced local components. Recursive references terminate, while unresolved or external schema references remain unfetched.
+
+Swagger references load one exact local path or explicit HTTP(S) URL. Remote documents are fetched for every load with a 30-second timeout and a 16 MiB response limit; retained paths and diagnostics omit URL credentials and query values. Any file, fetch, UTF-8, parse, version, normalization, duplicate-operation, or target-shape failure leaves the inventory incomplete.
+
 A citation to a containing type, namespace, document section, or model covers its selected descendants. `@evidenceExclude <target> <reason>` records why a selected obligation does not apply, subject to the reference's policy. The checker validates the declaration and its target; reviewers judge whether the explanation is true.
 
 ## Reviews

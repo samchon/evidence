@@ -6,6 +6,7 @@ import { EvidenceInventory } from "./EvidenceInventory";
 import { InventoryMerge } from "./internal/InventoryMerge";
 import { MarkdownTarget } from "./internal/MarkdownTarget";
 import { PrismaTarget } from "./internal/PrismaTarget";
+import { SwaggerTarget } from "./internal/SwaggerTarget";
 import type { IEvidenceTargetCandidate } from "./internal/IEvidenceTargetCandidate";
 import type { IEvidenceAddress } from "./structures/IEvidenceAddress";
 import type { IEvidenceDiagnostic } from "./structures/IEvidenceDiagnostic";
@@ -121,6 +122,8 @@ export class EvidenceTargetResolver {
         }
       } else if (type === "prisma") {
         addresses.push(PrismaTarget.parse(statement.target));
+      } else if (type === "swagger") {
+        addresses.push(SwaggerTarget.parse(statement.target));
       } else {
         const origins = InventoryMerge.unique(
           host.origins ?? [host.file],
@@ -150,7 +153,7 @@ export class EvidenceTargetResolver {
     );
     if (!this.inventory.complete)
       return this.incomplete(statement, uniqueAddresses);
-    if (type === "prisma") {
+    if (type === "prisma" || type === "swagger") {
       const candidates: IEvidenceTargetCandidate[] = uniqueAddresses.map(
         (address) => ({
           address,
@@ -269,6 +272,7 @@ export class EvidenceTargetResolver {
       };
     }
     const prisma = addresses.every((address) => address.file === "prisma:");
+    const swagger = addresses.every((address) => address.file === "swagger:");
     return this.failure(
       "missing-member",
       addresses,
@@ -279,10 +283,14 @@ export class EvidenceTargetResolver {
         "target-missing-member",
         prisma
           ? `The selected Prisma schema has no public selected address '${statement.target}'.`
-          : `Selected target file '${this.files(addresses)}' has no public selected address '${this.accessor(addresses)}'.`,
+          : swagger
+            ? `The selected Swagger document has no operation '${statement.target}'.`
+            : `Selected target file '${this.files(addresses)}' has no public selected address '${this.accessor(addresses)}'.`,
         prisma
           ? "Correct the model or member name, or include its symbol kind in this reference."
-          : "Correct the accessor, export a supported public declaration, or include its symbol kind in this reference.",
+          : swagger
+            ? "Correct the uppercase method or exact path, or select the intended Swagger document."
+            : "Correct the accessor, export a supported public declaration, or include its symbol kind in this reference.",
       ),
     );
   }

@@ -11,6 +11,7 @@ catalogs:
   samchon:
     "@nestia/e2e": ^13.0.2
     typia: &typia ^14.0.6
+    "@typia/interface": *typia
     "@typia/utils": *typia
   typescript:
     ttsc: &ttsc ^0.30.0
@@ -21,3 +22,4 @@ catalogs:
   utils:
     "@types/node": ^22.20.2
     rimraf: ^6.1.3
+    yaml: ^2.9.0
