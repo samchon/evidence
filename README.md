@@ -163,6 +163,12 @@ C tags use exact addresses such as `models.h#["struct Sale"]`; an unambiguous so
 
 The adapter follows nested declarators to distinguish functions returning pointers from function-pointer objects, including arrays, qualifiers, attributes, and multi-declarator statements. Attached leading or trailing Doxygen carries graph tags, while ordinary comments, strings, body comments, and detached Doxygen are unsupported hosts. Doxygen code and preformatted regions stay inert. Conventional whole-file include guards and `#pragma once` are structural wrappers; other conditional preprocessing, declaration-position macro invocations, and declaration-affecting directives make the inventory incomplete. Includes are not traversed, macro definitions are not expanded, and generated headers participate only when selected explicitly.
 
+`EvidenceCppAdapter` parses selected C++ source and header files with `tree-sitter-cpp` v0.23.4. Namespaces, classes, structs, unions, enums, aliases, typedefs, and concepts are `type` units. Free and member functions, constructors, destructors, operators, and conversions are `function` units. External variables, public fields, static data members, and enumerators are `property` units.
+
+C++ identities retain namespaces, nested owners, and template arity. ``shop["Box`1"].value`` identifies a member of `Box<T>`. Constructors and destructors use `constructor` and `destructor`; operators use literal segments such as `["operator +"]` and `["operator bool"]`. Header declarations and qualified source definitions merge across the selected snapshot, while name-only overloads contribute every declaration and definition site to one unit. Bounded `using` declarations and namespace aliases add addresses when they resolve to exactly one selected public unit.
+
+Only declarations reachable through public owners enter the population. Class members default to private, struct and union members default to public, and namespace-scope `static`, plain `const`, `constexpr`, and anonymous-namespace declarations stay outside the external surface. Attached leading or trailing Doxygen carries graph tags. The adapter does not run a preprocessor, compiler, build system, template instantiator, module resolver, or linker; conditional declarations, specializations, inheritance, friends, unresolved aliases, and other semantic boundaries leave the inventory incomplete.
+
 Markdown preserves its document outline, and Prisma preserves its schema structure. Swagger claims select local JSON/YAML documents with `files` globs. Swagger references use `file` for an exact local JSON/YAML path or an HTTP(S) URL, with an optional `root` for local paths.
 
 Markdown section anchors prefer a valid trailing `{#anchor}`. Otherwise, the adapter lowercases the heading, retains Unicode letters, numbers, and underscores, removes punctuation, and collapses whitespace or hyphens. Repeated anchors remain distinct sections and make the shared target ambiguous until the author supplies unique anchors.
@@ -178,7 +184,7 @@ Write `@evidence <target> <reason>` in a declaration's documentation comment. Co
 /** @evidence ../SomeNamespace.ts#SomeNamespace.property Supplies the namespace value. */
 ```
 
-TypeScript and Python instance members use `SomeClass.prototype.member`; Go receiver, Rust inherent, Java, C#, and C aggregate members use `SomeType.member`. Rust trait impl members use a quoted `impl Trait` segment. C# targets include their namespace. C exact tag targets quote a segment such as `["struct Sale"]`. File-qualified targets identify declarations without compiler import-scoped `{@link Symbol}` lookup.
+TypeScript and Python instance members use `SomeClass.prototype.member`; Go receiver, Rust inherent, Java, C#, C++, and C aggregate members use `SomeType.member`. Rust trait impl members use a quoted `impl Trait` segment. C# and C++ targets include their namespace. C exact tag targets quote a segment such as `["struct Sale"]`. File-qualified targets identify declarations without compiler import-scoped `{@link Symbol}` lookup.
 
 | Target                 | Example                               |
 | ---------------------- | ------------------------------------- |
@@ -191,6 +197,8 @@ TypeScript and Python instance members use `SomeClass.prototype.member`; Go rece
 | C# namespaced property | `../Sale.cs#Shop.Sale.Total`          |
 | C# generic type        | ``../Box.cs#Shop["Box`1"]``           |
 | C# indexer family      | `../Sale.cs#Shop.Sale["this[]"]`      |
+| C++ template member    | ``../box.hpp#shop["Box`1"].value``    |
+| C++ operator family    | `../sale.hpp#shop.Sale["operator +"]` |
 | C exact struct field   | `../sale.h#["struct Sale"].total`     |
 | C typedef field        | `../sale.h#Sale.total`                |
 | Python symbol          | `../calculator.py#add`                |

@@ -2,6 +2,7 @@
 export { EvidenceAccessor } from "./EvidenceAccessor";
 export { EvidenceCAdapter } from "./EvidenceCAdapter";
 export { EvidenceConfigLoader } from "./EvidenceConfigLoader";
+export { EvidenceCppAdapter } from "./EvidenceCppAdapter";
 export { EvidenceCSharpAdapter } from "./EvidenceCSharpAdapter";
 export { EvidenceDocumentation } from "./EvidenceDocumentation";
 export { EvidenceFileTarget } from "./EvidenceFileTarget";

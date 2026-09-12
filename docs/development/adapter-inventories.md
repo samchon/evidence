@@ -299,6 +299,37 @@ Do not follow `#include` directives; every selected file is analyzed once, so in
 
 The declaration model follows the [C declarator grammar](https://github.com/tree-sitter/tree-sitter-c/tree/v0.24.2) and [Doxygen documentation block forms](https://www.doxygen.nl/manual/docblocks.html) supported by the pinned syntax tree.
 
+## C++ inventories
+
+`EvidenceCppAdapter` parses `.cpp`, `.cc`, `.cxx`, `.c++`, `.C`, `.h`, `.hpp`, `.hh`, `.hxx`, `.h++`, `.H`, `.ipp`, `.tpp`, `.ixx`, `.cppm`, `.ccm`, `.cxxm`, and `.c++m` snapshots with the packaged `tree-sitter-cpp` v0.23.4 grammar. It inventories explicit declarations without invoking a preprocessor, compiler, build system, template instantiator, module resolver, linker, application, or native toolchain.
+
+Classify supported declarations as follows:
+
+| Source form | Symbol and address |
+| --- | --- |
+| Named namespace, class, struct, union, or enum | `type` at its qualified source name |
+| Alias declaration, typedef, or concept | `type` below its namespace or public owner |
+| Free function or public member function | `function` at its qualified source name |
+| Constructor or destructor | `function` below its owner at `constructor` or `destructor` |
+| Operator or conversion function | `function` at a literal segment such as `["operator +"]` or `["operator bool"]` |
+| External variable | `property` at its qualified source name |
+| Public field or static data member | `property` below its owner |
+| Enumerator | `property` below its named enum, or below the containing type for an anonymous member enum |
+
+Include namespaces and nested owners in semantic identity and public addresses. Encode every declared template entity's arity in its identity segment: `Box<T>` uses ``Box`1``, formatted as ``shop["Box`1"]``. Function overloads with one owner and source name form one unit with every declaration and definition site. Constructor, destructor, operator, and conversion segments remain separate from ordinary method names; a spelling collision makes analysis incomplete. Template specializations, partial specializations, and explicit instantiations have no common primary-template address and therefore leave analysis incomplete.
+
+Treat the configured snapshot as one C++ declared-source boundary. Merge compatible namespace openings, forward declarations, class declarations and definitions, function overloads, and qualified out-of-class definitions by symbol and fully qualified identity across selected files. A static data member's in-class declaration and qualified definition share one unit. A qualified class member definition needs a selected public declaration that establishes its owner and access. Namespace-level qualified definitions may use a selected public namespace owner. Mixed public and inaccessible overloads with qualified definitions require signature-aware matching and leave the inventory incomplete. Conflicting declaration forms and duplicate non-callable definitions do the same.
+
+Apply access through the complete owner chain. Class members default to private; struct and union members default to public. Exclude private and protected members, every declaration below a non-public owner, anonymous-namespace declarations, namespace-scope `static` declarations, and namespace-scope plain `const` or `constexpr` objects without `extern` or `inline`. Do not project inherited members or friend-introduced namespace declarations. Inheritance and friends make the inventory incomplete because their externally reachable surface requires semantic lookup.
+
+Resolve a `using` declaration or namespace alias only when its explicit target matches exactly one selected public unit. The alias adds its source-spelled address to that unit and its descendants without changing semantic identity. Missing, ambiguous, specialized, and using-directive targets make analysis incomplete. Includes are not followed, and modules receive no export interpretation.
+
+Attach consecutive leading `///` or `//!` comments, leading `/** */` or `/*! */` blocks, and same-line trailing `///<`, `//!<`, `/**< */`, or `/*!< */` Doxygen to the supported declaration. Documentation on a template attaches across the template wrapper, and one carrier on a multi-declarator statement hosts every public unit at that site. Mask Doxygen `@code` or `\code` blocks and HTML `code` or `pre` elements before parsing tags. Retain tag-bearing ordinary comments, strings, raw strings, function-body comments, detached Doxygen, and Doxygen attached only to unpublished declarations as unsupported hosts. Withdrawal on any declaration hides its merged unit; withdrawing a type or namespace hides its descendants.
+
+Unwrap a conventional whole-file `#ifndef NAME` and matching `#define NAME` include guard, and ignore includes, macro definitions, `#pragma once`, `#line`, `#undef`, and static assertions when they do not choose declarations. Other conditional preprocessing, declaration-position macro invocations, declaration-affecting directives, unreadable qualified owners, unsupported declaration forms, and syntax errors leave the inventory incomplete. Generated or preprocessed source participates when selected explicitly.
+
+The declaration model follows the pinned [tree-sitter-cpp](https://github.com/tree-sitter/tree-sitter-cpp/tree/v0.23.4) syntax and the [Doxygen documentation block forms](https://www.doxygen.nl/manual/docblocks.html) recognized by the scanner.
+
 ## Prisma inventories
 
 `EvidencePrismaAdapter` parses all selected physical files as one schema with `@prisma/prisma-schema-wasm`. Prefer a parser resolvable from the project root, then use the package's pinned fallback. Deduplicate physical sources before parsing and retain every logical address on the resulting source snapshot. A rejected schema makes the inventory incomplete and produces no guessed units.

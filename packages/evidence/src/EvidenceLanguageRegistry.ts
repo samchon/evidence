@@ -228,6 +228,21 @@ export namespace EvidenceLanguageRegistry {
           filenames: [],
         },
       ],
+      adapter: {
+        entry: "EvidenceCppAdapter",
+        symbols: ["type", "function", "property"],
+        publicSurface:
+          "Explicit namespaces, public types and members, external declarations, templates, and bounded aliases recognized by tree-sitter-cpp v0.23.4 across the selected snapshot.",
+        comments: ["attached Doxygen"],
+        unsupported: [
+          "preprocessor branch evaluation",
+          "macro expansion",
+          "include traversal",
+          "template specialization and instantiation",
+          "inheritance and friend lookup",
+          "modules and linker visibility",
+        ],
+      },
     },
     {
       type: "ruby",
