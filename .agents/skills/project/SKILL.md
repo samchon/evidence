@@ -28,7 +28,7 @@ The [roadmap](https://github.com/samchon/evidence/issues/31) owns execution orde
 | `config/tsconfig.json` | Shared strict Node/TypeScript settings |
 | `config/lint.config.ts` | Shared lint rules extended by each project |
 | `scripts` | Plain CommonJS JavaScript maintenance scripts |
-| `.github/workflows` | Required repository checks |
+| `.github/workflows` | Required repository checks and the release workflow |
 
 ## Dependencies And Distribution
 
@@ -52,6 +52,7 @@ pnpm build
 pnpm test
 pnpm format
 pnpm check:format
+pnpm release
 ```
 
 `build` compiles and lints `packages/*`. Do not add a separate typecheck command. `test` directly runs `ttsx -P tsconfig.json src/index.ts`, which checks and executes source without a preceding build. Follow AutoMovie's DynamicExecutor and exported `test_` function convention. Tests cover logic directly; do not add package-installation experiments, tarball tests, or CLI process tests.
@@ -59,3 +60,7 @@ pnpm check:format
 Keep CI as independent, single-Ubuntu workflows: `build.yml` runs only the build after dependency setup; `test.yml` runs only tests after dependency setup. Do not add an OS matrix, make tests depend on the build workflow, or prepend a build to `pnpm test`. Keep package compilation in `build` and `prepack`, not an installation-time `prepare` hook.
 
 Both workflows cache `node_modules/.cache/ttsc` after dependency installation and before compilation or tests, using the runner OS and `pnpm-workspace.yaml` hash as the shared cache key.
+
+## Release
+
+Every workspace manifest, private ones included, carries the release version; `pnpm release` runs `bumpp -r` from the root to bump them together, commit, tag `v<version>`, and push. Do not run `pnpm publish` by hand. The `release.yml` workflow publishes `packages/*` through `pnpm run package:<dist-tag>` with `--no-git-checks --provenance`, so the package's `prepack` hook owns the build, parser-asset check, and README/LICENSE copy. A pushed stable `vX.Y.Z` tag publishes `latest` and then creates the GitHub release notes; `scripts/release-guard.js` rejects a tag whose version disagrees with any tracked manifest before anything reaches npm. A prerelease is a manual `workflow_dispatch` on `master` that names the dist-tag (`rc` or `next`) and the exact `x.y.z-rc.n` or `x.y.z-next.n` version; the workflow bumps the manifests, commits them with `[skip ci]`, and publishes under that dist-tag. Releases share one non-cancelling concurrency group. npm authenticates through trusted publishing with the workflow's OIDC token, so the workflow holds no registry secret.

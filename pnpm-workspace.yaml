@@ -21,5 +21,6 @@ catalogs:
     prettier: ^3.9.6
   utils:
     "@types/node": ^22.20.2
+    bumpp: ^12.3.0
     rimraf: ^6.1.3
     yaml: ^2.9.0
