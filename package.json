@@ -8,9 +8,14 @@
     "build": "pnpm --filter=./packages/* -r run build",
     "test": "pnpm --filter @samchon/evidence-test start",
     "format": "prettier --write .",
-    "check:format": "prettier --check ."
+    "check:format": "prettier --check .",
+    "package:latest": "pnpm --filter=./packages/* -r publish --tag latest --access public",
+    "package:next": "pnpm --filter=./packages/* -r publish --tag next --access public",
+    "package:rc": "pnpm --filter=./packages/* -r publish --tag rc --access public",
+    "release": "bumpp -r"
   },
   "devDependencies": {
+    "bumpp": "catalog:utils",
     "prettier": "catalog:typescript"
   },
   "repository": {
