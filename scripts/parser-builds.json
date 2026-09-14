@@ -24,6 +24,19 @@
         "query": "(function_definition name: (identifier) @name)",
         "capture": "evidence_sum"
       }
+    },
+    {
+      "id": "sql",
+      "repository": "https://github.com/DerekStride/tree-sitter-sql",
+      "commit": "7b51ecda191d36b92f5a90a8d1bc3faef1c7b8b8",
+      "directory": ".",
+      "license": "LICENSE",
+      "abi": 15,
+      "smoke": {
+        "source": "CREATE TABLE evidence_probe (id INTEGER);",
+        "query": "(identifier) @name",
+        "capture": "evidence_probe"
+      }
     }
   ]
 }

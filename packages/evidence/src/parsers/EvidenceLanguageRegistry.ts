@@ -1,4 +1,4 @@
-import type { EvidenceDatabaseType } from "../typings/EvidenceDatabaseType";
+﻿import type { EvidenceDatabaseType } from "../typings/EvidenceDatabaseType";
 import type { IEvidenceDatabaseLanguage } from "../structures/IEvidenceDatabaseLanguage";
 import { EvidenceParserError } from "./EvidenceParserError";
 import type { IEvidenceLanguage } from "../structures/IEvidenceLanguage";
@@ -72,6 +72,26 @@ export namespace EvidenceLanguageRegistry {
           "LIKE, OF, and AS-derived schemas",
           "destructive ALTER",
           "executed migrations",
+        ],
+      },
+    },
+    {
+      type: "sql",
+      name: "Portable SQL",
+      grammars: [{ id: "sql", extensions: [".sql"], filenames: [] }],
+      adapter: {
+        entry: "EvidenceSqlAdapter",
+        symbols: ["model", "column", "relation"],
+        publicSurface:
+          "Explicit CREATE TABLE declarations in the documented portable DDL subset.",
+        addressing:
+          "Qualified table and column accessors; foreign keys use a literal endpoint-derived member segment.",
+        comments: ["adjacent -- or block documentation"],
+        unsupported: [
+          "schema mutations",
+          "query-derived tables",
+          "dialect extensions",
+          "runtime database discovery",
         ],
       },
     },
@@ -580,3 +600,4 @@ export namespace EvidenceLanguageRegistry {
     },
   ];
 }
+
