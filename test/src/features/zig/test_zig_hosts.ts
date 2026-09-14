@@ -25,6 +25,9 @@ export async function test_zig_hosts(): Promise<void> {
     /// ~~~
     ///
     ///     @evidence docs/spec.md#indented Inert indented example.
+    /// <pre>
+    /// @evidence docs/spec.md#html Inert HTML example.
+    /// </pre>
     pub fn sample() i32 { return 1; }
   `.replaceAll("\n", "\r\n");
   const adapter = new EvidenceZigAdapter();
@@ -141,6 +144,25 @@ export async function test_zig_hosts(): Promise<void> {
     );
     TestValidator.equals(
       `${tag} diagnostic`,
+      unsupported.diagnostics.map((item) => item.code),
+      ["unsupported-annotation-host"],
+    );
+  }
+  for (const content of [
+    "//! @evidence docs/spec.md#contract Container documentation has no declaration host.\npub const value = 1;",
+    "/// @evidence docs/spec.md#contract Private declaration is not a public carrier.\nconst value = 1;",
+    "pub fn run() void {\n/// @evidence docs/spec.md#contract Function-body documentation is not public.\nconst local = 1;\n}",
+  ]) {
+    const unsupported = await adapter.analyze(
+      TestSourceSnapshot.create("src/Unsupported.zig", content),
+    );
+    TestValidator.equals(
+      "nonpublic documentation never acknowledges",
+      unsupported.declarations,
+      [],
+    );
+    TestValidator.equals(
+      "nonpublic documentation remains actionable",
       unsupported.diagnostics.map((item) => item.code),
       ["unsupported-annotation-host"],
     );
