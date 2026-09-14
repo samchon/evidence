@@ -40,6 +40,8 @@ Use `TestFileSystem.experiment(location, records, closure)` for disposable file 
 
 ## Validation
 
+Run only affected local logic tests from the test workspace with `pnpm start --include <filter>`. Full local test runs are forbidden; the test CI workflow owns the complete suite.
+
 Use `pnpm build` and the affected logic unit tests according to the project skill. Build owns type and lint validation; do not add a separate typecheck command. Inspect package metadata and preparation scripts directly without creating installation experiments.
 
 Do not silently skip failed validation, change baselines to hide a regression, or represent unavailable analysis as a successful check. Report exact commands and any platform/tooling limitation. Once the relevant checks pass, rerun them only for new changes or unresolved concerns.

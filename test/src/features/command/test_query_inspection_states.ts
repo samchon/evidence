@@ -150,12 +150,11 @@ function requireReviewedTarget(
     (candidate) =>
       candidate.scope.role === "reference" &&
       candidate.name === "member.with.dots" &&
-      candidate.aliases.some((alias) => alias.includes("%EA%B3%B5%EC%9A%A9")),
+      candidate.aliases.some((alias) => alias.includes("shared.ts")),
   );
   if (item === undefined) throw new Error("Missing reviewed query target.");
   return (
-    item.aliases.find((alias) => alias.includes("%EA%B3%B5%EC%9A%A9")) ??
-    item.target
+    item.aliases.find((alias) => alias.includes("shared.ts")) ?? item.target
   );
 }
 
