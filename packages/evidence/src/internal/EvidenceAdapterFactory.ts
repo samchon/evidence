@@ -1,4 +1,3 @@
-import { EvidenceSqlAdapter } from "../adapters/sql/EvidenceSqlAdapter";
 import { EvidenceCAdapter } from "../adapters/c/EvidenceCAdapter";
 import { EvidenceCppAdapter } from "../adapters/cpp/EvidenceCppAdapter";
 import { EvidenceCSharpAdapter } from "../adapters/csharp/EvidenceCSharpAdapter";
