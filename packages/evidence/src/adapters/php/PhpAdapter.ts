@@ -1,5 +1,8 @@
+import { createHash } from "node:crypto";
+
 import typia from "typia";
 
+import { EvidenceFingerprintIndex } from "../../internal/EvidenceFingerprintIndex";
 import { EvidenceInventory } from "../../graph/EvidenceInventory";
 import { EvidenceParser } from "../../parsers/EvidenceParser";
 import { EvidenceParserError } from "../../parsers/EvidenceParserError";
@@ -18,10 +21,12 @@ import type { IPhpFileAnalysis } from "./IPhpFileAnalysis";
 import { PhpDocumentation } from "./PhpDocumentation";
 import { PhpFileScanner } from "./PhpFileScanner";
 
-/** Builds Php source-public inventories from the configured source snapshot. */
+/** Builds PHP source-public inventories from the configured source snapshot. */
 export class PhpAdapter implements IEvidenceAdapter {
+  /** Configured PHP artifact identifier. */
   public readonly type = "php";
 
+  /** Builds a serializable inventory while retaining source and parser failures. */
   public async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {
@@ -40,7 +45,7 @@ export class PhpAdapter implements IEvidenceAdapter {
         severity: "error",
         message: diagnostic.message,
         repair:
-          "Restore access to the selected Php source before evaluating coverage.",
+          "Restore access to the selected PHP source before evaluating coverage.",
         location: { file: diagnostic.path },
       })),
       dependencies: input.dependencies,
@@ -57,12 +62,48 @@ export class PhpAdapter implements IEvidenceAdapter {
       }
       const published = this.materializeUnits(inventory, analyses);
       this.materializeDocumentation(inventory, analyses, published);
-      return new EvidenceInventory([inventory]).snapshot();
+      const output = new EvidenceInventory([inventory]).snapshot();
+      if (output.complete) this.contextDigests(output, analyses);
+      return output;
     } finally {
       await parser.close();
     }
   }
 
+  /** Includes local import and directive changes in review content without widening declaration sites. */
+  private contextDigests(
+    inventory: IEvidenceInventory,
+    analyses: IPhpFileAnalysis[],
+  ): void {
+    const contexts = new Map(
+      analyses.map((analysis) => [
+        analysis.source.physicalPath,
+        analysis.context,
+      ]),
+    );
+    const index = new EvidenceFingerprintIndex(inventory);
+    const digests = new Map<string, string>();
+    for (const unit of inventory.units) {
+      const context = unit.sites.flatMap(
+        (site) => contexts.get(site.file) ?? [],
+      );
+      if (context.length === 0) continue;
+      digests.set(
+        unit.id,
+        createHash("sha256")
+          .update(
+            JSON.stringify([index.inspect(unit.id).contentDigest, context]),
+          )
+          .digest("hex"),
+      );
+    }
+    for (const unit of inventory.units) {
+      const digest = digests.get(unit.id);
+      if (digest !== undefined) unit.contentDigest = digest;
+    }
+  }
+
+  /** Parses one selected file and translates acquisition or syntax failures. */
   private async scan(
     parser: EvidenceParser,
     source: IEvidenceSourceFile,
@@ -80,13 +121,14 @@ export class PhpAdapter implements IEvidenceAdapter {
         source,
         declarations: [],
         documentation: [],
+        context: [],
         diagnostics: [
           {
             code: `php-${parserError?.code ?? "parse-failed"}`,
             severity: "error",
             message:
               parserError?.message ??
-              `Php parsing failed: ${cause instanceof Error ? cause.message : String(cause)}`,
+              `PHP parsing failed: ${cause instanceof Error ? cause.message : String(cause)}`,
             repair:
               "Correct the source or add adapter support before evaluating coverage.",
             location: {
@@ -102,6 +144,7 @@ export class PhpAdapter implements IEvidenceAdapter {
     }
   }
 
+  /** Creates public identities and rejects duplicate declarations. */
   private materializeUnits(
     inventory: IEvidenceInventory,
     analyses: IPhpFileAnalysis[],
@@ -134,8 +177,8 @@ export class PhpAdapter implements IEvidenceAdapter {
             inventory,
             analysis,
             "php-declaration-conflict",
-            `Php public identity '${declaration.identity.join(".")}' has more than one selected declaration.`,
-            "Select one source declaration for this package identity before checking coverage.",
+            `PHP public identity '${declaration.identity.join(".")}' has more than one selected declaration.`,
+            "Select one source declaration for this namespace identity before checking coverage.",
           );
         previousDeclarations.add(declaration.id);
         declarationIds.set(id, previousDeclarations);
@@ -172,6 +215,7 @@ export class PhpAdapter implements IEvidenceAdapter {
     return published;
   }
 
+  /** Attaches PHPDoc, reconciles withdrawals, and preserves unsupported annotations. */
   private materializeDocumentation(
     inventory: IEvidenceInventory,
     analyses: IPhpFileAnalysis[],
@@ -247,6 +291,7 @@ export class PhpAdapter implements IEvidenceAdapter {
     }
   }
 
+  /** Keeps undocumented public declarations in the claim population. */
   private materializeUndocumentedHosts(
     inventory: IEvidenceInventory,
     analysis: IPhpFileAnalysis,
@@ -299,6 +344,7 @@ export class PhpAdapter implements IEvidenceAdapter {
     }
   }
 
+  /** Groups a shared PHPDoc carrier by its original declaration site. */
   private attachmentGroups(
     documentation: IPhpDocumentation,
     published: Map<string, string>,
@@ -314,6 +360,7 @@ export class PhpAdapter implements IEvidenceAdapter {
     return groups;
   }
 
+  /** Creates an attached or explicitly unsupported documentation host. */
   private host(
     source: IEvidenceSourceFile,
     documentation: IPhpDocumentation,
@@ -333,11 +380,12 @@ export class PhpAdapter implements IEvidenceAdapter {
         ? {}
         : {
             problem:
-              "Move the annotation into Phpdoc attached to a supported public Php declaration.",
+              "Move the annotation into PHPDoc attached to a supported public PHP declaration.",
           }),
     };
   }
 
+  /** Parses tags only after ownership has been established. */
   private parse(
     source: IEvidenceSourceFile,
     documentation: IPhpDocumentation,
@@ -350,6 +398,7 @@ export class PhpAdapter implements IEvidenceAdapter {
     );
   }
 
+  /** Detects supported tags on otherwise unsupported PHPDoc carriers. */
   private annotation(
     analysis: IPhpFileAnalysis,
     documentation: IPhpDocumentation,
@@ -361,6 +410,7 @@ export class PhpAdapter implements IEvidenceAdapter {
     );
   }
 
+  /** Distinguishes acknowledgements and reviews from withdrawal-only documentation. */
   private claimAnnotation(
     analysis: IPhpFileAnalysis,
     documentation: IPhpDocumentation,
@@ -372,6 +422,7 @@ export class PhpAdapter implements IEvidenceAdapter {
     );
   }
 
+  /** Recognizes supported tag names at documentation line boundaries. */
   private annotationPattern(raw: string, withdrawal: boolean): boolean {
     return withdrawal
       ? /(?:^|[\r\n])[ \t]*@(evidenceExcludeReview|evidenceReview|evidenceExclude|evidence|link|internal|hidden|ignore)\b/u.test(
@@ -382,6 +433,7 @@ export class PhpAdapter implements IEvidenceAdapter {
         );
   }
 
+  /** Checks whether a declaration or lexical ancestor is withdrawn. */
   private withdrawn(
     id: string,
     units: Map<string, IEvidenceUnit>,
@@ -397,16 +449,18 @@ export class PhpAdapter implements IEvidenceAdapter {
       : this.withdrawn(unit.parentId, units, visited);
   }
 
+  /** Normalizes PHP case-insensitive owner and function identities. */
   private unitId(declaration: IPhpDeclaration): string {
     const identity = declaration.identity.map((segment, index) =>
       declaration.symbol === "property" &&
       index === declaration.identity.length - 1
         ? segment
-        : segment.toLowerCase(),
+        : segment.replace(/[A-Z]/gu, (character) => character.toLowerCase()),
     );
     return `php:${declaration.symbol}:${JSON.stringify(identity)}`;
   }
 
+  /** Retains a declaration conflict as an incomplete inventory. */
   private problem(
     inventory: IEvidenceInventory,
     analysis: IPhpFileAnalysis,

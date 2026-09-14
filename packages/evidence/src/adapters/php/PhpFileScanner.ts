@@ -48,7 +48,7 @@ export class PhpFileScanner {
         attachments: [],
       });
     }
-    if (!this.session.root.descendantsOfType("php_tag").length)
+    if (this.session.root.descendantsOfType("php_tag").length === 0)
       this.problem(
         this.session.root,
         "source-policy",
@@ -61,6 +61,9 @@ export class PhpFileScanner {
       declarations: this.declarations,
       documentation: [...this.documentation.values()],
       diagnostics: this.diagnostics,
+      context: this.session.root
+        .descendantsOfType(["namespace_use_declaration", "declare_directive"])
+        .map((node) => node.text.replaceAll("\r\n", "\n")),
       complete: this.diagnostics.length === 0,
     };
   }
@@ -75,7 +78,10 @@ export class PhpFileScanner {
     for (const child of node.namedChildren) {
       if (child.type === "namespace_definition") {
         const name = child.childForFieldName("name");
-        const segments = name === null ? [] : name.text.split("\\");
+        const segments =
+          name === null
+            ? []
+            : name.descendantsOfType("name").map((part) => part.text);
         const body = child.childForFieldName("body");
         if (body === null) namespace = segments;
         else this.scanScope(body, segments, undefined);
@@ -91,7 +97,7 @@ export class PhpFileScanner {
         this.add(child, child, "function", namespace, owner);
         if (
           owner !== undefined &&
-          child.childForFieldName("name")?.text.toLowerCase() === "__construct"
+          child.childForFieldName("name")?.text?.toLowerCase() === "__construct"
         )
           for (const parameter of child.childForFieldName("parameters")
             ?.namedChildren ?? [])
@@ -146,8 +152,8 @@ export class PhpFileScanner {
     const nameNode =
       item.childForFieldName("name") ??
       (item.type === "const_element" ? item.namedChildren[0] : null);
-    const name = nameNode?.text.replace(/^&\s*/u, "");
-    if (!name) {
+    const name = nameNode?.text?.replace(/^&\s*/u, "");
+    if (name === undefined || name.length === 0) {
       this.problem(
         item,
         "declaration-name",
@@ -186,7 +192,7 @@ export class PhpFileScanner {
         id: siteId,
         file: this.source.physicalPath,
         range: this.text.range(
-          doc?.range.start.offset ?? carrier.startIndex,
+          doc?.range?.start?.offset ?? carrier.startIndex,
           carrier.endIndex,
         ),
         content:
@@ -200,17 +206,39 @@ export class PhpFileScanner {
                   )?.startIndex ?? item.startIndex,
                 ),
                 this.session.range(item),
+                ...carrier.namedChildren
+                  .filter((child) => child.type === "property_hook_list")
+                  .map((child) => this.session.range(child)),
               ],
       },
       ...(owner === undefined ? {} : { ownerDeclarationId: owner.id }),
     };
     this.declarations.push(declaration);
-    doc?.attachments.push({ declarationId: declaration.id, siteId });
+    doc?.attachments?.push({ declarationId: declaration.id, siteId });
     return declaration;
   }
 
   /** Reports dynamic global declarations even when nested inside a function body. */
   private dynamicSurface(root: Node): void {
+    const dynamicNames = new Set([
+      "eval",
+      "define",
+      "class_alias",
+      "spl_autoload_register",
+    ]);
+    for (const imported of root.descendantsOfType(
+      "namespace_use_declaration",
+    )) {
+      if (imported.childForFieldName("type")?.text !== "function") continue;
+      for (const clause of imported.descendantsOfType("namespace_use_clause")) {
+        const target = clause.namedChildren[0]?.text
+          ?.replace(/^\\/u, "")
+          ?.toLowerCase();
+        const alias = clause.childForFieldName("alias");
+        if (target !== undefined && dynamicNames.has(target) && alias !== null)
+          dynamicNames.add(alias.text.toLowerCase());
+      }
+    }
     for (const node of root.descendantsOfType([
       "include_expression",
       "include_once_expression",
@@ -226,9 +254,7 @@ export class PhpFileScanner {
       const target = node.childForFieldName("function");
       if (
         target !== null &&
-        /^(?:\\)?(?:eval|define|class_alias|spl_autoload_register)$/iu.test(
-          target.text,
-        )
+        dynamicNames.has(target.text.replace(/^\\/u, "").toLowerCase())
       )
         this.problem(
           node,
@@ -266,7 +292,7 @@ export class PhpFileScanner {
       this.diagnostics.some(
         (diagnostic) =>
           diagnostic.code === `php-${code}` &&
-          diagnostic.location?.range?.start.offset === node.startIndex,
+          diagnostic.location?.range?.start?.offset === node.startIndex,
       )
     )
       return;

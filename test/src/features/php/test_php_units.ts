@@ -11,10 +11,9 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 /** Verifies namespace ownership, public defaults, independent declarators, and PHP property spelling. */
 export async function test_php_units(): Promise<void> {
   const source = dedent`
-    <html>Template before code</html>
     <?php
     namespace App\\Domain;
-    use Vendor\\Original as Imported;
+    use Vendor\\{Original as Imported, Another};
     use function Vendor\\helper as helperAlias;
     use const Vendor\\VALUE as VALUE_ALIAS;
     /** Public contract. */
@@ -52,7 +51,7 @@ export async function test_php_units(): Promise<void> {
     "exact public PHP identity set",
     inventory.units
       .map((unit) => `${unit.symbol}:${unit.identity.join(".")}`)
-      .sort(),
+      .sort((a, b) => a.localeCompare(b)),
     [
       "type:App.Domain.Contract",
       "property:App.Domain.Contract.$first",
@@ -75,7 +74,7 @@ export async function test_php_units(): Promise<void> {
       "property:App.Domain.TOP",
       "property:App.Domain.NEXT",
       "function:App.Domain.afterTemplate",
-    ].sort(),
+    ].sort((a, b) => a.localeCompare(b)),
   );
   const graph = new EvidenceInventory([inventory]);
   const selected = inventory.units.map((unit) => unit.id);
@@ -111,6 +110,23 @@ export async function test_php_units(): Promise<void> {
     "canonical accessor retains dollar sign",
     EvidenceAccessor.format(["App", "Domain", "Contract", "$first"]),
     "App.Domain.Contract.$first",
+  );
+
+  const unicode = await new EvidencePhpAdapter().analyze(
+    TestSourceSnapshot.create(
+      "unicode.php",
+      "<?php class \u00c0 {} class \u00e0 {} class Emoji { public int $\ud83d\ude00 = 1; }",
+    ),
+  );
+  TestValidator.equals(
+    "non-ASCII PHP names remain distinct",
+    unicode.complete,
+    true,
+  );
+  TestValidator.equals(
+    "non-ASCII declarations preserved",
+    unicode.units.map((unit) => unit.name),
+    ["\u00c0", "\u00e0", "Emoji", "$\ud83d\ude00"],
   );
 
   const brackets = await new EvidencePhpAdapter().analyze(

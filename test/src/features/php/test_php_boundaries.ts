@@ -15,6 +15,7 @@ export async function test_php_boundaries(): Promise<void> {
     "<?php function load() { include_once $path; }",
     "<?php class_alias('Source', 'Alias');",
     "<?php define('RUNTIME', 1);",
+    "<?php use function define as publish; publish('RUNTIME', 1);",
     "<?php eval($code);",
     "<?php spl_autoload_register($loader);",
     "<?php class Broken {",
@@ -29,6 +30,22 @@ export async function test_php_boundaries(): Promise<void> {
       inventory.diagnostics.some(
         (diagnostic) =>
           diagnostic.severity === "error" && diagnostic.repair.length !== 0,
+      ),
+    );
+  }
+  for (const file of ["contract.PHP", "contract.phtml", "contract.inc"]) {
+    const unsupported = await new EvidencePhpAdapter().analyze(
+      TestSourceSnapshot.create(file, "<?php class Contract {}"),
+    );
+    TestValidator.equals(
+      "unadvertised source spelling is rejected",
+      unsupported.complete,
+      false,
+    );
+    TestValidator.predicate(
+      "extension repair is actionable",
+      unsupported.diagnostics.some(
+        (diagnostic) => diagnostic.code === "php-unsupported-extension",
       ),
     );
   }
@@ -62,7 +79,7 @@ export async function test_php_boundaries(): Promise<void> {
   );
   sourceFailure.complete = false;
   sourceFailure.diagnostics.push({
-    code: "file-unreadable",
+    code: "path-unreadable",
     path: "/project/src/missing.php",
     message: "Read denied",
   });

@@ -14,6 +14,12 @@ export async function test_php_hosts(): Promise<void> {
      * <code>
      * @evidence ignored.md#html Example.
      * </code>
+     * \`\`\`php
+     * @evidence ignored.md#fence Fenced example.
+     * \`\`\`
+     *
+     *     @evidence ignored.md#indent Indented example.
+     *
      * @evidence requirement.md#contract Actual acknowledgement.
      */
     #[Deprecated]
@@ -54,7 +60,7 @@ export async function test_php_hosts(): Promise<void> {
   );
   TestValidator.equals(
     "shared declaration host owns both properties",
-    inventory.hosts.find((host) => host.unitIds.length === 2)?.unitIds.length,
+    inventory.hosts.find((host) => host.unitIds.length === 2)?.unitIds?.length,
     2,
   );
   const host = inventory.hosts.find((item) =>
@@ -64,10 +70,10 @@ export async function test_php_hosts(): Promise<void> {
   );
   TestValidator.equals(
     "original UTF-16 host start",
-    host?.range.start.offset,
+    host?.range?.start?.offset,
     content.indexOf("/**"),
   );
-  TestValidator.equals("original line and column", host?.range.start.line, 3);
+  TestValidator.equals("original line and column", host?.range?.start?.line, 3);
   TestValidator.equals(
     "withdrawn method has no eligible host",
     inventory.hosts.some((item) =>

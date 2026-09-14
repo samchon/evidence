@@ -9,6 +9,7 @@ export { EvidenceJavaAdapter } from "./adapters/java/EvidenceJavaAdapter";
 export { EvidenceJavaScriptAdapter } from "./adapters/javascript/EvidenceJavaScriptAdapter";
 export { EvidenceKotlinAdapter } from "./adapters/kotlin/EvidenceKotlinAdapter";
 export { EvidenceMarkdownAdapter } from "./adapters/markdown/EvidenceMarkdownAdapter";
+export { EvidencePhpAdapter } from "./adapters/php/EvidencePhpAdapter";
 export { EvidencePrismaAdapter } from "./adapters/prisma/EvidencePrismaAdapter";
 export { EvidencePythonAdapter } from "./adapters/python/EvidencePythonAdapter";
 export { EvidenceRubyAdapter } from "./adapters/ruby/EvidenceRubyAdapter";
@@ -46,5 +47,3 @@ export { EvidenceTargetResolver } from "./targets/EvidenceTargetResolver";
 
 export type * from "./structures";
 export type * from "./typings";
-
-export { EvidencePhpAdapter } from "./adapters/php/EvidencePhpAdapter";
