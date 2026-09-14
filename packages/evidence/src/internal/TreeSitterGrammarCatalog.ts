@@ -332,6 +332,26 @@ export namespace TreeSitterGrammarCatalog {
       },
     },
     {
+      id: "php",
+      repository: "https://github.com/tree-sitter/tree-sitter-php",
+      version: "v0.24.2",
+      commit: "5b5627faaa290d89eb3d01b9bf47c3bb9e797dea",
+      wasm: {
+        file: "php/tree-sitter-php.wasm",
+        url: "https://github.com/tree-sitter/tree-sitter-php/releases/download/v0.24.2/tree-sitter-php.wasm",
+        sha256:
+          "d4df6a6ff08c87c3ec4f9cbb785fe09998a0cb570e03f57d7b19b3acfb146aa7",
+        size: 1058041,
+      },
+      license: {
+        file: "php/LICENSE",
+        url: "https://raw.githubusercontent.com/tree-sitter/tree-sitter-php/5b5627faaa290d89eb3d01b9bf47c3bb9e797dea/LICENSE",
+        sha256:
+          "664764fabf40c0b318e06324a5a12379092a2df25b8cbf2415f71bc0bb352346",
+        size: 1166,
+      },
+    },
+    {
       id: "objc",
       repository: "https://github.com/tree-sitter-grammars/tree-sitter-objc",
       version: "v3.0.2",
