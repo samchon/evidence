@@ -7,6 +7,7 @@ import {
   EvidenceJavaAdapter,
   EvidenceJavaScriptAdapter,
   EvidenceKotlinAdapter,
+  EvidenceSwiftAdapter,
   EvidencePythonAdapter,
   EvidenceRubyAdapter,
   EvidenceRustAdapter,
@@ -34,6 +35,7 @@ export namespace AdapterCertificationFixtures {
       rust(),
       java(),
       kotlin(),
+      swift(),
       csharp(),
       c(),
       cpp(),
@@ -739,6 +741,111 @@ export namespace AdapterCertificationFixtures {
         key("function", ["Contract", "run"]),
         "fun run(): Int { return 1 }",
         "fun run(): Int { return 2 }",
+      ),
+    };
+  }
+
+  function swift(): IAdapterCertification {
+    const file = "src/Contract.swift";
+    return {
+      type: "swift",
+      adapter: new EvidenceSwiftAdapter(),
+      sources: [
+        {
+          file,
+          content: dedent`
+            /**
+             * 계약 한글
+             * @evidence docs/requirements.md#type Implements the certified type.
+             */
+            public struct Contract {
+                /**
+                 * 실행 한글
+                 * @evidence docs/requirements.md#function Implements the certified function.
+                 */
+                public func run() -> Int { return 1 }
+
+                /**
+                 * 값 한글
+                 * @evidence docs/requirements.md#property Implements the certified property.
+                 */
+                public let value = 1
+
+                private let hidden = 0
+
+                /** @internal Retired public contract. */
+                public let LEGACY = 1
+            }
+          `,
+        },
+      ],
+      units: [
+        unit(file, "type", ["Contract"]),
+        unit(file, "function", ["Contract", "run"], ["Contract"]),
+        unit(file, "property", ["Contract", "value"], ["Contract"]),
+        unit(
+          file,
+          "property",
+          ["Contract", "LEGACY"],
+          ["Contract"],
+          [],
+          ["internal"],
+        ),
+      ],
+      hosts: hosts(
+        key("type", ["Contract"]),
+        key("function", ["Contract", "run"]),
+        key("property", ["Contract", "value"]),
+      ),
+      requirements: requirements(
+        key("type", ["Contract"]),
+        key("function", ["Contract", "run"]),
+        key("property", ["Contract", "value"]),
+      ),
+      excludedUnits: [key("property", ["Contract", "hidden"])],
+      annotationRanges: 4,
+      incomplete: {
+        sources: [
+          {
+            file: "src/first/Conflict.swift",
+            content: "public struct Conflict {}\n",
+          },
+          {
+            file: "src/second/Conflict.swift",
+            content: "public struct Conflict {}\n",
+          },
+        ],
+        diagnosticCodes: ["swift-declaration-conflict"],
+      },
+      malformed: {
+        sources: [
+          {
+            file: "src/Malformed.swift",
+            content: "public struct Malformed { func run( { }\n",
+          },
+        ],
+        diagnosticCodes: ["swift-parse-incomplete"],
+      },
+      falsePositive: {
+        source: {
+          file: "src/FalsePositive.swift",
+          content: dedent`
+            public struct FalsePositive {
+                /** @evidence docs/requirements.md#attached Attached documentation. */
+                public func run() -> String {
+                    // @evidence docs/requirements.md#comment Ordinary comments are inert.
+                    return "@evidence docs/requirements.md#literal Literal text is inert."
+                }
+            }
+          `,
+        },
+        attachedTarget: "docs/requirements.md#attached",
+        unsupportedAnnotations: 2,
+      },
+      mutation: mutation(
+        key("function", ["Contract", "run"]),
+        "public func run() -> Int { return 1 }",
+        "public func run() -> Int { return 2 }",
       ),
     };
   }

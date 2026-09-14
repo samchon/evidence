@@ -126,6 +126,9 @@ export class SwiftAdapter implements IEvidenceAdapter {
       published.set(declaration.id, this.unitId(declaration));
 
     const units = new Map<string, IEvidenceUnit>();
+    const records = new Map(
+      publicDeclarations.map((declaration) => [declaration.id, declaration]),
+    );
     const declarationIds = new Map<string, Set<string>>();
     const addresses = new Set<string>();
     for (const analysis of analyses)
@@ -142,7 +145,8 @@ export class SwiftAdapter implements IEvidenceAdapter {
           declaration.symbol !== "function" &&
           !declaration.extension &&
           previousDeclarations.size !== 0 &&
-          !previousDeclarations.has(declaration.id)
+          !previousDeclarations.has(declaration.id) &&
+          !this.protocolDefault(declaration, previousDeclarations, records)
         )
           this.problem(
             inventory,
@@ -167,8 +171,18 @@ export class SwiftAdapter implements IEvidenceAdapter {
             ...(parentId === undefined ? {} : { parentId }),
           };
           units.set(id, unit);
-        } else if (!unit.sites.some((site) => site.id === declaration.site.id))
-          unit.sites.push(structuredClone(declaration.site));
+        } else {
+          if (unit.parentId !== parentId)
+            this.problem(
+              inventory,
+              analysis,
+              "swift-ownership-conflict",
+              `Swift accessor '${declaration.address.join(".")}' has distinct lexical owners.`,
+              "Rename the colliding declaration or implement disambiguated ownership addressing before checking coverage.",
+            );
+          if (!unit.sites.some((site) => site.id === declaration.site.id))
+            unit.sites.push(structuredClone(declaration.site));
+        }
 
         for (const sourceAddress of analysis.source.addresses) {
           const address: IEvidencePublicAddress = {
@@ -184,6 +198,26 @@ export class SwiftAdapter implements IEvidenceAdapter {
       }
     inventory.units.push(...units.values());
     return published;
+  }
+
+  /** Allows a protocol requirement and its explicit extension property implementation to share a unit. */
+  private protocolDefault(
+    declaration: ISwiftDeclaration,
+    previous: Set<string>,
+    records: Map<string, ISwiftDeclaration>,
+  ): boolean {
+    if (declaration.symbol !== "property" || previous.size !== 1) return false;
+    const first = records.get([...previous][0] ?? "");
+    if (first === undefined) return false;
+    const pair = [first, declaration];
+    return (
+      pair.some((entry) => entry.form === "protocol_property_declaration") &&
+      pair.some(
+        (entry) =>
+          entry.form === "property_declaration" &&
+          records.get(entry.ownerDeclarationId ?? "")?.extension === true,
+      )
+    );
   }
 
   /** Resolves withdrawals before publishing attached annotation hosts. */

@@ -1,4 +1,3 @@
-export { EvidenceSwiftAdapter } from "./adapters/swift/EvidenceSwiftAdapter";
 /** Public API. Importing the package performs no project work. */
 export { EvidenceChecker } from "./EvidenceChecker";
 
@@ -14,6 +13,7 @@ export { EvidencePrismaAdapter } from "./adapters/prisma/EvidencePrismaAdapter";
 export { EvidencePythonAdapter } from "./adapters/python/EvidencePythonAdapter";
 export { EvidenceRubyAdapter } from "./adapters/ruby/EvidenceRubyAdapter";
 export { EvidenceRustAdapter } from "./adapters/rust/EvidenceRustAdapter";
+export { EvidenceSwiftAdapter } from "./adapters/swift/EvidenceSwiftAdapter";
 export { EvidenceSwaggerAdapter } from "./adapters/swagger/EvidenceSwaggerAdapter";
 export { EvidenceTypeScriptAdapter } from "./adapters/typescript/EvidenceTypeScriptAdapter";
 

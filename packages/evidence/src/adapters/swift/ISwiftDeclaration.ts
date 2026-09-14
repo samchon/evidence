@@ -36,6 +36,9 @@ export interface ISwiftDeclaration {
   /** Declaration kind controlling member visibility defaults. */
   form: string;
 
+  /** Whether nominal lookup is restricted to this physical file. */
+  filePrivate: boolean;
+
   /** Explicit lexical owner, retained independently of accessor text. */
   ownerDeclarationId?: string;
 }

@@ -108,14 +108,30 @@ export class SwiftFileScanner {
             "Constrained extensions require generic requirement resolution.",
             node,
           );
+        const inheritance = node.namedChildren.filter(
+          (child) => child.type === "inheritance_specifier",
+        );
+        if (
+          inheritance.length !== 0 &&
+          (extension ||
+            form === "enum" ||
+            inheritance.some((child) =>
+              /\b(?:Codable|Encodable|Decodable|Equatable|Hashable|CaseIterable)\b/u.test(
+                child.text,
+              ),
+            ))
+        )
+          this.problem(
+            "conformance-expansion",
+            "Swift conformance or raw-value declarations require requirement visibility and synthesized-member resolution.",
+            node,
+          );
         const body = node.childForFieldName("body");
         if (body !== null)
           this.walk(
             body,
             declaration,
-            extension
-              ? this.visible(node, false)
-              : form === "protocol" || form === "enum",
+            extension ? this.visible(node, false) : form === "protocol",
           );
       } else if (
         [
@@ -240,7 +256,7 @@ export class SwiftFileScanner {
     );
     const staticMember =
       owner !== undefined &&
-      modifiers?.namedChildren.some((child) =>
+      modifiers?.namedChildren?.some((child) =>
         ["static", "class"].includes(child.text),
       ) === true;
     const address = extension
@@ -258,6 +274,13 @@ export class SwiftFileScanner {
       extension,
       alias,
       form,
+      filePrivate:
+        owner?.filePrivate === true ||
+        modifiers?.namedChildren?.some(
+          (child) =>
+            child.type === "visibility_modifier" &&
+            ["private", "fileprivate"].includes(child.text),
+        ) === true,
       ...(target === undefined ? {} : { target }),
       ...(owner === undefined ? {} : { ownerDeclarationId: owner.id }),
       site: {
@@ -285,7 +308,7 @@ export class SwiftFileScanner {
           siteId,
         });
     }
-    for (const attribute of modifiers?.namedChildren.filter(
+    for (const attribute of modifiers?.namedChildren?.filter(
       (child) => child.type === "attribute",
     ) ?? []) {
       const attributeName = attribute.namedChildren[0]?.text;
@@ -320,7 +343,7 @@ export class SwiftFileScanner {
     const modifiers = node.namedChildren.find(
       (child) => child.type === "modifiers",
     );
-    const visibility = modifiers?.namedChildren.find(
+    const visibility = modifiers?.namedChildren?.find(
       (child) =>
         child.type === "visibility_modifier" && !child.text.includes("("),
     );
@@ -363,7 +386,9 @@ export class SwiftFileScanner {
         (block && node.text.startsWith("/**"));
       if (
         !doc &&
-        !/@(?:evidence|link|internal|hidden|ignore)\b/u.test(node.text)
+        !/@(?:evidenceExcludeReview|evidenceReview|evidenceExclude|evidence|link|internal|hidden|ignore)\b/u.test(
+          node.text,
+        )
       ) {
         previous = undefined;
         continue;
@@ -371,7 +396,7 @@ export class SwiftFileScanner {
       if (
         line &&
         doc &&
-        previous?.syntax.opening === "///" &&
+        previous?.syntax?.opening === "///" &&
         /^[ \t]*\r?\n[ \t]*$/u.test(
           this.source.content.slice(previous.range.end.offset, node.startIndex),
         )
