@@ -3,7 +3,7 @@ import type { IEvidenceCommentSyntax } from "../../structures/IEvidenceCommentSy
 import type { IEvidenceSourceRange } from "../../structures/IEvidenceSourceRange";
 import type { ISqlDocumentationAttachment } from "./ISqlDocumentationAttachment";
 
-/** A Sql documentation carrier or tag-bearing unsupported carrier. */
+/** A SQL documentation carrier or tag-bearing unsupported carrier. */
 export interface ISqlDocumentation {
   /** Stable identity of this extraction record. */
   id: string;

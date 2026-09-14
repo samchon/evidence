@@ -5,10 +5,16 @@ import type { EvidenceDatabaseSymbol } from "../../typings/EvidenceDatabaseSymbo
 export interface ISqlPolicy {
   /** Decodes one identifier, rejecting syntax outside the configured dialect. */
   identifier: (raw: string) => string | undefined;
+
   /** Validates a complete statement or comment; a message makes analysis incomplete. */
   validate: (node: Node) => string | undefined;
+
   /** Projects decoded addresses to dialect-specific schema identities. */
   identity?: (address: string[], symbol: EvidenceDatabaseSymbol) => string[];
+
+  /** Resolves a referenced table name within an explicitly declared owner scope. */
+  reference?: (reference: string[], owner: string[]) => string[];
+
   /** Whether a grammar constraint name denotes an actual relation name. */
   constraintNames?: boolean;
 

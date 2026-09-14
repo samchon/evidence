@@ -101,6 +101,50 @@ export namespace EvidenceLanguageRegistry {
 
   const LANGUAGES: IEvidenceLanguage[] = [
     {
+      type: "scala",
+      name: "Scala",
+      grammars: [{ id: "scala", extensions: [".scala"], filenames: [] }],
+      adapter: {
+        entry: "EvidenceScalaAdapter",
+        symbols: ["type", "function", "property"],
+        publicSurface:
+          "Explicit unrestricted Scala 2/3 declarations recognized by tree-sitter-scala v0.26.2 within the selected source snapshot.",
+        addressing:
+          "File-qualified package and lexical owner paths; singleton objects and package objects have explicit quoted owner segments.",
+        comments: ["attached Scaladoc"],
+        unsupported: [
+          "anonymous givens",
+          "wildcard and unresolved exports",
+          "inherited and synthesized members",
+          "macro expansion",
+          "derives and uses clauses",
+          "extractor binding patterns",
+        ],
+      },
+    },
+    {
+      type: "matlab",
+      name: "MATLAB",
+      grammars: [{ id: "matlab", extensions: [".m"], filenames: [] }],
+      adapter: {
+        entry: "EvidenceMatlabAdapter",
+        symbols: ["type", "function", "property"],
+        publicSurface:
+          "Explicit textual MATLAB classdef and primary function declarations with class-folder ownership.",
+        addressing:
+          "File-qualified package and class segments; accessors merge with declared properties and external methods with class ownership.",
+        comments: ["attached percent-line help comments"],
+        unsupported: [
+          "runtime path mutation",
+          "dynamic properties",
+          "legacy classes",
+          "inherited or generated declarations",
+          "Octave extensions",
+          "binary and live scripts",
+        ],
+      },
+    },
+    {
       type: "swift",
       name: "Swift",
       grammars: [{ id: "swift", extensions: [".swift"], filenames: [] }],
@@ -443,28 +487,6 @@ export namespace EvidenceLanguageRegistry {
       next: "Build and pin ABI-compatible WASM, then certify one library graph with part and export combinator resolution.",
     },
     {
-      id: "scala",
-      name: "Scala",
-      kind: "programming-language",
-      dialects: ["Scala 2", "Scala 3"],
-      grammarRepository: "https://github.com/tree-sitter/tree-sitter-scala",
-      grammarLicense: "MIT",
-      wasm: "release-asset",
-      wasmNotes: "The v0.26.2 release publishes tree-sitter-scala.wasm.",
-      languageReference:
-        "https://docs.scala-lang.org/scala3/reference/changed-features/access-modifiers.html",
-      visibility:
-        "public by default, with private/protected access qualifiers and Scala 3 private[this] migration behavior",
-      declarations:
-        "packages, classes, traits, objects, enums, definitions, values, variables, type members, givens, extensions, and exports",
-      blockers: [
-        "Scala 2 and Scala 3 surface differences",
-        "package objects, givens, exports, and extension ownership",
-        "compiler-generated case-class and enum members",
-      ],
-      next: "Choose explicit Scala dialect fixtures and certify source declarations without compiler-synthesized members.",
-    },
-    {
       id: "lua",
       name: "Lua",
       kind: "programming-language",
@@ -530,29 +552,6 @@ export namespace EvidenceLanguageRegistry {
         "build options and generic instantiation affect reachable APIs",
       ],
       next: "Certify explicit pub declarations and container ownership while reporting usingnamespace and declaration-producing comptime blocks as incomplete.",
-    },
-    {
-      id: "matlab",
-      name: "MATLAB",
-      kind: "programming-language",
-      dialects: ["MATLAB text source"],
-      grammarRepository: "https://github.com/acristoffers/tree-sitter-matlab",
-      grammarLicense: "MIT",
-      wasm: "source-build",
-      wasmNotes:
-        "Inspected releases through v1.3.1 contain no WASM asset; build and verify a pinned source revision.",
-      languageReference:
-        "https://www.mathworks.com/help/matlab/ref/classdef.html",
-      visibility:
-        "class and member access attributes, package and class folders, and file-local function boundaries determine the declared public surface",
-      declarations:
-        "classes, functions, methods, properties, constructors, enumerations, and external method files",
-      blockers: [
-        "package and class-folder ownership with external method dependencies",
-        "help-comment placement and property getter/setter identity",
-        "dynamic properties, path changes, and runtime-created declarations",
-      ],
-      next: "Build and verify pinned WASM, then certify textual MATLAB declarations and documentation without executing MATLAB or inferring Objective-C from the shared .m extension.",
     },
     {
       id: "vue",

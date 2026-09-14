@@ -8,6 +8,22 @@ import type { IParserFixture } from "../../internal/IParserFixture";
 export async function test_parser_grammars(): Promise<void> {
   const fixtures: IParserFixture[] = [
     {
+      type: "scala",
+      grammar: "scala",
+      file: "Contract.scala",
+      name: "Contract",
+      content: "class Contract { val value = 1 }",
+      query: "(class_definition name: (identifier) @name)",
+    },
+    {
+      type: "matlab",
+      grammar: "matlab",
+      file: "Contract.m",
+      name: "Contract",
+      content: "classdef Contract\nproperties\nvalue\nend\nend\n",
+      query: "(class_definition name: (identifier) @name)",
+    },
+    {
       type: "swift",
       grammar: "swift",
       file: "Contract.swift",
