@@ -44,6 +44,13 @@ export namespace MysqlPolicy {
     if (nodes.some((child) => FORBIDDEN.has(child.type)))
       return "This MySQL table uses unsupported temporary, conditional, generated, inherited, or query-derived schema syntax; provide an unconditional explicit table definition.";
     for (const child of nodes) {
+      if (child.type === "literal" && child.text.startsWith("$"))
+        return "Dollar-quoted SQL literals are not MySQL source syntax; use a MySQL string literal.";
+      if (
+        child.type === "cast" &&
+        child.children.some((token) => token.type === "::")
+      )
+        return "PostgreSQL cast syntax is not MySQL source syntax; use a MySQL CAST expression.";
       if (child.type === "identifier" && identifier(child.text) === undefined)
         return "Use MySQL unquoted or backtick-quoted source names; ANSI_QUOTES and other dialect identifier modes are not inferred.";
       if (
@@ -62,6 +69,8 @@ export namespace MysqlPolicy {
     );
     const names = new Set<string>();
     for (const column of definitions) {
+      if (column.namedChildren.some((child) => child.type === "direction"))
+        return "ASC and DESC belong to MySQL index columns, not ordinary column definitions.";
       if (column.namedChildren.some((child) => child.type === "keyword_as"))
         return "Generated MySQL columns are outside the explicit ordinary-column subset.";
       if (
@@ -120,7 +129,9 @@ function tableOption(node: Node): string | undefined {
 
 /** Keywords and nodes whose effects require state or semantics outside the declared subset. */
 const FORBIDDEN = new Set([
+  "array",
   "array_size_definition",
+  "keyword_nulls",
   "keyword_temporary",
   "keyword_temp",
   "keyword_unlogged",
@@ -132,7 +143,6 @@ const FORBIDDEN = new Set([
   "keyword_inherits",
   "keyword_partition",
   "keyword_partitioned",
-  "keyword_like",
   "select",
   "select_expression",
   "create_query",
