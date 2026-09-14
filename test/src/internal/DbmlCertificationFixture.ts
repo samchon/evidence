@@ -21,19 +21,19 @@ export namespace DbmlCertificationFixture {
           file,
           content: dedent`
         /* 😀 @evidence is inert mid-line prose.
-         * @evidence ../docs/requirements.md#model Persists the account identity.
+         * @evidence docs/requirements.md#model Persists the account identity.
          */
         Table users {
           id int [pk]
         }
         Table posts {
           /* 😀
-           * @evidence ../docs/requirements.md#column Stores the account foreign key.
+           * @evidence docs/requirements.md#column Stores the account foreign key.
            */
           user_id int
         }
         /* 😀
-         * @evidence ../docs/requirements.md#relation Connects each post to its account.
+         * @evidence docs/requirements.md#relation Connects each post to its account.
          */
         Ref owner: posts.user_id > users.id
         Table hidden {
@@ -63,9 +63,9 @@ export namespace DbmlCertificationFixture {
         relation,
       ].map((name) => ({ attachment: "attached", units: [name] })),
       requirements: [
-        { unit: model, target: "../docs/requirements.md#model" },
-        { unit: column, target: "../docs/requirements.md#column" },
-        { unit: relation, target: "../docs/requirements.md#relation" },
+        { unit: model, target: "docs/requirements.md#model" },
+        { unit: column, target: "docs/requirements.md#column" },
+        { unit: relation, target: "docs/requirements.md#relation" },
       ],
       excludedUnits: ["model:status"],
       annotationRanges: 4,
@@ -81,19 +81,19 @@ export namespace DbmlCertificationFixture {
         source: {
           file,
           content: dedent`
-        /* @evidence ../docs/requirements.md#attached Owns the schema table. */
+        /* @evidence docs/requirements.md#attached Owns the schema table. */
         Table users {
           id int
-          example text [default: '@evidence ../docs/requirements.md#literal Inert default value.']
+          example text [default: '@evidence docs/requirements.md#literal Inert default value.']
           Note: '''
           \`\`\`
-          @evidence ../docs/requirements.md#example Inert fenced example.
+          @evidence docs/requirements.md#example Inert fenced example.
           \`\`\`
           '''
         }
       `,
         },
-        attachedTarget: "../docs/requirements.md#attached",
+        attachedTarget: "docs/requirements.md#attached",
         unsupportedAnnotations: 0,
       },
       mutation: {
