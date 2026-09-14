@@ -463,6 +463,7 @@ export class MatlabFileScanner {
       const previous = node.previousNamedSibling;
       if (
         previous?.type === "comment" &&
+        !previous.text.startsWith("%{") &&
         /^[ \t]*\r?\n[ \t]*$/u.test(
           this.source.content.slice(previous.endIndex, node.startIndex),
         ) &&
@@ -472,6 +473,7 @@ export class MatlabFileScanner {
         let before = previous.previousNamedSibling;
         while (
           before?.type === "comment" &&
+          !before.text.startsWith("%{") &&
           this.lineStart(before) &&
           /^[ \t]*\r?\n[ \t]*$/u.test(
             this.source.content.slice(before.endIndex, comments[0]?.startIndex),

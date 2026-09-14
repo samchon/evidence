@@ -12,8 +12,14 @@ export async function test_matlab_hosts(): Promise<void> {
       % Unicode 한글 😀 help.
       % @evidence doc.md#type Type documentation.
       properties
+        %{
+        @evidence doc.md#precedingBlock Ordinary block does not absorb help.
+        %}
         % @evidence doc.md#property Preferred preceding help.
         value = 1 % @evidence doc.md#ignored Inline loses precedence.
+        %{
+        @evidence doc.md#inlineBlock Ordinary block does not override inline help.
+        %}
         inline % @evidence doc.md#inline Inline documentation.
         % @internal Withdraw this property.
         legacy
