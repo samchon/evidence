@@ -336,12 +336,13 @@ export namespace AdapterCertificationFixtures {
           content: dedent`
             # @evidence docs/requirements.md#attached Attached documentation.
             def run():
-                # @evidence docs/requirements.md#comment Body comments are inert.
+                # @evidence docs/requirements.md#comment Body comments cannot host evidence.
                 return "@evidence docs/requirements.md#literal Literal text is inert."
           `,
         },
         attachedTarget: "docs/requirements.md#attached",
-        unsupportedAnnotations: 1,
+        // Both the first body comment and returned string are unsupported carriers.
+        unsupportedAnnotations: 2,
       },
       mutation: mutation(
         key("function", ["Contract", "prototype", "run"]),
