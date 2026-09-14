@@ -170,6 +170,18 @@ async function build(recipe, base, name, cli, env) {
   const commit = await run("git", ["-C", checkout, "rev-parse", "HEAD"]);
   if (commit.trim() !== recipe.commit)
     throw new Error("Grammar checkout differs from its source pin.");
+  let patchDigest;
+  if (recipe.patch) {
+    const patch = path.resolve(root, recipe.patch.file);
+    const patchRoot = path.join(root, "scripts/parser-patches");
+    if (!patch.startsWith(patchRoot + path.sep))
+      throw new Error("Grammar patch escapes scripts/parser-patches.");
+    patchDigest = sha256(await readFile(patch));
+    if (patchDigest !== recipe.patch.sha256)
+      throw new Error("Grammar patch differs from its pinned digest.");
+    await run("git", ["-C", checkout, "apply", "--check", patch]);
+    await run("git", ["-C", checkout, "apply", patch]);
+  }
   const cwd = path.resolve(checkout, recipe.directory);
   if (cwd !== checkout && !cwd.startsWith(checkout + path.sep))
     throw new Error("Grammar directory escapes the checkout.");
@@ -177,10 +189,14 @@ async function build(recipe, base, name, cli, env) {
   const wasm = path.join(checkout, "parser.wasm");
   await run(cli, ["build", "--wasm", "--output", wasm], { cwd, env });
   const inputs = {};
-  const files = [
-    path.join(cwd, "grammar.js"),
-    path.join(checkout, "tree-sitter.json"),
-  ];
+  if (patchDigest) inputs[recipe.patch.file] = patchDigest;
+  const files = [path.join(cwd, "grammar.js")];
+  try {
+    const metadata = path.join(checkout, "tree-sitter.json");
+    inputs["tree-sitter.json"] = sha256(await readFile(metadata));
+  } catch (error) {
+    if (error.code !== "ENOENT") throw error;
+  }
   for (const entry of await readdir(path.join(cwd, "src"), {
     recursive: true,
     withFileTypes: true,
