@@ -162,6 +162,7 @@ export class ObjcFileScanner {
         return;
       case "method_declaration":
       case "method_definition": {
+        this.signature(item);
         const selector = this.selector(item);
         if (selector === undefined) {
           this.problem(
@@ -317,6 +318,7 @@ export class ObjcFileScanner {
     visible: boolean,
     prefix: string,
   ): void {
+    this.signature(item);
     const declarators = item.namedChildren.filter(
       (child) => child.type === "struct_declarator",
     );
@@ -353,6 +355,7 @@ export class ObjcFileScanner {
 
   /** Includes external C function declarations and definitions; static functions stay private. */
   private functionDeclaration(item: Node): void {
+    this.signature(item);
     const visible =
       !CSyntax.storage(item, "static") &&
       !CSyntax.storage(item, "FOUNDATION_STATIC_INLINE") &&
@@ -378,6 +381,25 @@ export class ObjcFileScanner {
         visible,
       );
     }
+  }
+
+  /** Rejects nested aggregate definitions that would otherwise hide public fields behind a property or return type. */
+  private signature(item: Node): void {
+    if (item.type === "compound_statement") return;
+    if (
+      ["struct_specifier", "union_specifier", "enum_specifier"].includes(
+        item.type,
+      ) &&
+      item.childForFieldName("body") !== null
+    ) {
+      this.problem(
+        item,
+        "surface",
+        "Aggregate definitions in declaration signatures require C type and field extraction that this Objective-C adapter does not support.",
+      );
+      return;
+    }
+    for (const child of item.namedChildren) this.signature(child);
   }
 
   /** Adds a physical declaration site and attaches only adjacent Doxygen documentation. */

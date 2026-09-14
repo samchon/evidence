@@ -18,6 +18,8 @@ export async function test_objc_boundaries(): Promise<void> {
     "@compatibility_alias Alias Contract;\n",
     "typedef int Number;\n",
     "extern int exported;\n",
+    "@interface Contract\n@property struct { int child; } value;\n@end\n",
+    "struct { int child; } run(void);\n",
     "function result = run(value)\nresult = value;\nend\n",
     "@interface Contract\n#if FEATURE\n@property int conditional;\n#endif\n@end\n",
   ]) {
