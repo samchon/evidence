@@ -2,19 +2,19 @@
 
 A programming language becomes supported only when its adapter can establish a complete declared public surface. A grammar proves that Evidence can parse syntax. Certification additionally proves semantic unit identity, visibility, ownership, target spelling, documentation attachment, graph coverage, and conservative failure behavior.
 
-The common graph consumes `IEvidenceInventory` and does not contain language-specific rules. Add support through the language registry, packaged assets, one `IEvidenceAdapter`, and the shared certification fixtures. Do not change coverage policy to compensate for missing extraction.
+The common graph consumes `IEvidenceInventory` and does not contain language-specific rules. Add support through the language registry, the pinned grammar manifest, one `IEvidenceAdapter`, and the shared certification fixtures. Do not change coverage policy to compensate for missing extraction.
 
 ## 1. Select and pin the grammar
 
 Choose an upstream Tree-sitter grammar that is maintained, has a usable license, and can produce WebAssembly compatible with the pinned `web-tree-sitter` runtime.
 
-- Record the repository, release or commit, WASM URL, SHA-256 digest, byte size, license URL, license digest, and license size in `packages/evidence/assets/grammars.json`.
-- Prefer an upstream release asset. If upstream does not publish WASM, build the exact commit reproducibly and record that provenance.
-- Store the WASM and license under `packages/evidence/assets/<grammar>/`.
+- Record the repository, release or commit, WASM URL, SHA-256 digest, byte size, license URL, license digest, and license size in `packages/evidence/src/internal/parser-grammars.json`.
+- Prefer an upstream release asset. If upstream does not publish WASM, add a recipe to `scripts/parser-builds.json` and publish the reproducibly built artifact through the `parser-wasm` workflow.
+- Do not commit WASM or license bytes; the runtime downloads and verifies them on first use.
 - Add the grammar ID and its exact extensions or special filenames to `EvidenceLanguageRegistry`.
 - Keep multiple syntax variants, such as TypeScript and TSX, under one programming-language entry when they share one Evidence surface contract.
 
-Follow [parser-assets.md](parser-assets.md) for acquisition and checksum rules. A normal `@samchon/evidence` package update ships new certified grammar support; consumers do not install a separate grammar package or language plugin.
+Follow [parser-assets.md](parser-assets.md) for acquisition and checksum rules. A normal `@wrtnlabs/evidence` package update ships new certified grammar support; consumers do not install a separate grammar package or language plugin.
 
 ## 2. Define the declared public surface
 
@@ -87,9 +87,9 @@ The distribution certification checks that:
 
 - every supported registry entry has one adapter certification;
 - every grammar selected by those entries exists in the pinned manifest;
-- every pinned grammar and license is covered by the package `files` allowlist;
-- checksum-verified grammar bytes are readable at their declared size;
-- every shipped grammar parses a real declaration through `EvidenceParser`.
+- every manifest record passes `TreeSitterAssets` validation of its provenance paths and HTTPS asset URLs;
+- every pinned grammar is acquired at its declared size and digest into the test fixture cache;
+- every pinned grammar parses a real declaration through `EvidenceParser` in `test_parser_grammars`.
 
 Inspect package metadata and preparation scripts directly. Do not add tarball installation, packed-consumer, or CLI subprocess tests.
 
@@ -106,8 +106,8 @@ pnpm check:format
 
 Count each concept separately:
 
-- **Programming languages:** entries returned by `EvidenceLanguageRegistry.list()` that have certified adapters. The initial registry has 10.
-- **Packaged grammar variants:** unique grammar IDs in those language entries. The initial package has 11 because TypeScript and TSX use separate grammar assets; JSX shares the JavaScript grammar.
+- **Programming languages:** entries returned by `EvidenceLanguageRegistry.list()` that have certified adapters; `evidence languages` renders the current set.
+- **Pinned grammar variants:** unique grammar IDs across the registry entries. TypeScript and TSX use separate grammars; JSX shares the JavaScript grammar.
 - **Artifact formats:** Markdown, Prisma, and Swagger/OpenAPI are three additional non-programming Evidence families. They are not included in the programming-language count.
 - **Candidates:** researched entries returned by `EvidenceLanguageRegistry.candidates()`. They are excluded from supported counts until their adapters pass this process.
 

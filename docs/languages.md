@@ -54,9 +54,9 @@ Every implemented artifact family can be a claim and a reference. A Swagger refe
 
 ## Parser assets
 
-The package includes eleven grammar WASM files because TypeScript and TSX use separate grammars. Each grammar manifest record pins the upstream repository, release, source commit, download URL, SHA-256 digest, byte length, WASM file, and license. Runtime reads package-local bytes, verifies their checksum, and loads only grammars selected by active programming populations.
+The package contains no grammar WASM. Each grammar manifest record pins the upstream repository, release, source commit, download URL, SHA-256 digest, byte length, and license; TypeScript and TSX use separate grammars. The runtime downloads a grammar into the per-user cache the first time a selected source needs it, verifies its length and digest on every read, and loads only grammars selected by active populations.
 
-Consumers do not install per-language packages, download grammars during a check, or install a language compiler. Prisma uses `@prisma/prisma-schema-wasm`, and Swagger/OpenAPI uses local JSON/YAML parsing rather than Tree-sitter.
+Consumers do not install per-language packages, download grammars by hand, or install a language compiler. A cold cache needs network access once; see the root README for the cache location and `EVIDENCE_CACHE_DIR`. Prisma uses `@prisma/prisma-schema-wasm`, and Swagger/OpenAPI uses local JSON/YAML parsing rather than Tree-sitter.
 
 See [parser assets](development/parser-assets.md) for provenance and maintenance and [adapter onboarding](development/adapter-onboarding.md) for the certification gate.
 

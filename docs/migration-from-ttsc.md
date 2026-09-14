@@ -7,10 +7,10 @@ See the [compatibility ledger](development/compatibility.md) for behavior-level 
 ## Install the standalone checker
 
 ```bash
-pnpm i -D typescript ttsc @samchon/evidence
+pnpm i -D typescript ttsc @wrtnlabs/evidence
 ```
 
-Remove `@ttsc/evidence` only after the project no longer uses its companion lint rules. Keep `@ttsc/lint` when other lint rules still depend on it. `@samchon/evidence` does not register a ttsc lint plugin. It uses `ttsx` from the `ttsc` peer to typecheck and evaluate `evidence.config.ts`.
+Remove `@ttsc/evidence` only after the project no longer uses its companion lint rules. Keep `@ttsc/lint` when other lint rules still depend on it. `@wrtnlabs/evidence` does not register a ttsc lint plugin. It uses `ttsx` from the `ttsc` peer to typecheck and evaluate `evidence.config.ts`.
 
 ## Move graph configuration
 
@@ -46,7 +46,7 @@ export default {
 Move the graph value into `evidence.config.ts` and put the former outer rule severity on the root:
 
 ```ts
-import type { IEvidenceConfig } from "@samchon/evidence";
+import type { IEvidenceConfig } from "@wrtnlabs/evidence";
 
 export default {
   severity: "error",
@@ -98,7 +98,7 @@ Run `evidence list --language typescript` to see canonical targets and aliases, 
 The standalone config has `root` and `files`; it has no `package` selector and does not derive ownership from a `tsconfig` or package entry point. A relative root resolves from `evidence.config.ts`:
 
 ```ts
-import type { IEvidenceClaim } from "@samchon/evidence";
+import type { IEvidenceClaim } from "@wrtnlabs/evidence";
 
 const claim = {
   type: "typescript",
@@ -157,7 +157,7 @@ Replace reliance on the compiler plugin's graph side effect with an explicit com
 
 Keep the command's exit status. Exit 1 means the graph was fully analyzed and has Evidence errors. Exit 2 means the configuration or analysis is incomplete. Both must fail CI.
 
-The standalone package ships its certified grammar WASM and loads only selected grammars. CI does not need per-language compiler installations or grammar downloads. It still needs whatever commands the repository uses to build or run its software; Evidence does not replace those checks.
+The standalone package pins its certified grammars and downloads only the selected ones into a per-user cache on first use, verified by checksum. CI does not need per-language compiler installations; a cold cache needs network access once, and `EVIDENCE_CACHE_DIR` can point it at a cached directory. It still needs whatever commands the repository uses to build or run its software; Evidence does not replace those checks.
 
 ## Review the migration
 

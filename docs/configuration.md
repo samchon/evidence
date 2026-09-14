@@ -3,7 +3,7 @@
 `evidence.config.ts` exports one `IEvidenceConfig` value. Evidence asks the consumer's `ttsx` to typecheck and evaluate the file, validates the resulting value with `typia`, then applies path, policy, and adapter constraints before loading enabled artifacts.
 
 ```ts
-import type { IEvidenceConfig } from "@samchon/evidence";
+import type { IEvidenceConfig } from "@wrtnlabs/evidence";
 
 export default {
   severity: "error",
@@ -110,7 +110,7 @@ Programming targets resolve their file path from the source file carrying the ta
 Reference arrays do not form a union:
 
 ```ts
-import type { IEvidenceReference } from "@samchon/evidence";
+import type { IEvidenceReference } from "@wrtnlabs/evidence";
 
 const references = [
   {
