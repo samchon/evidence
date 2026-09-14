@@ -50,7 +50,8 @@ export async function test_php_hosts(): Promise<void> {
           inventory.hosts.find((host) => host.id === declaration.hostId)
             ?.attachment === "attached",
       )
-      .map((declaration) => declaration.target),
+      .map((declaration) => declaration.target)
+      .sort((a, b) => a.localeCompare(b)),
     ["requirement.md#contract", "requirement.md#values"],
   );
   TestValidator.equals(

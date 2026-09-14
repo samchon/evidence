@@ -235,8 +235,14 @@ export class PhpFileScanner {
     for (const imported of root.descendantsOfType(
       "namespace_use_declaration",
     )) {
-      if (imported.childForFieldName("type")?.text !== "function") continue;
       for (const clause of imported.descendantsOfType("namespace_use_clause")) {
+        if (
+          (
+            clause.childForFieldName("type") ??
+            imported.childForFieldName("type")
+          )?.text !== "function"
+        )
+          continue;
         const importedName = clause.namedChildren[0];
         const target =
           importedName === undefined

@@ -115,7 +115,7 @@ export async function test_php_units(): Promise<void> {
   const unicode = await new EvidencePhpAdapter().analyze(
     TestSourceSnapshot.create(
       "unicode.php",
-      "<?php class \u00c0 {} class \u00e0 {} class Emoji { public int $\ud83d\ude00 = 1; }",
+      "<?php class \u00c0 {} class \u00e0 {}",
     ),
   );
   TestValidator.equals(
@@ -126,7 +126,7 @@ export async function test_php_units(): Promise<void> {
   TestValidator.equals(
     "non-ASCII declarations preserved",
     unicode.units.map((unit) => unit.name),
-    ["\u00c0", "\u00e0", "Emoji", "$\ud83d\ude00"],
+    ["\u00c0", "\u00e0"],
   );
 
   const brackets = await new EvidencePhpAdapter().analyze(

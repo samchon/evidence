@@ -19,6 +19,7 @@ export async function test_php_boundaries(): Promise<void> {
     "<?php eval($code);",
     "<?php spl_autoload_register($loader);",
     "<?php class Broken {",
+    "<?php class Emoji { public int $\ud83d\ude00 = 1; }",
   ]) {
     const inventory = await new EvidencePhpAdapter().analyze(
       TestSourceSnapshot.create("src/boundary.php", source),
