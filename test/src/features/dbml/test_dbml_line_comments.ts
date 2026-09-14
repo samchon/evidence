@@ -54,18 +54,23 @@ export async function test_dbml_line_comments(): Promise<void> {
           ),
         ),
     );
+    if (host === undefined)
+      throw new Error(`Missing ${name} documentation host.`);
     TestValidator.equals(
       `${name} documents both scalar column and inline relation`,
       inventory.units
-        .filter((unit) => host?.unitIds.includes(unit.id) === true)
+        .filter((unit) => host.unitIds.includes(unit.id))
         .map((unit) => unit.symbol)
         .sort((left, right) => left.localeCompare(right, "en")),
       ["column", "relation"],
     );
   }
+  const annotation = inventory.declarations[0];
+  if (annotation === undefined || annotation.location.range === undefined)
+    throw new Error("Missing source-mapped table annotation.");
   TestValidator.equals(
     "continued annotation retains original UTF16 start",
-    inventory.declarations[0]?.location.range?.start.offset,
+    annotation.location.range.start.offset,
     source.indexOf("@evidence ./spec.md#table"),
   );
 }
