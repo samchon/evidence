@@ -5,6 +5,7 @@ import { EvidenceLanguageRegistry } from "../parsers/EvidenceLanguageRegistry";
 import type { IEvidenceAddress } from "../structures/IEvidenceAddress";
 import type { IEvidenceHost } from "../structures/IEvidenceHost";
 import type { IEvidenceTargetStatement } from "../structures/IEvidenceTargetStatement";
+import type { EvidenceDatabaseType } from "../typings/EvidenceDatabaseType";
 import type { EvidenceProgrammingType } from "../typings/EvidenceProgrammingType";
 import type { IEvidenceMaterializedReference } from "./IEvidenceMaterializedReference";
 import { MarkdownTarget } from "../adapters/markdown/MarkdownTarget";
@@ -67,7 +68,7 @@ function affinity(
     return exact ? 3 : markdownLike(file) ? 2 : 1;
   }
 
-  const parsed = parseProgrammingTargets(target, host);
+  const parsed = parseFileTargets(target, host);
   if (parsed.length !== 0) {
     const exact = reference.inventory.sources.some((source) =>
       source.addresses.some(
@@ -82,12 +83,10 @@ function affinity(
     );
     if (exact) return 3;
   }
-  return isProgrammingType(type) && recognizes(type, targetFile(target))
-    ? 2
-    : 0;
+  return isParsedType(type) && recognizes(type, targetFile(target)) ? 2 : 0;
 }
 
-function parseProgrammingTargets(
+function parseFileTargets(
   target: string,
   host: IEvidenceHost,
 ): IEvidenceAddress[] {
@@ -101,7 +100,10 @@ function parseProgrammingTargets(
   return output;
 }
 
-function recognizes(type: EvidenceProgrammingType, file: string): boolean {
+function recognizes(
+  type: EvidenceProgrammingType | EvidenceDatabaseType,
+  file: string,
+): boolean {
   try {
     EvidenceLanguageRegistry.select(type, file);
     return true;
@@ -110,8 +112,13 @@ function recognizes(type: EvidenceProgrammingType, file: string): boolean {
   }
 }
 
-function isProgrammingType(type: string): type is EvidenceProgrammingType {
-  return EvidenceLanguageRegistry.list().some((entry) => entry.type === type);
+function isParsedType(
+  type: string,
+): type is EvidenceProgrammingType | EvidenceDatabaseType {
+  return [
+    ...EvidenceLanguageRegistry.list(),
+    ...EvidenceLanguageRegistry.databases(),
+  ].some((entry) => entry.type === type);
 }
 
 function targetFile(target: string): string {

@@ -1,16 +1,5 @@
-import type {
-  EvidenceProgrammingSymbol,
-  IEvidenceWithdrawal,
-} from "@wrtnlabs/evidence";
-import type { IAdapterCertificationAddress } from "./IAdapterCertificationAddress";
+import type { EvidenceProgrammingSymbol } from "@wrtnlabs/evidence";
+import type { IAdapterCertificationUnitBase } from "./IAdapterCertificationUnitBase";
 
-/** Exact semantic identity, ownership, sites, addresses, and withdrawal state. */
-export interface IAdapterCertificationUnit {
-  key: string;
-  symbol: EvidenceProgrammingSymbol;
-  identity: string[];
-  parent?: string;
-  sites: number;
-  addresses: IAdapterCertificationAddress[];
-  withdrawals: IEvidenceWithdrawal["tag"][];
-}
+/** Expected exact inventory for one programming declaration. */
+export interface IAdapterCertificationUnit extends IAdapterCertificationUnitBase<EvidenceProgrammingSymbol> {}
