@@ -209,9 +209,16 @@ async function build(recipe, base, name, cli, env) {
     inputs[path.relative(checkout, file).replaceAll("\\", "/")] = sha256(
       await readFile(file),
     );
+  // Read the immutable Git blob so checkout newline conversion cannot change the URL pin.
+  const license = await execute(
+    "git",
+    ["-C", checkout, "show", `${recipe.commit}:${recipe.license}`],
+    { encoding: "buffer", maxBuffer: 16 * 1024 * 1024, windowsHide: true },
+  );
+  inputs[recipe.license] = sha256(license.stdout);
   return {
     bytes: await readFile(wasm),
-    license: await readFile(path.join(checkout, recipe.license)),
+    license: license.stdout,
     inputs,
     patch: patchBytes,
   };
