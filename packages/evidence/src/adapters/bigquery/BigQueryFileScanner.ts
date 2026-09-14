@@ -222,14 +222,12 @@ export class BigQueryFileScanner {
       list === null
         ? []
         : list.namedChildren.map((child) =>
-            BigQueryIdentifier.member(child.text)?.toLowerCase(),
+            BigQueryIdentifier.canonical(child.text),
           );
     const available = columns
       .map((column) => column.childForFieldName("column_name"))
       .map((name) =>
-        name === null
-          ? undefined
-          : BigQueryIdentifier.member(name.text)?.toLowerCase(),
+        name === null ? undefined : BigQueryIdentifier.canonical(name.text),
       );
     if (
       names.length === 0 ||
@@ -281,7 +279,7 @@ export class BigQueryFileScanner {
       list === null
         ? []
         : list.namedChildren.map((child) =>
-            BigQueryIdentifier.member(child.text)?.toLowerCase(),
+            BigQueryIdentifier.canonical(child.text),
           );
     if (
       path === undefined ||
@@ -307,7 +305,7 @@ export class BigQueryFileScanner {
     );
     declaration.identity = [
       ...model.identity,
-      name?.toLowerCase() ?? relationName,
+      name === undefined ? relationName : name.toLowerCase(),
     ];
   }
 
@@ -333,9 +331,9 @@ export class BigQueryFileScanner {
     const descriptions = clause.namedChildren.filter(
       (child) =>
         child.type === "option_item" &&
-        BigQueryIdentifier.member(
+        BigQueryIdentifier.canonical(
           child.childForFieldName("key")?.text ?? "",
-        )?.toLowerCase() === "description",
+        ) === "description",
     );
     if (descriptions.length > 1)
       this.fail(

@@ -53,19 +53,27 @@ export async function test_bigquery_ownership(): Promise<void> {
     [["hidden"], ["hidden"], ["hidden"], ["hidden"]],
   );
 
+  const reorderedSource = source.replace(
+    `${first},\n  ${second}`,
+    `${second},\n  ${first}`,
+  );
+  TestValidator.notEquals(
+    "constraint order actually changes",
+    reorderedSource,
+    source,
+  );
   const reordered = await adapter.analyze(
-    TestSourceSnapshot.create(
-      "schema.sql",
-      source.replace(`${first},\n  ${second}`, `${second},\n  ${first}`),
-    ),
+    TestSourceSnapshot.create("schema.sql", reorderedSource),
   );
   TestValidator.equals(
     "anonymous key identities ignore declaration order",
     reordered.units
       .filter((unit) => unit.symbol === "relation")
       .map((unit) => unit.id)
-      .sort(),
-    relations.map((unit) => unit.id).sort(),
+      .sort((left, right) => left.localeCompare(right, "en")),
+    relations
+      .map((unit) => unit.id)
+      .sort((left, right) => left.localeCompare(right, "en")),
   );
 
   const inline = await adapter.analyze(
@@ -84,9 +92,12 @@ export async function test_bigquery_ownership(): Promise<void> {
     inline.diagnostics,
     [],
   );
+  const inlineHost = inline.hosts.find((host) => host.unitIds.length === 2);
+  if (inlineHost === undefined)
+    throw new Error("Missing inline relation host.");
   TestValidator.equals(
     "inline relation and column share one physical host",
-    inline.hosts.find((host) => host.unitIds.length === 2)?.unitIds.length,
+    inlineHost.unitIds.length,
     2,
   );
   TestValidator.equals(

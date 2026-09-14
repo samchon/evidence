@@ -28,24 +28,28 @@ export async function test_bigquery_hosts(): Promise<void> {
   TestValidator.equals("description extraction", inventory.diagnostics, []);
   TestValidator.equals(
     "only owned prose creates acknowledgements",
-    inventory.declarations.map((declaration) => declaration.reason).sort(),
-    ["Documents the identifier.", "Documents the table."].sort(),
+    inventory.declarations
+      .map((declaration) => declaration.reason)
+      .sort((left, right) => left.localeCompare(right, "en")),
+    ["Documents the identifier.", "Documents the table."].sort((left, right) =>
+      left.localeCompare(right, "en"),
+    ),
   );
   const description = inventory.declarations.find(
     (declaration) => declaration.reason === "Documents the identifier.",
   );
-  if (description?.location.range === undefined)
+  if (description === undefined || description.location.range === undefined)
     throw new Error("Missing mapped description location.");
   TestValidator.equals(
     "original UTF-16 tag start",
     description.location.range.start.offset,
     content.indexOf("@evidence", content.indexOf("😀")),
   );
+  const secret = inventory.units.find((unit) => unit.name === "secret");
+  if (secret === undefined) throw new Error("Missing secret field.");
   TestValidator.equals(
     "withdrawn field retains metadata",
-    inventory.units
-      .find((unit) => unit.name === "secret")
-      ?.withdrawals.map((withdrawal) => withdrawal.tag),
+    secret.withdrawals.map((withdrawal) => withdrawal.tag),
     ["hidden"],
   );
   TestValidator.equals(

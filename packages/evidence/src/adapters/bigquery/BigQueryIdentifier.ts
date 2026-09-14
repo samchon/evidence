@@ -9,7 +9,7 @@ export namespace BigQueryIdentifier {
     const value = quoted ? raw.slice(1, -1) : raw;
     const parts = value.split(".").map((part, index) => {
       if (quoted) return member(`\`${part}\``);
-      if (index === 0 && /^[\p{L}_][\p{L}\p{N}_-]*$/u.test(part)) return part;
+      if (index === 0 && /^[A-Za-z_][A-Za-z0-9_-]*$/u.test(part)) return part;
       return member(part);
     });
     if (parts.length > 3 || parts.some((part) => part === undefined))
@@ -23,6 +23,12 @@ export namespace BigQueryIdentifier {
       const value = raw.slice(1, -1);
       return value.length > 0 && !/[`\\\r\n]/u.test(value) ? value : undefined;
     }
-    return /^[\p{L}_][\p{L}\p{N}_]*$/u.test(raw) ? raw : undefined;
+    return /^[A-Za-z_][A-Za-z0-9_]*$/u.test(raw) ? raw : undefined;
+  }
+
+  /** Normalizes a case-insensitive field or constraint identifier. */
+  export function canonical(raw: string): string | undefined {
+    const value = member(raw);
+    return value === undefined ? undefined : value.toLowerCase();
   }
 }

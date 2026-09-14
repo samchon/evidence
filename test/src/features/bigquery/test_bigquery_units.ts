@@ -35,7 +35,9 @@ export async function test_bigquery_units(): Promise<void> {
   TestValidator.equals("complete source", inventory.complete, true);
   TestValidator.equals(
     "exact declarations",
-    inventory.units.map((unit) => [unit.symbol, unit.identity]).sort(),
+    inventory.units
+      .map((unit) => JSON.stringify([unit.symbol, unit.identity]))
+      .sort((left, right) => left.localeCompare(right, "en")),
     [
       ["model", ["acme-prod", "sales", "orders"]],
       ...[
@@ -52,7 +54,9 @@ export async function test_bigquery_units(): Promise<void> {
         ["acme-prod", "sales", "orders", ...name.split(".")],
       ]),
       ["relation", ["acme-prod", "sales", "orders", "customer_key"]],
-    ].sort(),
+    ]
+      .map((value) => JSON.stringify(value))
+      .sort((left, right) => left.localeCompare(right, "en")),
   );
   const model = inventory.units.find((unit) => unit.symbol === "model");
   if (model === undefined) throw new Error("Missing orders model.");

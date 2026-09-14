@@ -11,7 +11,7 @@ export namespace BigQueryString {
     if (head === null) return undefined;
     const delimiter = head[2];
     if (delimiter === undefined || !raw.endsWith(delimiter)) return undefined;
-    const rawMode = head[1]?.toLowerCase() === "r";
+    const rawMode = (head[1] ?? "").toLowerCase() === "r";
     const end = raw.length - delimiter.length;
     let text = "";
     const offsets: number[] = [];
