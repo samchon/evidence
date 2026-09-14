@@ -24,7 +24,7 @@ export async function test_matlab_graph(): Promise<void> {
         end
       end
     end
-  `,
+  `.concat("\n"),
     ),
   );
   const claims = await new EvidenceTypeScriptAdapter().analyze(
@@ -37,7 +37,7 @@ export async function test_matlab_graph(): Promise<void> {
     export function runClaim() {}
     /** @evidence ./Contract.m#Contract.value Verifies the value. */
     export const valueClaim = 1;
-  `,
+  `.concat("\n"),
     ),
   );
 
@@ -104,7 +104,7 @@ export async function test_matlab_graph(): Promise<void> {
     function review()
       % @evidenceReview ./Contract.m#Contract.run Reviewed without an acknowledgement.
     end
-  `,
+  `.concat("\n"),
     ),
   );
   TestValidator.equals(

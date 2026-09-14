@@ -774,7 +774,7 @@ export namespace AdapterCertificationFixtures {
                 hidden = 0
               end
             end
-          `,
+          `.concat("\n"),
         },
       ],
       units: [
@@ -829,7 +829,7 @@ export namespace AdapterCertificationFixtures {
               value = "@evidence docs/requirements.md#literal Literal text is inert.";
               % @evidence docs/requirements.md#comment Body comments are inert.
             end
-          `,
+          `.concat("\n"),
         },
         attachedTarget: "docs/requirements.md#attached",
         unsupportedAnnotations: 0,

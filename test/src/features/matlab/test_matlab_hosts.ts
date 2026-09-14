@@ -41,7 +41,9 @@ export async function test_matlab_hosts(): Promise<void> {
         end
       end
     end
-  `.replaceAll("\n", "\r\n");
+  `
+    .concat("\n")
+    .replaceAll("\n", "\r\n");
   const adapter = new EvidenceMatlabAdapter();
   const inventory = await adapter.analyze(
     TestSourceSnapshot.create("src/Contract.m", content),

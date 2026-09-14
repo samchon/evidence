@@ -13,7 +13,7 @@ export async function test_matlab_fingerprints(): Promise<void> {
         second = 2
       end
     end
-  `;
+  `.concat("\n");
   const adapter = new EvidenceMatlabAdapter();
   const original = await adapter.analyze(
     TestSourceSnapshot.create("src/Contract.m", content),

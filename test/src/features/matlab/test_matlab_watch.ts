@@ -12,11 +12,11 @@ export async function test_matlab_watch(): Promise<void> {
     {
       "evidence.config.ts": dedent`
       export default { claims: [{ type: "typescript", files: ["claims.ts"], reference: { type: "matlab", files: ["contracts/*.m"], symbol: "property" } }] };
-    `,
+    `.concat("\n"),
       "claims.ts": dedent`
       /** @evidence ./contracts/Contract.m#Contract Implements the contract. */
       export function claim() {}
-    `,
+    `.concat("\n"),
       "contracts/Contract.m":
         "classdef Contract\nproperties\nvalue = 1\nend\nend\n",
     },
@@ -71,7 +71,7 @@ export async function test_matlab_watch(): Promise<void> {
             await TestFileSystem.save(directory, {
               "evidence.config.ts": dedent`
             export default { claims: [{ type: "typescript", files: ["claims.ts"], reference: { type: "matlab", files: ["contracts/*.m"], symbol: "type" } }] };
-          `,
+          `.concat("\n"),
             });
           } else {
             TestValidator.equals(

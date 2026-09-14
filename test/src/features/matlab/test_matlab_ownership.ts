@@ -17,7 +17,7 @@ export async function test_matlab_ownership(): Promise<void> {
         secret(obj)
       end
     end
-  `,
+  `.concat("\n"),
   );
   const run = TestSourceSnapshot.create(
     "src/+pkg/@Widget/run.m",
@@ -78,6 +78,14 @@ export async function test_matlab_ownership(): Promise<void> {
       (dependency) =>
         dependency.recursive && dependency.path.endsWith("/@Widget"),
     ),
+  );
+  const reversed = await new EvidenceMatlabAdapter().analyze(
+    TestSourceSnapshot.combine([additional, secret, run, cls]),
+  );
+  TestValidator.equals(
+    "snapshot order does not alter ownership",
+    reversed,
+    inventory,
   );
   const missing = await new EvidenceMatlabAdapter().analyze(run);
   TestValidator.equals("missing class cannot pass", missing.complete, false);

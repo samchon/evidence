@@ -17,7 +17,12 @@ export async function test_matlab_boundaries(): Promise<void> {
     "classdef Dynamic\nproperties (Unknown=true)\nvalue\nend\nend\n",
     "classdef Dynamic\nmethods\nfunction value=get.missing(obj)\nvalue=1;\nend\nend\nend\n",
     "classdef Dynamic\nproperties\nvalue\n",
+    "classdef Dynamic\nend",
     "value = 1;\n",
+    "function Other()\nend\n",
+    "function Dynamic()\nendfunction\n",
+    "classdef Dynamic\nproperties (Access={calculateAccess()})\nvalue\nend\nend\n",
+    "classdef Dynamic\nproperties\nvalue\nvalue\nend\nend\n",
     "@interface Dynamic\n@end\n",
   ]) {
     const inventory = await adapter.analyze(
@@ -32,6 +37,15 @@ export async function test_matlab_boundaries(): Promise<void> {
       ),
     );
   }
+  TestValidator.equals(
+    "class closing semicolon is a supported delimiter",
+    (
+      await adapter.analyze(
+        TestSourceSnapshot.create("src/Dynamic.m", "classdef Dynamic\nend;"),
+      )
+    ).complete,
+    true,
+  );
   for (const extension of [".p", ".mlx", ".mexw64"])
     TestValidator.equals(
       `reject nontext source ${extension}`,

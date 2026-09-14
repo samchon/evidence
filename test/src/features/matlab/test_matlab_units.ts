@@ -29,6 +29,9 @@ export async function test_matlab_units(): Promise<void> {
         properties (GetAccess=private, SetAccess=public)
           writable
         end
+        properties (Access={?Friend, ?pkg.Other})
+          friendOnly
+        end
         properties (Constant)
           constant = 1
         end
@@ -69,7 +72,7 @@ export async function test_matlab_units(): Promise<void> {
       end
       function local()
       end
-    `,
+    `.concat("\n"),
         ["src/Contract.m", "alias/Contract.m"],
       ),
       TestSourceSnapshot.create(
@@ -82,7 +85,7 @@ export async function test_matlab_units(): Promise<void> {
       end
       function helper()
       end
-    `,
+    `.concat("\n"),
       ),
       TestSourceSnapshot.create(
         "src/private/secret.m",
