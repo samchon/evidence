@@ -1,3 +1,4 @@
+import { EvidenceDartAdapter } from "../adapters/dart/EvidenceDartAdapter";
 import { EvidenceCAdapter } from "../adapters/c/EvidenceCAdapter";
 import { EvidenceCppAdapter } from "../adapters/cpp/EvidenceCppAdapter";
 import { EvidenceCSharpAdapter } from "../adapters/csharp/EvidenceCSharpAdapter";
@@ -16,6 +17,7 @@ import { EvidenceRubyAdapter } from "../adapters/ruby/EvidenceRubyAdapter";
 import { EvidenceScalaAdapter } from "../adapters/scala/EvidenceScalaAdapter";
 import { EvidenceRustAdapter } from "../adapters/rust/EvidenceRustAdapter";
 import { EvidenceSqlAdapter } from "../adapters/sql/EvidenceSqlAdapter";
+import { EvidenceSqliteAdapter } from "../adapters/sqlite/EvidenceSqliteAdapter";
 import { EvidenceSwiftAdapter } from "../adapters/swift/EvidenceSwiftAdapter";
 import { EvidenceSwaggerAdapter } from "../adapters/swagger/EvidenceSwaggerAdapter";
 import { EvidenceTypeScriptAdapter } from "../adapters/typescript/EvidenceTypeScriptAdapter";
@@ -26,6 +28,7 @@ import type { EvidenceArtifactType } from "../typings/EvidenceArtifactType";
 /** Creates only adapters whose complete Evidence behavior is certified. */
 export namespace EvidenceAdapterFactory {
   export function create(type: EvidenceArtifactType): IEvidenceAdapter {
+    if (type === "dart") return new EvidenceDartAdapter();
     if (type === "c") return new EvidenceCAdapter();
     if (type === "cpp") return new EvidenceCppAdapter();
     if (type === "csharp") return new EvidenceCSharpAdapter();
@@ -44,6 +47,7 @@ export namespace EvidenceAdapterFactory {
     if (type === "scala") return new EvidenceScalaAdapter();
     if (type === "rust") return new EvidenceRustAdapter();
     if (type === "sql") return new EvidenceSqlAdapter();
+    if (type === "sqlite") return new EvidenceSqliteAdapter();
     if (type === "swift") return new EvidenceSwiftAdapter();
     if (type === "swagger") return new EvidenceSwaggerAdapter();
     if (type === "typescript") return new EvidenceTypeScriptAdapter();

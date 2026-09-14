@@ -13,6 +13,19 @@
   },
   "grammars": [
     {
+      "id": "dart",
+      "repository": "https://github.com/nielsenko/tree-sitter-dart",
+      "commit": "b57d734c84f510bbd524097902cab671e4dbfca9",
+      "directory": ".",
+      "license": "LICENSE",
+      "abi": 15,
+      "smoke": {
+        "source": "void evidence_probe() {}",
+        "query": "(identifier) @name",
+        "capture": "evidence_probe"
+      }
+    },
+    {
       "id": "matlab",
       "repository": "https://github.com/acristoffers/tree-sitter-matlab",
       "commit": "f03d0347acd8bb05d4edd8c845ac1718729e1fad",
@@ -45,6 +58,19 @@
       "directory": ".",
       "license": "LICENSE",
       "abi": 15,
+      "smoke": {
+        "source": "CREATE TABLE evidence_probe (id INTEGER);",
+        "query": "(identifier) @name",
+        "capture": "evidence_probe"
+      }
+    },
+    {
+      "id": "sqlite",
+      "repository": "https://github.com/dhcmrlchtdj/tree-sitter-sqlite",
+      "commit": "993be0a91c0c90b0cc7799e6ff65922390e2cefe",
+      "directory": ".",
+      "license": "LICENSE",
+      "abi": 14,
       "smoke": {
         "source": "CREATE TABLE evidence_probe (id INTEGER);",
         "query": "(identifier) @name",
