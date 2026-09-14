@@ -21,7 +21,8 @@ export class ConfigDependencyScanner {
   /** Scans the configuration and every statically reachable local module. */
   public async scan(): Promise<IEvidenceSourceDependency[]> {
     try {
-      await this.watchModuleScope(path.resolve(this.configFile));
+      if (programmingType(this.configFile) !== undefined)
+        await this.watchModuleScope(path.resolve(this.configFile));
       await this.scanFile(path.resolve(this.configFile));
       return this.list();
     } finally {
@@ -44,7 +45,10 @@ export class ConfigDependencyScanner {
     const physical = SourcePath.slash(await realpath(logical));
     this.watch(physical, false);
     this.watch(SourcePath.slash(path.dirname(physical)), true);
-    if (logical === SourcePath.slash(path.resolve(this.configFile)))
+    if (
+      logical === SourcePath.slash(path.resolve(this.configFile)) &&
+      programmingType(physical) !== undefined
+    )
       await this.watchModuleScope(physical);
     if (this.scanned.has(physical)) return;
     this.scanned.add(physical);

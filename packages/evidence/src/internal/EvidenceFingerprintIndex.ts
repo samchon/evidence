@@ -56,7 +56,7 @@ export class EvidenceFingerprintIndex {
         : InventoryMerge.compare(this.contentDigest(x), this.contentDigest(y));
     });
     const hash = createHash("sha256");
-    hash.update(`@samchon/evidence:fingerprint:${VERSION}\0`);
+    hash.update(`@wrtnlabs/evidence:fingerprint:${VERSION}\0`);
     for (const unit of scope) {
       hash.update(unit.id);
       hash.update("\0");

@@ -1,10 +1,11 @@
+import {
+  EvidenceLanguageRegistry,
+  EvidenceRubyAdapter,
+} from "@wrtnlabs/evidence";
+import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceLanguageRegistry } from "../../../../packages/evidence/src/parsers/EvidenceLanguageRegistry";
-import { EvidenceRubyAdapter } from "../../../../packages/evidence/src/adapters/ruby/EvidenceRubyAdapter";
-import type { IEvidenceInventory } from "../../../../packages/evidence/src/structures/IEvidenceInventory";
-import type { IEvidenceUnit } from "../../../../packages/evidence/src/structures/IEvidenceUnit";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Classifies Ruby reopenings, visibility, method sides, constants, and attributes. */

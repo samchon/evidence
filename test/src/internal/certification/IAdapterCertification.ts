@@ -1,5 +1,7 @@
-import type { IEvidenceAdapter } from "../../../../packages/evidence/src/structures/IEvidenceAdapter";
-import type { EvidenceProgrammingType } from "../../../../packages/evidence/src/typings/EvidenceProgrammingType";
+import type {
+  EvidenceProgrammingType,
+  IEvidenceAdapter,
+} from "@wrtnlabs/evidence";
 import type { IAdapterCertificationFailure } from "./IAdapterCertificationFailure";
 import type { IAdapterCertificationFalsePositive } from "./IAdapterCertificationFalsePositive";
 import type { IAdapterCertificationHost } from "./IAdapterCertificationHost";

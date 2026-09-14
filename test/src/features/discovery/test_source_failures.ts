@@ -1,9 +1,9 @@
+import { EvidenceSourceLoader } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { EvidenceSourceLoader } from "../../../../packages/evidence/src/loaders/EvidenceSourceLoader";
 import { SourcePath } from "../../../../packages/evidence/src/internal/SourcePath";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 

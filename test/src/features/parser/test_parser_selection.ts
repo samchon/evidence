@@ -1,7 +1,6 @@
+import { EvidenceLanguageRegistry, EvidenceParser } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidenceLanguageRegistry } from "../../../../packages/evidence/src/parsers/EvidenceLanguageRegistry";
-import { EvidenceParser } from "../../../../packages/evidence/src/parsers/EvidenceParser";
 import { TestParserError } from "../../internal/TestParserError";
 
 /** Selects syntax by declared language and exact file spelling while preserving lazy loading. */

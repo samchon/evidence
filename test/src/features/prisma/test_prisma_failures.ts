@@ -1,7 +1,6 @@
+import { EvidenceGraph, EvidencePrismaAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidenceGraph } from "../../../../packages/evidence/src/graph/EvidenceGraph";
-import { EvidencePrismaAdapter } from "../../../../packages/evidence/src/adapters/prisma/EvidencePrismaAdapter";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Keeps rejected or unreadable Prisma schemas incomplete until repaired. */

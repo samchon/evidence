@@ -1,0 +1,29 @@
+{
+  "cliVersion": "0.27.0",
+  "sdkVersion": "34.0",
+  "tools": {
+    "linux": {
+      "cliSha256": "20a1f39ec1c45f2211492dcb8881c802b643b554bb196869a29ac3778277fa77",
+      "sdkSha256": "b761e3a0721dbae9c09a0059e5fdb2bf917d1b4a8a7b430fb3b5aafb0984b2c4"
+    },
+    "win32": {
+      "cliSha256": "2d6c014b4e91d3d302ba7b30b3b625914027c3861ae7817e068a273e3f034550",
+      "sdkSha256": "cccb5c323a9b34f0349a9b09e8804a0a7632c68c3310f4b5f437ed57d7e71d8f"
+    }
+  },
+  "grammars": [
+    {
+      "id": "matlab",
+      "repository": "https://github.com/acristoffers/tree-sitter-matlab",
+      "commit": "f03d0347acd8bb05d4edd8c845ac1718729e1fad",
+      "directory": ".",
+      "license": "LICENSE",
+      "abi": 15,
+      "smoke": {
+        "source": "function result = evidence_sum(value)\n  result = value + 1;\nend\n",
+        "query": "(function_definition name: (identifier) @name)",
+        "capture": "evidence_sum"
+      }
+    }
+  ]
+}

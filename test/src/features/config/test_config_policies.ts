@@ -1,8 +1,7 @@
+import type { IEvidenceConfig, IEvidenceReference } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
 import { validateEvidenceConfig } from "../../../../packages/evidence/src/internal/validateEvidenceConfig";
-import type { IEvidenceConfig } from "../../../../packages/evidence/src/structures/IEvidenceConfig";
-import type { IEvidenceReference } from "../../../../packages/evidence/src/structures/IEvidenceReference";
 
 /** Rejects checklist placements and combinations with contradictory obligations. */
 export async function test_config_policies(): Promise<void> {

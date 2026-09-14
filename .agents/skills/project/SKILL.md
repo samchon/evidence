@@ -7,11 +7,11 @@ description: Defines the Evidence workspace, current implementation status, prod
 
 ## Product
 
-`@samchon/evidence` enforces explicit acknowledgements between specifications, skills, public declarations, and tests. Public configuration types follow `@ttsc/evidence`: Config, Claim, Reference, shared bases, and artifact selectors. Use `Programming` and `Database` for type families. The `type` discriminator names the source language, such as `typescript`, `cpp`, `rust`, `prisma`, `sql`, or `dbml`; do not add a separate `language` setting. Files are selected directly with globs.
+`@wrtnlabs/evidence` enforces explicit acknowledgements between specifications, skills, public declarations, and tests. Public configuration types follow `@ttsc/evidence`: Config, Claim, Reference, shared bases, and artifact selectors. Use `Programming` and `Database` for type families. The `type` discriminator names the source language, such as `typescript`, `cpp`, `rust`, `prisma`, `sql`, or `dbml`; do not add a separate `language` setting. Files are selected directly with globs.
 
 Keep programming and database language identifiers in `EvidenceProgrammingType` and `EvidenceDatabaseType`. Database languages share one Claim and one Reference interface. Use `model`, `column`, and `relation` as the common database selectors, and `type`, `function`, and `property` for programming declarations. Classes belong to `type`.
 
-The [roadmap](https://github.com/samchon/evidence/issues/31) owns execution order. Package setup precedes common type declarations and configuration loading. GitHub issue numbers are stable identifiers; adjust ordering in the roadmap instead of moving issue contents between numbers.
+The [roadmap](https://github.com/wrtnlabs/evidence/issues/31) owns execution order. Package setup precedes common type declarations and configuration loading. GitHub issue numbers are stable identifiers; adjust ordering in the roadmap instead of moving issue contents between numbers.
 
 ## Layout
 
@@ -42,7 +42,7 @@ The [roadmap](https://github.com/samchon/evidence/issues/31) owns execution orde
 
 ## Dependencies And Distribution
 
-Use the root `packageManager` version. Keep `pnpm-workspace.yaml` to package globs and family catalogs: `samchon`, `typescript`, `tree-sitter`, and `utils`. Dependency and peer versions belong there; package manifests use named `catalog:<family>` or `workspace:` references. Do not add pnpm policy options. Consumers explicitly install `typescript`, `ttsc`, and `@samchon/evidence`; the first two remain required peers. `ttsx` is an executable in `ttsc`, not another dependency. `@ttsc/lint` is a development dependency. Each package and the test workspace have their own `lint.config.ts` extending `config/lint.config.ts`; keep shared rules in that common file.
+Use the root `packageManager` version. Keep `pnpm-workspace.yaml` to package globs and family catalogs: `samchon`, `typescript`, `tree-sitter`, and `utils`. Dependency and peer versions belong there; package manifests use named `catalog:<family>` or `workspace:` references. Do not add pnpm policy options. Consumers explicitly install `typescript`, `ttsc`, and `@wrtnlabs/evidence`; the first two remain required peers. `ttsx` is an executable in `ttsc`, not another dependency. `@ttsc/lint` is a development dependency. Each package and the test workspace have their own `lint.config.ts` extending `config/lint.config.ts`; keep shared rules in that common file.
 
 Use `typia` for runtime type checks and `@typia/utils` for `dedent`. Keep both in the `samchon` catalog. Register the development-only `@ttsc/evidence` contributor in each project's lint config and enable `evidence/singular` at error severity in the shared rules.
 
@@ -59,13 +59,13 @@ Use CommonJS; do not add `type: "module"` or an unsupported Node engine constrai
 ```bash
 pnpm install --frozen-lockfile
 pnpm build
-pnpm test
+pnpm start --include <filter>
 pnpm format
 pnpm check:format
 pnpm release
 ```
 
-`build` compiles and lints `packages/*`. Do not add a separate typecheck command. `test` directly runs `ttsx -P tsconfig.json src/index.ts`, which checks and executes source without a preceding build. Follow AutoMovie's DynamicExecutor and exported `test_` function convention. Tests cover logic directly; do not add package-installation experiments, tarball tests, or CLI process tests.
+`build` compiles and lints `packages/*`. Do not add a separate typecheck command. Run only affected tests locally with `pnpm start --include <filter>`; CI owns the full `pnpm test` run. Both execute `ttsx -P tsconfig.json src/index.ts`, which checks and executes source without a preceding build. Follow AutoMovie's DynamicExecutor and exported `test_` function convention. Tests cover logic directly; do not add package-installation experiments, tarball tests, or CLI process tests.
 
 Keep CI as independent, single-Ubuntu workflows: `build.yml` runs only the build after dependency setup; `test.yml` runs only tests after dependency setup. Do not add an OS matrix, make tests depend on the build workflow, or prepend a build to `pnpm test`. Keep package compilation in `build` and `prepack`, not an installation-time `prepare` hook.
 

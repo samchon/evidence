@@ -1,15 +1,17 @@
-import { EvidenceTargetResolver } from "../../../packages/evidence/src/targets/EvidenceTargetResolver";
-import type { IEvidenceDeclaration } from "../../../packages/evidence/src/structures/IEvidenceDeclaration";
-import type { IEvidenceGraphResolution } from "../../../packages/evidence/src/structures/IEvidenceGraphResolution";
-import type { IEvidenceGraphReviewResolution } from "../../../packages/evidence/src/structures/IEvidenceGraphReviewResolution";
-import type { IEvidenceGraphHostCoverage } from "../../../packages/evidence/src/structures/IEvidenceGraphHostCoverage";
-import type { IEvidenceGraphObligation } from "../../../packages/evidence/src/structures/IEvidenceGraphObligation";
-import type { IEvidenceGraphResult } from "../../../packages/evidence/src/structures/IEvidenceGraphResult";
-import type { IEvidenceHost } from "../../../packages/evidence/src/structures/IEvidenceHost";
-import type { IEvidenceInventory } from "../../../packages/evidence/src/structures/IEvidenceInventory";
-import type { IEvidenceTargetResolution } from "../../../packages/evidence/src/structures/IEvidenceTargetResolution";
-import type { IEvidenceUnit } from "../../../packages/evidence/src/structures/IEvidenceUnit";
-import type { EvidenceAcknowledgementKind } from "../../../packages/evidence/src/typings/EvidenceAcknowledgementKind";
+import { EvidenceTargetResolver } from "@wrtnlabs/evidence";
+import type {
+  EvidenceAcknowledgementKind,
+  IEvidenceDeclaration,
+  IEvidenceGraphHostCoverage,
+  IEvidenceGraphObligation,
+  IEvidenceGraphResolution,
+  IEvidenceGraphResult,
+  IEvidenceGraphReviewResolution,
+  IEvidenceHost,
+  IEvidenceInventory,
+  IEvidenceTargetResolution,
+  IEvidenceUnit,
+} from "@wrtnlabs/evidence";
 import { SourceText } from "../../../packages/evidence/src/internal/SourceText";
 
 /** Builds graph statements and already-resolved targets for pure policy tests. */

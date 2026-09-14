@@ -1,14 +1,18 @@
+import {
+  EvidenceGraph,
+  EvidenceMarkdownAdapter,
+  EvidenceTargetResolver,
+  EvidenceTypeScriptAdapter,
+} from "@wrtnlabs/evidence";
+import type {
+  IEvidenceGraphResolution,
+  IEvidenceHost,
+  IEvidenceInventory,
+  IEvidenceUnit,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceGraph } from "../../../../packages/evidence/src/graph/EvidenceGraph";
-import { EvidenceMarkdownAdapter } from "../../../../packages/evidence/src/adapters/markdown/EvidenceMarkdownAdapter";
-import { EvidenceTargetResolver } from "../../../../packages/evidence/src/targets/EvidenceTargetResolver";
-import { EvidenceTypeScriptAdapter } from "../../../../packages/evidence/src/adapters/typescript/EvidenceTypeScriptAdapter";
-import type { IEvidenceGraphResolution } from "../../../../packages/evidence/src/structures/IEvidenceGraphResolution";
-import type { IEvidenceHost } from "../../../../packages/evidence/src/structures/IEvidenceHost";
-import type { IEvidenceInventory } from "../../../../packages/evidence/src/structures/IEvidenceInventory";
-import type { IEvidenceUnit } from "../../../../packages/evidence/src/structures/IEvidenceUnit";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 

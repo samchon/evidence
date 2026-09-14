@@ -1,6 +1,6 @@
+import { EvidenceParser } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidenceParser } from "../../../../packages/evidence/src/parsers/EvidenceParser";
 import { TestParserError } from "../../internal/TestParserError";
 
 /** Rejects incomplete syntax and incompatible queries before they can shrink the evidence population. */

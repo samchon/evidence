@@ -30,6 +30,8 @@ Only meaningful logic unit tests are allowed. Hardcoded tests that duplicate typ
 
 Use English file and directory names, including disposable test paths. Unicode content and identifiers may be used to verify source behavior.
 
+Create every temporary file and directory only under the gitignored test/.tmp directory, including ad hoc scripts and build experiments. TestFileSystem.experiment owns test trees there; interrupted runs must not leave fixtures in tracked source directories. Never put temporary work in node_modules or a root-level temporary directory.
+
 Follow AutoMovie's unit-test structure: one exported `test_<behavior>` function per `test/src/features/<category>/test_<behavior>.ts` file. The entry point uses `@nestia/e2e`'s `DynamicExecutor` to discover the functions, and tests use `TestValidator` assertions. Keep the test workspace in `test`, not a second `tests` tree.
 
 Open a regression with a doc comment explaining what it verifies, why the behavior matters, and the short scenario. Separate setup, execution, and assertions with blank lines, and comment each scenario's purpose. Call the logic directly. Give changed predicates a negative counterpart and meaningful boundary cases. Tests are exclusively logic unit tests: do not add installation experiments, tarball verification, CLI subprocess tests, or a Node test-runner framework.

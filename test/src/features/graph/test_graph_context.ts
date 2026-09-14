@@ -1,7 +1,7 @@
+import { EvidenceGraph } from "@wrtnlabs/evidence";
+import type { IEvidenceGraphInput } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidenceGraph } from "../../../../packages/evidence/src/graph/EvidenceGraph";
-import type { IEvidenceGraphInput } from "../../../../packages/evidence/src/structures/IEvidenceGraphInput";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestInventory } from "../../internal/TestInventory";
 

@@ -1,11 +1,10 @@
+import { EvidenceGraphReporter, EvidenceQuery } from "@wrtnlabs/evidence";
+import type { IEvidenceGraphReport } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 import typia from "typia";
 
-import { EvidenceGraphReporter } from "../../../../packages/evidence/src/reporters/EvidenceGraphReporter";
-import { EvidenceQuery } from "../../../../packages/evidence/src/graph/EvidenceQuery";
-import type { IEvidenceGraphReport } from "../../../../packages/evidence/src/structures/IEvidenceGraphReport";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestQueryAnalysis } from "../../internal/TestQueryAnalysis";
 

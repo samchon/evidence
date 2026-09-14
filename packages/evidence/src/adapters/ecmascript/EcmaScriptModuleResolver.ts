@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 
 import typia from "typia";
+import { VariadicSingleton } from "tstl";
 
 import type { IEvidenceDiagnostic } from "../../structures/IEvidenceDiagnostic";
 import type { IEvidenceSourceDependency } from "../../structures/IEvidenceSourceDependency";
@@ -13,10 +14,47 @@ import { SourcePath } from "../../internal/SourcePath";
 
 /** Selects ESM or CommonJS semantics and records controlling package metadata. */
 export class EcmaScriptModuleResolver {
-  private readonly dependencies = new Map<string, IEvidenceSourceDependency>();
-  private readonly diagnostics: IEvidenceDiagnostic[] = [];
-  private readonly packages = new Map<string, Promise<EcmaScriptModuleMode>>();
+  /** Captures one immutable lazy package resolver for this analysis. */
+  public constructor() {
+    this.packages = new VariadicSingleton(
+      async (directory: string): Promise<EcmaScriptModuleMode> => {
+        const manifest = SourcePath.slash(path.join(directory, "package.json"));
+        this.dependencies.set(manifest, { path: manifest, recursive: false });
+        try {
+          const content = await readFile(manifest, "utf8");
+          const metadata = typia.json.assertParse<IJavaScriptPackageJson>(
+            content.replace(/^\uFEFF/u, ""),
+          );
+          if (metadata.type === undefined || metadata.type === "commonjs")
+            return "commonjs";
+          if (metadata.type === "module") return "esm";
+          this.problem(
+            "javascript-package-type",
+            `Package metadata declares unsupported JavaScript module type '${metadata.type}'.`,
+            "Use 'module' or 'commonjs' for the package.json type field.",
+            manifest,
+          );
+          return "commonjs";
+        } catch (cause) {
+          if (this.absent(cause)) {
+            const parent = path.dirname(directory);
+            return parent === directory
+              ? "commonjs"
+              : this.packages.get(SourcePath.slash(parent));
+          }
+          this.problem(
+            "javascript-package-json",
+            `Could not read JavaScript module metadata: ${this.message(cause)}`,
+            "Correct the nearest package.json before evaluating JavaScript coverage.",
+            manifest,
+          );
+          return "commonjs";
+        }
+      },
+    );
+  }
 
+  /** Resolves selected aliases and reports conflicting or unreadable package scopes. */
   public async resolve(
     sources: IEvidenceSourceFile[],
   ): Promise<IEcmaScriptModuleResolution> {
@@ -48,56 +86,27 @@ export class EcmaScriptModuleResolver {
     };
   }
 
+  /** Package boundaries consulted by this analysis. */
+  private readonly dependencies = new Map<string, IEvidenceSourceDependency>();
+
+  /** Failures that make module selection incomplete. */
+  private readonly diagnostics: IEvidenceDiagnostic[] = [];
+
+  /** Uses explicit extensions first and memoized package scopes for ordinary JS. */
   private async mode(file: string): Promise<EcmaScriptModuleMode> {
     const extension = path.extname(file).toLowerCase();
     if (extension === ".mjs") return "esm";
     if (extension === ".cjs") return "commonjs";
-    return this.packageMode(path.dirname(path.resolve(file)));
+    return this.packages.get(
+      SourcePath.slash(path.dirname(path.resolve(file))),
+    );
   }
 
-  private packageMode(directory: string): Promise<EcmaScriptModuleMode> {
-    const key = SourcePath.slash(path.resolve(directory));
-    const cached = this.packages.get(key);
-    if (cached !== undefined) return cached;
-    const pending = this.readPackageMode(key);
-    this.packages.set(key, pending);
-    return pending;
-  }
-
-  private async readPackageMode(
-    directory: string,
-  ): Promise<EcmaScriptModuleMode> {
-    const manifest = SourcePath.slash(path.join(directory, "package.json"));
-    this.dependencies.set(manifest, { path: manifest, recursive: false });
-    try {
-      const content = await readFile(manifest, "utf8");
-      const metadata = typia.json.assertParse<IJavaScriptPackageJson>(
-        content.replace(/^\uFEFF/u, ""),
-      );
-      if (metadata.type === undefined || metadata.type === "commonjs")
-        return "commonjs";
-      if (metadata.type === "module") return "esm";
-      this.problem(
-        "javascript-package-type",
-        `Package metadata declares unsupported JavaScript module type '${metadata.type}'.`,
-        "Use 'module' or 'commonjs' for the package.json type field.",
-        manifest,
-      );
-      return "commonjs";
-    } catch (cause) {
-      if (this.absent(cause)) {
-        const parent = path.dirname(directory);
-        return parent === directory ? "commonjs" : this.packageMode(parent);
-      }
-      this.problem(
-        "javascript-package-json",
-        `Could not read JavaScript module metadata: ${this.message(cause)}`,
-        "Correct the nearest package.json before evaluating JavaScript coverage.",
-        manifest,
-      );
-      return "commonjs";
-    }
-  }
+  /** Memoizes package metadata once per directory in this analysis. */
+  private readonly packages: VariadicSingleton<
+    Promise<EcmaScriptModuleMode>,
+    [string]
+  >;
 
   private absent(cause: unknown): boolean {
     return cause instanceof Error && "code" in cause && cause.code === "ENOENT";

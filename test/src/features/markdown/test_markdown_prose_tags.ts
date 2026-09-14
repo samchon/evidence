@@ -1,8 +1,8 @@
+import { EvidenceMarkdownAdapter } from "@wrtnlabs/evidence";
+import type { IEvidenceDiagnostic } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceMarkdownAdapter } from "../../../../packages/evidence/src/adapters/markdown/EvidenceMarkdownAdapter";
-import type { IEvidenceDiagnostic } from "../../../../packages/evidence/src/structures/IEvidenceDiagnostic";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Reports tag lines rendered as prose and ignores mentions inside prose or code examples. */

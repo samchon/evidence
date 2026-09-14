@@ -1,8 +1,8 @@
+import { EvidenceQuery } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidenceQuery } from "../../../../packages/evidence/src/graph/EvidenceQuery";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestQueryAnalysis } from "../../internal/TestQueryAnalysis";
 

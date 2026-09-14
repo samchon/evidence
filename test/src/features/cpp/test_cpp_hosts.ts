@@ -1,8 +1,7 @@
+import { EvidenceCppAdapter, EvidenceInventory } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceCppAdapter } from "../../../../packages/evidence/src/adapters/cpp/EvidenceCppAdapter";
-import { EvidenceInventory } from "../../../../packages/evidence/src/graph/EvidenceInventory";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Attaches C++ Doxygen and reports annotations in unsupported carriers. */

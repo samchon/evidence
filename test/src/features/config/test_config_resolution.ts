@@ -1,7 +1,7 @@
+import type { IEvidenceConfig } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
 import { createEvidenceConfigPlan } from "../../../../packages/evidence/src/internal/createEvidenceConfigPlan";
-import type { IEvidenceConfig } from "../../../../packages/evidence/src/structures/IEvidenceConfig";
 
 /** Resolves selector and severity defaults before filtering inactive populations. */
 export function test_config_resolution(): void {

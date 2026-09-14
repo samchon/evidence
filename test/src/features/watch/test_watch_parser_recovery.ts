@@ -1,10 +1,10 @@
+import { EvidenceWatcher } from "@wrtnlabs/evidence";
+import type { EvidenceWatchCycle } from "@wrtnlabs/evidence";
 import { TestParserAssets } from "../../internal/TestParserAssets";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { EvidenceWatcher } from "../../../../packages/evidence/src/commands/EvidenceWatcher";
 import { TreeSitterAssets } from "../../../../packages/evidence/src/internal/TreeSitterAssets";
 import { TreeSitterAssetScope } from "../../../../packages/evidence/src/internal/TreeSitterAssetScope";
-import type { EvidenceWatchCycle } from "../../../../packages/evidence/src/typings/EvidenceWatchCycle";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 

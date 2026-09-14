@@ -1,6 +1,6 @@
 # AGENTS.md
 
-`@samchon/evidence` is a standalone Evidence Graph checker being built in TypeScript with upstream Tree-sitter WASM. The pnpm workspace contains the published package in `packages/evidence` and its logic unit-test workspace in `test`.
+`@wrtnlabs/evidence` is a standalone Evidence Graph checker being built in TypeScript with upstream Tree-sitter WASM. The pnpm workspace contains the published package in `packages/evidence` and its logic unit-test workspace in `test`.
 
 ## Attitude
 

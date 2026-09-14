@@ -1,9 +1,10 @@
+import { EvidenceWatchReporter } from "@wrtnlabs/evidence";
+import type {
+  EvidenceWatchCycle,
+  IEvidenceWatchFailureCycle,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import typia from "typia";
-
-import { EvidenceWatchReporter } from "../../../../packages/evidence/src/reporters/EvidenceWatchReporter";
-import type { IEvidenceWatchFailureCycle } from "../../../../packages/evidence/src/structures/IEvidenceWatchFailureCycle";
-import type { EvidenceWatchCycle } from "../../../../packages/evidence/src/typings/EvidenceWatchCycle";
 
 /** Keeps operational failures persistent and machine output framed as one NDJSON record. */
 export function test_watch_reporter(): void {

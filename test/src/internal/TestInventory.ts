@@ -1,12 +1,14 @@
+import type {
+  EvidenceSymbol,
+  IEvidenceHost,
+  IEvidenceInventory,
+  IEvidenceSourceRange,
+  IEvidenceUnit,
+} from "@wrtnlabs/evidence";
 import { dedent } from "@typia/utils";
 import { createHash } from "node:crypto";
 
 import { SourceText } from "../../../packages/evidence/src/internal/SourceText";
-import type { IEvidenceHost } from "../../../packages/evidence/src/structures/IEvidenceHost";
-import type { IEvidenceInventory } from "../../../packages/evidence/src/structures/IEvidenceInventory";
-import type { IEvidenceSourceRange } from "../../../packages/evidence/src/structures/IEvidenceSourceRange";
-import type { IEvidenceUnit } from "../../../packages/evidence/src/structures/IEvidenceUnit";
-import type { EvidenceSymbol } from "../../../packages/evidence/src/typings/EvidenceSymbol";
 
 /** Explicit adapter records for testing identity and ownership independently of language extraction. */
 export namespace TestInventory {

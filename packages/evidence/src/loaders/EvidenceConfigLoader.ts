@@ -1,19 +1,20 @@
-import { realpath, stat } from "node:fs/promises";
-import { extname, resolve } from "node:path";
+import { readFile, realpath, stat } from "node:fs/promises";
+import { resolve } from "node:path";
 import typia from "typia";
 import type { TypeGuardError } from "typia";
 
 import { createEvidenceConfigPlan } from "../internal/createEvidenceConfigPlan";
+import { EvidenceConfigFormat } from "../internal/EvidenceConfigFormat";
 import { EvidenceArtifactTypes } from "../internal/EvidenceArtifactTypes";
 import { evaluateTypeScriptConfig } from "../internal/evaluateTypeScriptConfig";
 import { validateEvidenceConfig } from "../internal/validateEvidenceConfig";
 import type { IEvidenceConfig } from "../structures/IEvidenceConfig";
 import type { IEvidenceConfigPlan } from "../structures/IEvidenceConfigPlan";
 
-/** Loads a TypeScript configuration through the consumer's ttsx. */
+/** Loads JSON directly or evaluates TypeScript through the consumer's ttsx. */
 export namespace EvidenceConfigLoader {
   /**
-   * Loads a TS default export through the consumer's ttsx, then validates its data.
+   * Loads JSON or a TS default export, then validates every declaration.
    * Evaluator output goes to stderr.
    *
    * @param file Configuration path, relative to the current working directory.
@@ -43,11 +44,9 @@ export namespace EvidenceConfigLoader {
 }
 
 async function resolveConfigFile(file: string): Promise<string> {
+  EvidenceConfigFormat.get(file);
   const filename = await realpath(resolve(file));
-  if (![".ts", ".cts", ".mts"].includes(extname(filename)))
-    throw new Error(
-      `Unsupported evidence configuration extension: ${filename}`,
-    );
+  EvidenceConfigFormat.get(filename);
   if (!(await stat(filename)).isFile())
     throw new Error(`Evidence configuration must be a file: ${filename}`);
   return filename;
@@ -56,7 +55,10 @@ async function resolveConfigFile(file: string): Promise<string> {
 async function evaluateResolvedConfig(
   filename: string,
 ): Promise<IEvidenceConfig> {
-  const value = await evaluateTypeScriptConfig(filename);
+  const value: unknown =
+    EvidenceConfigFormat.get(filename) === "json"
+      ? JSON.parse((await readFile(filename, "utf8")).replace(/^\uFEFF/u, ""))
+      : await evaluateTypeScriptConfig(filename);
   validateArtifactTypes(value);
   return typia.assert<IEvidenceConfig>(value, configurationShapeError);
 }

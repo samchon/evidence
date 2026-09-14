@@ -1,10 +1,10 @@
+import { EvidenceChecker } from "@wrtnlabs/evidence";
+import type { IEvidenceConfigPlan } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidenceChecker } from "../../../../packages/evidence/src/EvidenceChecker";
-import type { IEvidenceConfigPlan } from "../../../../packages/evidence/src/structures/IEvidenceConfigPlan";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
 /** Rejects unowned target families and exclusions outside configured carriers. */

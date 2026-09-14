@@ -1,5 +1,6 @@
 import { DynamicExecutor } from "@nestia/e2e";
 import { join } from "node:path";
+import { parseArgs } from "node:util";
 
 import { TestParserAssets } from "./internal/TestParserAssets";
 
@@ -10,7 +11,12 @@ async function main(): Promise<void> {
 
 /** Discovers tests within an isolated parser acquisition scope. */
 async function run(): Promise<void> {
-  const filters = process.argv.slice(2);
+  const { values, positionals } = parseArgs({
+    args: process.argv.slice(2),
+    options: { include: { type: "string", multiple: true } },
+    allowPositionals: true,
+  });
+  const filters = [...(values.include ?? []), ...positionals];
   const report = await DynamicExecutor.validate({
     prefix: "test_",
     location: join(__dirname, "features"),

@@ -1,5 +1,5 @@
-import { mkdir, rm, writeFile } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { basename, dirname, join, resolve } from "node:path";
 
 /** Creates and removes disposable file trees for logic tests. */
 export namespace TestFileSystem {
@@ -33,9 +33,9 @@ export namespace TestFileSystem {
     records: Record<string, string>,
     closure: (directory: string) => T | Promise<T>,
   ): Promise<T> {
-    const directory = resolve(location);
-    await mkdir(dirname(directory), { recursive: true });
-    await mkdir(directory);
+    const root = resolve(__dirname, "../../.tmp/fixtures");
+    await mkdir(root, { recursive: true });
+    const directory = await mkdtemp(join(root, basename(location) + "-"));
 
     try {
       await save(directory, records);

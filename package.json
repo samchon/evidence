@@ -1,12 +1,13 @@
 {
-  "name": "@samchon/evidence-workspace",
+  "name": "@wrtnlabs/evidence-workspace",
   "version": "0.1.0",
   "private": true,
   "description": "Standalone cross-language Evidence Graph workspace.",
   "packageManager": "pnpm@11.17.0",
   "scripts": {
+    "start": "pnpm --filter @wrtnlabs/evidence-test start",
     "build": "pnpm --filter=./packages/* -r run build",
-    "test": "pnpm --filter @samchon/evidence-test start",
+    "test": "pnpm --filter @wrtnlabs/evidence-test start",
     "format": "prettier --write .",
     "check:format": "prettier --check .",
     "package:latest": "pnpm --filter=./packages/* -r publish --tag latest --access public",
@@ -20,8 +21,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/samchon/evidence.git"
+    "url": "git+https://github.com/wrtnlabs/evidence.git"
   },
-  "author": "Jeongho Nam",
+  "author": "Wrtn Technologies",
   "license": "MIT"
 }

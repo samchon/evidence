@@ -1,10 +1,14 @@
+import {
+  EvidenceTargetResolver,
+  EvidenceTypeScriptAdapter,
+} from "@wrtnlabs/evidence";
+import type {
+  IEvidenceHost,
+  IEvidenceTargetStatement,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceTargetResolver } from "../../../../packages/evidence/src/targets/EvidenceTargetResolver";
-import { EvidenceTypeScriptAdapter } from "../../../../packages/evidence/src/adapters/typescript/EvidenceTypeScriptAdapter";
-import type { IEvidenceHost } from "../../../../packages/evidence/src/structures/IEvidenceHost";
-import type { IEvidenceTargetStatement } from "../../../../packages/evidence/src/structures/IEvidenceTargetStatement";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Resolves exact public files, structural ancestors, aliases, and literal members. */

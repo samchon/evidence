@@ -1,8 +1,10 @@
+import {
+  EvidenceLanguageRegistry,
+  EvidencePythonAdapter,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidencePythonAdapter } from "../../../../packages/evidence/src/adapters/python/EvidencePythonAdapter";
-import { EvidenceLanguageRegistry } from "../../../../packages/evidence/src/parsers/EvidenceLanguageRegistry";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Classifies Python declarations and keeps class and instance ownership distinct. */

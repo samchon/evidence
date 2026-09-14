@@ -1,7 +1,7 @@
+import type { IEvidenceConfig } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
 import { validateEvidenceConfig } from "../../../../packages/evidence/src/internal/validateEvidenceConfig";
-import type { IEvidenceConfig } from "../../../../packages/evidence/src/structures/IEvidenceConfig";
 
 /** Rejects vacuous and unsupported populations even when their severity is inactive. */
 export function test_config_constraints(): void {
