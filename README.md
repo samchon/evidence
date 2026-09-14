@@ -1,4 +1,4 @@
-﻿# @wrtnlabs/evidence
+# @wrtnlabs/evidence
 
 An Evidence Graph connects specifications, engineering principles, public code contracts, and tests through explicit citations. `@wrtnlabs/evidence` checks that every selected requirement has evidence or a permitted exclusion, and that every citation names a valid target and explains its relationship.
 
