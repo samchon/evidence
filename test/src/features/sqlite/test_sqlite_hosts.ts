@@ -110,4 +110,27 @@ export async function test_sqlite_hosts(): Promise<void> {
       ["unsupported-annotation-host"],
     );
   }
+
+  const adjacent = await adapter.analyze(
+    TestSourceSnapshot.create(
+      "adjacent.sql",
+      dedent`
+    CREATE TABLE Fresh (
+      id INTEGER, -- ordinary trailing prose
+      -- @evidence docs.md#next Documents the next column.
+      documented TEXT
+    );
+  `,
+    ),
+  );
+  TestValidator.equals(
+    "trailing prose cannot swallow leading documentation",
+    adjacent.declarations.map((declaration) => declaration.target),
+    ["docs.md#next"],
+  );
+  TestValidator.equals(
+    "leading documentation remains valid",
+    adjacent.diagnostics,
+    [],
+  );
 }

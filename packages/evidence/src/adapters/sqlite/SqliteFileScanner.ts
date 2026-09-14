@@ -238,6 +238,8 @@ export class SqliteFileScanner {
       if (
         group !== undefined &&
         previous !== undefined &&
+        this.leading(previous) &&
+        this.leading(comment) &&
         previous.text.startsWith("--") &&
         comment.text.startsWith("--") &&
         this.adjacent(previous.endIndex, comment.startIndex)
@@ -249,16 +251,11 @@ export class SqliteFileScanner {
       const first = group[0];
       const last = group.at(-1);
       if (first === undefined || last === undefined) return [];
-      const prefix = this.source.content.slice(
-        this.source.content.lastIndexOf("\n", first.startIndex - 1) + 1,
-        first.startIndex,
-      );
-      const attached =
-        prefix.trim() === ""
-          ? this.declarations.filter((declaration) =>
-              this.adjacent(last.endIndex, declaration.site.range.start.offset),
-            )
-          : [];
+      const attached = this.leading(first)
+        ? this.declarations.filter((declaration) =>
+            this.adjacent(last.endIndex, declaration.site.range.start.offset),
+          )
+        : [];
       return [
         {
           id: `${this.source.id}:documentation:${first.startIndex}`,
@@ -281,6 +278,18 @@ export class SqliteFileScanner {
         },
       ];
     });
+  }
+
+  /** A trailing comment must never absorb the next declaration's leading documentation. */
+  private leading(node: Node): boolean {
+    return (
+      this.source.content
+        .slice(
+          this.source.content.lastIndexOf("\n", node.startIndex - 1) + 1,
+          node.startIndex,
+        )
+        .trim() === ""
+    );
   }
 
   /** Blank lines or intervening syntax detach a leading documentation run. */

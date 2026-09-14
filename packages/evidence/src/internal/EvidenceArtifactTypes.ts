@@ -22,7 +22,4 @@ const SUPPORTED: EvidenceArtifactType[] = [
   ]
     .filter((language) => language.adapter !== undefined)
     .map((language) => language.type),
-  ...EvidenceLanguageRegistry.databases()
-    .filter((language) => language.adapter !== undefined)
-    .map((language) => language.type),
 ];
