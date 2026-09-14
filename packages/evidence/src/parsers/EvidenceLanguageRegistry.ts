@@ -45,6 +45,28 @@ export namespace EvidenceLanguageRegistry {
 
   const LANGUAGES: IEvidenceLanguage[] = [
     {
+      type: "zig",
+      name: "Zig",
+      grammars: [{ id: "zig", extensions: [".zig"], filenames: [] }],
+      adapter: {
+        entry: "EvidenceZigAdapter",
+        symbols: ["type", "function", "property"],
+        publicSurface:
+          "Explicit pub declarations and fields of public containers recognized by tree-sitter-zig v1.1.2 (Zig 0.14 syntax).",
+        addressing:
+          "File-qualified lexical container paths; bounded same-container aliases share canonical source identities.",
+        comments: ["attached /// documentation"],
+        unsupported: [
+          "namespace imports and usingnamespace",
+          "namespace comptime execution",
+          "type-producing and dependent generic return types",
+          "inferred conditional and call-produced public surfaces",
+          "anonymous aggregate values and anonymous field types",
+          "build and generated-source execution",
+        ],
+      },
+    },
+    {
       type: "kotlin",
       name: "Kotlin",
       grammars: [{ id: "kotlin", extensions: [".kt"], filenames: [] }],
@@ -453,28 +475,6 @@ export namespace EvidenceLanguageRegistry {
         "selector spelling, Objective-C++ overlap, and linker visibility",
       ],
       next: "Certify explicit header interfaces and selector addresses first, with implementations, preprocessing, and Objective-C++ configured as separate boundaries.",
-    },
-    {
-      id: "zig",
-      name: "Zig",
-      kind: "programming-language",
-      dialects: ["Zig source"],
-      grammarRepository:
-        "https://github.com/tree-sitter-grammars/tree-sitter-zig",
-      grammarLicense: "MIT",
-      wasm: "release-asset",
-      wasmNotes: "The v1.1.2 release publishes tree-sitter-zig.wasm.",
-      languageReference: "https://ziglang.org/documentation/master/#pub",
-      visibility:
-        "pub marks declarations available outside their container; unmarked declarations remain container-private",
-      declarations:
-        "containers, functions, variables, constants, fields, enum values, tests, comptime declarations, and usingnamespace imports",
-      blockers: [
-        "comptime can generate or select declarations",
-        "usingnamespace changes the exported namespace",
-        "build options and generic instantiation affect reachable APIs",
-      ],
-      next: "Certify explicit pub declarations and container ownership while reporting usingnamespace and declaration-producing comptime blocks as incomplete.",
     },
     {
       id: "matlab",

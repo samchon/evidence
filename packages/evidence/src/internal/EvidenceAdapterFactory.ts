@@ -12,12 +12,14 @@ import { EvidenceRubyAdapter } from "../adapters/ruby/EvidenceRubyAdapter";
 import { EvidenceRustAdapter } from "../adapters/rust/EvidenceRustAdapter";
 import { EvidenceSwaggerAdapter } from "../adapters/swagger/EvidenceSwaggerAdapter";
 import { EvidenceTypeScriptAdapter } from "../adapters/typescript/EvidenceTypeScriptAdapter";
+import { EvidenceZigAdapter } from "../adapters/zig/EvidenceZigAdapter";
 import type { IEvidenceAdapter } from "../structures/IEvidenceAdapter";
 import type { EvidenceArtifactType } from "../typings/EvidenceArtifactType";
 
 /** Creates only adapters whose complete Evidence behavior is certified. */
 export namespace EvidenceAdapterFactory {
   export function create(type: EvidenceArtifactType): IEvidenceAdapter {
+    if (type === "zig") return new EvidenceZigAdapter();
     if (type === "c") return new EvidenceCAdapter();
     if (type === "cpp") return new EvidenceCppAdapter();
     if (type === "csharp") return new EvidenceCSharpAdapter();

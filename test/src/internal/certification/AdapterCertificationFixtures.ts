@@ -11,6 +11,7 @@ import {
   EvidenceRubyAdapter,
   EvidenceRustAdapter,
   EvidenceTypeScriptAdapter,
+  EvidenceZigAdapter,
 } from "@wrtnlabs/evidence";
 import type {
   EvidenceProgrammingSymbol,
@@ -34,6 +35,7 @@ export namespace AdapterCertificationFixtures {
       rust(),
       java(),
       kotlin(),
+      zig(),
       csharp(),
       c(),
       cpp(),
@@ -739,6 +741,91 @@ export namespace AdapterCertificationFixtures {
         key("function", ["Contract", "run"]),
         "fun run(): Int { return 1 }",
         "fun run(): Int { return 2 }",
+      ),
+    };
+  }
+
+  function zig(): IAdapterCertification {
+    const file = "src/certification.zig";
+    return {
+      type: "zig",
+      adapter: new EvidenceZigAdapter(),
+      sources: [
+        {
+          file,
+          content: dedent`
+        /// ?? ??
+        /// @evidence docs/requirements.md#type Implements the certified type.
+        pub const Contract = struct {
+          /// ?? ??
+          /// @evidence docs/requirements.md#function Implements the certified function.
+          pub fn run() i32 { return 1; }
+          /// ? ??
+          /// @evidence docs/requirements.md#property Implements the certified property.
+          value: i32,
+          const hidden = 0;
+          /// @internal Retired public contract.
+          pub const legacy = 1;
+        };
+      `,
+        },
+      ],
+      units: [
+        unit(file, "type", ["Contract"]),
+        unit(file, "function", ["Contract", "run"], ["Contract"]),
+        unit(file, "property", ["Contract", "value"], ["Contract"]),
+        unit(
+          file,
+          "property",
+          ["Contract", "legacy"],
+          ["Contract"],
+          [],
+          ["internal"],
+        ),
+      ],
+      hosts: hosts(
+        key("type", ["Contract"]),
+        key("function", ["Contract", "run"]),
+        key("property", ["Contract", "value"]),
+      ),
+      requirements: requirements(
+        key("type", ["Contract"]),
+        key("function", ["Contract", "run"]),
+        key("property", ["Contract", "value"]),
+      ),
+      excludedUnits: [key("property", ["Contract", "hidden"])],
+      annotationRanges: 4,
+      incomplete: {
+        sources: [
+          {
+            file: "src/incomplete.zig",
+            content: 'pub usingnamespace @import("other.zig");',
+          },
+        ],
+        diagnosticCodes: ["zig-usingnamespace"],
+      },
+      malformed: {
+        sources: [{ file: "src/malformed.zig", content: "pub fn broken( {" }],
+        diagnosticCodes: ["zig-parse-incomplete"],
+      },
+      falsePositive: {
+        source: {
+          file: "src/false-positive.zig",
+          content: dedent`
+          /// @evidence docs/requirements.md#attached Attached documentation.
+          pub fn run() []const u8 {
+            // @evidence docs/requirements.md#comment Ordinary comments are inert.
+            return "@evidence docs/requirements.md#literal Literal text is inert.";
+          }
+        `,
+        },
+        attachedTarget: "docs/requirements.md#attached",
+        unsupportedAnnotations: 2,
+      },
+      mutation: mutation(
+        key("function", ["Contract", "run"]),
+        "pub fn run() i32 { return 1; }",
+        "pub fn run() i32 { return 2; }",
       ),
     };
   }

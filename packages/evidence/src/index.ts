@@ -46,3 +46,5 @@ export { EvidenceTargetResolver } from "./targets/EvidenceTargetResolver";
 
 export type * from "./structures";
 export type * from "./typings";
+
+export * from "./adapters/zig/EvidenceZigAdapter";
