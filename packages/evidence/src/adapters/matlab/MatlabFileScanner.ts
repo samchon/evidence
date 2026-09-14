@@ -137,6 +137,12 @@ export class MatlabFileScanner {
         node.childForFieldName("name")?.text ??
         node.namedChildren[0]?.text ??
         "";
+      if (node.type === "command" && name === "endfunction")
+        this.problem(
+          "octave",
+          "Octave endfunction is outside configured MATLAB syntax.",
+          node,
+        );
       if (
         [
           "addprop",
