@@ -14,7 +14,7 @@ export async function test_postgresql_units(): Promise<void> {
       "schema.sql",
       dedent`
       CREATE SCHEMA app;
-      CREATE TABLE app.Account (ID integer PRIMARY KEY, region integer NOT NULL);
+      CREATE TABLE app.Account (ID integer CHECK (ID > 0), region integer NOT NULL, PRIMARY KEY (ID, region), UNIQUE (ID, region));
       CREATE TABLE app."Order.Item" (
         "Item.ID" integer,
         account_id integer,
@@ -42,7 +42,9 @@ export async function test_postgresql_units(): Promise<void> {
   );
   TestValidator.equals(
     "exact schema denominator",
-    inventory.units.map((unit) => [unit.symbol, unit.identity]),
+    inventory.units
+      .map((unit) => [unit.symbol, unit.identity])
+      .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b), "en")),
     [
       ["model", ["app", "account"]],
       ["column", ["app", "account", "id"]],
@@ -61,7 +63,7 @@ export async function test_postgresql_units(): Promise<void> {
       ],
       ["column", ["app", "account", "label"]],
       ["relation", ["app", "account", "constraint region_fk"]],
-    ],
+    ].sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b), "en")),
   );
   for (const unit of inventory.units.filter((unit) => unit.symbol !== "model"))
     TestValidator.equals(

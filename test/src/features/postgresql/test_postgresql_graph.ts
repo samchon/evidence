@@ -1,4 +1,5 @@
 import { EvidenceChecker } from "@wrtnlabs/evidence";
+import type { EvidenceDatabaseSymbol } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
@@ -32,8 +33,14 @@ export async function test_postgresql_graph(): Promise<void> {
             direction === "claim"
               ? `export default { claims: [{ type: "postgresql", files: ["claim.sql"], symbol: "${symbol}", reference: { type: "typescript", files: ["reference.ts"], symbol: "function" } }] };`
               : `export default { claims: [{ type: "typescript", files: ["claim.ts"], symbol: "function", reference: { type: "postgresql", files: ["reference.sql"], symbol: "${symbol}" } }] };`;
+          const filename = direction === "claim" ? "claim.sql" : "claim.ts";
+          const original =
+            direction === "claim"
+              ? claimSource(symbol)
+              : "/** @evidence ./reference.sql#app.other Covers the table subtree. */\nexport function claim() {}\n";
           await TestFileSystem.save(directory, {
             "evidence.config.ts": configuration,
+            [filename]: original,
           });
           const path = join(directory, "evidence.config.ts");
           const complete = await EvidenceChecker.check(path);
@@ -42,19 +49,6 @@ export async function test_postgresql_graph(): Promise<void> {
             complete.success,
             true,
           );
-          const filename = direction === "claim" ? "claim.sql" : "claim.ts";
-          const original =
-            direction === "claim"
-              ? dedent`
-          -- @evidence ./reference.ts#contract Covers the model.
-          CREATE TABLE app.Item (
-            -- @evidence ./reference.ts#contract Covers the column.
-            id integer,
-            -- @evidence ./reference.ts#contract Covers the relation.
-            FOREIGN KEY (id) REFERENCES app.Other (id)
-          );
-        `
-              : "/** @evidence ./reference.sql#app.other Covers the table subtree. */\nexport function claim() {}\n";
           for (const marker of ["Ordinary prose", "@evidenceReview"]) {
             await TestFileSystem.save(directory, {
               [filename]: original.replaceAll("@evidence", marker),
@@ -70,4 +64,17 @@ export async function test_postgresql_graph(): Promise<void> {
         }
     },
   );
+}
+
+/** Places each acknowledgement on a host selected by that claim's database selector. */
+function claimSource(symbol: EvidenceDatabaseSymbol): string {
+  return dedent`
+    -- ${symbol === "model" ? "@evidence ./reference.ts#contract Covers the model." : "Table declaration."}
+    CREATE TABLE app.Item (
+      -- ${symbol === "column" ? "@evidence ./reference.ts#contract Covers the column." : "Column declaration."}
+      id integer,
+      -- ${symbol === "relation" ? "@evidence ./reference.ts#contract Covers the relation." : "Relation declaration."}
+      FOREIGN KEY (id) REFERENCES app.Other (id)
+    );
+  `;
 }

@@ -118,7 +118,8 @@ export async function test_postgresql_certification(): Promise<void> {
     if (mutation === "unit") mutated.units.pop();
     else if (mutation === "kind") {
       const unit = mutated.units[0];
-      if (unit !== undefined) unit.symbol = "column";
+      if (unit !== undefined)
+        unit.symbol = unit.symbol === "column" ? "relation" : "column";
     } else if (mutation === "host") {
       const host = mutated.hosts[0];
       if (host !== undefined) host.attachment = "unsupported";

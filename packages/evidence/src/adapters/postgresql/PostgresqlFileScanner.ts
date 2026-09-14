@@ -118,6 +118,13 @@ export class PostgresqlFileScanner {
   /** Keeps ordinary columns distinct from separately selectable foreign-key relations. */
   private column(node: Node, table: ISqlDeclaration): void {
     const nameNode = node.childForFieldName("name");
+    if (nameNode !== null && /^like$/iu.test(nameNode.text)) {
+      this.problem(
+        node,
+        "LIKE-derived columns depend on another table schema and are unsupported.",
+      );
+      return;
+    }
     const name =
       nameNode === null
         ? undefined
