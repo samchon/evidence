@@ -7,6 +7,7 @@ import {
   EvidenceJavaAdapter,
   EvidenceJavaScriptAdapter,
   EvidenceKotlinAdapter,
+  EvidencePhpAdapter,
   EvidencePythonAdapter,
   EvidenceRubyAdapter,
   EvidenceRustAdapter,
@@ -34,6 +35,7 @@ export namespace AdapterCertificationFixtures {
       rust(),
       java(),
       kotlin(),
+      php(),
       csharp(),
       c(),
       cpp(),
@@ -528,6 +530,113 @@ export namespace AdapterCertificationFixtures {
         key("function", ["Contract", "run"]),
         "pub fn run(&self) -> i32 { 1 }",
         "pub fn run(&self) -> i32 { 2 }",
+      ),
+    };
+  }
+
+  function php(): IAdapterCertification {
+    const file = "src/Contract.php";
+    return {
+      type: "php",
+      adapter: new EvidencePhpAdapter(),
+      sources: [
+        {
+          file,
+          content: dedent`
+            <?php
+            /**
+             * 계약 한글
+             * @evidence docs/requirements.md#type Implements the certified type.
+             */
+            class Contract {
+                /**
+                 * 실행 한글
+                 * @evidence docs/requirements.md#function Implements the certified function.
+                 */
+                public function run() { return 1; }
+
+                /**
+                 * 값 한글
+                 * @evidence docs/requirements.md#property Implements the certified property.
+                 */
+                public int $value = 1;
+
+                private int $hidden = 0;
+
+                /** @internal Retired public contract. */
+                public const LEGACY = 1;
+            }
+          `,
+        },
+      ],
+      units: [
+        unit(file, "type", ["Contract"]),
+        unit(file, "function", ["Contract", "run"], ["Contract"]),
+        unit(file, "property", ["Contract", "$value"], ["Contract"]),
+        unit(
+          file,
+          "property",
+          ["Contract", "LEGACY"],
+          ["Contract"],
+          [],
+          ["internal"],
+        ),
+      ],
+      hosts: hosts(
+        key("type", ["Contract"]),
+        key("function", ["Contract", "run"]),
+        key("property", ["Contract", "$value"]),
+      ),
+      requirements: requirements(
+        key("type", ["Contract"]),
+        key("function", ["Contract", "run"]),
+        key("property", ["Contract", "$value"]),
+      ),
+      excludedUnits: [key("property", ["Contract", "$hidden"])],
+      annotationRanges: 4,
+      incomplete: {
+        sources: [
+          {
+            file: "src/first/Conflict.php",
+            content: "<?php class Conflict {}\n",
+          },
+          {
+            file: "src/second/Conflict.php",
+            content: "<?php class Conflict {}\n",
+          },
+        ],
+        diagnosticCodes: ["php-declaration-conflict"],
+      },
+      malformed: {
+        sources: [
+          {
+            file: "src/Malformed.php",
+            content: "<?php class Malformed { public void run( { }\n",
+          },
+        ],
+        diagnosticCodes: ["php-parse-incomplete"],
+      },
+      falsePositive: {
+        source: {
+          file: "src/FalsePositive.php",
+          content: dedent`
+            <?php
+            class FalsePositive {
+                /** @evidence docs/requirements.md#attached Attached documentation. */
+                public function run() {
+                    // @evidence docs/requirements.md#comment Ordinary comments are inert.
+                    return "@evidence docs/requirements.md#literal Literal text is inert.";
+                }
+            }
+          `,
+        },
+        attachedTarget: "docs/requirements.md#attached",
+        unsupportedAnnotations: 0,
+      },
+      mutation: mutation(
+        key("function", ["Contract", "run"]),
+        "public function run() { return 1; }",
+        "public function run() { return 2; }",
       ),
     };
   }
