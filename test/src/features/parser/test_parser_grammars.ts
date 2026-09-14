@@ -112,7 +112,7 @@ export async function test_parser_grammars(): Promise<void> {
   try {
     // Manifest parity prevents a newly shipped grammar from escaping this behavioral gate.
     TestValidator.equals(
-      "every packaged grammar has a real fixture",
+      "every registered grammar has a real fixture",
       (await parser.grammars()).map((grammar) => grammar.id),
       fixtures.map((fixture) => fixture.grammar),
     );

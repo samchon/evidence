@@ -4,7 +4,7 @@ import type { IEvidenceLanguageCandidate } from "../structures/IEvidenceLanguage
 import type { IEvidenceLanguageGrammar } from "../structures/IEvidenceLanguageGrammar";
 import type { EvidenceProgrammingType } from "../typings/EvidenceProgrammingType";
 
-/** Selects packaged syntax from the configured type and exact logical file name. */
+/** Selects pinned syntax from the configured type and exact logical file name. */
 export namespace EvidenceLanguageRegistry {
   /** Returns independent metadata; grammar availability does not imply an Evidence adapter. */
   export function list(): IEvidenceLanguage[] {
@@ -26,7 +26,7 @@ export namespace EvidenceLanguageRegistry {
       throw new EvidenceParserError(
         "unsupported-language",
         file,
-        `No packaged grammar for ${type}. Add its grammar and Evidence adapter before selecting it.`,
+        `No registered grammar for ${type}. Add its grammar and Evidence adapter before selecting it.`,
       );
     const basename = file.replaceAll("\\", "/").split("/").pop() ?? "";
     const grammar = language.grammars.find(

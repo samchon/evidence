@@ -9,6 +9,7 @@ catalogs:
   tree-sitter:
     web-tree-sitter: 0.27.0
   samchon:
+    tstl: ^3.0.0
     "@nestia/e2e": ^13.0.2
     typia: &typia ^14.0.6
     "@typia/interface": *typia

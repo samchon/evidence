@@ -19,6 +19,9 @@ catalogs:
     '@typia/utils':
       specifier: ^14.0.6
       version: 14.0.6
+    tstl:
+      specifier: ^3.0.0
+      version: 3.0.0
     typia:
       specifier: ^14.0.6
       version: 14.0.6
@@ -96,6 +99,9 @@ importers:
       '@typia/utils':
         specifier: catalog:samchon
         version: 14.0.6
+      tstl:
+        specifier: catalog:samchon
+        version: 3.0.0
       typia:
         specifier: catalog:samchon
         version: 14.0.6(ttsc@0.30.1)
@@ -449,6 +455,9 @@ packages:
     resolution: {integrity: sha512-wXR/dYpcqKmfWpEdZjiKJOwCNFndD0DMnrW/cYjVGttEkBfVgcLFHoNrlj47mjOVic9yyNu65alsgF4NQyTa2g==}
     engines: {node: '>=12.0.0'}
 
+  tstl@3.0.0:
+    resolution: {integrity: sha512-pR83y6/tbJx6jeGRqGJXk2t/eCUynaHEE6zsOLB0Zga8ej61LXtPfoeiROdhezpoCT15+1QMbqKB1Um5kasSKg==}
+
   ttsc@0.30.1:
     resolution: {integrity: sha512-z8OuL+3WZv7jgsgvt7eLnMSNtVjSGXFE2F4tZCTDIL5NXzR7mZKGpog6/6Re0pjsaZe4gxpj9T/y+e8JEswSdw==}
     engines: {node: '>=22.15.0'}
@@ -684,6 +693,8 @@ snapshots:
     dependencies:
       fdir: 6.5.0(picomatch@4.0.7)
       picomatch: 4.0.7
+
+  tstl@3.0.0: {}
 
   ttsc@0.30.1:
     dependencies:

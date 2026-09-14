@@ -1,15 +1,14 @@
 import { TestValidator } from "@nestia/e2e";
-import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import typia from "typia";
 
-import { EvidenceLanguageRegistry } from "../../../../packages/evidence/src/parsers/EvidenceLanguageRegistry";
 import { TreeSitterAssets } from "../../../../packages/evidence/src/internal/TreeSitterAssets";
+import { EvidenceLanguageRegistry } from "../../../../packages/evidence/src/parsers/EvidenceLanguageRegistry";
 import { AdapterCertificationFixtures } from "../../internal/certification/AdapterCertificationFixtures";
 import type { IPackageManifest } from "../../internal/certification/IPackageManifest";
 
-/** Verifies every certified adapter has intact grammar bytes included by the package allowlist. */
+/** Verifies certified adapters have pinned obtainable grammars while distribution excludes the asset directory. */
 export async function test_adapter_certification_distribution(): Promise<void> {
   const languages = EvidenceLanguageRegistry.list();
   const certifications = AdapterCertificationFixtures.all();
@@ -42,32 +41,16 @@ export async function test_adapter_certification_distribution(): Promise<void> {
   );
   for (const grammar of grammars) {
     const bytes = await assets.bytes(grammar);
-    const license = await readFile(
-      join(packageDirectory, "assets", grammar.license.file),
-    );
     TestValidator.equals(
       `${grammar.id} certified grammar size`,
       bytes.length,
       grammar.wasm.size,
     );
-    TestValidator.equals(
-      `${grammar.id} certified license size`,
-      license.length,
-      grammar.license.size,
-    );
-    TestValidator.equals(
-      `${grammar.id} certified license checksum`,
-      createHash("sha256").update(license).digest("hex"),
-      grammar.license.sha256,
-    );
   }
 
-  // The exact allowlist ships runtime output and parser assets without development trees.
+  // Download pins compile into lib; grammar payloads and repository fixtures are absent from distribution.
   TestValidator.equals("published package allowlist", manifest.files, [
     "lib",
-    "assets/**/*.wasm",
-    "assets/grammars.json",
-    "assets/**/LICENSE*",
     "README.md",
     "LICENSE",
   ]);

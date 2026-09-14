@@ -31,7 +31,7 @@ The [roadmap](https://github.com/samchon/evidence/issues/31) owns execution orde
 | `packages/evidence/src/structures` | Shared adapter contract, configuration, parser, source, and semantic inventory interfaces |
 | `packages/evidence/src/typings` | Language identifiers, symbol selectors, and diagnostic severity |
 | `packages/evidence/src/executable` | Small Node CLI bootstraps |
-| `packages/evidence/assets` | Pinned upstream grammar WASM, provenance manifest, and licenses |
+| `scripts/parser-grammars.json` | Pinned grammar download metadata compiled into the runtime catalog |
 | `test/src/index.ts` | DynamicExecutor unit-test entry point |
 | `test/src/features/<category>` | Exported logic unit-test functions |
 | `config/package.json` | Private workspace with dependencies for shared configuration |
@@ -48,7 +48,7 @@ Use `typia` for runtime type checks and `@typia/utils` for `dedent`. Keep both i
 
 Keep compiler dependencies in the workspaces that use them, including `config` for its typed lint configuration. The repository root only needs the formatter. Build scripts invoke `ttsc` with its default `tsconfig.json`; shared compiler settings do not declare plugins already discovered from package dependencies.
 
-The application and adapters are authored in TypeScript. `EvidenceParser` uses official `web-tree-sitter` and packaged upstream grammars. A language needs an adapter and certification as well as a grammar. Read [the domain skill](evidence/SKILL.md) for the completeness boundary and [the asset guide](../../../docs/development/parser-assets.md) before changing grammar pins or acquisition. Preserve upstream asset bytes through the repository's Git attributes; checksum verification includes the license files.
+The application and adapters are authored in TypeScript. `EvidenceParser` uses official `web-tree-sitter` and automatically downloaded, checksum-verified upstream grammars. A language needs an adapter and certification as well as a grammar. Read [the domain skill](evidence/SKILL.md) for the completeness boundary and the root README for acquisition and catalog maintenance. Keep language WASM out of the repository and package allowlist. Use constant `Singleton` and `VariadicSingleton` instances with initialization inside their callbacks; put exported namespace members before internal declarations.
 
 Adapters implement `IEvidenceAdapter` and return serializable inventories. `EvidenceInventory` reconciles identities, validates ownership, and projects independent populations. `EvidenceTagParser` consumes mapped documentation after the adapter establishes attachment. Follow the [adapter onboarding guide](../../../docs/development/adapter-onboarding.md) for certification and distribution gates and the [adapter inventory guide](../../../docs/development/adapter-inventories.md) for extraction and host records.
 

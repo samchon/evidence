@@ -9,20 +9,18 @@
   },
   "files": [
     "lib",
-    "assets/**/*.wasm",
-    "assets/grammars.json",
-    "assets/**/LICENSE*",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
     "build": "rimraf lib && ttsc && node ../../scripts/verify-evidence-build-output.js",
-    "prepack": "pnpm run build && node ../../scripts/prepare-parser-assets.js --check && node ../../scripts/copy-readme-and-license.js"
+    "prepack": "node ../../scripts/prepare-parser-catalog.js --check && pnpm run build && node ../../scripts/copy-readme-and-license.js"
   },
   "dependencies": {
     "@prisma/prisma-schema-wasm": "catalog:prisma",
     "@typia/interface": "catalog:samchon",
     "@typia/utils": "catalog:samchon",
+    "tstl": "catalog:samchon",
     "typia": "catalog:samchon",
     "web-tree-sitter": "catalog:tree-sitter",
     "yaml": "catalog:utils"

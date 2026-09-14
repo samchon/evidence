@@ -8,4 +8,7 @@ export interface IEvidenceWatchAttempt {
   cycle: EvidenceWatchCycle;
   dependencies: IEvidenceSourceDependency[];
   snapshot: WatchDependencySnapshot;
+
+  /** Whether parser preparation failed and should be retried independently of source edits. */
+  retryParser: boolean;
 }

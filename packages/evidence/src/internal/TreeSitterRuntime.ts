@@ -1,4 +1,5 @@
 import { readFile } from "node:fs/promises";
+import { hash, Singleton, VariadicSingleton } from "tstl";
 import { Language, Parser } from "web-tree-sitter";
 
 import { EvidenceParserError } from "../parsers/EvidenceParserError";
@@ -6,31 +7,17 @@ import type { IEvidenceGrammar } from "../structures/IEvidenceGrammar";
 
 /** Shares immutable grammar modules; the binding has no Language disposal API. */
 export namespace TreeSitterRuntime {
-  let initialization: Promise<void> | undefined;
-  const languages = new Map<string, Promise<Language>>();
-
+  /** Awaits the shared engine before obtaining the grammar's immutable language module. */
   export async function language(
     grammar: IEvidenceGrammar,
     bytes: Uint8Array,
   ): Promise<Language> {
-    initialization ??= initialize();
-    await initialization;
-
-    let pending = languages.get(grammar.wasm.sha256);
-    if (pending === undefined) {
-      pending = load(grammar, bytes);
-      languages.set(grammar.wasm.sha256, pending);
-    }
-    try {
-      return await pending;
-    } catch (cause) {
-      if (languages.get(grammar.wasm.sha256) === pending)
-        languages.delete(grammar.wasm.sha256);
-      throw cause;
-    }
+    await initialization.get();
+    return languages.get(grammar, bytes);
   }
 
-  async function initialize(): Promise<void> {
+  /** Initializes the installed engine exactly once on first use. */
+  const initialization = new Singleton(async () => {
     try {
       // Supplying local bytes avoids cwd-sensitive URLs and any runtime fetch fallback.
       const wasmBinary = await readFile(
@@ -46,22 +33,24 @@ export namespace TreeSitterRuntime {
         { cause },
       );
     }
-  }
+  });
 
-  async function load(
-    grammar: IEvidenceGrammar,
-    bytes: Uint8Array,
-  ): Promise<Language> {
-    try {
-      return await Language.load(bytes);
-    } catch (cause) {
-      throw new EvidenceParserError(
-        "grammar-incompatible",
-        grammar.wasm.file,
-        `Cannot link grammar ${grammar.id} (${grammar.version}) with web-tree-sitter. Supply a compatible pinned grammar/runtime pair.`,
-        undefined,
-        { cause },
-      );
-    }
-  }
+  /** Shares one language load per immutable digest, independent of input object identity. */
+  const languages = new VariadicSingleton(
+    async (grammar: IEvidenceGrammar, bytes: Uint8Array): Promise<Language> => {
+      try {
+        return await Language.load(bytes);
+      } catch (cause) {
+        throw new EvidenceParserError(
+          "grammar-incompatible",
+          grammar.wasm.file,
+          `Cannot link grammar ${grammar.id} (${grammar.version}) with web-tree-sitter. Supply a compatible pinned grammar/runtime pair.`,
+          undefined,
+          { cause },
+        );
+      }
+    },
+    ([grammar]) => hash(grammar.wasm.sha256),
+    ([left], [right]) => left.wasm.sha256 === right.wasm.sha256,
+  );
 }

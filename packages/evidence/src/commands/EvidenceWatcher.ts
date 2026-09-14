@@ -2,6 +2,8 @@ import path from "node:path";
 import typia from "typia";
 
 import { ConfigDependencyScanner } from "../internal/ConfigDependencyScanner";
+import { TreeSitterAssetScope } from "../internal/TreeSitterAssetScope";
+import { EvidenceParserError } from "../parsers/EvidenceParserError";
 import type { IConfigDependencyScan } from "../internal/IConfigDependencyScan";
 import type { IEvidenceWatchAttempt } from "../internal/IEvidenceWatchAttempt";
 import { SourcePath } from "../internal/SourcePath";
@@ -20,12 +22,19 @@ export class EvidenceWatcher {
   private readonly configFile: string;
   private readonly pollIntervalMilliseconds: number;
   private readonly debounceMilliseconds: number;
+
+  /** Retry interval for unavailable parser assets, independent of watched filesystem state. */
+  private readonly parserRetryMilliseconds: number;
+
+  /** Cancels only this watcher's parser acquisitions when it closes. */
+  private readonly cancellation = new AbortController();
   private active: IEvidenceSourceDependency[];
   private started = false;
   private closed = false;
   private wake: (() => void) | undefined;
   private cycles = 0;
 
+  /** Selects the configuration and validates polling, settling, and parser-retry controls. */
   public constructor(
     configFile: string = "evidence.config.ts",
     options: IEvidenceWatchOptions = {},
@@ -34,6 +43,7 @@ export class EvidenceWatcher {
     this.configFile = path.resolve(configFile);
     this.pollIntervalMilliseconds = checked.pollIntervalMilliseconds ?? 250;
     this.debounceMilliseconds = checked.debounceMilliseconds ?? 100;
+    this.parserRetryMilliseconds = checked.parserRetryMilliseconds ?? 5_000;
     this.active = configurationFallback(this.configFile);
   }
 
@@ -51,27 +61,33 @@ export class EvidenceWatcher {
     this.started = true;
 
     try {
-      let attempt = await this.evaluateStable();
+      let attempt = await this.evaluate();
       if (this.isClosed()) return;
       this.active = attempt.dependencies;
       this.cycles = attempt.cycle.cycle;
       await publish(attempt.cycle);
       let baseline = attempt.snapshot;
+      let retryAt = attempt.retryParser
+        ? Date.now() + this.parserRetryMilliseconds
+        : Infinity;
 
       while (!this.isClosed()) {
         await this.pause(this.pollIntervalMilliseconds);
         if (this.isClosed()) break;
         const changed = await WatchDependencySnapshot.capture(this.active);
-        if (changed.equals(baseline)) continue;
+        if (changed.equals(baseline) && Date.now() < retryAt) continue;
 
         await this.settle(changed);
         if (this.isClosed()) break;
-        attempt = await this.evaluateStable();
+        attempt = await this.evaluate();
         if (this.isClosed()) break;
         this.active = attempt.dependencies;
         this.cycles = attempt.cycle.cycle;
         await publish(attempt.cycle);
         baseline = attempt.snapshot;
+        retryAt = attempt.retryParser
+          ? Date.now() + this.parserRetryMilliseconds
+          : Infinity;
       }
     } finally {
       this.closed = true;
@@ -82,7 +98,18 @@ export class EvidenceWatcher {
   /** Requests shutdown and releases a pending delay without waiting for its full interval. */
   public async close(): Promise<void> {
     this.closed = true;
+    this.cancellation.abort();
     this.wake?.();
+  }
+
+  /** Applies execution-local cancellation to every parser created by configuration scanning or analysis. */
+  private async evaluate(): Promise<IEvidenceWatchAttempt> {
+    const inherited = TreeSitterAssetScope.current().signal;
+    const signal =
+      inherited === undefined
+        ? this.cancellation.signal
+        : AbortSignal.any([inherited, this.cancellation.signal]);
+    return TreeSitterAssetScope.run({ signal }, () => this.evaluateStable());
   }
 
   private async evaluateStable(): Promise<IEvidenceWatchAttempt> {
@@ -97,6 +124,7 @@ export class EvidenceWatcher {
           ),
           dependencies: this.active,
           snapshot,
+          retryParser: false,
         };
       }
       const beforeConfig = await scanConfiguration(this.configFile);
@@ -127,12 +155,22 @@ export class EvidenceWatcher {
                 WatchDependencySet.analysis(analysis, []),
               );
 
+      const retryParser =
+        parserFailure(cause) ||
+        (analysis !== undefined &&
+          analysis.report.diagnostics.some((diagnostic) =>
+            /(?:^|-)asset-(?:download|cache|corrupt)$/u.test(diagnostic.code),
+          ));
       if (!WatchDependencySet.contains(candidates, active)) {
         this.active = active;
-        continue;
+        // A preparation failure already proves this cycle incomplete. Publish it
+        // before retrying, while still recording every newly discovered dependency.
+        if (!retryParser) continue;
       }
-      const after = await WatchDependencySnapshot.capture(candidates);
-      if (!before.equals(after)) {
+      const after = await WatchDependencySnapshot.capture(
+        WatchDependencySet.merge(candidates, active),
+      );
+      if (!before.equals(after.select(candidates))) {
         this.active = active;
         continue;
       }
@@ -146,6 +184,7 @@ export class EvidenceWatcher {
         cycle,
         dependencies: active,
         snapshot: after.select(active),
+        retryParser,
       };
     }
   }
@@ -228,8 +267,16 @@ function failureCycle(
     configFile,
     message: cause instanceof Error ? cause.message : String(cause),
     repair:
-      "Correct the current configuration, dependency, or source failure; the watcher will retry after the next filesystem change.",
+      "Correct the current configuration, dependency, or source failure. Parser acquisition failures retry automatically; other failures retry after the next filesystem change.",
   };
+}
+
+/** Identifies preparation failures that can recover without any source or configuration edit. */
+function parserFailure(cause: unknown): boolean {
+  return (
+    cause instanceof EvidenceParserError &&
+    ["asset-download", "asset-cache", "asset-corrupt"].includes(cause.code)
+  );
 }
 
 function configurationFallback(

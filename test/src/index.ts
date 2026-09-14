@@ -1,11 +1,22 @@
 import { DynamicExecutor } from "@nestia/e2e";
 import { join } from "node:path";
 
+import { TestParserAssets } from "./internal/TestParserAssets";
+
+/** Executes all logic tests, or file-name filters explicitly supplied by a contributor. */
 async function main(): Promise<void> {
+  await TestParserAssets.run(run);
+}
+
+/** Discovers tests within an isolated parser acquisition scope. */
+async function run(): Promise<void> {
+  const filters = process.argv.slice(2);
   const report = await DynamicExecutor.validate({
     prefix: "test_",
     location: join(__dirname, "features"),
     extension: "ts",
+    filter: (file) =>
+      filters.length === 0 || filters.some((filter) => file.includes(filter)),
     parameters: () => [],
     onComplete: (execution) => {
       console.log(
