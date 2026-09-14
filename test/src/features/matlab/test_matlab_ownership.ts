@@ -66,6 +66,28 @@ export async function test_matlab_ownership(): Promise<void> {
       ).status,
       "resolved",
     );
+  TestValidator.equals(
+    "unlisted external method class alias",
+    graph.resolve(
+      {
+        file: "/project/src/+pkg/@Widget/Widget.m",
+        segments: ["pkg", "Widget", "extra"],
+      },
+      inventory.units.map((unit) => unit.id),
+    ).status,
+    "resolved",
+  );
+  TestValidator.equals(
+    "wrong external alias remains missing",
+    graph.resolve(
+      {
+        file: "/project/src/+pkg/@Widget/run.m",
+        segments: ["pkg", "Widget", "extra"],
+      },
+      inventory.units.map((unit) => unit.id),
+    ).status,
+    "missing",
+  );
   TestValidator.predicate(
     "owner invalidation dependency",
     inventory.dependencies.some((dependency) =>
