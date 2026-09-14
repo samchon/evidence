@@ -249,5 +249,26 @@ export namespace TreeSitterGrammarCatalog {
         size: 1101,
       },
     },
+    {
+      id: "matlab",
+      repository: "https://github.com/acristoffers/tree-sitter-matlab",
+      version:
+        "grammar-matlab-65d969c986b13b6907b9253307ede8f5c2bd1d31692635a2eab058ec81bb4409",
+      commit: "f03d0347acd8bb05d4edd8c845ac1718729e1fad",
+      wasm: {
+        file: "matlab/tree-sitter-matlab.wasm",
+        url: "https://github.com/wrtnlabs/evidence/releases/download/grammar-matlab-65d969c986b13b6907b9253307ede8f5c2bd1d31692635a2eab058ec81bb4409/tree-sitter-matlab.wasm",
+        sha256:
+          "65d969c986b13b6907b9253307ede8f5c2bd1d31692635a2eab058ec81bb4409",
+        size: 423002,
+      },
+      license: {
+        file: "matlab/LICENSE",
+        url: "https://raw.githubusercontent.com/acristoffers/tree-sitter-matlab/f03d0347acd8bb05d4edd8c845ac1718729e1fad/LICENSE",
+        sha256:
+          "8673f5acd59bfb3bd129760a57f72092d5e3c01e05837532eac9497cf8006a46",
+        size: 1061,
+      },
+    },
   ];
 }
