@@ -1,8 +1,8 @@
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceCAdapter } from "../../../../packages/evidence/src/EvidenceCAdapter";
-import { EvidenceLanguageRegistry } from "../../../../packages/evidence/src/EvidenceLanguageRegistry";
+import { EvidenceCAdapter } from "../../../../packages/evidence/src/adapters/c/EvidenceCAdapter";
+import { EvidenceLanguageRegistry } from "../../../../packages/evidence/src/parsers/EvidenceLanguageRegistry";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Classifies C tags, typedefs, functions, objects, fields, and enumerators. */

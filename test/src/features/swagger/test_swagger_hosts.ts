@@ -1,7 +1,7 @@
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceSwaggerAdapter } from "../../../../packages/evidence/src/EvidenceSwaggerAdapter";
+import { EvidenceSwaggerAdapter } from "../../../../packages/evidence/src/adapters/swagger/EvidenceSwaggerAdapter";
 import type { IEvidenceDeclaration } from "../../../../packages/evidence/src/structures/IEvidenceDeclaration";
 import type { IEvidenceHost } from "../../../../packages/evidence/src/structures/IEvidenceHost";
 import type { IEvidenceInventory } from "../../../../packages/evidence/src/structures/IEvidenceInventory";

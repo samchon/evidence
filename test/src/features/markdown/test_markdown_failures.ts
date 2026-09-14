@@ -1,6 +1,6 @@
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidenceMarkdownAdapter } from "../../../../packages/evidence/src/EvidenceMarkdownAdapter";
+import { EvidenceMarkdownAdapter } from "../../../../packages/evidence/src/adapters/markdown/EvidenceMarkdownAdapter";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Retains discovery failures and diagnoses every source spelling that cannot form a target. */

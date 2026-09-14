@@ -1,7 +1,7 @@
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceJavaAdapter } from "../../../../packages/evidence/src/EvidenceJavaAdapter";
+import { EvidenceJavaAdapter } from "../../../../packages/evidence/src/adapters/java/EvidenceJavaAdapter";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 

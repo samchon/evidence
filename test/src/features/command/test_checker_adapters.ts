@@ -1,7 +1,7 @@
 import { TestValidator } from "@nestia/e2e";
 import assert from "node:assert/strict";
 
-import { EvidenceLanguageRegistry } from "../../../../packages/evidence/src/EvidenceLanguageRegistry";
+import { EvidenceLanguageRegistry } from "../../../../packages/evidence/src/parsers/EvidenceLanguageRegistry";
 import { EvidenceAdapterFactory } from "../../../../packages/evidence/src/internal/EvidenceAdapterFactory";
 import type { EvidenceArtifactType } from "../../../../packages/evidence/src/typings/EvidenceArtifactType";
 

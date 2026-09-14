@@ -1,4 +1,4 @@
-import { EvidenceAccessor } from "../EvidenceAccessor";
+import { EvidenceAccessor } from "../targets/EvidenceAccessor";
 import type { IEvidenceTargetBody } from "./IEvidenceTargetBody";
 
 /** Lexical target boundaries; artifact-specific path resolution happens after population selection. */

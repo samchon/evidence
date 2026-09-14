@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import typia from "typia";
 
-import { EvidenceParserError } from "../EvidenceParserError";
+import { EvidenceParserError } from "../parsers/EvidenceParserError";
 import type { IEvidenceGrammar } from "../structures/IEvidenceGrammar";
 
 /** Reads only packaged assets and verifies bytes before they enter the WASM loader. */

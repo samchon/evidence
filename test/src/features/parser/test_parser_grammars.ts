@@ -1,7 +1,7 @@
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceParser } from "../../../../packages/evidence/src/EvidenceParser";
+import { EvidenceParser } from "../../../../packages/evidence/src/parsers/EvidenceParser";
 import type { IParserFixture } from "../../internal/IParserFixture";
 
 /** Parses and queries a real declaration with every shipped grammar, including TSX and external scanners. */

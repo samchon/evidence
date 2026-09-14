@@ -1,0 +1,75 @@
+import path from "node:path";
+
+import type { IEvidenceAddress } from "../structures/IEvidenceAddress";
+
+import { EvidenceAccessor } from "./EvidenceAccessor";
+
+/** Parses and canonically formats file-qualified segmented targets. */
+export namespace EvidenceFileTarget {
+  export function parse(target: string, origin: string): IEvidenceAddress {
+    const hash = target.indexOf("#");
+    if (hash === target.length - 1)
+      throw new Error(
+        "Name a public accessor after '#', or omit '#' when citing the file unit itself.",
+      );
+    const encoded = hash < 0 ? target : target.slice(0, hash);
+    if (encoded === "") throw new Error("Name the file before '#'.");
+    let decoded: string;
+    try {
+      decoded = decodeURIComponent(encoded);
+    } catch {
+      throw new Error(
+        "Use valid percent escapes in the file path; write %20 for a space and %23 for a literal '#'.",
+      );
+    }
+    if (
+      decoded.includes("\0") ||
+      decoded.includes("\r") ||
+      decoded.includes("\n")
+    )
+      throw new Error("Target paths cannot contain NUL or line breaks.");
+    return {
+      file: resolve(origin, decoded),
+      segments: hash < 0 ? [] : EvidenceAccessor.parse(target.slice(hash + 1)),
+    };
+  }
+
+  /** Canonical text percent-encodes reserved path characters and preserves accessor segments. */
+  export function format(address: IEvidenceAddress): string {
+    const encoded = encodeURIComponent(normalize(address.file))
+      .replaceAll("%2F", "/")
+      .replace(/^([A-Za-z])%3A\//u, "$1:/");
+    return address.segments.length === 0
+      ? encoded
+      : encoded + "#" + EvidenceAccessor.format(address.segments);
+  }
+
+  /** Normalizes separators and dot segments without consulting the filesystem. */
+  export function normalize(file: string): string {
+    const slash = file.replaceAll("\\", "/");
+    const flavor = windows(slash) ? path.win32 : path.posix;
+    const normalized = flavor.normalize(slash).replaceAll("\\", "/");
+    return normalized.startsWith("//") && !slash.startsWith("//")
+      ? normalized.slice(1)
+      : normalized;
+  }
+
+  function resolve(origin: string, file: string): string {
+    const base = normalize(origin);
+    if (!absolute(base))
+      throw new Error("The citing file origin must be an absolute path.");
+    const request = file.replaceAll("\\", "/");
+    if (/^[A-Za-z]:(?!\/)/u.test(request))
+      throw new Error("A target file path cannot be drive-relative.");
+    const flavor = windows(base) || windows(request) ? path.win32 : path.posix;
+    return flavor.resolve(flavor.dirname(base), request).replaceAll("\\", "/");
+  }
+
+  function absolute(file: string): boolean {
+    return file.startsWith("/") || /^[A-Za-z]:\//u.test(file);
+  }
+
+  function windows(file: string): boolean {
+    return /^[A-Za-z]:\//u.test(file) || file.startsWith("//");
+  }
+}

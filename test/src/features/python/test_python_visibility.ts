@@ -1,8 +1,8 @@
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceInventory } from "../../../../packages/evidence/src/EvidenceInventory";
-import { EvidencePythonAdapter } from "../../../../packages/evidence/src/EvidencePythonAdapter";
+import { EvidenceInventory } from "../../../../packages/evidence/src/graph/EvidenceInventory";
+import { EvidencePythonAdapter } from "../../../../packages/evidence/src/adapters/python/EvidencePythonAdapter";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Applies Python public-name convention, local reexports, nested-helper exclusion, and withdrawal. */

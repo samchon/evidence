@@ -1,6 +1,6 @@
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidenceInventory } from "../../../../packages/evidence/src/EvidenceInventory";
+import { EvidenceInventory } from "../../../../packages/evidence/src/graph/EvidenceInventory";
 import { TestInventory } from "../../internal/TestInventory";
 
 /** Input ordering changes neither the serialized inventory nor the separation between reviews and evidence. */

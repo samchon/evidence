@@ -1,7 +1,7 @@
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceJavaScriptAdapter } from "../../../../packages/evidence/src/EvidenceJavaScriptAdapter";
+import { EvidenceJavaScriptAdapter } from "../../../../packages/evidence/src/adapters/javascript/EvidenceJavaScriptAdapter";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Binds JavaScript evidence to JSDoc without reading JSX or literal examples. */

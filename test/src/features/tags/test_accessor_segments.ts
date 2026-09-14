@@ -1,6 +1,6 @@
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidenceAccessor } from "../../../../packages/evidence/src/EvidenceAccessor";
+import { EvidenceAccessor } from "../../../../packages/evidence/src/targets/EvidenceAccessor";
 
 /** Preserves literal dots, spaces, Unicode, quoted escapes, and unsigned numeric member names. */
 export async function test_accessor_segments(): Promise<void> {

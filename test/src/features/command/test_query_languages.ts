@@ -3,8 +3,8 @@ import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 import typia from "typia";
 
-import { EvidenceCommand } from "../../../../packages/evidence/src/EvidenceCommand";
-import { EvidenceLanguageRegistry } from "../../../../packages/evidence/src/EvidenceLanguageRegistry";
+import { EvidenceCommand } from "../../../../packages/evidence/src/commands/EvidenceCommand";
+import { EvidenceLanguageRegistry } from "../../../../packages/evidence/src/parsers/EvidenceLanguageRegistry";
 import type { IEvidenceCommandFailure } from "../../../../packages/evidence/src/structures/IEvidenceCommandFailure";
 import type { IEvidenceLanguagesReport } from "../../../../packages/evidence/src/structures/IEvidenceLanguagesReport";
 import { TestFileSystem } from "../../internal/TestFileSystem";

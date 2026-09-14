@@ -1,8 +1,8 @@
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceGoAdapter } from "../../../../packages/evidence/src/EvidenceGoAdapter";
-import { EvidenceInventory } from "../../../../packages/evidence/src/EvidenceInventory";
+import { EvidenceGoAdapter } from "../../../../packages/evidence/src/adapters/go/EvidenceGoAdapter";
+import { EvidenceInventory } from "../../../../packages/evidence/src/graph/EvidenceInventory";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Attaches Go group, spec, field, and method docs while rejecting non-doc carriers. */

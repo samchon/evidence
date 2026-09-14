@@ -1,6 +1,6 @@
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidenceGraph } from "../../../../packages/evidence/src/EvidenceGraph";
+import { EvidenceGraph } from "../../../../packages/evidence/src/graph/EvidenceGraph";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestInventory } from "../../internal/TestInventory";
 

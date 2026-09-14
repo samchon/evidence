@@ -1,7 +1,7 @@
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidencePythonAdapter } from "../../../../packages/evidence/src/EvidencePythonAdapter";
+import { EvidencePythonAdapter } from "../../../../packages/evidence/src/adapters/python/EvidencePythonAdapter";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Attaches Python docstrings and adjacent comments without accepting arbitrary strings. */

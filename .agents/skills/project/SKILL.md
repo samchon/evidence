@@ -17,8 +17,18 @@ The [roadmap](https://github.com/samchon/evidence/issues/31) owns execution orde
 
 | Path | Owner |
 | --- | --- |
-| `packages/evidence/src` | Library and reusable CLI implementation |
-| `packages/evidence/src/structures` | Configuration, parser, source, and semantic inventory interfaces |
+| `packages/evidence/src` | Public API entry point and configuration-to-graph checker orchestration |
+| `packages/evidence/src/adapters/<artifact>` | Public adapter, extraction helpers, and private types for each language or artifact; shared JavaScript/TypeScript extraction lives in `ecmascript` |
+| `packages/evidence/src/commands` | Reusable CLI command handling and watch execution |
+| `packages/evidence/src/contexts` | Execution state and indexes owned by facade/controller instances |
+| `packages/evidence/src/graph` | Semantic inventory, graph evaluation, fingerprints, and queries |
+| `packages/evidence/src/loaders` | Configuration and local source loading |
+| `packages/evidence/src/parsers` | Parser sessions, language registry, documentation mapping, and evidence tags |
+| `packages/evidence/src/programmers` | Namespace algorithms operating on explicit execution contexts |
+| `packages/evidence/src/reporters` | Check, query, graph, and watch output rendering |
+| `packages/evidence/src/targets` | Accessor parsing, file-qualified targets, and target resolution |
+| `packages/evidence/src/internal` | Private implementation helpers and records |
+| `packages/evidence/src/structures` | Shared adapter contract, configuration, parser, source, and semantic inventory interfaces |
 | `packages/evidence/src/typings` | Language identifiers, symbol selectors, and diagnostic severity |
 | `packages/evidence/src/executable` | Small Node CLI bootstraps |
 | `packages/evidence/assets` | Pinned upstream grammar WASM, provenance manifest, and licenses |

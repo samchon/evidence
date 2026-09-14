@@ -3,8 +3,8 @@ import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 import typia from "typia";
 
-import { EvidenceCommand } from "../../../../packages/evidence/src/EvidenceCommand";
-import { EvidenceQuery } from "../../../../packages/evidence/src/EvidenceQuery";
+import { EvidenceCommand } from "../../../../packages/evidence/src/commands/EvidenceCommand";
+import { EvidenceQuery } from "../../../../packages/evidence/src/graph/EvidenceQuery";
 import type { IEvidenceInspectReport } from "../../../../packages/evidence/src/structures/IEvidenceInspectReport";
 import type { IEvidenceListReport } from "../../../../packages/evidence/src/structures/IEvidenceListReport";
 import { TestFileSystem } from "../../internal/TestFileSystem";

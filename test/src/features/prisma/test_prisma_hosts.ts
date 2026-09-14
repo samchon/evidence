@@ -1,8 +1,8 @@
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceInventory } from "../../../../packages/evidence/src/EvidenceInventory";
-import { EvidencePrismaAdapter } from "../../../../packages/evidence/src/EvidencePrismaAdapter";
+import { EvidenceInventory } from "../../../../packages/evidence/src/graph/EvidenceInventory";
+import { EvidencePrismaAdapter } from "../../../../packages/evidence/src/adapters/prisma/EvidencePrismaAdapter";
 import type { IEvidenceDeclaration } from "../../../../packages/evidence/src/structures/IEvidenceDeclaration";
 import type { IEvidenceHost } from "../../../../packages/evidence/src/structures/IEvidenceHost";
 import type { IEvidenceInventory } from "../../../../packages/evidence/src/structures/IEvidenceInventory";

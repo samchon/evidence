@@ -1,10 +1,10 @@
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceFingerprint } from "../../../../packages/evidence/src/EvidenceFingerprint";
-import { EvidenceGraph } from "../../../../packages/evidence/src/EvidenceGraph";
-import { EvidenceMarkdownAdapter } from "../../../../packages/evidence/src/EvidenceMarkdownAdapter";
-import { EvidenceTypeScriptAdapter } from "../../../../packages/evidence/src/EvidenceTypeScriptAdapter";
+import { EvidenceFingerprint } from "../../../../packages/evidence/src/graph/EvidenceFingerprint";
+import { EvidenceGraph } from "../../../../packages/evidence/src/graph/EvidenceGraph";
+import { EvidenceMarkdownAdapter } from "../../../../packages/evidence/src/adapters/markdown/EvidenceMarkdownAdapter";
+import { EvidenceTypeScriptAdapter } from "../../../../packages/evidence/src/adapters/typescript/EvidenceTypeScriptAdapter";
 import type { IEvidenceInventory } from "../../../../packages/evidence/src/structures/IEvidenceInventory";
 import type { IEvidenceUnit } from "../../../../packages/evidence/src/structures/IEvidenceUnit";
 import { TestGraph } from "../../internal/TestGraph";

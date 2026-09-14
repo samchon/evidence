@@ -3,7 +3,7 @@ import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidenceSwaggerAdapter } from "../../../../packages/evidence/src/EvidenceSwaggerAdapter";
+import { EvidenceSwaggerAdapter } from "../../../../packages/evidence/src/adapters/swagger/EvidenceSwaggerAdapter";
 import type { IEvidenceInventory } from "../../../../packages/evidence/src/structures/IEvidenceInventory";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 

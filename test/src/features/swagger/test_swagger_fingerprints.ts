@@ -1,8 +1,8 @@
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceFingerprint } from "../../../../packages/evidence/src/EvidenceFingerprint";
-import { EvidenceSwaggerAdapter } from "../../../../packages/evidence/src/EvidenceSwaggerAdapter";
+import { EvidenceFingerprint } from "../../../../packages/evidence/src/graph/EvidenceFingerprint";
+import { EvidenceSwaggerAdapter } from "../../../../packages/evidence/src/adapters/swagger/EvidenceSwaggerAdapter";
 import type { IEvidenceInventory } from "../../../../packages/evidence/src/structures/IEvidenceInventory";
 import type { IEvidenceUnit } from "../../../../packages/evidence/src/structures/IEvidenceUnit";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";

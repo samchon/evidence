@@ -1,7 +1,7 @@
 import { TestValidator } from "@nestia/e2e";
 import typia from "typia";
 
-import { EvidenceWatchReporter } from "../../../../packages/evidence/src/EvidenceWatchReporter";
+import { EvidenceWatchReporter } from "../../../../packages/evidence/src/reporters/EvidenceWatchReporter";
 import type { IEvidenceWatchFailureCycle } from "../../../../packages/evidence/src/structures/IEvidenceWatchFailureCycle";
 import type { EvidenceWatchCycle } from "../../../../packages/evidence/src/typings/EvidenceWatchCycle";
 

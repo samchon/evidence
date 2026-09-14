@@ -2,8 +2,8 @@ import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidenceTargetResolver } from "../../../../packages/evidence/src/EvidenceTargetResolver";
-import { EvidenceTypeScriptAdapter } from "../../../../packages/evidence/src/EvidenceTypeScriptAdapter";
+import { EvidenceTargetResolver } from "../../../../packages/evidence/src/targets/EvidenceTargetResolver";
+import { EvidenceTypeScriptAdapter } from "../../../../packages/evidence/src/adapters/typescript/EvidenceTypeScriptAdapter";
 import type { IEvidenceHost } from "../../../../packages/evidence/src/structures/IEvidenceHost";
 import type { IEvidenceTargetStatement } from "../../../../packages/evidence/src/structures/IEvidenceTargetStatement";
 import { TestFileSystem } from "../../internal/TestFileSystem";

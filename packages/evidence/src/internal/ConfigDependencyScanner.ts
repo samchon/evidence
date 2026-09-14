@@ -3,11 +3,11 @@ import { createRequire, isBuiltin } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { EvidenceParser } from "../EvidenceParser";
-import type { EvidenceParseSession } from "../EvidenceParseSession";
+import { EvidenceParser } from "../parsers/EvidenceParser";
+import type { EvidenceParseSession } from "../parsers/EvidenceParseSession";
 import type { IEvidenceSourceDependency } from "../structures/IEvidenceSourceDependency";
 import type { EvidenceProgrammingType } from "../typings/EvidenceProgrammingType";
-import { EcmaScriptSyntax } from "./EcmaScriptSyntax";
+import { EcmaScriptSyntax } from "../adapters/ecmascript/EcmaScriptSyntax";
 import { SourcePath } from "./SourcePath";
 
 /** Finds runtime imports that can change one evaluated TypeScript configuration. */

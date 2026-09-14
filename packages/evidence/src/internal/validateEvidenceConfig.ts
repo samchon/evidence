@@ -5,7 +5,7 @@ import type { IEvidenceReference } from "../structures/IEvidenceReference";
 import { EvidenceArtifactTypes } from "./EvidenceArtifactTypes";
 import { FileGlob } from "./FileGlob";
 import { SourcePath } from "./SourcePath";
-import { SwaggerRemoteReader } from "./SwaggerRemoteReader";
+import { SwaggerRemoteReader } from "../adapters/swagger/SwaggerRemoteReader";
 
 /** Rejects invalid populations and policies before activation can suppress them. */
 export function validateEvidenceConfig(

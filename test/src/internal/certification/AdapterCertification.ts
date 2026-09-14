@@ -1,10 +1,10 @@
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidenceAccessor } from "../../../../packages/evidence/src/EvidenceAccessor";
-import { EvidenceFingerprint } from "../../../../packages/evidence/src/EvidenceFingerprint";
-import { EvidenceGraph } from "../../../../packages/evidence/src/EvidenceGraph";
-import { EvidenceInventory } from "../../../../packages/evidence/src/EvidenceInventory";
-import { EvidenceMarkdownAdapter } from "../../../../packages/evidence/src/EvidenceMarkdownAdapter";
+import { EvidenceAccessor } from "../../../../packages/evidence/src/targets/EvidenceAccessor";
+import { EvidenceFingerprint } from "../../../../packages/evidence/src/graph/EvidenceFingerprint";
+import { EvidenceGraph } from "../../../../packages/evidence/src/graph/EvidenceGraph";
+import { EvidenceInventory } from "../../../../packages/evidence/src/graph/EvidenceInventory";
+import { EvidenceMarkdownAdapter } from "../../../../packages/evidence/src/adapters/markdown/EvidenceMarkdownAdapter";
 import type { IEvidenceAddress } from "../../../../packages/evidence/src/structures/IEvidenceAddress";
 import type { IEvidenceInventory } from "../../../../packages/evidence/src/structures/IEvidenceInventory";
 import type { IEvidenceSourceSnapshot } from "../../../../packages/evidence/src/structures/IEvidenceSourceSnapshot";

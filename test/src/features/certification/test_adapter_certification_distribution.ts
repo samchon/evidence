@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import typia from "typia";
 
-import { EvidenceLanguageRegistry } from "../../../../packages/evidence/src/EvidenceLanguageRegistry";
+import { EvidenceLanguageRegistry } from "../../../../packages/evidence/src/parsers/EvidenceLanguageRegistry";
 import { TreeSitterAssets } from "../../../../packages/evidence/src/internal/TreeSitterAssets";
 import { AdapterCertificationFixtures } from "../../internal/certification/AdapterCertificationFixtures";
 import type { IPackageManifest } from "../../internal/certification/IPackageManifest";

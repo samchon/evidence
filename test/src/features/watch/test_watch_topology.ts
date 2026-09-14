@@ -5,8 +5,8 @@ import { join } from "node:path";
 import typia from "typia";
 
 import { EvidenceChecker } from "../../../../packages/evidence/src/EvidenceChecker";
-import { EvidenceWatcher } from "../../../../packages/evidence/src/EvidenceWatcher";
-import { EvidenceWatchReporter } from "../../../../packages/evidence/src/EvidenceWatchReporter";
+import { EvidenceWatcher } from "../../../../packages/evidence/src/commands/EvidenceWatcher";
+import { EvidenceWatchReporter } from "../../../../packages/evidence/src/reporters/EvidenceWatchReporter";
 import type { EvidenceWatchCycle } from "../../../../packages/evidence/src/typings/EvidenceWatchCycle";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 

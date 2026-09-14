@@ -1,6 +1,6 @@
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidenceFileTarget } from "../../../../packages/evidence/src/EvidenceFileTarget";
+import { EvidenceFileTarget } from "../../../../packages/evidence/src/targets/EvidenceFileTarget";
 
 /** Preserves encoded path characters and literal accessor segments across platforms. */
 export async function test_target_paths(): Promise<void> {

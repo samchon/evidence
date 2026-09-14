@@ -1,4 +1,4 @@
-import { EvidenceTargetResolver } from "../../../packages/evidence/src/EvidenceTargetResolver";
+import { EvidenceTargetResolver } from "../../../packages/evidence/src/targets/EvidenceTargetResolver";
 import type { IEvidenceDeclaration } from "../../../packages/evidence/src/structures/IEvidenceDeclaration";
 import type { IEvidenceGraphResolution } from "../../../packages/evidence/src/structures/IEvidenceGraphResolution";
 import type { IEvidenceGraphReviewResolution } from "../../../packages/evidence/src/structures/IEvidenceGraphReviewResolution";
