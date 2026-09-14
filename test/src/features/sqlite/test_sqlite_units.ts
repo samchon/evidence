@@ -136,11 +136,28 @@ export async function test_sqlite_units(): Promise<void> {
   );
 
   const schemas = await new EvidenceSqliteAdapter().analyze(
-    TestSourceSnapshot.create("two-schemas.sql", "CREATE TABLE Item (id INTEGER); CREATE TEMP TABLE Item (id INTEGER);"),
+    TestSourceSnapshot.create(
+      "two-schemas.sql",
+      "CREATE TABLE Item (id INTEGER); CREATE TEMP TABLE Item (id INTEGER);",
+    ),
   );
   const schemaIndex = new EvidenceInventory([schemas]);
   const schemaIds = schemas.units.map((unit) => unit.id);
   for (const schema of ["main", "temp"])
-    TestValidator.equals("qualified alias distinguishes same-name schemas", schemaIndex.resolve({file:"/project/two-schemas.sql",segments:[schema,"Item","id"]},schemaIds).status,"resolved");
-  TestValidator.equals("unqualified alias stays ambiguous across schemas",schemaIndex.resolve({file:"/project/two-schemas.sql",segments:["Item"]},schemaIds).status,"ambiguous");
+    TestValidator.equals(
+      "qualified alias distinguishes same-name schemas",
+      schemaIndex.resolve(
+        { file: "/project/two-schemas.sql", segments: [schema, "Item", "id"] },
+        schemaIds,
+      ).status,
+      "resolved",
+    );
+  TestValidator.equals(
+    "unqualified alias stays ambiguous across schemas",
+    schemaIndex.resolve(
+      { file: "/project/two-schemas.sql", segments: ["Item"] },
+      schemaIds,
+    ).status,
+    "ambiguous",
+  );
 }

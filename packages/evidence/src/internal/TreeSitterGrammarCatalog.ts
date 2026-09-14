@@ -270,5 +270,26 @@ export namespace TreeSitterGrammarCatalog {
         size: 1069,
       },
     },
+    {
+      id: "sqlite",
+      repository: "https://github.com/dhcmrlchtdj/tree-sitter-sqlite",
+      version:
+        "grammar-sqlite-f3a1767fc368a15eb10b1db906ff1abcf510dc5e38920cfb937fd0960c64fa82",
+      commit: "993be0a91c0c90b0cc7799e6ff65922390e2cefe",
+      wasm: {
+        file: "sqlite/tree-sitter-sqlite.wasm",
+        url: "https://github.com/wrtnlabs/evidence/releases/download/grammar-sqlite-f3a1767fc368a15eb10b1db906ff1abcf510dc5e38920cfb937fd0960c64fa82/tree-sitter-sqlite.wasm",
+        sha256:
+          "f3a1767fc368a15eb10b1db906ff1abcf510dc5e38920cfb937fd0960c64fa82",
+        size: 983433,
+      },
+      license: {
+        file: "sqlite/LICENSE",
+        url: "https://raw.githubusercontent.com/dhcmrlchtdj/tree-sitter-sqlite/993be0a91c0c90b0cc7799e6ff65922390e2cefe/LICENSE",
+        sha256:
+          "67ac25fd004faa46bf79351c6f0e94dbbb071172567a7247b71a4c19777c982b",
+        size: 1103,
+      },
+    },
   ];
 }

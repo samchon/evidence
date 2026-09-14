@@ -30,7 +30,10 @@ export async function test_sqlite_certification(): Promise<void> {
         symbol: "model",
         identity: ["main", "account"],
         sites: 1,
-        addresses: [{ file: "schema.sql", accessor: "Account" }, { file: "schema.sql", accessor: "main.Account" }],
+        addresses: [
+          { file: "schema.sql", accessor: "Account" },
+          { file: "schema.sql", accessor: "main.Account" },
+        ],
         withdrawals: [],
       },
       {
@@ -39,7 +42,10 @@ export async function test_sqlite_certification(): Promise<void> {
         identity: ["main", "account", "owner"],
         parent: "model:main.account",
         sites: 1,
-        addresses: [{ file: "schema.sql", accessor: "Account.owner" }, { file: "schema.sql", accessor: "main.Account.owner" }],
+        addresses: [
+          { file: "schema.sql", accessor: "Account.owner" },
+          { file: "schema.sql", accessor: "main.Account.owner" },
+        ],
         withdrawals: [],
       },
       {
@@ -50,7 +56,10 @@ export async function test_sqlite_certification(): Promise<void> {
         sites: 1,
         addresses: [
           { file: "schema.sql", accessor: 'Account["foreign key:owner_link"]' },
-          { file: "schema.sql", accessor: 'main.Account["foreign key:owner_link"]' },
+          {
+            file: "schema.sql",
+            accessor: 'main.Account["foreign key:owner_link"]',
+          },
         ],
         withdrawals: [],
       },
