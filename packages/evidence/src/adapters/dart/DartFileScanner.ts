@@ -217,7 +217,11 @@ export class DartFileScanner {
       return;
     }
     const getter = signature.type === "getter_signature";
-    const setter = signature.type === "setter_signature";
+    // The pinned grammar also parses an omitted-return-type setter as a function returning `set`.
+    const setter =
+      signature.type === "setter_signature" ||
+      (signature.type === "function_signature" &&
+        signature.childForFieldName("return_type")?.text === "set");
     let name = signature.childForFieldName("name")?.text;
     if (signature.type.includes("constructor")) {
       const identifiers = signature.namedChildren.filter(
