@@ -10,6 +10,14 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 /** Prevents unsupported preprocessing, Objective-C++, aliases, and C surfaces from becoming smaller successes. */
 export async function test_objc_boundaries(): Promise<void> {
   const adapter = new EvidenceObjcAdapter();
+  TestValidator.equals(
+    "configured types distinguish the shared MATLAB and Objective-C extension",
+    [
+      EvidenceLanguageRegistry.select("objc", "src/Shared.m").id,
+      EvidenceLanguageRegistry.select("matlab", "src/Shared.m").id,
+    ],
+    ["objc", "matlab"],
+  );
   for (const content of [
     "#if FEATURE\n@interface Conditional\n@end\n#endif\n",
     "#define API(name) @interface name @end\n",

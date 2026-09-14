@@ -1,0 +1,159 @@
+import {
+  EvidenceFingerprint,
+  EvidenceInventory,
+  EvidenceScalaAdapter,
+} from "@wrtnlabs/evidence";
+import { TestValidator } from "@nestia/e2e";
+import { dedent } from "@typia/utils";
+
+import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+
+/** Preserves Scaladoc coordinates, lexical withdrawals, and fingerprints without accepting code examples. */
+export async function test_scala_hosts(): Promise<void> {
+  const source = dedent`
+    /**
+     * 계약 😀
+     * @evidence docs/spec.md#contract Implements the contract.
+     */
+    @deprecated("legacy", "1.0")
+    class Contract {
+      /** @internal Withdraws the nested type. */
+      class Retired { val child = 1; }
+      /** @evidence docs/spec.md#value Implements the value. */
+      val \`value.part\` = 1
+    }
+    /**
+     * {{{
+     * @evidence docs/spec.md#scaladoc Inert Scaladoc example.
+     * }}}
+     * Examples:
+     * ~~~scala
+     * @evidence docs/spec.md#example Inert example.
+     * ~~~
+     *
+     *     @evidence docs/spec.md#indented Inert indented example.
+     */
+    def sample() = 1
+  `.replaceAll("\n", "\r\n");
+  const adapter = new EvidenceScalaAdapter();
+  const inventory = await adapter.analyze(
+    TestSourceSnapshot.create("src/Contract.scala", source),
+  );
+
+  TestValidator.equals(
+    "Scaladoc examples remain inert",
+    inventory.declarations.map((item) => item.target),
+    ["docs/spec.md#contract", "docs/spec.md#value"],
+  );
+  TestValidator.equals(
+    "Scaladoc positions remain valid",
+    inventory.diagnostics,
+    [],
+  );
+  const declaration = inventory.declarations[0];
+  if (declaration === undefined || declaration.location.range === undefined)
+    throw new Error("Missing declaration range.");
+  TestValidator.equals(
+    "UTF-16 offset after astral text",
+    declaration.location.range.start.offset,
+    source.indexOf("@evidence"),
+  );
+  TestValidator.equals(
+    "CRLF source line",
+    declaration.location.range.start.line,
+    3,
+  );
+  const selected = inventory.units.map((unit) => unit.id);
+  const graph = new EvidenceInventory([inventory]);
+  TestValidator.equals(
+    "withdrawn descendant target",
+    graph.resolve(
+      {
+        file: "/project/src/Contract.scala",
+        segments: ["Contract", "Retired", "child"],
+      },
+      selected,
+    ).status,
+    "hidden",
+  );
+  TestValidator.equals(
+    "literal dotted property",
+    graph.resolve(
+      {
+        file: "/project/src/Contract.scala",
+        segments: ["Contract", "value.part"],
+      },
+      selected,
+    ).status,
+    "resolved",
+  );
+  TestValidator.equals(
+    "dotted text does not imply containment",
+    graph.resolve(
+      {
+        file: "/project/src/Contract.scala",
+        segments: ["Contract", "value", "part"],
+      },
+      selected,
+    ).status,
+    "missing",
+  );
+  const contract = inventory.units.find((unit) => unit.name === "Contract");
+  if (contract === undefined) throw new Error("Missing contract unit.");
+  const rewritten = await adapter.analyze(
+    TestSourceSnapshot.create(
+      "src/Contract.scala",
+      source.replace(
+        "Implements the value.",
+        "Records the same value differently.",
+      ),
+    ),
+  );
+  TestValidator.equals(
+    "descendant annotation does not stale ancestor review",
+    EvidenceFingerprint.inspect(inventory, contract.id).fingerprint,
+    EvidenceFingerprint.inspect(rewritten, contract.id).fingerprint,
+  );
+  const changed = await adapter.analyze(
+    TestSourceSnapshot.create(
+      "src/Contract.scala",
+      source.replace("= 1", "= 2"),
+    ),
+  );
+  TestValidator.notEquals(
+    "semantic subtree edit changes fingerprint",
+    EvidenceFingerprint.inspect(inventory, contract.id).fingerprint,
+    EvidenceFingerprint.inspect(changed, contract.id).fingerprint,
+  );
+
+  // Every Evidence tag kind on an ordinary comment remains an unsupported carrier.
+  for (const tag of [
+    "evidence",
+    "evidenceExclude",
+    "evidenceReview",
+    "evidenceExcludeReview",
+    "link",
+  ]) {
+    const unsupported = await adapter.analyze(
+      TestSourceSnapshot.create(
+        "src/Unsupported.scala",
+        `// @${tag} docs/spec.md#contract Unsupported carrier.\ndef run() = 1\n`,
+      ),
+    );
+    TestValidator.equals(
+      `${tag} ordinary comments never acknowledge`,
+      unsupported.declarations,
+      [],
+    );
+    TestValidator.equals(
+      `${tag} ordinary comments never review`,
+      unsupported.reviews,
+      [],
+    );
+    TestValidator.equals(
+      `${tag} diagnostic`,
+      unsupported.diagnostics.map((item) => item.code),
+      ["unsupported-annotation-host"],
+    );
+  }
+}
