@@ -50,7 +50,7 @@ export namespace EvidenceLanguageRegistry {
     return structuredClone(grammar);
   }
 
-  const DATABASES: IEvidenceDatabaseLanguage[] = [];
+  const DATABASES: IEvidenceDatabaseLanguage[] = [{ type: "dbml", name: "DBML", grammars: [{ id: "dbml", extensions: [".dbml"], filenames: [] }] }];
 
   const LANGUAGES: IEvidenceLanguage[] = [
     {
