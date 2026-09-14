@@ -11,6 +11,7 @@ export async function test_matlab_ownership(): Promise<void> {
     dedent`
     classdef Widget
       methods
+        % @evidence doc.md#prototype Documents the external method contract.
         run(obj)
       end
       methods (Access=private)
@@ -46,6 +47,11 @@ export async function test_matlab_ownership(): Promise<void> {
       .map((unit) => unit.identity.join("."))
       .sort((left, right) => left.localeCompare(right)),
     ["pkg.Widget", "pkg.Widget.extra", "pkg.Widget.run"],
+  );
+  TestValidator.equals(
+    "signature-only documentation owns the method",
+    inventory.declarations.map((declaration) => declaration.target),
+    ["doc.md#prototype"],
   );
   const method = inventory.units.find((unit) => unit.name === "run");
   TestValidator.equals(
