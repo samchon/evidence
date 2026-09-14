@@ -26,10 +26,13 @@ export class PythonFileScanner {
   private readonly units = new Map<string, IPythonOwnedUnit>();
   private readonly positions = new Map<string, IPythonHostPosition>();
   private readonly documentation = new Map<string, IPythonDocumentation>();
+
+  /** Comment runs indexed by their final one-based source line. */
   private readonly commentDocumentation = new Map<
-    string,
+    number,
     IPythonDocumentation
   >();
+
   private readonly diagnostics: IEvidenceDiagnostic[] = [];
   private readonly reported = new Set<string>();
   private readonly docstringParts = new Set<string>();
@@ -545,22 +548,21 @@ export class PythonFileScanner {
     if (!position.unitIds.includes(unitId)) position.unitIds.push(unitId);
   }
 
+  /** Attaches adjacent source lines even when the grammar places a comment outside the body block. */
   private attachPrecedingComment(
     node: Node,
     siteId: string,
     unitId: string,
   ): void {
-    const previous = node.previousNamedSibling;
+    const documentation = this.commentDocumentation.get(node.startPosition.row);
     if (
-      previous === null ||
-      previous.type !== "comment" ||
-      previous.startPosition.column !== node.startPosition.column
+      documentation === undefined ||
+      documentation.range.start.column !== node.startPosition.column + 1 ||
+      !this.standaloneComment(documentation.range.start.offset)
     )
       return;
-    const documentation = this.commentDocumentation.get(this.nodeKey(previous));
-    if (documentation === undefined) return;
     if (
-      /\r?\n[ \t]*\r?\n/u.test(
+      !/^[ \t]*\r?\n[ \t]*$/u.test(
         this.source.content.slice(
           documentation.range.end.offset,
           node.startIndex,
@@ -616,41 +618,44 @@ export class PythonFileScanner {
     documentation.attachments.push({ positionId, siteId, unitId });
   }
 
+  /** Retains every parsed comment, grouping only consecutive standalone lines at one indent. */
   private collectCommentRuns(): void {
-    const blocks = [
-      this.session.root,
-      ...this.session.root.descendantsOfType("block"),
-    ];
-    for (const block of blocks) {
-      const children = block.namedChildren;
-      for (let index = 0; index < children.length; ++index) {
-        const first = children[index];
-        if (first?.type !== "comment") continue;
-        const comments: Node[] = [first];
-        let last = first;
-        while (index + 1 < children.length) {
-          const next = children[index + 1];
-          if (
-            next?.type !== "comment" ||
-            next.startPosition.column !== first.startPosition.column ||
-            /\r?\n[ \t]*\r?\n/u.test(
-              this.source.content.slice(last.endIndex, next.startIndex),
-            )
+    const comments = this.session.root
+      .descendantsOfType("comment")
+      .sort((left, right) => left.startIndex - right.startIndex);
+    for (let index = 0; index < comments.length; ++index) {
+      const first = comments[index];
+      if (first === undefined) continue;
+      let last = first;
+      while (
+        this.standaloneComment(first.startIndex) &&
+        index + 1 < comments.length
+      ) {
+        const next = comments[index + 1];
+        if (
+          next === undefined ||
+          next.startPosition.column !== first.startPosition.column ||
+          !/^[ \t]*\r?\n[ \t]*$/u.test(
+            this.source.content.slice(last.endIndex, next.startIndex),
           )
-            break;
-          comments.push(next);
-          last = next;
-          ++index;
-        }
-        const range = this.text.range(first.startIndex, last.endIndex);
-        const documentation = this.ensureDocumentationRange(
-          range,
-          PythonSyntax.commentSyntax(),
-        );
-        for (const comment of comments)
-          this.commentDocumentation.set(this.nodeKey(comment), documentation);
+        )
+          break;
+        last = next;
+        ++index;
       }
+      const range = this.text.range(first.startIndex, last.endIndex);
+      const documentation = this.ensureDocumentationRange(
+        range,
+        PythonSyntax.commentSyntax(),
+      );
+      this.commentDocumentation.set(range.end.line, documentation);
     }
+  }
+
+  /** Refuses trailing code comments as leading declaration documentation. */
+  private standaloneComment(offset: number): boolean {
+    const start = this.source.content.lastIndexOf("\n", offset - 1) + 1;
+    return /^[ \t]*$/u.test(this.source.content.slice(start, offset));
   }
 
   private collectStringAnnotations(): void {

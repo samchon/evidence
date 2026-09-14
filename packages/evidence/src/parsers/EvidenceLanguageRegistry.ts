@@ -101,6 +101,27 @@ export namespace EvidenceLanguageRegistry {
 
   const LANGUAGES: IEvidenceLanguage[] = [
     {
+      type: "swift",
+      name: "Swift",
+      grammars: [{ id: "swift", extensions: [".swift"], filenames: [] }],
+      adapter: {
+        entry: "EvidenceSwiftAdapter",
+        symbols: ["type", "function", "property"],
+        publicSurface:
+          "Explicit public/open declarations in one selected Swift module, including local nominal extensions and protocol requirements.",
+        addressing:
+          "File-qualified lexical owners; overloads group by base name and static members add a static segment.",
+        comments: ["attached DocC /// and /** */"],
+        unsupported: [
+          "external extension ownership",
+          "constrained extensions",
+          "macro and custom attribute expansion",
+          "conditional compilation",
+          "compiler-generated and inherited members",
+        ],
+      },
+    },
+    {
       type: "kotlin",
       name: "Kotlin",
       grammars: [{ id: "kotlin", extensions: [".kt"], filenames: [] }],
@@ -376,28 +397,6 @@ export namespace EvidenceLanguageRegistry {
   ];
 
   const CANDIDATES: IEvidenceLanguageCandidate[] = [
-    {
-      id: "swift",
-      name: "Swift",
-      kind: "programming-language",
-      dialects: ["Swift source"],
-      grammarRepository: "https://github.com/alex-pinkus/tree-sitter-swift",
-      grammarLicense: "MIT",
-      wasm: "release-asset",
-      wasmNotes: "The 0.7.3 release publishes tree-sitter-swift.wasm.",
-      languageReference:
-        "https://docs.swift.org/swift-book/documentation/the-swift-programming-language/accesscontrol/",
-      visibility:
-        "internal by default, with open, public, package, fileprivate, and private declarations",
-      declarations:
-        "modules, nominal types, protocols, extensions, functions, operators, properties, subscripts, and type aliases",
-      blockers: [
-        "module and package boundaries come from build metadata",
-        "extensions merge declarations across files and modules",
-        "synthesized protocol and macro members",
-      ],
-      next: "Define a configured module boundary and certify explicit public/open declarations, extensions, overloads, and DocC comments.",
-    },
     {
       id: "php",
       name: "PHP",
