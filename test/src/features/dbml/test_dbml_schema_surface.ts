@@ -12,7 +12,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_dbml_schema_surface(): Promise<void> {
   const source = dedent`
     Table core.users as U {
-      id int [pk]
+      id int [pk, ref: < posts.user_id, ref: <> profiles.user_id]
       tenant int
     }
     Enum state {
@@ -63,9 +63,9 @@ export async function test_dbml_schema_surface(): Promise<void> {
     7,
   );
   TestValidator.equals(
-    "six independent relations",
+    "eight independent relations",
     inventory.units.filter((unit) => unit.symbol === "relation").length,
-    6,
+    8,
   );
   TestValidator.equals(
     "relation owning model follows cardinality",
@@ -85,6 +85,71 @@ export async function test_dbml_schema_surface(): Promise<void> {
       ["$ref:reverse", ["public", "posts"]],
       ["$ref:pair", ["public", "profiles"]],
       ["$ref:network", ["core", "users"]],
+    ].sort((left, right) =>
+      JSON.stringify(left).localeCompare(JSON.stringify(right), "en"),
+    ),
+  );
+  TestValidator.equals(
+    "inline relation identity preserves cardinality and owning table",
+    inventory.units
+      .filter(
+        (unit) =>
+          unit.symbol === "relation" &&
+          (unit.identity.at(-1) ?? "").startsWith("$ref:["),
+      )
+      .map((unit) => unit.identity)
+      .sort((left, right) =>
+        JSON.stringify(left).localeCompare(JSON.stringify(right), "en"),
+      ),
+    [
+      [
+        "public",
+        "posts",
+        "$ref:" +
+          JSON.stringify([
+            ["core", "users"],
+            ["id"],
+            "<",
+            ["public", "posts"],
+            ["user_id"],
+          ]),
+      ],
+      [
+        "core",
+        "users",
+        "$ref:" +
+          JSON.stringify([
+            ["core", "users"],
+            ["id"],
+            "<>",
+            ["public", "profiles"],
+            ["user_id"],
+          ]),
+      ],
+      [
+        "public",
+        "posts",
+        "$ref:" +
+          JSON.stringify([
+            ["public", "posts"],
+            ["user_id"],
+            ">",
+            ["core", "users"],
+            ["id"],
+          ]),
+      ],
+      [
+        "public",
+        "profiles",
+        "$ref:" +
+          JSON.stringify([
+            ["public", "profiles"],
+            ["user_id"],
+            "-",
+            ["core", "users"],
+            ["id"],
+          ]),
+      ],
     ].sort((left, right) =>
       JSON.stringify(left).localeCompare(JSON.stringify(right), "en"),
     ),
