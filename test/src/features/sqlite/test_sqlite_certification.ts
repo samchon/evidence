@@ -4,7 +4,14 @@ import { dedent } from "@typia/utils";
 import { DatabaseAdapterCertification } from "../../internal/certification/DatabaseAdapterCertification";
 import type { IDatabaseAdapterCertification } from "../../internal/certification/IDatabaseAdapterCertification";
 
-/** Runs the common inventory, missing-edge, ambiguity, and fingerprint gates on independently authored SQLite expectations. */
+/** Applies shared database certification to independently specified SQLite behavior.
+ *
+ * The fixture fixes SQLite inventory, missing-edge, ambiguity, and review fingerprint expectations.
+ *
+ * 1. Construct the SQLite certification fixture.
+ * 2. Run the common database certification suite.
+ * 3. Require every declared gate to pass.
+ */
 export async function test_sqlite_certification(): Promise<void> {
   const fixture: IDatabaseAdapterCertification = {
     type: "sqlite",

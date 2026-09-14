@@ -4,7 +4,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Keeps sibling declarators outside a cited unit's review fingerprint while retaining their own semantic changes. */
+/** Isolates Objective-C review fingerprints between sibling declarators.
+ *
+ * A cited unit must ignore sibling edits but invalidate when its own semantic content changes.
+ *
+ * 1. Analyze sibling declarations with separate cited units.
+ * 2. Edit each sibling independently.
+ * 3. Verify only the affected unit's fingerprint changes.
+ */
 export async function test_objc_fingerprint_siblings(): Promise<void> {
   const source = dedent`
     @interface Contract {

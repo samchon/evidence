@@ -4,7 +4,12 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Attaches Go group, spec, field, and method docs while rejecting non-doc carriers. */
+/** Attaches Go group, specification, field, and method documentation.
+ *
+ * Declaration documentation can host evidence while non-document carriers remain diagnostics.
+ *
+ * 1. Analyze supported Go doc positions. 2. Compare attached hosts. 3. Reject annotations in inert carriers.
+ */
 export async function test_go_hosts(): Promise<void> {
   const inventory = await new EvidenceGoAdapter().analyze(
     TestSourceSnapshot.create(

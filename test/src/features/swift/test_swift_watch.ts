@@ -5,7 +5,13 @@ import { join } from "node:path";
 
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
-/** Rebuilds Swift populations after source, new-file, syntax, and configuration changes. */
+/** Rebuilds Swift coverage through watch changes.
+ *
+ * New files, syntax failure, repair, and selector changes must replace stale inventory.
+ *
+ * 1. Compare every cycle to a fresh check.
+ * 2. Verify failure, incompleteness, and recovery transitions.
+ */
 export async function test_swift_watch(): Promise<void> {
   await TestFileSystem.experiment(
     "swift-watch",

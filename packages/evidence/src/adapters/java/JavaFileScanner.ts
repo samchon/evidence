@@ -16,7 +16,12 @@ import { JavaSyntax } from "./JavaSyntax";
 import type { JavaTypeKind } from "./JavaTypeKind";
 import { SourceText } from "../../internal/SourceText";
 
-/** Extracts Java packages, declarations, and Javadoc before family materialization. */
+/**
+ * Extracts Java packages, declarations, and Javadoc before family materialization.
+ *
+ * Ownership and visibility are recorded from selected source only; `JavaAdapter`
+ * later reconciles compatible declaration families into graph units.
+ */
 export class JavaFileScanner {
   private readonly declarations: IJavaDeclaration[] = [];
   private readonly documentation = new Map<string, IJavaDocumentation>();
@@ -26,6 +31,12 @@ export class JavaFileScanner {
   private readonly text: SourceText;
   private complete = true;
 
+  /**
+   * Creates a scanner for one Java parse session and source snapshot.
+   *
+   * Javadoc carriers are collected before declaration walking so their physical
+   * attachment cannot be confused with same-named declarations elsewhere.
+   */
   public constructor(
     private readonly session: EvidenceParseSession,
     private readonly source: IEvidenceSourceFile,
@@ -34,6 +45,12 @@ export class JavaFileScanner {
     this.collectDocumentation();
   }
 
+  /**
+   * Produces node-free package declarations, documentation, and diagnostics.
+   *
+   * The result records unsupported relevant forms as incomplete rather than
+   * allowing the adapter to publish a falsely complete smaller inventory.
+   */
   public scan(): IJavaFileAnalysis {
     const packageDeclaration = this.session.root.namedChildren.find(
       (child) => child.type === "package_declaration",

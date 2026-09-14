@@ -8,7 +8,12 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Keeps public Kotlin declarations complete across lexical owners, overloads, and file aliases. */
+/** Classifies public Kotlin declarations across owners, overloads, and file aliases.
+ *
+ * The denominator retains lexical ownership and overload sites without merging unrelated file aliases.
+ *
+ * 1. Analyze public Kotlin forms. 2. Compare unit identities and symbols. 3. Verify overload and alias ownership.
+ */
 export async function test_kotlin_units(): Promise<void> {
   const snapshot = TestSourceSnapshot.combine([
     TestSourceSnapshot.create(

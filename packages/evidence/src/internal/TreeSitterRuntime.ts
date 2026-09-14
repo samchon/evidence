@@ -5,9 +5,14 @@ import { Language, Parser } from "web-tree-sitter";
 import { EvidenceParserError } from "../parsers/EvidenceParserError";
 import type { IEvidenceGrammar } from "../structures/IEvidenceGrammar";
 
-/** Shares immutable grammar modules; the binding has no Language disposal API. */
+/**
+ * Initializes the WASM binding once and shares immutable loaded grammar modules.
+ *
+ * web-tree-sitter offers no language disposal API, so cache keys use verified
+ * byte digests and instances are intentionally process-lifetime resources.
+ */
 export namespace TreeSitterRuntime {
-  /** Awaits the shared engine before obtaining the grammar's immutable language module. */
+  /** Awaits engine initialization before returning the language module keyed by its pinned digest. */
   export async function language(
     grammar: IEvidenceGrammar,
     bytes: Uint8Array,
@@ -16,7 +21,7 @@ export namespace TreeSitterRuntime {
     return languages.get(grammar, bytes);
   }
 
-  /** Initializes the installed engine exactly once on first use. */
+  /** Initializes the installed engine exactly once on first use, wrapping package-asset failures. */
   const initialization = new Singleton(async () => {
     try {
       // Supplying local bytes avoids cwd-sensitive URLs and any runtime fetch fallback.

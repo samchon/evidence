@@ -1,32 +1,73 @@
 import type { IEvidenceUnitSite } from "../../structures/IEvidenceUnitSite";
 import type { EvidenceProgrammingSymbol } from "../../typings/EvidenceProgrammingSymbol";
 
-/** One PHP declaration before public units are materialized. */
+/**
+ * Captures one PHP declaration before public inventory materialization.
+ *
+ * PhpAdapter groups these lexical records into semantic units, retaining exact
+ * source spelling for public addresses while separately normalizing identity.
+ */
 export interface IPhpDeclaration {
-  /** Stable extraction identity. */
+  /**
+   * Stable scanner identity for this declaration occurrence.
+   *
+   * Documentation attachments and owner links use it before public units exist.
+   */
   id: string;
 
-  /** Exact source name. */
+  /**
+   * Declaration name exactly as PHP source spells it.
+   *
+   * Property names retain `$`, which is meaningful to public target construction.
+   */
   name: string;
 
-  /** Public selector category. */
+  /**
+   * Evidence selector family assigned to this declaration.
+   *
+   * Consumers use it to distinguish nominal types, functions, and properties.
+   */
   symbol: EvidenceProgrammingSymbol;
 
-  /** Original declaration syntax form. */
+  /**
+   * Tree-sitter declaration form that established this record.
+   *
+   * It lets later validation distinguish source constructs sharing one selector category.
+   */
   form: string;
 
-  /** Namespace and lexical owner segments. */
+  /**
+   * Namespace and lexical-owner segments forming semantic identity.
+   *
+   * PhpAdapter applies PHP case rules to this path without changing public spelling.
+   */
   identity: string[];
 
-  /** Exact file-qualified accessor segments. */
+  /**
+   * Exact accessor segments published beneath this declaration's source file.
+   *
+   * Address aliases remain independent of semantic identity and preserve case-sensitive properties.
+   */
   address: string[];
 
-  /** Original declaration site and semantic content. */
+  /**
+   * Source site and content ranges used for fingerprints and documentation hosts.
+   *
+   * The scanner can include declaration carriers and separated property elements precisely.
+   */
   site: IEvidenceUnitSite;
 
-  /** Whether source visibility exposes this declaration. */
+  /**
+   * Whether lexical PHP visibility exposes this declaration on the supported surface.
+   *
+   * A hidden owner also prevents all of its members from being published.
+   */
   public: boolean;
 
-  /** Lexical type owner when present. */
+  /**
+   * Scanner identity of the enclosing nominal declaration when this is a member.
+   *
+   * Omission denotes a namespace-level declaration with no inherited visibility boundary.
+   */
   ownerDeclarationId?: string;
 }

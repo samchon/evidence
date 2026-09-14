@@ -7,7 +7,20 @@ import { join } from "node:path";
 
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
-/** Rejects unowned target families and exclusions outside configured carriers. */
+/**
+ * Rejects acknowledgements that lie outside a claim's target and exclusion boundaries.
+ *
+ * A TypeScript-function claim owns Markdown heading targets only. Its graph must
+ * expose an annotation for a Prisma target as a configuration-participation
+ * error, and must constrain valid Markdown exclusions to declared carrier files.
+ *
+ * 1. Evaluate a function annotated with a Prisma model and require the
+ *    check-non-participating-acknowledgement diagnostic.
+ * 2. Replace it with an exclusion for the configured Markdown target, then limit
+ *    exclusion carriers to a different source file.
+ * 3. Require the misplaced source host to report graph-out-of-scope-host and an
+ *    error exit rather than silently accepting or discarding the exclusion.
+ */
 export async function test_checker_participation(): Promise<void> {
   const location = join(__dirname, `participation ${randomUUID()}`);
   await TestFileSystem.experiment(

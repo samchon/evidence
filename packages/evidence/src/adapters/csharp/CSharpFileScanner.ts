@@ -18,7 +18,12 @@ import type { ICSharpFileAnalysis } from "./ICSharpFileAnalysis";
 import type { ICSharpTypeContext } from "./ICSharpTypeContext";
 import { SourceText } from "../../internal/SourceText";
 
-/** Extracts C# namespaces, declarations, and XML documentation. */
+/**
+ * Extracts C# namespaces, declarations, and XML documentation.
+ *
+ * It preserves declaration ownership and physical attachment decisions for
+ * `CSharpAdapter`, which reconciles partial families after parsing closes.
+ */
 export class CSharpFileScanner {
   private readonly declarations: ICSharpDeclaration[] = [];
   private readonly documentation = new Map<string, ICSharpDocumentation>();
@@ -31,6 +36,12 @@ export class CSharpFileScanner {
   private readonly text: SourceText;
   private complete = true;
 
+  /**
+   * Binds the scanner to one C# parser session and captured source file.
+   *
+   * XML documentation is collected first so declaration adjacency remains a
+   * property of the original source rather than a materialized unit.
+   */
   public constructor(
     private readonly session: EvidenceParseSession,
     private readonly source: IEvidenceSourceFile,
@@ -39,6 +50,12 @@ export class CSharpFileScanner {
     this.collectDocumentation();
   }
 
+  /**
+   * Extracts supported file and block namespace declarations into a file record.
+   *
+   * Invalid namespace or declaration surfaces contribute diagnostics and preserve
+   * incompleteness for the adapter's final inventory.
+   */
   public scan(): ICSharpFileAnalysis {
     let namespacePath: string[] = [];
     let fileScoped = false;

@@ -7,7 +7,22 @@ import { join } from "node:path";
 import { SourcePath } from "../../../../packages/evidence/src/internal/SourcePath";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
-/** Distinguishes healthy empty selections from missing roots, files, and invalid UTF-8. */
+/**
+ * Distinguishes healthy empty selections from missing roots, files, and invalid UTF-8.
+ *
+ * Source discovery must retain recoverable dependencies and valid neighboring
+ * files when a selected population cannot be read completely.
+ *
+ * 1. Glob an absent pattern, a missing root, and a root occupied by a file;
+ *    require a complete empty result only for the absent pattern and the
+ *    root-unreadable diagnostic for both roots.
+ * 2. Verify that the missing root remains a recursive dependency, then load a
+ *    missing exact file and a directory as a file to exercise exact-path failure.
+ * 3. Add malformed UTF-8 beside a valid Markdown file and require an incomplete
+ *    snapshot with the encoding diagnostic while retaining the valid neighbor.
+ * 4. Exclude the malformed file and require the selected population to become
+ *    complete because discovery does not open deliberately excluded input.
+ */
 export async function test_source_failures(): Promise<void> {
   const location = join(__dirname, "failures-" + randomUUID());
 

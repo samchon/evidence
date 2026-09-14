@@ -4,7 +4,17 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Attaches HTML comments to their current unit and rejects comments below H5/H6 hosts. */
+/**
+ * Attaches Markdown HTML comments to supported heading hosts.
+ *
+ * Comment ownership follows the current file or H1-H4 section. Comments below
+ * H5/H6 are retained as hosts for diagnostics but cannot contribute declarations.
+ *
+ * 1. Analyze CRLF content with file, parent, child, deep-heading, and supported-heading comments.
+ * 2. Verify host attachment counts and the collected evidence, exclusion, and review records.
+ * 3. Require an unsupported-host diagnostic only for the comment under the H5 heading.
+ * 4. Verify the review range uses original CRLF coordinates and slices to its annotation text.
+ */
 export async function test_markdown_hosts(): Promise<void> {
   const content = dedent`
     <!-- @evidence docs/spec.md#file Supplies the document contract. -->

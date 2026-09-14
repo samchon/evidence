@@ -12,8 +12,25 @@ import { createEvidenceConfigPlan } from "../../../../packages/evidence/src/inte
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
 /**
- * Runs one graph through Markdown, Prisma, Swagger, implementation, and test
- * declarations, then proves that each changed input fails for its own reason.
+ * Runs one graph through Markdown, Prisma, Swagger, implementation, and test declarations.
+ *
+ * The cross-language graph must keep independently configured obligations and
+ * distinguish coverage violations from target-resolution and parser failures.
+ *
+ * 1. Evaluate the five-claim fixture spanning TypeScript, Markdown, Prisma, and
+ *    Swagger; require six covered obligations with the expected claim, reference,
+ *    artifact, and unit counts.
+ * 2. Remove one implementation-to-Markdown citation and require only that
+ *    obligation to become missing, with exit 1 and its graph diagnostic.
+ * 3. Add a second Markdown requirement and require the denominator to grow to
+ *    seven units with one missing acknowledgement.
+ * 4. Rename the barrel export cited by the test claim and require the precise
+ *    file-qualified target-missing-member diagnostic plus the resulting gap.
+ * 5. Malform the Swagger document and require incomplete exit 2, diagnostics at
+ *    every affected graph position, and no derivative empty-reference or missing
+ *    acknowledgement findings.
+ * 6. Restore the fixture records and require the same complete six-obligation
+ *    graph in the existing checker process.
  */
 export async function test_cross_language_graph(): Promise<void> {
   const location = join(__dirname, `cross-language-${randomUUID()}`);

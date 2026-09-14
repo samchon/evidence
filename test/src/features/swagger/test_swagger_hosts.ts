@@ -9,7 +9,13 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Parses operation descriptions while excluding unrelated Swagger descriptions. */
+/** Parses annotation tags from supported Swagger operation descriptions.
+ *
+ * Descriptions on unrelated document nodes cannot acknowledge an operation, even when their text contains a tag.
+ *
+ * 1. Analyze eligible and ineligible descriptions.
+ * 2. Verify extracted targets, coordinates, and host diagnostics.
+ */
 export async function test_swagger_hosts(): Promise<void> {
   const inventory = await new EvidenceSwaggerAdapter().analyze(
     TestSourceSnapshot.create(

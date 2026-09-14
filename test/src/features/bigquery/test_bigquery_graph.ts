@@ -9,7 +9,14 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Requires positive and missing coverage in both roles for every database selector. */
+/** Evaluates acknowledgement coverage for each BigQuery model, column, and relation selector.
+ *
+ * Both directions of a database-to-TypeScript claim must use the exact selected denominator rather than treating a missing acknowledgement as an empty population.
+ *
+ * 1. Create one schema unit of each selector kind and one TypeScript contract with and without reciprocal evidence.
+ * 2. Evaluate each inventory as both claimant and reference.
+ * 3. Require acknowledged graphs to pass and unacknowledged graphs to report every referenced unit as missing.
+ */
 export async function test_bigquery_graph(): Promise<void> {
   const adapter = new EvidenceBigQueryAdapter();
   for (const symbol of ["model", "column", "relation"] as const) {

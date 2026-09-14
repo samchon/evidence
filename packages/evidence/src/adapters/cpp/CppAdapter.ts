@@ -22,10 +22,34 @@ import type { ICppDocumentation } from "./ICppDocumentation";
 import type { ICppFileAnalysis } from "./ICppFileAnalysis";
 import type { ICppResolvedAlias } from "./ICppResolvedAlias";
 
-/** Builds C++ declared-source inventories from the configured source snapshot. */
+/**
+ * Reconciles C++ declaration families, public aliases, and documentation ownership.
+ *
+ * The scanner records lexical declarations and qualified definitions before the
+ * snapshot-wide materializer decides which occurrences belong to one unit.
+ * Alias resolution can then project public paths without changing canonical
+ * identity. Documentation is attached only after those relationships are known.
+ *
+ * The pipeline carries conflicts and unsupported source forms into incomplete
+ * output. It does not replace C++ lookup, preprocessing, or instantiation with
+ * name-based guesses merely to produce a smaller public inventory.
+ */
 export class CppAdapter implements IEvidenceAdapter {
+  /**
+   * C++ artifact discriminator used by the public adapter.
+   *
+   * The configured type selects C++ grammar and ownership policy even for header
+   * extensions also accepted by C; extension overlap does not choose semantics.
+   */
   public readonly type = "cpp";
 
+  /**
+   * Builds a C++ inventory from an owned copy of the source snapshot.
+   *
+   * Parsing precedes declaration and alias reconciliation, followed by annotation
+   * materialization and common inventory validation. Failures retain diagnostics,
+   * and the invocation's parser closes regardless of the extraction outcome.
+   */
   public async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {
@@ -59,6 +83,8 @@ export class CppAdapter implements IEvidenceAdapter {
         inventory.diagnostics.push(...analysis.diagnostics);
         inventory.complete &&= analysis.complete;
       }
+      // Qualified definitions and aliases need the complete selected declaration
+      // set before a documentation position can be assigned its semantic owners.
       const published = this.materializeUnits(inventory, analyses);
       this.materializeDocumentation(inventory, analyses, published);
       return new EvidenceInventory([inventory]).snapshot();

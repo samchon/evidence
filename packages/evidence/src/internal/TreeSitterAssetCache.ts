@@ -13,15 +13,21 @@ import type { ITreeSitterAssetLock } from "./ITreeSitterAssetLock";
 import type { ITreeSitterAssetOptions } from "./ITreeSitterAssetOptions";
 import type { ITreeSitterAssetPending } from "./ITreeSitterAssetPending";
 
-/** Acquires immutable upstream grammars and validates every cache read before loading WASM. */
+/**
+ * Acquires immutable upstream grammars and validates every cache read before loading WASM.
+ *
+ * Concurrent callers share transfer work by destination but receive independent
+ * byte arrays. Atomic publication and lock recovery prevent partial or abandoned
+ * downloads from becoming trusted cache entries across processes.
+ */
 export class TreeSitterAssetCache {
-  /** Transfers shared across independent adapter/parser instances. */
+  /** Process-local transfers keyed by immutable cache destination. */
   private static readonly pending = new Map<string, ITreeSitterAssetPending>();
 
-  /** Captures execution-local controls without performing filesystem or network work. */
+  /** Captures acquisition controls without performing filesystem or network work. */
   public constructor(private readonly options: ITreeSitterAssetOptions) {}
 
-  /** Returns verified bytes, automatically repairing missing or damaged cache entries. */
+  /** Returns verified caller-owned bytes, automatically repairing missing or damaged cache entries. */
   public async bytes(grammar: IEvidenceGrammar): Promise<Uint8Array> {
     const destination = path.join(
       cacheDirectory(this.options.cacheDirectory),
@@ -80,7 +86,12 @@ export class TreeSitterAssetCache {
     }
   }
 
-  /** Coordinates publication across processes and cleans up only this attempt's files. */
+  /**
+   * Acquires a cross-process cache lock, verifies downloaded bytes, and atomically publishes one entry.
+   *
+   * The finally block removes only files owned by this acquisition, preserving
+   * another process's active lock and completed cache entry.
+   */
   private async acquire(
     grammar: IEvidenceGrammar,
     destination: string,
@@ -146,7 +157,12 @@ export class TreeSitterAssetCache {
     }
   }
 
-  /** Downloads the pinned URL with finite attempts, a body deadline, and an exact size bound. */
+  /**
+   * Downloads one pinned grammar with bounded retries, response size, and cancellation.
+   *
+   * Hash verification remains in the caller so every cache and fresh-download
+   * path shares the same immutable-asset check.
+   */
   private async download(
     grammar: IEvidenceGrammar,
     signal: AbortSignal,
@@ -213,7 +229,12 @@ export class TreeSitterAssetCache {
   }
 }
 
-/** Resolves platform cache conventions without writing to node_modules or the source project. */
+/**
+ * Selects the explicit, environment, or platform cache root without creating it.
+ *
+ * Acquisition owns directory creation so resolving a location never changes the
+ * project or user cache as a side effect.
+ */
 function cacheDirectory(override: string | undefined): string {
   const configured = override ?? process.env["EVIDENCE_CACHE_DIR"];
   if (configured !== undefined) {
@@ -244,7 +265,12 @@ function cacheDirectory(override: string | undefined): string {
   );
 }
 
-/** Rejects oversized cache entries before reading their contents. */
+/**
+ * Reads a cache file only when its size and SHA-256 match pinned provenance.
+ *
+ * Checking metadata first avoids loading a corrupted or unexpectedly large
+ * file before immutable-asset validation.
+ */
 async function verified(
   file: string,
   asset: IEvidenceGrammarAsset,
@@ -259,7 +285,12 @@ async function verified(
   }
 }
 
-/** Checks the complete immutable identity, independent of transport response headers. */
+/**
+ * Verifies immutable bytes against the exact declared size and digest.
+ *
+ * Response headers cannot establish grammar provenance, so this comparison is
+ * the shared trust boundary for cached and downloaded data.
+ */
 function matches(bytes: Uint8Array, asset: IEvidenceGrammarAsset): boolean {
   return (
     bytes.length === asset.size &&
@@ -267,7 +298,12 @@ function matches(bytes: Uint8Array, asset: IEvidenceGrammarAsset): boolean {
   );
 }
 
-/** Reads no more than the catalog's expected bytes and always releases the response stream. */
+/**
+ * Streams a response with a byte cap so a bad server cannot exhaust the process before validation.
+ *
+ * The reader is always released, including when the advertised asset is too
+ * large or the stream ends unexpectedly.
+ */
 async function boundedBody(
   response: Response,
   size: number,
@@ -298,7 +334,12 @@ async function boundedBody(
   }
 }
 
-/** Waits for shared work while allowing one subscriber to stop independently. */
+/**
+ * Races a shared transfer against one caller's cancellation without cancelling peers.
+ *
+ * Other parser sessions may still consume the same destination promise, so a
+ * single abort cannot own the shared controller.
+ */
 async function consume(
   promise: Promise<Uint8Array>,
   signal: AbortSignal | undefined,
@@ -321,12 +362,21 @@ async function consume(
   }
 }
 
-/** Recognizes a filesystem condition without assuming every thrown value is an errno object. */
+/**
+ * Narrows expected filesystem error codes used for cache recovery decisions.
+ *
+ * Unknown thrown values remain non-matches and are propagated by the caller.
+ */
 function fileError(cause: unknown, code: string): boolean {
   return cause instanceof Error && "code" in cause && cause.code === code;
 }
 
-/** Reads a lock if present; incomplete lock writes use the age-based recovery path. */
+/**
+ * Reads and validates lock ownership, treating malformed locks as recoverable stale state.
+ *
+ * Incomplete writes flow into age-based recovery instead of being trusted as a
+ * live owner.
+ */
 async function readLock(
   file: string,
 ): Promise<ITreeSitterAssetLock | undefined> {
@@ -341,7 +391,12 @@ async function readLock(
   }
 }
 
-/** Recovers dead owners and old partial lock writes; live owners are never evicted by age. */
+/**
+ * Removes only stale lock files after checking owner liveness and acquisition age.
+ *
+ * A live process keeps its lock regardless of age, preventing one slow download
+ * from being replaced by a competing acquisition.
+ */
 async function recoverLock(file: string): Promise<void> {
   const owner = await readLock(file);
   if (owner !== undefined) {

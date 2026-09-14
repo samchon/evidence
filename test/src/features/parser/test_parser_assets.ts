@@ -8,7 +8,23 @@ import { TreeSitterAssets } from "../../../../packages/evidence/src/internal/Tre
 import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestParserError } from "../../internal/TestParserError";
 
-/** Acquires exact pinned bytes once, repairs damaged cache entries, and reuses a warm cache offline. */
+/**
+ * Shares verified grammar acquisition and repairs corruption in a reusable cache.
+ *
+ * Grammar bytes must remain immutable across callers, and offline reuse is safe
+ * only after verification. The scenario supplies pinned bytes through a controlled
+ * fetch implementation and uses a disposable cache to exercise cold and warm paths.
+ *
+ * 1. Request one cold grammar concurrently from eight callers:
+ *    - Require exactly one request to the pinned URL.
+ *    - Require complete bytes for every caller and independent returned arrays.
+ * 2. Open the warm cache with a fetch implementation that always fails and require
+ *    the same bytes without network access.
+ * 3. Replace the cached file with corrupt content and require offline acquisition
+ *    to fail instead of accepting the damaged entry.
+ * 4. Restore network access and require one repair download, successful offline
+ *    reuse afterward, and no transient files beside the verified cache entry.
+ */
 export async function test_parser_assets(): Promise<void> {
   const original = new TreeSitterAssets();
   const grammar = await original.grammar("python");

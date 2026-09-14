@@ -11,7 +11,15 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Evaluates Python type, function, and property hosts and semantic fingerprints. */
+/**
+ * Evaluates Python evidence hosts against Markdown requirements and fingerprints.
+ *
+ * A type, function docstring, and property comment acknowledge separate requirements, allowing graph coverage and semantic-change behavior to be checked independently.
+ *
+ * 1. Analyze the requirement document and Python implementation, then require complete graph coverage.
+ * 2. Remove each acknowledgement in turn and verify the corresponding requirement is the exact missing obligation.
+ * 3. Compare function fingerprints after metadata-only and implementation-body edits, preserving the former and changing the latter.
+ */
 export async function test_python_graph(): Promise<void> {
   const requirements = await new EvidenceMarkdownAdapter().analyze(
     TestSourceSnapshot.create(

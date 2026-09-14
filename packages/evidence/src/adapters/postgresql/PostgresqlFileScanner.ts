@@ -9,15 +9,32 @@ import type { ISqlDocumentation } from "../sql/ISqlDocumentation";
 import type { IPostgresqlFileAnalysis } from "./IPostgresqlFileAnalysis";
 import { PostgresqlIdentity } from "./PostgresqlIdentity";
 
-/** Extracts a bounded PostgreSQL DDL surface from authoritative grammar nodes. */
+/**
+ * Extracts the supported PostgreSQL DDL surface from authoritative grammar nodes.
+ *
+ * It records unsupported schema changes as incomplete instead of producing a
+ * smaller declaration inventory that could make coverage pass.
+ */
 export class PostgresqlFileScanner {
-  /** Serializable analysis owned by this source scan. */
+  /**
+   * Accumulates the serializable analysis for this source scan.
+   *
+   * References remain provisional until cross-file ownership resolution completes.
+   */
   private readonly output: Required<IPostgresqlFileAnalysis>;
 
-  /** Declaration nodes retained only during this parser callback. */
+  /**
+   * Maps parser-node offsets to declarations created from that node.
+   *
+   * Comment attachment uses this transient map before the scanner returns its serializable output.
+   */
   private readonly nodes = new Map<number, ISqlDeclaration[]>();
 
-  /** Binds one borrowed syntax tree and original UTF-16 source. */
+  /**
+   * Binds one borrowed PostgreSQL syntax tree and its UTF-16 source snapshot.
+   *
+   * Parser nodes are retained only for this scan and never escape in the analysis result.
+   */
   public constructor(
     private readonly session: EvidenceParseSession,
     private readonly source: IEvidenceSourceFile,
@@ -32,14 +49,22 @@ export class PostgresqlFileScanner {
     };
   }
 
-  /** Visits statements without descending into executable bodies or string examples. */
+  /**
+   * Visits supported statements and attaches adjacent SQL comments.
+   *
+   * Traversal stays at statement syntax so executable bodies and string examples cannot create units.
+   */
   public scan(): IPostgresqlFileAnalysis {
     for (const node of this.session.root.namedChildren) this.statement(node);
     this.comments();
     return this.output;
   }
 
-  /** Rejects every statement outside the declared schema snapshot boundary. */
+  /**
+   * Dispatches supported DDL statements and rejects all other statement forms.
+   *
+   * The declared boundary is intentionally narrow because migrations require stateful evaluation.
+   */
   private statement(node: Node): void {
     if (this.commentNode(node)) return;
     if (node.type === "statement") {
@@ -69,7 +94,11 @@ export class PostgresqlFileScanner {
       );
   }
 
-  /** Publishes only tables with explicit columns and a schema-qualified owner. */
+  /**
+   * Publishes tables only when columns and a schema-qualified owner are explicit.
+   *
+   * Inferred schemas and search-path-dependent identities cannot form stable Evidence units.
+   */
   private table(node: Node): void {
     const reference = node.namedChildren.find(
       (child) => child.type === "object_reference",
@@ -115,7 +144,11 @@ export class PostgresqlFileScanner {
         );
   }
 
-  /** Keeps ordinary columns distinct from separately selectable foreign-key relations. */
+  /**
+   * Publishes a column while keeping foreign-key relations separately selectable.
+   *
+   * A column belongs to its table, whereas a relation has its own semantic identity.
+   */
   private column(node: Node, table: ISqlDeclaration): void {
     const nameNode = node.childForFieldName("name");
     if (nameNode !== null && /^like$/iu.test(nameNode.text)) {
@@ -154,7 +187,11 @@ export class PostgresqlFileScanner {
       this.relation(node, table, [name]);
   }
 
-  /** Treats non-relation constraints as semantic content of the owning table. */
+  /**
+   * Processes constraints as table semantics unless they declare a foreign-key relation.
+   *
+   * Unsupported dialect-specific keys and indexes are diagnosed before inventory materialization.
+   */
   private constraint(
     node: Node,
     table: ISqlDeclaration,
@@ -208,7 +245,11 @@ export class PostgresqlFileScanner {
       );
   }
 
-  /** Encodes every composite endpoint in stable anonymous foreign-key identities. */
+  /**
+   * Publishes a foreign key using stable identities for composite endpoints.
+   *
+   * Anonymous constraints must retain endpoint meaning without depending on statement order.
+   */
   private relation(
     node: Node,
     table: ISqlDeclaration,
@@ -252,7 +293,11 @@ export class PostgresqlFileScanner {
     this.declaration(node, "relation", [...table.identity, segment], table.id);
   }
 
-  /** Supports additive ALTER declarations and rejects destructive or stateful migrations. */
+  /**
+   * Extracts supported additive ALTER TABLE declarations.
+   *
+   * Destructive or stateful migrations require database history and are rejected by this snapshot scanner.
+   */
   private alter(node: Node): void {
     const target = node.namedChildren.find(
       (child) => child.type === "object_reference",
@@ -340,7 +385,11 @@ export class PostgresqlFileScanner {
     }
   }
 
-  /** Attaches COMMENT ON TABLE/COLUMN strings to the selected declaration identity. */
+  /**
+   * Attaches supported COMMENT ON TABLE or COLUMN strings to their target identity.
+   *
+   * The resulting declaration site resolves against an existing owner after all files are scanned.
+   */
   private commentStatement(node: Node): void {
     const column = node.namedChildren.some(
       (child) => child.type === "keyword_column",
@@ -411,7 +460,11 @@ export class PostgresqlFileScanner {
     });
   }
 
-  /** Creates one physical declaration with a semantic identity independent of its file. */
+  /**
+   * Creates one physical declaration with a file-independent semantic identity.
+   *
+   * Cross-file ALTER and COMMENT sites can therefore merge with the same selected declaration.
+   */
   private declaration(
     node: Node,
     symbol: EvidenceDatabaseSymbol,
@@ -442,7 +495,11 @@ export class PostgresqlFileScanner {
     return declaration;
   }
 
-  /** Establishes adjacent SQL comment ownership before shared annotation parsing. */
+  /**
+   * Establishes ownership for adjacent SQL comments before shared annotation parsing.
+   *
+   * Only standalone runs immediately before a declaration become documentation carriers.
+   */
   private comments(): void {
     const comments = this.session.root.descendantsOfType([
       "comment",
@@ -500,12 +557,20 @@ export class PostgresqlFileScanner {
     }
   }
 
-  /** Identifies parser extras without interpreting their contents as DDL. */
+  /**
+   * Identifies parser extras without interpreting their contents as DDL.
+   *
+   * Comments and marginalia are handled only by the documentation attachment pass.
+   */
   private commentNode(node: Node): boolean {
     return node.type === "comment" || node.type === "marginalia";
   }
 
-  /** Makes unsupported surface-changing syntax explicitly incomplete. */
+  /**
+   * Marks unsupported surface-changing syntax as explicitly incomplete.
+   *
+   * The diagnostic preserves the failure rather than allowing coverage to use fewer obligations.
+   */
   private problem(node: Node, message: string): void {
     this.output.complete = false;
     this.output.diagnostics.push({

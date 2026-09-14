@@ -3,7 +3,12 @@ import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { ILuaDeclaration } from "./ILuaDeclaration";
 import type { ILuaDocumentation } from "./ILuaDocumentation";
 
-/** Node-free Lua extraction retained after a parse session closes. */
+/**
+ * Holds the node-free Lua extraction retained after a parse session closes.
+ *
+ * Static initialization is interpreted only while scanning; this record carries
+ * the resulting public-value candidates into inventory materialization.
+ */
 export interface ILuaFileAnalysis {
   /** Original selected source snapshot. */
   source: IEvidenceSourceFile;
@@ -17,6 +22,11 @@ export interface ILuaFileAnalysis {
   /** Failures encountered while establishing the public surface. */
   diagnostics: IEvidenceDiagnostic[];
 
-  /** Whether every relevant declaration form was understood. */
+  /**
+   * States whether static extraction understood every relevant source form.
+   *
+   * A false value keeps unsupported dynamic behavior visible to callers rather
+   * than treating an incomplete table projection as an empty public surface.
+   */
   complete: boolean;
 }

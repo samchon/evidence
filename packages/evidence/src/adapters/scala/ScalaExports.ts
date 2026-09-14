@@ -3,9 +3,19 @@ import { ScalaDocumentation } from "./ScalaDocumentation";
 import type { IScalaDeclaration } from "./IScalaDeclaration";
 import type { IScalaFileAnalysis } from "./IScalaFileAnalysis";
 
-/** Resolves named exports as alternate addresses of selected public source members. */
+/**
+ * Resolves named exports as alternate addresses of selected public source members.
+ *
+ * Export syntax has its own physical declaration and documentation site, while
+ * the forwarded member retains identity and withdrawal ownership at its source.
+ */
 export namespace ScalaExports {
-  /** Keeps source ownership and identity while attaching the export's own declaration site. */
+  /**
+   * Keeps source ownership and identity while attaching the export's own declaration site.
+   *
+   * Only one selected singleton owner can satisfy an export; ambiguity remains
+   * incomplete instead of choosing a same-named member from another object.
+   */
   export function resolve(analyses: IScalaFileAnalysis[]): void {
     const declarations = analyses.flatMap((analysis) => analysis.declarations);
     const hidden = withdrawals(analyses);

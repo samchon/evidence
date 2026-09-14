@@ -11,7 +11,14 @@ interface ICppTargetStatus {
   status: EvidenceTargetResolutionStatus;
 }
 
-/** Resolves C++ namespaces, templates, callable names, and bounded aliases. */
+/** Resolves C++ namespaces, templates, callable families, and bounded aliases.
+ *
+ * Target resolution must retain template and owner boundaries so a short alias cannot select a different declaration subtree.
+ *
+ * 1. Analyze nested namespaces, templates, and callable declarations.
+ * 2. Resolve exact evidence paths for valid public units.
+ * 3. Require invalid, missing, or ambiguous aliases to preserve their resolution status.
+ */
 export async function test_cpp_targets(): Promise<void> {
   const adapter = new EvidenceCppAdapter();
   const reference = await adapter.analyze(

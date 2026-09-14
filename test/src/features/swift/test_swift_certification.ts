@@ -1,7 +1,13 @@
 import { AdapterCertification } from "../../internal/certification/AdapterCertification";
 import { AdapterCertificationFixtures } from "../../internal/certification/AdapterCertificationFixtures";
 
-/** Certifies Swift inventory, graph failures, and fingerprints through the unchanged shared contract. */
+/** Applies shared adapter certification to Swift.
+ *
+ * The Swift fixture defines inventory, graph, and fingerprint expectations.
+ *
+ * 1. Construct the fixture.
+ * 2. Run every shared certification gate.
+ */
 export async function test_swift_certification(): Promise<void> {
   const fixture = AdapterCertificationFixtures.all().find(
     (item) => item.type === "swift",

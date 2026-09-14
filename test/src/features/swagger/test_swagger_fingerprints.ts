@@ -8,7 +8,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Tracks normalized operation content through component and description edits. */
+/** Tracks Swagger operation fingerprints through normalized content edits.
+ *
+ * Component references and operation descriptions affect review meaning according to normalized operation content.
+ *
+ * 1. Analyze an operation with referenced components and descriptions.
+ * 2. Apply component and description edits.
+ * 3. Verify the expected fingerprint stability or invalidation.
+ */
 export async function test_swagger_fingerprints(): Promise<void> {
   const baseline = await analyze(document("Creates a member.", "string"));
   const post = fingerprint(baseline, "POST:/members");

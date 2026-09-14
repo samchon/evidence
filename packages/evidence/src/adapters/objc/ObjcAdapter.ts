@@ -18,12 +18,29 @@ import type { IObjcFileAnalysis } from "./IObjcFileAnalysis";
 import { ObjcDocumentation } from "./ObjcDocumentation";
 import { ObjcFileScanner } from "./ObjcFileScanner";
 
-/** Builds Objective-C source-public inventories from the configured source snapshot. */
+/**
+ * Extracts Objective-C public declarations into merged units and comment hosts.
+ *
+ * Interface, category, and implementation records require a shared ownership model
+ * before documentation can be attributed to semantic API subjects. The adapter
+ * retains each physical site while normalizing published identities and preserving
+ * failures that prevent complete extraction.
+ */
 export class ObjcAdapter implements IEvidenceAdapter {
-  /** Configured language discriminator, independent of overlapping extensions. */
+  /**
+   * Configured language discriminator for Objective-C extraction.
+   *
+   * It selects Objective-C rules even when headers or .m files overlap other
+   * registered language extensions.
+   */
   public readonly type = "objc";
 
-  /** Builds an owned serializable inventory and closes every borrowed parser session. */
+  /**
+   * Builds an owned Objective-C inventory from captured source contents.
+   *
+   * Unit publication precedes documentation materialization, and source or parser
+   * failures retain incomplete state. The runtime closes after accepted scans settle.
+   */
   public async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {
@@ -57,6 +74,8 @@ export class ObjcAdapter implements IEvidenceAdapter {
         inventory.diagnostics.push(...analysis.diagnostics);
         inventory.complete &&= analysis.complete;
       }
+      // Documentation sites must use the published owner identity rather than
+      // treating interface and implementation fragments as unrelated subjects.
       const published = this.materializeUnits(inventory, analyses);
       this.materializeDocumentation(inventory, analyses, published);
       return new EvidenceInventory([inventory]).snapshot();
@@ -65,7 +84,12 @@ export class ObjcAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Converts parser failures into incomplete source inventories. */
+  /**
+   * Extracts declaration records within one borrowed Objective-C parse session.
+   *
+   * Failures retain the physical source and parser range when available, marking
+   * the analysis incomplete instead of accepting an empty public surface.
+   */
   private async scan(
     parser: EvidenceParser,
     source: IEvidenceSourceFile,

@@ -1,14 +1,35 @@
 import type { EvidenceSeverity } from "../typings/EvidenceSeverity";
 
 /**
- * Coverage policies for one independent reference. Ordinary evidence and
- * permitted exclusions cover selected targets and descendants.
+ * Shared selection and coverage policy for one referenced population.
+ *
+ * A reference creates an independent obligation within its claim. Ordinary
+ * evidence and permitted exclusions cover selected targets and their selected
+ * descendants. Unselected structural ancestors can remain addressable so authors
+ * can cite an aggregate scope without changing the required population.
+ *
+ * The optional policies tighten different parts of that obligation:
+ *
+ * 1. `noEvidenceExclude` requires positive evidence rather than non-applicability.
+ * 2. `uniqueEvidence` limits positive semantic hosts for each selected unit.
+ * 3. `singleEvidencePerSymbol` requires one selected target per claim host.
+ * 4. `requireReview` validates a paired review against current target content.
+ *
+ * Defaults are permissive. A strict reference and a permissive reference can
+ * judge the same annotation differently without changing the shared inventory.
+ * Artifact-specific interfaces add file selection and, for Markdown, checklist
+ * semantics that require every host to answer every item.
  */
 export interface IEvidenceReferenceBase<
   Type extends string,
   SymbolKind extends string,
 > {
-  /** Artifact type of the referenced evidence. */
+  /**
+   * Artifact discriminator selecting the reference's extraction and target rules.
+   *
+   * This can differ from the claim's artifact type. It determines supported symbol
+   * selectors and target grammar, not which host language must acknowledge them.
+   */
   type: Type;
 
   /**
@@ -24,7 +45,9 @@ export interface IEvidenceReferenceBase<
   root?: string;
 
   /**
-   * Evidence symbol kinds; accepts one kind or a nonempty array. Defaults by family:
+   * Evidence symbol kinds selected as required units.
+   *
+   * Accepts one kind or a nonempty array. Defaults by family:
    *
    * - Programming: type when supported; otherwise every supported kind.
    * - Database: model.
@@ -36,14 +59,18 @@ export interface IEvidenceReferenceBase<
   symbol?: SymbolKind | SymbolKind[];
 
   /**
-   * Overrides the claim severity. Omit or use `undefined` to inherit.
-   * `"off"` disables this reference's population and obligation.
+   * Overrides the claim's inherited diagnostic severity.
+   *
+   * Omit or use `undefined` to inherit. `"off"` disables this reference's population
+   * and obligation after validating its configuration shape.
    */
   severity?: EvidenceSeverity | undefined;
 
   /**
-   * Reject exclusions for this reference, report them at their declarations, and
-   * leave their targets uncovered unless positive evidence acknowledges them.
+   * Refuses exclusion acknowledgements for this reference.
+   *
+   * Report refused exclusions at their declarations and leave their targets
+   * uncovered unless positive evidence acknowledges them.
    * The same declaration may still cover another reference that allows exclusions.
    *
    * @default false
@@ -51,8 +78,9 @@ export interface IEvidenceReferenceBase<
   noEvidenceExclude?: boolean;
 
   /**
-   * Allow at most one distinct claim host per evidence unit. Repeated tags,
-   * overloads, and merged declarations do not create additional hosts.
+   * Allows at most one distinct positive claim host per evidence unit.
+   *
+   * Repeated tags, overloads, and merged declarations do not create extra hosts.
    * Exclusions do not count; an uncited unit still fails coverage.
    *
    * @default false

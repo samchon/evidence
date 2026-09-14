@@ -4,7 +4,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Keeps each member fingerprint scoped to its own content and shared access metadata. */
+/** Scopes MATLAB member fingerprints to their own content and relevant metadata.
+ *
+ * A review must survive edits to unrelated members while changes to a member or its shared access policy invalidate the affected fingerprint.
+ *
+ * 1. Analyze a class with independently documented members and access metadata.
+ * 2. Compare fingerprints after unrelated and annotation-only edits.
+ * 3. Require semantic member and access changes to invalidate the relevant review.
+ */
 export async function test_matlab_fingerprints(): Promise<void> {
   const content = dedent`
     classdef Contract

@@ -8,12 +8,17 @@ import { TreeSitterAssetCache } from "./TreeSitterAssetCache";
 import { TreeSitterAssetScope } from "./TreeSitterAssetScope";
 import { TreeSitterGrammarCatalog } from "./TreeSitterGrammarCatalog";
 
-/** Reads compiled provenance and lazily acquires pinned grammar bytes in the user cache. */
+/**
+ * Reads compiled grammar provenance and lazily acquires verified pinned bytes.
+ *
+ * Metadata validation occurs before cache-key or URL use so a corrupted package
+ * catalog cannot redirect filesystem writes or downloads outside the asset boundary.
+ */
 export class TreeSitterAssets {
-  /** Execution-local acquisition controls inherited by independently constructed adapters. */
+  /** Cache instance bound to inherited and constructor-provided acquisition controls. */
   private readonly cache: TreeSitterAssetCache;
 
-  /** Captures optional acquisition overrides without reading or writing any package files. */
+  /** Captures optional acquisition overrides without reading, writing, or downloading assets. */
   public constructor(options: ITreeSitterAssetOptions = {}) {
     this.cache = new TreeSitterAssetCache({
       ...TreeSitterAssetScope.current(),
@@ -21,12 +26,12 @@ export class TreeSitterAssets {
     });
   }
 
-  /** Returns independent metadata without initializing WASM, writing the cache, or downloading assets. */
+  /** Returns validated metadata without initializing WASM, writing the cache, or downloading assets. */
   public async list(): Promise<IEvidenceGrammar[]> {
     return this.readManifest();
   }
 
-  /** Resolves a pinned syntax variant without preparing its bytes. */
+  /** Resolves one pinned grammar by ID without preparing or loading its bytes. */
   public async grammar(id: string): Promise<IEvidenceGrammar> {
     const grammar = (await this.list()).find((entry) => entry.id === id);
     if (grammar === undefined)
@@ -38,14 +43,14 @@ export class TreeSitterAssets {
     return grammar;
   }
 
-  /** Obtains verified cache bytes or automatically downloads the exact pinned asset. */
+  /** Obtains a caller-owned copy of verified bytes, repairing the immutable cache when necessary. */
   public async bytes(input: IEvidenceGrammar): Promise<Uint8Array> {
     const grammar = structuredClone(typia.assert(input));
     this.validate(grammar);
     return this.cache.bytes(grammar);
   }
 
-  /** Validates compiled catalog records and rejects duplicate identifiers. */
+  /** Validates compiled catalog records and rejects duplicate identifiers before returning them. */
   private readManifest(): IEvidenceGrammar[] {
     try {
       const entries = typia.assert(TreeSitterGrammarCatalog.list());
@@ -68,7 +73,7 @@ export class TreeSitterAssets {
     }
   }
 
-  /** Rejects unsafe metadata before it can choose a filesystem key or download destination. */
+  /** Rejects unsafe asset metadata before it can choose a filesystem key or network destination. */
   private validate(grammar: IEvidenceGrammar): void {
     for (const asset of [grammar.wasm, grammar.license]) {
       this.location(asset.file);

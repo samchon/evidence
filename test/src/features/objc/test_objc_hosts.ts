@@ -8,7 +8,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Preserves UTF-16 Doxygen positions and merged withdrawals while excluding comments and examples from acknowledgements. */
+/** Attaches Objective-C Doxygen annotations at exact source locations.
+ *
+ * Eligible documentation retains UTF-16 coordinates and merged withdrawals, while ordinary comments and examples cannot acknowledge units.
+ *
+ * 1. Analyze documented declarations, withdrawals, and inert comment-shaped text.
+ * 2. Verify targets, CRLF positions, and resolution behavior.
+ * 3. Compare semantic and documentation fingerprint effects.
+ */
 export async function test_objc_hosts(): Promise<void> {
   const source = dedent`
     /**

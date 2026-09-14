@@ -7,7 +7,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Certifies explicit project paths, nested/repeated field ownership, and declared key units. */
+/** Classifies BigQuery tables, fields, and declared keys with their full ownership paths.
+ *
+ * The selected schema surface includes nested and repeated field structure, so identity must retain explicit project qualifiers and parent relationships.
+ *
+ * 1. Analyze qualified tables with scalar, nested, repeated, and flexible-name fields plus key constraints.
+ * 2. Compare the complete unit identities and symbols against the declared schema surface.
+ * 3. Verify nested fields and constraints retain the model as their owner.
+ */
 export async function test_bigquery_units(): Promise<void> {
   const content = dedent`
     CREATE TABLE \`acme-prod.sales.orders\` (

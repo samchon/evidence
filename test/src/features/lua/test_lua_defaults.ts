@@ -5,7 +5,12 @@ import { join } from "node:path";
 
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
-/** Ensures a language without type declarations cannot pass through an empty default reference selector. */
+/** Prevents Lua from passing through an empty default type selector.
+ *
+ * A language without type units must retain an explicit graph obligation instead of treating an empty selector as coverage.
+ *
+ * 1. Configure a default type reference for Lua. 2. Run graph evaluation. 3. Require the empty selection to fail visibly.
+ */
 export async function test_lua_defaults(): Promise<void> {
   await TestFileSystem.experiment(
     "lua-defaults",

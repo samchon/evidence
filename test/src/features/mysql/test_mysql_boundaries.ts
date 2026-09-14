@@ -3,7 +3,14 @@ import { TestValidator } from "@nestia/e2e";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Keeps dialect changes, migration state, executable comments, and invalid names from passing with a smaller schema. */
+/** Rejects MySQL inputs that could hide part of the selected schema.
+ *
+ * Dialect changes, migration state, executable comments, invalid names, and source failures must produce incomplete analysis instead of a smaller success.
+ *
+ * 1. Analyze unsupported and malformed schema variants.
+ * 2. Require each result to be incomplete with its boundary diagnostic.
+ * 3. Verify failed snapshots and wrong extensions remain incomplete.
+ */
 export async function test_mysql_boundaries(): Promise<void> {
   const adapter = new EvidenceMysqlAdapter();
   for (const source of [

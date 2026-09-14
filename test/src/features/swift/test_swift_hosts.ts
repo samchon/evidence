@@ -8,7 +8,13 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Keeps DocC attachment and UTF-16 coordinates precise across attributes, CRLF, withdrawals, and inert examples. */
+/** Attaches Swift DocC with exact coordinates and withdrawal behavior.
+ *
+ * Attributes, CRLF text, and examples must not alter eligible host semantics.
+ *
+ * 1. Analyze DocC hosts, withdrawals, and examples.
+ * 2. Verify coordinates, targets, and fingerprints.
+ */
 export async function test_swift_hosts(): Promise<void> {
   const source = dedent`
     /// 계약 😀

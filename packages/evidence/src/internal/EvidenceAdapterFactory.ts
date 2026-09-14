@@ -29,8 +29,14 @@ import { EvidenceZigAdapter } from "../adapters/zig/EvidenceZigAdapter";
 import type { IEvidenceAdapter } from "../structures/IEvidenceAdapter";
 import type { EvidenceArtifactType } from "../typings/EvidenceArtifactType";
 
-/** Creates only adapters whose complete Evidence behavior is certified. */
+/**
+ * Constructs the adapter implementing one certified artifact contract.
+ *
+ * A fresh instance isolates parser/session state between analyses; unsupported
+ * additions fail here instead of producing a partial inventory downstream.
+ */
 export namespace EvidenceAdapterFactory {
+  /** Returns the dedicated adapter for a validated artifact discriminator. */
   export function create(type: EvidenceArtifactType): IEvidenceAdapter {
     if (type === "objc") return new EvidenceObjcAdapter();
     if (type === "dart") return new EvidenceDartAdapter();

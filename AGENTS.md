@@ -19,7 +19,7 @@ Durable conventions live under `.agents/skills/`. Read the linked skill when its
 
 - [Project](.agents/skills/project/SKILL.md): workspace layout, current product boundaries, dependencies, and canonical commands.
 - [Development](.agents/skills/development/SKILL.md): implementation, test, validation, and change-integrity rules. Read before changing code, package wiring, or CI.
-- [Documentation](.agents/skills/documentation/SKILL.md): README, guide, and agent-instruction writing. Read before editing documentation or skills.
+- [Documentation](.agents/skills/documentation/SKILL.md): prose, source JSDoc, implementation comments, test scenarios, and agent instructions. Read before editing documentation, source comments, or skills.
 - [Evidence Graph](.agents/skills/project/evidence/SKILL.md): units, targets, coverage, exclusions, reviews, and parser completeness. Read before changing graph semantics, configuration contracts, adapters, or diagnostics.
 - [Review](.agents/skills/review/SKILL.md): solo review of the whole declared change and its consequences. Use for ordinary review and self-review.
 - [Pull Request](.agents/skills/pull-request/SKILL.md): branches, commits, submission, checks, and merge boundaries. Use when the corresponding delivery action is authorized.
@@ -35,3 +35,5 @@ This file is the shared entry point for Codex and Claude Code; `CLAUDE.md` point
 Keep repository skills under `.agents/skills/<topic>/SKILL.md`, with unique kebab-case frontmatter names and third-person descriptions stating their scope and trigger. The nested `project/evidence` skill uses the name `evidence-graph`. Keep operational rules in their owning skill and link to them elsewhere. Use sibling documents for substantial conditional procedures; do not add UI metadata or empty resource directories.
 
 The skill structure and shared conventions are adapted from [samchon/ttsc](https://github.com/samchon/ttsc/tree/14a22f077caf23f1bfb8a97b3d9db765912074ef/.agents/skills). Keep changes appropriate to this standalone TypeScript/WASM project; compiler plugins, Go shims, and ttsc-specific benchmark operations are not this repository's implementation model.
+
+Apply the [documentation principles](.agents/skills/documentation/SKILL.md) to every skill and supporting instruction file. Keep each rule in one owning file and link to it from other workflows.

@@ -16,7 +16,22 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Checks an actual Markdown requirement through TypeScript implementation and test obligations. */
+/**
+ * Evaluates a requirement-to-implementation-to-test chain through real adapters.
+ *
+ * Each link is an independent configured claim/reference pair. Evidence from the
+ * test to the implementation cannot substitute for the implementation's citation
+ * to a requirement, and breaking one link must not erase the other link's coverage.
+ *
+ * 1. Extract a Markdown rounding requirement, a TypeScript method citing it, and
+ *    a TypeScript test citing that method; resolve both authored targets.
+ * 2. Evaluate both claim/reference pairs and require success with no diagnostics.
+ * 3. Remove only the implementation acknowledgement and require the requirement
+ *    to become missing while the test-to-implementation obligation remains covered.
+ * 4. Restore the implementation citation and remove only the test acknowledgement;
+ *    require implementation-to-requirement coverage to remain and the test's
+ *    reference obligation to report the method as missing.
+ */
 export async function test_graph_chain(): Promise<void> {
   const requirements = await new EvidenceMarkdownAdapter().analyze(
     TestSourceSnapshot.create(
@@ -220,6 +235,12 @@ export async function test_graph_chain(): Promise<void> {
   );
 }
 
+/**
+ * Locates an independently named fixture unit before building graph inputs.
+ *
+ * Markdown explicit IDs can appear as the final identity segment, while code
+ * fixtures use declaration names. Missing extraction fails setup immediately.
+ */
 function requireUnit(
   inventory: IEvidenceInventory,
   name: string,
@@ -232,6 +253,12 @@ function requireUnit(
   return unit;
 }
 
+/**
+ * Requires the fixture's authored acknowledgement to survive adapter extraction.
+ *
+ * The scenario has one citation per citing inventory; absence must fail setup
+ * instead of constructing an accidentally empty resolution list.
+ */
 function requireDeclaration(
   inventory: IEvidenceInventory,
 ): IEvidenceDeclaration {
@@ -241,6 +268,12 @@ function requireDeclaration(
   return declaration;
 }
 
+/**
+ * Finds the extracted carrier that owns a fixture acknowledgement.
+ *
+ * Resolution needs that carrier's source origin, so a missing host is a setup
+ * failure rather than a reason to invent a command-relative location.
+ */
 function requireHost(inventory: IEvidenceInventory, id: string): IEvidenceHost {
   const host = inventory.hosts.find((candidate) => candidate.id === id);
   if (host === undefined) throw new Error(`Missing graph host: ${id}`);

@@ -1,14 +1,35 @@
 import type { IEvidenceCheckAnalysis } from "../structures/IEvidenceCheckAnalysis";
 import type { EvidenceQueryPopulationContext } from "./EvidenceQueryPopulationContext";
 
-/** One owned analysis snapshot and the indexes shared by its query operations. */
+/**
+ * Owned query state shared by list, inspect, and graph programmers.
+ *
+ * The EvidenceQuery facade clones analysis before constructing this context and
+ * clones reports before returning them. Population indexes can therefore cache
+ * traversal results without depending on caller-owned mutable inventory data.
+ */
 export interface IEvidenceQueryContext {
-  /** Analysis snapshot isolated from caller mutations. */
+  /**
+   * Complete analysis bundle captured by the query facade.
+   *
+   * Its plan, inventories, graph input, and report remain aligned throughout the
+   * lifetime of the population indexes.
+   */
   readonly analysis: IEvidenceCheckAnalysis;
 
-  /** Absolute base directory for rendering and resolving query targets. */
+  /**
+   * Absolute directory anchoring file-qualified query targets.
+   *
+   * Capturing it once prevents later cwd changes from altering target formatting
+   * or inspection within the same facade.
+   */
   readonly cwd: string;
 
-  /** Claim and reference indexes reused across this facade's query operations. */
+  /**
+   * Claim and reference indexes belonging to the captured analysis.
+   *
+   * Each index keeps independent selection and obligation state despite shared
+   * semantic identities across configuration boundaries.
+   */
   readonly populations: EvidenceQueryPopulationContext[];
 }

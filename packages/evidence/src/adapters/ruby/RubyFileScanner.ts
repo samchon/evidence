@@ -21,17 +21,80 @@ import { RubySyntax } from "./RubySyntax";
 import type { RubyVisibility } from "./RubyVisibility";
 import { SourceText } from "../../internal/SourceText";
 
-/** Extracts bounded Ruby declarations, visibility changes, and documentation carriers. */
+/**
+ * Extracts bounded Ruby declarations, visibility changes, and documentation carriers.
+ *
+ * The scanner follows Ruby's ordered class and module directives while retaining
+ * declaration records for later inventory assembly and documentation attachment.
+ */
 export class RubyFileScanner {
+  /**
+   * Collects declarations in source order for visibility and alias resolution.
+   *
+   * Ruby directives can alter only prior declarations, so this list preserves
+   * the order required to reject ambiguous or forward targets.
+   */
   private readonly declarations: IRubyDeclaration[] = [];
+
+  /**
+   * Stores recognized documentation carriers by their source-range identity.
+   *
+   * Attachments are accumulated while declarations are scanned and later become
+   * evidence documentation mappings.
+   */
   private readonly documentation = new Map<string, IRubyDocumentation>();
+
+  /**
+   * Collects failures that make static Ruby surface extraction incomplete.
+   *
+   * The adapter emits these records instead of silently omitting dynamic forms.
+   */
   private readonly diagnostics: IEvidenceDiagnostic[] = [];
+
+  /**
+   * Deduplicates diagnostics encountered through overlapping syntax traversals.
+   *
+   * One unsupported directive should retain one actionable source location.
+   */
   private readonly reported = new Set<string>();
+
+  /**
+   * Remembers explicit constant visibility by lexical identity.
+   *
+   * Later declarations of the same constant inherit the most recent supported
+   * visibility directive in their selected source context.
+   */
   private readonly constantVisibility = new Map<string, RubyVisibility>();
+
+  /**
+   * Converts parser offsets to source ranges that survive parser cleanup.
+   *
+   * Declaration sites and attached documentation both use this one source view.
+   */
   private readonly text: SourceText;
+
+  /**
+   * States whether all surface-affecting Ruby constructs were classified.
+   *
+   * Unsupported dynamic behavior marks the file incomplete to protect coverage
+   * from a falsely reduced public population.
+   */
   private complete = true;
+
+  /**
+   * Supplies unique declaration-record suffixes within this source file.
+   *
+   * Synthetic aliases and module-function copies require identities distinct
+   * from the source declaration they derive from.
+   */
   private serial = 0;
 
+  /**
+   * Binds this scanner to the current parser session and selected Ruby source.
+   *
+   * Documentation is collected before declarations so adjacent comments are
+   * available when a site is emitted.
+   */
   public constructor(
     private readonly session: EvidenceParseSession,
     private readonly source: IEvidenceSourceFile,
@@ -41,6 +104,12 @@ export class RubyFileScanner {
     this.collectLiteralAnnotations();
   }
 
+  /**
+   * Produces the serializable extraction result for one Ruby source file.
+   *
+   * The root body is traversed with top-level scope state after documentation
+   * collection, preserving ordered visibility and attachment behavior.
+   */
   public scan(): IRubyFileAnalysis {
     const root: IRubyScopeContext = {
       kind: "top",
@@ -59,11 +128,21 @@ export class RubyFileScanner {
     };
   }
 
+  /**
+   * Scans statements in one Ruby lexical body.
+   *
+   * Context carries ordered visibility and owner state into each statement.
+   */
   private scanBody(body: Node, context: IRubyScopeContext): void {
     for (const statement of body.namedChildren)
       this.scanStatement(statement, context);
   }
 
+  /**
+   * Dispatches one statement to the supported Ruby surface classifier.
+   *
+   * Unrecognized nested surface changes are preserved as incomplete diagnostics.
+   */
   private scanStatement(statement: Node, context: IRubyScopeContext): void {
     switch (statement.type) {
       case "comment":
@@ -117,6 +196,11 @@ export class RubyFileScanner {
     }
   }
 
+  /**
+   * Extracts a class or module and traverses its owned lexical body.
+   *
+   * Owner identity and visibility state are derived before child declarations.
+   */
   private scanContainer(
     statement: Node,
     context: IRubyScopeContext,
@@ -175,6 +259,11 @@ export class RubyFileScanner {
     this.scanBody(body, nested);
   }
 
+  /**
+   * Extracts a singleton-class scope with singleton member ownership.
+   *
+   * Unsupported singleton owners are reported because their address is dynamic.
+   */
   private scanSingletonClass(
     statement: Node,
     context: IRubyScopeContext,
@@ -218,6 +307,11 @@ export class RubyFileScanner {
     this.scanBody(body, singleton);
   }
 
+  /**
+   * Extracts an instance method under the current Ruby scope.
+   *
+   * Scope visibility and module-function state determine its published form.
+   */
   private scanMethod(
     method: Node,
     wrapper: Node,
@@ -255,6 +349,11 @@ export class RubyFileScanner {
     if (moduleFunction) this.cloneModuleFunction(declaration);
   }
 
+  /**
+   * Extracts a statically named singleton method.
+   *
+   * The receiver must resolve to the current selected owner.
+   */
   private scanSingletonMethod(
     method: Node,
     wrapper: Node,
@@ -315,6 +414,11 @@ export class RubyFileScanner {
     );
   }
 
+  /**
+   * Adds a method declaration with its semantic and runtime names.
+   *
+   * The method centralizes site construction for ordinary and synthetic forms.
+   */
   private addMethod(
     method: Node,
     wrapper: Node,
@@ -343,6 +447,11 @@ export class RubyFileScanner {
     );
   }
 
+  /**
+   * Extracts supported constant assignments from the current scope.
+   *
+   * Dynamic targets are failures because they cannot supply stable addresses.
+   */
   private scanAssignment(statement: Node, context: IRubyScopeContext): void {
     const left = statement.childForFieldName("left");
     const path = RubySyntax.constantPath(left);
@@ -398,6 +507,11 @@ export class RubyFileScanner {
       );
   }
 
+  /**
+   * Dispatches a Ruby call that may alter the declared surface.
+   *
+   * Only known static directives are interpreted; the rest preserve boundaries.
+   */
   private scanCall(call: Node, context: IRubyScopeContext): void {
     const name = RubySyntax.callName(call);
     if (name === undefined) return;
@@ -448,6 +562,11 @@ export class RubyFileScanner {
       );
   }
 
+  /**
+   * Handles a directive written without an explicit receiver.
+   *
+   * Such calls inherit the current lexical scope and visibility state.
+   */
   private scanBareDirective(statement: Node, context: IRubyScopeContext): void {
     const name = statement.text;
     if (name === "public" || name === "private" || name === "protected") {
@@ -468,6 +587,11 @@ export class RubyFileScanner {
     }
   }
 
+  /**
+   * Applies a supported method-visibility directive in the current scope.
+   *
+   * Literal targets update prior selected declarations in Ruby source order.
+   */
   private scanVisibilityCall(
     call: Node,
     context: IRubyScopeContext,
@@ -524,6 +648,11 @@ export class RubyFileScanner {
       );
   }
 
+  /**
+   * Applies a class-method visibility directive to singleton members.
+   *
+   * Dynamic names are rejected because the selected member cannot be identified.
+   */
   private scanClassVisibilityCall(
     call: Node,
     context: IRubyScopeContext,
@@ -559,6 +688,11 @@ export class RubyFileScanner {
       );
   }
 
+  /**
+   * Applies a constant-visibility directive to selected constants.
+   *
+   * Visibility is retained for both prior records and later same-name declarations.
+   */
   private scanConstantVisibilityCall(
     call: Node,
     context: IRubyScopeContext,
@@ -585,6 +719,12 @@ export class RubyFileScanner {
       );
   }
 
+  /**
+   * Expands a static Ruby attribute directive into property declarations.
+   *
+   * Reader and writer modes retain their runtime spelling and scope visibility;
+   * dynamic attribute names leave the scan incomplete.
+   */
   private scanAttribute(
     call: Node,
     wrapper: Node,
@@ -665,6 +805,11 @@ export class RubyFileScanner {
     }
   }
 
+  /**
+   * Resolves an `alias` statement against a preceding selected method.
+   *
+   * Ruby alias names must be literal so the new public address is stable.
+   */
   private scanAlias(
     statement: Node,
     wrapper: Node,
@@ -685,6 +830,11 @@ export class RubyFileScanner {
     this.addAlias(statement, wrapper, context, name, target);
   }
 
+  /**
+   * Resolves an `alias_method` call with two literal method names.
+   *
+   * It delegates to the common alias path after enforcing static argument count.
+   */
   private scanAliasCall(call: Node, context: IRubyScopeContext): void {
     if (context.kind === "top") return;
     const names = RubySyntax.literalNames(RubySyntax.callArguments(call));
@@ -703,6 +853,12 @@ export class RubyFileScanner {
       this.addAlias(call, call, context, name, target);
   }
 
+  /**
+   * Adds an alias declaration after finding exactly one prior function target.
+   *
+   * Ambiguity is rejected because Ruby load order cannot be inferred beyond the
+   * selected file's ordered declaration records.
+   */
   private addAlias(
     statement: Node,
     wrapper: Node,
@@ -746,6 +902,12 @@ export class RubyFileScanner {
     );
   }
 
+  /**
+   * Applies supported `module_function` forms to instance methods.
+   *
+   * The directive privatizes the source method and creates a public singleton
+   * copy only when its target can be identified statically.
+   */
   private scanModuleFunction(call: Node, context: IRubyScopeContext): void {
     if (context.kind !== "module" || context.side !== "instance") {
       this.problem(
@@ -794,6 +956,12 @@ export class RubyFileScanner {
     }
   }
 
+  /**
+   * Creates the public singleton copy required by `module_function`.
+   *
+   * Documentation attachments are copied to the new declaration site relation
+   * so both Ruby entry points retain the source evidence mapping.
+   */
   private cloneModuleFunction(target: IRubyDeclaration): void {
     const address = this.memberAddress(
       target.ownerIdentity ?? [],
@@ -821,6 +989,12 @@ export class RubyFileScanner {
         });
   }
 
+  /**
+   * Changes visibility on matching prior method declarations.
+   *
+   * Missing targets are errors because a directive must not silently alter an
+   * unknown population member.
+   */
   private changeMethodVisibility(
     ownerIdentity: string[],
     side: RubyMethodSide,
@@ -841,6 +1015,12 @@ export class RubyFileScanner {
     for (const candidate of candidates) candidate.visibility = visibility;
   }
 
+  /**
+   * Changes visibility on matching constants and stores it for later records.
+   *
+   * Ruby permits the directive after declaration, so both existing and future
+   * selected records need the resolved lexical visibility.
+   */
   private changeConstantVisibility(
     identity: string[],
     visibility: Extract<RubyVisibility, "private" | "public">,
@@ -867,6 +1047,12 @@ export class RubyFileScanner {
     for (const candidate of candidates) candidate.visibility = visibility;
   }
 
+  /**
+   * Returns definition records matching one owner, side, and runtime method name.
+   *
+   * Attributes participate because their generated readers and writers are
+   * valid targets for Ruby visibility directives.
+   */
   private methodDeclarations(
     ownerIdentity: string[],
     side: RubyMethodSide,
@@ -883,6 +1069,12 @@ export class RubyFileScanner {
     );
   }
 
+  /**
+   * Builds and records one Ruby declaration with its source site and metadata.
+   *
+   * The site begins at attached documentation when present, preserving the
+   * source region Evidence associates with the declaration.
+   */
   private addDeclaration(
     item: Node,
     siteNode: Node,
@@ -934,6 +1126,12 @@ export class RubyFileScanner {
     return declaration;
   }
 
+  /**
+   * Finds the nearest attachable documentation carrier before a declaration.
+   *
+   * Only line-leading comments without intervening content attach, preventing
+   * an unrelated earlier comment from becoming the declaration's evidence host.
+   */
   private attachedDocumentation(node: Node): IRubyDocumentation | undefined {
     const documentation = Array.from(this.documentation.values())
       .filter(
@@ -955,6 +1153,11 @@ export class RubyFileScanner {
       : documentation;
   }
 
+  /**
+   * Checks whether a documentation range begins after only whitespace on its line.
+   *
+   * Inline comments cannot attach to the following Ruby declaration.
+   */
   private lineLeading(range: IEvidenceSourceRange): boolean {
     const lineStart =
       Math.max(
@@ -966,6 +1169,12 @@ export class RubyFileScanner {
     );
   }
 
+  /**
+   * Collects supported Ruby comment carriers and contiguous hash-comment runs.
+   *
+   * Adjacent aligned comments become one mapping; blank lines and indentation
+   * changes deliberately break the run.
+   */
   private collectDocumentation(): void {
     const comments = this.session.root
       .descendantsOfType("comment")
@@ -1001,6 +1210,11 @@ export class RubyFileScanner {
     }
   }
 
+  /**
+   * Collects tag-bearing string and heredoc content as documentation mappings.
+   *
+   * These literal carriers support Evidence annotations even without comments.
+   */
   private collectLiteralAnnotations(): void {
     const contents = [
       ...this.session.root.descendantsOfType("string_content"),
@@ -1024,6 +1238,11 @@ export class RubyFileScanner {
     }
   }
 
+  /**
+   * Returns the documentation record for one exact source range and syntax.
+   *
+   * Reuse prevents duplicate mappings when several collection paths meet.
+   */
   private ensureDocumentationRange(
     range: IEvidenceSourceRange,
     syntax: IEvidenceCommentSyntax,
@@ -1042,6 +1261,11 @@ export class RubyFileScanner {
     return documentation;
   }
 
+  /**
+   * Attaches documentation to a declaration site without duplicate relations.
+   *
+   * Repeated scan paths can identify the same carrier and declaration pair.
+   */
   private attach(
     documentation: IRubyDocumentation,
     declarationId: string,
@@ -1057,6 +1281,12 @@ export class RubyFileScanner {
       documentation.attachments.push({ declarationId, siteId });
   }
 
+  /**
+   * Detects nested syntax that can change Ruby's declared public surface.
+   *
+   * Dynamic execution boundaries are reported instead of interpreted as static
+   * declarations within a conditional or metaprogrammed body.
+   */
   private containsSurfaceChange(node: Node): boolean {
     const queue: Node[] = [node];
     for (let index = 0; index < queue.length; ++index) {
@@ -1084,6 +1314,11 @@ export class RubyFileScanner {
     return false;
   }
 
+  /**
+   * Checks whether a call name is known to mutate Ruby declaration surface.
+   *
+   * This explicit list bounds static support and identifies dynamic directives.
+   */
   private surfaceCall(name: string): boolean {
     return [
       "alias_method",
@@ -1116,6 +1351,12 @@ export class RubyFileScanner {
     ].includes(name);
   }
 
+  /**
+   * Reports a directive whose names or target cannot be statically resolved.
+   *
+   * The diagnostic marks the file incomplete so unsupported runtime behavior
+   * cannot lower coverage requirements.
+   */
   private dynamicDirective(node: Node, description: string): void {
     this.problem(
       "ruby-dynamic-directive",
@@ -1125,6 +1366,11 @@ export class RubyFileScanner {
     );
   }
 
+  /**
+   * Resolves a constant path against the current lexical owner when relative.
+   *
+   * Absolute paths and top-level paths retain their source segments unchanged.
+   */
   private resolvePath(
     path: IRubyConstantPath,
     context: IRubyScopeContext,
@@ -1134,6 +1380,11 @@ export class RubyFileScanner {
       : [...context.identity, ...path.segments];
   }
 
+  /**
+   * Resolves a constant path when a supported path is present.
+   *
+   * Absence remains undefined so callers can distinguish it from top-level paths.
+   */
   private resolveOptionalPath(
     path: IRubyConstantPath | undefined,
     context: IRubyScopeContext,
@@ -1141,6 +1392,11 @@ export class RubyFileScanner {
     return path === undefined ? undefined : this.resolvePath(path, context);
   }
 
+  /**
+   * Creates a public member address for instance or singleton ownership.
+   *
+   * Singleton members use the explicit `self` segment to avoid identity clashes.
+   */
   private memberAddress(
     owner: string[],
     side: RubyMethodSide,
@@ -1149,24 +1405,49 @@ export class RubyFileScanner {
     return side === "instance" ? [...owner, name] : [...owner, "self", name];
   }
 
+  /**
+   * Serializes a lexical identity for map keys and equality checks.
+   *
+   * JSON preserves segment boundaries that a joined string could blur.
+   */
   private identityKey(identity: string[]): string {
     return JSON.stringify(identity);
   }
 
+  /**
+   * Checks whether raw Ruby carrier text contains an Evidence annotation tag.
+   *
+   * The predicate is shared by comments, strings, and heredocs.
+   */
   private annotation(raw: string): boolean {
     return /(?:^|[\r\n])[ \t]*(?:#[ \t]*)?@(evidenceExcludeReview|evidenceReview|evidenceExclude|evidence|link|internal|hidden|ignore)\b/u.test(
       raw,
     );
   }
 
+  /**
+   * Serializes a parser node range as a stable source-local key.
+   *
+   * The immutable selected source makes its offsets suitable for record identity.
+   */
   private nodeKey(node: Node): string {
     return `${node.startIndex}:${node.endIndex}`;
   }
 
+  /**
+   * Creates the stable declaration-site identity for a Ruby parser node.
+   *
+   * The source ID scopes a range that could recur in another selected file.
+   */
   private siteId(node: Node): string {
     return `ruby:${this.source.id}:site:${this.nodeKey(node)}`;
   }
 
+  /**
+   * Records one static-analysis failure and marks the file incomplete.
+   *
+   * A source-range key suppresses repeated diagnostics from overlapping checks.
+   */
   private problem(
     code: string,
     message: string,

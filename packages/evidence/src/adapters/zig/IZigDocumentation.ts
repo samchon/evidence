@@ -2,7 +2,12 @@ import type { IEvidenceCommentSyntax } from "../../structures/IEvidenceCommentSy
 import type { IEvidenceSourceRange } from "../../structures/IEvidenceSourceRange";
 import type { IZigDocumentationAttachment } from "./IZigDocumentationAttachment";
 
-/** A Zig documentation carrier or tag-bearing unsupported carrier. */
+/**
+ * Represents a Zig documentation carrier or tag-bearing unsupported carrier.
+ *
+ * The record retains source-mapped `///` text and ineligible annotation carriers
+ * until alias reconciliation determines the supported documentation host.
+ */
 export interface IZigDocumentation {
   /** Stable identity of this extraction record. */
   id: string;

@@ -11,7 +11,12 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Evaluates Java type, function, and property evidence and semantic fingerprints. */
+/** Evaluates Java type, function, and property evidence with semantic fingerprints.
+ *
+ * Graph obligations remain exact across symbol kinds and prose cannot alter code identity.
+ *
+ * 1. Evaluate covered claims. 2. Evaluate missing claims and compare IDs. 3. Verify annotation-only fingerprint stability.
+ */
 export async function test_java_graph(): Promise<void> {
   const requirements = await new EvidenceMarkdownAdapter().analyze(
     TestSourceSnapshot.create(

@@ -7,7 +7,14 @@ import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Establishes composite foreign-key identity, file-independent ownership, and actual qualified-name ambiguity. */
+/** Extracts SQL models and composite foreign keys with exact ownership.
+ *
+ * File order cannot change a schema unit, and qualified-name ambiguity must be reported rather than guessed.
+ *
+ * 1. Analyze composite schemas across independent files.
+ * 2. Verify model identities, ordered relation endpoints, and target resolution.
+ * 3. Require duplicate, ambiguous, and failed sources to remain incomplete.
+ */
 export async function test_sql_units(): Promise<void> {
   const adapter = new EvidenceSqlAdapter();
   const inventory = await adapter.analyze(

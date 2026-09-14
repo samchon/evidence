@@ -19,10 +19,28 @@ import type { IRubyDocumentation } from "./IRubyDocumentation";
 import type { IRubyFileAnalysis } from "./IRubyFileAnalysis";
 import { RubyFileScanner } from "./RubyFileScanner";
 
-/** Builds Ruby declared-source inventories from the configured source snapshot. */
+/**
+ * Extracts Ruby public declarations while merging reopened structural identities.
+ *
+ * File scans retain visibility and owner paths for classes, modules, and members.
+ * Materialization groups compatible declarations before attaching documentation,
+ * so reopened sites share semantic identity while keeping their physical origins
+ * and withdrawal causes. Unsupported analysis remains visible as incompleteness.
+ */
 export class RubyAdapter implements IEvidenceAdapter {
+  /**
+   * Artifact discriminator selecting Ruby source and named-file rules.
+   *
+   * Configuration uses this value independently of the filename's extension.
+   */
   public readonly type = "ruby";
 
+  /**
+   * Builds a normalized Ruby inventory from an owned copy of the snapshot.
+   *
+   * Public identity groups are established before comment hosts are materialized.
+   * Source and scan diagnostics are retained, and parser cleanup runs on every exit.
+   */
   public async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {
@@ -56,6 +74,8 @@ export class RubyAdapter implements IEvidenceAdapter {
         inventory.diagnostics.push(...analysis.diagnostics);
         inventory.complete &&= analysis.complete;
       }
+      // Reopened declarations must agree on semantic ownership before their
+      // individual comment sites can contribute to the shared public identity.
       const published = this.materializeUnits(inventory, analyses);
       this.materializeDocumentation(inventory, analyses, published);
       return new EvidenceInventory([inventory]).snapshot();
@@ -64,6 +84,12 @@ export class RubyAdapter implements IEvidenceAdapter {
     }
   }
 
+  /**
+   * Copies one Ruby file's declaration and comment records out of its parse session.
+   *
+   * Syntax or acquisition failure yields an incomplete analysis with a concrete
+   * source diagnostic rather than a successful empty declaration list.
+   */
   private async scan(
     parser: EvidenceParser,
     source: IEvidenceSourceFile,
@@ -103,6 +129,12 @@ export class RubyAdapter implements IEvidenceAdapter {
     }
   }
 
+  /**
+   * Merges Ruby declaration groups and publishes their public owner hierarchy.
+   *
+   * Type groups are considered from outer to inner ownership before members,
+   * preventing a child of an unpublished owner from becoming a free-standing API.
+   */
   private materializeUnits(
     inventory: IEvidenceInventory,
     analyses: IRubyFileAnalysis[],

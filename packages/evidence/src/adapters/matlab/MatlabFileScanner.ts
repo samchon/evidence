@@ -10,7 +10,12 @@ import type { IMatlabDeclaration } from "./IMatlabDeclaration";
 import type { IMatlabDocumentation } from "./IMatlabDocumentation";
 import type { IMatlabFileAnalysis } from "./IMatlabFileAnalysis";
 
-/** Extracts declared MATLAB surfaces without evaluating application code. */
+/**
+ * Extracts declared MATLAB surfaces without evaluating application code.
+ *
+ * The scanner keeps class-folder facts, external signatures, and property
+ * accessors separate because their public owner may be established in another file.
+ */
 export class MatlabFileScanner {
   /** Serializable declarations including private ownership boundaries. */
   private readonly declarations: IMatlabDeclaration[] = [];
@@ -30,7 +35,12 @@ export class MatlabFileScanner {
   /** Original UTF-16 source mapper. */
   private readonly text: SourceText;
 
-  /** Borrows a live syntax tree only during extraction. */
+  /**
+   * Borrows a live syntax tree only during extraction.
+   *
+   * The constructor normalizes the source path and derives package segments once,
+   * so later ownership reconciliation has platform-independent physical identity.
+   */
   public constructor(
     private readonly session: EvidenceParseSession,
     private readonly source: IEvidenceSourceFile,
@@ -43,7 +53,12 @@ export class MatlabFileScanner {
     this.text = new SourceText(source.content);
   }
 
-  /** Selects the primary declaration and recognizes dynamic-source boundaries. */
+  /**
+   * Selects the primary declaration and recognizes dynamic-source boundaries.
+   *
+   * MATLAB file layout determines ownership, so unsupported leading forms become
+   * diagnostics instead of being skipped and shrinking the public population.
+   */
   public scan(): IMatlabFileAnalysis {
     const nodes = this.session.root.namedChildren.filter(
       (node) => node.type !== "comment" && node.type !== "line_continuation",

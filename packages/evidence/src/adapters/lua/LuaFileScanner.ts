@@ -9,7 +9,12 @@ import type { ILuaDocumentation } from "./ILuaDocumentation";
 import type { ILuaFileAnalysis } from "./ILuaFileAnalysis";
 import type { ILuaValue } from "./ILuaValue";
 
-/** Resolves an explicit, non-executing Lua module initialization convention. */
+/**
+ * Resolves an explicit, non-executing Lua module initialization convention.
+ *
+ * Lua exports arise from values and table writes, so the scanner follows only
+ * supported static initialization and reports dynamic boundaries it cannot prove.
+ */
 export class LuaFileScanner {
   /** Lexical chunk bindings, including private locals. */
   private readonly bindings = new Map<string, ILuaValue>();
@@ -29,13 +34,23 @@ export class LuaFileScanner {
   /** Unsupported surface-changing constructs keep the inventory incomplete. */
   private readonly diagnostics: IEvidenceDiagnostic[] = [];
 
-  /** Borrows the tree only for the active parser callback. */
+  /**
+   * Borrows the tree only for the active parser callback.
+   *
+   * The source remains authoritative for file identity and sites, while values
+   * are converted into serializable declarations before the session closes.
+   */
   public constructor(
     private readonly session: EvidenceParseSession,
     private readonly source: IEvidenceSourceFile,
   ) {}
 
-  /** Establishes values and ownership before attaching documentation. */
+  /**
+   * Establishes values and ownership before attaching documentation.
+   *
+   * Public aliases must resolve first so a comment attaches to the canonical
+   * declaration instead of a temporary local table projection.
+   */
   public scan(): ILuaFileAnalysis {
     this.comments();
     for (const node of this.session.root.namedChildren) this.statement(node);

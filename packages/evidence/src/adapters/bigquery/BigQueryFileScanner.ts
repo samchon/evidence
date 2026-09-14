@@ -11,15 +11,32 @@ import type { EvidenceParseSession } from "../../parsers/EvidenceParseSession";
 import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { EvidenceDatabaseSymbol } from "../../typings/EvidenceDatabaseSymbol";
 
-/** Establishes GoogleSQL declaration ownership before interpreting documentation. */
+/**
+ * Extracts supported BigQuery schema declarations from one parsed source file.
+ *
+ * The scanner publishes only explicit, complete DDL so unsupported syntax cannot
+ * reduce the inventory used to evaluate coverage.
+ */
 export class BigQueryFileScanner {
-  /** Serializable output owned by this file analysis. */
+  /**
+   * Accumulates the serializable result for this source file.
+   *
+   * Every declaration, documentation carrier, and diagnostic returned by scan belongs here.
+   */
   private readonly output: ISqlFileAnalysis;
 
-  /** Maps original source offsets without normalizing line endings. */
+  /**
+   * Maps original source offsets without normalizing line endings.
+   *
+   * Comment attachment relies on the physical UTF-16 positions from this source snapshot.
+   */
   private readonly text: SourceText;
 
-  /** Borrows the completed GoogleSQL tree for this scan only. */
+  /**
+   * Binds one completed GoogleSQL tree to the source it represents.
+   *
+   * The scanner borrows both inputs for this extraction and never retains parser nodes in its result.
+   */
   public constructor(
     private readonly session: EvidenceParseSession,
     private readonly source: IEvidenceSourceFile,
@@ -34,7 +51,11 @@ export class BigQueryFileScanner {
     this.text = new SourceText(source.content);
   }
 
-  /** Extracts explicit tables and rejects every other statement that could alter schema. */
+  /**
+   * Extracts declarations and documentation from the supported BigQuery DDL surface.
+   *
+   * Unsupported statements mark the analysis incomplete before the result is returned.
+   */
   public scan(): ISqlFileAnalysis {
     for (const node of this.session.root.namedChildren) {
       if (node.type === "comment") continue;
@@ -88,7 +109,11 @@ export class BigQueryFileScanner {
     return this.output;
   }
 
-  /** Publishes a table only when its schema is completely declared in source. */
+  /**
+   * Publishes a table only when its full schema is declared in this statement.
+   *
+   * Query-derived and inferred schemas cannot define a reliable Evidence inventory.
+   */
   private table(node: Node): void {
     const name = node.childForFieldName("table_name");
     const parameters = node.namedChildren.find(
@@ -158,7 +183,11 @@ export class BigQueryFileScanner {
       this.constraint(constraint, model, columns);
   }
 
-  /** Nested STRUCT fields retain a field path and the table's schema ownership. */
+  /**
+   * Publishes a column or nested STRUCT field under its table owner.
+   *
+   * Field paths preserve nested schema identity while ownership remains with the containing table.
+   */
   private column(
     node: Node,
     model: ISqlDeclaration,
@@ -208,7 +237,11 @@ export class BigQueryFileScanner {
     this.enforcement(node);
   }
 
-  /** Primary keys constrain columns; only foreign keys create relation units. */
+  /**
+   * Interprets constraints that affect the declared table surface.
+   *
+   * Primary keys remain table semantics, while foreign keys become independently selectable relations.
+   */
   private constraint(
     node: Node,
     model: ISqlDeclaration,
@@ -282,7 +315,11 @@ export class BigQueryFileScanner {
     );
   }
 
-  /** Gives anonymous composite keys endpoint-based identity, independent of statement order. */
+  /**
+   * Publishes a foreign-key relation with a stable endpoint-based identity.
+   *
+   * Anonymous composite keys must not depend on their incidental statement order.
+   */
   private relation(
     node: Node,
     reference: Node,
@@ -328,7 +365,11 @@ export class BigQueryFileScanner {
     ];
   }
 
-  /** BigQuery key constraints are declarations and cannot claim enforcement. */
+  /**
+   * Rejects key constraints that claim unsupported enforcement semantics.
+   *
+   * BigQuery keys still describe schema, but enforcement changes their operational meaning.
+   */
   private enforcement(node: Node): void {
     for (const capture of this.session.captures(
       "(constraint_enfoce_option) @enforcement",
@@ -341,7 +382,11 @@ export class BigQueryFileScanner {
         );
   }
 
-  /** Reads only OPTIONS description strings attached to this exact declaration. */
+  /**
+   * Reads description strings from OPTIONS clauses attached to one declaration.
+   *
+   * Restricting the search to this node prevents nested or unrelated strings becoming documentation.
+   */
   private options(node: Node, declaration: ISqlDeclaration): void {
     const clause = node.namedChildren.find(
       (child) => child.type === "option_clause",
@@ -383,7 +428,11 @@ export class BigQueryFileScanner {
     }
   }
 
-  /** Attaches adjacent real comments, leaving embedded examples and string contents inert. */
+  /**
+   * Attaches contiguous standalone comments to their following declarations.
+   *
+   * Comments embedded in examples or strings stay inert because they are not documentation carriers.
+   */
   private comment(node: Node, last: Node): void {
     const following = this.output.declarations
       .filter(
@@ -426,13 +475,21 @@ export class BigQueryFileScanner {
     });
   }
 
-  /** Keeps trailing source comments from documenting the following declaration. */
+  /**
+   * Determines whether a comment begins on otherwise blank source text.
+   *
+   * Trailing comments must not be reassigned as documentation for the next declaration.
+   */
   private standalone(start: number): boolean {
     const line = this.source.content.lastIndexOf("\n", start - 1) + 1;
     return this.source.content.slice(line, start).trim() === "";
   }
 
-  /** Constructs a serializable site with exact source ranges. */
+  /**
+   * Constructs one serializable declaration site with exact source ranges.
+   *
+   * The site records physical location separately from the semantic identity used across files.
+   */
   private declare(
     node: Node,
     path: string[],
@@ -467,7 +524,11 @@ export class BigQueryFileScanner {
     return declaration;
   }
 
-  /** Keeps unsupported schema-changing syntax from producing a passing smaller inventory. */
+  /**
+   * Marks unsupported schema-changing syntax as an analysis failure.
+   *
+   * This preserves the failed scan instead of allowing a smaller inventory to pass coverage.
+   */
   private fail(node: Node, message: string): void {
     this.output.complete = false;
     this.output.diagnostics.push({

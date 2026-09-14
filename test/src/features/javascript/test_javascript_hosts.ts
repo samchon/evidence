@@ -4,7 +4,12 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Binds JavaScript evidence to JSDoc without reading JSX or literal examples. */
+/** Binds JavaScript evidence to JSDoc without reading JSX or literal examples.
+ *
+ * Only declaration-owned JSDoc is eligible; JSX and literal text remain inert.
+ *
+ * 1. Analyze documented declarations. 2. Compare evidence hosts. 3. Reject JSX and literal annotation carriers.
+ */
 export async function test_javascript_hosts(): Promise<void> {
   const content = dedent`
     /** @evidence docs/spec.md#service Implements the service contract. */

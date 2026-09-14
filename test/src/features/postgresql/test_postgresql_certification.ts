@@ -8,7 +8,14 @@ import { dedent } from "@typia/utils";
 import { DatabaseAdapterCertification } from "../../internal/certification/DatabaseAdapterCertification";
 import type { IDatabaseAdapterCertification } from "../../internal/certification/IDatabaseAdapterCertification";
 
-/** Applies unchanged shared inventory, graph, fingerprint, and mutation gates to PostgreSQL. */
+/** Applies the shared database certification contract to PostgreSQL.
+ *
+ * The PostgreSQL fixture fixes expected inventory, graph, fingerprint, and mutation behavior.
+ *
+ * 1. Construct the PostgreSQL certification fixture.
+ * 2. Execute the shared database certification suite.
+ * 3. Require every declared gate to pass.
+ */
 export async function test_postgresql_certification(): Promise<void> {
   const relation = 'foreign key ["id"] references ["app","parent","id"]';
   const relationAccessor = EvidenceAccessor.format(["app", "item", relation]);

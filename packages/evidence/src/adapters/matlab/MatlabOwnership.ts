@@ -4,9 +4,19 @@ import type { IEvidenceInventory } from "../../structures/IEvidenceInventory";
 import type { IMatlabDeclaration } from "./IMatlabDeclaration";
 import type { IMatlabFileAnalysis } from "./IMatlabFileAnalysis";
 
-/** Reconciles selected class folders, external implementations, and property accessors. */
+/**
+ * Reconciles selected class folders, external implementations, and property accessors.
+ *
+ * MATLAB distributes one public class surface across files, so semantic ownership
+ * must be proven from class-folder paths before units and annotation hosts exist.
+ */
 export namespace MatlabOwnership {
-  /** Resolves all ownership before any public identities or hosts are published. */
+  /**
+   * Resolves all ownership before any public identities or hosts are published.
+   *
+   * This order lets a missing external implementation remain an observable
+   * dependency and prevents an accessor from becoming a second property unit.
+   */
   export function resolve(
     analyses: IMatlabFileAnalysis[],
     inventory: IEvidenceInventory,

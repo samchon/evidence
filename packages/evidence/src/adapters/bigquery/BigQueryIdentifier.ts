@@ -1,6 +1,14 @@
-/** Decodes GoogleSQL names without inferring an ambient project or dataset. */
+/** Decodes GoogleSQL names without inferring an ambient project or dataset.
+ *
+ * Explicit segments preserve schema identity across snapshots, avoiding an
+ * environment-dependent address when source omits a project or dataset.
+ */
 export namespace BigQueryIdentifier {
-  /** Splits table paths, including a backtick pair enclosing the whole path. */
+  /** Splits a declared table path into explicit identity segments.
+   *
+   * A whole-path backtick pair still permits segment boundaries at dots, matching
+   * BigQuery table qualification rather than treating it as one member name.
+   */
   export function table(raw: string): string[] | undefined {
     const quoted =
       raw.startsWith("`") &&
@@ -17,7 +25,11 @@ export namespace BigQueryIdentifier {
     return parts.filter((part) => part !== undefined);
   }
 
-  /** Decodes one quoted identifier without splitting its literal content. */
+  /** Decodes one member identifier without splitting its literal content.
+   *
+   * Unsupported escapes and line breaks are rejected because they cannot form a
+   * stable selector segment.
+   */
   export function member(raw: string): string | undefined {
     if (raw.startsWith("`") && raw.endsWith("`")) {
       const value = raw.slice(1, -1);
@@ -26,7 +38,11 @@ export namespace BigQueryIdentifier {
     return /^[A-Za-z_][A-Za-z0-9_]*$/u.test(raw) ? raw : undefined;
   }
 
-  /** Normalizes a case-insensitive field or constraint identifier. */
+  /** Normalizes a case-insensitive field or constraint identifier.
+   *
+   * Table paths retain their declared spelling; only member comparisons use this
+   * canonical form.
+   */
   export function canonical(raw: string): string | undefined {
     const value = member(raw);
     return value === undefined ? undefined : value.toLowerCase();

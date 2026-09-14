@@ -5,7 +5,13 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Resolves Rust modules, aliases, fields, and associated items through public files. */
+/** Resolves Rust public modules, aliases, fields, and associated items.
+ *
+ * Target resolution follows public files and preserves associated-item ownership.
+ *
+ * 1. Resolve every supported Rust target form.
+ * 2. Verify exact statuses and addresses.
+ */
 export async function test_rust_targets(): Promise<void> {
   const adapter = new EvidenceRustAdapter();
 

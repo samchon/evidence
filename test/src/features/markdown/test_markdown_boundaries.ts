@@ -4,7 +4,17 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Syntax examples cannot create headings or annotations, while real HTML comments can. */
+/**
+ * Excludes Markdown syntax examples from heading and annotation discovery.
+ *
+ * Fence, inline-code, rendered-code, MDX-template, indentation, and comment
+ * regions may contain realistic Evidence syntax without declaring a public unit or host.
+ *
+ * 1. Analyze one visible heading plus heading and annotation syntax in each excluded region.
+ * 2. Verify only the visible heading and real child materialize as section units.
+ * 3. Verify only the real HTML comment declares its Evidence target.
+ * 4. Require no diagnostics from the ignored examples.
+ */
 export async function test_markdown_boundaries(): Promise<void> {
   const content = dedent`
     # Visible

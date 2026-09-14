@@ -9,7 +9,14 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Requires every Objc selector as a reference, including undocumented declarations and review-only failures. */
+/** Evaluates every selected Objective-C declaration as a graph reference.
+ *
+ * Evidence covers selected units, whereas reviews remain recorded without satisfying missing obligations.
+ *
+ * 1. Extract Objective-C units and TypeScript claims for each selector.
+ * 2. Evaluate covered and undocumented selector populations.
+ * 3. Verify a review-only reference stays missing.
+ */
 export async function test_objc_graph(): Promise<void> {
   const reference = await new EvidenceObjcAdapter().analyze(
     TestSourceSnapshot.create(

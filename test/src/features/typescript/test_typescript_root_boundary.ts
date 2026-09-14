@@ -3,7 +3,13 @@ import { TestValidator } from "@nestia/e2e";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Rejects reexports that escape either the logical or physical population root. */
+/** Rejects TypeScript reexports that escape their population root.
+ *
+ * Logical and physical roots both bound the selected public population.
+ *
+ * 1. Analyze reexports crossing each root boundary.
+ * 2. Require incomplete status and the corresponding diagnostic.
+ */
 export async function test_typescript_root_boundary(): Promise<void> {
   const inside = TestSourceSnapshot.create(
     "api/index.ts",

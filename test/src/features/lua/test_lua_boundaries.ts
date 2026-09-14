@@ -3,7 +3,12 @@ import { TestValidator } from "@nestia/e2e";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Rejects smaller successful inventories for dynamic exports and recovers on a fresh static snapshot. */
+/** Rejects smaller Lua inventories for dynamic exports and recovers on static source.
+ *
+ * Dynamic module publication cannot pass coverage by omitting unknown exported units.
+ *
+ * 1. Analyze dynamic exports. 2. Require incompleteness. 3. Analyze a fresh static snapshot and require recovery.
+ */
 export async function test_lua_boundaries(): Promise<void> {
   const adapter = new EvidenceLuaAdapter();
   const cases = [

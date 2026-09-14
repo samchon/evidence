@@ -7,7 +7,15 @@ import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Resolves explicit exports across selected sources while preserving source ownership and review content. */
+/**
+ * Resolves Scala exports while preserving source declaration ownership.
+ *
+ * A forwarding object exports an overloaded method, property, and type alias from another selected source, with evidence on the forwarding export path.
+ *
+ * 1. Analyze the selected Scala sources and verify the exported alias resolves to its source unit without adding denominator units.
+ * 2. Verify overload and export physical sites are retained and a source-body edit changes the exported fingerprint.
+ * 3. Withdraw the source method and verify the exported alias resolves as hidden.
+ */
 export async function test_scala_exports(): Promise<void> {
   const sources = TestSourceSnapshot.combine([
     TestSourceSnapshot.create(

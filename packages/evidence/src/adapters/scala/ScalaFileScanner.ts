@@ -8,7 +8,12 @@ import type { IScalaDocumentation } from "./IScalaDocumentation";
 import type { IScalaExport } from "./IScalaExport";
 import type { IScalaFileAnalysis } from "./IScalaFileAnalysis";
 
-/** Extracts explicit Scala 2/3 declarations while retaining unsupported surface boundaries. */
+/**
+ * Extracts explicit Scala 2/3 declarations while retaining unsupported surface boundaries.
+ *
+ * The scanner records lexical declarations and explicit exports separately so
+ * a later snapshot-wide pass can resolve singleton forwarding without inventing aliases.
+ */
 export class ScalaFileScanner {
   /** Node-free declaration records. */
   private readonly declarations: IScalaDeclaration[] = [];
@@ -22,13 +27,23 @@ export class ScalaFileScanner {
   /** Surface failures that prevent a passing smaller inventory. */
   private readonly diagnostics: IEvidenceDiagnostic[] = [];
 
-  /** Borrows syntax only during the common parser callback. */
+  /**
+   * Borrows syntax only during the common parser callback.
+   *
+   * Source identity and ranges are copied into the returned analysis because
+   * export resolution begins only after parser sessions have closed.
+   */
   public constructor(
     private readonly session: EvidenceParseSession,
     private readonly source: IEvidenceSourceFile,
   ) {}
 
-  /** Produces a serializable inventory fragment. */
+  /**
+   * Produces a serializable inventory fragment.
+   *
+   * Documentation is collected first, then scopes are traversed without entering
+   * executable bodies, preserving source attachment and public-boundary semantics.
+   */
   public scan(): IScalaFileAnalysis {
     this.collectDocumentation();
     this.scope(this.session.root.namedChildren, [], undefined);

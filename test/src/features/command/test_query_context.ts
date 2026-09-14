@@ -7,9 +7,21 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestQueryAnalysis } from "../../internal/TestQueryAnalysis";
 
 /**
- * Keeps reusable query contexts independent of input and output mutations.
+ * Keeps reusable query contexts independent of caller mutations and concurrent resolution state.
  *
- * Two repeated reference entries retain their own boundaries while concurrent inspections share one captured analysis.
+ * Repeated reference entries retain separate configured boundaries even when a
+ * caller mutates the analysis and output objects used to create the query. The
+ * facade must preserve its own indexes while one inspection resolves and another
+ * reports a missing target.
+ *
+ * 1. Create a query from the shared fixture and capture baseline list and graph reports.
+ * 2. Erase caller-owned claims, report entries, listed items, diagnostics, and graph
+ *    nodes; require subsequent list and graph calls to equal their baselines.
+ * 3. Inspect a known target and an absent target concurrently. Require the known
+ *    result to resolve through reference indexes 4 and 5 while the absent result
+ *    remains unresolved.
+ * 4. Mutate the returned inspection and require a later inspection to reproduce
+ *    the unmodified baseline.
  */
 export async function test_query_context(): Promise<void> {
   await TestFileSystem.experiment(

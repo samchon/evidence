@@ -7,7 +7,14 @@ import { join } from "node:path";
 
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
-/** Normalizes local Swagger 2.0 and OpenAPI 3.x documents into exact operations. */
+/** Normalizes Swagger 2.0 and OpenAPI 3.x documents into operations.
+ *
+ * Version-specific syntax must yield the same exact operation addressing model without conflating distinct documents.
+ *
+ * 1. Analyze local Swagger and OpenAPI JSON and YAML documents.
+ * 2. Verify exact operation targets and complete inventories.
+ * 3. Confirm independent document fingerprints differ.
+ */
 export async function test_swagger_units(): Promise<void> {
   const location = join(__dirname, "units-" + randomUUID());
   await TestFileSystem.experiment(

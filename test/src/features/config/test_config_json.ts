@@ -7,7 +7,21 @@ import { join } from "node:path";
 import { ConfigDependencyScanner } from "../../../../packages/evidence/src/internal/ConfigDependencyScanner";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
-/** Loads equivalent JSON and TS plans, rejects malformed formats, and treats JSON strings as data. */
+/**
+ * Preserves JSON configuration semantics through loading, dependency scanning, and initialization.
+ *
+ * JSON strings must remain data even when they resemble module-loading code.
+ * The loader should produce the same claim plan as equivalent TypeScript while
+ * rejecting malformed or unsupported formats and refusing destructive initialization.
+ *
+ * 1. Load matching JSON and TypeScript configurations and require equal active
+ *    claims, with the JSON plan anchored to its own absolute configuration path.
+ * 2. Scan JSON containing a require-like claim label and require no dependency
+ *    on the module name embedded in that string.
+ * 3. Reject YAML extensions and malformed JSON during planning.
+ * 4. Initialize a new JSON configuration and successfully plan it; reject a second
+ *    initialization at the same destination and reject new YAML destinations.
+ */
 export async function test_config_json(): Promise<void> {
   const config: IEvidenceConfig = {
     claims: [

@@ -8,7 +8,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Preserves Zig documentation coordinates, lexical withdrawals, and fingerprints without accepting code examples. */
+/** Attaches Zig documentation with exact coordinates and withdrawal semantics.
+ *
+ * Lexical withdrawals and review fingerprints affect eligible documentation, while code examples cannot acknowledge units.
+ *
+ * 1. Analyze documentation, withdrawals, and inert examples.
+ * 2. Verify coordinates, records, and resolution.
+ * 3. Compare annotation and semantic fingerprint effects.
+ */
 export async function test_zig_hosts(): Promise<void> {
   const source = dedent`
     /// 계약 🔎

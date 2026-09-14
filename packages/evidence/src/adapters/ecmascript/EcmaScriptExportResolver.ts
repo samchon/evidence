@@ -11,14 +11,62 @@ import type { IEcmaScriptResolution } from "./IEcmaScriptResolution";
 import type { EcmaScriptType } from "./EcmaScriptType";
 import { SourcePath } from "../../internal/SourcePath";
 
-/** Resolves static exports across one ECMAScript-family source snapshot. */
+/**
+ * Publishes local ECMAScript declarations that have a static public export.
+ *
+ * `EcmaScriptAdapter` constructs this resolver after every selected source has
+ * been scanned. It follows local exports and re-exports, records each resulting
+ * public address in the inventory, and reports resolution failures so an
+ * incomplete export graph cannot reduce the coverage population silently.
+ */
 export class EcmaScriptExportResolver {
+  /**
+   * Scanned module data by stable source ID.
+   *
+   * Resolution follows these records instead of reparsing source files, so each
+   * export path refers to the same declaration inventory gathered by the adapter.
+   */
   private readonly modules = new Map<string, IEcmaScriptModule>();
+
+  /**
+   * Normalized physical and logical locations mapped to their source IDs.
+   *
+   * A source may have aliases; retaining all locations lets an import resolve
+   * through either address while ambiguity remains detectable.
+   */
   private readonly locations = new Map<string, Set<string>>();
+
+  /**
+   * Cached module-specifier targets, including known failures.
+   *
+   * Caching undefined failures prevents repeated traversal from emitting the
+   * same diagnostic for an import edge.
+   */
   private readonly targets = new Map<string, string | undefined>();
+
+  /**
+   * Cached binding resolutions for source and exported-name pairs.
+   *
+   * Publication may visit a re-export from several public paths, but each pair
+   * has one resolution result within this immutable source snapshot.
+   */
   private readonly resolutions = new Map<string, IEcmaScriptResolution>();
+
+  /**
+   * Diagnostic identities already emitted by this resolver.
+   *
+   * Several export paths can reach one invalid edge; the inventory needs one
+   * actionable error rather than a copy for every traversal.
+   */
   private readonly reported = new Set<string>();
 
+  /**
+   * Indexes a complete set of scanned ECMAScript modules for publication.
+   *
+   * The adapter supplies declarations before any reachability filtering. The
+   * source root and language type define supported import targets and extension
+   * candidates, while the inventory receives addresses and diagnostics.
+   */
   public constructor(
     analyses: IEcmaScriptFileAnalysis[],
     private readonly inventory: IEvidenceInventory,
@@ -50,9 +98,18 @@ export class EcmaScriptExportResolver {
         ids.add(analysis.source.id);
       }
     }
+    // Star exports contribute names before recursive binding resolution begins.
+    // Without this fixed point, a transitive `export *` can be omitted entirely.
     this.expandStars();
   }
 
+  /**
+   * Materializes public addresses and returns the reachable semantic unit IDs.
+   *
+   * The adapter uses the returned set to remove declarations that have no public
+   * export. Addresses remain in the shared inventory because aliases can expose
+   * one unit through several public module paths.
+   */
   public publish(): Set<string> {
     const published = new Set<string>();
     for (const module of this.modules.values()) {
@@ -85,6 +142,12 @@ export class EcmaScriptExportResolver {
     return published;
   }
 
+  /**
+   * Adds names inherited through transitive star exports to every module.
+   *
+   * Repeating until no name changes reaches a fixed point even when barrel files
+   * form a cycle. `default` is excluded because ECMAScript star exports omit it.
+   */
   private expandStars(): void {
     let changed = true;
     while (changed) {
@@ -105,6 +168,12 @@ export class EcmaScriptExportResolver {
     }
   }
 
+  /**
+   * Resolves one exported name and caches the result for later publication.
+   *
+   * Recursive traversal receives a fresh cycle-tracking set; only a completed
+   * resolution is memoized because its bindings do not depend on the caller path.
+   */
   private resolve(sourceId: string, name: string): IEcmaScriptResolution {
     const key = JSON.stringify([sourceId, name]);
     const cached = this.resolutions.get(key);
@@ -114,6 +183,12 @@ export class EcmaScriptExportResolver {
     return resolved;
   }
 
+  /**
+   * Follows export edges from a source/name pair to declaration bindings.
+   *
+   * The visited set is scoped to this traversal so circular re-exports become an
+   * incomplete cycle result without suppressing bindings found on other paths.
+   */
   private resolveFrom(
     sourceId: string,
     name: string,
@@ -131,6 +206,8 @@ export class EcmaScriptExportResolver {
       excluded: false,
       cyclic: false,
     };
+    // Named exports override star-export lookup; default is never provided by a
+    // star export, even when the module has no explicit default edge.
     const explicit = module.exports.filter(
       (entry) => entry.publicName === name && entry.kind !== "star",
     );
@@ -238,6 +315,13 @@ export class EcmaScriptExportResolver {
     return output;
   }
 
+  /**
+   * Converts a resolved binding into addresses under one exported prefix.
+   *
+   * Namespace bindings recursively publish their target module's named exports.
+   * The visited module set stops namespace cycles while preserving independent
+   * paths that reach the same declaration.
+   */
   private publishBinding(
     entry: IEvidenceSourceFile,
     binding: IEcmaScriptBinding,
@@ -283,6 +367,12 @@ export class EcmaScriptExportResolver {
     }
   }
 
+  /**
+   * Adds a distinct declaration binding while combining type-only restrictions.
+   *
+   * A binding reachable through a value export must remain publishable in value
+   * space, so the merged flag is true only when every path is type-only.
+   */
   private addBinding(
     output: IEcmaScriptBinding[],
     binding: IEcmaScriptBinding,
@@ -296,6 +386,12 @@ export class EcmaScriptExportResolver {
     else previous.typeOnly = previous.typeOnly && binding.typeOnly;
   }
 
+  /**
+   * Carries failure state from a nested resolution to its caller.
+   *
+   * Bindings alone cannot distinguish an excluded declaration from a missing one,
+   * and cycles must remain visible until publication can diagnose an empty cycle.
+   */
   private mergeState(
     output: IEcmaScriptResolution,
     resolved: IEcmaScriptResolution,
@@ -304,11 +400,24 @@ export class EcmaScriptExportResolver {
     output.cyclic ||= resolved.cyclic;
   }
 
+  /**
+   * Reports whether a module declares an export name before resolving its binding.
+   *
+   * Callers use this to avoid diagnosing a recursive or excluded path as a
+   * missing export when the target module did declare the requested name.
+   */
   private exported(sourceId: string, name: string): boolean {
     const module = this.modules.get(sourceId);
     return module !== undefined && module.names.has(name);
   }
 
+  /**
+   * Resolves a supported local module specifier to one selected source ID.
+   *
+   * Resolution accepts physical and logical source locations but rejects package
+   * semantics, root escapes, absent files, and aliases that identify multiple
+   * physical sources. Those cases make the inventory incomplete.
+   */
   private target(
     source: IEvidenceSourceFile,
     specifier: string,
@@ -326,6 +435,8 @@ export class EcmaScriptExportResolver {
       this.targets.set(key, undefined);
       return undefined;
     }
+    // Keep root-escaping candidates separate from absent ones so diagnostics tell
+    // users whether the dependency must be moved or added to the source snapshot.
     const found = new Set<string>();
     let outside = false;
     for (const location of this.sourceLocations(source)) {
@@ -373,6 +484,12 @@ export class EcmaScriptExportResolver {
     return target;
   }
 
+  /**
+   * Checks whether a selected source remains under an optional physical root.
+   *
+   * Logical aliases may lie under the configured address root while their actual
+   * file is elsewhere; physical-root selection forbids that escape.
+   */
   private insidePhysicalRoot(source: IEvidenceSourceFile): boolean {
     return (
       this.root.physical === undefined ||
@@ -380,6 +497,12 @@ export class EcmaScriptExportResolver {
     );
   }
 
+  /**
+   * Returns normalized physical and logical locations for one selected source.
+   *
+   * Duplicates are removed because the physical path may also be one of the
+   * logical addresses supplied by the source snapshot.
+   */
   private sourceLocations(source: IEvidenceSourceFile): string[] {
     return Array.from(
       new Set([
@@ -389,10 +512,22 @@ export class EcmaScriptExportResolver {
     );
   }
 
+  /**
+   * Identifies POSIX and Windows drive-qualified module requests.
+   *
+   * Resolver input is slash-normalized before this check, so Windows separators
+   * cannot change whether a request is treated as absolute.
+   */
   private absolute(location: string): boolean {
     return location.startsWith("/") || /^[A-Za-z]:\//u.test(location);
   }
 
+  /**
+   * Canonicalizes a location for case-insensitive Windows-style resolution.
+   *
+   * UNC prefixes are restored after POSIX normalization so distinct network
+   * locations are not accidentally converted into ordinary rooted paths.
+   */
   private locationKey(location: string): string {
     const slash = location.replaceAll("\\", "/");
     const unc = slash.startsWith("//");
@@ -403,6 +538,12 @@ export class EcmaScriptExportResolver {
       : restored;
   }
 
+  /**
+   * Produces TypeScript source candidates for a normalized import base.
+   *
+   * JavaScript-shaped extensions map to their TypeScript declaration forms,
+   * while extensionless imports also consider supported index files.
+   */
   private candidates(base: string): string[] {
     if (this.type === "javascript") return this.javaScriptCandidates(base);
     const extension = path.posix.extname(base).toLowerCase();
@@ -435,6 +576,12 @@ export class EcmaScriptExportResolver {
     return Array.from(new Set(files.map((file) => this.locationKey(file))));
   }
 
+  /**
+   * Produces JavaScript source candidates for a normalized import base.
+   *
+   * Extensionless JavaScript imports may select ordinary or index modules, but
+   * explicit extensions name exactly one selected source.
+   */
   private javaScriptCandidates(base: string): string[] {
     const extension = path.posix.extname(base).toLowerCase();
     const files =
@@ -453,6 +600,12 @@ export class EcmaScriptExportResolver {
     return files.map((file) => this.locationKey(file));
   }
 
+  /**
+   * Records one export-resolution failure and marks the inventory incomplete.
+   *
+   * The key deduplicates repeated traversal failures while preserving a separate
+   * diagnostic when another source or exported name has a distinct cause.
+   */
   private problem(
     source: IEvidenceSourceFile,
     message: string,

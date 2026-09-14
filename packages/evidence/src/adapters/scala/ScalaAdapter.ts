@@ -19,12 +19,29 @@ import { ScalaDocumentation } from "./ScalaDocumentation";
 import { ScalaFileScanner } from "./ScalaFileScanner";
 import { ScalaExports } from "./ScalaExports";
 
-/** Builds Scala source-public inventories from the configured source snapshot. */
+/**
+ * Builds Scala public inventories after resolving source-level export forwarding.
+ *
+ * File scans retain declaration owners, export records, and Scaladoc attachments.
+ * Forwarded exports are resolved before semantic groups are published, ensuring
+ * public aliases and documentation refer to the same underlying identity rather
+ * than creating independent coverage units.
+ */
 export class ScalaAdapter implements IEvidenceAdapter {
-  /** Public configuration discriminator owned by this adapter. */
+  /**
+   * Artifact discriminator selecting Scala grammar and extraction rules.
+   *
+   * Population configuration uses this value to select public declarations and
+   * supported documentation carriers through the common adapter contract.
+   */
   public readonly type = "scala";
 
-  /** Builds a fresh inventory and releases the bounded parser session. */
+  /**
+   * Builds a normalized Scala inventory from a validated, cloned snapshot.
+   *
+   * Export resolution and public unit grouping precede annotation materialization.
+   * Diagnostics preserve incomplete scans, and parser cleanup runs on every exit.
+   */
   public async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {
@@ -54,6 +71,8 @@ export class ScalaAdapter implements IEvidenceAdapter {
       const analyses = await Promise.all(
         input.files.map((source) => this.scan(parser, source)),
       );
+      // Export forwarding can expose an existing declaration under another name;
+      // settle that identity before publishing addresses and attaching Scaladoc.
       ScalaExports.resolve(analyses);
       for (const analysis of analyses) {
         inventory.diagnostics.push(...analysis.diagnostics);
@@ -67,7 +86,12 @@ export class ScalaAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Converts parser failures into incomplete source analysis. */
+  /**
+   * Copies Scala declaration, export, and comment records out of a parse session.
+   *
+   * A parser failure retains a located diagnostic and incomplete state so missing
+   * extraction cannot silently lower the configured coverage requirement.
+   */
   private async scan(
     parser: EvidenceParser,
     source: IEvidenceSourceFile,

@@ -2,7 +2,12 @@ import type { IEvidenceCommentSyntax } from "../../structures/IEvidenceCommentSy
 import type { IEvidenceSourceRange } from "../../structures/IEvidenceSourceRange";
 import type { ILuaDocumentationAttachment } from "./ILuaDocumentationAttachment";
 
-/** A Lua documentation carrier or tag-bearing unsupported carrier. */
+/**
+ * Represents a Lua documentation carrier or tag-bearing unsupported carrier.
+ *
+ * LuaDoc is retained independently of static value resolution so annotations on
+ * dynamic or detached source can be reported truthfully rather than discarded.
+ */
 export interface ILuaDocumentation {
   /** Stable identity of this extraction record. */
   id: string;

@@ -9,7 +9,18 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
 /**
  * Gives every invocation of a reusable checker its own execution context.
  *
- * Concurrent plans use different reference roots, and later checks observe source changes without carrying over prior coverage.
+ * A TypeScript function acknowledges one Markdown requirement. Reusing the
+ * checker must preserve each invocation's captured policy while loading current
+ * source, rather than sharing mutable plans or retaining earlier coverage.
+ *
+ * 1. Load the passing plan and make a copy whose reference root is missing.
+ * 2. Start the valid evaluation, clear its caller-owned plan, and concurrently
+ *    evaluate the invalid copy. Verify that:
+ *    - The captured valid plan still passes with one covered reference unit.
+ *    - The missing-root plan is incomplete without affecting the valid result.
+ * 3. Remove the function's annotation and call `check` on the same facade:
+ *    - The fresh report fails with one missing unit.
+ *    - The earlier report remains successful and independently owned.
  */
 export async function test_checker_context(): Promise<void> {
   await TestFileSystem.experiment(

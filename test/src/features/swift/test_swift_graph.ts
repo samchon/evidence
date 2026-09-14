@@ -9,7 +9,13 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Requires every Swift selector as a reference, including undocumented declarations and review-only failures. */
+/** Evaluates every selected Swift declaration as a reference.
+ *
+ * Evidence covers a selector while a review-only target remains missing.
+ *
+ * 1. Evaluate acknowledged and undocumented selectors.
+ * 2. Verify exact missing populations and review behavior.
+ */
 export async function test_swift_graph(): Promise<void> {
   const reference = await new EvidenceSwiftAdapter().analyze(
     TestSourceSnapshot.create(

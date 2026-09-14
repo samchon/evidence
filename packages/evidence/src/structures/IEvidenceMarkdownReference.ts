@@ -1,14 +1,33 @@
 import type { EvidenceMarkdownSymbol } from "../typings/EvidenceMarkdownSymbol";
 import type { IEvidenceReferenceBase } from "./IEvidenceReferenceBase";
 
-/** Markdown documents and sections that the owning claim must cite. */
+/**
+ * Markdown documents or outline items required by the owning claim.
+ *
+ * Ordinary coverage lets a citation acknowledge a selected section and its
+ * selected descendants. `checklist` adds a host dimension: every selected claim
+ * host must independently answer every selected Markdown item, and positive
+ * evidence answers only the named item.
+ *
+ * Use checklist mode for a review form each declaration must complete, rather
+ * than a requirement that any one implementation may satisfy. Configuration
+ * validation rejects cardinality and carrier combinations that conflict with
+ * this per-host interpretation.
+ *
+ * @example
+ * // With two selected test functions and three checklist headings, each
+ * // function owes three answers. Six required answers cannot be pooled into
+ * // three citations supplied by only one of the functions.
+ */
 export interface IEvidenceMarkdownReference extends IEvidenceReferenceBase<
   "markdown",
   EvidenceMarkdownSymbol
 > {
   /**
-   * Markdown file globs relative to root, using claim glob rules. Every matching
-   * regular file is parsed regardless of extension; exclude non-Markdown assets.
+   * Markdown source globs relative to the reference root.
+   *
+   * Selection uses the claim glob rules. Every matching regular file is parsed
+   * regardless of extension, so explicitly exclude non-Markdown assets.
    */
   files: string[];
 

@@ -1,12 +1,23 @@
 import { createHash } from "node:crypto";
 
-/** Produces stable digests for parser-normalized declarations. */
+/**
+ * Produces canonical JSON-derived values for semantic identity calculations.
+ *
+ * The renderer normalizes object order and cyclic references so equivalent
+ * extracted structures have stable hashes across process runs.
+ */
 export namespace CanonicalJson {
+  /** Hashes the canonical representation with SHA-256 for persisted semantic comparison. */
   export function digest(value: unknown): string {
     return createHash("sha256").update(render(value, new Set())).digest("hex");
   }
 
-  /** Copies an object without fields that do not belong to semantic content. */
+  /**
+   * Copies enumerable fields except caller-named non-semantic metadata.
+   *
+   * This is non-mutating because adapters may reuse the source record for
+   * diagnostics after computing an identity-specific view.
+   */
   export function without(
     value: object,
     keys: string[],
@@ -17,6 +28,7 @@ export namespace CanonicalJson {
     );
   }
 
+  /** Recursively serializes values while replacing an active cycle with a stable sentinel. */
   function render(value: unknown, seen: Set<object>): string {
     if (value === null || typeof value !== "object") return stringify(value);
     if (seen.has(value)) return '"[circular]"';
@@ -41,6 +53,7 @@ export namespace CanonicalJson {
     }
   }
 
+  /** Preserves JSON primitive semantics while making unsupported values explicit as null. */
   function stringify(value: unknown): string {
     return JSON.stringify(value) ?? "null";
   }

@@ -4,7 +4,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Attaches official help placements while keeping executable comments, examples, and strings inert. */
+/** Attaches MATLAB help annotations only at supported declaration sites.
+ *
+ * Preceding and inline help can document declarations, whereas executable comments, examples, blocks, and strings must remain inert.
+ *
+ * 1. Analyze CRLF class, property, and method help with competing comment placements.
+ * 2. Verify the exact eligible targets, UTF-16 positions, and withdrawal handling.
+ * 3. Compare fingerprints after documentation-only and semantic edits.
+ */
 export async function test_matlab_hosts(): Promise<void> {
   const content = dedent`
     % @evidence doc.md#unattached Unattached file header.

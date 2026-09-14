@@ -3,7 +3,21 @@ import { TestValidator } from "@nestia/e2e";
 
 import { validateEvidenceConfig } from "../../../../packages/evidence/src/internal/validateEvidenceConfig";
 
-/** Rejects vacuous and malformed populations even when their severity is inactive. */
+/**
+ * Validates malformed population declarations before inactive entries are filtered.
+ *
+ * Disabled and off settings control execution, not whether configuration shape
+ * is valid. Ignoring malformed inactive declarations would let later activation
+ * change which invalid settings the loader accepts.
+ *
+ * 1. Reject an empty root claim array with the nonempty-claim diagnostic.
+ * 2. Validate a disabled claim containing a drive-relative root, empty files and
+ *    selectors, exclusion-only carrier globs, and no references; require every
+ *    offending field path in the combined message.
+ * 3. Reject a whitespace-padded Swagger file on an off reference and an active
+ *    Markdown reference with exclusion-only globs and an empty selector array.
+ * 4. Accept a well-formed off Kotlin claim, proving inactivity itself is valid.
+ */
 export function test_config_constraints(): void {
   const emptyGraph = failure({ claims: [] });
 
@@ -82,6 +96,12 @@ export function test_config_constraints(): void {
   });
 }
 
+/**
+ * Captures the diagnostic message from an expected configuration failure.
+ *
+ * Unexpected non-Error causes propagate, and successful validation fails the
+ * scenario rather than returning text that could satisfy a negative assertion.
+ */
 function failure(config: IEvidenceConfig): string {
   try {
     validateEvidenceConfig(config);

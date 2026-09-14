@@ -4,7 +4,13 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Attaches Ruby RDoc comments and rejects tags in non-documentation carriers. */
+/** Attaches Ruby RDoc only at supported documentation hosts.
+ *
+ * Tags in non-documentation carriers cannot acknowledge Ruby units.
+ *
+ * 1. Analyze RDoc and inert carrier examples.
+ * 2. Verify attached targets, diagnostics, and grouped hosts.
+ */
 export async function test_ruby_hosts(): Promise<void> {
   const inventory = await new EvidenceRubyAdapter().analyze(
     TestSourceSnapshot.create(

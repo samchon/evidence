@@ -12,7 +12,12 @@ import type { IObjcDocumentation } from "./IObjcDocumentation";
 import type { IObjcFileAnalysis } from "./IObjcFileAnalysis";
 import type { ObjcDeclarationForm } from "./ObjcDeclarationForm";
 
-/** Extracts explicit interfaces before reconciling implementations across selected files. */
+/**
+ * Extracts explicit interfaces before reconciling implementations across selected files.
+ *
+ * Headers, implementations, categories, and extensions retain independent sites
+ * here because the adapter must prove their common semantic identity later.
+ */
 export class ObjcFileScanner {
   /** Original UTF-16 source coordinates. */
   private readonly text: SourceText;
@@ -26,7 +31,12 @@ export class ObjcFileScanner {
   /** Failures that prevent a complete public denominator. */
   private readonly diagnostics: IEvidenceDiagnostic[] = [];
 
-  /** Borrows a parser session only for the duration of extraction. */
+  /**
+   * Borrows a parser session only for the duration of extraction.
+   *
+   * The source text mapper is created at this boundary so all later sites use
+   * original UTF-16 offsets, independent of the parser session's lifetime.
+   */
   public constructor(
     private readonly session: EvidenceParseSession,
     private readonly source: IEvidenceSourceFile,
@@ -34,7 +44,12 @@ export class ObjcFileScanner {
     this.text = new SourceText(source.content);
   }
 
-  /** Returns node-free declarations and documentation. */
+  /**
+   * Returns node-free declarations and documentation.
+   *
+   * Comment classification precedes top-level traversal, allowing Doxygen to
+   * attach only to the adjacent declaration before reconciliation merges sites.
+   */
   public scan(): IObjcFileAnalysis {
     this.comments();
     const items = this.session.root.namedChildren;

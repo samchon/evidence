@@ -2,8 +2,20 @@ import type { IEvidenceCheckReport } from "../structures/IEvidenceCheckReport";
 import type { IEvidenceDiagnostic } from "../structures/IEvidenceDiagnostic";
 import type { EvidenceReportFormat } from "../typings/EvidenceReportFormat";
 
-/** Renders the same deterministic check report as human or machine output. */
+/**
+ * Serializes an evaluated check for terminal users or machine consumers.
+ *
+ * Both formats read the same report and preserve its diagnostic order. Rendering
+ * does not evaluate coverage or change process status, which keeps presentation
+ * separate from the check programmer's completeness and severity decisions.
+ */
 export namespace EvidenceReporter {
+  /**
+   * Selects the requested representation of a completed report object.
+   *
+   * The returned string includes its final newline and is ready for a stream or
+   * output file. This function performs no I/O.
+   */
   export function render(
     report: IEvidenceCheckReport,
     format: EvidenceReportFormat,
@@ -11,10 +23,23 @@ export namespace EvidenceReporter {
     return format === "json" ? json(report) : text(report);
   }
 
+  /**
+   * Serializes the versioned report as indented JSON.
+   *
+   * No fields are projected away, so consumers retain claim boundaries and
+   * structured diagnostic coordinates alongside the aggregate counts.
+   */
   export function json(report: IEvidenceCheckReport): string {
     return JSON.stringify(report, null, 2) + "\n";
   }
 
+  /**
+   * Renders summary counts followed by actionable diagnostic blocks.
+   *
+   * Each finding includes configuration context, location, subject, and repair.
+   * Missing source coordinates fall back to file or aggregate context rather
+   * than implying an invented line number.
+   */
   export function text(report: IEvidenceCheckReport): string {
     const counts = report.counts;
     const lines: string[] = [
@@ -31,6 +56,12 @@ export namespace EvidenceReporter {
   }
 }
 
+/**
+ * Expands one finding into the common terminal diagnostic layout.
+ *
+ * Keeping context, location, and subject on separate lines lets aggregate and
+ * source-level findings share the layout without losing their repair guidance.
+ */
 function diagnosticLines(
   report: IEvidenceCheckReport,
   diagnostic: IEvidenceDiagnostic,
@@ -44,6 +75,12 @@ function diagnosticLines(
   ];
 }
 
+/**
+ * Labels a diagnostic with its authored claim and reference coordinates.
+ *
+ * Claim names supplement numeric identities. If a reference result is unavailable,
+ * the authored index still identifies the boundary without an artifact label.
+ */
 function context(
   report: IEvidenceCheckReport,
   diagnostic: IEvidenceDiagnostic,
@@ -62,6 +99,12 @@ function context(
     : `${claimText} -> reference[${reference.reference}] (${reference.type})`;
 }
 
+/**
+ * Chooses the most precise location supplied by a diagnostic.
+ *
+ * File-only failures and aggregate findings remain readable when extraction
+ * could not provide a concrete source span.
+ */
 function location(diagnostic: IEvidenceDiagnostic): string {
   const location = diagnostic.location;
   if (location === undefined) return "configuration or aggregate graph";
@@ -71,6 +114,12 @@ function location(diagnostic: IEvidenceDiagnostic): string {
     : `${location.file}:${start.line}:${start.column}`;
 }
 
+/**
+ * Identifies the host and authored target involved in a finding.
+ *
+ * Target text is JSON-escaped so quotes and control characters remain visible.
+ * Findings without either coordinate apply to the configured population.
+ */
 function subject(diagnostic: IEvidenceDiagnostic): string {
   const values: string[] = [];
   if (diagnostic.hostId !== undefined) values.push(`host ${diagnostic.hostId}`);

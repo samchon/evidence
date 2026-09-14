@@ -2,7 +2,12 @@ import type { IEvidenceCommentSyntax } from "../../structures/IEvidenceCommentSy
 import type { IEvidenceSourceRange } from "../../structures/IEvidenceSourceRange";
 import type { IMatlabDocumentationAttachment } from "./IMatlabDocumentationAttachment";
 
-/** A MATLAB documentation carrier or tag-bearing unsupported carrier. */
+/**
+ * Represents a MATLAB documentation carrier or tag-bearing unsupported carrier.
+ *
+ * MATLAB help placement has language-specific attachment rules, so this record
+ * preserves both accepted help and tagged text that needs an actionable failure.
+ */
 export interface IMatlabDocumentation {
   /** Stable identity of this extraction record. */
   id: string;

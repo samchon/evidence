@@ -7,7 +7,13 @@ import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Keeps tuple indexes, visibility, and documentation on real fields when comments occur between their tokens. */
+/** Preserves Rust tuple-field identity across interleaved comments.
+ *
+ * Comments between field tokens cannot change tuple indexes, visibility, or documentation ownership.
+ *
+ * 1. Analyze commented tuple fields.
+ * 2. Verify indexes, hosts, visibility, and fingerprints.
+ */
 export async function test_rust_tuple_comments(): Promise<void> {
   const content = dedent`
     pub struct Sale(

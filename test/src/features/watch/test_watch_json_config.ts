@@ -6,7 +6,19 @@ import { join } from "node:path";
 
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
-/** Replaces valid JSON results with parse/deletion failures and recovers when the file is repaired. */
+/**
+ * Replaces valid JSON results with parse and deletion failures, then recovers on repair.
+ *
+ * The watcher must publish the current JSON configuration state rather than retain
+ * a prior successful report when its only configuration file becomes unusable.
+ *
+ * 1. Start from a JSON configuration whose Markdown source cites its target and
+ *    require the initial cycle to complete.
+ * 2. Replace the configuration with malformed JSON and require a failed cycle.
+ * 3. Delete the malformed configuration and require another failed cycle.
+ * 4. Recreate the original JSON content and require a complete recovery cycle
+ *    before closing the watcher.
+ */
 export async function test_watch_json_config(): Promise<void> {
   const config: IEvidenceConfig = {
     claims: [

@@ -5,18 +5,74 @@ import type { IGoDeclaration } from "./IGoDeclaration";
 import type { IGoFileAnalysis } from "./IGoFileAnalysis";
 import type { IGoMaterializedDeclaration } from "./IGoMaterializedDeclaration";
 
-/** Joins Go files by directory and package before publishing receiver-owned units. */
+/**
+ * Reconciles selected Go files into package-wide Evidence units and addresses.
+ *
+ * GoAdapter supplies one analysis per source file because receiver methods may
+ * depend on types in another file; this resolver restores Go's package boundary
+ * before the shared inventory is published.
+ */
 export class GoPackageResolver {
+  /**
+   * Published units indexed by their package-wide semantic IDs.
+   *
+   * Materialization adds physical declaration sites to these units before they
+   * are appended to the caller-owned inventory.
+   */
   private readonly units = new Map<string, IEvidenceUnit>();
+
+  /**
+   * Unit IDs already associated with each package-local public identity.
+   *
+   * The resolver uses this map to report incompatible symbol kinds that would
+   * otherwise make one identity ambiguous.
+   */
   private readonly identities = new Map<string, string>();
+
+  /**
+   * Serialized addresses that have already been emitted for a unit.
+   *
+   * Several owner and member sources can contribute the same public address.
+   */
   private readonly addresses = new Set<string>();
+
+  /**
+   * Diagnostic fingerprints reported during this package reconciliation.
+   *
+   * Suppressing repeats keeps one input defect from producing redundant errors.
+   */
   private readonly reported = new Set<string>();
 
+  /**
+   * Creates a resolver for the selected Go file analyses and destination inventory.
+   *
+   * The analyses remain immutable input; published units, addresses, and
+   * diagnostics are added to the provided inventory during {@link publish}.
+   */
   public constructor(
+    /**
+     * File-local extractions selected for this adapter pass.
+     *
+     * Their directory and package names establish the package groups to resolve.
+     */
     private readonly analyses: IGoFileAnalysis[],
+
+    /**
+     * Shared inventory that receives resolved units and reconciliation diagnostics.
+     *
+     * Its completeness flag is cleared whenever package resolution finds an error.
+     */
     private readonly inventory: IEvidenceInventory,
   ) {}
 
+  /**
+   * Resolves all selected declarations and publishes their package-wide units.
+   *
+   * The returned map lets GoAdapter associate scanner-local documentation with
+   * the unit ID that survived receiver and package-boundary reconciliation.
+   *
+   * @returns Scanner-local declaration IDs mapped to their published unit IDs.
+   */
   public publish(): Map<string, string> {
     this.validatePackages();
     const entries = this.analyses.flatMap((analysis) =>
@@ -72,6 +128,12 @@ export class GoPackageResolver {
     return published;
   }
 
+  /**
+   * Adds one declaration to its resolved unit and publishes its public addresses.
+   *
+   * Compatible physical declarations contribute sites to one unit; conflicting
+   * declarations remain visible through diagnostics instead of being discarded.
+   */
   private materialize(
     entry: IGoMaterializedDeclaration,
     owners: IGoMaterializedDeclaration[],
@@ -130,6 +192,12 @@ export class GoPackageResolver {
     this.publishAddresses(entry, owners);
   }
 
+  /**
+   * Emits each configured source address that can publicly name a resolved unit.
+   *
+   * Member addresses inherit paths from both their own file and selected owner
+   * files, because either file may be the configured public entry point.
+   */
   private publishAddresses(
     entry: IGoMaterializedDeclaration,
     owners: IGoMaterializedDeclaration[],
@@ -156,6 +224,12 @@ export class GoPackageResolver {
       }
   }
 
+  /**
+   * Verifies that selected files form compatible ordinary and external test packages.
+   *
+   * Go permits one ordinary package and its matching `_test` package per
+   * directory; other combinations make package-wide identity unreliable.
+   */
   private validatePackages(): void {
     const directories = new Map<string, IGoFileAnalysis[]>();
     for (const analysis of this.analyses) {
@@ -191,6 +265,12 @@ export class GoPackageResolver {
     }
   }
 
+  /**
+   * Finds the ordinary package name represented by a test-only file selection.
+   *
+   * A lone package is its own base, while a matching external test package
+   * identifies the base through Go's required `_test` suffix.
+   */
   private testPackageBase(
     names: Array<string | undefined>,
   ): string | undefined {
@@ -201,6 +281,12 @@ export class GoPackageResolver {
     return packages.find((name) => packages.includes(`${name}_test`));
   }
 
+  /**
+   * Records an incompatible-package diagnostic for every affected file group.
+   *
+   * The directory is the Go package boundary, so no unit from this group can be
+   * trusted as a single semantic package population.
+   */
   private packageProblem(directory: string, analyses: IGoFileAnalysis[]): void {
     const names = Array.from(
       new Set(analyses.map((analysis) => analysis.packageName)),
@@ -216,6 +302,12 @@ export class GoPackageResolver {
     );
   }
 
+  /**
+   * Wraps a physical declaration with the package-wide ID it would publish under.
+   *
+   * This transient form keeps source context available while ownership checks
+   * determine whether the declaration is eligible for materialization.
+   */
   private entry(
     analysis: IGoFileAnalysis,
     declaration: IGoDeclaration,
@@ -231,6 +323,12 @@ export class GoPackageResolver {
     };
   }
 
+  /**
+   * Serializes a stable unit ID from the Go package boundary and semantic identity.
+   *
+   * File paths are deliberately absent because declarations in several package
+   * files may represent one public unit.
+   */
   private unitId(
     analysis: IGoFileAnalysis,
     symbol: string,
@@ -239,14 +337,32 @@ export class GoPackageResolver {
     return `go:${this.packageKey(analysis)}:${symbol}:${JSON.stringify(identity)}`;
   }
 
+  /**
+   * Produces a package-scoped lookup key for an exported owner type name.
+   *
+   * The package component prevents same-named types in different directories
+   * from satisfying each other's methods.
+   */
   private ownerKey(analysis: IGoFileAnalysis, name: string): string {
     return JSON.stringify([this.packageKey(analysis), name]);
   }
 
+  /**
+   * Produces the normalized package identity shared by compatible file analyses.
+   *
+   * Both directory and package clause are required because either alone can
+   * collide across the selected source set.
+   */
   private packageKey(analysis: IGoFileAnalysis): string {
     return JSON.stringify([analysis.directory, analysis.packageName]);
   }
 
+  /**
+   * Adds one deduplicated package-resolution failure to the shared inventory.
+   *
+   * Reporting also marks the inventory incomplete, preventing a bad package
+   * population from appearing as successful reduced coverage.
+   */
   private problem(
     code: string,
     analysis: IGoFileAnalysis | undefined,

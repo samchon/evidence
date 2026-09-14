@@ -3,7 +3,23 @@ import { TestValidator } from "@nestia/e2e";
 
 import { TestInventory } from "../../internal/TestInventory";
 
-/** Input ordering changes neither the serialized inventory nor the separation between reviews and evidence. */
+/**
+ * Normalizes duplicate inventory inputs without losing selection or annotation meaning.
+ *
+ * Deterministic merging must treat source ranges as a set while retaining real
+ * coordinate conflicts. Reviews and tag diagnostics also have different effects:
+ * reviews cannot create acknowledgements, and tag problems do not shrink a
+ * successfully extracted declaration population.
+ *
+ * 1. Prepare matching inventories with a review, a tag diagnostic, an added public
+ *    alias, and repeated content ranges; mark one source copy dependency-only.
+ * 2. Merge in both orders and require identical serialization, with direct source
+ *    selection taking precedence over dependency-only loading.
+ * 3. Require the merged inventory to retain one review, no acknowledgements, one
+ *    selected declaration, and complete extraction despite the tag diagnostic.
+ * 4. Alter the line coordinate of a duplicate content range while keeping its
+ *    offset and require incomplete analysis rather than deduplicating away the conflict.
+ */
 export async function test_inventory_serialization(): Promise<void> {
   const input = TestInventory.create();
   TestInventory.unit(

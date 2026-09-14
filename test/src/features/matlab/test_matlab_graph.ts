@@ -9,7 +9,15 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Requires every MATLAB selector as a reference, including undocumented declarations and review-only failures. */
+/** Evaluates each selected MATLAB declaration as a required cross-language reference.
+ *
+ * Evidence and reviews have different graph effects: missing evidence fails coverage, while a review is retained but cannot satisfy it.
+ *
+ * 1. Extract MATLAB type, function, and property units with TypeScript claims.
+ * 2. Evaluate each selector with and without its matching acknowledgement.
+ * 3. Require exact missing populations when evidence is absent.
+ * 4. Verify a review-only claim leaves its referenced function uncovered.
+ */
 export async function test_matlab_graph(): Promise<void> {
   const reference = await new EvidenceMatlabAdapter().analyze(
     TestSourceSnapshot.create(

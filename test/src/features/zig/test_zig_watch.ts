@@ -5,7 +5,14 @@ import { join } from "node:path";
 
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
-/** Rebuilds Zig populations after source, new-file, syntax, and configuration changes. */
+/** Rebuilds Zig coverage after watched source and selector changes.
+ *
+ * New files, syntax failure, repair, and a changed selector must replace the current inventory.
+ *
+ * 1. Compare each watch cycle to a fresh check.
+ * 2. Add and break selected input, then require failure and incompleteness.
+ * 3. Repair and reselect coverage, requiring recovery.
+ */
 export async function test_zig_watch(): Promise<void> {
   await TestFileSystem.experiment(
     "zig-watch",

@@ -5,7 +5,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Reports C preprocessing, declaration conflicts, and malformed syntax. */
+/** Reports C preprocessing, declaration conflicts, and malformed syntax as incomplete.
+ *
+ * The adapter must not derive a reliable public surface when preprocessing or conflicting declarations make ownership uncertain.
+ *
+ * 1. Analyze source containing unsupported preprocessing and declaration conflicts.
+ * 2. Analyze malformed C syntax.
+ * 3. Require each inventory to be incomplete and to retain actionable diagnostics.
+ */
 export async function test_c_failures(): Promise<void> {
   const adapter = new EvidenceCAdapter();
 

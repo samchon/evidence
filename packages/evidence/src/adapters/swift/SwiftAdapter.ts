@@ -19,12 +19,31 @@ import { SwiftDocumentation } from "./SwiftDocumentation";
 import { SwiftFileScanner } from "./SwiftFileScanner";
 import { SwiftOwnership } from "./SwiftOwnership";
 
-/** Builds Swift source-public inventories from the configured source snapshot. */
+/**
+ * Reconciles Swift extension ownership and DocC within one configured module.
+ *
+ * The scanner records explicit declarations before snapshot-wide ownership
+ * resolution links extensions and nominal types. Materialization includes the
+ * root identity so equal declarations in separate module selections stay distinct.
+ * Documentation then attaches to the reconciled owners, while source dependencies
+ * retain every physical file needed to invalidate the analysis.
+ */
 export class SwiftAdapter implements IEvidenceAdapter {
-  /** Public configuration discriminator owned by this adapter. */
+  /**
+   * Swift discriminator for explicit public and open source declarations.
+   *
+   * The module boundary comes from the snapshot root. This value selects Swift
+   * grammar and visibility rules without inferring generated members.
+   */
   public readonly type = "swift";
 
-  /** Builds a fresh inventory and releases the bounded parser session. */
+  /**
+   * Builds a module-scoped Swift inventory from a captured source population.
+   *
+   * Extension ownership resolves before units are published. Inaccessible input,
+   * unsupported ownership, and syntax failures remain incomplete findings; the
+   * invocation releases its parser regardless of the materialization outcome.
+   */
   public async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {
@@ -60,6 +79,8 @@ export class SwiftAdapter implements IEvidenceAdapter {
       const analyses = await Promise.all(
         input.files.map((source) => this.scan(parser, source)),
       );
+      // Extensions need the complete selected nominal type set. Resolving before
+      // publication also keeps source order from choosing a different owner.
       SwiftOwnership.resolve(analyses);
       for (const analysis of analyses) {
         inventory.diagnostics.push(...analysis.diagnostics);

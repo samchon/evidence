@@ -23,10 +23,29 @@ import type { IEvidenceUnit } from "../../structures/IEvidenceUnit";
 import type { IEvidenceUnitSite } from "../../structures/IEvidenceUnitSite";
 import type { EvidenceArtifactType } from "../../typings/EvidenceArtifactType";
 
-/** Builds Swagger/OpenAPI operation units and description hosts. */
+/**
+ * Extracts Swagger/OpenAPI operations and their description-based annotation hosts.
+ *
+ * Local snapshots and explicitly configured remote documents pass through the
+ * same normalization and materialization path. Each method/path operation retains
+ * its own identity even without a description, while supported description spans
+ * map annotations back to source coordinates. Document failures remain incomplete.
+ */
 export class EvidenceSwaggerAdapter implements IEvidenceAdapter {
+  /**
+   * Artifact discriminator selecting API-operation extraction.
+   *
+   * Operations use method/path targets within each independent document population.
+   */
   public readonly type: EvidenceArtifactType = "swagger";
 
+  /**
+   * Normalizes captured JSON/YAML documents into operation inventories.
+   *
+   * Each document failure is retained alongside successfully loaded documents.
+   * Input is cloned, and final inventory validation preserves incompleteness rather
+   * than treating failed normalization as a document with no operations.
+   */
   public async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {
@@ -35,6 +54,8 @@ export class EvidenceSwaggerAdapter implements IEvidenceAdapter {
     if (input.files.length === 0)
       return new EvidenceInventory([inventory]).snapshot();
 
+    // Keep every document's outcome: one failed normalization must not discard
+    // useful diagnostics from peers or be interpreted as an empty operation set.
     const loaded = await Promise.allSettled(
       input.files.map((source) => SwaggerDocumentLoader.load(source)),
     );
@@ -57,7 +78,14 @@ export class EvidenceSwaggerAdapter implements IEvidenceAdapter {
     return new EvidenceInventory([inventory]).snapshot();
   }
 
-  /** Loads one exact local document or explicitly configured HTTP(S) URL. */
+  /**
+   * Loads one exact local document or explicitly configured HTTP(S) URL.
+   *
+   * Local paths resolve from the configuration-relative root and use source-loader
+   * dependency tracking. Remote bytes become a synthetic source snapshot without
+   * filesystem dependencies. Access and normalization failures return incomplete
+   * inventory diagnostics for the requested document.
+   */
   public async load(
     configFile: string,
     file: string,
@@ -108,6 +136,12 @@ export class EvidenceSwaggerAdapter implements IEvidenceAdapter {
     }
   }
 
+  /**
+   * Seeds an operation inventory with snapshot provenance and discovery failures.
+   *
+   * Operation and annotation collections remain empty until document normalization
+   * establishes supported API structure and source mappings.
+   */
   private inventory(input: IEvidenceSourceSnapshot): IEvidenceInventory {
     return {
       schemaVersion: 1,
@@ -131,6 +165,13 @@ export class EvidenceSwaggerAdapter implements IEvidenceAdapter {
     };
   }
 
+  /**
+   * Creates semantic operation units and mapped description carriers.
+   *
+   * Source identity qualifies each operation token so separate documents do not
+   * merge accidentally. Operations remain represented even when no description
+   * supplies an annotation, preserving per-host coverage requirements.
+   */
   private materialize(
     inventory: IEvidenceInventory,
     source: IEvidenceSourceFile,

@@ -7,7 +7,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Prevents unsupported preprocessing, Objective-C++, aliases, and C surfaces from becoming smaller successes. */
+/** Rejects Objective-C inputs with unsupported public surfaces.
+ *
+ * Preprocessing, Objective-C++, aliases, C declarations, malformed syntax, and failed snapshots must not silently produce smaller inventories.
+ *
+ * 1. Analyze each unsupported or malformed source form.
+ * 2. Require incomplete status and actionable diagnostics.
+ * 3. Verify a source failure remains incomplete.
+ */
 export async function test_objc_boundaries(): Promise<void> {
   const adapter = new EvidenceObjcAdapter();
   TestValidator.equals(

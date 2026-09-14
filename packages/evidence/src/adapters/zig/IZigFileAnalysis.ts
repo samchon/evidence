@@ -3,7 +3,12 @@ import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { IZigDeclaration } from "./IZigDeclaration";
 import type { IZigDocumentation } from "./IZigDocumentation";
 
-/** Node-free Zig extraction retained after a parse session closes. */
+/**
+ * Holds the node-free Zig extraction retained after a parse session closes.
+ *
+ * Alias reconciliation works from this serializable record after the parser is
+ * closed, retaining the physical sites that support each exported address.
+ */
 export interface IZigFileAnalysis {
   /** Original selected source snapshot. */
   source: IEvidenceSourceFile;
@@ -17,6 +22,11 @@ export interface IZigFileAnalysis {
   /** Failures encountered while establishing the public surface. */
   diagnostics: IEvidenceDiagnostic[];
 
-  /** Whether every relevant declaration form was understood. */
+  /**
+   * States whether scanning classified every surface-affecting Zig form.
+   *
+   * The inventory treats false as a failed boundary, preserving uncertainty
+   * rather than allowing an unclassified alias to reduce the public population.
+   */
   complete: boolean;
 }

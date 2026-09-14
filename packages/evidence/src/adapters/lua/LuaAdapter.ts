@@ -18,12 +18,31 @@ import type { ILuaFileAnalysis } from "./ILuaFileAnalysis";
 import { LuaDocumentation } from "./LuaDocumentation";
 import { LuaFileScanner } from "./LuaFileScanner";
 
-/** Builds Lua source-public inventories from the configured source snapshot. */
+/**
+ * Materializes statically established Lua declarations and documentation owners.
+ *
+ * The scanner records supported globals, returned-table fields, and local alias
+ * relationships without executing the module. Materialization publishes their
+ * semantic units before LuaDoc becomes evidence hosts, so a shared source value
+ * is not assigned an arbitrary table owner merely because a comment names it.
+ * Source and syntax uncertainty remain part of the final inventory status.
+ */
 export class LuaAdapter implements IEvidenceAdapter {
-  /** Public configuration discriminator owned by this adapter. */
+  /**
+   * Lua discriminator for static global and module-table extraction.
+   *
+   * It selects Lua grammar and documentation rules. Tables remain property units
+   * rather than becoming type declarations by analogy with another language.
+   */
   public readonly type = "lua";
 
-  /** Builds a fresh inventory and releases the bounded parser session. */
+  /**
+   * Analyzes a copied Lua snapshot and returns reconciled public records.
+   *
+   * Declaration materialization precedes comment attachment, and common inventory
+   * validation checks the resulting ownership. The parser closes after success
+   * or failure; returned records contain no borrowed syntax nodes.
+   */
   public async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {
@@ -57,6 +76,8 @@ export class LuaAdapter implements IEvidenceAdapter {
         inventory.diagnostics.push(...analysis.diagnostics);
         inventory.complete &&= analysis.complete;
       }
+      // Publish the scanner-established owners before documentation is interpreted.
+      // Tag text cannot decide which table owns an otherwise ambiguous value.
       const published = this.materializeUnits(inventory, analyses);
       this.materializeDocumentation(inventory, analyses, published);
       return new EvidenceInventory([inventory]).snapshot();

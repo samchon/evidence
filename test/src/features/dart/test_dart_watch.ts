@@ -5,7 +5,14 @@ import { join } from "node:path";
 
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
-/** Rebuilds Dart populations after source, new-file, syntax, and configuration changes. */
+/** Rebuilds Dart populations after source, discovery, syntax, and configuration changes.
+ *
+ * Watch must report each state transition from the same checker contract rather than retaining stale library analysis.
+ *
+ * 1. Start a watched Dart project and mutate an existing source and add a new selected file.
+ * 2. Introduce malformed source and require an incomplete cycle.
+ * 3. Repair source and change configuration, requiring the corresponding recovered populations.
+ */
 export async function test_dart_watch(): Promise<void> {
   await TestFileSystem.experiment(
     "dart-watch",

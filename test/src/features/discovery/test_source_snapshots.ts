@@ -7,7 +7,21 @@ import { join } from "node:path";
 import { SourcePath } from "../../../../packages/evidence/src/internal/SourcePath";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
-/** Anchors roots to the config, preserves raw source, and returns deterministic snapshots. */
+/**
+ * Anchors roots to the config, preserves raw source, and returns deterministic snapshots.
+ *
+ * Discovery must preserve source bytes and stable address order while resolving
+ * relative roots from the configuration file rather than the caller's directory.
+ *
+ * 1. Load the same selected Markdown population through relative and absolute
+ *    roots; require equal inventories, ordered addresses, the authored root
+ *    display, and a recursive dependency that can discover new files.
+ * 2. Require the BOM- and CRLF-containing document content to survive unchanged.
+ * 3. Edit one exact source, reload it, and require a changed digest plus its
+ *    relative display path from the nested configuration.
+ * 4. Select an unknown extension and require complete retention so adapters can
+ *    decide whether that explicit input is supported.
+ */
 export async function test_source_snapshots(): Promise<void> {
   const location = join(__dirname, "sources " + randomUUID());
   const content =

@@ -7,7 +7,13 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Classifies Rust public types, fields, variants, traits, values, and impl items. */
+/** Classifies Rust's public declaration and member matrix.
+ *
+ * Types, fields, variants, traits, values, and impl items retain exact public ownership.
+ *
+ * 1. Analyze supported Rust declarations.
+ * 2. Verify units, identities, and parents.
+ */
 export async function test_rust_units(): Promise<void> {
   // Certified metadata must accompany the pinned Rust grammar.
   const language = EvidenceLanguageRegistry.list().find(

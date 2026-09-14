@@ -4,7 +4,13 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Resolves inline and file modules through Rust visibility and public reexports. */
+/** Resolves Rust inline and file modules through public visibility.
+ *
+ * Public reexports and module files determine the addressable module graph.
+ *
+ * 1. Analyze inline, file, and reexported modules.
+ * 2. Verify identities, links, and resolutions.
+ */
 export async function test_rust_modules(): Promise<void> {
   // Inline, conventional, private, and orphan modules share one selected snapshot.
   const inventory = await new EvidenceRustAdapter().analyze(

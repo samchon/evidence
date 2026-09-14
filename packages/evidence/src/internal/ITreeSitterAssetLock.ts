@@ -1,10 +1,15 @@
 import type { tags } from "typia";
 
-/** Identifies a cache lock owner so crashed processes do not block future checks. */
+/**
+ * Serialized ownership record for one cross-process grammar cache transfer.
+ *
+ * The token prevents an old owner from deleting a lock reacquired after a crash;
+ * the PID permits stale-lock recovery when that owner is no longer alive.
+ */
 export interface ITreeSitterAssetLock {
-  /** Process that owns the transfer lock. */
+  /** Positive operating-system process ID that acquired the transfer lock. */
   pid: number & tags.Type<"uint32"> & tags.Minimum<1>;
 
-  /** Unique acquisition token checked before releasing a lock. */
+  /** Random acquisition token checked before releasing a lock with the same path. */
   token: string;
 }

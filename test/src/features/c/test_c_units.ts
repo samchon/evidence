@@ -4,7 +4,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Classifies C tags, typedefs, functions, objects, fields, and enumerators. */
+/** Classifies the public C surface across tags, aliases, callables, objects, and members.
+ *
+ * The inventory must retain each distinct declaration category so coverage cannot omit public aggregate structure.
+ *
+ * 1. Analyze C declarations for tags, typedefs, functions, objects, fields, and enumerators.
+ * 2. Compare the selected unit symbols and full identities.
+ * 3. Verify members retain their aggregate owner.
+ */
 export async function test_c_units(): Promise<void> {
   // Certified metadata describes the exact grammar and explicit-source boundary.
   const language = EvidenceLanguageRegistry.list().find(

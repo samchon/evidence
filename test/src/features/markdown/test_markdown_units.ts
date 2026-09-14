@@ -5,7 +5,19 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Materializes only the Markdown file and ATX H1-H4 identities with exact anchors. */
+/**
+ * Materializes the Markdown file and supported ATX heading identities.
+ *
+ * The adapter must make a file unit and H1 through H4 units without treating
+ * Setext headings, code, malformed markers, or H5/H6 headings as public units.
+ *
+ * 1. Analyze headings with Unicode text, punctuation, explicit anchors, and duplicate anchors.
+ * 2. Verify the supported units:
+ *    - Their count, symbols, normalized identities, and parent hierarchy are exact.
+ *    - Unsupported heading spellings do not add a unit.
+ * 3. Resolve a repeated public anchor and require an ambiguous result while each duplicate remains a file child.
+ * 4. Require an otherwise diagnostic-free inventory.
+ */
 export async function test_markdown_units(): Promise<void> {
   const content = dedent`
     Setext is ordinary content

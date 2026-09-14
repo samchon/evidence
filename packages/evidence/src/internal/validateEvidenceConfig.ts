@@ -9,7 +9,12 @@ import { FileGlob } from "./FileGlob";
 import { SourcePath } from "./SourcePath";
 import { SwaggerRemoteReader } from "../adapters/swagger/SwaggerRemoteReader";
 
-/** Rejects invalid populations and policies before activation can suppress them. */
+/**
+ * Collects all configuration contract violations before plan construction.
+ *
+ * Validation does not stop at the first error so users can repair related
+ * population policy mistakes together, including entries later disabled by severity.
+ */
 export function validateEvidenceConfig(
   config: IEvidenceConfig,
   configFile: string = resolve("evidence.config.ts"),
@@ -86,6 +91,7 @@ export function validateEvidenceConfig(
     );
 }
 
+/** Ensures a type has a complete certified adapter rather than only a parser grammar. */
 function validateArtifactType(
   problems: string[],
   path: string,
@@ -97,6 +103,7 @@ function validateArtifactType(
   );
 }
 
+/** Validates file selection through the same restricted matcher used by discovery. */
 function validateGlobs(
   problems: string[],
   path: string,
@@ -109,6 +116,7 @@ function validateGlobs(
   }
 }
 
+/** Validates root spelling lexically without requiring the directory to exist yet. */
 function validateRoot(
   problems: string[],
   path: string,
@@ -123,6 +131,7 @@ function validateRoot(
   }
 }
 
+/** Checks explicit symbol selections only when a language adapter supplies its supported set. */
 function validateSymbols(
   problems: string[],
   path: string,
@@ -144,6 +153,7 @@ function validateSymbols(
       );
 }
 
+/** Allows one exact local or supported remote Swagger document, never a directory-like source. */
 function validateSwaggerSource(
   problems: string[],
   path: string,
@@ -171,6 +181,7 @@ function validateSwaggerSource(
   }
 }
 
+/** Converts validation helper failures into stable user-facing problem text. */
 function message(cause: unknown): string {
   return cause instanceof Error ? cause.message : String(cause);
 }

@@ -19,12 +19,31 @@ import { KotlinDocumentation } from "./KotlinDocumentation";
 import { KotlinFileScanner } from "./KotlinFileScanner";
 import { KotlinReceivers } from "./KotlinReceivers";
 
-/** Builds Kotlin source-public inventories from the configured source snapshot. */
+/**
+ * Resolves Kotlin nominal receivers before publishing declaration and KDoc hosts.
+ *
+ * File analysis retains aliases, type parameters, and receiver candidates until
+ * the selected snapshot is available for lookup. Receiver resolution then updates
+ * ownership or records uncertainty before unit materialization. KDoc attachments
+ * join the resulting units through physical declaration sites, preserving the
+ * distinction between a receiver-qualified public path and its original source.
+ */
 export class KotlinAdapter implements IEvidenceAdapter {
-  /** Public configuration discriminator owned by this adapter. */
+  /**
+   * Kotlin discriminator selecting KDoc and receiver-aware declaration rules.
+   *
+   * This fixes the language of inventory records; it does not widen selection to
+   * scripts or compiler-generated declarations absent from the snapshot.
+   */
   public readonly type = "kotlin";
 
-  /** Builds a fresh inventory and releases the bounded parser session. */
+  /**
+   * Extracts and reconciles Kotlin declarations from an owned source snapshot.
+   *
+   * All files are scanned before receiver lookup. Resolution findings contribute
+   * to completeness before units and documentation are published, and the parser
+   * closes after both successful and failed materialization.
+   */
   public async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {
@@ -54,6 +73,8 @@ export class KotlinAdapter implements IEvidenceAdapter {
       const analyses = await Promise.all(
         input.files.map((source) => this.scan(parser, source)),
       );
+      // Alias targets and nominal receivers can be declared in another file.
+      // Resolve them before assigning extension units or accepting their tags.
       KotlinReceivers.resolve(analyses);
       for (const analysis of analyses) {
         inventory.diagnostics.push(...analysis.diagnostics);

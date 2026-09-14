@@ -1,7 +1,12 @@
 import type { IEvidenceUnitSite } from "../../structures/IEvidenceUnitSite";
 import type { EvidenceProgrammingSymbol } from "../../typings/EvidenceProgrammingSymbol";
 
-/** A MATLAB declaration before class-folder and accessor reconciliation. */
+/**
+ * Represents a MATLAB declaration before class-folder and accessor reconciliation.
+ *
+ * MATLAB can separate a public signature, implementation file, and property
+ * accessors, so this record retains those physical facts until ownership is known.
+ */
 export interface IMatlabDeclaration {
   /** Unique extraction site identity. */
   id: string;
@@ -24,10 +29,20 @@ export interface IMatlabDeclaration {
   /** Whether the declaration is externally accessible. */
   public: boolean;
 
-  /** Class-folder owner file required by an external method. */
+  /**
+   * Names the class-folder owner required by an external method declaration.
+   *
+   * The resolver uses this physical relationship to reject same-named methods
+   * from an unrelated class before assigning a semantic parent.
+   */
   externalOwner?: string;
 
-  /** A method signature requiring a selected implementation, unless abstract. */
+  /**
+   * Identifies the selected implementation required by a nonabstract signature.
+   *
+   * Keeping the required file explicit lets incomplete input fail instead of
+   * silently shrinking the population to only declarations with bodies.
+   */
   implementation?: string;
 
   /** A getter or setter that belongs to an existing property. */
@@ -39,7 +54,12 @@ export interface IMatlabDeclaration {
   /** Property write access. */
   setPublic?: boolean;
 
-  /** Additional class-file aliases for an external method. */
+  /**
+   * Lists additional public class-file projections for an external method.
+   *
+   * Each file supplies an address for the same semantic unit, rather than a
+   * duplicate declaration that would inflate coverage.
+   */
   publicFiles?: string[];
 
   /** Explicit parent extraction identity. */

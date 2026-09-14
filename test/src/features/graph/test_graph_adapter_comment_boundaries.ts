@@ -14,7 +14,23 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Verifies comment attachment changes against real coverage so lost or misplaced tags cannot pass a check. */
+/**
+ * Rejects evidence tags that a language adapter cannot attach to the selected declaration.
+ *
+ * Comment-boundary handling is part of graph correctness: a tag must cover the
+ * declaration that owns it, rather than a neighbouring declaration whose text
+ * happens to be aligned with the annotation.
+ *
+ * 1. Analyze Ruby and Rust member declarations with correctly attached evidence
+ *    tags, then require each selected member to cover the Markdown requirement.
+ * 2. Replace each tag with ordinary text and require both results to fail:
+ *    - The requirement remains the missing unit.
+ *    - Removing documentation cannot leave accidental coverage behind.
+ * 3. Put a Go tag at the end of an earlier variable declaration and require that
+ *    it cannot cover the later selected declaration.
+ * 4. Move the Go tag to the selected declaration's leading comment and require
+ *    coverage to recover.
+ */
 export async function test_graph_adapter_comment_boundaries(): Promise<void> {
   const reference = await new EvidenceMarkdownAdapter().analyze(
     TestSourceSnapshot.create(

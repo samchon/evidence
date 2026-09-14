@@ -4,7 +4,15 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Keeps external methods in their selected package class, including prototype visibility and dependencies. */
+/** Assigns external MATLAB methods to their selected package class.
+ *
+ * Class prototypes and implementation files describe one owner; missing or wrongly aliased class context must not create a passing inventory.
+ *
+ * 1. Combine a package class with external public, private, and additional method files.
+ * 2. Verify merged identities, prototype evidence, supported addresses, and ownership dependencies.
+ * 3. Reverse snapshot order and require the same result.
+ * 4. Require missing class or implementation inputs to remain incomplete.
+ */
 export async function test_matlab_ownership(): Promise<void> {
   const cls = TestSourceSnapshot.create(
     "src/+pkg/@Widget/Widget.m",

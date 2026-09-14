@@ -3,7 +3,14 @@ import { TestValidator } from "@nestia/e2e";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Prevents successful smaller inventories for search-path and migration-dependent schemas. */
+/** Rejects PostgreSQL schemas whose selected population depends on unresolved context.
+ *
+ * Search paths, migration state, unsupported syntax, and failed source snapshots must remain incomplete.
+ *
+ * 1. Analyze each context-dependent or malformed schema.
+ * 2. Require incomplete status and actionable diagnostics.
+ * 3. Verify wrong extensions and failed sources cannot pass.
+ */
 export async function test_postgresql_boundaries(): Promise<void> {
   const adapter = new EvidencePostgresqlAdapter();
   for (const source of [

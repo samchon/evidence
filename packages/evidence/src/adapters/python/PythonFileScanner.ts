@@ -19,26 +19,104 @@ import type { IPythonOwnedUnit } from "./IPythonOwnedUnit";
 import { PythonSyntax } from "./PythonSyntax";
 import { SourceText } from "../../internal/SourceText";
 
-/** Extracts Python declarations and static module bindings before export traversal. */
+/**
+ * Extracts Python declarations and static module bindings from one source file.
+ *
+ * This scanner classifies source-local public surface and documentation while a
+ * later snapshot-wide resolver follows imports and publishes public addresses.
+ */
 export class PythonFileScanner {
+  /**
+   * Records the file's statically understood `__all__` state and names.
+   *
+   * Dynamic mutations make the analysis incomplete rather than allowing the
+   * export resolver to infer a smaller public surface.
+   */
   private readonly all: IPythonAll = { state: "absent", names: [] };
+
+  /**
+   * Collects ordered module bindings used by later export resolution.
+   *
+   * Binding order preserves Python shadowing semantics for imports and locals.
+   */
   private readonly bindings: IPythonBinding[] = [];
+
+  /**
+   * Owns units indexed by their semantic identity within this source file.
+   *
+   * Repeated declaration sites contribute to the same record before it is
+   * returned as a serializable file analysis.
+   */
   private readonly units = new Map<string, IPythonOwnedUnit>();
+
+  /**
+   * Tracks declaration positions used to identify enclosing public hosts.
+   *
+   * Position records retain nesting information after parser nodes are released.
+   */
   private readonly positions = new Map<string, IPythonHostPosition>();
+
+  /**
+   * Holds parsed comment and string documentation by extraction identity.
+   *
+   * Attachments are added as declarations are recognized instead of inferred
+   * later from line adjacency.
+   */
   private readonly documentation = new Map<string, IPythonDocumentation>();
 
-  /** Comment runs indexed by their final one-based source line. */
+  /**
+   * Indexes contiguous comment runs by their final one-based source line.
+   *
+   * A declaration can attach only to an immediately preceding standalone run.
+   */
   private readonly commentDocumentation = new Map<
     number,
     IPythonDocumentation
   >();
 
+  /**
+   * Collects diagnostics that describe unsupported public-surface constructs.
+   *
+   * They are returned with the file analysis so the adapter can retain failure
+   * context after closing the parse session.
+   */
   private readonly diagnostics: IEvidenceDiagnostic[] = [];
+
+  /**
+   * Remembers reported source decisions to avoid duplicate diagnostics.
+   *
+   * Several traversal predicates can encounter one unsupported node.
+   */
   private readonly reported = new Set<string>();
+
+  /**
+   * Tracks string ranges already consumed as a concatenated docstring.
+   *
+   * This prevents adjacent string literals from producing overlapping mappings.
+   */
   private readonly docstringParts = new Set<string>();
+
+  /**
+   * Converts parser offsets into source ranges for units and documentation.
+   *
+   * The scanner owns this helper because all returned records must outlive nodes.
+   */
   private readonly text: SourceText;
+
+  /**
+   * States whether every surface-affecting construct was statically classified.
+   *
+   * Unsupported dynamic forms set this false so missing declarations cannot
+   * reduce the inventory population.
+   */
   private complete = true;
 
+  /**
+   * Binds the active parser session to the selected source snapshot.
+   *
+   * Comment runs are collected eagerly because later traversal intentionally
+   * skips comments while classifying executable declarations.
+   */
   public constructor(
     private readonly session: EvidenceParseSession,
     private readonly source: IEvidenceSourceFile,
@@ -47,6 +125,12 @@ export class PythonFileScanner {
     this.collectCommentRuns();
   }
 
+  /**
+   * Produces the serializable extraction result for this Python source file.
+   *
+   * The first pass establishes `__all__`; the second records declarations and
+   * bindings, so public-name decisions do not depend on statement encounter order.
+   */
   public scan(): IPythonFileAnalysis {
     const statements = this.session.root.namedChildren.filter(
       (statement) => statement.type !== "comment",
@@ -97,6 +181,12 @@ export class PythonFileScanner {
     };
   }
 
+  /**
+   * Classifies one static `__all__` assignment or augmentation.
+   *
+   * Returns whether the statement owns `__all__` handling so other surface
+   * checks do not report the same mutation as an unrelated dynamic construct.
+   */
   private scanAll(statement: Node): boolean {
     if (statement.type !== "expression_statement") return false;
     const expression = statement.namedChildren[0];
@@ -125,6 +215,12 @@ export class PythonFileScanner {
     return false;
   }
 
+  /**
+   * Records bindings introduced by one supported module-scope import.
+   *
+   * Returns whether the statement was an import so declaration scanning can
+   * continue without treating it as an unsupported surface expression.
+   */
   private scanImport(statement: Node): boolean {
     if (statement.type === "import_statement") {
       statement.namedChildren.forEach((entry, index) => {
@@ -202,6 +298,12 @@ export class PythonFileScanner {
     return true;
   }
 
+  /**
+   * Extracts a class declaration and its supported class-level members.
+   *
+   * Nested traversal carries the class identity so methods and fields receive
+   * addresses relative to their owning public type.
+   */
   private scanClass(
     wrapper: Node,
     definition: Node,
@@ -261,6 +363,12 @@ export class PythonFileScanner {
     }
   }
 
+  /**
+   * Extracts a module-level function declaration.
+   *
+   * The wrapper supplies documentation attachment while the definition supplies
+   * the semantic name and source content range.
+   */
   private scanFunction(wrapper: Node, definition: Node): void {
     const name = PythonSyntax.name(definition.childForFieldName("name"));
     if (name === undefined) return;
@@ -278,6 +386,12 @@ export class PythonFileScanner {
     this.bindLocal(name, wrapper.startIndex, root);
   }
 
+  /**
+   * Extracts a method declared in a selected class.
+   *
+   * Class context distinguishes instance and supported static-style ownership
+   * before the unit is added to the file-local collection.
+   */
   private scanMethod(
     wrapper: Node,
     definition: Node,
@@ -317,6 +431,11 @@ export class PythonFileScanner {
     );
   }
 
+  /**
+   * Extracts a statically named module-level type alias.
+   *
+   * The alias is a public type declaration when it is not private by spelling.
+   */
   private scanTypeAlias(
     wrapper: Node,
     definition: Node,
@@ -339,6 +458,12 @@ export class PythonFileScanner {
     if (context === undefined) this.bindLocal(name, wrapper.startIndex, root);
   }
 
+  /**
+   * Classifies a module-scope expression that may alter public declarations.
+   *
+   * Supported assignment forms are delegated; unrecognized surface mutations
+   * become diagnostics to preserve inventory completeness.
+   */
   private scanModuleExpression(statement: Node): void {
     const expression = statement.namedChildren[0];
     if (expression?.type === "assignment")
@@ -347,6 +472,12 @@ export class PythonFileScanner {
       this.scanAugmentedAssignment(statement, expression);
   }
 
+  /**
+   * Classifies a class-body expression that may define a member.
+   *
+   * Assignment handling receives the class context needed to publish member
+   * addresses and reject unsupported receiver mutation.
+   */
   private scanClassExpression(
     statement: Node,
     context: IPythonClassContext,
@@ -358,6 +489,11 @@ export class PythonFileScanner {
       this.scanAugmentedAssignment(statement, expression, context);
   }
 
+  /**
+   * Rejects augmented assignments that can dynamically change public surface.
+   *
+   * Python does not provide a static declaration contract for these mutations.
+   */
   private scanAugmentedAssignment(
     statement: Node,
     assignment: Node,
@@ -387,6 +523,12 @@ export class PythonFileScanner {
     if (context === undefined) this.bindLocal(name, statement.startIndex, root);
   }
 
+  /**
+   * Extracts supported simple assignments as module or class declarations.
+   *
+   * The surrounding context determines whether the assigned name is a type,
+   * class property, or an unsupported dynamic surface change.
+   */
   private scanAssignments(
     statement: Node,
     assignment: Node,
@@ -427,6 +569,11 @@ export class PythonFileScanner {
       );
   }
 
+  /**
+   * Extracts supported instance-field assignments from an initializer body.
+   *
+   * Only statically recognizable receiver attributes become property units.
+   */
   private scanInstanceFields(
     definition: Node,
     context: IPythonClassContext,
@@ -487,6 +634,12 @@ export class PythonFileScanner {
     }
   }
 
+  /**
+   * Adds a declaration site to its semantic unit and records its local binding.
+   *
+   * Reusing unit identity keeps repeated sites and overload-like declarations
+   * together while preserving each physical source location.
+   */
   private addUnit(
     wrapper: Node,
     definition: Node,
@@ -533,6 +686,11 @@ export class PythonFileScanner {
     return record;
   }
 
+  /**
+   * Records a declaration position for later host selection.
+   *
+   * Positions retain parser-independent nesting and source-location metadata.
+   */
   private registerPosition(node: Node, siteId: string, unitId: string): void {
     const id = this.positionId(node);
     let position = this.positions.get(id);
@@ -549,6 +707,12 @@ export class PythonFileScanner {
   }
 
   /** Attaches adjacent source lines even when the grammar places a comment outside the body block. */
+  /**
+   * Attaches the immediately preceding standalone comment run to a declaration.
+   *
+   * Blank lines and intervening source prevent attachment so unrelated comments
+   * cannot become evidence documentation.
+   */
   private attachPrecedingComment(
     node: Node,
     siteId: string,
@@ -573,6 +737,11 @@ export class PythonFileScanner {
     this.attach(documentation, this.positionId(node), siteId, unitId);
   }
 
+  /**
+   * Attaches a recognized docstring mapping to a declaration site.
+   *
+   * The method records both declaration and site identities for later assembly.
+   */
   private attachDocstring(
     definition: Node,
     siteId: string,
@@ -600,6 +769,11 @@ export class PythonFileScanner {
     );
   }
 
+  /**
+   * Adds one declaration-site attachment without duplicating the relation.
+   *
+   * Multiple traversal paths can reach a shared documentation mapping.
+   */
   private attach(
     documentation: IPythonDocumentation,
     positionId: string,
@@ -619,6 +793,11 @@ export class PythonFileScanner {
   }
 
   /** Retains every parsed comment, grouping only consecutive standalone lines at one indent. */
+  /**
+   * Collects contiguous Python comment runs eligible for declaration attachment.
+   *
+   * The final line index allows a constant-time lookup from the next declaration.
+   */
   private collectCommentRuns(): void {
     const comments = this.session.root
       .descendantsOfType("comment")
@@ -653,11 +832,21 @@ export class PythonFileScanner {
   }
 
   /** Refuses trailing code comments as leading declaration documentation. */
+  /**
+   * Checks whether a comment begins on an otherwise empty source line.
+   *
+   * Inline comments cannot document the following declaration.
+   */
   private standaloneComment(offset: number): boolean {
     const start = this.source.content.lastIndexOf("\n", offset - 1) + 1;
     return /^[ \t]*$/u.test(this.source.content.slice(start, offset));
   }
 
+  /**
+   * Finds string literals that carry Evidence annotation tags.
+   *
+   * Tagged literals are retained even when they are not attachable docstrings.
+   */
   private collectStringAnnotations(): void {
     for (const string of this.session.root.descendantsOfType("string")) {
       if (this.docstringParts.has(this.nodeKey(string))) continue;
@@ -671,6 +860,11 @@ export class PythonFileScanner {
     }
   }
 
+  /**
+   * Creates or returns documentation for one string literal range.
+   *
+   * Mapping identity is derived from the stable source range.
+   */
   private ensureStringDocumentation(
     node: Node,
   ): IPythonDocumentation | undefined {
@@ -680,6 +874,11 @@ export class PythonFileScanner {
       : this.ensureDocumentation(node, syntax);
   }
 
+  /**
+   * Creates documentation for adjacent string literals forming one docstring.
+   *
+   * Consumed parts are remembered to avoid overlapping documentation mappings.
+   */
   private ensureConcatenatedDocumentation(
     node: Node,
     parts: Node[],
@@ -725,6 +924,11 @@ export class PythonFileScanner {
     return documentation;
   }
 
+  /**
+   * Returns the documentation carrier for a stable extraction identity.
+   *
+   * The first caller supplies mapping metadata; later callers reuse it.
+   */
   private ensureDocumentation(
     node: Node,
     syntax: IEvidenceCommentSyntax,
@@ -732,6 +936,11 @@ export class PythonFileScanner {
     return this.ensureDocumentationRange(this.session.range(node), syntax);
   }
 
+  /**
+   * Returns documentation keyed by an exact source range.
+   *
+   * Range identity lets comments and string annotations coexist in one map.
+   */
   private ensureDocumentationRange(
     range: IEvidenceSourceRange,
     syntax: IEvidenceCommentSyntax,
@@ -750,20 +959,40 @@ export class PythonFileScanner {
     return documentation;
   }
 
+  /**
+   * Records a local binding with its source-order precedence.
+   *
+   * Export resolution uses the latest binding to model Python shadowing.
+   */
   private bindLocal(name: string, order: number, root: string): void {
     this.bindings.push({ kind: "local", localName: name, order, root });
   }
 
+  /**
+   * Finds the currently winning local root for a module name.
+   *
+   * This mirrors the same ordered binding rule used by export resolution.
+   */
   private currentLocalRoot(name: string): string | undefined {
     return this.bindings.findLast(
       (binding) => binding.kind === "local" && binding.localName === name,
     )?.root;
   }
 
+  /**
+   * Creates a stable local-root token from a name and parser position.
+   *
+   * Distinct rebindings need distinct roots even when they share a name.
+   */
   private rootToken(name: string, node: Node): string {
     return `${name}:${node.startIndex}`;
   }
 
+  /**
+   * Reports an `__all__` mutation that cannot be statically enumerated.
+   *
+   * Public names remain incomplete rather than being guessed from runtime code.
+   */
   private dynamicAll(node: Node): void {
     this.all.state = "dynamic";
     this.problem(
@@ -774,6 +1003,11 @@ export class PythonFileScanner {
     );
   }
 
+  /**
+   * Detects nested mutations of the module's `__all__` binding.
+   *
+   * Control flow around this state prevents a complete static export population.
+   */
   private containsAllMutation(node: Node): boolean {
     const definition = PythonSyntax.definition(node);
     if (
@@ -801,6 +1035,11 @@ export class PythonFileScanner {
     return node.namedChildren.some((child) => this.containsAllMutation(child));
   }
 
+  /**
+   * Detects nested constructs that conditionally alter module public surface.
+   *
+   * The scanner reports these boundaries instead of following executable flow.
+   */
   private containsModuleSurface(node: Node): boolean {
     const queue: Node[] = [node];
     for (let index = 0; index < queue.length; ++index) {
@@ -851,6 +1090,11 @@ export class PythonFileScanner {
     return false;
   }
 
+  /**
+   * Detects class-body constructs that dynamically alter member surface.
+   *
+   * Dynamic class execution cannot safely become selected declarations.
+   */
   private containsClassSurface(node: Node): boolean {
     const queue: Node[] = [node];
     for (let index = 0; index < queue.length; ++index) {
@@ -886,6 +1130,11 @@ export class PythonFileScanner {
     return false;
   }
 
+  /**
+   * Checks whether a module name is eligible for public extraction.
+   *
+   * Private spellings are excluded unless `__all__` later explicitly exposes them.
+   */
   private selectedModuleName(name: string | undefined): boolean {
     if (name === undefined) return false;
     return this.all.state === "static"
@@ -893,6 +1142,11 @@ export class PythonFileScanner {
       : !this.private(name) || this.all.names.includes(name);
   }
 
+  /**
+   * Checks whether a conditional import would introduce a selected public name.
+   *
+   * Such imports make the exported surface depend on runtime control flow.
+   */
   private conditionalImportSelected(statement: Node): boolean {
     if (
       statement.type === "import_from_statement" &&
@@ -913,6 +1167,12 @@ export class PythonFileScanner {
     return false;
   }
 
+  /**
+   * Detects assignments through a receiver that can create instance fields.
+   *
+   * Receiver-aware scanning distinguishes supported initializer fields from
+   * arbitrary mutation in nested executable code.
+   */
   private containsReceiverAssignment(node: Node, receiver: string): boolean {
     const mutations = [
       ...node.descendantsOfType("assignment"),
@@ -928,6 +1188,11 @@ export class PythonFileScanner {
     });
   }
 
+  /**
+   * Returns literal attribute names assigned through one receiver expression.
+   *
+   * Only these names can be represented as static property declarations.
+   */
   private receiverAttributes(node: Node | null, receiver: string): string[] {
     if (node === null) return [];
     const attributes =
@@ -942,10 +1207,20 @@ export class PythonFileScanner {
     });
   }
 
+  /**
+   * Returns non-private identifiers from a syntax subtree.
+   *
+   * The helper centralizes Python underscore filtering for surface predicates.
+   */
   private publicIdentifiers(node: Node | null): string[] {
     return this.identifiers(node).filter((name) => !this.private(name));
   }
 
+  /**
+   * Checks whether an assignment introduces a selected public identifier.
+   *
+   * The caller uses this to decide whether dynamic control flow is reportable.
+   */
   private selectedAssignment(
     node: Node | null,
     context: IPythonClassContext | undefined,
@@ -956,6 +1231,11 @@ export class PythonFileScanner {
       : names.some((name) => !this.private(name));
   }
 
+  /**
+   * Extracts literal identifier spellings from a parser subtree.
+   *
+   * Unnamed or computed targets are intentionally absent from this static view.
+   */
   private identifiers(node: Node | null): string[] {
     if (node === null) return [];
     const identifiers =
@@ -965,28 +1245,58 @@ export class PythonFileScanner {
     return identifiers.map((identifier) => identifier.text);
   }
 
+  /**
+   * Checks Python's conventional underscore-based private spelling.
+   *
+   * `__all__` remains the explicit mechanism for exposing such a binding.
+   */
   private private(name: string): boolean {
     return name.startsWith("_");
   }
 
+  /**
+   * Checks whether raw comment or string text contains an Evidence tag.
+   *
+   * Tagged carriers are retained even when ordinary documentation attachment fails.
+   */
   private annotation(raw: string): boolean {
     return /(?:^|[\r\n])[ \t]*(?:#[ \t]*)?@(evidenceExcludeReview|evidenceReview|evidenceExclude|evidence|link|internal|hidden|ignore)\b/u.test(
       raw,
     );
   }
 
+  /**
+   * Serializes a parser node's source range as a local identity component.
+   *
+   * Offsets remain stable for the immutable source snapshot.
+   */
   private nodeKey(node: Node): string {
     return `${node.startIndex}:${node.endIndex}`;
   }
 
+  /**
+   * Creates the stable declaration-site identity for a parser node.
+   *
+   * The source ID scopes otherwise reusable range offsets.
+   */
   private siteId(node: Node): string {
     return `python:${this.source.id}:site:${this.nodeKey(node)}`;
   }
 
+  /**
+   * Creates the stable host-position identity for a parser node.
+   *
+   * Position records use a distinct namespace from declaration sites.
+   */
   private positionId(node: Node): string {
     return `python:${this.source.id}:position:${this.nodeKey(node)}`;
   }
 
+  /**
+   * Records one unsupported source construct and marks scanning incomplete.
+   *
+   * A source-range key prevents duplicate diagnostics from overlapping checks.
+   */
   private problem(
     code: string,
     message: string,

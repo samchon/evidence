@@ -4,7 +4,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Prevents unsupported, state-dependent, malformed, or inaccessible schemas from shrinking coverage. */
+/** Keeps unsupported and malformed GoogleSQL from producing a smaller passing population.
+ *
+ * BigQuery analysis must preserve failure information whenever static extraction cannot establish an authoritative schema surface.
+ *
+ * 1. Analyze unsupported table forms, conflicting declarations, invalid keys and types, dynamic options, and malformed syntax.
+ * 2. Require every case to be incomplete with an error diagnostic that provides a repair.
+ * 3. Retain an unreadable-source failure and exclude a temporary table while retaining the persistent table and column.
+ */
 export async function test_bigquery_failures(): Promise<void> {
   const adapter = new EvidenceBigQueryAdapter();
   for (const content of [

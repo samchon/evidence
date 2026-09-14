@@ -4,7 +4,13 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Binds only declaration JSDoc while retaining unsupported tag-bearing comments as findings. */
+/** Binds TypeScript JSDoc only to supported declaration hosts.
+ *
+ * Tag-bearing comments outside declaration JSDoc remain findings and cannot create acknowledgements.
+ *
+ * 1. Analyze eligible JSDoc and unsupported comment placements.
+ * 2. Verify attached declarations and unsupported-host diagnostics.
+ */
 export async function test_typescript_hosts(): Promise<void> {
   const content = dedent`
     /** @evidence docs/spec.md#mixed Supplies both exported bindings. */

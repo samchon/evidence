@@ -5,9 +5,20 @@ import { PostgresqlFingerprint } from "./PostgresqlFingerprint";
 import type { IEvidenceInventory } from "../../structures/IEvidenceInventory";
 import type { IEvidenceSourceSnapshot } from "../../structures/IEvidenceSourceSnapshot";
 
-/** Extracts explicitly configured PostgreSQL declared table schemas. */
+/**
+ * Extracts PostgreSQL table schemas with cross-file DDL and COMMENT ownership.
+ *
+ * PostgreSQL scanning and ownership resolution feed the shared SQL inventory
+ * materializer. A final fingerprint pass preserves review content semantics when
+ * annotation-only COMMENT statements add eligible documentation positions.
+ */
 export class EvidencePostgresqlAdapter extends SqlAdapter {
-  /** Uses PostgreSQL identity and DDL rules over the pinned SQL grammar. */
+  /**
+   * Selects PostgreSQL identity rules, scanning, and ownership resolution.
+   *
+   * These hooks interpret captured DDL through the pinned SQL grammar without
+   * executing statements against a database.
+   */
   public constructor() {
     super({
       type: "postgresql",
@@ -17,7 +28,12 @@ export class EvidencePostgresqlAdapter extends SqlAdapter {
     });
   }
 
-  /** Preserves annotation-only COMMENT additions without discarding their eligible host positions. */
+  /**
+   * Applies PostgreSQL COMMENT fingerprint policy after shared inventory extraction.
+   *
+   * Annotation-only COMMENT additions remain eligible hosts while the fingerprint
+   * layer avoids making review metadata invalidate the declaration it reviews.
+   */
   public override async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {

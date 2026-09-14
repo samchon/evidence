@@ -20,7 +20,13 @@ import type { FileGlob } from "./FileGlob";
 import { SourceFailure } from "./SourceFailure";
 import { SourcePath } from "./SourcePath";
 
-/** Collects one population without merging its logical addresses with another. */
+/**
+ * Collects one configured filesystem population into a stable source snapshot.
+ *
+ * Logical aliases remain attached to a single physical file identity, while
+ * dependency tracking retains intermediate paths so watch mode can recover from
+ * missing files, symlink changes, and read failures.
+ */
 export class SourceCollector {
   private readonly directory: string;
   private readonly root: IEvidenceSourceRoot;
@@ -29,6 +35,7 @@ export class SourceCollector {
   private readonly dependencies = new Map<string, IEvidenceSourceDependency>();
   private readonly diagnostics: IEvidenceSourceDiagnostic[] = [];
 
+  /** Resolves one declared root relative to its configuration file without accessing it yet. */
   public constructor(configFile: string, declared: string) {
     this.directory = path.dirname(path.resolve(configFile));
     const absolute = SourcePath.root(configFile, declared);
@@ -39,6 +46,7 @@ export class SourceCollector {
     };
   }
 
+  /** Recursively discovers files selected by ordered globs and records any root failure. */
   public async scan(globs: FileGlob): Promise<void> {
     this.watch(this.root.absolute, true);
     try {
@@ -54,6 +62,7 @@ export class SourceCollector {
     }
   }
 
+  /** Loads one exact local source path, retaining its failed path as a watch dependency. */
   public async exact(file: string): Promise<void> {
     if (/^https?:\/\//i.test(file))
       throw new Error(
@@ -81,6 +90,7 @@ export class SourceCollector {
     }
   }
 
+  /** Returns deterministic collected files, dependencies, and diagnostics for one analysis pass. */
   public snapshot(): IEvidenceSourceSnapshot {
     const files = [...this.files.values()];
     for (const file of files)
@@ -104,6 +114,7 @@ export class SourceCollector {
     };
   }
 
+  /** Walks a physical directory through its logical address while preventing symlink ancestry cycles. */
   private async walk(
     absolute: string,
     relative: string,
@@ -166,6 +177,7 @@ export class SourceCollector {
     }
   }
 
+  /** Reads one stable physical file, coalescing aliases only after stat-before/stat-after validation. */
   private async read(
     absolute: string,
     relative: string,
@@ -231,7 +243,7 @@ export class SourceCollector {
     }
   }
 
-  /** Tracks intermediate links as well as their final targets for watch invalidation. */
+  /** Resolves each symlink component while tracking links and enforcing configured path casing. */
   private async resolvePhysical(
     absolute: string,
     links: ReadonlySet<string> = new Set(),
@@ -279,6 +291,7 @@ export class SourceCollector {
     return SourcePath.slash(await realpath(current));
   }
 
+  /** Merges a dependency observation, retaining recursive monitoring when any consumer requires it. */
   private watch(location: string, recursive: boolean): void {
     const existing = this.dependencies.get(location);
     this.dependencies.set(location, {
@@ -287,6 +300,7 @@ export class SourceCollector {
     });
   }
 
+  /** Converts an expected collection failure into a retained diagnostic instead of aborting sibling paths. */
   private report(
     fallback: IEvidenceSourceDiagnostic["code"],
     location: string,
@@ -301,14 +315,17 @@ export class SourceCollector {
   }
 }
 
+/** Uses stable device/inode identity where available, falling back to the resolved path on filesystems without it. */
 function identity(info: BigIntStats, physical: string): string {
   return info.ino === 0n ? "path:" + physical : `file:${info.dev}:${info.ino}`;
 }
 
+/** Sorts filesystem names without locale rules so snapshots are cross-machine stable. */
 function compare(left: string, right: string): number {
   return left < right ? -1 : left > right ? 1 : 0;
 }
 
+/** Encodes metadata needed to detect a changed file seen through a second alias. */
 function version(info: BigIntStats): string {
   return `${info.size}:${info.mtimeNs}:${info.ctimeNs}`;
 }

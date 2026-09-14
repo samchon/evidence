@@ -9,7 +9,12 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Requires every Lua selector as a reference, including undocumented declarations and review-only failures. */
+/** Evaluates Lua selector coverage for undocumented and review-only claims.
+ *
+ * Each selected Lua unit remains missing until evidence resolves; reviews never substitute for evidence.
+ *
+ * 1. Select each Lua symbol kind. 2. Evaluate acknowledged and missing graphs. 3. Require review-only references to remain missing.
+ */
 export async function test_lua_graph(): Promise<void> {
   const reference = await new EvidenceLuaAdapter().analyze(
     TestSourceSnapshot.create(

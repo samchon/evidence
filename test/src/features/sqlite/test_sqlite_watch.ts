@@ -5,7 +5,14 @@ import { join } from "node:path";
 
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
-/** Recomputes SQLite populations when selected files appear, fail parsing, and recover. */
+/** Recomputes SQLite populations as selected files appear and recover.
+ *
+ * Watch cycles must discard stale coverage after a file is added or fails parsing, then restore it when repaired.
+ *
+ * 1. Start with a covered SQLite schema and compare cycles to a fresh check.
+ * 2. Add an undocumented selected file and require failed coverage.
+ * 3. Make it malformed, repair it, and require incomplete status followed by recovery.
+ */
 export async function test_sqlite_watch(): Promise<void> {
   await TestFileSystem.experiment(
     "sqlite-watch",

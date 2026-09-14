@@ -7,7 +7,13 @@ import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Preserves function alias sites, withdrawals through every address, and independent copied values. */
+/** Preserves Zig aliases, withdrawals, and copied-value independence.
+ *
+ * Function aliases share their declaration sites, while copied values and withdrawals retain distinct identity effects.
+ *
+ * 1. Analyze aliases, copied values, and withdrawn declarations.
+ * 2. Verify sites, target resolution, and withdrawal behavior.
+ */
 export async function test_zig_aliases(): Promise<void> {
   const content = dedent`
     /// @evidence docs/spec.md#run Implements the function.

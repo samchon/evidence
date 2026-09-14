@@ -1,7 +1,13 @@
 import { EvidenceFileTarget } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-/** Preserves encoded path characters and literal accessor segments across platforms. */
+/** Resolves encoded paths and literal accessor segments across platforms.
+ *
+ * Path encoding and accessor punctuation must survive platform path conversion without changing identity.
+ *
+ * 1. Resolve targets containing encoded path characters and literal segments.
+ * 2. Verify the same results for supported platform spellings.
+ */
 export async function test_target_paths(): Promise<void> {
   const posix = EvidenceFileTarget.parse(
     '../src/a%20%23%20b.ts#Service["prototype.run"]["a/b"]',

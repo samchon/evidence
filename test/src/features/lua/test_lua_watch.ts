@@ -5,7 +5,12 @@ import { join } from "node:path";
 
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
-/** Rebuilds Lua populations after source, new-file, syntax, and configuration changes. */
+/** Rebuilds Lua populations after source, discovery, syntax, and configuration changes.
+ *
+ * Watch must invalidate stale module analysis as selected project inputs change.
+ *
+ * 1. Mutate source and add a selected file. 2. Introduce malformed input. 3. Repair it and verify recovered configuration output.
+ */
 export async function test_lua_watch(): Promise<void> {
   await TestFileSystem.experiment(
     "lua-watch",

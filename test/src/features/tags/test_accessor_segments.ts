@@ -1,7 +1,13 @@
 import { EvidenceAccessor } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-/** Preserves literal dots, spaces, Unicode, quoted escapes, and unsigned numeric member names. */
+/** Parses literal accessor segments without normalizing their public spelling.
+ *
+ * Dots, spaces, Unicode, escapes, and unsigned numeric names remain distinct target segments.
+ *
+ * 1. Parse each supported accessor spelling.
+ * 2. Verify the exact segment arrays and serialized targets.
+ */
 export async function test_accessor_segments(): Promise<void> {
   const cases: string[][] = [
     ["SomeClass", "prototype", "member"],

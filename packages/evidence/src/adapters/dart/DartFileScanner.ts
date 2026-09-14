@@ -9,7 +9,13 @@ import type { IDartDirective } from "./IDartDirective";
 import type { IDartDocumentation } from "./IDartDocumentation";
 import type { IDartFileAnalysis } from "./IDartFileAnalysis";
 
-/** Extracts explicit Dart declarations while leaving library topology to snapshot resolution. */
+/**
+ * Extracts explicit Dart declarations while leaving library topology to snapshot resolution.
+ *
+ * The scanner owns parser-bound nodes for one source only. It emits declarations,
+ * directives, and documentation as independent records so parts and exported
+ * aliases can be reconciled across the selected snapshot.
+ */
 export class DartFileScanner {
   /** Node-free declarations retained beyond the parser session. */
   private readonly declarations: IDartDeclaration[] = [];
@@ -23,13 +29,23 @@ export class DartFileScanner {
   /** Static part and export relationships. */
   private readonly directives: IDartDirective[] = [];
 
-  /** Borrows the active parser session and immutable source. */
+  /**
+   * Borrows the active parser session and immutable source.
+   *
+   * The session supplies syntax and ranges, while source identity is copied into
+   * records that remain valid after the parser callback closes.
+   */
   public constructor(
     private readonly session: EvidenceParseSession,
     private readonly source: IEvidenceSourceFile,
   ) {}
 
-  /** Establishes physical declarations, documentation ownership, and source boundaries. */
+  /**
+   * Establishes physical declarations, documentation ownership, and source boundaries.
+   *
+   * Documentation is collected first so adjacency is decided from original
+   * source positions before directives and declarations consume the tree.
+   */
   public scan(): IDartFileAnalysis {
     this.collectDocumentation();
     this.scope(this.session.root, undefined);

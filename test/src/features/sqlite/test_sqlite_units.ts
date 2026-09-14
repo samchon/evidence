@@ -9,7 +9,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Certifies SQLite quoting, schema ownership, generated columns, and explicit composite relations. */
+/** Extracts SQLite schema units with exact quoted ownership and relations.
+ *
+ * Generated columns and composite foreign keys must retain their explicit declaration semantics and owning model.
+ *
+ * 1. Analyze quoted schemas, generated columns, and composite relations.
+ * 2. Verify physical sites, owners, identities, and target resolution.
+ * 3. Require relation endpoints and addresses to remain exact.
+ */
 export async function test_sqlite_units(): Promise<void> {
   const source = dedent`
     CREATE TABLE main."Order.Items" (

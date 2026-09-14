@@ -19,12 +19,31 @@ import { DartDocumentation } from "./DartDocumentation";
 import { DartFileScanner } from "./DartFileScanner";
 import { DartLibraries } from "./DartLibraries";
 
-/** Builds Dart source-public inventories from the configured source snapshot. */
+/**
+ * Resolves Dart library topology before publishing declarations and documentation.
+ *
+ * File scans record directives and physical declarations. Reciprocal part
+ * resolution establishes defining-library ownership, then unit materialization
+ * and show/hide export publication expose aliases without duplicating identities.
+ * Documentation is attached after those owners exist. Missing library inputs
+ * remain dependencies so a later watch cycle can observe their creation.
+ */
 export class DartAdapter implements IEvidenceAdapter {
-  /** Public configuration discriminator owned by this adapter. */
+  /**
+   * Dart artifact discriminator for library-aware extraction.
+   *
+   * The public entry point uses this fixed language for grammar selection and
+   * inventory records, independently of claim or reference role.
+   */
   public readonly type = "dart";
 
-  /** Builds a fresh inventory and releases the bounded parser session. */
+  /**
+   * Builds an owned Dart inventory from captured source and library directives.
+   *
+   * Topology resolution runs before declarations are grouped by library. Source,
+   * topology, and syntax failures preserve incomplete status, and parser cleanup
+   * runs even if publication or documentation materialization throws.
+   */
   public async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {
@@ -54,6 +73,8 @@ export class DartAdapter implements IEvidenceAdapter {
       const analyses = await Promise.all(
         input.files.map((source) => this.scan(parser, source)),
       );
+      // Part declarations inherit the defining library's identity and privacy.
+      // Validate that relationship before grouping declarations or exporting aliases.
       DartLibraries.resolve(analyses, inventory);
       for (const analysis of analyses) {
         inventory.diagnostics.push(...analysis.diagnostics);

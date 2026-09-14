@@ -13,7 +13,13 @@ import { join } from "node:path";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Keeps missing, unselected, withdrawn, ambiguous, and incomplete targets distinct. */
+/** Distinguishes every unresolved target state.
+ *
+ * Missing, unselected, withdrawn, ambiguous, and incomplete addresses require different diagnostics and recovery behavior.
+ *
+ * 1. Resolve claims against each failing target state.
+ * 2. Verify status, diagnostic, and obligation behavior for each state.
+ */
 export async function test_target_failures(): Promise<void> {
   const location = join(__dirname, "failures-" + randomUUID());
 

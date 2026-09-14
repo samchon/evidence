@@ -4,7 +4,14 @@ import { dedent } from "@typia/utils";
 
 import { TestDocumentation } from "../../internal/TestDocumentation";
 
-/** Reports common tag failures while deferring reference-specific target syntax. */
+/** Reports common annotation failures without applying reference-specific syntax rules.
+ *
+ * Tag parsing validates its own required form and preserves invalid inputs as findings.
+ *
+ * 1. Parse malformed evidence, exclusion, and review tags.
+ * 2. Verify diagnostic codes and positions.
+ * 3. Require invalid reviews to create no review records.
+ */
 export async function test_tag_diagnostics(): Promise<void> {
   const fixture = TestDocumentation.create(dedent`
     /**

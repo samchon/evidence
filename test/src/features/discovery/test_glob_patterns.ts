@@ -2,7 +2,22 @@ import { TestValidator } from "@nestia/e2e";
 
 import { FileGlob } from "../../../../packages/evidence/src/internal/FileGlob";
 
-/** Preserves upstream wildcard boundaries, Unicode characters, and ordered exclusions. */
+/**
+ * Preserves upstream wildcard boundaries, Unicode characters, and ordered exclusions.
+ *
+ * File selection must preserve the configured pattern sequence after normalizing
+ * separators, without adding character-class or case-insensitive glob semantics.
+ *
+ * 1. Match shallow and recursive Markdown patterns, proving that `*` remains in
+ *    one segment while `**` accepts both zero and nested segments.
+ * 2. Apply normalized include, exclusion, and later reinclusion patterns; require
+ *    the public private file to return while its excluded neighbor and a case
+ *    variant remain unmatched.
+ * 3. Check that `?` consumes Unicode code points and that directory-only and
+ *    bracket spellings retain their literal, non-extension behavior.
+ * 4. Reject empty, exclusion-only, absolute, drive-qualified, parent-traversing,
+ *    and malformed pattern lists before discovery begins.
+ */
 export async function test_glob_patterns(): Promise<void> {
   // A single star stays in one segment; globstar also accepts no intermediate directory.
   const shallow = new FileGlob(["docs/*.md"]);

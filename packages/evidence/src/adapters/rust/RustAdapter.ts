@@ -17,10 +17,29 @@ import type { IRustFileAnalysis } from "./IRustFileAnalysis";
 import { RustFileScanner } from "./RustFileScanner";
 import { RustModuleResolver } from "./RustModuleResolver";
 
-/** Builds Rust crate inventories from the configured source snapshot. */
+/**
+ * Builds Rust public inventories by resolving modules, implementations, and uses.
+ *
+ * File scans retain declaration and documentation candidates without assuming
+ * that lexical presence makes an item publicly reachable. RustModuleResolver
+ * publishes semantic identities across the configured snapshot before doc comments
+ * attach to those identities and inherited withdrawal removes eligible hosts.
+ */
 export class RustAdapter implements IEvidenceAdapter {
+  /**
+   * Artifact discriminator selecting Rust grammar and visibility rules.
+   *
+   * Population configuration uses this value to choose the crate-oriented adapter.
+   */
   public readonly type = "rust";
 
+  /**
+   * Extracts an isolated Rust inventory from captured source contents.
+   *
+   * Module publication precedes annotation materialization. Source and parser
+   * failures retain incomplete state, and the parser runtime closes after all
+   * accepted file scans finish.
+   */
   public async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {
@@ -54,6 +73,8 @@ export class RustAdapter implements IEvidenceAdapter {
         inventory.diagnostics.push(...analysis.diagnostics);
         inventory.complete &&= analysis.complete;
       }
+      // Source-local declaration IDs need the resolver's published identity map
+      // before documentation attachments can name cross-module semantic owners.
       const published = new RustModuleResolver(analyses, inventory).publish();
       this.materializeDocumentation(inventory, analyses, published);
       return new EvidenceInventory([inventory]).snapshot();
@@ -62,6 +83,12 @@ export class RustAdapter implements IEvidenceAdapter {
     }
   }
 
+  /**
+   * Extracts one Rust file while its syntax tree remains borrowed.
+   *
+   * Module, use, and implementation records survive as serializable values. A
+   * parser failure retains a located diagnostic and explicitly incomplete state.
+   */
   private async scan(
     parser: EvidenceParser,
     source: IEvidenceSourceFile,
@@ -104,6 +131,12 @@ export class RustAdapter implements IEvidenceAdapter {
     }
   }
 
+  /**
+   * Maps Rust documentation attachments through published semantic identities.
+   *
+   * The first pass collects withdrawals across merged sites; the second creates
+   * visible hosts and accepted annotations after inherited hiding is known.
+   */
   private materializeDocumentation(
     inventory: IEvidenceInventory,
     analyses: IRustFileAnalysis[],
@@ -132,6 +165,8 @@ export class RustAdapter implements IEvidenceAdapter {
           }
         }
       }
+    // A withdrawal on any published fragment affects the whole identity and its
+    // descendants before evidence from another fragment can become eligible.
     const hidden = new Set<string>();
     for (const unit of inventory.units)
       if (this.withdrawn(unit.id, units, new Set<string>()))

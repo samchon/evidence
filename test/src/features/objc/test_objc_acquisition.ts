@@ -8,7 +8,14 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestParserAssets } from "../../internal/TestParserAssets";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Acquires only pinned Objective-C syntax on a cold run and returns an equivalent warm offline inventory. */
+/** Acquires pinned Objective-C syntax and reuses it offline.
+ *
+ * Cold analysis must request only its required parser assets, and a warm cache must preserve the complete inventory.
+ *
+ * 1. Analyze Objective-C input on a cold cache while recording requests.
+ * 2. Verify the requested grammar and complete cold inventory.
+ * 3. Repeat offline and require an equivalent warm result.
+ */
 export async function test_objc_acquisition(): Promise<void> {
   const grammar = await new TreeSitterAssets().grammar("objc");
   const bytes = Uint8Array.from(await TestParserAssets.bytes(grammar));

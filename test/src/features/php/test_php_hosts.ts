@@ -4,7 +4,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Keeps PHPDoc attached to exact source sites while strings, ordinary comments, and examples remain inert. */
+/** Attaches PHPDoc annotations to exact declaration hosts.
+ *
+ * PHPDoc may acknowledge its attached declaration, while strings, ordinary comments, and examples remain inert.
+ *
+ * 1. Analyze declarations with eligible and ineligible tag-shaped text.
+ * 2. Verify exact host attachment and original coordinates.
+ * 3. Require only eligible documentation to create acknowledgements.
+ */
 export async function test_php_hosts(): Promise<void> {
   const content = dedent`
     <?php

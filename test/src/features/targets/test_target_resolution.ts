@@ -11,7 +11,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Resolves exact public files, structural ancestors, aliases, and literal members. */
+/** Resolves public files, ancestors, aliases, and literal members.
+ *
+ * Resolution must distinguish structural containment from public identity while preserving aliases and literal member names.
+ *
+ * 1. Build units with files, ancestors, aliases, and literal members.
+ * 2. Resolve each supported target form.
+ * 3. Verify the exact resolved unit or failure status.
+ */
 export async function test_target_resolution(): Promise<void> {
   const inventory = await new EvidenceTypeScriptAdapter().analyze(
     TestSourceSnapshot.combine([

@@ -7,7 +7,14 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestParserAssets } from "../../internal/TestParserAssets";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Acquires only the configured SQLite WASM and reproduces a complete inventory from a warm offline cache. */
+/** Acquires SQLite's configured WASM parser and reuses it offline.
+ *
+ * Cold analysis must load one required dialect asset, while a warm cache reproduces the complete inventory without network access.
+ *
+ * 1. Analyze SQLite input cold while recording requests.
+ * 2. Verify the selected transfer and complete inventory.
+ * 3. Repeat offline and require equivalent analysis.
+ */
 export async function test_sqlite_acquisition(): Promise<void> {
   const grammar = await new TreeSitterAssets().grammar("sqlite");
   const bytes = Uint8Array.from(await TestParserAssets.bytes(grammar));

@@ -5,7 +5,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Invalidates PHP reviews for property hooks and namespace import changes while isolating sibling declarators. */
+/** Tracks PHP review fingerprints across semantic ownership changes.
+ *
+ * Property hooks and namespace imports affect cited meaning, while unrelated sibling declarations remain isolated.
+ *
+ * 1. Analyze documented PHP declarations with hooks and imports.
+ * 2. Apply annotation, sibling, hook, and import edits.
+ * 3. Verify only semantic changes to the cited unit invalidate its review.
+ */
 export async function test_php_fingerprints(): Promise<void> {
   const content = dedent`
     <?php

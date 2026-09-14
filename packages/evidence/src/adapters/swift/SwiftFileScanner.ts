@@ -9,7 +9,12 @@ import type { ISwiftDeclaration } from "./ISwiftDeclaration";
 import type { ISwiftDocumentation } from "./ISwiftDocumentation";
 import type { ISwiftFileAnalysis } from "./ISwiftFileAnalysis";
 
-/** Extracts lexical Swift source without compiler expansion or build-condition evaluation. */
+/**
+ * Extracts lexical Swift source without compiler expansion or build-condition evaluation.
+ *
+ * Extensions and aliases are held apart from nominal declarations because their
+ * semantic ownership can resolve only after all selected files are available.
+ */
 export class SwiftFileScanner {
   /** Node-free declarations retained after the parser callback. */
   private readonly declarations: ISwiftDeclaration[] = [];
@@ -20,13 +25,23 @@ export class SwiftFileScanner {
   /** Unsupported syntax that prevents a complete denominator. */
   private readonly diagnostics: IEvidenceDiagnostic[] = [];
 
-  /** Borrows the syntax tree only during the active parser callback. */
+  /**
+   * Borrows the syntax tree only during the active parser callback.
+   *
+   * The source supplies durable file identity; node-free records preserve the
+   * ranges needed by later extension reconciliation and documentation hosts.
+   */
   public constructor(
     private readonly session: EvidenceParseSession,
     private readonly source: IEvidenceSourceFile,
   ) {}
 
-  /** Collects public source declarations and conservative semantic boundaries. */
+  /**
+   * Collects public source declarations and conservative semantic boundaries.
+   *
+   * Documentation is classified before traversal so a comment at an extension
+   * site remains attached even if its nominal target resolves in another file.
+   */
   public scan(): ISwiftFileAnalysis {
     this.collectDocumentation();
     for (const node of this.session.root.descendantsOfType([

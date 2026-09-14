@@ -4,7 +4,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Preserves continuation/fence state across line comments and all obligations at shared inline sites. */
+/** Preserves DBML line-comment continuation and fence state at shared inline hosts.
+ *
+ * Consecutive line comments can form one eligible annotation, while fenced text remains inert and one inline relation site can document both its column and relation.
+ *
+ * 1. Analyze CRLF comments containing a fenced annotation, a continued table annotation, and inline references.
+ * 2. Require only unfenced annotations to produce declarations and preserve their original UTF-16 offset.
+ * 3. Verify each inline column host includes both the column and its relation unit.
+ */
 export async function test_dbml_line_comments(): Promise<void> {
   const source = dedent`
     // \`\`\`dbml

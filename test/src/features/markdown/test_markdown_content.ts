@@ -5,7 +5,19 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Partitions section content without losing deep-heading bodies, fences, or adjacent prose. */
+/**
+ * Partitions Markdown content among file and heading units at real section boundaries.
+ *
+ * Evidence needs each unit's owned ranges to exclude nested supported sections
+ * while retaining deep headings, fenced text, and prose that belongs to the current section.
+ *
+ * 1. Analyze file prelude, nested H1-H4 sections, an anchorless heading, a deep heading, and annotations.
+ * 2. Verify owned content ranges:
+ *    - The file retains its prelude and the H1 retains its anchorless region.
+ *    - The H2 contains only its direct section.
+ *    - The H4 retains deep and fenced content but excludes a comment-only line.
+ * 3. Verify the later H3 reconnects to the real H1 ancestor.
+ */
 export async function test_markdown_content(): Promise<void> {
   const content = dedent`
     File prelude.

@@ -4,7 +4,15 @@ import { dedent } from "@typia/utils";
 import { join } from "node:path";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
-/** Recomputes exported source identities when an independently selected declaration loses and regains visibility. */
+/**
+ * Recomputes Scala export coverage when a source declaration changes visibility.
+ *
+ * A watcher starts with an exported selected property, then restricts its source declaration, adds an uncovered property, and repairs it so each cycle must discard stale export identities before checking coverage.
+ *
+ * 1. Start the watcher and verify the initial exported property satisfies the claim.
+ * 2. Restrict the source property and verify the following cycle is incomplete rather than reusing its prior identity.
+ * 3. Add an uncovered property, remove it, and verify the watcher returns to complete coverage after recovery.
+ */
 export async function test_scala_export_watch(): Promise<void> {
   await TestFileSystem.experiment(
     "scala-export-watch",

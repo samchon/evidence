@@ -8,7 +8,14 @@ import { join } from "node:path";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Keeps source, parse, validation, and identity failures visible until repaired. */
+/** Keeps Swagger source, parse, validation, and identity failures visible.
+ *
+ * Failed documents remain active and incomplete until repair so their graph obligations cannot disappear.
+ *
+ * 1. Analyze each malformed, invalid, and unreadable document.
+ * 2. Verify incomplete status and diagnostics.
+ * 3. Repair the document and require graph recovery.
+ */
 export async function test_swagger_failures(): Promise<void> {
   const adapter = new EvidenceSwaggerAdapter();
   const malformed = await adapter.analyze(

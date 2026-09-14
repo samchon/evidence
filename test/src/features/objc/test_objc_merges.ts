@@ -8,7 +8,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Keeps class properties, getter selectors, synthesized content, and duplicate definitions distinct. */
+/** Merges Objective-C declaration sites without collapsing distinct members.
+ *
+ * Properties, getter selectors, synthesized content, and duplicate definitions have different identity and completeness rules.
+ *
+ * 1. Analyze class interfaces and implementations with properties and accessors.
+ * 2. Verify expected merged identities and independent selector addresses.
+ * 3. Require conflicting duplicate definitions to remain incomplete.
+ */
 export async function test_objc_merges(): Promise<void> {
   const adapter = new EvidenceObjcAdapter();
   const header = TestSourceSnapshot.create(

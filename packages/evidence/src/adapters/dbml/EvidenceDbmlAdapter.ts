@@ -19,12 +19,29 @@ import type { IDbmlEndpoint } from "./IDbmlEndpoint";
 import type { IDbmlFileAnalysis } from "./IDbmlFileAnalysis";
 import { DbmlFileScanner } from "./DbmlFileScanner";
 
-/** Builds DBML schema inventories from the explicitly configured language. */
+/**
+ * Extracts DBML tables, columns, relations, and supported documentation hosts.
+ *
+ * Physical source aliases are deduplicated before parsing. Schema aliases and
+ * relation endpoints are resolved across file analyses before public units and
+ * annotation carriers are materialized, preserving semantic ownership and explicit
+ * failures instead of guessing unresolved schema links.
+ */
 export class EvidenceDbmlAdapter implements IEvidenceAdapter {
-  /** Public database discriminator. */
+  /**
+   * Database family discriminator selecting DBML parsing and schema rules.
+   *
+   * Claims and references use this value to apply the adapter's database selectors.
+   */
   public readonly type = "dbml";
 
-  /** Parses a fresh source snapshot, resolves schema ownership, and releases parser resources. */
+  /**
+   * Builds a normalized DBML inventory from a validated, cloned source snapshot.
+   *
+   * Failed scans preserve located diagnostics and incomplete state. Successfully
+   * scanned files contribute dependencies, aliases, relation ownership, and
+   * documentation before the parser runtime closes in cleanup.
+   */
   public async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {
@@ -72,6 +89,8 @@ export class EvidenceDbmlAdapter implements IEvidenceAdapter {
           recursive: false,
         });
       }
+      // Relation endpoints may use table aliases from another selected file.
+      // Resolve those names before units and their documentation acquire owners.
       const aliases = this.aliases(inventory, analyses);
       this.relations(inventory, analyses, aliases);
       this.units(inventory, analyses, aliases);
@@ -82,7 +101,12 @@ export class EvidenceDbmlAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Preserves parser failure provenance and incomplete analysis. */
+  /**
+   * Extracts DBML declaration records inside one borrowed parse session.
+   *
+   * Syntax and acquisition failures retain their source range when available and
+   * mark analysis incomplete, rather than contributing a successful empty schema.
+   */
   private async scan(
     parser: EvidenceParser,
     source: IEvidenceSourceFile,

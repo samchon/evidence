@@ -7,7 +7,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Preserves quoted segments, folded names, composite relations, and cross-file additive ownership. */
+/** Extracts PostgreSQL schema units with exact quoted and folded identities.
+ *
+ * Cross-file definitions add ownership, while composite relations retain their ordered qualified endpoints.
+ *
+ * 1. Analyze quoted names, folded names, and schemas split across files.
+ * 2. Verify units, ownership, composite relations, and target resolution.
+ * 3. Require exact address behavior for quoted segments.
+ */
 export async function test_postgresql_units(): Promise<void> {
   const snapshot = TestSourceSnapshot.combine([
     TestSourceSnapshot.create(

@@ -4,7 +4,12 @@ import type { IDartDirective } from "./IDartDirective";
 import type { IDartDeclaration } from "./IDartDeclaration";
 import type { IDartDocumentation } from "./IDartDocumentation";
 
-/** Node-free Dart extraction retained after a parse session closes. */
+/**
+ * Holds the node-free Dart extraction retained after a parse session closes.
+ *
+ * Library resolution consumes this intermediate record across every selected
+ * file, so parser nodes cannot be retained and physical source remains explicit.
+ */
 export interface IDartFileAnalysis {
   /** Selected defining library physical path. */
   library: string;
@@ -27,6 +32,11 @@ export interface IDartFileAnalysis {
   /** Failures encountered while establishing the public surface. */
   diagnostics: IEvidenceDiagnostic[];
 
-  /** Whether every relevant declaration form was understood. */
+  /**
+   * States whether scanning classified every surface-affecting form.
+   *
+   * A false value survives topology resolution and prevents missing syntax from
+   * reducing the population used to evaluate coverage.
+   */
   complete: boolean;
 }

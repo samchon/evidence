@@ -3,7 +3,21 @@ import { TestValidator } from "@nestia/e2e";
 
 import { TestInventory } from "../../internal/TestInventory";
 
-/** Shared filesystem identities retain both public paths and one deterministic declaration location. */
+/**
+ * Merges physical aliases while retaining every public address and citation origin.
+ *
+ * Independent populations may discover one inode through different hard-link
+ * spellings. The merged inventory must avoid duplicate units and hosts without
+ * choosing relative citation behavior according to whichever input arrived first.
+ *
+ * 1. Clone a declaration and its host under another physical-path spelling while
+ *    retaining the same source identity, then merge both input orders.
+ * 2. Require complete, identical serialization with one source, one selected unit,
+ *    and one host whose origins contain both logical paths.
+ * 3. Resolve both the original and alias public addresses successfully.
+ * 4. Change a source identity at the same path while keeping its content and
+ *    require incomplete analysis, exposing replacement between snapshots.
+ */
 export async function test_inventory_physical_aliases(): Promise<void> {
   // Two populations can discover the same inode through different hard-link paths.
   const first = TestInventory.create();

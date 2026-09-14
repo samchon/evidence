@@ -1,9 +1,15 @@
 import type { IFileGlobPattern } from "./IFileGlobPattern";
 
-/** The upstream Evidence glob language: *, **, ?, and ordered negation. */
+/**
+ * Matches the restricted Evidence glob language: `*`, `**`, `?`, and ordered negation.
+ *
+ * The matcher operates on portable path segments, keeping selection independent
+ * of host separator conventions and refusing patterns that escape a population root.
+ */
 export class FileGlob {
   private readonly patterns: IFileGlobPattern[];
 
+  /** Compiles ordered patterns and requires at least one positive selection baseline. */
   public constructor(patterns: readonly string[]) {
     this.patterns = patterns.map(compile);
     if (!this.patterns.some((pattern) => !pattern.exclude))
@@ -37,6 +43,7 @@ export class FileGlob {
   }
 }
 
+/** Parses one authored glob into normalized segments while rejecting ambiguous root escapes. */
 function compile(raw: string): IFileGlobPattern {
   if (raw.trim() === "") throw new Error("Glob strings must not be empty.");
   const exclude = raw.startsWith("!");
@@ -55,6 +62,7 @@ function compile(raw: string): IFileGlobPattern {
   return { segments, exclude };
 }
 
+/** Splits a candidate path into portable relative segments without filesystem resolution. */
 function split(value: string): string[] {
   let normalized = value.replaceAll("\\", "/");
   while (normalized.startsWith("./")) normalized = normalized.slice(2);
@@ -62,7 +70,7 @@ function split(value: string): string[] {
   return normalized === "" || normalized === "." ? [] : normalized.split("/");
 }
 
-/** Memoization bounds repeated globstar branches to the pattern/path grid. */
+/** Matches a pattern with memoized globstar branches bounded by the pattern/path grid. */
 function match(
   pattern: readonly string[],
   segments: readonly string[],
@@ -95,7 +103,11 @@ function match(
   }
 }
 
-/** A question mark consumes one Unicode code point, as in the Go matcher. */
+/**
+ * Matches one segment where star and question mark never cross a separator boundary.
+ *
+ * A question mark consumes one Unicode code point, as in the Go matcher.
+ */
 function matchSegment(pattern: string, value: string): boolean {
   const tokens = Array.from(pattern);
   const characters = Array.from(value);

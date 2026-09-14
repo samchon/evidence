@@ -9,7 +9,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Preserves Prisma documentation hosts, withdrawals, and exclusion ledgers. */
+/** Attaches Prisma documentation and preserves withdrawal and exclusion semantics.
+ *
+ * Eligible documentation hosts create acknowledgements, while lexical withdrawals and exclusions remain independently observable.
+ *
+ * 1. Analyze documented models and fields with withdrawals and exclusions.
+ * 2. Verify attachment, targets, and ledger records.
+ * 3. Compare the resulting host and declaration populations.
+ */
 export async function test_prisma_hosts(): Promise<void> {
   const schema = dedent`
     datasource db {

@@ -4,7 +4,20 @@ import { dedent } from "@typia/utils";
 
 import type { IParserFixture } from "../../internal/IParserFixture";
 
-/** Parses and queries a real declaration with every shipped grammar, including TSX and external scanners. */
+/**
+ * Parses and queries representative declarations across registered language grammars.
+ *
+ * Metadata alone cannot establish that a pinned WASM grammar can initialize,
+ * accept source, and execute a query with the runtime. The fixtures include TSX
+ * and languages with external scanners, and copy captured text before sessions end.
+ *
+ * 1. Construct a parser and require no eagerly initialized languages.
+ * 2. For each fixture, parse its declared language and filename, run its
+ *    declaration-name query, and require exactly the independently specified name.
+ * 3. After every callback, require zero active sessions so successful extraction
+ *    cannot accumulate native parser ownership across the fixture sequence.
+ * 4. Close the parser in cleanup, including when an earlier assertion fails.
+ */
 export async function test_parser_grammars(): Promise<void> {
   const fixtures: IParserFixture[] = [
     {

@@ -1,7 +1,25 @@
 import typia from "typia";
 
-/** Parses the baseline's dotted identifiers, JSON-string brackets, and unsigned integer brackets. */
+/**
+ * Converts the accessor portion of a file-qualified target between text and segments.
+ *
+ * Target resolution uses segments to distinguish lexical ownership from a literal
+ * dot in a member name. This namespace accepts the portable baseline syntax only:
+ * identifiers after dots, JSON strings in brackets, and non-negative integer
+ * bracket members. It neither resolves symbols nor interprets a segment as code.
+ *
+ * @example
+ * EvidenceAccessor.parse('Client.prototype["send.request"]');
+ * // ["Client", "prototype", "send.request"]
+ */
 export namespace EvidenceAccessor {
+  /**
+   * Parses one accessor spelling into the literal segments used by an address.
+   *
+   * A bracket string preserves characters that have structural meaning in dotted
+   * syntax. Invalid separators, unterminated brackets, and unsupported bracket
+   * content reject before a resolver can look up a different declaration.
+   */
   export function parse(value: string): string[] {
     const segments: string[] = [];
     let cursor = 0;
@@ -23,6 +41,8 @@ export namespace EvidenceAccessor {
             "Close the bracket accessor and its quoted member name.",
           );
         const literal = value.slice(start, cursor++);
+        // JSON parsing handles escapes exactly as the canonical formatter emits
+        // them, while numeric brackets remain literal accessor segments.
         if (literal.startsWith('"'))
           segments.push(typia.json.assertParse<string>(literal));
         else if (/^(?:0|[1-9][0-9]*)$/.test(literal)) segments.push(literal);
@@ -58,7 +78,14 @@ export namespace EvidenceAccessor {
     return segments;
   }
 
-  /** Canonical formatting never turns a literal dot into a parent relationship. */
+  /**
+   * Serializes literal accessor segments in the canonical target spelling.
+   *
+   * Identifier segments use dotted notation. Every other segment is JSON-quoted
+   * in brackets so formatting cannot turn a literal dot, bracket, or space into
+   * an accidental parent relationship. Empty paths are invalid because a target
+   * accessor must identify at least one declaration segment.
+   */
   export function format(segments: string[]): string {
     if (segments.length === 0)
       throw new Error("An accessor needs at least one segment.");
@@ -70,6 +97,12 @@ export namespace EvidenceAccessor {
     return output;
   }
 
+  /**
+   * Determines whether one segment is safe in dotted accessor notation.
+   *
+   * The Unicode-aware expression matches the baseline's identifier subset. A
+   * segment outside that subset remains valid, but `format` must quote it.
+   */
   function identifier(value: string): boolean {
     return /^(?:[$_]|\p{L})(?:[$_]|\p{L}|\p{Nd}|\p{M})*$/u.test(value);
   }

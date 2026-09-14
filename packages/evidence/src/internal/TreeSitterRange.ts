@@ -2,8 +2,9 @@ import type { Node } from "web-tree-sitter";
 
 import type { IEvidenceSourceRange } from "../structures/IEvidenceSourceRange";
 
-/** The web binding exposes UTF-16 indices and columns for JavaScript string input. */
+/** Converts web-tree-sitter's UTF-16, zero-based coordinates to Evidence source ranges. */
 export namespace TreeSitterRange {
+  /** Returns a half-open range whose one-based positions correspond to the parser's original string input. */
   export function from(node: Node): IEvidenceSourceRange {
     return {
       start: {

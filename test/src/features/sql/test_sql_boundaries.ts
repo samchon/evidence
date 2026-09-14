@@ -2,7 +2,14 @@ import { EvidenceSqlAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Prevents the broad grammar from silently accepting dialect or schema-changing constructs as portable SQL. */
+/** Rejects portable SQL constructs that could change the selected schema.
+ *
+ * The broad grammar must not turn dialect-specific or schema-changing input into a smaller successful inventory.
+ *
+ * 1. Analyze unsupported and malformed portable SQL inputs.
+ * 2. Require incomplete analysis with boundary diagnostics.
+ * 3. Verify an understood empty schema remains complete without fabricated units.
+ */
 export async function test_sql_boundaries(): Promise<void> {
   const adapter = new EvidenceSqlAdapter();
   for (const content of [

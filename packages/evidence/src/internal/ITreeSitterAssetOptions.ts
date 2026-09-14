@@ -1,20 +1,25 @@
-/** Execution-local parser acquisition controls, including injectable transport for logic tests. */
+/**
+ * Execution-local controls for immutable grammar acquisition.
+ *
+ * These options influence one caller's cache and transfer lifetime; they do
+ * not alter catalog provenance or the bytes accepted into the shared cache.
+ */
 export interface ITreeSitterAssetOptions {
-  /** Absolute writable cache root; otherwise uses EVIDENCE_CACHE_DIR or the user's OS cache. */
+  /** Writable cache root; omission uses EVIDENCE_CACHE_DIR, then the platform user's cache location. */
   cacheDirectory?: string;
 
-  /** HTTP transport; defaults to the platform fetch implementation. */
+  /** HTTP transport; omission uses the platform fetch implementation. */
   fetch?: typeof globalThis.fetch;
 
-  /** Maximum duration of each transfer, including its response body. Defaults to 30 seconds. */
+  /** Maximum duration of each transfer, including its response body; omission defaults to 30 seconds. */
   timeoutMilliseconds?: number;
 
-  /** Maximum transfer attempts. Defaults to three. */
+  /** Maximum transfer attempts for transient failures; omission defaults to three. */
   attempts?: number;
 
-  /** Stops this caller's wait without cancelling other callers' acquisitions. */
+  /** Stops this caller's wait without cancelling other callers sharing the immutable transfer. */
   signal?: AbortSignal | undefined;
 
-  /** Optional caller-owned diagnostic sink; libraries do not print progress by default. */
+  /** Optional caller-owned progress sink; omission keeps library acquisition silent. */
   progress?: ((message: string) => void) | undefined;
 }

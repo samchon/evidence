@@ -10,7 +10,24 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Composes full structural scopes independently of selectors and withdrawal comments. */
+/**
+ * Fingerprints complete structural scopes, including identity rebinding and withdrawn descendants.
+ *
+ * A scope review concerns the actual declaration subtree, not only selected public
+ * leaves. Own content, structural descendants, and withdrawal metadata must remain
+ * distinguishable so annotation exclusion does not hide changes to reviewed API meaning.
+ *
+ * 1. Edit a nested Markdown section and require its parent's own content digest
+ *    to stay stable while the parent scope fingerprint changes.
+ * 2. Edit an unrelated sibling section and require the original scope to stay stable.
+ * 3. Rebind identical Markdown content to another source path, then rebind one
+ *    TypeScript public alias between identical declarations; require both identity
+ *    changes to expire their respective fingerprints.
+ * 4. Withdraw a TypeScript member through documentation and require unchanged parent
+ *    own content but a changed parent scope fingerprint.
+ * 5. Change the already withdrawn member's type and require the enclosing scope
+ *    to change again, proving hidden descendants remain part of reviewed content.
+ */
 export async function test_fingerprint_scope(): Promise<void> {
   const markdown = dedent`
     ## Pricing {#pricing}
@@ -131,6 +148,12 @@ export async function test_fingerprint_scope(): Promise<void> {
   );
 }
 
+/**
+ * Extracts a Markdown variant with an optionally changed source identity.
+ *
+ * Most calls preserve the default path; the rebinding scenario supplies another
+ * path to distinguish identity changes from prose changes.
+ */
 async function markdownInventory(
   content: string,
   file: string = "docs/rules.md",
@@ -140,6 +163,12 @@ async function markdownInventory(
   );
 }
 
+/**
+ * Extracts public and withdrawn TypeScript variants at one stable source path.
+ *
+ * Shared source identity keeps withdrawal and member-content changes isolated
+ * from unrelated rebinding effects.
+ */
 async function typescriptInventory(
   content: string,
 ): Promise<IEvidenceInventory> {
@@ -148,6 +177,12 @@ async function typescriptInventory(
   );
 }
 
+/**
+ * Resolves one public alias after choosing which identical declaration it forwards.
+ *
+ * The barrel address stays constant while its target module changes. Fingerprinting
+ * the resolved declaration tests whether semantic rebinding expires the review.
+ */
 async function reexportedFingerprint(module: string): Promise<string> {
   const inventory = await new EvidenceTypeScriptAdapter().analyze(
     TestSourceSnapshot.combine([
@@ -178,6 +213,12 @@ async function reexportedFingerprint(module: string): Promise<string> {
   return EvidenceFingerprint.inspect(inventory, unit.id).fingerprint;
 }
 
+/**
+ * Finds a fixture unit by declaration name or final explicit Markdown identity.
+ *
+ * Failure to extract the intended unit aborts setup rather than producing a
+ * misleading fingerprint comparison against another candidate.
+ */
 function requireUnit(
   inventory: IEvidenceInventory,
   identity: string,

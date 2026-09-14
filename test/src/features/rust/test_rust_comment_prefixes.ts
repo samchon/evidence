@@ -7,7 +7,13 @@ import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Keeps Rust outer attributes attached across whitespace comments without promoting those comments to evidence. */
+/** Keeps Rust outer attributes attached across whitespace comments.
+ *
+ * Intervening comments cannot become evidence merely because they precede an attribute.
+ *
+ * 1. Analyze attributes with whitespace comments.
+ * 2. Verify host attachment, inert comments, and fingerprints.
+ */
 export async function test_rust_comment_prefixes(): Promise<void> {
   const source = dedent`
     /// 계약 🦀

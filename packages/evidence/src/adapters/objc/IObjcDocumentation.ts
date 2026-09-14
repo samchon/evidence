@@ -2,7 +2,12 @@ import type { IEvidenceCommentSyntax } from "../../structures/IEvidenceCommentSy
 import type { IEvidenceSourceRange } from "../../structures/IEvidenceSourceRange";
 import type { IObjcDocumentationAttachment } from "./IObjcDocumentationAttachment";
 
-/** A Doxygen documentation carrier or unsupported annotation-bearing comment. */
+/**
+ * Represents a Doxygen documentation carrier or unsupported annotation-bearing comment.
+ *
+ * Attachment is determined before interface and implementation sites merge, so
+ * tagged ordinary comments remain available for an accurate host diagnostic.
+ */
 export interface IObjcDocumentation {
   /** Stable physical carrier identifier. */
   id: string;

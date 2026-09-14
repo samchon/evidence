@@ -8,7 +8,23 @@ import { TestValidator } from "@nestia/e2e";
 import { TestParserError } from "../../internal/TestParserError";
 import { TestSignal } from "../../internal/TestSignal";
 
-/** Bounds live sessions, releases failed callbacks, and drains accepted work during close. */
+/**
+ * Bounds parser sessions and drains accepted work after callback failure and close.
+ *
+ * A one-slot parser holds its first callback behind a signal while another request
+ * queues. Shutdown and callback rejection must release resources without losing
+ * already accepted work or allowing callers to reuse borrowed sessions.
+ *
+ * 1. Hold the first callback, queue a second parse, and require one active and one
+ *    waiting request. Mutate the shared request object after submitting the second.
+ * 2. Begin close and require a newly submitted parse to reject as session-closed.
+ * 3. Release the first callback and verify that:
+ *    - Its original error object propagates unchanged.
+ *    - The queued parse drains using the original identifier `answer`.
+ *    - Closing finishes with no active or waiting requests.
+ * 4. Query a retained session after disposal and require session-closed.
+ * 5. Close again and require the runtime to remain closed without failure.
+ */
 export async function test_parser_lifetime(): Promise<void> {
   const parser = new EvidenceParser({ concurrency: 1 });
   const entered = new TestSignal();

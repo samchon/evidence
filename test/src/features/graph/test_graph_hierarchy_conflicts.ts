@@ -4,7 +4,23 @@ import { TestValidator } from "@nestia/e2e";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestInventory } from "../../internal/TestInventory";
 
-/** Cascades real structural scopes and reports each later acknowledgement conflict once. */
+/**
+ * Expands explicit target hierarchy and attributes acknowledgement conflicts once per scope.
+ *
+ * Aggregate citations cover selected descendants without covering unrelated units.
+ * Conflict detection must distinguish repeated positive evidence on one semantic
+ * host, evidence from another host, overlapping exclusions, and opposite intent
+ * without multiplying findings for every descendant in an aggregate scope.
+ *
+ * 1. Cite an unselected parent and require its two selected children to be covered
+ *    while an unrelated selected declaration remains missing.
+ * 2. Repeat one child citation across two physical fragments of the same semantic
+ *    host and also cite it from another host; require one duplicate-evidence finding.
+ * 3. Follow positive child evidence with child and parent exclusions:
+ *    - Require one opposite-intent finding for each later exclusion scope.
+ *    - Require one duplicate-exclusion finding for the overlap.
+ *    - Retain coverage of both selected children despite the conflict diagnostics.
+ */
 export async function test_graph_hierarchy_conflicts(): Promise<void> {
   const reference = TestInventory.create();
   const parent = TestInventory.unit(
@@ -229,6 +245,12 @@ export async function test_graph_hierarchy_conflicts(): Promise<void> {
   );
 }
 
+/**
+ * Counts one graph finding category across the complete evaluation result.
+ *
+ * Scope-conflict assertions use this to detect duplicate diagnostics caused by
+ * expanding a single authored acknowledgement over multiple descendants.
+ */
 function count(
   result: ReturnType<typeof EvidenceGraph.evaluate>,
   code: string,

@@ -18,17 +18,47 @@ import type { ISqlFileAnalysis } from "./ISqlFileAnalysis";
 import { SqlDocumentation } from "./SqlDocumentation";
 import type { ISqlAdapterOptions } from "./ISqlAdapterOptions";
 
-/** Builds database inventories from the configured source snapshot. */
+/**
+ * Materializes SQL-family inventories using an explicitly selected dialect scanner.
+ *
+ * Dialect options own parsing and optional cross-file ownership resolution. This
+ * shared layer manages parser lifetime, semantic declaration grouping, public
+ * addresses, and documentation materialization. It analyzes source declarations
+ * without connecting to a database or executing the supplied SQL.
+ */
 export class SqlAdapter implements IEvidenceAdapter {
-  /** Public configuration discriminator owned by this adapter. */
+  /**
+   * Database family selected by the supplied dialect options.
+   *
+   * The parser uses it for grammar selection; a shared SQL extension does not
+   * override the configured dialect.
+   */
   public readonly type;
 
-  /** Supplies the configured dialect and its independent extraction policy. */
-  public constructor(private readonly options: ISqlAdapterOptions) {
+  /**
+   * Selects a dialect scanner and its optional cross-file ownership resolver.
+   *
+   * Construction records extraction policy without loading source or allocating
+   * a parser runtime; analyze owns those resources for each snapshot.
+   */
+  public constructor(
+    /**
+     * Dialect-specific grammar discriminator and extraction hooks.
+     *
+     * The resolver, when present, runs after all file scans and before unit publication.
+     */
+    private readonly options: ISqlAdapterOptions,
+  ) {
     this.type = options.type;
   }
 
-  /** Builds a fresh inventory and releases the bounded parser session. */
+  /**
+   * Builds an owned SQL inventory through dialect scanning and shared materialization.
+   *
+   * Source and parser failures retain incomplete state. Optional ownership
+   * resolution precedes public grouping and annotation attachment, and native
+   * parser resources close in cleanup after accepted scans settle.
+   */
   public async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {
@@ -58,6 +88,8 @@ export class SqlAdapter implements IEvidenceAdapter {
       const analyses = await Promise.all(
         input.files.map((source) => this.scan(parser, source)),
       );
+      // ALTER or COMMENT ownership may depend on declarations in another file.
+      // Dialect resolution must finish before public IDs and hosts are finalized.
       this.options.resolve?.(analyses);
       for (const analysis of analyses) {
         inventory.diagnostics.push(...analysis.diagnostics);
@@ -71,7 +103,12 @@ export class SqlAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Converts parser failures into incomplete source analysis. */
+  /**
+   * Invokes the configured dialect scanner within a borrowed parse session.
+   *
+   * A failed parse becomes a dialect-prefixed diagnostic with source coordinates
+   * and incomplete state, preserving its effect on the coverage denominator.
+   */
   private async scan(
     parser: EvidenceParser,
     source: IEvidenceSourceFile,
@@ -111,7 +148,13 @@ export class SqlAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Reconciles schema identities and retains each physical declaration address. */
+  /**
+   * Publishes public schema identities with explicit parents and physical aliases.
+   *
+   * Source-local declaration IDs are mapped before parents are assigned. Repeated
+   * declarations require an explicit merge allowance; otherwise a conflict remains
+   * a diagnostic instead of silently combining independent schema definitions.
+   */
   private materializeUnits(
     inventory: IEvidenceInventory,
     analyses: ISqlFileAnalysis[],

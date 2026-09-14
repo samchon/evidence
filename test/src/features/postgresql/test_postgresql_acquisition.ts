@@ -7,7 +7,14 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestParserAssets } from "../../internal/TestParserAssets";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Obtains only PostgreSQL's pinned variant and reproduces complete analysis from an offline warm cache. */
+/** Acquires PostgreSQL's pinned parser variant and reuses it offline.
+ *
+ * The adapter must request only the configured grammar and preserve a complete schema inventory from the warmed cache.
+ *
+ * 1. Analyze PostgreSQL input cold while recording grammar requests.
+ * 2. Verify the requested variant and complete inventory.
+ * 3. Repeat offline and require equivalent analysis.
+ */
 export async function test_postgresql_acquisition(): Promise<void> {
   const grammar = await new TreeSitterAssets().grammar("sql");
   const bytes = await TestParserAssets.bytes(grammar);

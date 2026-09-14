@@ -4,7 +4,13 @@ import { dedent } from "@typia/utils";
 
 import { TestDocumentation } from "../../internal/TestDocumentation";
 
-/** Tokenizes the four requested code forms and preserves artifact-specific target spellings. */
+/** Tokenizes supported target forms while preserving artifact-specific spelling.
+ *
+ * The common tag parser must retain target text for each requested code form rather than reinterpret it.
+ *
+ * 1. Parse all four target forms.
+ * 2. Verify exact targets and associated annotation records.
+ */
 export async function test_tag_targets(): Promise<void> {
   const fixture = TestDocumentation.create(dedent`
     /**

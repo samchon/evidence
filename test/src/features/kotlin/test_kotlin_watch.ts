@@ -5,7 +5,12 @@ import { join } from "node:path";
 
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
-/** Rebuilds Kotlin populations after source, new-file, syntax, and configuration changes. */
+/** Rebuilds Kotlin populations after source, discovery, syntax, and configuration changes.
+ *
+ * Watch must publish each checked state instead of retaining stale Kotlin analysis.
+ *
+ * 1. Mutate selected source and add a file. 2. Introduce malformed source. 3. Repair it and verify recovery after configuration change.
+ */
 export async function test_kotlin_watch(): Promise<void> {
   await TestFileSystem.experiment(
     "kotlin-watch",

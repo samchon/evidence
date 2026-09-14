@@ -5,7 +5,14 @@ import { join } from "node:path";
 
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
-/** Rebuilds SQL populations after source, new-file, syntax, and configuration changes. */
+/** Rebuilds SQL coverage as watched sources and selectors change.
+ *
+ * Each watch report must reflect newly selected files, syntax failures, repairs, and a changed selector instead of stale state.
+ *
+ * 1. Start with covered SQL input and compare cycles to a fresh check.
+ * 2. Add an undocumented model, then make it malformed.
+ * 3. Repair the source and reselect types, requiring recovery in each case.
+ */
 export async function test_sql_watch(): Promise<void> {
   await TestFileSystem.experiment(
     "sql-watch",

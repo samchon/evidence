@@ -3,7 +3,22 @@ import { TestValidator } from "@nestia/e2e";
 
 import { validateEvidenceConfig } from "../../../../packages/evidence/src/internal/validateEvidenceConfig";
 
-/** Rejects checklist placements and combinations with contradictory obligations. */
+/**
+ * Rejects checklist policies that contradict per-host Markdown answers.
+ *
+ * Checklist coverage requires every selected host to answer every selected item.
+ * Configuration must reject policies that would silently replace this meaning
+ * with global host cardinality or shared exclusion carriers.
+ *
+ * 1. Accept a reviewed Markdown checklist that forbids exclusions.
+ * 2. Enable both cardinality flags and require separate diagnostics for
+ *    uniqueEvidence and singleEvidencePerSymbol instead of choosing one policy.
+ * 3. Add a checklist property to a TypeScript reference at runtime, even with
+ *    value false, and require the artifact-placement diagnostic.
+ * 4. Add shared exclusion-carrier globs to a checklist and require rejection.
+ * 5. Forbid exclusions on that same reference and require the configuration to
+ *    become valid, exercising the permitted counterpart of the carrier rule.
+ */
 export async function test_config_policies(): Promise<void> {
   const checklist = createConfig({
     type: "markdown",
@@ -75,6 +90,12 @@ export async function test_config_policies(): Promise<void> {
   validateEvidenceConfig(carriers);
 }
 
+/**
+ * Places a candidate reference under one active TypeScript claim.
+ *
+ * Keeping the surrounding claim fixed isolates the checklist policy being
+ * accepted or rejected, including mutations of its exclusion-carrier selection.
+ */
 function createConfig(reference: IEvidenceReference): IEvidenceConfig {
   return {
     claims: [
@@ -87,6 +108,12 @@ function createConfig(reference: IEvidenceReference): IEvidenceConfig {
   };
 }
 
+/**
+ * Retrieves the fixture's reference in either supported declaration form.
+ *
+ * A missing claim or reference is a fixture failure. It must not be mistaken for
+ * the policy rejection the caller intends to exercise.
+ */
 function firstReference(config: IEvidenceConfig): IEvidenceReference {
   const claim = config.claims[0];
   if (claim === undefined) throw new Error("Missing policy claim fixture.");
@@ -98,6 +125,12 @@ function firstReference(config: IEvidenceConfig): IEvidenceReference {
   return reference;
 }
 
+/**
+ * Returns the message from an expected policy-validation error.
+ *
+ * Successful validation throws a test failure, and non-Error causes propagate.
+ * Callers can therefore assert the actual rejected policy rather than mere failure.
+ */
 function failure(config: IEvidenceConfig): string {
   try {
     validateEvidenceConfig(config);

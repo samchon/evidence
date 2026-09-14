@@ -24,10 +24,29 @@ import type { IEvidenceUnitSite } from "../../structures/IEvidenceUnitSite";
 import type { EvidenceArtifactType } from "../../typings/EvidenceArtifactType";
 import type { EvidenceDatabaseSymbol } from "../../typings/EvidenceDatabaseSymbol";
 
-/** Builds Prisma models and members from the bundled schema parser. */
+/**
+ * Extracts Prisma models, columns, relations, and declaration documentation.
+ *
+ * Selected files form one schema for the Prisma model loader, while a separate
+ * source scan retains exact declaration and comment coordinates. Materialization
+ * joins those views so semantic schema units remain tied to their physical hosts.
+ * A schema-loading failure produces incomplete analysis instead of an empty pass.
+ */
 export class EvidencePrismaAdapter implements IEvidenceAdapter {
+  /**
+   * Artifact discriminator selecting Prisma schema extraction.
+   *
+   * Prisma target spelling and database selectors apply to the resulting inventory.
+   */
   public readonly type: EvidenceArtifactType = "prisma";
 
+  /**
+   * Loads one combined schema from a validated, cloned source snapshot.
+   *
+   * Incomplete discovery is returned without attempting to certify partial schema
+   * content. Complete input is deduplicated by physical identity, parsed for models,
+   * and joined to source locations before annotations are materialized.
+   */
   public async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {
@@ -56,6 +75,9 @@ export class EvidencePrismaAdapter implements IEvidenceAdapter {
       return new EvidenceInventory([inventory]).snapshot();
     }
 
+    // The model parser owns schema semantics; the source scanner owns exact
+    // spans. Join both before attaching tags so normalized models do not invent
+    // comment coordinates or erase the original declaration boundaries.
     const analyses = files.map((file) =>
       new PrismaFileScanner(file.source).scan(),
     );
@@ -64,6 +86,12 @@ export class EvidencePrismaAdapter implements IEvidenceAdapter {
     return new EvidenceInventory([inventory]).snapshot();
   }
 
+  /**
+   * Seeds inventory state while preserving discovery failures and dependencies.
+   *
+   * No declarations are certified at this stage; the schema-loading phase adds
+   * semantic units only after it can interpret the complete selected schema.
+   */
   private inventory(input: IEvidenceSourceSnapshot): IEvidenceInventory {
     return {
       schemaVersion: 1,
@@ -87,6 +115,13 @@ export class EvidencePrismaAdapter implements IEvidenceAdapter {
     };
   }
 
+  /**
+   * Deduplicates physical schema files and chooses deterministic logical parser names.
+   *
+   * Multiple selected link spellings must not submit the same declarations twice.
+   * All addresses are retained while the first sorted selected relative path names
+   * the schema input supplied to the model loader.
+   */
   private schemaFiles(sources: IEvidenceSourceFile[]): IPrismaSchemaFile[] {
     const records = new Map<string, IEvidenceSourceFile>();
     for (const source of sources) {

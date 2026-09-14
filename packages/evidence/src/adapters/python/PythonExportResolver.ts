@@ -12,14 +12,60 @@ import type { IPythonResolvedBinding } from "./IPythonResolvedBinding";
 import type { PythonResolutionMode } from "./PythonResolutionMode";
 import { SourcePath } from "../../internal/SourcePath";
 
-/** Resolves Python module bindings and __all__ across one source snapshot. */
+/**
+ * Resolves Python module exports across a complete source snapshot.
+ *
+ * The Python adapter records file-local declarations first, then this resolver
+ * follows imports and `__all__` so the inventory exposes the public addresses
+ * through which callers can reach each owned unit.
+ */
 export class PythonExportResolver {
+  /**
+   * Modules indexed by their source identities.
+   *
+   * Each record combines the scanner's local bindings with the names currently
+   * considered public while star imports are expanded.
+   */
   private readonly modules = new Map<string, IPythonModule>();
+
+  /**
+   * Source identities grouped by normalized physical and public locations.
+   *
+   * Import resolution uses this index to reject missing and ambiguous module
+   * targets without depending on the host filesystem.
+   */
   private readonly locations = new Map<string, Set<string>>();
+
+  /**
+   * Memoized module targets for import specifiers, including unresolved ones.
+   *
+   * Caching `undefined` prevents duplicate diagnostics while the same import is
+   * encountered through multiple reexports.
+   */
   private readonly targets = new Map<string, string | undefined>();
+
+  /**
+   * Memoized binding resolutions keyed by source, name, and visibility mode.
+   *
+   * Declared and public lookup differ for star imports, so both modes form part
+   * of the cache key.
+   */
   private readonly resolutions = new Map<string, IPythonResolution>();
+
+  /**
+   * Diagnostic keys already emitted for this snapshot.
+   *
+   * A single unsupported import may be reached through several exports but must
+   * make the inventory incomplete only once.
+   */
   private readonly reported = new Set<string>();
 
+  /**
+   * Initializes the resolver from file-local Python analyses.
+   *
+   * The constructor derives each module's initial public names before expanding
+   * transitive star imports, because that fixed point defines later lookups.
+   */
   public constructor(
     analyses: IPythonFileAnalysis[],
     private readonly inventory: IEvidenceInventory,
@@ -54,6 +100,12 @@ export class PythonExportResolver {
     this.expandStars();
   }
 
+  /**
+   * Materializes public addresses for every resolved exported binding.
+   *
+   * Returns semantic unit IDs that received at least one address. Unresolvable
+   * public names record diagnostics instead of silently shrinking coverage.
+   */
   public publish(): Set<string> {
     const published = new Set<string>();
     for (const module of this.modules.values())
@@ -96,6 +148,12 @@ export class PythonExportResolver {
     return published;
   }
 
+  /**
+   * Adds names introduced by transitive star imports until none remain.
+   *
+   * A fixed-point pass is necessary because one imported module can itself
+   * obtain public names from another star import.
+   */
   private expandStars(): void {
     let changed = true;
     while (changed) {
@@ -119,6 +177,12 @@ export class PythonExportResolver {
     }
   }
 
+  /**
+   * Resolves one name from a source module with memoization.
+   *
+   * Resolution mode distinguishes a module's declared bindings from the names
+   * it publicly reexports through `__all__` or star imports.
+   */
   private resolve(
     sourceId: string,
     name: string,
@@ -137,6 +201,12 @@ export class PythonExportResolver {
     return resolution;
   }
 
+  /**
+   * Resolves a name recursively while detecting declaration-free import cycles.
+   *
+   * Later bindings win in Python. Star bindings participate only when no later
+   * explicit binding shadows the requested name.
+   */
   private resolveFrom(
     sourceId: string,
     name: string,
@@ -175,6 +245,12 @@ export class PythonExportResolver {
     return output;
   }
 
+  /**
+   * Converts a selected binding into local units or a recursive import lookup.
+   *
+   * Namespace imports intentionally preserve only the target module so address
+   * publication can append its reachable member paths.
+   */
   private resolveBinding(
     module: IPythonModule,
     binding: IPythonBinding,
@@ -203,6 +279,12 @@ export class PythonExportResolver {
     );
   }
 
+  /**
+   * Publishes addresses reachable through one resolved binding.
+   *
+   * Namespace bindings recurse through their public members; root bindings map
+   * matching owned units onto every public address of the entry source.
+   */
   private publishBinding(
     entry: IEvidenceSourceFile,
     binding: IPythonResolvedBinding,
@@ -250,6 +332,12 @@ export class PythonExportResolver {
     return materialized;
   }
 
+  /**
+   * Finds the unique in-snapshot module selected by an import specifier.
+   *
+   * Imports leaving the configured root, missing snapshot files, and physical
+   * aliases are reported because each would make export coverage unreliable.
+   */
   private target(
     source: IEvidenceSourceFile,
     specifier: string,
@@ -296,6 +384,12 @@ export class PythonExportResolver {
     return target;
   }
 
+  /**
+   * Computes the normalized filesystem base named by a Python import.
+   *
+   * Relative dot depth is resolved from the importing location; absolute names
+   * are rooted at the configured source root.
+   */
   private importBase(
     source: IEvidenceSourceFile,
     location: string,
@@ -329,6 +423,11 @@ export class PythonExportResolver {
     );
   }
 
+  /**
+   * Lists source-file spellings that can implement one module base.
+   *
+   * Python permits both implementation and stub files, plus package initializers.
+   */
   private candidates(base: string): string[] {
     return [
       `${base}.py`,
@@ -338,6 +437,12 @@ export class PythonExportResolver {
     ].map((candidate) => this.locationKey(candidate));
   }
 
+  /**
+   * Checks whether a resolved source remains within the optional physical root.
+   *
+   * Public addresses can alias a source, but its physical path still defines the
+   * boundary that imports may not escape.
+   */
   private insidePhysicalRoot(source: IEvidenceSourceFile): boolean {
     return (
       this.root.physical === undefined ||
@@ -345,6 +450,12 @@ export class PythonExportResolver {
     );
   }
 
+  /**
+   * Returns normalized physical and public locations for one source file.
+   *
+   * De-duplication preserves valid aliases while preventing one source from
+   * making an import appear ambiguous by itself.
+   */
   private sourceLocations(source: IEvidenceSourceFile): string[] {
     return Array.from(
       new Set([
@@ -356,6 +467,12 @@ export class PythonExportResolver {
     );
   }
 
+  /**
+   * Normalizes a location for platform-independent module matching.
+   *
+   * Drive and UNC locations are case-insensitive, while other paths retain case
+   * so the resolver does not invent Windows behavior on POSIX snapshots.
+   */
   private locationKey(location: string): string {
     const slash = location.replaceAll("\\", "/");
     const unc = slash.startsWith("//");
@@ -366,6 +483,12 @@ export class PythonExportResolver {
       : restored;
   }
 
+  /**
+   * Records one export-resolution failure and marks the inventory incomplete.
+   *
+   * The supplied key suppresses repeated reports from reexport paths that reach
+   * the same underlying import or binding failure.
+   */
   private problem(
     source: IEvidenceSourceFile | undefined,
     message: string,

@@ -5,7 +5,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Merges C++ declarations, overloads, and qualified definitions by identity. */
+/** Merges compatible C++ declarations and definitions into their semantic identities.
+ *
+ * A callable family may appear as declarations, overloads, and qualified out-of-class definitions, all of which must contribute sites to one owner.
+ *
+ * 1. Analyze class and namespace declarations with matching qualified definitions.
+ * 2. Compare the resulting callable identities and their declaration-site counts.
+ * 3. Require overload families to remain separate from unrelated names.
+ */
 export async function test_cpp_definitions(): Promise<void> {
   const inventory = await new EvidenceCppAdapter().analyze(
     TestSourceSnapshot.combine([

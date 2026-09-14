@@ -2,7 +2,12 @@ import type { IEvidenceUnitSite } from "../../structures/IEvidenceUnitSite";
 import type { EvidenceProgrammingSymbol } from "../../typings/EvidenceProgrammingSymbol";
 import type { ObjcDeclarationForm } from "./ObjcDeclarationForm";
 
-/** One Objective-C declaration before public interface and implementation reconciliation. */
+/**
+ * Represents one Objective-C declaration before interface and implementation reconciliation.
+ *
+ * The adapter keeps declarations from headers, implementations, categories, and
+ * extensions distinct until it can establish the one public semantic identity.
+ */
 export interface IObjcDeclaration {
   /** Physical declaration identity within the snapshot. */
   id: string;
@@ -28,10 +33,20 @@ export interface IObjcDeclaration {
   /** Whether this declaration participates in the public inventory after reconciliation. */
   public: boolean;
 
-  /** Allows implementation or extension sites to join an independently public identity. */
+  /**
+   * Permits an implementation or extension site to join a public identity.
+   *
+   * The flag never makes a private declaration public by itself; it authorizes
+   * reconciliation with the separately extracted interface declaration.
+   */
   merge: boolean;
 
-  /** Whether this site defines a body or nominal implementation that must be unique. */
+  /**
+   * Marks a body or nominal implementation site that must be unique.
+   *
+   * Multiple declarations can describe a selector, but conflicting definitions
+   * leave the analysis incomplete rather than choosing an arbitrary site.
+   */
   definition: boolean;
 
   /** Physical owner declaration, reconciled to a semantic parent later. */

@@ -15,7 +15,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Preserves root-relative Markdown paths and literal anchor identities. */
+/** Resolves root-relative Markdown paths and literal anchors.
+ *
+ * Markdown target paths and anchors must retain their public spelling through normalization and resolution.
+ *
+ * 1. Build Markdown units with root-relative paths and anchors.
+ * 2. Resolve the supported target spellings.
+ * 3. Verify literal anchor identities remain exact.
+ */
 export async function test_markdown_target_paths(): Promise<void> {
   const reference = await new EvidenceMarkdownAdapter().analyze(
     TestSourceSnapshot.create("docs/spec%value.md", "## Pricing {#price.v2}"),

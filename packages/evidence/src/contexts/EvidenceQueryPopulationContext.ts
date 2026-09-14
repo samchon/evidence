@@ -2,42 +2,100 @@ import type { IEvidenceQueryPopulation } from "../internal/IEvidenceQueryPopulat
 import type { IEvidencePublicAddress } from "../structures/IEvidencePublicAddress";
 import type { IEvidenceUnit } from "../structures/IEvidenceUnit";
 
-/** Indexes one claim or reference population within an owned query snapshot. */
+/**
+ * Indexes one configured population for repeated structural and coverage queries.
+ *
+ * The containing facade owns the analysis snapshot. This context borrows its
+ * records, distinguishes explicit selection from ancestor closure and visibility,
+ * and caches descendant traversal without rebuilding indexes for each operation.
+ */
 export class EvidenceQueryPopulationContext {
-  /** Claim or reference coordinates that distinguish this population's obligation. */
+  /**
+   * Claim or reference coordinates identifying the configured population.
+   *
+   * Query rows qualify semantic identities with this scope to retain independent obligations.
+   */
   public readonly scope: IEvidenceQueryPopulation["scope"];
 
-  /** Inventory owned by the containing query snapshot. */
+  /**
+   * Inventory borrowed from the containing facade's isolated analysis snapshot.
+   *
+   * It supplies full structural context, including units outside explicit selection.
+   */
   public readonly inventory: IEvidenceQueryPopulation["inventory"];
 
-  /** Configured selection in its original order. */
+  /**
+   * Configured semantic selection in its original order.
+   *
+   * Descendant results preserve this order rather than adopting map traversal order.
+   */
   public readonly unitIds: IEvidenceQueryPopulation["unitIds"];
 
-  /** Coverage policy when this population represents a reference. */
+  /**
+   * Effective graph input when the population represents a reference.
+   *
+   * Claim populations leave this undefined because they do not own a reference policy.
+   */
   public readonly reference: IEvidenceQueryPopulation["reference"];
 
-  /** Evaluated coverage when this population represents a reference. */
+  /**
+   * Evaluated obligation ledger for a reference population.
+   *
+   * Coverage inspection uses this alongside structural selection; claim entries omit it.
+   */
   public readonly obligation: IEvidenceQueryPopulation["obligation"];
 
-  /** Semantic units indexed once for parent and descendant traversal. */
+  /**
+   * Full inventory indexed by semantic unit identity.
+   *
+   * Parent traversal follows these explicit links instead of inferring ownership
+   * from public accessor prefixes.
+   */
   public readonly units: Map<string, IEvidenceUnit>;
 
-  /** Explicitly selected identities, excluding structural ancestors added for lookup. */
+  /**
+   * Explicitly selected identities used for direct membership checks.
+   *
+   * Structural ancestors belong to configured closure separately and do not
+   * increase this population's selected denominator.
+   */
   public readonly selected: Set<string>;
 
-  /** Selected identities and their existing structural ancestors. */
+  /**
+   * Selected identities together with their existing structural ancestors.
+   *
+   * Withdrawn identities remain in this set for exact target applicability even
+   * though visible discovery output excludes them.
+   */
   public readonly configured = new Set<string>();
 
-  /** Configured identities that have no withdrawn ancestor or own withdrawal. */
+  /**
+   * Configured identities with neither an own withdrawal nor a withdrawn ancestor.
+   *
+   * List queries use this set to avoid advertising hidden public targets as visible API.
+   */
   public readonly visible = new Set<string>();
 
-  /** Public aliases grouped by semantic identity in inventory order. */
+  /**
+   * Public addresses grouped by semantic identity in inventory order.
+   *
+   * Formatting later sorts and deduplicates target spellings for each query row.
+   */
   public readonly addresses = new Map<string, IEvidencePublicAddress[]>();
 
-  /** Selected descendant results cached separately for each queried ancestor. */
+  /**
+   * Cached selected-descendant lists keyed by queried ancestor identity.
+   *
+   * The immutable snapshot boundary lets repeated coverage queries reuse traversal results.
+   */
   private readonly descendants = new Map<string, string[]>();
 
-  /** Builds indexes from a population belonging to an already owned analysis snapshot. */
+  /**
+   * Builds selection, visibility, and address indexes over an owned analysis population.
+   *
+   * This constructor does not clone records itself; the containing facade supplies
+   * isolated data. Parent walks stop at cycles or missing units so inspection cannot loop.
+   */
   public constructor(population: IEvidenceQueryPopulation) {
     this.scope = population.scope;
     this.inventory = population.inventory;
@@ -59,6 +117,8 @@ export class EvidenceQueryPopulationContext {
             : this.units.get(current.parentId);
       }
     }
+    // Preserve structural closure before applying withdrawal. Exact inspection
+    // still needs to recognize a configured target and explain why it is hidden.
     for (const id of this.configured) {
       let current = this.units.get(id);
       const visited = new Set<string>();
@@ -83,7 +143,12 @@ export class EvidenceQueryPopulationContext {
     }
   }
 
-  /** Returns selected descendants in configured order, including the ancestor if selected. */
+  /**
+   * Returns selected descendants in configured order, including a selected ancestor itself.
+   *
+   * The cached result follows explicit parent relationships. Callers receive a
+   * readonly view because mutating it would corrupt subsequent coverage summaries.
+   */
   public selectedDescendants(ancestorId: string): readonly string[] {
     const remembered = this.descendants.get(ancestorId);
     if (remembered !== undefined) return remembered;
@@ -94,7 +159,12 @@ export class EvidenceQueryPopulationContext {
     return descendants;
   }
 
-  /** Tests structural ancestry, including the identity itself, without revisiting parent cycles. */
+  /**
+   * Tests whether an identity belongs to an ancestor's explicit structural subtree.
+   *
+   * A unit descends from itself. Missing parents and cycles terminate the walk,
+   * and literal dots in names never invent another ownership edge.
+   */
   public descends(unitId: string, ancestorId: string): boolean {
     const visited = new Set<string>();
     let unit = this.units.get(unitId);

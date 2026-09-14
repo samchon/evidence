@@ -3,7 +3,12 @@ import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { ISwiftDeclaration } from "./ISwiftDeclaration";
 import type { ISwiftDocumentation } from "./ISwiftDocumentation";
 
-/** Node-free Swift extraction retained after a parse session closes. */
+/**
+ * Holds the node-free Swift extraction retained after a parse session closes.
+ *
+ * Module-wide nominal and alias resolution consumes these records after parsing,
+ * so they retain source sites and boundaries without borrowing tree nodes.
+ */
 export interface ISwiftFileAnalysis {
   /** Original selected source snapshot. */
   source: IEvidenceSourceFile;
@@ -17,6 +22,11 @@ export interface ISwiftFileAnalysis {
   /** Failures encountered while establishing the public surface. */
   diagnostics: IEvidenceDiagnostic[];
 
-  /** Whether every relevant declaration form was understood. */
+  /**
+   * States whether all surface-affecting Swift forms were classified.
+   *
+   * This failure signal is preserved through extension reconciliation so absent
+   * declarations cannot disappear from the coverage denominator.
+   */
   complete: boolean;
 }

@@ -11,7 +11,22 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Evaluates Markdown as a claim against Markdown and code references. */
+/**
+ * Carries reviewed evidence through a Markdown-to-Markdown-to-TypeScript chain.
+ *
+ * Markdown sections may serve as claims as well as reference targets. The graph
+ * must preserve each hop's declaration and review resolution, and must still
+ * report a failed Markdown claim even when it yields no selected hosts.
+ *
+ * 1. Analyze a TypeScript pricing export and record its content fingerprint.
+ * 2. Analyze a Markdown pricing requirement that acknowledges and reviews that
+ *    export, then record the requirement's own fingerprint.
+ * 3. Analyze a Markdown checkout guide that acknowledges and reviews the pricing
+ *    requirement, evaluate both graph hops, and require no diagnostics or failures.
+ * 4. Analyze a failed version of the Markdown claim and require that its graph
+ *    result remains active and incomplete while suppressing empty-reference and
+ *    missing-acknowledgement findings derived from unavailable claim content.
+ */
 export async function test_graph_markdown_chain(): Promise<void> {
   const implementation = await new EvidenceTypeScriptAdapter().analyze(
     TestSourceSnapshot.create(

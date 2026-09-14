@@ -21,12 +21,29 @@ import type { IPhpFileAnalysis } from "./IPhpFileAnalysis";
 import { PhpDocumentation } from "./PhpDocumentation";
 import { PhpFileScanner } from "./PhpFileScanner";
 
-/** Builds PHP source-public inventories from the configured source snapshot. */
+/**
+ * Extracts PHP public identities and documentation with file-context fingerprints.
+ *
+ * Declaration groups and public addresses are materialized before annotations.
+ * Local imports and directives can change declaration meaning without changing
+ * its own source span, so complete inventories incorporate that context into
+ * content digests after normalization.
+ */
 export class PhpAdapter implements IEvidenceAdapter {
-  /** Configured PHP artifact identifier. */
+  /**
+   * Artifact family selecting PHP parsing and source-public extraction.
+   *
+   * The value connects population configuration to this adapter's visibility and
+   * documentation attachment rules.
+   */
   public readonly type = "php";
 
-  /** Builds a serializable inventory while retaining source and parser failures. */
+  /**
+   * Builds a serializable PHP inventory while retaining source and parser failures.
+   *
+   * Input is validated and cloned before scanning. Only a complete normalized
+   * inventory receives context-sensitive digests, and parser resources close in cleanup.
+   */
   public async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {
@@ -63,6 +80,8 @@ export class PhpAdapter implements IEvidenceAdapter {
       const published = this.materializeUnits(inventory, analyses);
       this.materializeDocumentation(inventory, analyses, published);
       const output = new EvidenceInventory([inventory]).snapshot();
+      // Context hashes depend on valid declaration content ranges. Do not certify
+      // them when normalization has already found an incomplete inventory.
       if (output.complete) this.contextDigests(output, analyses);
       return output;
     } finally {
@@ -70,7 +89,13 @@ export class PhpAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Includes local import and directive changes in review content without widening declaration sites. */
+  /**
+   * Incorporates local imports and directives into declaration review content.
+   *
+   * Context is combined with the existing content digest without widening physical
+   * declaration ranges. All new digests are computed before assignment so iteration
+   * order cannot make later calculations observe partially updated units.
+   */
   private contextDigests(
     inventory: IEvidenceInventory,
     analyses: IPhpFileAnalysis[],
@@ -103,7 +128,12 @@ export class PhpAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Parses one selected file and translates acquisition or syntax failures. */
+  /**
+   * Extracts one PHP file and translates acquisition or syntax failures.
+   *
+   * A failed scan preserves the source and located cause with incomplete state,
+   * allowing the enclosing inventory to explain why coverage cannot be certified.
+   */
   private async scan(
     parser: EvidenceParser,
     source: IEvidenceSourceFile,

@@ -8,7 +8,22 @@ import { join } from "node:path";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestParserError } from "../../internal/TestParserError";
 
-/** Rejects invalid downloads, bounds transient retries, and permits later recovery without retaining a failed promise. */
+/**
+ * Rejects unverified grammar downloads and permits recovery on the same provider.
+ *
+ * Retry policy must distinguish transient transport failures from permanent HTTP
+ * and content-integrity failures. Rejected work must leave neither a published
+ * cache entry nor a retained promise that prevents a later healthy acquisition.
+ *
+ * 1. Return HTTP 503 and require asset-download failure after the configured two
+ *    attempts; switch to HTTP 404 and require only one additional request.
+ * 2. Supply truncated, oversized, and same-sized modified bytes separately:
+ *    - Each attempt fails with asset-corrupt.
+ *    - No bytes are published in the cache directory.
+ *    - Integrity failures are not retried.
+ * 3. Switch the same provider to pinned bytes and require successful acquisition
+ *    with exactly one additional request.
+ */
 export async function test_parser_acquisition_failures(): Promise<void> {
   const grammar = await new TreeSitterAssets().grammar("python");
   const pinned = Uint8Array.from(await TestParserAssets.bytes(grammar));

@@ -30,9 +30,27 @@ import type { EvidenceSymbol } from "../typings/EvidenceSymbol";
 import type { IEvidenceCheckContext } from "../contexts/IEvidenceCheckContext";
 import type { IEvidenceClaimContext } from "../contexts/IEvidenceClaimContext";
 
-/** Materializes, resolves, and reports the inputs owned by a checker execution. */
+/**
+ * Turns a validated check plan into inventories, graph input, and a command report.
+ *
+ * This namespace is the orchestration boundary between configuration and graph
+ * evaluation. It keeps every configured reference independent, so the same
+ * population can appear in several obligations without sharing a resolution or
+ * silently discharging coverage in another claim.
+ *
+ * @example
+ *   const claims = await EvidenceCheckProgrammer.materialize(plan);
+ *   const analysis = await EvidenceCheckProgrammer.evaluate({ plan, claims });
+ */
 export namespace EvidenceCheckProgrammer {
-  /** Loads each configured population before claim participation is resolved. */
+  /**
+   * Materializes every active claim and the reference populations it owns.
+   *
+   * The returned array retains the configuration-plan order because evaluation
+   * and reporting use positions as stable claim coordinates. Loading is allowed
+   * to run concurrently, but each materialized reference remains attached to
+   * exactly the claim entry that declared it.
+   */
   export async function materialize(
     plan: IEvidenceConfigPlan,
   ): Promise<IEvidenceMaterializedClaim[]> {
@@ -41,7 +59,14 @@ export namespace EvidenceCheckProgrammer {
     );
   }
 
-  /** Builds the graph and command report from one materialized execution context. */
+  /**
+   * Prepares graph input and evaluates the checker result for one execution.
+   *
+   * Preparation resolves annotations against each independent reference boundary
+   * before {@link EvidenceGraph.evaluate} applies coverage policy. The returned
+   * analysis deliberately retains both graph input and graph output so query
+   * commands can explain the result without rebuilding or reloading inventories.
+   */
   export async function evaluate(
     context: IEvidenceCheckContext,
   ): Promise<IEvidenceCheckAnalysis> {
@@ -52,7 +77,13 @@ export namespace EvidenceCheckProgrammer {
     return { graphInput, graph, report: report(context.plan, graph) };
   }
 
-  /** Loads one claim and its independent reference populations from the same configuration base. */
+  /**
+   * Loads a claim inventory and every reference inventory declared beneath it.
+   *
+   * All paths are resolved from the single configuration file, even though the
+   * loads run concurrently. This produces selected unit identifiers only; it
+   * does not add visible structural ancestors, which are a query-layer concern.
+   */
   async function materializeClaim(
     configFile: string,
     plan: IEvidenceConfigPlanClaim,
@@ -89,7 +120,14 @@ export namespace EvidenceCheckProgrammer {
     };
   }
 
-  /** Selects the artifact adapter and loads the local or remote population it accepts. */
+  /**
+   * Loads one configured population through the adapter that owns its artifact grammar.
+   *
+   * File-backed Swagger is exceptional because its adapter owns direct document
+   * loading. Every other population first expands source globs relative to the
+   * configuration file, then transfers the resulting source snapshot to the
+   * selected adapter for analysis.
+   */
   async function load(
     configFile: string,
     population: IEvidenceClaim | IEvidenceReference,
@@ -109,7 +147,13 @@ export namespace EvidenceCheckProgrammer {
     );
   }
 
-  /** Selects semantic identities by configured symbol kinds without adding structural ancestors. */
+  /**
+   * Selects configured semantic identities from an inventory.
+   *
+   * The configuration's symbol kinds are the only selection criterion. Keeping
+   * this result free of parent identities prevents graph coverage from treating
+   * a structural ancestor as an independently configured obligation.
+   */
   function selectUnitIds(
     inventory: IEvidenceInventory,
     symbols: EvidenceSymbol[],
@@ -120,7 +164,13 @@ export namespace EvidenceCheckProgrammer {
       .map((unit) => unit.id);
   }
 
-  /** Selects exclusion carriers whose source addresses match the configured file globs. */
+  /**
+   * Selects documentation hosts whose source files match exclusion-carrier globs.
+   *
+   * Matching starts from selected logical addresses, then maps their physical
+   * files back to hosts. This lets aliases share one exclusion decision while
+   * avoiding exclusions from an unselected logical source address.
+   */
   function selectExclusionHosts(
     inventory: IEvidenceInventory,
     patterns: string[],
@@ -141,7 +191,14 @@ export namespace EvidenceCheckProgrammer {
       .map((host) => host.id);
   }
 
-  /** Builds claim participation indexes before resolving each reference obligation. */
+  /**
+   * Clones a claim inventory and prepares its graph-facing reference boundaries.
+   *
+   * The clone receives preparation diagnostics so the materialized inventory can
+   * still serve as the unmodified loading result. Declaration and review indexes
+   * record eligible reference positions before resolving targets, ensuring an
+   * annotation is only evaluated where its grammar and host can participate.
+   */
   async function prepareClaim(
     materialized: IEvidenceMaterializedClaim,
   ): Promise<IEvidenceGraphClaim> {
@@ -155,6 +212,8 @@ export namespace EvidenceCheckProgrammer {
     };
     const { hosts, declarations, reviews } = context;
 
+    // Record applicability before resolution so an incompatible target becomes
+    // one useful diagnostic instead of one resolution failure per reference.
     for (const declaration of inventory.declarations)
       declarations.set(
         declaration.id,
@@ -194,7 +253,13 @@ export namespace EvidenceCheckProgrammer {
     };
   }
 
-  /** Maps an annotation to the positions of reference populations that accept its target grammar. */
+  /**
+   * Maps one annotation to the reference positions whose target grammar accepts it.
+   *
+   * Positions, rather than reference identities, preserve duplicate configured
+   * references as separate obligations. The returned set is later consulted by
+   * both acknowledgement and review preparation.
+   */
   function applicable(
     statement: Parameters<typeof EvidenceTargetApplicability.select>[0],
     host: IEvidenceHost,
@@ -207,7 +272,14 @@ export namespace EvidenceCheckProgrammer {
     );
   }
 
-  /** Resolves acknowledgements and reviews using the shared claim context and this reference selection. */
+  /**
+   * Builds one graph reference from the claim annotations eligible for this position.
+   *
+   * A resolver sees only this reference inventory and its selected unit IDs. That
+   * isolation is essential: the same textual target may resolve differently in
+   * another reference population, and a review remains independent of an
+   * acknowledgement that happens to cover the same identity.
+   */
   async function prepareReference(
     context: IEvidenceClaimContext,
     materialized: IEvidenceMaterializedReference,
@@ -273,7 +345,13 @@ export namespace EvidenceCheckProgrammer {
     };
   }
 
-  /** Resolves an acknowledgement within the reference selection established for its host. */
+  /**
+   * Resolves one acknowledgement against a preselected reference population.
+   *
+   * The wrapper keeps the source declaration identity beside the resolver output,
+   * allowing graph evaluation and inspection reports to trace every edge back to
+   * the authored annotation.
+   */
   async function resolveDeclaration(
     resolver: EvidenceTargetResolver,
     declaration: IEvidenceInventory["declarations"][number],
@@ -286,7 +364,13 @@ export namespace EvidenceCheckProgrammer {
     };
   }
 
-  /** Resolves a review independently of the acknowledgements that may discharge coverage. */
+  /**
+   * Resolves one review against the same boundary used for acknowledgements.
+   *
+   * Reviews are returned in a separate collection because review policy assesses
+   * their status independently; resolving one must never manufacture an evidence
+   * edge or change coverage counts.
+   */
   async function resolveReview(
     resolver: EvidenceTargetResolver,
     review: IEvidenceInventory["reviews"][number],
@@ -299,7 +383,13 @@ export namespace EvidenceCheckProgrammer {
     };
   }
 
-  /** Requires an annotation host to exist in the indexed claim inventory. */
+  /**
+   * Retrieves an annotation host from the claim-local host index.
+   *
+   * A missing host means an inventory invariant was broken after parsing. Throwing
+   * here prevents a later resolver error from losing the statement identity that
+   * caused the invalid graph input.
+   */
   function requireHost(
     hosts: Map<string, IEvidenceHost>,
     id: string,
@@ -310,7 +400,13 @@ export namespace EvidenceCheckProgrammer {
     return host;
   }
 
-  /** Tests whether an annotation participates in the specified reference position. */
+  /**
+   * Tests whether an indexed annotation participates in one reference position.
+   *
+   * Missing records are treated as nonparticipating. This keeps the caller safe
+   * when an inventory has no annotation of the requested identity while retaining
+   * position-based separation for duplicated reference entries.
+   */
   function selected(
     records: Map<string, Set<number>>,
     id: string,
@@ -320,7 +416,13 @@ export namespace EvidenceCheckProgrammer {
     return positions !== undefined && positions.has(position);
   }
 
-  /** Reports annotations that match none of the configured reference populations. */
+  /**
+   * Appends diagnostics for annotations accepted by no configured reference.
+   *
+   * Both acknowledgement and review diagnostics retain the authored location,
+   * host, and target so a caller can repair configuration or source text without
+   * inferring which pre-resolution applicability decision failed.
+   */
   function reportNonParticipating(
     inventory: IEvidenceInventory,
     declarations: Map<string, Set<number>>,
@@ -352,7 +454,14 @@ export namespace EvidenceCheckProgrammer {
         });
   }
 
-  /** Converts graph results into the deterministic checker status, counts, and diagnostics. */
+  /**
+   * Converts evaluated graph state into the stable public check report.
+   *
+   * Completion is stricter than diagnostic success: inactive claims are ignored,
+   * while every active claim and active obligation must be complete. Exit code 2
+   * denotes incomplete graph state, code 1 denotes a complete graph with errors,
+   * and code 0 denotes a successful execution.
+   */
   function report(
     plan: IEvidenceConfigPlan,
     graph: IEvidenceGraphResult,
@@ -382,7 +491,14 @@ export namespace EvidenceCheckProgrammer {
     };
   }
 
-  /** Combines configured claim labels and policies with evaluated obligation results. */
+  /**
+   * Projects graph claims into report rows using their configuration-plan labels.
+   *
+   * Positional joins are intentional: graph input is constructed in plan order,
+   * including duplicate populations. Missing plan entries are invariant failures,
+   * not report omissions, because emitting a relabelled obligation would mislead
+   * consumers about the policy that produced it.
+   */
   function checkClaims(
     plan: IEvidenceConfigPlan,
     graph: IEvidenceGraphResult,
@@ -421,7 +537,13 @@ export namespace EvidenceCheckProgrammer {
     });
   }
 
-  /** Counts active obligations, coverage, and diagnostic severities for the command report. */
+  /**
+   * Summarizes claims, active obligations, coverage, and diagnostic severities.
+   *
+   * Coverage totals include only active obligations, matching the policy used for
+   * completion. Overall claim and obligation counts remain unfiltered so callers
+   * can distinguish disabled configuration from absent configuration.
+   */
   function checkCounts(
     claims: IEvidenceCheckClaim[],
     diagnostics: IEvidenceDiagnostic[],
@@ -455,7 +577,13 @@ export namespace EvidenceCheckProgrammer {
     };
   }
 
-  /** Orders diagnostics by stable source, graph, and message coordinates. */
+  /**
+   * Compares diagnostics using the report's deterministic ordering contract.
+   *
+   * Claim and reference coordinates come first, followed by source location and
+   * diagnostic identity. The final message comparison makes otherwise identical
+   * diagnostics stable across adapter iteration order and operating systems.
+   */
   function compareDiagnostics(
     left: IEvidenceDiagnostic,
     right: IEvidenceDiagnostic,
@@ -477,17 +605,32 @@ export namespace EvidenceCheckProgrammer {
     ]);
   }
 
-  /** Compares text using the report ordering shared across platforms. */
+  /**
+   * Compares two report strings using code-unit order.
+   *
+   * This deliberately avoids locale-sensitive collation so serialized checker
+   * output has the same order on every platform.
+   */
   function compare(left: string, right: string): number {
     return left < right ? -1 : left > right ? 1 : 0;
   }
 
-  /** Compares numeric report coordinates in ascending order. */
+  /**
+   * Compares numeric report coordinates in ascending order.
+   *
+   * Callers pass only bounded graph indexes and source offsets, so subtraction
+   * supplies a compact comparator while preserving exact coordinate priority.
+   */
   function compareNumber(left: number, right: number): number {
     return left - right;
   }
 
-  /** Returns the first nonzero comparison in the requested ordering priority. */
+  /**
+   * Returns the first decisive comparison result in priority order.
+   *
+   * Comparator construction remains separate from execution so ordering rules can
+   * be read as a single ordered list in {@link compareDiagnostics}.
+   */
   function firstDifference(values: number[]): number {
     return values.find((value) => value !== 0) ?? 0;
   }

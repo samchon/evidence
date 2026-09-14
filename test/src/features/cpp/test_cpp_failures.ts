@@ -5,7 +5,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Reports C++ preprocessing, specialization, lookup, and syntax boundaries. */
+/** Reports C++ preprocessing, specialization, lookup, and syntax boundaries as incomplete.
+ *
+ * Static extraction must decline to publish a complete surface when unsupported preprocessing or unresolved C++ forms change declaration meaning.
+ *
+ * 1. Analyze sources at preprocessing, specialization, qualified-lookup, and parse-error boundaries.
+ * 2. Require each uncertain source to be incomplete.
+ * 3. Require diagnostics to describe the rejected condition.
+ */
 export async function test_cpp_failures(): Promise<void> {
   const adapter = new EvidenceCppAdapter();
 

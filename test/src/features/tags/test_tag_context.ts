@@ -8,6 +8,10 @@ import { TestDocumentation } from "../../internal/TestDocumentation";
  * Resets annotation continuations, fences, and diagnostics for every parse.
  *
  * Reusing a controller after mutating its original host and a previous result preserves the captured documentation and its valid annotation.
+ *
+ * 1. Parse a host and retain its baseline annotation result.
+ * 2. Mutate the original host and prior result, then parse again.
+ * 3. Verify fresh controller state and an unaffected second controller.
  */
 export async function test_tag_context(): Promise<void> {
   const fixture = TestDocumentation.create(dedent`

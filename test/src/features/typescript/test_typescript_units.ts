@@ -5,7 +5,13 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Classifies the supported TypeScript declaration matrix and public member paths. */
+/** Classifies TypeScript's supported public declaration matrix.
+ *
+ * Declaration kind and member path determine the addressable population exported by an artifact.
+ *
+ * 1. Analyze supported declarations and members.
+ * 2. Verify exact symbols, identities, and public paths.
+ */
 export async function test_typescript_units(): Promise<void> {
   const content = dedent`
     export interface IService {

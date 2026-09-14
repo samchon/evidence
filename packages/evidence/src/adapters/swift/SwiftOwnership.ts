@@ -1,9 +1,19 @@
 ﻿import type { ISwiftDeclaration } from "./ISwiftDeclaration";
 import type { ISwiftFileAnalysis } from "./ISwiftFileAnalysis";
 
-/** Reconciles extensions against nominal declarations in one configured Swift module. */
+/**
+ * Reconciles extensions against nominal declarations in one configured Swift module.
+ *
+ * The pass resolves selected local aliases without importing compiler metadata,
+ * then propagates visibility from the verified nominal owner to extension members.
+ */
 export namespace SwiftOwnership {
-  /** Resolves local aliases and extension-introduced types before propagating visibility. */
+  /**
+   * Resolves local aliases and extension-introduced types before propagating visibility.
+   *
+   * Repeated passes handle declarations whose owner is another pending extension;
+   * unresolved cycles remain incomplete instead of gaining an invented owner.
+   */
   export function resolve(analyses: ISwiftFileAnalysis[]): void {
     const declarations = analyses.flatMap((analysis) => analysis.declarations);
     const ids = new Map(

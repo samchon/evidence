@@ -3,9 +3,21 @@ import type { IEvidenceCommentSyntax } from "../structures/IEvidenceCommentSynta
 import type { IEvidenceDocumentation } from "../structures/IEvidenceDocumentation";
 import type { IEvidenceSourceRange } from "../structures/IEvidenceSourceRange";
 
-/** Removes known comment delimiters while retaining a map to every original source position. */
+/**
+ * Normalizes adapter-identified comments without losing source coordinates.
+ *
+ * The adapter owns comment classification and attachment. This helper only removes
+ * the supplied delimiters and line prefixes, retaining mappings that let the tag
+ * parser report exact spans and exclude accepted annotations from fingerprints.
+ */
 export namespace EvidenceDocumentation {
-  /** Adapters must establish comment identity and attachment before calling this helper. */
+  /**
+   * Reads a validated comment span into mapped annotation text.
+   *
+   * The range must belong to the supplied content and match the declared opening
+   * and closing delimiters. Invalid spans throw instead of mapping unrelated text.
+   * Adapters must establish comment identity and declaration ownership beforehand.
+   */
   export function read(
     content: string,
     hostId: string,
@@ -43,6 +55,8 @@ export namespace EvidenceDocumentation {
         if (content.startsWith(prefix, from)) from += prefix.length;
         else from = cursor;
       }
+      // Normalize CRLF for tag scanning while mapping the retained newline to
+      // its original LF. Prefix removal must not shift diagnostic coordinates.
       const lineEnd = content[until - 1] === "\r" ? until - 1 : until;
       for (let index = from; index < lineEnd; ++index) {
         text += content[index] ?? "";
@@ -56,6 +70,8 @@ export namespace EvidenceDocumentation {
       }
       cursor = until + 1;
     }
+    // Positions at normalized EOF still need an original source boundary even
+    // when no text character remains after removing the closing delimiter.
     offsets.push(end);
     return {
       hostId,

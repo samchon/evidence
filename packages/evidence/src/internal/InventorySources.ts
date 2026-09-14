@@ -1,8 +1,14 @@
 import type { IEvidenceInventory } from "../structures/IEvidenceInventory";
 import type { IEvidenceSourceLocation } from "../structures/IEvidenceSourceLocation";
 
-/** Reconciles physical spellings across snapshots without rewriting public module addresses. */
+/**
+ * Reconciles physical source paths across inventories without rewriting public addresses.
+ *
+ * Merge consumers need one physical key for source content and annotations, but
+ * adapters retain logical origins because they remain valid user-facing targets.
+ */
 export namespace InventorySources {
+  /** Normalizes all location-bearing records in place and reports impossible identity conflicts. */
   export function reconcile(inputs: IEvidenceInventory[]): void {
     const canonical = new Map<string, string>();
     const owners = new Map<string, string>();
@@ -34,6 +40,7 @@ export namespace InventorySources {
           canonical.get(source.id) ?? source.physicalPath,
         );
 
+    /** Rewrites only physical locations through the source-ID canonicalization map. */
     function locate(location: IEvidenceSourceLocation): void {
       location.file = paths.get(location.file) ?? location.file;
     }

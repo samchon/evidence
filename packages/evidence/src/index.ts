@@ -1,8 +1,15 @@
+/**
+ * Public package API.
+ *
+ * Importing this entry point registers no parser work, configuration loading, or
+ * command execution. Consumers choose explicit checker, command, loader, and
+ * adapter entry points for their own execution boundary.
+ */
 export { EvidenceDartAdapter } from "./adapters/dart/EvidenceDartAdapter";
 export { EvidenceScalaAdapter } from "./adapters/scala/EvidenceScalaAdapter";
-/** Public API. Importing the package performs no project work. */
 export { EvidenceChecker } from "./EvidenceChecker";
 
+/** Certified adapters for supported programming and database artifacts. */
 export { EvidenceCAdapter } from "./adapters/c/EvidenceCAdapter";
 export { EvidenceBigQueryAdapter } from "./adapters/bigquery/EvidenceBigQueryAdapter";
 export { EvidenceCppAdapter } from "./adapters/cpp/EvidenceCppAdapter";
@@ -29,18 +36,22 @@ export { EvidenceSwaggerAdapter } from "./adapters/swagger/EvidenceSwaggerAdapte
 export { EvidenceTypeScriptAdapter } from "./adapters/typescript/EvidenceTypeScriptAdapter";
 export { EvidenceZigAdapter } from "./adapters/zig/EvidenceZigAdapter";
 
+/** Command execution, reusable watch lifecycle, and command syntax failures. */
 export { EvidenceCommand } from "./commands/EvidenceCommand";
 export { EvidenceCommandError } from "./commands/EvidenceCommandError";
 export { EvidenceWatcher } from "./commands/EvidenceWatcher";
 
+/** Graph construction, semantic inventory, and query projections. */
 export { EvidenceFingerprint } from "./graph/EvidenceFingerprint";
 export { EvidenceGraph } from "./graph/EvidenceGraph";
 export { EvidenceInventory } from "./graph/EvidenceInventory";
 export { EvidenceQuery } from "./graph/EvidenceQuery";
 
+/** Configuration and local-source loading boundaries. */
 export { EvidenceConfigLoader } from "./loaders/EvidenceConfigLoader";
 export { EvidenceSourceLoader } from "./loaders/EvidenceSourceLoader";
 
+/** Parser sessions, documentation tags, and certified language registry access. */
 export { EvidenceDocumentation } from "./parsers/EvidenceDocumentation";
 export { EvidenceLanguageRegistry } from "./parsers/EvidenceLanguageRegistry";
 export { EvidenceParser } from "./parsers/EvidenceParser";
@@ -48,15 +59,18 @@ export { EvidenceParserError } from "./parsers/EvidenceParserError";
 export type { EvidenceParseSession } from "./parsers/EvidenceParseSession";
 export { EvidenceTagParser } from "./parsers/EvidenceTagParser";
 
+/** Check, query, graph, and watch report serializers. */
 export { EvidenceGraphReporter } from "./reporters/EvidenceGraphReporter";
 export { EvidenceQueryReporter } from "./reporters/EvidenceQueryReporter";
 export { EvidenceReporter } from "./reporters/EvidenceReporter";
 export { EvidenceWatchReporter } from "./reporters/EvidenceWatchReporter";
 
+/** Target parsing and resolution utilities. */
 export { EvidenceAccessor } from "./targets/EvidenceAccessor";
 export { EvidenceFileTarget } from "./targets/EvidenceFileTarget";
 export { EvidenceTargetResolver } from "./targets/EvidenceTargetResolver";
 
+/** Public configuration, report, source, and semantic contract types. */
 export type * from "./structures";
 export type * from "./typings";
 export { EvidenceObjcAdapter } from "./adapters/objc/EvidenceObjcAdapter";

@@ -18,7 +18,14 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Evaluates Swagger as a claim and a reviewed cross-artifact reference. */
+/** Evaluates Swagger as a claim and cross-artifact reference.
+ *
+ * Operations can supply or require evidence, while reviewed targets remain distinct from acknowledged coverage.
+ *
+ * 1. Build Swagger and counterpart claim inventories.
+ * 2. Resolve supported, missing, and review-only operations.
+ * 3. Verify graph outcomes and resolution statuses.
+ */
 export async function test_swagger_graph(): Promise<void> {
   const specification = await new EvidenceMarkdownAdapter().analyze(
     TestSourceSnapshot.create(

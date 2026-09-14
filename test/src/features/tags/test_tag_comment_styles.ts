@@ -4,7 +4,13 @@ import { dedent } from "@typia/utils";
 
 import { TestDocumentation } from "../../internal/TestDocumentation";
 
-/** Preserves HTML prose boundaries and Prisma-style tag boundaries with exact CRLF source locations. */
+/** Parses supported comment styles with exact CRLF source locations.
+ *
+ * HTML prose and Prisma-style carriers have distinct tag boundaries that must preserve original coordinates.
+ *
+ * 1. Parse HTML and Prisma-style annotations in CRLF text.
+ * 2. Verify extracted declarations, ignored prose, and source line and column positions.
+ */
 export async function test_tag_comment_styles(): Promise<void> {
   const html = TestDocumentation.create(
     dedent`

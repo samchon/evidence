@@ -3,7 +3,14 @@ import { TestValidator } from "@nestia/e2e";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Prevents runtime-dependent PHP declarations and malformed input from becoming a smaller passing inventory. */
+/** Rejects PHP inputs whose declaration population is not statically knowable.
+ *
+ * Runtime-dependent declarations, malformed syntax, conflicts, and failed sources must remain incomplete.
+ *
+ * 1. Analyze dynamic, unsupported, and malformed PHP sources.
+ * 2. Require incomplete results with relevant diagnostics.
+ * 3. Verify source failure cannot pass.
+ */
 export async function test_php_boundaries(): Promise<void> {
   for (const source of [
     "class Tagless {}",

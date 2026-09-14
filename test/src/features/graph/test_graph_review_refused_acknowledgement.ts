@@ -10,7 +10,18 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Keeps a review paired when policy refuses its otherwise valid acknowledgement. */
+/**
+ * Retains a review's pairing when checklist policy refuses its aggregate acknowledgement.
+ *
+ * The function acknowledges the whole Markdown document while the checklist
+ * selects only its price section. The aggregate acknowledgement needs its own
+ * repair, but its attached review must not become an unrelated orphan.
+ *
+ * 1. Analyze a Markdown price rule and a function with document-level evidence
+ *    plus a review of that same document-level acknowledgement.
+ * 2. Evaluate the price section as a checklist target.
+ * 3. Require one refused-aggregate diagnostic and no orphan-review diagnostic.
+ */
 export async function test_graph_review_refused_acknowledgement(): Promise<void> {
   const requirements = await new EvidenceMarkdownAdapter().analyze(
     TestSourceSnapshot.create(

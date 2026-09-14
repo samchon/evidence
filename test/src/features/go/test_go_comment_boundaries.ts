@@ -7,7 +7,12 @@ import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Separates trailing Go comments from leading runs even when their columns coincide. */
+/** Separates trailing Go comments from leading documentation runs.
+ *
+ * Evidence attaches only to the declaration-leading run despite matching columns.
+ *
+ * 1. Analyze leading and trailing annotated comments. 2. Compare attached declarations. 3. Require trailing annotations to remain inert.
+ */
 export async function test_go_comment_boundaries(): Promise<void> {
   const source = dedent`
     package sale

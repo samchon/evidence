@@ -4,7 +4,12 @@ import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { IScalaDeclaration } from "./IScalaDeclaration";
 import type { IScalaDocumentation } from "./IScalaDocumentation";
 
-/** Node-free Scala extraction retained after a parse session closes. */
+/**
+ * Holds the node-free Scala extraction retained after a parse session closes.
+ *
+ * Export reconciliation needs declarations from the selected snapshot at once,
+ * while parser state is intentionally released after each source scan.
+ */
 export interface IScalaFileAnalysis {
   /** Original selected source snapshot. */
   source: IEvidenceSourceFile;
@@ -21,6 +26,11 @@ export interface IScalaFileAnalysis {
   /** Explicit exports awaiting selected-source resolution. */
   exports: IScalaExport[];
 
-  /** Whether every relevant declaration form was understood. */
+  /**
+   * States whether scanning classified every surface-affecting Scala form.
+   *
+   * The inventory carries a false value forward so incomplete export discovery
+   * cannot silently turn a missing obligation into a passing result.
+   */
   complete: boolean;
 }

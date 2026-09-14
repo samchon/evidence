@@ -3,7 +3,14 @@ import { TestValidator } from "@nestia/e2e";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Rejects schema-changing execution and invalid foreign keys without dropping obligations silently. */
+/** Rejects SQLite input that changes schema interpretation or relation certainty.
+ *
+ * Execution-dependent statements and invalid foreign keys must keep the inventory incomplete rather than silently remove obligations.
+ *
+ * 1. Analyze each schema-changing or invalid relation form.
+ * 2. Require incomplete status with actionable diagnostics.
+ * 3. Verify supported empty input has no fabricated units.
+ */
 export async function test_sqlite_boundaries(): Promise<void> {
   for (const statement of [
     "CREATE VIRTUAL TABLE search USING fts5(title, body);",

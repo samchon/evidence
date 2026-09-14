@@ -18,10 +18,34 @@ import type { IJavaFileAnalysis } from "./IJavaFileAnalysis";
 import { JavaDocumentation } from "./JavaDocumentation";
 import { JavaFileScanner } from "./JavaFileScanner";
 
-/** Builds Java source-public inventories from the configured source snapshot. */
+/**
+ * Materializes Java public declaration families and their attached Javadoc.
+ *
+ * The scanner establishes source visibility, lexical owners, and physical sites.
+ * Unit materialization reconciles supported callable families before comments
+ * become evidence hosts, retaining distinct sites without counting each overload
+ * as an unrelated public name. This boundary concerns declared Java visibility,
+ * not module export policy or compiler-generated members.
+ *
+ * Source failures and incomplete scans remain visible in the returned inventory.
+ * Each invocation owns its parser lifetime and mutable extraction state.
+ */
 export class JavaAdapter implements IEvidenceAdapter {
+  /**
+   * Java artifact discriminator for grammar selection and unit classification.
+   *
+   * The public adapter uses this fixed language for both claim hosts and reference
+   * targets; it does not infer another language from a selected source filename.
+   */
   public readonly type = "java";
 
+  /**
+   * Extracts source-public Java declarations from a captured snapshot.
+   *
+   * Input is validated and copied before asynchronous scanning. Units precede
+   * Javadoc materialization so declaration families own their actual comment
+   * positions, and parser cleanup runs after either success or failure.
+   */
   public async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {
@@ -55,6 +79,8 @@ export class JavaAdapter implements IEvidenceAdapter {
         inventory.diagnostics.push(...analysis.diagnostics);
         inventory.complete &&= analysis.complete;
       }
+      // Reconciled callable owners must exist before overload documentation can
+      // contribute tags without creating duplicate semantic hosts.
       const published = this.materializeUnits(inventory, analyses);
       this.materializeDocumentation(inventory, analyses, published);
       return new EvidenceInventory([inventory]).snapshot();

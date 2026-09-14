@@ -2,7 +2,13 @@ import { EvidenceZigAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Refuses compiler-dependent public denominators and preserves private/local counterparts. */
+/** Rejects Zig public populations that require compiler evaluation.
+ *
+ * Compiler-dependent declarations must remain incomplete while explicit private and local counterparts retain their documented boundaries.
+ *
+ * 1. Analyze compiler-dependent, private, and local declarations.
+ * 2. Verify incomplete diagnostics and retained boundary behavior.
+ */
 export async function test_zig_boundaries(): Promise<void> {
   const adapter = new EvidenceZigAdapter();
   const cases = new Map<string, string>([

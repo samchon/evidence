@@ -3,7 +3,21 @@ import { TestValidator } from "@nestia/e2e";
 
 import { TestInventory } from "../../internal/TestInventory";
 
-/** Scope closure follows explicit parents and cannot invent ancestry from literal dots. */
+/**
+ * Builds structural scope from explicit parents while preserving literal accessor segments.
+ *
+ * Public name prefixes are not ownership edges. A selected property with a dot in
+ * its literal name must retain its actual parent without making a similarly named
+ * unselected declaration or unrelated unit part of the resolvable population.
+ *
+ * 1. Create Box, its explicit child named value.part, a parentless lookalike named
+ *    Box.value, and an unrelated declaration; select only the literal dotted child.
+ * 2. Require the scope closure to contain exactly Box and that selected child.
+ * 3. Resolve the literal value.part segment successfully, but reject splitting
+ *    it into value and part as a different, missing accessor.
+ * 4. Require both the unselected lookalike and the unrelated declaration to remain
+ *    missing from lookup within this selected population.
+ */
 export async function test_inventory_scopes(): Promise<void> {
   const input = TestInventory.create();
   TestInventory.unit(

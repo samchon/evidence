@@ -7,7 +7,13 @@ import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Attaches column-zero embedded RDoc to indented nested declarations while respecting blank lines and scope boundaries. */
+/** Attaches embedded Ruby RDoc across nested declaration indentation.
+ *
+ * Column-zero comments respect blank-line and lexical scope boundaries before they can document a member.
+ *
+ * 1. Analyze nested declarations with embedded comments.
+ * 2. Verify attachment, boundaries, and fingerprint effects.
+ */
 export async function test_ruby_embedded_comments(): Promise<void> {
   const source = dedent`
     class Sale

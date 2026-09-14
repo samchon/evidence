@@ -5,7 +5,14 @@ import { join } from "node:path";
 
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
-/** Replaces stale MySQL inventories after new schemas, mutations, syntax failures, and repair. */
+/** Replaces stale MySQL inventories during watch cycles.
+ *
+ * A newly selected schema, schema mutation, parse failure, and repair must each yield a report derived from the current files.
+ *
+ * 1. Start from covered MySQL input and compare every watch report to a fresh check.
+ * 2. Add and mutate an undocumented schema, then require failing coverage and incomplete parsing.
+ * 3. Repair the source and require the next cycle to recover coverage.
+ */
 export async function test_mysql_watch(): Promise<void> {
   await TestFileSystem.experiment(
     "mysql-watch",

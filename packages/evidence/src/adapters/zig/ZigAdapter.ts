@@ -18,12 +18,31 @@ import type { IZigFileAnalysis } from "./IZigFileAnalysis";
 import { ZigDocumentation } from "./ZigDocumentation";
 import { ZigFileScanner } from "./ZigFileScanner";
 
-/** Builds Zig source-public inventories from the configured source snapshot. */
+/**
+ * Materializes explicit Zig container declarations and their documentation hosts.
+ *
+ * File scanning establishes lexical visibility, supported aliases, and source
+ * attachment before publication. The adapter reconciles those declaration records
+ * into units and public addresses, then applies documentation and withdrawals
+ * through their real owners. It preserves unsupported source forms as incomplete
+ * findings rather than evaluating comptime code to guess a public surface.
+ */
 export class ZigAdapter implements IEvidenceAdapter {
-  /** Public configuration discriminator owned by this adapter. */
+  /**
+   * Zig discriminator for the pinned declared-source extraction rules.
+   *
+   * It fixes grammar and container semantics for both graph roles; it does not
+   * authorize build execution or inferred declarations outside selected source.
+   */
   public readonly type = "zig";
 
-  /** Builds a fresh inventory and releases the bounded parser session. */
+  /**
+   * Extracts a fresh Zig inventory from a validated copy of the snapshot.
+   *
+   * Semantic publication precedes documentation so aliases keep the original
+   * owner and withdrawals. Completeness includes every scan's outcome, and the
+   * invocation releases parser resources on all completion paths.
+   */
   public async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {
@@ -57,6 +76,8 @@ export class ZigAdapter implements IEvidenceAdapter {
         inventory.diagnostics.push(...analysis.diagnostics);
         inventory.complete &&= analysis.complete;
       }
+      // Alias publication must preserve the defining unit before its documentation
+      // and inherited withdrawals can be projected onto eligible hosts.
       const published = this.materializeUnits(inventory, analyses);
       this.materializeDocumentation(inventory, analyses, published);
       return new EvidenceInventory([inventory]).snapshot();

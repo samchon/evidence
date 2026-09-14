@@ -6,7 +6,14 @@ import { DatabaseAdapterCertification } from "../../internal/certification/Datab
 import type { IDatabaseAdapterCertification } from "../../internal/certification/IDatabaseAdapterCertification";
 import type { IDatabaseAdapterCertificationUnit } from "../../internal/certification/IDatabaseAdapterCertificationUnit";
 
-/** Certifies MySQL through the shared database inventory, coverage, failure, ambiguity, and fingerprint gates. */
+/** Applies the shared database certification contract to MySQL.
+ *
+ * The MySQL fixture specifies expected inventory, coverage, failure, ambiguity, and fingerprint behavior at the database adapter boundary.
+ *
+ * 1. Construct the MySQL certification fixture.
+ * 2. Execute the shared database certification suite.
+ * 3. Require every declared adapter gate to pass.
+ */
 export async function test_mysql_certification(): Promise<void> {
   const relation = 'foreign-key:["parent_id"]->["Parent"](["id"])';
   const fixture: IDatabaseAdapterCertification = {

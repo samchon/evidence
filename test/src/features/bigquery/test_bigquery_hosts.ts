@@ -7,7 +7,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Separates attached descriptions from inert values and preserves escaped Unicode tag positions. */
+/** Attaches BigQuery description evidence while preserving source coordinates and inert carriers.
+ *
+ * SQL descriptions are eligible hosts, whereas defaults, fenced examples, and review annotations must not become acknowledgements.
+ *
+ * 1. Extract table and column description tags from CRLF source containing Unicode and compare their reasons.
+ * 2. Verify the description tag's original UTF-16 offset, line, and column, then retain a hidden field without an attached host.
+ * 3. Keep review annotations separate from declarations and preserve the model fingerprint across an annotation-only edit.
+ */
 export async function test_bigquery_hosts(): Promise<void> {
   const adapter = new EvidenceBigQueryAdapter();
   const content = dedent`

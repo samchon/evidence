@@ -3,7 +3,18 @@ import { TestValidator } from "@nestia/e2e";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Retains discovery failures and diagnoses every source spelling that cannot form a target. */
+/**
+ * Retains Markdown path and discovery failures without losing independent diagnostics.
+ *
+ * A source spelling can fail to form a public Markdown address even when the
+ * physical content is readable, and a source-read failure must keep parsing diagnostics visible.
+ *
+ * 1. Analyze a whitespace-containing source path and require no units plus its path diagnostic.
+ * 2. Analyze that physical file through invalid and valid aliases:
+ *    - Keep the valid address for both physical entries.
+ *    - Retain the invalid alias diagnostic.
+ * 3. Combine a failed source snapshot with malformed heading syntax and require incomplete status with both diagnostic classes.
+ */
 export async function test_markdown_failures(): Promise<void> {
   const adapter = new EvidenceMarkdownAdapter();
 

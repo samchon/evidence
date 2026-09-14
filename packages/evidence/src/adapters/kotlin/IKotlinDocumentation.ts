@@ -2,7 +2,12 @@ import type { IEvidenceCommentSyntax } from "../../structures/IEvidenceCommentSy
 import type { IEvidenceSourceRange } from "../../structures/IEvidenceSourceRange";
 import type { IKotlinDocumentationAttachment } from "./IKotlinDocumentationAttachment";
 
-/** A Kotlin documentation carrier or tag-bearing unsupported carrier. */
+/**
+ * Represents a Kotlin documentation carrier or tag-bearing unsupported carrier.
+ *
+ * KDoc attachment is established from source adjacency, while tagged text in an
+ * ineligible carrier remains present for a host-level diagnostic.
+ */
 export interface IKotlinDocumentation {
   /** Stable identity of this extraction record. */
   id: string;

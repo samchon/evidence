@@ -11,7 +11,23 @@ import typia from "typia";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestQueryAnalysis } from "../../internal/TestQueryAnalysis";
 
-/** Lists exact aliases and round-trips canonical targets through scoped inspection. */
+/**
+ * Lists canonical aliases and round-trips each reference target through scoped inspection.
+ *
+ * Query consumers need selected and structural rows without mutating evaluation,
+ * plus a stable target spelling that resolves the same semantic identity through
+ * both the API and command facade.
+ *
+ * 1. List the fixture and require the selected dotted property plus its ancestor
+ *    contract type.
+ * 2. Find the re-exported property and require literal accessor escaping, its
+ *    physical shared-source alias, and the Renamed barrel alias.
+ * 3. Inspect every listed reference target and require exactly its listed unit ID.
+ * 4. Apply language and kind filters; require all emitted rows to match while the
+ *    original check denominator and exit status remain unchanged.
+ * 5. Run JSON list and inspect commands, parse their public reports, and require
+ *    the command-provided canonical target to round-trip to the same unit ID.
+ */
 export async function test_query_list_and_inspect(): Promise<void> {
   const location = join(__dirname, `query list ${randomUUID()}`);
   await TestFileSystem.experiment(

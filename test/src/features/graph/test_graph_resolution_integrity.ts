@@ -4,7 +4,20 @@ import { TestValidator } from "@nestia/e2e";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestInventory } from "../../internal/TestInventory";
 
-/** Rejects inconsistent materialized resolution records without granting coverage. */
+/**
+ * Refuses prepared resolution records that violate declaration or population identity.
+ *
+ * The graph accepts materialized resolutions from callers, so resolved status
+ * alone cannot establish a valid evidence edge. Each record must identify one
+ * actual claim statement and a target inside the selected reference's scope closure.
+ *
+ * 1. Supply two different target answers for one acknowledgement; require one
+ *    graph-conflicting-resolution finding and leave the required target missing.
+ * 2. Supply a resolution naming no claim declaration; require one
+ *    graph-resolution-declaration finding and no coverage.
+ * 3. Resolve the acknowledgement to an unrelated unselected reference identity;
+ *    require one graph-resolution-scope finding and keep the selected target missing.
+ */
 export async function test_graph_resolution_integrity(): Promise<void> {
   const reference = TestInventory.create();
   const target = TestInventory.unit(
@@ -140,6 +153,12 @@ export async function test_graph_resolution_integrity(): Promise<void> {
   );
 }
 
+/**
+ * Counts a specific integrity diagnostic in the full graph result.
+ *
+ * The scenario checks one direct finding per invalid mapping while separately
+ * asserting that the mapping did not contribute coverage.
+ */
 function count(
   result: ReturnType<typeof EvidenceGraph.evaluate>,
   code: string,

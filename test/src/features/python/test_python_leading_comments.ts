@@ -5,9 +5,13 @@ import { dedent } from "@typia/utils";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /**
- * Attaches comments before the first class member even outside its parsed block.
- * Nested types, decorated methods, constructor fields, and withdrawals must keep
- * their own hosts instead of losing annotations or attaching them to the class.
+ * Attaches leading comments to the first eligible Python class member.
+ *
+ * The nested-class fixture places evidence before members, decorators, and constructor fields while also withdrawing a member, so lexical ownership must survive parser block boundaries.
+ *
+ * 1. Analyze the nested class fixture with leading evidence comments.
+ * 2. Verify evidence targets attach to the intended nested type, method, and constructor field rather than the enclosing class.
+ * 3. Repeat the assertions for LF, CRLF, and tab-indented source, verifying withdrawal, completion, reviews, and original tag offsets.
  */
 export async function test_python_leading_comments(): Promise<void> {
   const source = dedent`

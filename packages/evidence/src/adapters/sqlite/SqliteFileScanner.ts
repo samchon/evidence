@@ -10,18 +10,37 @@ import type { ISqlDocumentation } from "../sql/ISqlDocumentation";
 import type { ISqlFileAnalysis } from "../sql/ISqlFileAnalysis";
 import { SqliteSyntax } from "./SqliteSyntax";
 
-/** Reads SQLite grammar nodes into a static schema without applying migrations. */
+/** Extracts a static SQLite schema from declarative grammar nodes.
+ *
+ * The scanner does not execute migrations or queries. It records only syntax
+ * that establishes a stable schema and reports other constructs so they cannot
+ * make a partial inventory appear complete.
+ */
 export class SqliteFileScanner {
-  /** Declarations established by SQLite grammar positions. */
+  /** Collects declarations established by recognized SQLite grammar positions.
+   *
+   * The array remains private until `scan` returns its node-free analysis.
+   */
   private readonly declarations: ISqlDeclaration[] = [];
 
-  /** Findings that prevent a smaller schema from appearing complete. */
+  /** Collects findings that prevent a smaller schema from appearing complete.
+   *
+   * Each diagnostic identifies syntax requiring runtime interpretation or a
+   * scanner capability that SQLite extraction does not support.
+   */
   private readonly diagnostics: IEvidenceDiagnostic[] = [];
 
-  /** Original UTF-16 source coordinates. */
+  /** Maps SQLite node offsets into original UTF-16 source coordinates.
+   *
+   * Documentation and declaration sites share this coordinate authority.
+   */
   private readonly text: SourceText;
 
-  /** Borrows a parser session only for the duration of one scan. */
+  /** Initializes one scanner over a borrowed session and immutable source.
+   *
+   * The session supplies grammar nodes only during the scan; the returned
+   * analysis contains no node references after this object finishes.
+   */
   public constructor(
     private readonly session: EvidenceParseSession,
     private readonly source: IEvidenceSourceFile,
@@ -29,7 +48,11 @@ export class SqliteFileScanner {
     this.text = new SourceText(source.content);
   }
 
-  /** Returns serializable declarations and documentation attachments. */
+  /** Returns declarations, documentation carriers, and truthful completeness.
+   *
+   * Every unsupported statement records a diagnostic before the result reports
+   * completion, preventing a reduced schema from passing coverage checks.
+   */
   public scan(): ISqlFileAnalysis {
     for (const statement of this.session.root.namedChildren) {
       if (statement.type === "comment") continue;
@@ -59,7 +82,11 @@ export class SqliteFileScanner {
     };
   }
 
-  /** Creates one owning model and its explicitly declared members. */
+  /** Creates one model and its explicitly declared columns and relations.
+   *
+   * The method rejects query-derived tables and ambiguous names because static
+   * identity must come from explicit SQLite schema syntax.
+   */
   private table(node: Node): void {
     if (node.namedChildren.some((child) => child.type === "select_stmt")) {
       this.incomplete(node, "CREATE TABLE AS requires query-derived columns.");
@@ -140,7 +167,11 @@ export class SqliteFileScanner {
       ];
   }
 
-  /** Preserves explicit endpoints and uses a separate relation namespace below the model. */
+  /** Creates a relation from a foreign-key clause with explicit endpoints.
+   *
+   * Relations use a namespace below their model so a constraint does not
+   * collide with a column, and endpoint arity must remain verifiable.
+   */
   private relation(
     node: Node,
     model: ISqlDeclaration,
@@ -193,7 +224,11 @@ export class SqliteFileScanner {
     );
   }
 
-  /** Records physical sites independently from case-insensitive schema identity. */
+  /** Creates a physical declaration record distinct from normalized identity.
+   *
+   * SQLite case-folds semantic identity while preserving source spelling and
+   * ranges for public addresses, documentation, and review fingerprints.
+   */
   private declare(
     node: Node,
     symbol: EvidenceDatabaseSymbol,
@@ -225,7 +260,11 @@ export class SqliteFileScanner {
     return declaration;
   }
 
-  /** Attaches adjacent leading comments while retaining detached annotation carriers. */
+  /** Attaches adjacent leading comments while retaining detached carriers.
+   *
+   * Grouping is limited to standalone adjacent line comments so trailing text
+   * cannot accidentally document the declaration on the following line.
+   */
   private documentation(): ISqlDocumentation[] {
     const comments = this.session
       .captures("(comment) @comment")
@@ -280,7 +319,11 @@ export class SqliteFileScanner {
     });
   }
 
-  /** A trailing comment must never absorb the next declaration's leading documentation. */
+  /** Checks whether a comment begins before other content on its source line.
+   *
+   * Trailing comments fail this check and therefore cannot absorb the next
+   * declaration's leading documentation role.
+   */
   private leading(node: Node): boolean {
     return (
       this.source.content
@@ -292,7 +335,11 @@ export class SqliteFileScanner {
     );
   }
 
-  /** Blank lines or intervening syntax detach a leading documentation run. */
+  /** Checks whether only one optional line break separates two source ranges.
+   *
+   * Blank lines and intervening syntax detach comments from declarations and
+   * from preceding line-comment fragments.
+   */
   private adjacent(start: number, end: number): boolean {
     return (
       start <= end &&
@@ -300,7 +347,11 @@ export class SqliteFileScanner {
     );
   }
 
-  /** Reports a truthful repair without inferring a runtime database state. */
+  /** Reports unsupported SQLite syntax without inferring runtime database state.
+   *
+   * The repair tells authors how to restore a declarative complete inventory
+   * while the diagnostic keeps the partial result from passing as complete.
+   */
   private incomplete(node: Node, message: string): void {
     this.diagnostics.push({
       code: "unsupported-sqlite-syntax",

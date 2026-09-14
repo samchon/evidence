@@ -19,12 +19,28 @@ import { MatlabDocumentation } from "./MatlabDocumentation";
 import { MatlabFileScanner } from "./MatlabFileScanner";
 import { MatlabOwnership } from "./MatlabOwnership";
 
-/** Builds MATLAB source-public inventories from the configured source snapshot. */
+/**
+ * Extracts MATLAB public units after resolving file and class-folder ownership.
+ *
+ * Snapshot-wide ownership connects declarations that lexical scanning alone
+ * cannot place under their final public owner. Unit materialization then precedes
+ * documentation attachment, preserving shared identities, physical sites, and
+ * incomplete-analysis diagnostics across the selected source population.
+ */
 export class MatlabAdapter implements IEvidenceAdapter {
-  /** Public configuration discriminator owned by this adapter. */
+  /**
+   * Artifact discriminator selecting MATLAB source interpretation.
+   *
+   * It disambiguates .m sources from other languages that accept the same suffix.
+   */
   public readonly type = "matlab";
 
-  /** Builds a fresh inventory and releases the bounded parser session. */
+  /**
+   * Builds an owned MATLAB inventory and closes the bounded parser runtime.
+   *
+   * Ownership resolution runs across file analyses before publishing units and
+   * comment hosts. Failed source discovery or parsing remains an incomplete result.
+   */
   public async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {
@@ -54,6 +70,8 @@ export class MatlabAdapter implements IEvidenceAdapter {
       const analyses = await Promise.all(
         input.files.map((source) => this.scan(parser, source)),
       );
+      // Class-folder and external member ownership crosses file boundaries;
+      // resolve it before groups receive public addresses or documentation hosts.
       MatlabOwnership.resolve(analyses, inventory);
       for (const analysis of analyses) {
         inventory.diagnostics.push(...analysis.diagnostics);
@@ -67,7 +85,12 @@ export class MatlabAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Converts parser failures into incomplete source analysis. */
+  /**
+   * Scans one MATLAB file without retaining borrowed syntax nodes.
+   *
+   * Parser failures become source-located diagnostics with incomplete state, so
+   * failed extraction cannot be mistaken for a file containing no public declarations.
+   */
   private async scan(
     parser: EvidenceParser,
     source: IEvidenceSourceFile,

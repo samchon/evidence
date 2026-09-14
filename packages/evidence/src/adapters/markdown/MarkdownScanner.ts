@@ -9,8 +9,18 @@ import type { IMarkdownComment } from "./IMarkdownComment";
 import { MarkdownSyntax } from "./MarkdownSyntax";
 import { SourceText } from "../../internal/SourceText";
 
-/** Materializes one physical Markdown source and every selected logical alias. */
+/**
+ * Materializes one Markdown source as a file unit and its heading units.
+ *
+ * The scanner also maps HTML-comment annotations while excluding rendered and
+ * example content that must remain ordinary Markdown text.
+ */
 export class MarkdownScanner {
+  /**
+   * Maps UTF-16 offsets in the original source content to Evidence ranges.
+   *
+   * All sites, content ranges, and diagnostics use this source-preserving mapper.
+   */
   private readonly text: SourceText;
   private readonly lineStarts = [0];
   private readonly lineEnds: number[] = [];
@@ -25,6 +35,11 @@ export class MarkdownScanner {
   private readonly sites = new Map<string, IEvidenceUnitSite>();
   private readonly unitSites = new Map<string, string>();
 
+  /**
+   * Binds the destination inventory and one physical Markdown source.
+   *
+   * Scan mutates only the supplied inventory with units, hosts, and diagnostics from this source.
+   */
   public constructor(
     private readonly inventory: IEvidenceInventory,
     private readonly source: IEvidenceSourceFile,
@@ -32,6 +47,11 @@ export class MarkdownScanner {
     this.text = new SourceText(source.content);
   }
 
+  /**
+   * Scans Markdown structure, materializes units, and parses attached annotations.
+   *
+   * The phases run in source order because unit and host ownership depend on line classification.
+   */
   public scan(): void {
     this.splitLines();
     this.markExamples();
@@ -42,6 +62,11 @@ export class MarkdownScanner {
     this.reportRenderedAnnotations();
   }
 
+  /**
+   * Indexes physical source lines and initializes their classification state.
+   *
+   * Carriage returns are excluded from line content while offsets remain tied to the original source.
+   */
   private splitLines(): void {
     for (let index = 0; index < this.source.content.length; ++index)
       if (this.source.content[index] === "\n") this.lineStarts.push(index + 1);
@@ -57,6 +82,11 @@ export class MarkdownScanner {
     }
   }
 
+  /**
+   * Marks fenced, indented, rendered, and comment-only lines before heading parsing.
+   *
+   * These regions cannot introduce Markdown units or active Evidence annotation hosts.
+   */
   private markExamples(): void {
     let fenceMarker: "`" | "~" | undefined;
     let fenceLength = 0;
@@ -129,6 +159,11 @@ export class MarkdownScanner {
     }
   }
 
+  /**
+   * Finds HTML comments that occur outside examples and inline code.
+   *
+   * The resulting carriers retain source spans for later host and documentation construction.
+   */
   private findComments(): void {
     let cursor = 0;
     while (cursor < this.source.content.length) {
@@ -159,6 +194,11 @@ export class MarkdownScanner {
     }
   }
 
+  /**
+   * Materializes file and supported heading units for every targetable address.
+   *
+   * Heading ownership is maintained by structural depth so content and annotations attach consistently.
+   */
   private materializeUnits(): void {
     const targetable = this.source.addresses.filter(
       (address) => !MarkdownSyntax.hasWhitespace(address.relative),
@@ -332,6 +372,11 @@ export class MarkdownScanner {
     }
   }
 
+  /**
+   * Assigns non-comment source lines to their current semantic unit sites.
+   *
+   * Annotation-only lines do not contribute to fingerprints of their documentation host.
+   */
   private assignContent(): void {
     for (let index = 0; index < this.lineStarts.length; ++index) {
       const owner = this.owners[index];
@@ -348,6 +393,11 @@ export class MarkdownScanner {
     }
   }
 
+  /**
+   * Creates annotation hosts and parses each recognized HTML comment.
+   *
+   * Unsupported attachment positions remain hosts so diagnostics retain their original location.
+   */
   private materializeComments(): void {
     const origins = this.source.addresses.map((address) => address.absolute);
     for (const comment of this.comments) {
@@ -392,6 +442,11 @@ export class MarkdownScanner {
     }
   }
 
+  /**
+   * Diagnoses annotation markers rendered as ordinary Markdown prose.
+   *
+   * A visible marker is not an Evidence annotation until wrapped in an HTML comment.
+   */
   private reportRenderedAnnotations(): void {
     for (let index = 0; index < this.lineStarts.length; ++index) {
       const line = this.line(index);
@@ -419,6 +474,11 @@ export class MarkdownScanner {
     }
   }
 
+  /**
+   * Finds the nearest structural heading ancestor for a newly materialized unit.
+   *
+   * The file unit is the fallback owner when no prior heading level remains open.
+   */
   private parent(
     structural: Array<string | undefined>,
     level: number,
@@ -431,6 +491,11 @@ export class MarkdownScanner {
     return fileId;
   }
 
+  /**
+   * Returns one indexed line without its line-ending characters.
+   *
+   * Classification helpers use this normalized view while source ranges retain original offsets.
+   */
   private line(index: number): string {
     return this.source.content.slice(
       this.lineStarts[index] ?? 0,
@@ -438,6 +503,11 @@ export class MarkdownScanner {
     );
   }
 
+  /**
+   * Locates the source line containing a UTF-16 offset.
+   *
+   * Binary search keeps comment lookup proportional to the logarithm of the file length.
+   */
   private lineAt(offset: number): number {
     let left = 0;
     let right = this.lineStarts.length;

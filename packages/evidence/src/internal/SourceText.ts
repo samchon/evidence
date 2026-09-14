@@ -1,15 +1,22 @@
 import type { IEvidenceSourcePosition } from "../structures/IEvidenceSourcePosition";
 import type { IEvidenceSourceRange } from "../structures/IEvidenceSourceRange";
 
-/** Maps original UTF-16 offsets to coordinates without altering BOM or line endings. */
+/**
+ * Maps original UTF-16 offsets to source coordinates without rewriting text.
+ *
+ * Parser and documentation positions both use JavaScript string offsets, so
+ * preserving BOM and line-ending bytes avoids a later location translation.
+ */
 export class SourceText {
   private readonly lines = [0];
 
+  /** Indexes line starts in the supplied immutable source content. */
   public constructor(public readonly content: string) {
     for (let index = 0; index < content.length; ++index)
       if (content[index] === "\n") this.lines.push(index + 1);
   }
 
+  /** Resolves one bounded UTF-16 offset to one-based line and column coordinates. */
   public position(offset: number): IEvidenceSourcePosition {
     if (
       !Number.isSafeInteger(offset) ||
@@ -31,11 +38,13 @@ export class SourceText {
     };
   }
 
+  /** Builds a validated half-open range from offsets in this exact source string. */
   public range(start: number, end: number): IEvidenceSourceRange {
     if (end < start) throw new Error("The source range ends before it starts.");
     return { start: this.position(start), end: this.position(end) };
   }
 
+  /** Checks whether positions and offsets agree with this source, returning false for malformed ranges. */
   public contains(range: IEvidenceSourceRange): boolean {
     try {
       const expected = this.range(range.start.offset, range.end.offset);

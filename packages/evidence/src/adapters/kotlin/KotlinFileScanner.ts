@@ -11,7 +11,12 @@ import type { IKotlinDocumentation } from "./IKotlinDocumentation";
 import type { IKotlinFileAnalysis } from "./IKotlinFileAnalysis";
 import type { IKotlinTypeReference } from "./IKotlinTypeReference";
 
-/** Extracts lexical Kotlin declarations without executing scripts or compiler synthesis. */
+/**
+ * Extracts lexical Kotlin declarations without executing scripts or compiler synthesis.
+ *
+ * The scanner retains package, import, receiver, and alias facts so the later
+ * resolver can establish extension ownership without guessing from local syntax.
+ */
 export class KotlinFileScanner {
   /** Copied declarations retained after the parser callback ends. */
   private readonly declarations: IKotlinDeclaration[] = [];
@@ -31,13 +36,23 @@ export class KotlinFileScanner {
   /** Wildcard imports require dependency resolution for unknown receiver names. */
   private wildcardImport = false;
 
-  /** Borrows syntax and source only for the active parse callback. */
+  /**
+   * Borrows syntax and source only for the active parse callback.
+   *
+   * Source identity defines file-private lookup boundaries; serializable ranges
+   * and paths outlive the session in the emitted analysis.
+   */
   public constructor(
     private readonly session: EvidenceParseSession,
     private readonly source: IEvidenceSourceFile,
   ) {}
 
-  /** Returns serializable declarations and conservative boundary diagnostics. */
+  /**
+   * Returns serializable declarations and conservative boundary diagnostics.
+   *
+   * Import collection precedes declaration extraction because receiver lookup
+   * preserves the source-defined alternatives and their order.
+   */
   public scan(): IKotlinFileAnalysis {
     this.collectDocumentation();
     const packageNode = this.session.root.namedChildren.find(

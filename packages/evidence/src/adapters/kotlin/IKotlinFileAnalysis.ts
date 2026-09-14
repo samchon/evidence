@@ -3,7 +3,12 @@ import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { IKotlinDeclaration } from "./IKotlinDeclaration";
 import type { IKotlinDocumentation } from "./IKotlinDocumentation";
 
-/** Node-free Kotlin extraction retained after a parse session closes. */
+/**
+ * Holds the node-free Kotlin extraction retained after a parse session closes.
+ *
+ * Receiver and alias resolution consumes all selected files after scanning, so
+ * this boundary owns source-context facts without retaining parser objects.
+ */
 export interface IKotlinFileAnalysis {
   /** Original selected source snapshot. */
   source: IEvidenceSourceFile;
@@ -17,6 +22,11 @@ export interface IKotlinFileAnalysis {
   /** Failures encountered while establishing the public surface. */
   diagnostics: IEvidenceDiagnostic[];
 
-  /** Whether every relevant declaration form was understood. */
+  /**
+   * States whether the scanner understood every surface-affecting form.
+   *
+   * Incomplete scans are propagated into the inventory so unsupported Kotlin
+   * syntax cannot make a coverage check pass with fewer units.
+   */
   complete: boolean;
 }

@@ -8,7 +8,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Prevents malformed, conflicting, unsupported or unresolved schema input from passing with a smaller inventory. */
+/** Prevents malformed, conflicting, unsupported, or unresolved DBML from passing with a smaller inventory.
+ *
+ * A failed schema analysis must retain incompleteness until the underlying source is repaired rather than reporting empty coverage.
+ *
+ * 1. Analyze malformed, conflicting, unsupported, and unresolved DBML source.
+ * 2. Require each case to report incompleteness with its diagnostic.
+ * 3. Repair the affected source and require normal schema analysis to recover.
+ */
 export async function test_dbml_failure_recovery(): Promise<void> {
   const adapter = new EvidenceDbmlAdapter();
   const failures = [

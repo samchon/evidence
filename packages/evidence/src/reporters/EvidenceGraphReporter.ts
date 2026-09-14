@@ -5,8 +5,20 @@ import type { IEvidenceGraphReport } from "../structures/IEvidenceGraphReport";
 import type { EvidenceGraphFormat } from "../typings/EvidenceGraphFormat";
 import type { EvidenceGraphNode } from "../typings/EvidenceGraphNode";
 
-/** Renders the authoritative graph report as JSON or injection-safe visual syntax. */
+/**
+ * Serializes the authoritative graph report as JSON, Mermaid, or DOT.
+ *
+ * Visual formats escape authored labels before embedding them in their respective
+ * grammars. They are projections of an already evaluated graph and never change
+ * graph membership, coverage, or review resolution.
+ */
 export namespace EvidenceGraphReporter {
+  /**
+   * Chooses the requested graph serialization.
+   *
+   * JSON preserves the report object, while Mermaid and DOT encode its boundaries,
+   * nodes, evidence edges, and review edges for visualization tools.
+   */
   export function render(
     report: IEvidenceGraphReport,
     format: EvidenceGraphFormat,
@@ -15,10 +27,22 @@ export namespace EvidenceGraphReporter {
     return format === "mermaid" ? mermaid(report) : dot(report);
   }
 
+  /**
+   * Serializes the complete graph report as indented JSON.
+   *
+   * This format keeps stable identifiers and every exported property available to
+   * programmatic consumers without visual-format escaping.
+   */
   export function json(report: IEvidenceGraphReport): string {
     return JSON.stringify(report, null, 2) + "\n";
   }
 
+  /**
+   * Emits a Mermaid flowchart with one subgraph per configured boundary.
+   *
+   * Synthetic node names avoid treating semantic IDs as Mermaid syntax; labels
+   * carry the authored values after escaping text-sensitive characters.
+   */
   export function mermaid(report: IEvidenceGraphReport): string {
     const names = nodeNames(report.nodes);
     const lines: string[] = ["flowchart LR"];
@@ -48,6 +72,12 @@ export namespace EvidenceGraphReporter {
     return lines.join("\n") + "\n";
   }
 
+  /**
+   * Emits a DOT directed graph with clusters for configuration boundaries.
+   *
+   * Evidence exclusion and review relations use distinct line styles so their
+   * meaning remains visible when a viewer does not expose edge metadata.
+   */
   export function dot(report: IEvidenceGraphReport): string {
     const names = nodeNames(report.nodes);
     const lines: string[] = ["digraph Evidence {", "  rankdir=LR;"];
@@ -80,10 +110,22 @@ export namespace EvidenceGraphReporter {
   }
 }
 
+/**
+ * Assigns syntax-safe local names to graph nodes in report order.
+ *
+ * Exported node IDs may contain target punctuation, so formats refer to these
+ * generated names and reserve IDs for labels and lookup only.
+ */
 function nodeNames(nodes: EvidenceGraphNode[]): Map<string, string> {
   return new Map(nodes.map((node, index) => [node.id, `n${index}`]));
 }
 
+/**
+ * Retrieves a generated node name and detects an inconsistent graph export.
+ *
+ * An edge without a listed endpoint is a report-construction failure, not an
+ * opportunity to emit invalid visualization syntax.
+ */
 function requireNodeName(names: Map<string, string>, id: string): string {
   const name = names.get(id);
   if (name === undefined)
@@ -91,6 +133,12 @@ function requireNodeName(names: Map<string, string>, id: string): string {
   return name;
 }
 
+/**
+ * Summarizes a claim/reference boundary and its resolved policy state.
+ *
+ * The label makes inactive and incomplete boundaries visible even when they have
+ * no ordinary evidence edges in the graph export.
+ */
 function boundaryLabel(boundary: IEvidenceGraphBoundary): string {
   const policies = [
     boundary.policy.noEvidenceExclude ? "no-exclude" : undefined,
@@ -107,6 +155,12 @@ function boundaryLabel(boundary: IEvidenceGraphBoundary): string {
   return `claim[${boundary.claim.claim}] (${boundary.claim.type}) -> reference[${boundary.reference.reference ?? -1}] (${boundary.reference.type}); ${status}, ${boundary.policy.severity}${policies.length === 0 ? "" : `, ${policies.join(", ")}`}`;
 }
 
+/**
+ * Produces a concise label for a graph node.
+ *
+ * Hosts identify their physical source location; unit nodes identify their role,
+ * target, symbol, and selection or coverage state.
+ */
 function nodeLabel(node: EvidenceGraphNode): string {
   if (node.role === "host")
     return `host ${node.location.file}:${node.location.range?.start?.line ?? 1}`;
@@ -118,10 +172,21 @@ function nodeLabel(node: EvidenceGraphNode): string {
   return `${node.role} ${node.symbol} ${node.target} (${state})`;
 }
 
+/**
+ * Labels an acknowledgement edge with its tag kind and fingerprint.
+ *
+ * Fingerprints connect rendered edges to their persistent review identifiers.
+ */
 function edgeLabel(edge: IEvidenceGraphExportEdge): string {
   return `@${edge.kind} #${edge.fingerprint}`;
 }
 
+/**
+ * Labels a review relation with its review-tag spelling and optional fingerprint.
+ *
+ * Missing fingerprints remain explicit because their absence affects review
+ * matching rather than meaning that the review edge has no source data.
+ */
 function reviewLabel(review: IEvidenceGraphExportReview): string {
   const marker =
     review.reviews === "evidence"
@@ -130,6 +195,12 @@ function reviewLabel(review: IEvidenceGraphExportReview): string {
   return `${marker}${review.review.fingerprint === undefined ? "" : ` #${review.review.fingerprint}`}`;
 }
 
+/**
+ * Escapes text embedded inside Mermaid quoted labels and edge labels.
+ *
+ * Entity encodings prevent authored markup, quotes, separators, and line breaks
+ * from changing the surrounding flowchart grammar.
+ */
 function mermaidText(value: string): string {
   return value
     .replaceAll("&", "&amp;")
@@ -141,6 +212,12 @@ function mermaidText(value: string): string {
     .replaceAll("\n", "&#10;");
 }
 
+/**
+ * Escapes text embedded in a DOT quoted string literal.
+ *
+ * Backslashes are handled first so later quote and line-break substitutions cannot
+ * create an escape sequence with a different meaning.
+ */
 function dotText(value: string): string {
   return value
     .replaceAll("\\", "\\\\")

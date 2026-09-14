@@ -21,7 +21,13 @@ import type { IConfigPackageScope } from "./IConfigPackageScope";
 import type { IEvaluateTypeScriptConfigOptions } from "./IEvaluateTypeScriptConfigOptions";
 import type { ITtsxManifest } from "./ITtsxManifest";
 
-/** Typechecks and evaluates a config in an isolated project through its own ttsx. */
+/**
+ * Typechecks and evaluates a config in an isolated temporary project through its own ttsx.
+ *
+ * The evaluator resolves the consumer's compiler rather than this package's,
+ * and serializes the default export with V8 so invalid configuration values
+ * reach parent-side validation without JSON silently dropping them.
+ */
 export async function evaluateTypeScriptConfig(
   configFile: string,
   options: IEvaluateTypeScriptConfigOptions = {},
@@ -173,6 +179,7 @@ export async function evaluateTypeScriptConfig(
   }
 }
 
+/** Starts the isolated evaluator and forwards compiler output without parsing or rewriting it. */
 function runEvaluator(
   configFile: string,
   args: string[],
@@ -207,11 +214,12 @@ function runEvaluator(
   });
 }
 
+/** Writes child diagnostics to the parent process while preserving compiler formatting. */
 function writeProcessDiagnostic(content: string): void {
   process.stderr.write(content);
 }
 
-/** Uses Node's nearest package boundary without inheriting application tsconfig settings. */
+/** Uses Node's nearest package boundary for module kind without inheriting application tsconfig settings. */
 async function configModule(
   configFile: string,
 ): Promise<"CommonJS" | "ESNext"> {
@@ -232,6 +240,7 @@ async function configModule(
   }
 }
 
+/** Finds the nearest reusable dependency tree so the temporary project resolves the consumer's packages. */
 async function findNodeModules(start: string): Promise<string | undefined> {
   let directory = start;
   for (;;) {
@@ -244,7 +253,7 @@ async function findNodeModules(start: string): Promise<string | undefined> {
   }
 }
 
-/** Keeps evaluator files outside dependencies and on the config's volume. */
+/** Keeps evaluator files outside dependencies and on the config's volume for valid relative links. */
 async function tempBase(
   configFile: string,
   nodeModules: string | undefined,
@@ -266,6 +275,7 @@ async function tempBase(
   return realpath(directory);
 }
 
+/** Treats absent paths as false while preserving unexpected filesystem failures for diagnostics. */
 async function exists(file: string): Promise<boolean> {
   try {
     await access(file);

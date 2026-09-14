@@ -6,7 +6,14 @@ import { TestValidator } from "@nestia/e2e";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Applies configured PostgreSQL naming even when the same source also parses as portable SQL. */
+/** Uses configured PostgreSQL naming for a source that portable SQL also accepts.
+ *
+ * Dialect selection changes the public spelling and must remain visible in units and targets.
+ *
+ * 1. Analyze the same schema with PostgreSQL and portable SQL adapters.
+ * 2. Verify both inventories are complete.
+ * 3. Require PostgreSQL-specific identities and resolution results.
+ */
 export async function test_postgresql_dialect(): Promise<void> {
   const snapshot = TestSourceSnapshot.create(
     "schema.sql",

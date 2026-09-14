@@ -1,7 +1,13 @@
 import path from "node:path";
 
-/** Portable path spelling without case folding or filesystem access. */
+/**
+ * Performs lexical path normalization without filesystem access or case folding.
+ *
+ * Source discovery owns physical resolution; these helpers preserve authored
+ * spelling boundaries so logical addresses remain portable across platforms.
+ */
 export namespace SourcePath {
+  /** Resolves a portable absolute or relative path and rejects ambiguous drive-relative notation. */
   export function resolve(base: string, value: string): string {
     const normalized = value.replaceAll("\\", "/");
     if (/^[A-Za-z]:(?!\/)/.test(normalized))
@@ -15,6 +21,7 @@ export namespace SourcePath {
     return slash(path.resolve(base, normalized));
   }
 
+  /** Resolves a configured population root while keeping glob syntax confined to files. */
   export function root(configFile: string, declared: string): string {
     if (declared.trim() !== declared || declared === "")
       throw new Error(
@@ -27,6 +34,7 @@ export namespace SourcePath {
     return resolve(path.dirname(path.resolve(configFile)), declared);
   }
 
+  /** Produces a slash-normalized diagnostic path relative to a stable display base. */
   export function display(base: string, absolute: string): string {
     const relative = slash(path.relative(base, absolute));
     return relative === "" ? "." : relative;
@@ -42,10 +50,12 @@ export namespace SourcePath {
     );
   }
 
+  /** Converts separators only; it deliberately does not canonicalize dot segments or case. */
   export function slash(value: string): string {
     return value.replaceAll("\\", "/");
   }
 
+  /** Uses the appropriate path flavor for containment comparison without touching the filesystem. */
   function normalize(value: string): string {
     const normalized = slash(value);
     const flavor =

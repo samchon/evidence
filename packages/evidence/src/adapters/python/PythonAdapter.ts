@@ -18,10 +18,29 @@ import type { IPythonFileAnalysis } from "./IPythonFileAnalysis";
 import { PythonExportResolver } from "./PythonExportResolver";
 import { PythonFileScanner } from "./PythonFileScanner";
 
-/** Builds Python declared-source inventories with bounded static export analysis. */
+/**
+ * Extracts Python declarations through bounded static export and re-export analysis.
+ *
+ * File scanning records candidate units, bindings, and docstring ownership before
+ * PythonExportResolver determines which identities are publicly reachable. Only
+ * published owners receive eligible documentation hosts; parser and export
+ * failures remain incomplete inventory diagnostics instead of shrinking coverage.
+ */
 export class PythonAdapter implements IEvidenceAdapter {
+  /**
+   * Artifact family selecting Python parsing and public-surface rules.
+   *
+   * The common adapter contract uses this discriminator independently of query selectors.
+   */
   public readonly type = "python";
 
+  /**
+   * Builds an owned inventory from the supplied Python source snapshot.
+   *
+   * The method validates and clones input, scans with a bounded parser runtime,
+   * resolves public exports, and materializes annotations on their published owners.
+   * Native resources close in cleanup even when extraction fails.
+   */
   public async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {
@@ -56,6 +75,8 @@ export class PythonAdapter implements IEvidenceAdapter {
         inventory.diagnostics.push(...analysis.diagnostics);
         inventory.complete &&= analysis.complete;
       }
+      // Public reachability must be settled before docstrings become eligible
+      // hosts; merely scanning a local declaration cannot make it public evidence.
       const published = new PythonExportResolver(
         analyses,
         inventory,
@@ -71,6 +92,12 @@ export class PythonAdapter implements IEvidenceAdapter {
     }
   }
 
+  /**
+   * Copies one Python file's declarations and bindings out of a borrowed parse session.
+   *
+   * A parse failure returns an explicitly incomplete analysis with its source
+   * location, preserving the failure when other files can still be scanned.
+   */
   private async scan(
     parser: EvidenceParser,
     source: IEvidenceSourceFile,
@@ -113,6 +140,12 @@ export class PythonAdapter implements IEvidenceAdapter {
     }
   }
 
+  /**
+   * Attaches parsed documentation only after exported identity selection is known.
+   *
+   * Withdrawal directives are collected before visible hosts are finalized, so
+   * hidden parents cannot leave descendants as eligible evidence carriers.
+   */
   private materializeDocumentation(
     inventory: IEvidenceInventory,
     analyses: IPythonFileAnalysis[],

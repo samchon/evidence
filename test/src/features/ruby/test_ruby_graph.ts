@@ -11,7 +11,13 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Evaluates Ruby type, function, and property hosts and semantic fingerprints. */
+/** Evaluates Ruby type, function, and property evidence.
+ *
+ * Each selected host has independent coverage and semantic fingerprint behavior.
+ *
+ * 1. Evaluate covered and missing selector populations.
+ * 2. Verify graph outcomes and fingerprint invalidation.
+ */
 export async function test_ruby_graph(): Promise<void> {
   const requirements = await new EvidenceMarkdownAdapter().analyze(
     TestSourceSnapshot.create(

@@ -8,7 +8,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Reconciles header/implementation sites while preserving category, protocol, and selector ownership. */
+/** Reconciles Objective-C headers and implementations into owned public units.
+ *
+ * Class, category, protocol, and selector sites can merge while retaining their distinct ownership and addresses.
+ *
+ * 1. Analyze matching headers and implementations with categories and protocols.
+ * 2. Verify exact public units, merged sites, parentage, and target resolution.
+ * 3. Require diagnostics-free complete extraction.
+ */
 export async function test_objc_units(): Promise<void> {
   const inventory = await new EvidenceObjcAdapter().analyze(
     TestSourceSnapshot.combine([

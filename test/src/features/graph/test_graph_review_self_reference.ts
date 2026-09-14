@@ -10,7 +10,19 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Lets a correct review of its own Markdown scope terminate in one edit. */
+/**
+ * Accepts a Markdown section's current review of its own evidence target.
+ *
+ * A review annotation changes the source file that contains the target. The
+ * fingerprint calculation must exclude accepted review annotation spans so an
+ * author can add the required self-review without immediately making it stale.
+ *
+ * 1. Analyze a bare Markdown rule and record its target fingerprint.
+ * 2. Add a self acknowledgement and review carrying that fingerprint, then
+ *    require the rule's recomputed fingerprint to remain unchanged.
+ * 3. Evaluate the section as both claim and required-review reference target.
+ * 4. Require no diagnostics and a successful current self-review.
+ */
 export async function test_graph_review_self_reference(): Promise<void> {
   const bare = await analyze(
     dedent`
@@ -73,6 +85,12 @@ export async function test_graph_review_self_reference(): Promise<void> {
   TestValidator.predicate("self-review is current", result.success);
 }
 
+/**
+ * Extracts a Markdown rule from the fixed source identity used by the self-review fixture.
+ *
+ * Keeping the file path and document-relative base stable isolates the inserted
+ * acknowledgement and review spans from target-resolution or identity changes.
+ */
 async function analyze(content: string): Promise<IEvidenceInventory> {
   return new EvidenceMarkdownAdapter().analyze(
     TestSourceSnapshot.create(

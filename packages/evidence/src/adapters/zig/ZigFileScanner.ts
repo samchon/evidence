@@ -9,7 +9,12 @@ import type { IZigDeclaration } from "./IZigDeclaration";
 import type { IZigDocumentation } from "./IZigDocumentation";
 import type { IZigFileAnalysis } from "./IZigFileAnalysis";
 
-/** Reads declared Zig namespaces without evaluating build or comptime code. */
+/**
+ * Reads declared Zig namespaces without evaluating build or comptime code.
+ *
+ * It preserves physical declarations and alias projections separately, allowing
+ * later materialization to publish several paths for one semantic unit.
+ */
 export class ZigFileScanner {
   /** Serializable declarations, including intentional alias projections. */
   private readonly declarations: IZigDeclaration[] = [];
@@ -20,13 +25,23 @@ export class ZigFileScanner {
   /** Unsupported public forms that prevent a complete denominator. */
   private readonly diagnostics: IEvidenceDiagnostic[] = [];
 
-  /** Borrows the real syntax tree for the bounded parser callback. */
+  /**
+   * Borrows the real syntax tree for the bounded parser callback.
+   *
+   * The scanner copies source identity and ranges into records before returning,
+   * so no inventory state relies on a parser node after the callback ends.
+   */
   public constructor(
     private readonly session: EvidenceParseSession,
     private readonly source: IEvidenceSourceFile,
   ) {}
 
-  /** Extracts explicit public declarations and classified annotation carriers. */
+  /**
+   * Extracts explicit public declarations and classified annotation carriers.
+   *
+   * Carrier collection precedes alias resolution so documentation retains its
+   * original site while reconciliation decides which unit receives it.
+   */
   public scan(): IZigFileAnalysis {
     this.collectDocumentation();
     this.scope(this.session.root, undefined, [], new Set<number>());

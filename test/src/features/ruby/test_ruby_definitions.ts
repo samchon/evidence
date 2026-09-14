@@ -5,7 +5,13 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Merges compatible Ruby reopenings while preserving replacement conflicts. */
+/** Merges compatible Ruby reopenings while retaining replacement conflicts.
+ *
+ * Reopened declarations can share identity, but incompatible definitions must remain incomplete.
+ *
+ * 1. Analyze compatible reopenings and conflicting replacements.
+ * 2. Verify merged units and conflict diagnostics.
+ */
 export async function test_ruby_definitions(): Promise<void> {
   const compatible = await new EvidenceRubyAdapter().analyze(
     TestSourceSnapshot.combine([

@@ -5,7 +5,15 @@ import {
 import { TestValidator } from "@nestia/e2e";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Prevents unresolved Scala surface constructs and source failures from passing with smaller populations. */
+/**
+ * Marks unresolved Scala surface constructs and parse failures incomplete.
+ *
+ * The fixtures cover givens, exports with non-static or shadowed carriers, unsupported forms, malformed source, and excluded forms to ensure uncertain discovery cannot pass as a smaller population.
+ *
+ * 1. Analyze each unsupported public construct and verify an incomplete inventory with its expected diagnostic.
+ * 2. Verify excluded or private forms do not create public obligations where the fixture selects none.
+ * 3. Analyze malformed Scala source and verify parser incompleteness replaces a healthy inventory.
+ */
 export async function test_scala_boundaries(): Promise<void> {
   for (const source of [
     "given Ordering[Int] = ???",

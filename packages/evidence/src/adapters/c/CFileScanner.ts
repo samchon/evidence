@@ -18,7 +18,12 @@ import type { ICFileAnalysis } from "./ICFileAnalysis";
 import type { ICTypeContext } from "./ICTypeContext";
 import { SourceText } from "../../internal/SourceText";
 
-/** Extracts explicit C declarations and Doxygen without preprocessing source. */
+/**
+ * Extracts explicit C declarations and Doxygen without preprocessing source.
+ *
+ * It records physical declaration and attachment facts for `CAdapter` to
+ * reconcile; it never infers declarations from included or expanded source.
+ */
 export class CFileScanner {
   private readonly declarations: ICDeclaration[] = [];
   private readonly documentation = new Map<string, ICDocumentation>();
@@ -29,6 +34,12 @@ export class CFileScanner {
   private readonly text: SourceText;
   private complete = true;
 
+  /**
+   * Creates one scanner bound to a live C parse session and source snapshot.
+   *
+   * Documentation is collected before declaration walking so adjacency can be
+   * decided against the original source positions.
+   */
   public constructor(
     private readonly session: EvidenceParseSession,
     private readonly source: IEvidenceSourceFile,
@@ -37,6 +48,12 @@ export class CFileScanner {
     this.collectDocumentation();
   }
 
+  /**
+   * Scans supported top-level C constructs into node-free file analysis.
+   *
+   * Unsupported public-surface syntax adds diagnostics and makes the returned
+   * analysis incomplete instead of silently omitting its declarations.
+   */
   public scan(): ICFileAnalysis {
     const items = this.session.root.namedChildren;
     const population = items.filter((item) => !this.inertTopLevel(item));

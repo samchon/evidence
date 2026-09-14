@@ -4,7 +4,12 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Attaches Java evidence to Javadoc and rejects inert Java carriers. */
+/** Attaches Java evidence to Javadoc and rejects inert carriers.
+ *
+ * Only Javadoc owned by eligible declarations can acknowledge units.
+ *
+ * 1. Analyze annotated Javadoc. 2. Compare hosted declarations. 3. Require inert Java carriers to report diagnostics.
+ */
 export async function test_java_hosts(): Promise<void> {
   const inventory = await new EvidenceJavaAdapter().analyze(
     TestSourceSnapshot.create(

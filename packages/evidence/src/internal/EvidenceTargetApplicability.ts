@@ -10,8 +10,14 @@ import type { EvidenceProgrammingType } from "../typings/EvidenceProgrammingType
 import type { IEvidenceMaterializedReference } from "./IEvidenceMaterializedReference";
 import { MarkdownTarget } from "../adapters/markdown/MarkdownTarget";
 
-/** Assigns a declaration to references whose target grammar and files accept it. */
+/**
+ * Chooses reference populations that can interpret an authored target.
+ *
+ * The scoring is conservative: when no grammar signal distinguishes references,
+ * the declaration remains available to all of them rather than losing a valid acknowledgement.
+ */
 export namespace EvidenceTargetApplicability {
+  /** Returns the highest-affinity references while preserving configuration order. */
   export function select(
     statement: IEvidenceTargetStatement,
     host: IEvidenceHost,
@@ -44,6 +50,7 @@ export namespace EvidenceTargetApplicability {
   }
 }
 
+/** Scores a target by exact inventory file, recognizable grammar, and artifact spelling. */
 function affinity(
   target: string,
   host: IEvidenceHost,
@@ -86,6 +93,7 @@ function affinity(
   return isParsedType(type) && recognizes(type, targetFile(target)) ? 2 : 0;
 }
 
+/** Parses against every retained host origin because a physical host can have several logical paths. */
 function parseFileTargets(
   target: string,
   host: IEvidenceHost,
@@ -100,6 +108,7 @@ function parseFileTargets(
   return output;
 }
 
+/** Checks registry recognition without leaking parser-selection failures into affinity scoring. */
 function recognizes(
   type: EvidenceProgrammingType | EvidenceDatabaseType,
   file: string,
@@ -112,6 +121,7 @@ function recognizes(
   }
 }
 
+/** Narrows types backed by the registry, excluding document artifacts with separate target grammars. */
 function isParsedType(
   type: string,
 ): type is EvidenceProgrammingType | EvidenceDatabaseType {
@@ -121,6 +131,7 @@ function isParsedType(
   ].some((entry) => entry.type === type);
 }
 
+/** Extracts a decodable file portion; malformed escapes retain a harmless basename. */
 function targetFile(target: string): string {
   const hash = target.indexOf("#");
   const encoded = hash < 0 ? target : target.slice(0, hash);
@@ -131,10 +142,12 @@ function targetFile(target: string): string {
   }
 }
 
+/** Identifies conventional Markdown names when no exact selected source is known. */
 function markdownLike(file: string): boolean {
   return /\.(?:md|markdown|mdx)$/iu.test(file);
 }
 
+/** Recognizes API operation spelling before a Swagger reference can parse it. */
 function swaggerLike(target: string): boolean {
   const match = /^([^:\s/]+):\//u.exec(target);
   const method = match?.[1];

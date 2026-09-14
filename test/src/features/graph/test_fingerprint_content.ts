@@ -8,7 +8,24 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Keeps TypeScript fingerprints on semantic declaration content. */
+/**
+ * Fingerprints TypeScript declaration content independently of annotations and siblings.
+ *
+ * Reviews must expire for semantic source changes while remaining stable when
+ * only review metadata or checkout formatting changes. Leaf content also needs
+ * narrower ownership than its enclosing statement or the complete source file.
+ *
+ * 1. Extract a type, a documented member, an unrelated type, and sibling variable
+ *    declarators; require version one, a seven-character presentation, and a
+ *    declaration content digest distinct from the source-cache digest.
+ * 2. Mark the inventory incomplete and require fingerprint inspection to reject.
+ * 3. Change review hash/prose, line endings, and trailing whitespace; require the
+ *    enclosing type's fingerprint to remain unchanged.
+ * 4. Change the member's type and require both leaf and enclosing-scope fingerprints
+ *    to change; alter an ordinary inline comment and require the leaf to change.
+ * 5. Edit the unrelated type and second variable declarator, then require the
+ *    original type scope and first declarator fingerprint to remain stable.
+ */
 export async function test_fingerprint_content(): Promise<void> {
   const baseline = dedent`
     export interface Sale {
@@ -128,12 +145,23 @@ export async function test_fingerprint_content(): Promise<void> {
   );
 }
 
+/**
+ * Extracts each content variant under the same TypeScript source identity.
+ *
+ * Keeping the path fixed ensures comparisons isolate edited declaration content
+ * rather than fingerprint changes caused by rebinding to another source.
+ */
 async function analyze(content: string): Promise<IEvidenceInventory> {
   return new EvidenceTypeScriptAdapter().analyze(
     TestSourceSnapshot.create("src/contracts.ts", content),
   );
 }
 
+/**
+ * Requires a named declaration before comparing its fingerprint across variants.
+ *
+ * Missing extraction fails explicitly instead of comparing an unrelated fallback unit.
+ */
 function requireUnit(
   inventory: IEvidenceInventory,
   name: string,

@@ -8,8 +8,14 @@ import type { IEvidenceUnit } from "../structures/IEvidenceUnit";
 import type { IEvidenceUnitSite } from "../structures/IEvidenceUnitSite";
 import { InventorySources } from "./InventorySources";
 
-/** Combines adapter-established identities while retaining conflicting analysis as a failure. */
+/**
+ * Combines compatible adapter inventories into one analysis snapshot.
+ *
+ * Conflicts mark the result incomplete instead of choosing whichever adapter
+ * happened to run first, preserving the failure boundary for graph evaluation.
+ */
 export namespace InventoryMerge {
+  /** Merges source, unit, host, and declaration records while retaining all diagnostics. */
   export function combine(inputs: IEvidenceInventory[]): IEvidenceInventory {
     InventorySources.reconcile(inputs);
     const output: IEvidenceInventory = {
@@ -127,6 +133,7 @@ export namespace InventoryMerge {
     return output;
   }
 
+  /** Deduplicates by semantic key and returns a deterministic key-ordered result. */
   export function unique<T>(values: T[], key: (value: T) => string): T[] {
     const records = new Map<string, T>();
     for (const value of values) records.set(key(value), value);
@@ -135,6 +142,7 @@ export namespace InventoryMerge {
       .map(([, value]) => value);
   }
 
+  /** Compares opaque identity strings without locale-dependent ordering. */
   export function compare(x: string, y: string): number {
     return x < y ? -1 : x > y ? 1 : 0;
   }
@@ -160,6 +168,7 @@ export namespace InventoryMerge {
       .map(([, value]) => value);
   }
 
+  /** Serializes structural site identity, excluding content spans that can be merged separately. */
   export function siteKey(site: IEvidenceUnitSite): string {
     return JSON.stringify([
       site.id,
@@ -168,6 +177,7 @@ export namespace InventoryMerge {
     ]);
   }
 
+  /** Serializes deduplicated content ranges for conflict detection independent of source order. */
   export function contentKey(site: IEvidenceUnitSite): string {
     return JSON.stringify(
       unique(
@@ -177,6 +187,7 @@ export namespace InventoryMerge {
     );
   }
 
+  /** Captures unit fields that must agree for a shared semantic identity. */
   function unitKey(unit: IEvidenceUnit): string {
     return JSON.stringify([
       unit.type,
@@ -187,6 +198,7 @@ export namespace InventoryMerge {
     ]);
   }
 
+  /** Captures host attachment semantics that cannot be safely unioned on conflict. */
   function hostKey(host: IEvidenceHost): string {
     return JSON.stringify([
       host.file,
@@ -197,6 +209,7 @@ export namespace InventoryMerge {
     ]);
   }
 
+  /** Records a non-recoverable identity disagreement without dropping competing records. */
   function conflict(
     output: IEvidenceInventory,
     kind: string,

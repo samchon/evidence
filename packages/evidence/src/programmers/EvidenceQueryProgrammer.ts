@@ -41,9 +41,30 @@ import type { EvidenceGraphNode } from "../typings/EvidenceGraphNode";
 import type { EvidenceSymbol } from "../typings/EvidenceSymbol";
 import type { EvidenceUnitSelection } from "../typings/EvidenceUnitSelection";
 
-/** Builds target discovery, inspection, language, and graph reports from one analysis. */
+/**
+ * Projects one completed checker analysis into query-command reports.
+ *
+ * Query operations never re-evaluate graph policy or mutate inventories. They
+ * retain the claim/reference coordinates established during checking, so a list,
+ * target inspection, and exported graph all describe the same independent
+ * obligation boundaries and diagnostic set.
+ *
+ * @example
+ *   const report = EvidenceQueryProgrammer.list(queryContext, "typescript");
+ *   const inspection = await EvidenceQueryProgrammer.inspect(
+ *     queryContext,
+ *     "src/user.ts#UserService",
+ *   );
+ */
 export namespace EvidenceQueryProgrammer {
-  /** Lists selected evidence identities and their addressable ancestors. */
+  /**
+   * Lists configured identities and the structural ancestors needed to address them.
+   *
+   * Language and symbol filters apply after each population is projected, so they
+   * do not change configured selection or graph coverage. Rows are sorted by
+   * stable query identity, and checker diagnostics are passed through unchanged
+   * because a list command is an observation of the existing analysis.
+   */
   export function list(
     context: IEvidenceQueryContext,
     language?: EvidenceArtifactType,
@@ -74,7 +95,14 @@ export namespace EvidenceQueryProgrammer {
     };
   }
 
-  /** Resolves one CLI-relative target against every applicable configured population. */
+  /**
+   * Inspects one CLI-relative target across the populations that can interpret it.
+   *
+   * Exact indexed spellings take precedence over grammar inference, preventing a
+   * target alias from being hidden by a broad file-extension match. Resolution is
+   * isolated per population; the report is resolved only when every selected
+   * boundary resolves, and preserves incomplete checker state as exit code 2.
+   */
   export async function inspect(
     context: IEvidenceQueryContext,
     target: string,
@@ -89,6 +117,8 @@ export namespace EvidenceQueryProgrammer {
           : [],
       ),
     );
+    // An indexed spelling is authoritative: grammar inference is only a fallback
+    // when no configured identity exposes this exact public target.
     const selected =
       exact.size === 0
         ? applicablePopulations(all, target)
@@ -128,7 +158,14 @@ export namespace EvidenceQueryProgrammer {
     };
   }
 
-  /** Exports independent obligation boundaries, identities, edges, and reviews. */
+  /**
+   * Exports the evaluated graph as boundaries, nodes, acknowledgement edges, and reviews.
+   *
+   * Each claim/reference pair receives its own boundary even when it reuses an
+   * inventory. Nodes are keyed by boundary and role so coverage cannot visually
+   * leak between obligations, while documentation-host nodes represent evidence
+   * attached outside any selected claim unit.
+   */
   export function graph(context: IEvidenceQueryContext): IEvidenceGraphReport {
     const { analysis } = context;
     const root = context.cwd;
@@ -138,6 +175,8 @@ export namespace EvidenceQueryProgrammer {
     const edges: IEvidenceGraphExportEdge[] = [];
     const reviews: IEvidenceGraphExportReview[] = [];
 
+    // Join inputs, results, and report labels by construction order. A positional
+    // mismatch violates analysis invariants and is rejected by the require helpers.
     analysis.graphInput.claims.forEach((claim, claimPosition) => {
       const reportClaim = requireReportClaim(analysis, claimPosition);
       const claimPopulation = requirePopulation(
@@ -294,7 +333,13 @@ export namespace EvidenceQueryProgrammer {
     };
   }
 
-  /** Reports only adapters certified and shipped by the runtime registry. */
+  /**
+   * Lists artifact adapters that the installed runtime can actually analyze.
+   *
+   * Registry entries without an adapter remain parser metadata and are omitted.
+   * Language and database entries are combined then ordered by type, providing a
+   * stable capability report without depending on registry declaration order.
+   */
   export function languages(): IEvidenceLanguagesReport {
     const languages = [
       ...EvidenceLanguageRegistry.list().flatMap((language) =>
@@ -330,7 +375,13 @@ export namespace EvidenceQueryProgrammer {
     };
   }
 
-  /** Builds a separate indexed context for every configured claim and reference entry. */
+  /**
+   * Builds a query context for every configured claim and reference entry.
+   *
+   * The context list preserves graph-input order and gives each reference its own
+   * wrapper, even when several entries share the same inventory. This preserves
+   * obligation-specific selection, policies, and coverage during later queries.
+   */
   export function populations(
     analysis: IEvidenceCheckAnalysis,
   ): EvidenceQueryPopulationContext[] {
@@ -376,7 +427,13 @@ export namespace EvidenceQueryProgrammer {
     );
   }
 
-  /** Lists visible selected identities and their addressable structural ancestors. */
+  /**
+   * Lists one population's selected identities and visible structural ancestors.
+   *
+   * Visibility is owned by {@link EvidenceQueryPopulationContext}; this helper
+   * only turns visible units into public rows. Units without a public address are
+   * excluded because list output must contain targets that inspect can accept.
+   */
   function listPopulation(
     population: EvidenceQueryPopulationContext,
     cwd: string,
@@ -389,7 +446,14 @@ export namespace EvidenceQueryProgrammer {
     });
   }
 
-  /** Builds one query row with its canonical target, aliases, and source locations. */
+  /**
+   * Creates one public list row for an addressable inventory unit.
+   *
+   * The first sorted alias becomes the canonical target, while every alias is
+   * retained for callers that need an exact spelling. Returning `undefined` for
+   * an unaddressable unit lets list operations omit internal identities without
+   * manufacturing a target that the resolver cannot round-trip.
+   */
   function listItem(
     population: EvidenceQueryPopulationContext,
     unit: IEvidenceUnit,
@@ -414,7 +478,14 @@ export namespace EvidenceQueryProgrammer {
     };
   }
 
-  /** Resolves a CLI-relative target and gathers its evidence within one population boundary. */
+  /**
+   * Resolves a target and gathers its query evidence within one population boundary.
+   *
+   * A synthetic attached host gives the shared resolver a CLI-relative source
+   * context without pretending that the query came from a real documentation
+   * comment. The returned units, coverage, acknowledgements, reviews, and
+   * diagnostics all remain scoped to this one claim or reference context.
+   */
   async function inspectPopulation(
     analysis: IEvidenceCheckAnalysis,
     population: EvidenceQueryPopulationContext,
@@ -459,7 +530,13 @@ export namespace EvidenceQueryProgrammer {
     };
   }
 
-  /** Collects a unit, its direct children, documentation hosts, and available fingerprint. */
+  /**
+   * Builds the detailed inspection record for one resolved unit.
+   *
+   * Only direct children are included so recursive client views can choose their
+   * own expansion. A fingerprint is exposed only from a complete inventory: an
+   * incomplete parse cannot safely provide a stable review identity.
+   */
   function inspectedUnit(
     population: EvidenceQueryPopulationContext,
     unit: IEvidenceUnit,
@@ -490,7 +567,13 @@ export namespace EvidenceQueryProgrammer {
     };
   }
 
-  /** Reports coverage for inspected identities that participate in this reference selection. */
+  /**
+   * Reports the reference obligations that govern inspected selected identities.
+   *
+   * Claim populations own no coverage obligation, and unselected resolved units
+   * must not imply coverage. Missing graph policy data returns no rows so an
+   * inconsistent query context cannot be presented as a passing obligation.
+   */
   function inspectedObligations(
     population: EvidenceQueryPopulationContext,
     unitIds: Set<string>,
@@ -521,7 +604,13 @@ export namespace EvidenceQueryProgrammer {
     });
   }
 
-  /** Collects graph acknowledgements that cover or name the inspected reference identities. */
+  /**
+   * Collects acknowledgement edges relevant to inspected reference identities.
+   *
+   * The search joins graph results to the matching claim input by configured
+   * coordinates, preserving duplicate reference obligations. Broken graph links
+   * are omitted here because checker construction already owns their diagnostics.
+   */
   function inspectedAcknowledgements(
     analysis: IEvidenceCheckAnalysis,
     population: EvidenceQueryPopulationContext,
@@ -569,7 +658,13 @@ export namespace EvidenceQueryProgrammer {
     });
   }
 
-  /** Collects resolved reviews whose targets contain an inspected reference identity. */
+  /**
+   * Collects review resolutions whose target contains an inspected identity.
+   *
+   * Descendant matching lets an inspection of a child expose a review on its
+   * selected ancestor. The report retains the reference coordinates so review
+   * status cannot be attributed to a different population with the same units.
+   */
   function inspectedReviews(
     analysis: IEvidenceCheckAnalysis,
     population: EvidenceQueryPopulationContext,
@@ -625,7 +720,13 @@ export namespace EvidenceQueryProgrammer {
     );
   }
 
-  /** Selects populations compatible with a target spelling, retaining all when no type can be inferred. */
+  /**
+   * Narrows target inspection to populations whose artifact grammar can accept it.
+   *
+   * Prisma and Swagger have unmistakable target forms; file targets consult the
+   * installed registry. When inference finds no type, every population remains
+   * eligible so the resolver can return its own actionable diagnostics.
+   */
   function applicablePopulations(
     populations: EvidenceQueryPopulationContext[],
     target: string,
@@ -657,7 +758,13 @@ export namespace EvidenceQueryProgrammer {
     return selected.length === 0 ? populations : selected;
   }
 
-  /** Distinguishes explicit selections, visible structural ancestors, and unselected identities. */
+  /**
+   * Classifies an identity by its configured and query-visible membership.
+   *
+   * Selection is owned by the population context: ancestors exist only to make
+   * selected descendants addressable, while unselected identities must not gain
+   * coverage semantics merely because they share an inventory.
+   */
   function selection(
     population: EvidenceQueryPopulationContext,
     unitId: string,
@@ -666,7 +773,13 @@ export namespace EvidenceQueryProgrammer {
     return population.visible.has(unitId) ? "ancestor" : "unselected";
   }
 
-  /** Formats and orders the public aliases indexed for one semantic identity. */
+  /**
+   * Formats the public aliases for one semantic identity in deterministic order.
+   *
+   * Inventory aliases may render to the same artifact target, so deduplication
+   * occurs after formatting. The sorted result supplies the canonical list target
+   * and makes exact-target matching stable across adapter traversal order.
+   */
   function targets(
     population: EvidenceQueryPopulationContext,
     unitId: string,
@@ -680,7 +793,13 @@ export namespace EvidenceQueryProgrammer {
     ).sort(compare);
   }
 
-  /** Checks whether a configured identity has the exact requested public target spelling. */
+  /**
+   * Tests whether a configured identity exposes the exact requested target spelling.
+   *
+   * Only configured addresses participate because an ancestor's visible address
+   * must not override grammar inference for a target that names no obligation.
+   * A match is used solely to choose populations; resolution remains authoritative.
+   */
   function populationHasTarget(
     population: EvidenceQueryPopulationContext,
     target: string,
@@ -696,7 +815,13 @@ export namespace EvidenceQueryProgrammer {
     );
   }
 
-  /** Renders an address using its artifact target grammar and the query base directory. */
+  /**
+   * Renders one indexed address with the target grammar of its population.
+   *
+   * Prisma and Swagger do not use file-qualified accessors, while Markdown must
+   * preserve selected logical aliases for a physical file. Other artifacts are
+   * made CLI-relative; an unrenderable Swagger address is omitted from query output.
+   */
   function formatAddress(
     population: EvidenceQueryPopulationContext,
     file: string,
@@ -734,7 +859,13 @@ export namespace EvidenceQueryProgrammer {
     ];
   }
 
-  /** Creates a synthetic host at the query base directory for CLI-relative target resolution. */
+  /**
+   * Creates the attached synthetic host used for command-line target resolution.
+   *
+   * Its file anchors relative paths at the query working directory without adding
+   * a document to any inventory. The fixed identity prevents command hosts from
+   * being confused with authored annotation hosts in resolver diagnostics.
+   */
   function commandHost(cwd: string): IEvidenceHost {
     const file = path.join(cwd, ".evidence-inspect");
     return {
@@ -747,7 +878,13 @@ export namespace EvidenceQueryProgrammer {
     };
   }
 
-  /** Creates the zero-width source coordinate used for synthetic command hosts. */
+  /**
+   * Creates the zero-width coordinate assigned to a synthetic command host.
+   *
+   * Query input has no authored source span, but downstream diagnostics require a
+   * complete location. Line and column one with offset zero provides that boundary
+   * without claiming a real character exists in the synthetic file.
+   */
   function zeroLocation(file: string): Required<IEvidenceSourceLocation> {
     return {
       file,
@@ -758,7 +895,13 @@ export namespace EvidenceQueryProgrammer {
     };
   }
 
-  /** Projects a query row into a graph node within an independent obligation boundary. */
+  /**
+   * Projects an addressable query row into a boundary-specific graph unit node.
+   *
+   * The caller supplies coverage state because it differs by reference obligation
+   * even when the underlying inventory unit is shared. The generated node carries
+   * the public target and source locations needed by graph consumers.
+   */
   function graphUnitNode(
     boundaryId: string,
     role: "claim" | "reference",
@@ -781,7 +924,13 @@ export namespace EvidenceQueryProgrammer {
     };
   }
 
-  /** Registers the graph node for a documentation host and returns its identity. */
+  /**
+   * Returns graph source nodes for an annotation host within one boundary.
+   *
+   * Hosts attached to units reuse claim nodes, preserving unit-level edges. A
+   * detached-from-selection host becomes a dedicated node so evidence remains
+   * visible without inventing a claim unit; absent hosts fail the graph invariant.
+   */
   function graphSourceNodes(
     nodes: Map<string, EvidenceGraphNode>,
     boundaryId: string,
@@ -811,7 +960,13 @@ export namespace EvidenceQueryProgrammer {
     return [id];
   }
 
-  /** Adds a missing boundary-specific unit node and rejects absent or unaddressable identities. */
+  /**
+   * Ensures a boundary-specific graph node exists for a referenced identity.
+   *
+   * Existing nodes are retained to preserve their coverage state. An absent unit
+   * or missing public address is an invalid graph projection, so this throws
+   * instead of exporting an edge that a consumer cannot inspect.
+   */
   function ensureUnitNode(
     nodes: Map<string, EvidenceGraphNode>,
     boundaryId: string,
@@ -835,7 +990,13 @@ export namespace EvidenceQueryProgrammer {
     nodes.set(id, graphUnitNode(boundaryId, role, item, false, false));
   }
 
-  /** Tests direct coverage or complete coverage of a structural ancestor's selected descendants. */
+  /**
+   * Tests whether a reference unit is covered in its obligation.
+   *
+   * Directly selected units use graph coverage. A visible ancestor is covered
+   * only when it has selected descendants and all are covered, preventing an
+   * empty structural container from appearing complete.
+   */
   function covered(
     population: EvidenceQueryPopulationContext,
     unitId: string,
@@ -851,7 +1012,13 @@ export namespace EvidenceQueryProgrammer {
     );
   }
 
-  /** Tests direct missing coverage or missing coverage among selected descendants. */
+  /**
+   * Tests whether a reference unit exposes missing coverage in its obligation.
+   *
+   * Direct missing identities and ancestors with any missing selected descendant
+   * are both marked missing. Without an obligation, the population owns no
+   * coverage state and therefore returns false.
+   */
   function missing(
     population: EvidenceQueryPopulationContext,
     unitId: string,
@@ -864,7 +1031,13 @@ export namespace EvidenceQueryProgrammer {
       .some((id) => obligation.missingUnitIds.includes(id));
   }
 
-  /** Requires an indexed population matching the exact role and configured obligation coordinates. */
+  /**
+   * Retrieves the query population at an exact claim/reference coordinate.
+   *
+   * Role is part of the key because one inventory can serve both sides of an
+   * obligation. A missing entry means analysis and query context lost positional
+   * alignment, so graph export throws rather than relabelling its data.
+   */
   function requirePopulation(
     entries: EvidenceQueryPopulationContext[],
     role: "claim" | "reference",
@@ -884,7 +1057,13 @@ export namespace EvidenceQueryProgrammer {
     return population;
   }
 
-  /** Requires reference policy data for a population used as a reference. */
+  /**
+   * Retrieves graph reference policy input from a reference population.
+   *
+   * Only reference contexts own this data. Its absence signals a context assembly
+   * invariant failure, and throwing prevents a graph report from silently using
+   * fabricated defaults.
+   */
   function requirePopulationReference(
     population: EvidenceQueryPopulationContext,
   ): IEvidenceGraphReference {
@@ -893,7 +1072,13 @@ export namespace EvidenceQueryProgrammer {
     return population.reference;
   }
 
-  /** Projects effective coverage policies into the public graph report. */
+  /**
+   * Projects effective reference policy flags into a public graph boundary.
+   *
+   * Optional graph-input flags become explicit booleans so report consumers need
+   * not reproduce configuration defaults. Severity is retained unchanged because
+   * it controls the consequence of coverage diagnostics.
+   */
   function graphPolicy(
     reference: IEvidenceGraphReference,
   ): IEvidenceGraphPolicy {
@@ -907,7 +1092,13 @@ export namespace EvidenceQueryProgrammer {
     };
   }
 
-  /** Requires a checker report claim at the graph input position being inspected. */
+  /**
+   * Retrieves the checker report claim at a graph-input position.
+   *
+   * Graph export joins report labels by construction order. A missing row exposes
+   * a broken checker-analysis invariant and throws before coordinates can be
+   * assigned to a wrong boundary.
+   */
   function requireReportClaim(
     analysis: IEvidenceCheckAnalysis,
     position: number,
@@ -918,7 +1109,13 @@ export namespace EvidenceQueryProgrammer {
     return claim;
   }
 
-  /** Requires an evaluated graph claim at the graph input position being inspected. */
+  /**
+   * Retrieves the evaluated graph claim at a graph-input position.
+   *
+   * This preserves the checker’s positional join with its input and report. A
+   * missing result is an internal invariant failure, not an empty claim suitable
+   * for graph serialization.
+   */
   function requireResultClaim(
     analysis: IEvidenceCheckAnalysis,
     position: number,
@@ -929,7 +1126,13 @@ export namespace EvidenceQueryProgrammer {
     return claim;
   }
 
-  /** Requires the checker report obligation corresponding to a reference position. */
+  /**
+   * Retrieves the report obligation for exact claim and reference positions.
+   *
+   * The returned row supplies public coordinates for graph export. Throwing on a
+   * missing position prevents edges and policies from being emitted under an
+   * unrelated reference label.
+   */
   function requireReportObligation(
     analysis: IEvidenceCheckAnalysis,
     claim: number,
@@ -945,7 +1148,13 @@ export namespace EvidenceQueryProgrammer {
     return obligation;
   }
 
-  /** Requires the evaluated graph obligation corresponding to a reference position. */
+  /**
+   * Retrieves the evaluated obligation for exact claim and reference positions.
+   *
+   * Graph export uses its coverage, edges, and completion state together with the
+   * matching report row. Missing positional state is fatal because an empty
+   * substitute could falsely make a boundary look complete.
+   */
   function requireResultObligation(
     analysis: IEvidenceCheckAnalysis,
     claim: number,
@@ -961,7 +1170,13 @@ export namespace EvidenceQueryProgrammer {
     return obligation;
   }
 
-  /** Requires an acknowledgement by identity in the supplied inventory. */
+  /**
+   * Retrieves an acknowledgement by its inventory-local identity.
+   *
+   * Graph edges retain only this identity, while export needs the authored target,
+   * reason, and location. A missing record breaks that graph-to-inventory link and
+   * throws instead of emitting an unverifiable edge.
+   */
   function requireDeclaration(
     inventory: EvidenceQueryPopulationContext["inventory"],
     id: string,
@@ -974,7 +1189,13 @@ export namespace EvidenceQueryProgrammer {
     return declaration;
   }
 
-  /** Requires a review by identity in the supplied inventory. */
+  /**
+   * Retrieves a review by its inventory-local identity.
+   *
+   * Review resolutions refer back to the authored annotation through this value.
+   * A missing record indicates invalid graph input and is fatal because the public
+   * report cannot accurately represent the review without it.
+   */
   function requireReview(
     inventory: EvidenceQueryPopulationContext["inventory"],
     id: string,
@@ -984,14 +1205,26 @@ export namespace EvidenceQueryProgrammer {
     return review;
   }
 
-  /** Requires an annotation host by identity in the supplied inventory. */
+  /**
+   * Retrieves the documentation host identified by an annotation.
+   *
+   * Hosts supply source locations and attached claim units for graph nodes. An
+   * absent host violates inventory ownership, so callers throw before exporting
+   * a source edge with a fabricated or incomplete origin.
+   */
   function requireHost(hosts: IEvidenceHost[], id: string): IEvidenceHost {
     const host = hosts.find((candidate) => candidate.id === id);
     if (host === undefined) throw new Error(`Missing graph host '${id}'.`);
     return host;
   }
 
-  /** Labels a diagnostic with its configured claim and optional reference coordinates. */
+  /**
+   * Adds the query population’s configured coordinates to a diagnostic.
+   *
+   * Resolver diagnostics are inventory-local; query output must identify the
+   * independent claim and reference obligation that produced them. Claim scope is
+   * always present, while reference scope remains absent for claim populations.
+   */
   function scopedDiagnostic(
     diagnostic: IEvidenceDiagnostic,
     scope: IEvidenceQueryScope,
@@ -1003,7 +1236,13 @@ export namespace EvidenceQueryProgrammer {
     };
   }
 
-  /** Deduplicates diagnostics by their complete serialized content. */
+  /**
+   * Deduplicates diagnostics whose complete public content is identical.
+   *
+   * Inspection combines checker and per-population diagnostics, which can reach
+   * the same error through several compatible populations. Serialization includes
+   * coordinates and repair text, preserving distinct actionable failures.
+   */
   function uniqueDiagnostics(
     diagnostics: IEvidenceDiagnostic[],
   ): IEvidenceDiagnostic[] {
@@ -1012,19 +1251,37 @@ export namespace EvidenceQueryProgrammer {
     );
   }
 
-  /** Formats the stable identity of a claim or reference query scope. */
+  /**
+   * Formats the stable key for a claim scope or one of its reference scopes.
+   *
+   * The key is internal to query ordering and exact-population selection. Omitting
+   * the reference segment for claims preserves the distinct coordinate shape and
+   * prevents a claim from colliding with its first reference.
+   */
   function scopeId(scope: IEvidenceQueryScope): string {
     return scope.reference === undefined
       ? `claim:${scope.claim}`
       : `claim:${scope.claim}:reference:${scope.reference}`;
   }
 
-  /** Formats the stable identity of an independent claim/reference obligation. */
+  /**
+   * Formats the graph boundary identity for one claim/reference obligation.
+   *
+   * Boundary IDs are intentionally coordinate-based, even when populations share
+   * an inventory, so exported nodes and edges cannot leak coverage across policy
+   * boundaries.
+   */
   function boundary(claim: number, reference: number): string {
     return `claim:${claim}:reference:${reference}`;
   }
 
-  /** Formats a graph unit identity including its boundary and population role. */
+  /**
+   * Formats a graph node identity for one unit within a boundary and role.
+   *
+   * Claim and reference nodes need separate IDs because the same semantic unit can
+   * appear on both sides of an obligation with different selection and coverage
+   * state.
+   */
   function graphUnitNodeId(
     boundaryId: string,
     role: "claim" | "reference",
@@ -1033,7 +1290,13 @@ export namespace EvidenceQueryProgrammer {
     return `${boundaryId}:${role}:${unitId}`;
   }
 
-  /** Extracts and decodes the file portion of a file-qualified target when available. */
+  /**
+   * Extracts the decoded file portion from a possibly qualified target.
+   *
+   * Type inference examines only the physical-looking file prefix, leaving accessor
+   * syntax untouched. Invalid percent encoding is retained verbatim so inference
+   * can fail normally and the resolver can report the authored target.
+   */
   function targetFile(target: string): string {
     const separator = target.indexOf("#");
     const encoded = separator < 0 ? target : target.slice(0, separator);
@@ -1044,7 +1307,13 @@ export namespace EvidenceQueryProgrammer {
     }
   }
 
-  /** Recognizes target spellings that follow the Swagger operation addressing form. */
+  /**
+   * Recognizes target spellings reserved for Swagger operation resolution.
+   *
+   * HTTP method prefixes and non-single-letter scheme-like prefixes distinguish
+   * these targets from ordinary file paths. This early classification keeps a
+   * Swagger target from being needlessly sent to unrelated language adapters.
+   */
   function swaggerLike(target: string): boolean {
     const match = /^([^:\s/]+):\//u.exec(target);
     const method = match?.[1];
@@ -1054,7 +1323,12 @@ export namespace EvidenceQueryProgrammer {
     );
   }
 
-  /** Orders query identities and targets with deterministic string comparison. */
+  /**
+   * Orders query identities and rendered targets by code-unit comparison.
+   *
+   * Avoiding locale collation makes list, inspection, and graph output reproducible
+   * across operating systems and independent of the invoking process locale.
+   */
   function compare(left: string, right: string): number {
     return left < right ? -1 : left > right ? 1 : 0;
   }
