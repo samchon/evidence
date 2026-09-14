@@ -3,7 +3,7 @@ import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { ISqlDeclaration } from "./ISqlDeclaration";
 import type { ISqlDocumentation } from "./ISqlDocumentation";
 
-/** Node-free Sql extraction retained after a parse session closes. */
+/** Node-free database extraction retained after a parse session closes. */
 export interface ISqlFileAnalysis {
   /** Original selected source snapshot. */
   source: IEvidenceSourceFile;
