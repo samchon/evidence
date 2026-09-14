@@ -214,5 +214,23 @@
       "sha256": "0eea8dc45e89deeb03c7799bbbc7b4688f365fb274562f4540ecfebdea82e727",
       "size": 1101
     }
+  },
+  {
+    "id": "lua",
+    "repository": "https://github.com/tree-sitter-grammars/tree-sitter-lua",
+    "version": "v0.5.0",
+    "commit": "10fe0054734eec83049514ea2e718b2a56acd0c9",
+    "wasm": {
+      "file": "lua/tree-sitter-lua.wasm",
+      "url": "https://github.com/tree-sitter-grammars/tree-sitter-lua/releases/download/v0.5.0/tree-sitter-lua.wasm",
+      "sha256": "df08a1704e504c70b8dba4a3e6f8e0c99a4fb94e1b1693d2969f53141d09f0d4",
+      "size": 54603
+    },
+    "license": {
+      "file": "lua/LICENSE",
+      "url": "https://raw.githubusercontent.com/tree-sitter-grammars/tree-sitter-lua/10fe0054734eec83049514ea2e718b2a56acd0c9/LICENSE.md",
+      "sha256": "9a32b02e4c917b1ce6b5e79d8ea81e25cefd7f27d89c7235f2afb262c06cf32e",
+      "size": 1079
+    }
   }
 ]
