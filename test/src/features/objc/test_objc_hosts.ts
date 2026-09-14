@@ -61,7 +61,7 @@ export async function test_objc_hosts(): Promise<void> {
     [],
   );
   const tag = inventory.declarations[0];
-  if (tag?.location.range === undefined)
+  if (tag === undefined || tag.location.range === undefined)
     throw new Error("Missing annotation range.");
   TestValidator.equals(
     "original UTF-16 offset",
@@ -81,7 +81,10 @@ export async function test_objc_hosts(): Promise<void> {
   const contract = inventory.units.find((unit) => unit.name === "Contract");
   if (contract === undefined) throw new Error("Missing contract.");
   const annotation = structuredClone(snapshot);
-  annotation.files[0]!.content = source.replace(
+  const annotationFile = annotation.files[0];
+  if (annotationFile === undefined)
+    throw new Error("Missing annotation source.");
+  annotationFile.content = source.replace(
     "Implements the value.",
     "Describes the same value differently.",
   );
@@ -92,7 +95,9 @@ export async function test_objc_hosts(): Promise<void> {
     EvidenceFingerprint.inspect(rewritten, contract.id).fingerprint,
   );
   const semantic = structuredClone(snapshot);
-  semantic.files[0]!.content = source.replace(
+  const semanticFile = semantic.files[0];
+  if (semanticFile === undefined) throw new Error("Missing semantic source.");
+  semanticFile.content = source.replace(
     "@property int value;",
     "@property long value;",
   );

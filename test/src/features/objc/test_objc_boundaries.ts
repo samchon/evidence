@@ -13,6 +13,7 @@ export async function test_objc_boundaries(): Promise<void> {
   for (const content of [
     "#if FEATURE\n@interface Conditional\n@end\n#endif\n",
     "#define API(name) @interface name @end\n",
+    "#ifndef FEATURE\n#define FEATURE\n@interface Conditional\n@end\n#endif\n@interface Outside\n@end\n",
     "#import HEADER\n@interface Contract\n@end\n",
     "@compatibility_alias Alias Contract;\n",
     "typedef int Number;\n",

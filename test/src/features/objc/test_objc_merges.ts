@@ -100,4 +100,30 @@ export async function test_objc_merges(): Promise<void> {
     ).length,
     2,
   );
+
+  const escaped = await adapter.analyze(
+    TestSourceSnapshot.combine([
+      TestSourceSnapshot.create(
+        "src/Escaped.h",
+        "@interface \\u0057idget\n- (void)\\u0072un;\n@end\n",
+      ),
+      TestSourceSnapshot.create(
+        "src/Escaped.m",
+        "@implementation Widget\n- (void)run {}\n@end\n",
+      ),
+    ]),
+  );
+  TestValidator.equals(
+    "universal character names merge with ordinary spelling",
+    escaped.diagnostics,
+    [],
+  );
+  TestValidator.equals(
+    "decoded nominal and selector identities",
+    escaped.units.map((unit) => [unit.identity, unit.sites.length]),
+    [
+      [["Widget"], 2],
+      [["Widget", "-run"], 2],
+    ],
+  );
 }

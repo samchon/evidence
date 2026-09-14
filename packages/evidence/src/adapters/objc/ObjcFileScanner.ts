@@ -36,7 +36,20 @@ export class ObjcFileScanner {
   /** Returns node-free declarations and documentation. */
   public scan(): IObjcFileAnalysis {
     this.comments();
-    for (const item of this.session.root.namedChildren) this.topLevel(item);
+    const items = this.session.root.namedChildren;
+    const population = items.filter(
+      (item) =>
+        item.type !== "comment" &&
+        item.type !== "preproc_include" &&
+        !CSyntax.isInertDirective(item),
+    );
+    const guard = population.length === 1 ? population[0] : undefined;
+    const guarded =
+      guard === undefined ? undefined : CSyntax.guardedDeclarations(guard);
+    for (const item of items)
+      if (guarded !== undefined && item.startIndex === guard?.startIndex)
+        for (const child of guarded) this.topLevel(child);
+      else this.topLevel(item);
     return {
       source: this.source,
       declarations: this.declarations,
@@ -77,11 +90,6 @@ export class ObjcFileScanner {
         return;
       }
       default: {
-        const guarded = CSyntax.guardedDeclarations(item);
-        if (guarded !== undefined && item.parent?.type === "translation_unit") {
-          for (const child of guarded) this.topLevel(child);
-          return;
-        }
         if (CSyntax.isInertDirective(item)) return;
         this.problem(
           item,
@@ -94,14 +102,15 @@ export class ObjcFileScanner {
 
   /** Keeps protocols and named categories in distinct nominal namespaces. */
   private typeDeclaration(item: Node): void {
-    const name = item.namedChildren.find(
+    const nameNode = item.namedChildren.find(
       (child) => child.type === "identifier",
-    )?.text;
+    );
+    const name = CSyntax.name(nameNode ?? null);
     if (name === undefined) {
       this.problem(item, "name", "The nominal declaration has no static name.");
       return;
     }
-    const category = item.childForFieldName("category")?.text;
+    const category = CSyntax.name(item.childForFieldName("category"));
     const extension =
       item.type === "class_interface" &&
       category === undefined &&
@@ -182,10 +191,12 @@ export class ObjcFileScanner {
         const declaration = item.namedChildren.find(
           (child) => child.type === "struct_declaration",
         );
+        const attributes = item.namedChildren.find(
+          (child) => child.type === "property_attributes_declaration",
+        );
         const classProperty =
-          item.namedChildren
-            .find((child) => child.type === "property_attributes_declaration")
-            ?.namedChildren.some((child) => child.text === "class") ?? false;
+          attributes !== undefined &&
+          attributes.namedChildren.some((child) => child.text === "class");
         if (declaration === undefined)
           this.problem(
             item,
@@ -254,7 +265,7 @@ export class ObjcFileScanner {
     for (const child of item.children) {
       if (child.type === ",") next = true;
       else if (child.type === "identifier" && next) {
-        const name = `${prefix}${child.text}`;
+        const name = `${prefix}${CSyntax.name(child) ?? child.text}`;
         const site =
           item.parent?.type === "implementation_definition"
             ? item.parent
@@ -284,7 +295,7 @@ export class ObjcFileScanner {
     for (const child of item.namedChildren) {
       if (child.type === "identifier") {
         if (pending !== "") return undefined;
-        pending = child.text;
+        pending = CSyntax.name(child) ?? child.text;
       } else if (child.type === "method_parameter") {
         if (!child.text.startsWith(":")) continue;
         selector += `${pending}:`;
@@ -412,7 +423,9 @@ export class ObjcFileScanner {
         id: siteId,
         file: this.source.physicalPath,
         range: this.text.range(
-          documentation?.range.start.offset ?? siteNode.startIndex,
+          documentation === undefined
+            ? siteNode.startIndex
+            : documentation.range.start.offset,
           siteNode.endIndex,
         ),
         content: [this.session.range(siteNode)],
@@ -420,7 +433,8 @@ export class ObjcFileScanner {
       ...(owner === undefined ? {} : { ownerDeclarationId: owner.id }),
     };
     this.declarations.push(declaration);
-    documentation?.attachments.push({ declarationId: declaration.id, siteId });
+    if (documentation !== undefined)
+      documentation.attachments.push({ declarationId: declaration.id, siteId });
     return declaration;
   }
 
@@ -435,7 +449,8 @@ export class ObjcFileScanner {
           : undefined;
       if (
         syntax.opening.startsWith("//") &&
-        prior?.syntax.opening === syntax.opening &&
+        prior !== undefined &&
+        prior.syntax.opening === syntax.opening &&
         previous !== null &&
         /^\s*$/u.test(
           this.source.content.slice(previous.endIndex, comment.startIndex),

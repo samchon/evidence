@@ -75,7 +75,7 @@ export async function test_objc_units(): Promise<void> {
     "exact public surface",
     inventory.units
       .map((unit) => `${unit.symbol}:${EvidenceAccessor.format(unit.identity)}`)
-      .sort(),
+      .sort((left, right) => left.localeCompare(right)),
     [
       "type:Widget",
       'type:["Widget(Extras)"]',
@@ -90,7 +90,7 @@ export async function test_objc_units(): Promise<void> {
       'function:["protocol(Widget)"]["-optional"]',
       'property:["protocol(Widget)"].required',
       "function:run",
-    ].sort(),
+    ].sort((left, right) => left.localeCompare(right)),
   );
   const widget = inventory.units.find((unit) => unit.name === "Widget");
   const method = inventory.units.find((unit) => unit.name === "-send:to:");
