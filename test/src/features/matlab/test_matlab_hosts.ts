@@ -23,6 +23,12 @@ export async function test_matlab_hosts(): Promise<void> {
       methods
         function result = run(obj)
           % @evidence doc.md#function Function documentation.
+          % <pre>
+          % @evidence doc.md#html HTML code is inert.
+          % </pre>
+          % ${"```"}matlab
+          % @evidence doc.md#fenced Fenced code is inert.
+          % ${"```"}
           % Example:
           %     @evidence doc.md#example Example is inert.
           result = "@evidence doc.md#string Strings are inert.";

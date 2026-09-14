@@ -315,11 +315,15 @@ export class MatlabFileScanner {
         /Access$/u.test(name) &&
         !["public", "private", "protected", "immutable"].includes(value)
       ) {
+        const friends =
+          value.startsWith("{") && value.endsWith("}")
+            ? value
+                .slice(1, -1)
+                .trim()
+                .split(/[,\s]+/u)
+            : [value];
         if (
-          !/^\?[A-Za-z][A-Za-z0-9_.]*$/u.test(value) &&
-          !/^\{\s*\?[A-Za-z][A-Za-z0-9_.]*(?:\s*,\s*\?[A-Za-z][A-Za-z0-9_.]*)*\s*\}$/u.test(
-            value,
-          )
+          !friends.every((friend) => /^\?[A-Za-z][A-Za-z0-9_.]*$/u.test(friend))
         )
           this.problem(
             "attribute",

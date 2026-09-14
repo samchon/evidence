@@ -1,4 +1,4 @@
-/** One MATLAB help carrier attached to a Matlab declaration site. */
+/** One MATLAB help carrier attached to a MATLAB declaration site. */
 export interface IMatlabDocumentationAttachment {
   /** Owning declaration extraction identity. */
   declarationId: string;

@@ -2,7 +2,7 @@ import type { IEvidenceCommentSyntax } from "../../structures/IEvidenceCommentSy
 import type { IEvidenceSourceRange } from "../../structures/IEvidenceSourceRange";
 import type { IMatlabDocumentationAttachment } from "./IMatlabDocumentationAttachment";
 
-/** A Matlab documentation carrier or tag-bearing unsupported carrier. */
+/** A MATLAB documentation carrier or tag-bearing unsupported carrier. */
 export interface IMatlabDocumentation {
   /** Stable identity of this extraction record. */
   id: string;

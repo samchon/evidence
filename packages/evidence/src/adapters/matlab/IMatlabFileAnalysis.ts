@@ -3,7 +3,7 @@ import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { IMatlabDeclaration } from "./IMatlabDeclaration";
 import type { IMatlabDocumentation } from "./IMatlabDocumentation";
 
-/** Node-free Matlab extraction retained after a parse session closes. */
+/** Node-free MATLAB extraction retained after a parse session closes. */
 export interface IMatlabFileAnalysis {
   /** Original selected source snapshot. */
   source: IEvidenceSourceFile;
