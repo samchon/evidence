@@ -45,6 +45,28 @@ export namespace EvidenceLanguageRegistry {
 
   const LANGUAGES: IEvidenceLanguage[] = [
     {
+      type: "kotlin",
+      name: "Kotlin",
+      grammars: [{ id: "kotlin", extensions: [".kt"], filenames: [] }],
+      adapter: {
+        entry: "EvidenceKotlinAdapter",
+        symbols: ["type", "function", "property"],
+        publicSurface:
+          "Explicit public Kotlin source declarations recognized by tree-sitter-kotlin v1.1.0 within the selected snapshot.",
+        addressing:
+          "File-qualified lexical owners, explicit companions, and receiver-qualified extension segments.",
+        comments: ["attached KDoc"],
+        unsupported: [
+          "scripts",
+          "multiplatform expect/actual",
+          "delegated members",
+          "implicit override visibility",
+          "generic and unresolved extension receivers",
+          "compiler-generated and inherited members",
+        ],
+      },
+    },
+    {
       type: "typescript",
       name: "TypeScript",
       grammars: [
@@ -298,29 +320,6 @@ export namespace EvidenceLanguageRegistry {
   ];
 
   const CANDIDATES: IEvidenceLanguageCandidate[] = [
-    {
-      id: "kotlin",
-      name: "Kotlin",
-      kind: "programming-language",
-      dialects: ["Kotlin source"],
-      grammarRepository:
-        "https://github.com/tree-sitter-grammars/tree-sitter-kotlin",
-      grammarLicense: "MIT",
-      wasm: "release-asset",
-      wasmNotes: "The v1.1.0 release publishes tree-sitter-kotlin.wasm.",
-      languageReference:
-        "https://kotlinlang.org/docs/visibility-modifiers.html",
-      visibility:
-        "public by default, with internal, protected, and private declarations plus file-private top-level members",
-      declarations:
-        "packages, classes, interfaces, objects, companions, functions, properties, constructors, type aliases, and extensions",
-      blockers: [
-        "expect/actual and multiplatform source-set ownership",
-        "companion and extension receiver address policy",
-        "generated and delegated members",
-      ],
-      next: "Certify explicit JVM-agnostic source declarations, companion ownership, overload families, and KDoc before resolving multiplatform exports.",
-    },
     {
       id: "swift",
       name: "Swift",
