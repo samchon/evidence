@@ -127,7 +127,7 @@ export class SqlFileScanner {
       );
       const local = ordered
         ?.descendantsOfType("identifier")
-        .map((child) => this.identifier(child));
+        ?.map((child) => this.identifier(child));
       if (
         local === undefined ||
         local.length === 0 ||
