@@ -54,17 +54,29 @@ export namespace RustSyntax {
       });
   }
 
+  /** Reads outer attributes across ordinary comments, which Rust treats as whitespace. */
   export function attributes(node: Node): Node[] {
     const output: Node[] = [];
     let previous = node.previousNamedSibling;
     while (
       previous !== null &&
-      (previous.type === "attribute_item" || isOuterDocumentation(previous))
+      (previous.type === "attribute_item" ||
+        isOuterDocumentation(previous) ||
+        ordinaryComment(previous))
     ) {
-      output.push(previous);
+      if (!ordinaryComment(previous)) output.push(previous);
       previous = previous.previousNamedSibling;
     }
     return output.reverse();
+  }
+
+  /** Distinguishes whitespace comments from outer and inner documentation attributes. */
+  export function ordinaryComment(node: Node): boolean {
+    return (
+      (node.type === "line_comment" || node.type === "block_comment") &&
+      node.childForFieldName("outer") === null &&
+      node.childForFieldName("inner") === null
+    );
   }
 
   export function attributeName(node: Node): string | undefined {
