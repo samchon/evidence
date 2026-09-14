@@ -125,9 +125,12 @@ export class SqlFileScanner {
       const ordered = constraint.namedChildren.find(
         (child) => child.type === "ordered_columns",
       );
-      const local = ordered
-        ?.descendantsOfType("identifier")
-        ?.map((child) => this.identifier(child));
+      const local =
+        ordered === undefined
+          ? undefined
+          : ordered
+              .descendantsOfType("identifier")
+              .map((child) => this.identifier(child));
       if (
         local === undefined ||
         local.length === 0 ||
