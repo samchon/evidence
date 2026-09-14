@@ -600,4 +600,3 @@ export namespace EvidenceLanguageRegistry {
     },
   ];
 }
-

@@ -27,6 +27,7 @@ export async function test_postgresql_boundaries(): Promise<void> {
     "CREATE TABLE app.Item (id integer); COMMENT ON TABLE app.Item IS NULL;",
     "CREATE TABLE app.Item (id integer); COMMENT ON TABLE app.Item IS 'One'; COMMENT ON TABLE app.Item IS 'Two';",
     `CREATE TABLE app."${"a".repeat(64)}" (id integer);`,
+    'CREATE TABLE app."a""b" (id integer);',
     "CREATE TABLE app.Item (id integer); CREATE TABLE app.Item (id text);",
     "CREATE TABLE app.Item (id integer",
   ]) {

@@ -467,7 +467,9 @@ export class PostgresqlFileScanner {
             first.startIndex,
           ),
         ) &&
-        /^\s*$/u.test(this.source.content.slice(last.endIndex, next));
+        /^[ \t]*(?:\r?\n[ \t]*)?$/u.test(
+          this.source.content.slice(last.endIndex, next),
+        );
       const declarations = attached ? (this.nodes.get(next) ?? []) : [];
       const range = {
         start: this.session.range(first).start,
