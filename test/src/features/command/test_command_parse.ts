@@ -88,6 +88,17 @@ export function test_command_parse(): void {
     },
   );
   TestValidator.equals(
+    "Kotlin list filter",
+    EvidenceCommand.parse(["list", "--language", "kotlin"]),
+    {
+      operation: "list",
+      cwd: ".",
+      config: "evidence.config.ts",
+      format: "text",
+      language: "kotlin",
+    },
+  );
+  TestValidator.equals(
     "inspect target",
     EvidenceCommand.parse([
       "inspect",
@@ -157,7 +168,7 @@ export function test_command_parse(): void {
     ["inspect"],
     ["inspect", "one.ts#A", "two.ts#B"],
     ["inspect", "one.ts#A", "--kind", "type"],
-    ["list", "--language", "kotlin"],
+    ["list", "--language", "not-a-language"],
     ["list", "--kind", "namespace"],
     ["check", "--language", "typescript"],
     ["--help", "--format", "json"],

@@ -3,7 +3,7 @@ import { TestValidator } from "@nestia/e2e";
 
 import { validateEvidenceConfig } from "../../../../packages/evidence/src/internal/validateEvidenceConfig";
 
-/** Rejects vacuous and unsupported populations even when their severity is inactive. */
+/** Rejects vacuous and malformed populations even when their severity is inactive. */
 export function test_config_constraints(): void {
   const emptyGraph = failure({ claims: [] });
 
@@ -59,9 +59,8 @@ export function test_config_constraints(): void {
       message.includes(expected),
     );
 
-  // Off populations reject unavailable adapters, malformed exact sources, and empty selectors.
+  // Off populations still reject malformed exact sources and empty selectors.
   for (const expected of [
-    "claims[1].type: artifact type 'kotlin' has no certified Evidence adapter",
     "claims[1].reference.file",
     "claims[2].reference.files",
     "claims[2].reference.symbol",
@@ -70,6 +69,17 @@ export function test_config_constraints(): void {
       `inactive population constraint: ${expected}`,
       message.includes(expected),
     );
+
+  validateEvidenceConfig({
+    claims: [
+      {
+        type: "kotlin",
+        severity: "off",
+        files: ["src/**/*.kt"],
+        reference: { type: "markdown", files: ["docs/**/*.md"] },
+      },
+    ],
+  });
 }
 
 function failure(config: IEvidenceConfig): string {
