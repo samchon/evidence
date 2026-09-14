@@ -49,8 +49,9 @@ export async function test_zig_aliases(): Promise<void> {
     "alias paths remain addressable",
     inventory.addresses
       .filter((address) => address.unitId === callable.id)
-      .map((address) => address.segments),
-    [["run"], ["renamed"]],
+      .map((address) => address.segments.join("."))
+      .sort((left, right) => left.localeCompare(right)),
+    ["renamed", "run"],
   );
   const annotation = await adapter.analyze(
     TestSourceSnapshot.create(
