@@ -306,6 +306,24 @@
     }
   },
   {
+    "id": "mysql",
+    "repository": "https://github.com/DerekStride/tree-sitter-sql",
+    "version": "grammar-mysql-9257f0317112cff54be54e45302f2b00330d209df52e662e2572c4f154ecc68a",
+    "commit": "b7057b7d4ca94bb45403435f12cc01cee821daa8",
+    "wasm": {
+      "file": "mysql/tree-sitter-mysql.wasm",
+      "url": "https://github.com/wrtnlabs/evidence/releases/download/grammar-mysql-9257f0317112cff54be54e45302f2b00330d209df52e662e2572c4f154ecc68a/tree-sitter-mysql.wasm",
+      "sha256": "9257f0317112cff54be54e45302f2b00330d209df52e662e2572c4f154ecc68a",
+      "size": 11063017
+    },
+    "license": {
+      "file": "mysql/LICENSE",
+      "url": "https://raw.githubusercontent.com/DerekStride/tree-sitter-sql/b7057b7d4ca94bb45403435f12cc01cee821daa8/LICENSE",
+      "sha256": "3b3e4e4252d5d7d1c18e1257005f23242bf0580ad619204fd093c99b8c56748d",
+      "size": 1069
+    }
+  },
+  {
     "id": "dbml",
     "repository": "https://github.com/dynamotn/tree-sitter-dbml",
     "version": "grammar-dbml-c67985a56a3edf40b84cbc41d2c0224d074362a8ecb916a1a744c283c035fc15",

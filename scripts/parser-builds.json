@@ -39,6 +39,19 @@
       }
     },
     {
+      "id": "mysql",
+      "repository": "https://github.com/DerekStride/tree-sitter-sql",
+      "commit": "b7057b7d4ca94bb45403435f12cc01cee821daa8",
+      "directory": ".",
+      "license": "LICENSE",
+      "abi": 15,
+      "smoke": {
+        "source": "CREATE TABLE evidence_probe (id INTEGER);",
+        "query": "(identifier) @name",
+        "capture": "evidence_probe"
+      }
+    },
+    {
       "id": "dbml",
       "repository": "https://github.com/dynamotn/tree-sitter-dbml",
       "commit": "2e2fa5640268c33c3d3f27f7e676f631a9c68fd9",
