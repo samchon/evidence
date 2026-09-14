@@ -1,3 +1,4 @@
+export { EvidenceDartAdapter } from "./adapters/dart/EvidenceDartAdapter";
 /** Public API. Importing the package performs no project work. */
 export { EvidenceChecker } from "./EvidenceChecker";
 

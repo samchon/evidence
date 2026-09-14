@@ -1,3 +1,4 @@
+import type { IDartExportFilter } from "./IDartExportFilter";
 import type { IEvidenceSourceRange } from "../../structures/IEvidenceSourceRange";
 
 /** A static directive whose selected dependency can alter public library addresses. */
@@ -20,5 +21,3 @@ export interface IDartDirective {
   /** Original directive range. */
   range: IEvidenceSourceRange;
 }
-
-import type { IDartExportFilter } from "./IDartExportFilter";

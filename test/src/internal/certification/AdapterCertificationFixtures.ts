@@ -7,6 +7,7 @@ import {
   EvidenceJavaAdapter,
   EvidenceJavaScriptAdapter,
   EvidenceKotlinAdapter,
+  EvidenceDartAdapter,
   EvidencePythonAdapter,
   EvidenceRubyAdapter,
   EvidenceRustAdapter,
@@ -34,6 +35,7 @@ export namespace AdapterCertificationFixtures {
       rust(),
       java(),
       kotlin(),
+      dart(),
       csharp(),
       c(),
       cpp(),
@@ -637,7 +639,112 @@ export namespace AdapterCertificationFixtures {
     };
   }
 
-  /** Supplies exact Kotlin declarations and counterexamples for the common certification gates. */
+  /** Supplies exact Dart declarations and counterexamples for the common certification gates. */
+  function dart(): IAdapterCertification {
+    const file = "src/Contract.dart";
+    return {
+      type: "dart",
+      adapter: new EvidenceDartAdapter(),
+      sources: [
+        {
+          file,
+          content: dedent`
+            /**
+             * 계약 한글
+             * @evidence docs/requirements.md#type Implements the certified type.
+             */
+            class Contract {
+                /**
+                 * 실행 한글
+                 * @evidence docs/requirements.md#function Implements the certified function.
+                 */
+                int run() { return 1; }
+
+                /**
+                 * 값 한글
+                 * @evidence docs/requirements.md#property Implements the certified property.
+                 */
+                final value = 1;
+
+                final _hidden = 0;
+
+                /** @internal Retired public contract. */
+                final LEGACY = 1;
+            }
+          `,
+        },
+      ],
+      units: [
+        unit(file, "type", ["Contract"]),
+        unit(file, "function", ["Contract", "run"], ["Contract"]),
+        unit(file, "property", ["Contract", "value"], ["Contract"]),
+        unit(
+          file,
+          "property",
+          ["Contract", "LEGACY"],
+          ["Contract"],
+          [],
+          ["internal"],
+        ),
+      ],
+      hosts: hosts(
+        key("type", ["Contract"]),
+        key("function", ["Contract", "run"]),
+        key("property", ["Contract", "value"]),
+      ),
+      requirements: requirements(
+        key("type", ["Contract"]),
+        key("function", ["Contract", "run"]),
+        key("property", ["Contract", "value"]),
+      ),
+      excludedUnits: [key("property", ["Contract", "_hidden"])],
+      annotationRanges: 4,
+      incomplete: {
+        sources: [
+          {
+            file: "src/first/Conflict.dart",
+            content: "class Conflict {} class Conflict {}\n",
+          },
+          {
+            file: "src/second/Conflict.dart",
+            content: "class Conflict {}\n",
+          },
+        ],
+        diagnosticCodes: ["dart-declaration-conflict"],
+      },
+      malformed: {
+        sources: [
+          {
+            file: "src/Malformed.dart",
+            content: "class Malformed { run( { }\n",
+          },
+        ],
+        diagnosticCodes: ["dart-parse-incomplete"],
+      },
+      falsePositive: {
+        source: {
+          file: "src/FalsePositive.dart",
+          content: dedent`
+            class FalsePositive {
+                /** @evidence docs/requirements.md#attached Attached documentation. */
+                String run() {
+                    // @evidence docs/requirements.md#comment Ordinary comments are inert.
+                    return "@evidence docs/requirements.md#literal Literal text is inert.";
+                }
+            }
+          `,
+        },
+        attachedTarget: "docs/requirements.md#attached",
+        unsupportedAnnotations: 2,
+      },
+      mutation: mutation(
+        key("function", ["Contract", "run"]),
+        "int run() { return 1; }",
+        "int run() { return 2; }",
+      ),
+    };
+  }
+
   function kotlin(): IAdapterCertification {
     const file = "src/Contract.kt";
     return {

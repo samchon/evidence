@@ -33,11 +33,23 @@ export class DartFileScanner {
   public scan(): IDartFileAnalysis {
     this.collectDocumentation();
     this.scope(this.session.root, undefined);
-    const libraryName = this.session.root.namedChildren
-      .find((node) => node.type === "library_name")
-      ?.namedChildren.find(
-        (node) => node.type === "dotted_identifier_list",
-      )?.text;
+    if (this.directives.some((directive) => directive.kind === "part-of"))
+      for (const node of this.session.root.namedChildren)
+        if (node.type === "import_or_export" || node.type === "library_name")
+          this.problem(
+            "part-directives",
+            "A part cannot contain import, export, or library directives.",
+            node,
+          );
+    const library = this.session.root.namedChildren.find(
+      (node) => node.type === "library_name",
+    );
+    const libraryName =
+      library === undefined
+        ? undefined
+        : library.namedChildren.find(
+            (node) => node.type === "dotted_identifier_list",
+          )?.text;
     return {
       source: this.source,
       library: this.source.physicalPath,
@@ -89,7 +101,7 @@ export class DartFileScanner {
         case "type_alias":
           this.add(
             node,
-            node.namedChildren.find((child) => child.type === "identifier")
+            node.namedChildren.find((child) => child.type === "type_identifier")
               ?.text,
             "type",
             owner,
@@ -343,7 +355,8 @@ export class DartFileScanner {
       );
       return;
     }
-    const target = named?.text ?? raw?.slice(1, -1);
+    const target =
+      named?.text ?? (raw === undefined ? undefined : raw.slice(1, -1));
     if (target === undefined) {
       this.problem(
         "directive-uri",
@@ -381,7 +394,9 @@ export class DartFileScanner {
       if (
         !line &&
         !block &&
-        !/@(?:evidence|link|internal|hidden|ignore)\b/u.test(node.text)
+        !/@(?:evidenceExcludeReview|evidenceReview|evidenceExclude|evidence|link|internal|hidden|ignore)\b/u.test(
+          node.text,
+        )
       )
         continue;
       const previous = node.previousNamedSibling;
@@ -391,7 +406,8 @@ export class DartFileScanner {
           : this.documentation.get(previous.startIndex);
       if (
         line &&
-        previous?.text.startsWith("///") &&
+        previous !== null &&
+        previous.text.startsWith("///") &&
         prior !== undefined &&
         /^[ \t]*\r?\n[ \t]*$/u.test(
           this.source.content.slice(previous.endIndex, node.startIndex),
@@ -409,9 +425,7 @@ export class DartFileScanner {
             ? "//"
             : node.text.startsWith("/*")
               ? "/*"
-              : node.text.startsWith("r")
-                ? node.text.slice(0, 2)
-                : (node.text[0] ?? "");
+              : (node.text.match(/^(?:r)?(?:'''|"""|'|")/u)?.[0] ?? "");
       this.documentation.set(node.startIndex, {
         id: `dart:${this.source.id}:documentation:${node.startIndex}`,
         range: this.session.range(node),
@@ -421,7 +435,7 @@ export class DartFileScanner {
             ? "*/"
             : opening.startsWith("//")
               ? ""
-              : (opening.at(-1) ?? ""),
+              : opening.replace(/^r/u, ""),
           ...(opening.startsWith("/*")
             ? { linePrefix: "*" }
             : line

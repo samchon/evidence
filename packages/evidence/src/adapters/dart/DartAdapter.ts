@@ -110,7 +110,7 @@ export class DartAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Reconciles overload families and retains each physical declaration address. */
+  /** Reconciles library declarations and retains every physical declaration address. */
   private materializeUnits(
     inventory: IEvidenceInventory,
     analyses: IDartFileAnalysis[],
@@ -123,7 +123,6 @@ export class DartAdapter implements IEvidenceAdapter {
       published.set(declaration.id, this.unitId(declaration));
 
     const units = new Map<string, IEvidenceUnit>();
-    const declarationIds = new Map<string, Set<string>>();
     const addresses = new Set<string>();
     for (const analysis of analyses)
       for (const declaration of analysis.declarations) {
@@ -133,24 +132,6 @@ export class DartAdapter implements IEvidenceAdapter {
           declaration.ownerDeclarationId === undefined
             ? undefined
             : published.get(declaration.ownerDeclarationId);
-        const previousDeclarations =
-          declarationIds.get(id) ?? new Set<string>();
-        if (
-          declaration.role !== "getter" &&
-          declaration.role !== "setter" &&
-          previousDeclarations.size !== 0 &&
-          !previousDeclarations.has(declaration.id)
-        )
-          this.problem(
-            inventory,
-            analysis,
-            "dart-declaration-conflict",
-            `Dart public identity '${declaration.identity.join(".")}' has more than one selected declaration.`,
-            "Select one source declaration for this package identity before checking coverage.",
-          );
-        previousDeclarations.add(declaration.id);
-        declarationIds.set(id, previousDeclarations);
-
         let unit = units.get(id);
         if (unit === undefined) {
           unit = {
@@ -417,26 +398,8 @@ export class DartAdapter implements IEvidenceAdapter {
       : this.withdrawn(unit.parentId, units, visited);
   }
 
-  /** Separates programming kinds while unifying package-scoped overload identities. */
+  /** Separates defining libraries and programming kinds while merging complementary accessors. */
   private unitId(declaration: IDartDeclaration): string {
     return `dart:${declaration.library}:${declaration.symbol}:${JSON.stringify(declaration.identity)}`;
-  }
-
-  /** Marks a declaration conflict as incomplete analysis. */
-  private problem(
-    inventory: IEvidenceInventory,
-    analysis: IDartFileAnalysis,
-    code: string,
-    message: string,
-    repair: string,
-  ): void {
-    inventory.complete = false;
-    inventory.diagnostics.push({
-      code,
-      severity: "error",
-      message,
-      repair,
-      location: { file: analysis.source.physicalPath },
-    });
   }
 }

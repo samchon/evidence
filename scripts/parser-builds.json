@@ -24,6 +24,19 @@
         "query": "(function_definition name: (identifier) @name)",
         "capture": "evidence_sum"
       }
+    },
+    {
+      "id": "dart",
+      "repository": "https://github.com/nielsenko/tree-sitter-dart",
+      "commit": "b57d734c84f510bbd524097902cab671e4dbfca9",
+      "directory": ".",
+      "license": "LICENSE",
+      "abi": 15,
+      "smoke": {
+        "source": "void evidence_probe() {}",
+        "query": "(identifier) @name",
+        "capture": "evidence_probe"
+      }
     }
   ]
 }

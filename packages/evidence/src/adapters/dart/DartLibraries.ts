@@ -27,8 +27,8 @@ export namespace DartLibraries {
               candidate.libraryName === directive.target &&
               !candidate.directives.some((item) => item.kind === "part-of"),
           );
-          if (matches.length === 1)
-            directive.resolved = matches[0]?.source.physicalPath;
+          if (matches.length === 1 && matches[0] !== undefined)
+            directive.resolved = matches[0].source.physicalPath;
           else
             problem(
               analysis,
@@ -77,8 +77,8 @@ export namespace DartLibraries {
             }),
           ),
         ];
-        if (matches.length === 1)
-          directive.resolved = matches[0]?.source.physicalPath;
+        if (matches.length === 1 && matches[0] !== undefined)
+          directive.resolved = matches[0].source.physicalPath;
         else
           problem(
             analysis,
@@ -210,10 +210,11 @@ export namespace DartLibraries {
           const destination = surfaces.get(analysis.library);
           if (target === undefined || destination === undefined) continue;
           for (const id of surfaces.get(target.library) ?? []) {
-            const name = units.get(id)?.identity[0];
+            const name = units.get(id)?.identity?.[0];
+            const locals = localNames.get(analysis.library);
             if (
               name === undefined ||
-              localNames.get(analysis.library)?.has(name) ||
+              (locals !== undefined && locals.has(name)) ||
               !allowed(directive, name) ||
               destination.has(id)
             )
