@@ -7,6 +7,7 @@ import {
   EvidenceJavaAdapter,
   EvidenceJavaScriptAdapter,
   EvidenceKotlinAdapter,
+  EvidenceObjcAdapter,
   EvidenceDartAdapter,
   EvidenceScalaAdapter,
   EvidenceMatlabAdapter,
@@ -41,6 +42,7 @@ export namespace AdapterCertificationFixtures {
       rust(),
       java(),
       kotlin(),
+      objc(),
       LuaCertificationFixture.create(),
       dart(),
       zig(),
@@ -53,6 +55,103 @@ export namespace AdapterCertificationFixtures {
       cpp(),
       ruby(),
     ];
+  }
+
+  function objc(): IAdapterCertification {
+    const file = "src/Contract.h";
+    return {
+      type: "objc",
+      adapter: new EvidenceObjcAdapter(),
+      sources: [
+        {
+          file,
+          content: dedent`
+        /**
+         * 계약 😀
+         * @evidence docs/requirements.md#type Implements the certified type.
+         */
+        @interface Contract {
+          @private int hidden;
+        }
+        /**
+         * 실행
+         * @evidence docs/requirements.md#function Implements the certified function.
+         */
+        - (int)run;
+        /**
+         * 값
+         * @evidence docs/requirements.md#property Implements the certified property.
+         */
+        @property int value;
+        /** @internal Retired public contract. */
+        @property int legacy;
+        @end
+      `,
+        },
+      ],
+      units: [
+        unit(file, "type", ["Contract"]),
+        unit(file, "function", ["Contract", "-run"], ["Contract"]),
+        unit(file, "property", ["Contract", "value"], ["Contract"]),
+        unit(
+          file,
+          "property",
+          ["Contract", "legacy"],
+          ["Contract"],
+          [],
+          ["internal"],
+        ),
+      ],
+      hosts: hosts(
+        key("type", ["Contract"]),
+        key("function", ["Contract", "-run"]),
+        key("property", ["Contract", "value"]),
+      ),
+      requirements: requirements(
+        key("type", ["Contract"]),
+        key("function", ["Contract", "-run"]),
+        key("property", ["Contract", "value"]),
+      ),
+      excludedUnits: [key("property", ["Contract", "ivar:hidden"])],
+      annotationRanges: 4,
+      incomplete: {
+        sources: [
+          {
+            file: "src/Conditional.h",
+            content: "#if FEATURE\n@interface Conditional\n@end\n#endif\n",
+          },
+        ],
+        diagnosticCodes: ["objc-surface"],
+      },
+      malformed: {
+        sources: [
+          {
+            file: "src/Malformed.m",
+            content: "@interface Broken\n- (void)run\n",
+          },
+        ],
+        diagnosticCodes: ["objc-parse-incomplete"],
+      },
+      falsePositive: {
+        source: {
+          file: "src/FalsePositive.m",
+          content: dedent`
+          /** @evidence docs/requirements.md#attached Attached documentation. */
+          const char *run(void) {
+            // @evidence docs/requirements.md#comment Ordinary comments are inert.
+            return "@evidence docs/requirements.md#literal Literal text is inert.";
+          }
+        `,
+        },
+        attachedTarget: "docs/requirements.md#attached",
+        unsupportedAnnotations: 1,
+      },
+      mutation: mutation(
+        key("function", ["Contract", "-run"]),
+        "- (int)run;",
+        "- (long)run;",
+      ),
+    };
   }
 
   function typescript(): IAdapterCertification {

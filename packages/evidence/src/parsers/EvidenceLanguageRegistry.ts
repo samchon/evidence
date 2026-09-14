@@ -197,6 +197,29 @@ export namespace EvidenceLanguageRegistry {
 
   const LANGUAGES: IEvidenceLanguage[] = [
     {
+      type: "objc",
+      name: "Objective-C",
+      grammars: [{ id: "objc", extensions: [".m", ".h"], filenames: [] }],
+      adapter: {
+        entry: "EvidenceObjcAdapter",
+        symbols: ["type", "function", "property"],
+        publicSurface:
+          "Explicit interfaces, protocols, named categories, public ivars, properties and external C functions in the selected Objective-C snapshot.",
+        addressing:
+          "File-qualified nominal owners; protocols and categories use quoted names, and method selectors retain their + or - prefix and all colons.",
+        comments: ["attached Doxygen"],
+        unsupported: [
+          "Objective-C++",
+          "conditional compilation",
+          "macro expansion",
+          "include traversal",
+          "external C data and aggregate types",
+          "compatibility aliases",
+          "inherited and synthesized declarations",
+        ],
+      },
+    },
+    {
       type: "lua",
       name: "Lua",
       grammars: [{ id: "lua", extensions: [".lua"], filenames: [] }],
@@ -626,29 +649,6 @@ export namespace EvidenceLanguageRegistry {
   ];
 
   const CANDIDATES: IEvidenceLanguageCandidate[] = [
-    {
-      id: "objc",
-      name: "Objective-C",
-      kind: "programming-language",
-      dialects: ["Objective-C", "Objective-C++"],
-      grammarRepository:
-        "https://github.com/tree-sitter-grammars/tree-sitter-objc",
-      grammarLicense: "MIT",
-      wasm: "release-asset",
-      wasmNotes: "The v3.0.2 release publishes tree-sitter-objc.wasm.",
-      languageReference:
-        "https://clang.llvm.org/docs/UsersManual.html#objective-c-language-features",
-      visibility:
-        "header declarations establish the consumable interface; ivars have access directives while methods and properties are exposed by interface/category/protocol declarations",
-      declarations:
-        "interfaces, implementations, protocols, categories, methods, properties, ivars, functions, variables, enums, and typedefs",
-      blockers: [
-        "header/include and preprocessor traversal",
-        "category and class-extension identity merging",
-        "selector spelling, Objective-C++ overlap, and linker visibility",
-      ],
-      next: "Certify explicit header interfaces and selector addresses first, with implementations, preprocessing, and Objective-C++ configured as separate boundaries.",
-    },
     {
       id: "vue",
       name: "Vue single-file component",

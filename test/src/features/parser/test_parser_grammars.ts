@@ -8,6 +8,14 @@ import type { IParserFixture } from "../../internal/IParserFixture";
 export async function test_parser_grammars(): Promise<void> {
   const fixtures: IParserFixture[] = [
     {
+      type: "objc",
+      grammar: "objc",
+      file: "Contract.h",
+      name: "Contract",
+      content: "@interface Contract\n@property int value;\n@end\n",
+      query: "(class_interface (identifier) @name)",
+    },
+    {
       type: "lua",
       grammar: "lua",
       file: "contract.lua",

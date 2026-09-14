@@ -1,3 +1,4 @@
+import { EvidenceObjcAdapter } from "../adapters/objc/EvidenceObjcAdapter";
 import { EvidenceDartAdapter } from "../adapters/dart/EvidenceDartAdapter";
 import { EvidenceCAdapter } from "../adapters/c/EvidenceCAdapter";
 import { EvidenceBigQueryAdapter } from "../adapters/bigquery/EvidenceBigQueryAdapter";
@@ -31,6 +32,7 @@ import type { EvidenceArtifactType } from "../typings/EvidenceArtifactType";
 /** Creates only adapters whose complete Evidence behavior is certified. */
 export namespace EvidenceAdapterFactory {
   export function create(type: EvidenceArtifactType): IEvidenceAdapter {
+    if (type === "objc") return new EvidenceObjcAdapter();
     if (type === "dart") return new EvidenceDartAdapter();
     if (type === "c") return new EvidenceCAdapter();
     if (type === "bigquery") return new EvidenceBigQueryAdapter();
