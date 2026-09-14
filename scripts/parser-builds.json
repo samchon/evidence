@@ -26,6 +26,19 @@
       }
     },
     {
+      "id": "bigquery",
+      "repository": "https://github.com/takegue/tree-sitter-sql-bigquery",
+      "commit": "eb53d2486b353f8a3d5f69833b2ae749b4862ba5",
+      "directory": ".",
+      "license": "LICENSE",
+      "abi": 14,
+      "smoke": {
+        "source": "CREATE TABLE evidence_probe (id INTEGER);",
+        "query": "(identifier) @name",
+        "capture": "evidence_probe"
+      }
+    },
+    {
       "id": "sql",
       "repository": "https://github.com/DerekStride/tree-sitter-sql",
       "commit": "7b51ecda191d36b92f5a90a8d1bc3faef1c7b8b8",
@@ -39,12 +52,12 @@
       }
     },
     {
-      "id": "bigquery",
-      "repository": "https://github.com/takegue/tree-sitter-sql-bigquery",
-      "commit": "eb53d2486b353f8a3d5f69833b2ae749b4862ba5",
+      "id": "mysql",
+      "repository": "https://github.com/DerekStride/tree-sitter-sql",
+      "commit": "b7057b7d4ca94bb45403435f12cc01cee821daa8",
       "directory": ".",
       "license": "LICENSE",
-      "abi": 14,
+      "abi": 15,
       "smoke": {
         "source": "CREATE TABLE evidence_probe (id INTEGER);",
         "query": "(identifier) @name",
