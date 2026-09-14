@@ -14,7 +14,7 @@ export async function test_zig_units(): Promise<void> {
       TestSourceSnapshot.create(
         "src/Contract.zig",
         dedent`
-      const Internal = struct {
+      const @"Internal" = struct {
         value: i32,
         pub fn run() i32 { return 1; }
         const secret = 2;

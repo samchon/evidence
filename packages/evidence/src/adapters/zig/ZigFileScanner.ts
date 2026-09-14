@@ -159,10 +159,11 @@ export class ZigFileScanner {
           ["variable_declaration", "function_declaration"].includes(
             child.type,
           ) &&
-          (
+          this.sameName(
             child.childForFieldName("name") ??
-            child.namedChildren.find((part) => part.type === "identifier")
-          )?.text === initializer.text,
+              child.namedChildren.find((part) => part.type === "identifier"),
+            initializer,
+          ),
       );
       const target = matches[0];
       if (matches.length !== 1 || target === undefined) {
@@ -234,7 +235,7 @@ export class ZigFileScanner {
         (child) => child.type === "parameters",
       );
       const generic =
-        parameters?.namedChildren.some((parameter) =>
+        parameters?.namedChildren?.some((parameter) =>
           parameter.children.some(
             (child) => child.text === "comptime" || child.text === "anytype",
           ),
@@ -356,8 +357,10 @@ export class ZigFileScanner {
     const target = scope.namedChildren.find(
       (child) =>
         child.type === "variable_declaration" &&
-        child.namedChildren.find((part) => part.type === "identifier")?.text ===
-          node.text,
+        this.sameName(
+          child.namedChildren.find((part) => part.type === "identifier"),
+          node,
+        ),
     );
     const initializer =
       target === undefined ? undefined : this.initializer(target);
@@ -381,8 +384,10 @@ export class ZigFileScanner {
     const matches = scope.namedChildren.filter(
       (child) =>
         child.type === "variable_declaration" &&
-        child.namedChildren.find((part) => part.type === "identifier")?.text ===
-          initializer.text,
+        this.sameName(
+          child.namedChildren.find((part) => part.type === "identifier"),
+          initializer,
+        ),
     );
     const target = matches[0];
     return (
@@ -436,11 +441,21 @@ export class ZigFileScanner {
         );
   }
 
+  /** Compares equivalent bare and quoted spellings by their decoded identifier. */
+  private sameName(left: Node | null | undefined, right: Node): boolean {
+    return (
+      left !== undefined &&
+      left !== null &&
+      this.name(left) === this.name(right)
+    );
+  }
+
   /** Decodes literal Zig identifiers, preserving dots as a single accessor segment. */
   private name(node: Node): string {
     if (!node.text.startsWith('@"')) return node.text;
     try {
-      return typia.assert<string>(JSON.parse(node.text.slice(1)));
+      const parsed: unknown = JSON.parse(node.text.slice(1));
+      return typia.assert<string>(parsed);
     } catch {
       this.problem(
         "identifier-escape",
@@ -555,7 +570,7 @@ export class ZigFileScanner {
       this.diagnostics.some(
         (item) =>
           item.code === `zig-${code}` &&
-          item.location?.range?.start.offset === node.startIndex,
+          item.location?.range?.start?.offset === node.startIndex,
       )
     )
       return;
