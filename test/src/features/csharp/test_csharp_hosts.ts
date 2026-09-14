@@ -1,8 +1,8 @@
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceCSharpAdapter } from "../../../../packages/evidence/src/EvidenceCSharpAdapter";
-import { EvidenceInventory } from "../../../../packages/evidence/src/EvidenceInventory";
+import { EvidenceCSharpAdapter } from "../../../../packages/evidence/src/adapters/csharp/EvidenceCSharpAdapter";
+import { EvidenceInventory } from "../../../../packages/evidence/src/graph/EvidenceInventory";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /**

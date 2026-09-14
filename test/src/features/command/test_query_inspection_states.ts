@@ -2,7 +2,7 @@ import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidenceQuery } from "../../../../packages/evidence/src/EvidenceQuery";
+import { EvidenceQuery } from "../../../../packages/evidence/src/graph/EvidenceQuery";
 import type { IEvidenceCheckAnalysis } from "../../../../packages/evidence/src/structures/IEvidenceCheckAnalysis";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestQueryAnalysis } from "../../internal/TestQueryAnalysis";

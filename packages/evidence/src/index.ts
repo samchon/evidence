@@ -1,39 +1,47 @@
 /** Public API. Importing the package performs no project work. */
-export { EvidenceAccessor } from "./EvidenceAccessor";
-export { EvidenceCAdapter } from "./EvidenceCAdapter";
-export { EvidenceConfigLoader } from "./EvidenceConfigLoader";
-export { EvidenceCppAdapter } from "./EvidenceCppAdapter";
-export { EvidenceCSharpAdapter } from "./EvidenceCSharpAdapter";
 export { EvidenceChecker } from "./EvidenceChecker";
-export { EvidenceCommand } from "./EvidenceCommand";
-export { EvidenceCommandError } from "./EvidenceCommandError";
-export { EvidenceDocumentation } from "./EvidenceDocumentation";
-export { EvidenceFileTarget } from "./EvidenceFileTarget";
-export { EvidenceFingerprint } from "./EvidenceFingerprint";
-export { EvidenceGoAdapter } from "./EvidenceGoAdapter";
-export { EvidenceGraph } from "./EvidenceGraph";
-export { EvidenceGraphReporter } from "./EvidenceGraphReporter";
-export { EvidenceInventory } from "./EvidenceInventory";
-export { EvidenceJavaAdapter } from "./EvidenceJavaAdapter";
-export { EvidenceJavaScriptAdapter } from "./EvidenceJavaScriptAdapter";
-export { EvidenceLanguageRegistry } from "./EvidenceLanguageRegistry";
-export { EvidenceMarkdownAdapter } from "./EvidenceMarkdownAdapter";
-export { EvidenceParser } from "./EvidenceParser";
-export { EvidenceParserError } from "./EvidenceParserError";
-export { EvidencePrismaAdapter } from "./EvidencePrismaAdapter";
-export { EvidencePythonAdapter } from "./EvidencePythonAdapter";
-export { EvidenceQuery } from "./EvidenceQuery";
-export { EvidenceQueryReporter } from "./EvidenceQueryReporter";
-export { EvidenceReporter } from "./EvidenceReporter";
-export type { EvidenceParseSession } from "./EvidenceParseSession";
-export { EvidenceRubyAdapter } from "./EvidenceRubyAdapter";
-export { EvidenceRustAdapter } from "./EvidenceRustAdapter";
-export { EvidenceSourceLoader } from "./EvidenceSourceLoader";
-export { EvidenceSwaggerAdapter } from "./EvidenceSwaggerAdapter";
-export { EvidenceTagParser } from "./EvidenceTagParser";
-export { EvidenceTargetResolver } from "./EvidenceTargetResolver";
-export { EvidenceTypeScriptAdapter } from "./EvidenceTypeScriptAdapter";
-export { EvidenceWatcher } from "./EvidenceWatcher";
-export { EvidenceWatchReporter } from "./EvidenceWatchReporter";
+
+export { EvidenceCAdapter } from "./adapters/c/EvidenceCAdapter";
+export { EvidenceCppAdapter } from "./adapters/cpp/EvidenceCppAdapter";
+export { EvidenceCSharpAdapter } from "./adapters/csharp/EvidenceCSharpAdapter";
+export { EvidenceGoAdapter } from "./adapters/go/EvidenceGoAdapter";
+export { EvidenceJavaAdapter } from "./adapters/java/EvidenceJavaAdapter";
+export { EvidenceJavaScriptAdapter } from "./adapters/javascript/EvidenceJavaScriptAdapter";
+export { EvidenceMarkdownAdapter } from "./adapters/markdown/EvidenceMarkdownAdapter";
+export { EvidencePrismaAdapter } from "./adapters/prisma/EvidencePrismaAdapter";
+export { EvidencePythonAdapter } from "./adapters/python/EvidencePythonAdapter";
+export { EvidenceRubyAdapter } from "./adapters/ruby/EvidenceRubyAdapter";
+export { EvidenceRustAdapter } from "./adapters/rust/EvidenceRustAdapter";
+export { EvidenceSwaggerAdapter } from "./adapters/swagger/EvidenceSwaggerAdapter";
+export { EvidenceTypeScriptAdapter } from "./adapters/typescript/EvidenceTypeScriptAdapter";
+
+export { EvidenceCommand } from "./commands/EvidenceCommand";
+export { EvidenceCommandError } from "./commands/EvidenceCommandError";
+export { EvidenceWatcher } from "./commands/EvidenceWatcher";
+
+export { EvidenceFingerprint } from "./graph/EvidenceFingerprint";
+export { EvidenceGraph } from "./graph/EvidenceGraph";
+export { EvidenceInventory } from "./graph/EvidenceInventory";
+export { EvidenceQuery } from "./graph/EvidenceQuery";
+
+export { EvidenceConfigLoader } from "./loaders/EvidenceConfigLoader";
+export { EvidenceSourceLoader } from "./loaders/EvidenceSourceLoader";
+
+export { EvidenceDocumentation } from "./parsers/EvidenceDocumentation";
+export { EvidenceLanguageRegistry } from "./parsers/EvidenceLanguageRegistry";
+export { EvidenceParser } from "./parsers/EvidenceParser";
+export { EvidenceParserError } from "./parsers/EvidenceParserError";
+export type { EvidenceParseSession } from "./parsers/EvidenceParseSession";
+export { EvidenceTagParser } from "./parsers/EvidenceTagParser";
+
+export { EvidenceGraphReporter } from "./reporters/EvidenceGraphReporter";
+export { EvidenceQueryReporter } from "./reporters/EvidenceQueryReporter";
+export { EvidenceReporter } from "./reporters/EvidenceReporter";
+export { EvidenceWatchReporter } from "./reporters/EvidenceWatchReporter";
+
+export { EvidenceAccessor } from "./targets/EvidenceAccessor";
+export { EvidenceFileTarget } from "./targets/EvidenceFileTarget";
+export { EvidenceTargetResolver } from "./targets/EvidenceTargetResolver";
+
 export type * from "./structures";
 export type * from "./typings";

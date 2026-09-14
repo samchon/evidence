@@ -1,8 +1,8 @@
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceCSharpAdapter } from "../../../../packages/evidence/src/EvidenceCSharpAdapter";
-import { EvidenceLanguageRegistry } from "../../../../packages/evidence/src/EvidenceLanguageRegistry";
+import { EvidenceCSharpAdapter } from "../../../../packages/evidence/src/adapters/csharp/EvidenceCSharpAdapter";
+import { EvidenceLanguageRegistry } from "../../../../packages/evidence/src/parsers/EvidenceLanguageRegistry";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /**

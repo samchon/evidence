@@ -1,4 +1,4 @@
-import { EvidenceLanguageRegistry } from "../EvidenceLanguageRegistry";
+import { EvidenceLanguageRegistry } from "../parsers/EvidenceLanguageRegistry";
 import type { EvidenceArtifactType } from "../typings/EvidenceArtifactType";
 
 /** Runtime registry of artifact types backed by certified adapters. */

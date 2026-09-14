@@ -1,8 +1,8 @@
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceInventory } from "../../../../packages/evidence/src/EvidenceInventory";
-import { EvidenceRubyAdapter } from "../../../../packages/evidence/src/EvidenceRubyAdapter";
+import { EvidenceInventory } from "../../../../packages/evidence/src/graph/EvidenceInventory";
+import { EvidenceRubyAdapter } from "../../../../packages/evidence/src/adapters/ruby/EvidenceRubyAdapter";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Attaches Ruby RDoc comments and rejects tags in non-documentation carriers. */

@@ -1,6 +1,6 @@
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidenceParserError } from "../../../packages/evidence/src/EvidenceParserError";
+import { EvidenceParserError } from "../../../packages/evidence/src/parsers/EvidenceParserError";
 import type { EvidenceParserErrorCode } from "../../../packages/evidence/src/typings/EvidenceParserErrorCode";
 
 /** Requires the precise analysis failure, rather than accepting an unrelated exception. */

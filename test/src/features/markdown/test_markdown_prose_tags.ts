@@ -1,7 +1,7 @@
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceMarkdownAdapter } from "../../../../packages/evidence/src/EvidenceMarkdownAdapter";
+import { EvidenceMarkdownAdapter } from "../../../../packages/evidence/src/adapters/markdown/EvidenceMarkdownAdapter";
 import type { IEvidenceDiagnostic } from "../../../../packages/evidence/src/structures/IEvidenceDiagnostic";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 

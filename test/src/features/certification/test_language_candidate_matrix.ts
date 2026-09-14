@@ -2,7 +2,7 @@ import { TestValidator } from "@nestia/e2e";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { EvidenceLanguageRegistry } from "../../../../packages/evidence/src/EvidenceLanguageRegistry";
+import { EvidenceLanguageRegistry } from "../../../../packages/evidence/src/parsers/EvidenceLanguageRegistry";
 import type { EvidenceLanguageCandidateId } from "../../../../packages/evidence/src/typings/EvidenceLanguageCandidateId";
 
 /** Keeps researched candidates concrete, separate from support, and synchronized with their matrix. */

@@ -1,7 +1,7 @@
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceTagParser } from "../../../../packages/evidence/src/EvidenceTagParser";
+import { EvidenceTagParser } from "../../../../packages/evidence/src/parsers/EvidenceTagParser";
 import { TestDocumentation } from "../../internal/TestDocumentation";
 
 /** Preserves HTML prose boundaries and Prisma-style tag boundaries with exact CRLF source locations. */

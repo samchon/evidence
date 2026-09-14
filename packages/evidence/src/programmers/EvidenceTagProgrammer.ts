@@ -1,0 +1,259 @@
+import type { IEvidenceTagContext } from "../contexts/IEvidenceTagContext";
+import { EvidenceTargetBody } from "../internal/EvidenceTargetBody";
+import type { IEvidenceSourceLocation } from "../structures/IEvidenceSourceLocation";
+import type { IEvidenceTagParseResult } from "../structures/IEvidenceTagParseResult";
+
+/** Parses adapter-owned documentation using one invocation's mutable state. */
+export namespace EvidenceTagProgrammer {
+  /** Validates source mappings and reads annotations while tracking continuations and fences. */
+  export function parse(context: IEvidenceTagContext): IEvidenceTagParseResult {
+    validate(context);
+    let cursor = 0;
+    for (const rawLine of context.documentation.text.split("\n")) {
+      const line = rawLine.trim();
+      const start = cursor + rawLine.indexOf(line);
+      const end = start + line.length;
+      cursor += rawLine.length + 1;
+      const delimiter = /^(`{3,}|~{3,})(.*)$/.exec(line);
+      if (delimiter !== null) {
+        const marker = delimiter[1] ?? "";
+        if (context.fence === "") {
+          context.fence = marker[0] ?? "";
+          context.fenceLength = marker.length;
+        } else if (
+          marker[0] === context.fence &&
+          marker.length >= context.fenceLength &&
+          (delimiter[2] ?? "").trim() === ""
+        )
+          context.fence = "";
+        if (context.pending !== undefined) {
+          context.pending.body += "\n" + line;
+          context.pending.end = end;
+        }
+        continue;
+      }
+      if (context.fence !== "") {
+        if (context.pending !== undefined) {
+          context.pending.body += "\n" + line;
+          context.pending.end = end;
+        }
+        continue;
+      }
+      const marker =
+        /^@(evidenceExcludeReview|evidenceReview|evidenceExclude|evidence|link)(?:[ \t]|$)/.exec(
+          line,
+        );
+      if (marker !== null) {
+        flush(context);
+        const kind = marker[1];
+        if (
+          kind === "evidenceExcludeReview" ||
+          kind === "evidenceReview" ||
+          kind === "evidenceExclude" ||
+          kind === "evidence" ||
+          kind === "link"
+        )
+          context.pending = {
+            kind,
+            body: line.slice(marker[0].length).trim(),
+            start,
+            end,
+          };
+        continue;
+      }
+      const hidden = /^@(internal|hidden|ignore)(?:[ \t]|$)/.exec(line);
+      if (hidden !== null && context.documentation.allowWithdrawal) {
+        flush(context);
+        const tag = hidden[1];
+        if (
+          context.host.attachment === "attached" &&
+          (tag === "internal" || tag === "hidden" || tag === "ignore")
+        )
+          context.result.withdrawals.push({
+            tag,
+            location: location(context, start, end),
+          });
+        continue;
+      }
+      if (
+        line.startsWith("@") &&
+        (context.documentation.tagBoundaries ||
+          context.pending?.kind === "evidenceReview" ||
+          context.pending?.kind === "evidenceExcludeReview")
+      ) {
+        flush(context);
+        continue;
+      }
+      if (context.pending !== undefined) {
+        context.pending.body += "\n" + line;
+        context.pending.end = end;
+      }
+    }
+    flush(context);
+    return context.result;
+  }
+
+  /** Rejects documentation maps that escape or disagree with their declared host. */
+  function validate(context: IEvidenceTagContext): void {
+    if (
+      context.documentation.hostId !== context.host.id ||
+      context.documentation.offsets.length !==
+        context.documentation.text.length + 1 ||
+      context.documentation.ends.length !== context.documentation.text.length ||
+      !context.source.contains(context.host.range)
+    )
+      throw new Error(
+        "The documentation map does not belong to its host or text.",
+      );
+    let previous = context.host.range.start.offset;
+    for (const [index, offset] of context.documentation.offsets.entries()) {
+      if (offset < previous || offset > context.host.range.end.offset)
+        throw new Error("The documentation map escapes its source host.");
+      context.source.position(offset);
+      const end = context.documentation.ends[index] ?? offset;
+      if (end < offset || end > context.host.range.end.offset)
+        throw new Error("The documentation character escapes its source host.");
+      context.source.position(end);
+      previous = end;
+    }
+  }
+
+  /** Maps documentation offsets to the original host file and source range. */
+  function location(
+    context: IEvidenceTagContext,
+    start: number,
+    end: number,
+  ): IEvidenceSourceLocation {
+    const from = context.documentation.offsets[start];
+    const until = end === start ? from : context.documentation.ends[end - 1];
+    if (from === undefined || until === undefined)
+      throw new Error("Missing documentation source boundary.");
+    return {
+      file: context.host.file,
+      range: context.source.range(from, until),
+    };
+  }
+
+  /** Appends a diagnostic associated with the current annotation host. */
+  function problem(
+    context: IEvidenceTagContext,
+    code: string,
+    message: string,
+    repair: string,
+    where: IEvidenceSourceLocation,
+  ): void {
+    context.result.diagnostics.push({
+      code,
+      severity: "error",
+      message,
+      repair,
+      location: where,
+      hostId: context.host.id,
+    });
+  }
+
+  /** Finalizes the pending annotation and clears it before validating its target. */
+  function flush(context: IEvidenceTagContext): void {
+    if (context.pending === undefined) return;
+    const tag = context.pending;
+    context.pending = undefined;
+    const where = location(context, tag.start, tag.end);
+    if (context.host.attachment !== "attached") {
+      problem(
+        context,
+        "unsupported-annotation-host",
+        "The annotation has no eligible declaration host.",
+        context.host.problem ??
+          "Attach the citation to documentation owned by the declaration that supplies the evidence, or remove it if stale.",
+        where,
+      );
+      return;
+    }
+    if (/^\s*\{@link(?:code|plain)?\b/u.test(tag.body)) {
+      problem(
+        context,
+        "unsupported-inline-link",
+        "Compiler import-scoped inline links are unavailable in standalone Evidence.",
+        "Use an explicit target such as @evidence ../calculator.ts#add Implements the arithmetic contract.",
+        where,
+      );
+      return;
+    }
+    const body = EvidenceTargetBody.split(tag.body);
+    try {
+      EvidenceTargetBody.check(body.target, tag.kind === "link");
+    } catch (cause) {
+      problem(
+        context,
+        "malformed-target",
+        "The annotation has a malformed target.",
+        cause instanceof Error
+          ? cause.message
+          : "Use a valid artifact target or file-qualified accessor.",
+        where,
+      );
+      return;
+    }
+    const id = JSON.stringify([
+      context.host.id,
+      context.documentation.offsets[tag.start],
+      tag.kind,
+    ]);
+    if (tag.kind === "evidenceReview" || tag.kind === "evidenceExcludeReview") {
+      let description = body.remainder;
+      let fingerprint: string | undefined;
+      if (description.startsWith("#")) {
+        const token = description.split(/\s/u)[0] ?? "";
+        const prose = description.slice(token.length).trim();
+        if (/^#[0-9a-f]{7}$/.test(token)) {
+          fingerprint = token.slice(1);
+          description = prose;
+        } else if (prose === "") {
+          problem(
+            context,
+            "malformed-fingerprint",
+            "The review contains only an invalid fingerprint-like token.",
+            "Write a seven-character lowercase hexadecimal fingerprint after '#', followed by a description of the review.",
+            where,
+          );
+          return;
+        }
+      }
+      if (description === "") {
+        problem(
+          context,
+          "missing-review-description",
+          "The review does not explain what was checked.",
+          "Describe the verification after the target and optional fingerprint.",
+          where,
+        );
+        return;
+      }
+      context.result.reviews.push({
+        id,
+        hostId: context.host.id,
+        reviews: tag.kind === "evidenceReview" ? "evidence" : "evidenceExclude",
+        target: body.target,
+        description,
+        location: where,
+        ...(fingerprint === undefined ? {} : { fingerprint }),
+      });
+    } else if (body.remainder === "")
+      problem(
+        context,
+        "missing-evidence-reason",
+        "The acknowledgement does not state a reason.",
+        "Explain how the host supplies the cited evidence or why the target does not apply.",
+        where,
+      );
+    else
+      context.result.declarations.push({
+        id,
+        hostId: context.host.id,
+        kind: tag.kind === "evidenceExclude" ? "evidenceExclude" : "evidence",
+        target: body.target,
+        reason: body.remainder,
+        location: where,
+      });
+  }
+}

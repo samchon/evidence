@@ -1,17 +1,17 @@
 import { dedent } from "@typia/utils";
 
-import { EvidenceAccessor } from "../../../../packages/evidence/src/EvidenceAccessor";
-import { EvidenceCAdapter } from "../../../../packages/evidence/src/EvidenceCAdapter";
-import { EvidenceCppAdapter } from "../../../../packages/evidence/src/EvidenceCppAdapter";
-import { EvidenceCSharpAdapter } from "../../../../packages/evidence/src/EvidenceCSharpAdapter";
-import { EvidenceGoAdapter } from "../../../../packages/evidence/src/EvidenceGoAdapter";
-import { EvidenceJavaAdapter } from "../../../../packages/evidence/src/EvidenceJavaAdapter";
-import { EvidenceJavaScriptAdapter } from "../../../../packages/evidence/src/EvidenceJavaScriptAdapter";
-import { EvidencePythonAdapter } from "../../../../packages/evidence/src/EvidencePythonAdapter";
-import { EvidenceRubyAdapter } from "../../../../packages/evidence/src/EvidenceRubyAdapter";
-import { EvidenceRustAdapter } from "../../../../packages/evidence/src/EvidenceRustAdapter";
+import { EvidenceAccessor } from "../../../../packages/evidence/src/targets/EvidenceAccessor";
+import { EvidenceCAdapter } from "../../../../packages/evidence/src/adapters/c/EvidenceCAdapter";
+import { EvidenceCppAdapter } from "../../../../packages/evidence/src/adapters/cpp/EvidenceCppAdapter";
+import { EvidenceCSharpAdapter } from "../../../../packages/evidence/src/adapters/csharp/EvidenceCSharpAdapter";
+import { EvidenceGoAdapter } from "../../../../packages/evidence/src/adapters/go/EvidenceGoAdapter";
+import { EvidenceJavaAdapter } from "../../../../packages/evidence/src/adapters/java/EvidenceJavaAdapter";
+import { EvidenceJavaScriptAdapter } from "../../../../packages/evidence/src/adapters/javascript/EvidenceJavaScriptAdapter";
+import { EvidencePythonAdapter } from "../../../../packages/evidence/src/adapters/python/EvidencePythonAdapter";
+import { EvidenceRubyAdapter } from "../../../../packages/evidence/src/adapters/ruby/EvidenceRubyAdapter";
+import { EvidenceRustAdapter } from "../../../../packages/evidence/src/adapters/rust/EvidenceRustAdapter";
 import type { IEvidenceWithdrawal } from "../../../../packages/evidence/src/structures/IEvidenceWithdrawal";
-import { EvidenceTypeScriptAdapter } from "../../../../packages/evidence/src/EvidenceTypeScriptAdapter";
+import { EvidenceTypeScriptAdapter } from "../../../../packages/evidence/src/adapters/typescript/EvidenceTypeScriptAdapter";
 import type { EvidenceProgrammingSymbol } from "../../../../packages/evidence/src/typings/EvidenceProgrammingSymbol";
 import type { IAdapterCertification } from "./IAdapterCertification";
 import type { IAdapterCertificationAddress } from "./IAdapterCertificationAddress";

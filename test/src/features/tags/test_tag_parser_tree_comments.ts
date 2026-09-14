@@ -1,9 +1,9 @@
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceDocumentation } from "../../../../packages/evidence/src/EvidenceDocumentation";
-import { EvidenceParser } from "../../../../packages/evidence/src/EvidenceParser";
-import { EvidenceTagParser } from "../../../../packages/evidence/src/EvidenceTagParser";
+import { EvidenceDocumentation } from "../../../../packages/evidence/src/parsers/EvidenceDocumentation";
+import { EvidenceParser } from "../../../../packages/evidence/src/parsers/EvidenceParser";
+import { EvidenceTagParser } from "../../../../packages/evidence/src/parsers/EvidenceTagParser";
 import type { IEvidenceHost } from "../../../../packages/evidence/src/structures/IEvidenceHost";
 
 /** Parser-owned comment spans prevent tag-shaped strings and regexes from entering documentation parsing. */

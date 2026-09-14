@@ -1,8 +1,8 @@
 import { TestValidator } from "@nestia/e2e";
 import assert from "node:assert/strict";
 
-import { EvidenceCommand } from "../../../../packages/evidence/src/EvidenceCommand";
-import { EvidenceCommandError } from "../../../../packages/evidence/src/EvidenceCommandError";
+import { EvidenceCommand } from "../../../../packages/evidence/src/commands/EvidenceCommand";
+import { EvidenceCommandError } from "../../../../packages/evidence/src/commands/EvidenceCommandError";
 import type { IEvidenceCheckCommand } from "../../../../packages/evidence/src/structures/IEvidenceCheckCommand";
 
 /** Parses aliases, common options, and every reserved or invalid combination. */

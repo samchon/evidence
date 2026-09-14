@@ -1,8 +1,8 @@
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceJavaAdapter } from "../../../../packages/evidence/src/EvidenceJavaAdapter";
-import { EvidenceLanguageRegistry } from "../../../../packages/evidence/src/EvidenceLanguageRegistry";
+import { EvidenceJavaAdapter } from "../../../../packages/evidence/src/adapters/java/EvidenceJavaAdapter";
+import { EvidenceLanguageRegistry } from "../../../../packages/evidence/src/parsers/EvidenceLanguageRegistry";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Classifies Java public types, overloads, fields, records, enums, and annotations. */

@@ -1,13 +1,13 @@
 import path from "node:path";
 
-import { EvidenceFileTarget } from "../EvidenceFileTarget";
-import { EvidenceLanguageRegistry } from "../EvidenceLanguageRegistry";
+import { EvidenceFileTarget } from "../targets/EvidenceFileTarget";
+import { EvidenceLanguageRegistry } from "../parsers/EvidenceLanguageRegistry";
 import type { IEvidenceAddress } from "../structures/IEvidenceAddress";
 import type { IEvidenceHost } from "../structures/IEvidenceHost";
 import type { IEvidenceTargetStatement } from "../structures/IEvidenceTargetStatement";
 import type { EvidenceProgrammingType } from "../typings/EvidenceProgrammingType";
 import type { IEvidenceMaterializedReference } from "./IEvidenceMaterializedReference";
-import { MarkdownTarget } from "./MarkdownTarget";
+import { MarkdownTarget } from "../adapters/markdown/MarkdownTarget";
 
 /** Assigns a declaration to references whose target grammar and files accept it. */
 export namespace EvidenceTargetApplicability {

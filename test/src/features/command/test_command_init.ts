@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 
-import { EvidenceCommand } from "../../../../packages/evidence/src/EvidenceCommand";
+import { EvidenceCommand } from "../../../../packages/evidence/src/commands/EvidenceCommand";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
 /** Creates one typed starter config and refuses every overwrite attempt. */

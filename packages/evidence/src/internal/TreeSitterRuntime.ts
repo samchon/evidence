@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { Language, Parser } from "web-tree-sitter";
 
-import { EvidenceParserError } from "../EvidenceParserError";
+import { EvidenceParserError } from "../parsers/EvidenceParserError";
 import type { IEvidenceGrammar } from "../structures/IEvidenceGrammar";
 
 /** Shares immutable grammar modules; the binding has no Language disposal API. */

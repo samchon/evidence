@@ -3,7 +3,7 @@ import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidenceConfigLoader } from "../../../../packages/evidence/src/EvidenceConfigLoader";
+import { EvidenceConfigLoader } from "../../../../packages/evidence/src/loaders/EvidenceConfigLoader";
 import { evaluateTypeScriptConfig } from "../../../../packages/evidence/src/internal/evaluateTypeScriptConfig";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 

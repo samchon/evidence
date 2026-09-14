@@ -1,6 +1,6 @@
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidenceInventory } from "../../../../packages/evidence/src/EvidenceInventory";
+import { EvidenceInventory } from "../../../../packages/evidence/src/graph/EvidenceInventory";
 import { TestInventory } from "../../internal/TestInventory";
 
 /** Multiple module-qualified exports keep one obligation while preserving unrelated homonyms. */

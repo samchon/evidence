@@ -1,7 +1,7 @@
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceTagParser } from "../../../../packages/evidence/src/EvidenceTagParser";
+import { EvidenceTagParser } from "../../../../packages/evidence/src/parsers/EvidenceTagParser";
 import { TestDocumentation } from "../../internal/TestDocumentation";
 
 /** Reviews, fenced examples, and prose mentions never become acknowledgements or withdrawals. */

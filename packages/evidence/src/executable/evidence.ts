@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { EvidenceCommand } from "../EvidenceCommand.js";
+import { EvidenceCommand } from "../commands/EvidenceCommand.js";
 
 EvidenceCommand.main(process.argv.slice(2))
   .then((exitCode) => {

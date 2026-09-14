@@ -1,7 +1,7 @@
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidencePythonAdapter } from "../../../../packages/evidence/src/EvidencePythonAdapter";
+import { EvidencePythonAdapter } from "../../../../packages/evidence/src/adapters/python/EvidencePythonAdapter";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 

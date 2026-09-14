@@ -1,7 +1,7 @@
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceParser } from "../../../../packages/evidence/src/EvidenceParser";
+import { EvidenceParser } from "../../../../packages/evidence/src/parsers/EvidenceParser";
 
 /** Keeps Unicode, surrogate pairs, BOM, and CRLF coordinates usable with the original source string. */
 export async function test_parser_coordinates(): Promise<void> {

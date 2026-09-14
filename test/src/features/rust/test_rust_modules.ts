@@ -1,8 +1,8 @@
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceAccessor } from "../../../../packages/evidence/src/EvidenceAccessor";
-import { EvidenceRustAdapter } from "../../../../packages/evidence/src/EvidenceRustAdapter";
+import { EvidenceAccessor } from "../../../../packages/evidence/src/targets/EvidenceAccessor";
+import { EvidenceRustAdapter } from "../../../../packages/evidence/src/adapters/rust/EvidenceRustAdapter";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Resolves inline and file modules through Rust visibility and public reexports. */

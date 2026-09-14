@@ -1,4 +1,4 @@
-import { EvidenceDocumentation } from "../../../packages/evidence/src/EvidenceDocumentation";
+import { EvidenceDocumentation } from "../../../packages/evidence/src/parsers/EvidenceDocumentation";
 import { SourceText } from "../../../packages/evidence/src/internal/SourceText";
 import type { IEvidenceCommentSyntax } from "../../../packages/evidence/src/structures/IEvidenceCommentSyntax";
 import type { IEvidenceHost } from "../../../packages/evidence/src/structures/IEvidenceHost";

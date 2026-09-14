@@ -1,8 +1,8 @@
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceLanguageRegistry } from "../../../../packages/evidence/src/EvidenceLanguageRegistry";
-import { EvidenceRubyAdapter } from "../../../../packages/evidence/src/EvidenceRubyAdapter";
+import { EvidenceLanguageRegistry } from "../../../../packages/evidence/src/parsers/EvidenceLanguageRegistry";
+import { EvidenceRubyAdapter } from "../../../../packages/evidence/src/adapters/ruby/EvidenceRubyAdapter";
 import type { IEvidenceInventory } from "../../../../packages/evidence/src/structures/IEvidenceInventory";
 import type { IEvidenceUnit } from "../../../../packages/evidence/src/structures/IEvidenceUnit";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";

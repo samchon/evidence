@@ -1,7 +1,7 @@
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceTagParser } from "../../../../packages/evidence/src/EvidenceTagParser";
+import { EvidenceTagParser } from "../../../../packages/evidence/src/parsers/EvidenceTagParser";
 import { TestDocumentation } from "../../internal/TestDocumentation";
 
 /** Reports common tag failures while deferring reference-specific target syntax. */

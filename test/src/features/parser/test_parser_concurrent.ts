@@ -1,7 +1,7 @@
 import { TestValidator } from "@nestia/e2e";
 
-import type { EvidenceParseSession } from "../../../../packages/evidence/src/EvidenceParseSession";
-import { EvidenceParser } from "../../../../packages/evidence/src/EvidenceParser";
+import type { EvidenceParseSession } from "../../../../packages/evidence/src/parsers/EvidenceParseSession";
+import { EvidenceParser } from "../../../../packages/evidence/src/parsers/EvidenceParser";
 import type { IEvidenceParserInput } from "../../../../packages/evidence/src/structures/IEvidenceParserInput";
 import { TestParserError } from "../../internal/TestParserError";
 import { TestSignal } from "../../internal/TestSignal";

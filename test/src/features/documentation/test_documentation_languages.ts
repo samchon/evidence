@@ -2,7 +2,7 @@ import { TestValidator } from "@nestia/e2e";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { EvidenceLanguageRegistry } from "../../../../packages/evidence/src/EvidenceLanguageRegistry";
+import { EvidenceLanguageRegistry } from "../../../../packages/evidence/src/parsers/EvidenceLanguageRegistry";
 
 /** Keeps the reader-facing programming-language matrix aligned with certified registry entries. */
 export async function test_documentation_languages(): Promise<void> {
