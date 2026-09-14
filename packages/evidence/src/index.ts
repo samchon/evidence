@@ -15,6 +15,7 @@ export { EvidenceRubyAdapter } from "./adapters/ruby/EvidenceRubyAdapter";
 export { EvidenceRustAdapter } from "./adapters/rust/EvidenceRustAdapter";
 export { EvidenceSwaggerAdapter } from "./adapters/swagger/EvidenceSwaggerAdapter";
 export { EvidenceTypeScriptAdapter } from "./adapters/typescript/EvidenceTypeScriptAdapter";
+export { EvidenceZigAdapter } from "./adapters/zig/EvidenceZigAdapter";
 
 export { EvidenceCommand } from "./commands/EvidenceCommand";
 export { EvidenceCommandError } from "./commands/EvidenceCommandError";
@@ -46,5 +47,3 @@ export { EvidenceTargetResolver } from "./targets/EvidenceTargetResolver";
 
 export type * from "./structures";
 export type * from "./typings";
-
-export * from "./adapters/zig/EvidenceZigAdapter";

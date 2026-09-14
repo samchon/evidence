@@ -19,7 +19,6 @@ import type { EvidenceArtifactType } from "../typings/EvidenceArtifactType";
 /** Creates only adapters whose complete Evidence behavior is certified. */
 export namespace EvidenceAdapterFactory {
   export function create(type: EvidenceArtifactType): IEvidenceAdapter {
-    if (type === "zig") return new EvidenceZigAdapter();
     if (type === "c") return new EvidenceCAdapter();
     if (type === "cpp") return new EvidenceCppAdapter();
     if (type === "csharp") return new EvidenceCSharpAdapter();
@@ -34,6 +33,7 @@ export namespace EvidenceAdapterFactory {
     if (type === "rust") return new EvidenceRustAdapter();
     if (type === "swagger") return new EvidenceSwaggerAdapter();
     if (type === "typescript") return new EvidenceTypeScriptAdapter();
+    if (type === "zig") return new EvidenceZigAdapter();
     throw new Error(
       `Artifact type '${type}' has no certified Evidence adapter.`,
     );

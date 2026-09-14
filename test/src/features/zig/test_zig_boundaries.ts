@@ -6,6 +6,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_zig_boundaries(): Promise<void> {
   const adapter = new EvidenceZigAdapter();
   const cases = new Map<string, string>([
+    [String.raw`pub const @"\x61" = 1;`, "zig-identifier-escape"],
     [
       "const Meta = type; pub const Generated: Meta = Factory();",
       "zig-generated-type",
