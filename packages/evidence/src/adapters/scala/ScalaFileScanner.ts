@@ -12,10 +12,13 @@ import type { IScalaFileAnalysis } from "./IScalaFileAnalysis";
 export class ScalaFileScanner {
   /** Node-free declaration records. */
   private readonly declarations: IScalaDeclaration[] = [];
+
   /** Scaladoc and unsupported tag carriers by original source offset. */
   private readonly documentation = new Map<number, IScalaDocumentation>();
+
   /** Explicit exports resolved after every selected file has been scanned. */
   private readonly exports: IScalaExport[] = [];
+
   /** Surface failures that prevent a passing smaller inventory. */
   private readonly diagnostics: IEvidenceDiagnostic[] = [];
 

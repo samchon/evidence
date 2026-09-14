@@ -25,7 +25,11 @@ export namespace ScalaExports {
               : [];
           if (candidates.length !== 0) break;
         }
-        const owner = owners.length === 1 ? owners[0] : undefined;
+        const candidate = owners.length === 1 ? owners[0] : undefined;
+        const owner =
+          candidate !== undefined && staticObject(candidate, declarations)
+            ? candidate
+            : undefined;
         const targets =
           owner === undefined
             ? []
@@ -81,6 +85,7 @@ export namespace ScalaExports {
           exported.declaration.ownerDeclarationId = target.ownerDeclarationId;
       }
   }
+
   /** Resolves lexical withdrawals before exports can expose alternate addresses. */
   function withdrawals(analyses: IScalaFileAnalysis[]): Set<string> {
     const hidden = new Set<string>();
@@ -118,5 +123,28 @@ export namespace ScalaExports {
           hidden.add(declaration.id);
     }
     return hidden;
+  }
+
+  /** Requires a namespace path made entirely of singleton objects and package objects. */
+  function staticObject(
+    declaration: IScalaDeclaration,
+    declarations: IScalaDeclaration[],
+  ): boolean {
+    let current: IScalaDeclaration | undefined = declaration;
+    const visited = new Set<string>();
+    while (current !== undefined) {
+      if (
+        visited.has(current.id) ||
+        (!current.object && current.syntax !== "package_object")
+      )
+        return false;
+      visited.add(current.id);
+      const parent: string | undefined = current.ownerDeclarationId;
+      current =
+        parent === undefined
+          ? undefined
+          : declarations.find((candidate) => candidate.id === parent);
+    }
+    return true;
   }
 }

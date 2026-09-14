@@ -9,6 +9,8 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_scala_boundaries(): Promise<void> {
   for (const source of [
     "given Ordering[Int] = ???",
+    "class Container { object Source { val value = 1 } }; object Forward { export Container.Source.value }",
+    "object Origin { val value = 1 }; class Forward(Origin: Int) { export Origin.value }",
     "object Origin { val value = 1 }; object Forward { val Origin = ???; export Origin.value }",
     "import other.Origin; object Origin { val value = 1 }; object Forward { export Origin.value }",
     "trait T { def structural: { def value: Int } }",
