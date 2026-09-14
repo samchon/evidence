@@ -100,3 +100,6 @@ export type * from "./IEvidenceVersionCommand";
 export type * from "./IEvidenceWatchCheckCycle";
 export type * from "./IEvidenceWatchFailureCycle";
 export type * from "./IEvidenceWatchOptions";
+
+export type { IEvidenceDatabaseLanguage } from "./IEvidenceDatabaseLanguage";
+export type { IEvidenceDatabaseLanguageAdapter } from "./IEvidenceDatabaseLanguageAdapter";
