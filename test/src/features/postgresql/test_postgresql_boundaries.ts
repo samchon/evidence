@@ -8,6 +8,7 @@ export async function test_postgresql_boundaries(): Promise<void> {
   const adapter = new EvidencePostgresqlAdapter();
   for (const source of [
     "CREATE TABLE Item (id integer);",
+    "CREATE SCHEMA `app`;",
     "SET search_path TO app; CREATE TABLE app.Item (id integer);",
     "CREATE TABLE app.Item AS SELECT 1 AS id;",
     "CREATE TABLE app.Item (LIKE app.Other);",

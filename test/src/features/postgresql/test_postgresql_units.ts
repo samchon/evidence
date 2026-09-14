@@ -93,13 +93,15 @@ export async function test_postgresql_units(): Promise<void> {
     ).status,
     "missing",
   );
+  const commentHost = inventory.hosts.find(
+    (host) => host.id === inventory.declarations[0]?.hostId,
+  );
+  if (commentHost === undefined) throw new Error("Missing COMMENT host.");
   TestValidator.equals(
     "COMMENT maps to added column",
-    inventory.hosts
-      .find((host) => host.id === inventory.declarations[0]?.hostId)
-      ?.unitIds.map(
-        (id) => inventory.units.find((unit) => unit.id === id)?.identity,
-      ),
+    commentHost.unitIds.map(
+      (id) => inventory.units.find((unit) => unit.id === id)?.identity,
+    ),
     [["app", "account", "label"]],
   );
   const reversed = await new EvidencePostgresqlAdapter().analyze({
@@ -113,7 +115,11 @@ export async function test_postgresql_units(): Promise<void> {
   );
   TestValidator.equals(
     "same semantic identity independent of file order",
-    reversed.units.map((unit) => unit.id).sort(),
-    inventory.units.map((unit) => unit.id).sort(),
+    reversed.units
+      .map((unit) => unit.id)
+      .sort((a, b) => a.localeCompare(b, "en")),
+    inventory.units
+      .map((unit) => unit.id)
+      .sort((a, b) => a.localeCompare(b, "en")),
   );
 }

@@ -12,7 +12,7 @@ import { PostgresqlIdentity } from "./PostgresqlIdentity";
 /** Extracts a bounded PostgreSQL DDL surface from authoritative grammar nodes. */
 export class PostgresqlFileScanner {
   /** Serializable analysis owned by this source scan. */
-  private readonly output: IPostgresqlFileAnalysis;
+  private readonly output: Required<IPostgresqlFileAnalysis>;
 
   /** Declaration nodes retained only during this parser callback. */
   private readonly nodes = new Map<number, ISqlDeclaration[]>();
@@ -48,10 +48,17 @@ export class PostgresqlFileScanner {
     }
     if (node.type === "create_table") this.table(node);
     else if (node.type === "create_schema") {
-      if (node.namedChildren.some((child) => child.type === "keyword_if"))
+      if (
+        node.namedChildren.some(
+          (child) =>
+            child.type === "keyword_if" ||
+            (child.type === "identifier" &&
+              PostgresqlIdentity.identifier(child.text) === undefined),
+        )
+      )
         this.problem(
           node,
-          "Conditional schema creation depends on an existing database.",
+          "CREATE SCHEMA requires unconditional PostgreSQL identifiers without server-side name truncation.",
         );
     } else if (node.type === "alter_table") this.alter(node);
     else if (node.type === "comment_statement") this.commentStatement(node);
@@ -162,7 +169,7 @@ export class PostgresqlFileScanner {
       const columns = node.namedChildren.find(
         (child) => child.type === "ordered_columns",
       );
-      const local = columns?.namedChildren
+      const local = (columns?.namedChildren ?? [])
         .filter((child) => child.type === "column")
         .map((child) => {
           const name = child.childForFieldName("name");
@@ -170,11 +177,7 @@ export class PostgresqlFileScanner {
             ? undefined
             : PostgresqlIdentity.identifier(name.text);
         });
-      if (
-        local === undefined ||
-        local.length === 0 ||
-        local.some((name) => name === undefined)
-      ) {
+      if (local.length === 0 || local.some((name) => name === undefined)) {
         this.problem(
           node,
           "Foreign keys require explicit local column endpoints.",
@@ -274,7 +277,7 @@ export class PostgresqlFileScanner {
     }
     const table = this.declaration(node, "model", identity);
     table.merge = true;
-    this.output.references?.push({
+    this.output.references.push({
       declarationId: table.id,
       identity,
       comment: false,
@@ -363,8 +366,9 @@ export class PostgresqlFileScanner {
       column ? "column" : "model",
       identity,
     );
+    declaration.site.id += ":comment";
     declaration.merge = true;
-    this.output.references?.push({
+    this.output.references.push({
       declarationId: declaration.id,
       identity,
       comment: true,

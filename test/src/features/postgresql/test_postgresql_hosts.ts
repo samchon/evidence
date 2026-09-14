@@ -42,15 +42,20 @@ export async function test_postgresql_hosts(): Promise<void> {
   );
   TestValidator.equals(
     "strings and fences remain inert",
-    inventory.declarations.map((item) => item.target).sort(),
+    inventory.declarations
+      .map((item) => item.target)
+      .sort((a, b) => a.localeCompare(b, "en")),
     ["spec.md#id", "spec.md#table", "spec.md#value"],
   );
-  for (const declaration of inventory.declarations)
+  for (const declaration of inventory.declarations) {
+    const range = declaration.location.range;
+    if (range === undefined) throw new Error("Missing annotation location.");
     TestValidator.equals(
       "original UTF-16 annotation position",
-      declaration.location.range?.start.offset,
+      range.start.offset,
       source.indexOf(`@evidence ${declaration.target}`),
     );
+  }
   TestValidator.equals(
     "withdrawn descendant target",
     new EvidenceInventory([inventory]).resolve(
@@ -84,6 +89,42 @@ export async function test_postgresql_hosts(): Promise<void> {
     "column type edit invalidates table review",
     EvidenceFingerprint.inspect(inventory, table.id).fingerprint,
     EvidenceFingerprint.inspect(changed, table.id).fingerprint,
+  );
+  const plain = "CREATE TABLE app.Item (id integer);";
+  const withoutComment = await adapter.analyze(
+    TestSourceSnapshot.create("comment.sql", plain),
+  );
+  const withComment = await adapter.analyze(
+    TestSourceSnapshot.create(
+      "comment.sql",
+      `${plain}\nCOMMENT ON TABLE app.Item IS '@evidenceReview spec.md#table Review metadata only.';`,
+    ),
+  );
+  TestValidator.equals(
+    "adding COMMENT documentation preserves table fingerprint",
+    EvidenceFingerprint.inspect(withoutComment, table.id).fingerprint,
+    EvidenceFingerprint.inspect(withComment, table.id).fingerprint,
+  );
+  TestValidator.equals(
+    "COMMENT review never acknowledges",
+    withComment.declarations,
+    [],
+  );
+  TestValidator.equals(
+    "COMMENT review retains its eligible host",
+    withComment.reviews.length,
+    1,
+  );
+  const trailing = await adapter.analyze(
+    TestSourceSnapshot.create(
+      "trailing.sql",
+      "CREATE TABLE app.Item (id integer); -- @evidence spec.md#trailing No next owner.\nCREATE TABLE app.Other (id integer);",
+    ),
+  );
+  TestValidator.equals(
+    "trailing comment does not move to following table",
+    trailing.declarations,
+    [],
   );
   const unattached = await adapter.analyze(
     TestSourceSnapshot.create(
