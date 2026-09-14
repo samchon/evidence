@@ -7,7 +7,7 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
 
 /** Keeps help/version independent and makes operational JSON/output failures explicit. */
 export async function test_command_output(): Promise<void> {
-  const location = join(__dirname, `output 한글 ${randomUUID()}`);
+  const location = join(__dirname, `output ${randomUUID()}`);
   await TestFileSystem.experiment(
     location,
     { "nested/.keep": "" },

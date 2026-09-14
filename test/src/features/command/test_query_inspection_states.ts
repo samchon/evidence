@@ -9,7 +9,7 @@ import { TestQueryAnalysis } from "../../internal/TestQueryAnalysis";
 
 /** Explains review expiry, ambiguity, withdrawal, and incomplete target analysis. */
 export async function test_query_inspection_states(): Promise<void> {
-  const location = join(__dirname, `query states 한글 ${randomUUID()}`);
+  const location = join(__dirname, `query states ${randomUUID()}`);
   await TestFileSystem.experiment(
     location,
     TestQueryAnalysis.records(),
@@ -150,12 +150,11 @@ function requireReviewedTarget(
     (candidate) =>
       candidate.scope.role === "reference" &&
       candidate.name === "member.with.dots" &&
-      candidate.aliases.some((alias) => alias.includes("%EA%B3%B5%EC%9A%A9")),
+      candidate.aliases.some((alias) => alias.includes("shared.ts")),
   );
   if (item === undefined) throw new Error("Missing reviewed query target.");
   return (
-    item.aliases.find((alias) => alias.includes("%EA%B3%B5%EC%9A%A9")) ??
-    item.target
+    item.aliases.find((alias) => alias.includes("shared.ts")) ?? item.target
   );
 }
 

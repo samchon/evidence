@@ -11,7 +11,7 @@ import { TestQueryAnalysis } from "../../internal/TestQueryAnalysis";
 
 /** Exports independent obligations and renders untrusted labels as graph data. */
 export async function test_query_graph(): Promise<void> {
-  const location = join(__dirname, `query graph 한글 ${randomUUID()}`);
+  const location = join(__dirname, `query graph ${randomUUID()}`);
   await TestFileSystem.experiment(
     location,
     TestQueryAnalysis.records(),

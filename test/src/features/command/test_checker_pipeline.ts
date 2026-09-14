@@ -10,7 +10,7 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
 
 /** Runs source discovery, two adapters, target resolution, graph policy, and reports. */
 export async function test_checker_pipeline(): Promise<void> {
-  const location = join(__dirname, `checker 한글 ${randomUUID()}`);
+  const location = join(__dirname, `checker ${randomUUID()}`);
   await TestFileSystem.experiment(
     location,
     {

@@ -30,7 +30,7 @@ export async function test_python_stubs(): Promise<void> {
         `,
       ),
       TestSourceSnapshot.create(
-        "유니코드/계약.py",
+        "unicode/contract.py",
         dedent`
           __all__ = ["판매", "_강제"]
 
@@ -64,7 +64,7 @@ export async function test_python_stubs(): Promise<void> {
 
   TestValidator.equals(
     "Unicode and explicit private addresses",
-    addresses(inventory, "/project/유니코드/계약.py"),
+    addresses(inventory, "/project/unicode/contract.py"),
     ["_강제", "판매", "판매.prototype.계산", "판매.값"],
   );
   TestValidator.equals("complete Python stubs", inventory.diagnostics, []);

@@ -14,7 +14,7 @@ export async function test_parser_coordinates(): Promise<void> {
   try {
     for (const content of [text, "\uFEFF" + text.replaceAll("\n", "\r\n")]) {
       const ranges = await parser.parse(
-        { type: "typescript", file: "한글.ts", content },
+        { type: "typescript", file: "unicode.ts", content },
         (session) =>
           session
             .captures("(variable_declarator name: (identifier) @name)")

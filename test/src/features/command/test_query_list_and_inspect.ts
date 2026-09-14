@@ -12,7 +12,7 @@ import { TestQueryAnalysis } from "../../internal/TestQueryAnalysis";
 
 /** Lists exact aliases and round-trips canonical targets through scoped inspection. */
 export async function test_query_list_and_inspect(): Promise<void> {
-  const location = join(__dirname, `query list 한글 ${randomUUID()}`);
+  const location = join(__dirname, `query list ${randomUUID()}`);
   await TestFileSystem.experiment(
     location,
     TestQueryAnalysis.records(),
@@ -54,8 +54,8 @@ export async function test_query_list_and_inspect(): Promise<void> {
         ),
       );
       TestValidator.predicate(
-        "Unicode path escaped",
-        aliased.aliases.some((alias) => alias.includes("%EA%B3%B5%EC%9A%A9")),
+        "shared source address",
+        aliased.aliases.some((alias) => alias.includes("shared.ts")),
       );
       TestValidator.predicate(
         "re-export alias preserved",

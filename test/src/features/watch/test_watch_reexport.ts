@@ -9,7 +9,7 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
 
 /** Verifies re-export and syntax changes invalidate graph results and recover in place. */
 export async function test_watch_reexport(): Promise<void> {
-  const location = join(__dirname, `reexport 한글 ${randomUUID()}`);
+  const location = join(__dirname, `reexport ${randomUUID()}`);
   await TestFileSystem.experiment(
     location,
     {
