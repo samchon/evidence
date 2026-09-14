@@ -16,6 +16,14 @@ export async function test_parser_grammars(): Promise<void> {
       query: "(class_interface (identifier) @name)",
     },
     {
+      type: "dart",
+      grammar: "dart",
+      file: "Contract.dart",
+      name: "Contract",
+      content: "class Contract { int value = 1; }",
+      query: "(class_declaration name: (identifier) @name)",
+    },
+    {
       type: "php",
       grammar: "php",
       file: "Contract.php",
