@@ -11,6 +11,7 @@ import { EvidencePrismaAdapter } from "../adapters/prisma/EvidencePrismaAdapter"
 import { EvidencePythonAdapter } from "../adapters/python/EvidencePythonAdapter";
 import { EvidenceRubyAdapter } from "../adapters/ruby/EvidenceRubyAdapter";
 import { EvidenceRustAdapter } from "../adapters/rust/EvidenceRustAdapter";
+import { EvidenceSwiftAdapter } from "../adapters/swift/EvidenceSwiftAdapter";
 import { EvidenceSwaggerAdapter } from "../adapters/swagger/EvidenceSwaggerAdapter";
 import { EvidenceTypeScriptAdapter } from "../adapters/typescript/EvidenceTypeScriptAdapter";
 import type { IEvidenceAdapter } from "../structures/IEvidenceAdapter";
@@ -32,6 +33,7 @@ export namespace EvidenceAdapterFactory {
     if (type === "python") return new EvidencePythonAdapter();
     if (type === "ruby") return new EvidenceRubyAdapter();
     if (type === "rust") return new EvidenceRustAdapter();
+    if (type === "swift") return new EvidenceSwiftAdapter();
     if (type === "swagger") return new EvidenceSwaggerAdapter();
     if (type === "typescript") return new EvidenceTypeScriptAdapter();
     throw new Error(
