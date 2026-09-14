@@ -47,3 +47,5 @@ export { EvidenceTargetResolver } from "./targets/EvidenceTargetResolver";
 
 export type * from "./structures";
 export type * from "./typings";
+
+export { EvidenceSqlAdapter } from "./adapters/sql/EvidenceSqlAdapter";

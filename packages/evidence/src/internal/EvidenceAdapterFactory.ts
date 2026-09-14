@@ -1,3 +1,4 @@
+import { EvidenceSqlAdapter } from "../adapters/sql/EvidenceSqlAdapter";
 import { EvidenceCAdapter } from "../adapters/c/EvidenceCAdapter";
 import { EvidenceCppAdapter } from "../adapters/cpp/EvidenceCppAdapter";
 import { EvidenceCSharpAdapter } from "../adapters/csharp/EvidenceCSharpAdapter";
@@ -30,6 +31,7 @@ export namespace EvidenceAdapterFactory {
     if (type === "python") return new EvidencePythonAdapter();
     if (type === "ruby") return new EvidenceRubyAdapter();
     if (type === "rust") return new EvidenceRustAdapter();
+    if (type === "sql") return new EvidenceSqlAdapter();
     if (type === "swagger") return new EvidenceSwaggerAdapter();
     if (type === "typescript") return new EvidenceTypeScriptAdapter();
     throw new Error(
