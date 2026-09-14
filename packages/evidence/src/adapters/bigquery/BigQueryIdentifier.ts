@@ -17,7 +17,7 @@ export namespace BigQueryIdentifier {
     return parts.filter((part) => part !== undefined);
   }
 
-  /** Keeps a quoted field name as one segment, including literal dots. */
+  /** Decodes one quoted identifier without splitting its literal content. */
   export function member(raw: string): string | undefined {
     if (raw.startsWith("`") && raw.endsWith("`")) {
       const value = raw.slice(1, -1);
@@ -29,6 +29,32 @@ export namespace BigQueryIdentifier {
   /** Normalizes a case-insensitive field or constraint identifier. */
   export function canonical(raw: string): string | undefined {
     const value = member(raw);
+    return value === undefined ? undefined : value.toLowerCase();
+  }
+
+  /** Accepts documented flexible column characters, including quoted whitespace and Unicode letters. */
+  export function column(raw: string): string | undefined {
+    const value = member(raw);
+    if (value === undefined) return undefined;
+    const characters = Array.from(value);
+    return characters.length <= 300 &&
+      characters.every(
+        (character) =>
+          /^\p{L}$/u.test(character) ||
+          /^\p{N}$/u.test(character) ||
+          /^\p{Pc}$/u.test(character) ||
+          /^\p{Pd}$/u.test(character) ||
+          /^\p{M}$/u.test(character) ||
+          /^[&%=+:'<>#|]$/u.test(character) ||
+          /^\s$/u.test(character),
+      )
+      ? value
+      : undefined;
+  }
+
+  /** Normalizes valid field endpoints independently of case-sensitive table paths. */
+  export function canonicalColumn(raw: string): string | undefined {
+    const value = column(raw);
     return value === undefined ? undefined : value.toLowerCase();
   }
 }

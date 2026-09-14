@@ -21,6 +21,8 @@ export async function test_bigquery_failures(): Promise<void> {
     "CREATE TABLE ds.orders (id INT64, ID STRING);",
     "CREATE TABLE ds.orders (id INT64 PRIMARY KEY NOT ENFORCED, PRIMARY KEY (id) NOT ENFORCED);",
     "CREATE TABLE ds.orders (items ARRAY<UnknownType>);",
+    "CREATE TABLE ds.orders (`display.name` STRING);",
+    "CREATE TABLE ds.orders (details STRUCT<id INT64 PRIMARY KEY NOT ENFORCED>);",
     "CREATE TABLE ds.orders (id INT64, CONSTRAINT `escaped\\u0061` FOREIGN KEY (id) REFERENCES ds.other (id) NOT ENFORCED);",
     "CREATE TABLE ds.orders (id INT64, FOREIGN KEY (id) REFERENCES ds.other (id, extra) NOT ENFORCED);",
     "CREATE TABLE ds.orders (id INT64) OPTIONS(description=CONCAT('dynamic', ' value'));",
@@ -79,10 +81,9 @@ export async function test_bigquery_failures(): Promise<void> {
   );
   TestValidator.equals(
     "temporary schema is not published",
-    temporary.units.map((unit) => unit.identity),
-    [
-      ["ds", "orders"],
-      ["ds", "orders", "id"],
-    ],
+    temporary.units
+      .map((unit) => unit.identity.join("."))
+      .sort((left, right) => left.localeCompare(right, "en")),
+    ["ds.orders", "ds.orders.id"],
   );
 }

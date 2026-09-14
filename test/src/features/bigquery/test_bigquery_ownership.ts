@@ -12,7 +12,7 @@ export async function test_bigquery_ownership(): Promise<void> {
   const source = dedent`
     CREATE TABLE ds.orders (
       ID INT64,
-      \`display.name\` STRING,
+      \`display name\` STRING,
       /* @hidden */
       secret STRUCT<leaf STRING, repeated ARRAY<STRUCT<value STRING>>>,
       ${first},
@@ -28,9 +28,9 @@ export async function test_bigquery_ownership(): Promise<void> {
     [],
   );
   TestValidator.equals(
-    "quoted dotted field remains literal",
-    inventory.units.find((unit) => unit.name === "display.name")?.identity,
-    ["ds", "orders", "display.name"],
+    "quoted flexible field remains literal",
+    inventory.units.find((unit) => unit.name === "display name")?.identity,
+    ["ds", "orders", "display name"],
   );
   const relations = inventory.units.filter(
     (unit) => unit.symbol === "relation",

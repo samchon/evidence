@@ -167,7 +167,7 @@ export class BigQueryFileScanner {
     const name =
       identifier === null
         ? undefined
-        : BigQueryIdentifier.member(identifier.text);
+        : BigQueryIdentifier.column(identifier.text);
     const type = node.childForFieldName("column_type");
     if (name === undefined || type === null) {
       this.fail(
@@ -183,6 +183,14 @@ export class BigQueryFileScanner {
         "This field type is outside the declared GoogleSQL scalar, STRUCT, and ARRAY type surface.",
       );
     const column = this.declare(node, path, "column", model, model.public);
+    if (
+      ownerPath.length !== model.address.length &&
+      node.childForFieldName("constraint_clause") !== null
+    )
+      this.fail(
+        node,
+        "Primary and foreign key constraints cannot be declared on STRUCT or ARRAY elements.",
+      );
     this.options(node, column);
     for (const nested of type.namedChildren.filter(
       (child) => child.type === "column_definition",
@@ -221,12 +229,14 @@ export class BigQueryFileScanner {
       list === null
         ? []
         : list.namedChildren.map((child) =>
-            BigQueryIdentifier.canonical(child.text),
+            BigQueryIdentifier.canonicalColumn(child.text),
           );
     const available = columns
       .map((column) => column.childForFieldName("column_name"))
       .map((name) =>
-        name === null ? undefined : BigQueryIdentifier.canonical(name.text),
+        name === null
+          ? undefined
+          : BigQueryIdentifier.canonicalColumn(name.text),
       );
     if (
       names.length === 0 ||
@@ -287,7 +297,7 @@ export class BigQueryFileScanner {
       list === null
         ? []
         : list.namedChildren.map((child) =>
-            BigQueryIdentifier.canonical(child.text),
+            BigQueryIdentifier.canonicalColumn(child.text),
           );
     if (
       path === undefined ||
