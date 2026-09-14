@@ -1,0 +1,54 @@
+import { EvidenceInventory, EvidenceSwiftAdapter } from "@wrtnlabs/evidence";
+import { TestValidator } from "@nestia/e2e";
+
+import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+
+/** Keeps identically named declarations in separately configured Swift module roots independent. */
+export async function test_swift_module_identity(): Promise<void> {
+  const adapter = new EvidenceSwiftAdapter();
+  const first = await adapter.analyze(
+    TestSourceSnapshot.create(
+      "Contract.swift",
+      "public struct Contract {}",
+      ["Contract.swift"],
+      "/project/First",
+    ),
+  );
+  const second = await adapter.analyze(
+    TestSourceSnapshot.create(
+      "Other.swift",
+      "public struct Contract {}",
+      ["Other.swift"],
+      "/project/Second",
+    ),
+  );
+  const inventory = new EvidenceInventory([first, second]);
+  const combined = inventory.snapshot();
+
+  TestValidator.equals(
+    "separate modules preserve two nominal identities",
+    combined.units.length,
+    2,
+  );
+  TestValidator.notEquals(
+    "module roots disambiguate same-name units",
+    first.units[0]?.id,
+    second.units[0]?.id,
+  );
+  TestValidator.equals(
+    "first module resolves its own type",
+    inventory.resolve(
+      { file: "/project/First/Contract.swift", segments: ["Contract"] },
+      first.units.map((unit) => unit.id),
+    ).status,
+    "resolved",
+  );
+  TestValidator.equals(
+    "second module cannot resolve inside first population",
+    inventory.resolve(
+      { file: "/project/Second/Other.swift", segments: ["Contract"] },
+      first.units.map((unit) => unit.id),
+    ).status,
+    "missing",
+  );
+}

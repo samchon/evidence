@@ -27,8 +27,10 @@ export async function test_parser_selection(): Promise<void> {
     "ruby",
   );
 
-  await TestParserError.expect("unsupported-language", () =>
-    EvidenceLanguageRegistry.select("matlab", "contract.m"),
+  TestValidator.equals(
+    "MATLAB source",
+    EvidenceLanguageRegistry.select("matlab", "contract.m").id,
+    "matlab",
   );
   await TestParserError.expect("unsupported-extension", () =>
     EvidenceLanguageRegistry.select("python", "contract.ts"),

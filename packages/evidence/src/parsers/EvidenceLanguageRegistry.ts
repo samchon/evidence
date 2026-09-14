@@ -1,3 +1,5 @@
+import type { EvidenceDatabaseType } from "../typings/EvidenceDatabaseType";
+import type { IEvidenceDatabaseLanguage } from "../structures/IEvidenceDatabaseLanguage";
 import { EvidenceParserError } from "./EvidenceParserError";
 import type { IEvidenceLanguage } from "../structures/IEvidenceLanguage";
 import type { IEvidenceLanguageCandidate } from "../structures/IEvidenceLanguageCandidate";
@@ -11,6 +13,11 @@ export namespace EvidenceLanguageRegistry {
     return structuredClone(LANGUAGES);
   }
 
+  /** Returns independently certified database grammar metadata. */
+  export function databases(): IEvidenceDatabaseLanguage[] {
+    return structuredClone(DATABASES);
+  }
+
   /** Returns researched candidates without advertising them as supported languages. */
   export function candidates(): IEvidenceLanguageCandidate[] {
     return structuredClone(CANDIDATES);
@@ -18,10 +25,12 @@ export namespace EvidenceLanguageRegistry {
 
   /** Rejects unimplemented grammars and mismatched files without guessing another language. */
   export function select(
-    type: EvidenceProgrammingType,
+    type: EvidenceProgrammingType | EvidenceDatabaseType,
     file: string,
   ): IEvidenceLanguageGrammar {
-    const language = LANGUAGES.find((entry) => entry.type === type);
+    const language = [...LANGUAGES, ...DATABASES].find(
+      (entry) => entry.type === type,
+    );
     if (language === undefined)
       throw new EvidenceParserError(
         "unsupported-language",
@@ -43,6 +52,29 @@ export namespace EvidenceLanguageRegistry {
     return structuredClone(grammar);
   }
 
+  const DATABASES: IEvidenceDatabaseLanguage[] = [
+    {
+      type: "sql",
+      name: "Portable SQL",
+      grammars: [{ id: "sql", extensions: [".sql"], filenames: [] }],
+      adapter: {
+        entry: "EvidenceSqlAdapter",
+        symbols: ["model", "column", "relation"],
+        publicSurface:
+          "Explicit CREATE TABLE declarations in the documented portable DDL subset.",
+        addressing:
+          "Qualified table and column accessors; foreign keys use a literal endpoint-derived member segment.",
+        comments: ["adjacent -- or block documentation"],
+        unsupported: [
+          "schema mutations",
+          "query-derived tables",
+          "dialect extensions",
+          "runtime database discovery",
+        ],
+      },
+    },
+  ];
+
   const LANGUAGES: IEvidenceLanguage[] = [
     {
       type: "php",
@@ -63,6 +95,71 @@ export namespace EvidenceLanguageRegistry {
           "runtime includes and autoload discovery",
           "dynamic declaration generation",
           "inherited and generated members",
+        ],
+      },
+    },
+    {
+      type: "scala",
+      name: "Scala",
+      grammars: [{ id: "scala", extensions: [".scala"], filenames: [] }],
+      adapter: {
+        entry: "EvidenceScalaAdapter",
+        symbols: ["type", "function", "property"],
+        publicSurface:
+          "Explicit unrestricted Scala 2/3 declarations recognized by tree-sitter-scala v0.26.2 within the selected source snapshot.",
+        addressing:
+          "File-qualified package and lexical owner paths; singleton objects and package objects have explicit quoted owner segments.",
+        comments: ["attached Scaladoc"],
+        unsupported: [
+          "anonymous givens",
+          "wildcard and unresolved exports",
+          "inherited and synthesized members",
+          "macro expansion",
+          "derives and uses clauses",
+          "extractor binding patterns",
+        ],
+      },
+    },
+    {
+      type: "matlab",
+      name: "MATLAB",
+      grammars: [{ id: "matlab", extensions: [".m"], filenames: [] }],
+      adapter: {
+        entry: "EvidenceMatlabAdapter",
+        symbols: ["type", "function", "property"],
+        publicSurface:
+          "Explicit textual MATLAB classdef and primary function declarations with class-folder ownership.",
+        addressing:
+          "File-qualified package and class segments; accessors merge with declared properties and external methods with class ownership.",
+        comments: ["attached percent-line help comments"],
+        unsupported: [
+          "runtime path mutation",
+          "dynamic properties",
+          "legacy classes",
+          "inherited or generated declarations",
+          "Octave extensions",
+          "binary and live scripts",
+        ],
+      },
+    },
+    {
+      type: "swift",
+      name: "Swift",
+      grammars: [{ id: "swift", extensions: [".swift"], filenames: [] }],
+      adapter: {
+        entry: "EvidenceSwiftAdapter",
+        symbols: ["type", "function", "property"],
+        publicSurface:
+          "Explicit public/open declarations in one selected Swift module, including local nominal extensions and protocol requirements.",
+        addressing:
+          "File-qualified lexical owners; overloads group by base name and static members add a static segment.",
+        comments: ["attached DocC /// and /** */"],
+        unsupported: [
+          "external extension ownership",
+          "constrained extensions",
+          "macro and custom attribute expansion",
+          "conditional compilation",
+          "compiler-generated and inherited members",
         ],
       },
     },
@@ -343,28 +440,6 @@ export namespace EvidenceLanguageRegistry {
 
   const CANDIDATES: IEvidenceLanguageCandidate[] = [
     {
-      id: "swift",
-      name: "Swift",
-      kind: "programming-language",
-      dialects: ["Swift source"],
-      grammarRepository: "https://github.com/alex-pinkus/tree-sitter-swift",
-      grammarLicense: "MIT",
-      wasm: "release-asset",
-      wasmNotes: "The 0.7.3 release publishes tree-sitter-swift.wasm.",
-      languageReference:
-        "https://docs.swift.org/swift-book/documentation/the-swift-programming-language/accesscontrol/",
-      visibility:
-        "internal by default, with open, public, package, fileprivate, and private declarations",
-      declarations:
-        "modules, nominal types, protocols, extensions, functions, operators, properties, subscripts, and type aliases",
-      blockers: [
-        "module and package boundaries come from build metadata",
-        "extensions merge declarations across files and modules",
-        "synthesized protocol and macro members",
-      ],
-      next: "Define a configured module boundary and certify explicit public/open declarations, extensions, overloads, and DocC comments.",
-    },
-    {
       id: "dart",
       name: "Dart",
       kind: "programming-language",
@@ -385,28 +460,6 @@ export namespace EvidenceLanguageRegistry {
         "generated members and extension lookup",
       ],
       next: "Build and pin ABI-compatible WASM, then certify one library graph with part and export combinator resolution.",
-    },
-    {
-      id: "scala",
-      name: "Scala",
-      kind: "programming-language",
-      dialects: ["Scala 2", "Scala 3"],
-      grammarRepository: "https://github.com/tree-sitter/tree-sitter-scala",
-      grammarLicense: "MIT",
-      wasm: "release-asset",
-      wasmNotes: "The v0.26.2 release publishes tree-sitter-scala.wasm.",
-      languageReference:
-        "https://docs.scala-lang.org/scala3/reference/changed-features/access-modifiers.html",
-      visibility:
-        "public by default, with private/protected access qualifiers and Scala 3 private[this] migration behavior",
-      declarations:
-        "packages, classes, traits, objects, enums, definitions, values, variables, type members, givens, extensions, and exports",
-      blockers: [
-        "Scala 2 and Scala 3 surface differences",
-        "package objects, givens, exports, and extension ownership",
-        "compiler-generated case-class and enum members",
-      ],
-      next: "Choose explicit Scala dialect fixtures and certify source declarations without compiler-synthesized members.",
     },
     {
       id: "lua",
@@ -474,29 +527,6 @@ export namespace EvidenceLanguageRegistry {
         "build options and generic instantiation affect reachable APIs",
       ],
       next: "Certify explicit pub declarations and container ownership while reporting usingnamespace and declaration-producing comptime blocks as incomplete.",
-    },
-    {
-      id: "matlab",
-      name: "MATLAB",
-      kind: "programming-language",
-      dialects: ["MATLAB text source"],
-      grammarRepository: "https://github.com/acristoffers/tree-sitter-matlab",
-      grammarLicense: "MIT",
-      wasm: "source-build",
-      wasmNotes:
-        "Inspected releases through v1.3.1 contain no WASM asset; build and verify a pinned source revision.",
-      languageReference:
-        "https://www.mathworks.com/help/matlab/ref/classdef.html",
-      visibility:
-        "class and member access attributes, package and class folders, and file-local function boundaries determine the declared public surface",
-      declarations:
-        "classes, functions, methods, properties, constructors, enumerations, and external method files",
-      blockers: [
-        "package and class-folder ownership with external method dependencies",
-        "help-comment placement and property getter/setter identity",
-        "dynamic properties, path changes, and runtime-created declarations",
-      ],
-      next: "Build and verify pinned WASM, then certify textual MATLAB declarations and documentation without executing MATLAB or inferring Objective-C from the shared .m extension.",
     },
     {
       id: "vue",
