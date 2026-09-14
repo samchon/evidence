@@ -287,8 +287,8 @@ export namespace TreeSitterGrammarCatalog {
         file: "sqlite/LICENSE",
         url: "https://raw.githubusercontent.com/dhcmrlchtdj/tree-sitter-sqlite/993be0a91c0c90b0cc7799e6ff65922390e2cefe/LICENSE",
         sha256:
-          "67ac25fd004faa46bf79351c6f0e94dbbb071172567a7247b71a4c19777c982b",
-        size: 1103,
+          "d9e7e47e6b65f2ad3cd1770d7ec20d6ac1e5fe8f5177d22c6b273590635e4722",
+        size: 1082,
       },
     },
   ];
