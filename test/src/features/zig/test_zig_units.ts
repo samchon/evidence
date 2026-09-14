@@ -51,7 +51,7 @@ export async function test_zig_units(): Promise<void> {
     "exact selectors and identities",
     inventory.units
       .map((unit) => `${unit.symbol}:${EvidenceAccessor.format(unit.identity)}`)
-      .sort(),
+      .sort((left, right) => left.localeCompare(right)),
     [
       "type:Internal",
       "property:Internal.value",
@@ -72,7 +72,7 @@ export async function test_zig_units(): Promise<void> {
       "function:generic",
       "type:State",
       "property:State.other",
-    ].sort(),
+    ].sort((left, right) => left.localeCompare(right)),
   );
   const graph = new EvidenceInventory([inventory]);
   const selected = inventory.units.map((unit) => unit.id);

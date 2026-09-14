@@ -6,6 +6,10 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_zig_boundaries(): Promise<void> {
   const adapter = new EvidenceZigAdapter();
   const cases = new Map<string, string>([
+    [
+      "const Meta = type; pub const Generated: Meta = Factory();",
+      "zig-generated-type",
+    ],
     ["pub const Empty = struct {};", "zig-parse-incomplete"],
     ["pub const Empty = opaque {};", "zig-parse-incomplete"],
     [

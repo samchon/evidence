@@ -148,9 +148,12 @@ export class ZigFileScanner {
     const address = [...(owner?.address ?? []), exposed ?? name];
     const initializer = this.initializer(node);
     const declaredType = node.childForFieldName("type");
+    const declaredMeta =
+      declaredType !== null &&
+      this.metaType(declaredType, scope, new Set<number>());
     if (
       node.type === "variable_declaration" &&
-      (declaredType === null || declaredType.text === "type") &&
+      (declaredType === null || declaredMeta) &&
       node.children.some((child) => child.text === "const") &&
       initializer?.type === "identifier"
     ) {
@@ -215,9 +218,7 @@ export class ZigFileScanner {
         ? "property"
         : node.type === "function_declaration"
           ? "function"
-          : container !== undefined ||
-              primitiveType ||
-              declaredType?.text === "type"
+          : container !== undefined || primitiveType || declaredMeta
             ? "type"
             : "property";
     const declaration = this.add(
@@ -235,11 +236,12 @@ export class ZigFileScanner {
         (child) => child.type === "parameters",
       );
       const generic =
-        parameters?.namedChildren?.some((parameter) =>
+        parameters !== undefined &&
+        parameters.namedChildren.some((parameter) =>
           parameter.children.some(
             (child) => child.text === "comptime" || child.text === "anytype",
           ),
-        ) ?? false;
+        );
       if (
         (returnType !== null &&
           this.metaType(returnType, scope, new Set<number>())) ||
@@ -314,11 +316,7 @@ export class ZigFileScanner {
         "An inferred public value may expose a type, namespace, or generated members. Import, conditional, call, and comptime expressions require static ownership resolution.",
         node,
       );
-    } else if (
-      declaredType?.text === "type" &&
-      container === undefined &&
-      !primitiveType
-    ) {
+    } else if (declaredMeta && container === undefined && !primitiveType) {
       this.problem(
         "generated-type",
         "A public type value requires resolving its complete member surface without executing comptime code.",
