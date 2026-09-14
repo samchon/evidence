@@ -11,7 +11,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 /** Preserves UTF-16 comment attachment, inert examples, withdrawal, and literal qualified addresses. */
 export async function test_sql_hosts(): Promise<void> {
   const source = dedent`
-    /* ?? ??
+    /* 문서 🧪
      * @evidence docs/spec.md#table Documents the literal table.
      * \`\`\`sql
      * @evidence docs/spec.md#fence An inert example.
@@ -19,7 +19,7 @@ export async function test_sql_hosts(): Promise<void> {
      * <pre>@evidence docs/spec.md#html An inert example.</pre>
      */
     CREATE TABLE "schema.dot"."Table Name" (
-      -- ?? ??
+      -- 검증 🧪
       -- @evidenceReview docs/spec.md#column This is only a review.
       "literal.column" INTEGER REFERENCES parent(id),
       -- @hidden Retired declared column.
@@ -55,6 +55,16 @@ export async function test_sql_hosts(): Promise<void> {
     "original UTF-16 tag offset",
     declaration.location.range.start.offset,
     source.indexOf("@evidence docs/spec.md#table"),
+  );
+  TestValidator.equals(
+    "CRLF source line",
+    declaration.location.range.start.line,
+    2,
+  );
+  TestValidator.equals(
+    "original one-based source column",
+    declaration.location.range.start.column,
+    4,
   );
   TestValidator.predicate(
     "literal dotted segments survive",

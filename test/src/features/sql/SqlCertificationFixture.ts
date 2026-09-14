@@ -26,15 +26,15 @@ export namespace SqlCertificationFixture {
         {
           file,
           content: dedent`
-        -- ?? ??
+        -- 검증 🧪
         -- @evidence docs/requirements.md#model Implements the certified model.
         CREATE TABLE child (
-          -- ? ??
+          -- 값 🧪
           -- @evidence docs/requirements.md#column Implements the certified column.
           id INTEGER,
           -- @internal Retired column.
           legacy INTEGER,
-          -- ?? ??
+          -- 검증 🧪
           -- @evidence docs/requirements.md#relation Implements the certified relation.
           FOREIGN KEY (id) REFERENCES parent(id)
         );

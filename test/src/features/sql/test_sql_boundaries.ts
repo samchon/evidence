@@ -6,12 +6,16 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_sql_boundaries(): Promise<void> {
   const adapter = new EvidenceSqlAdapter();
   for (const content of [
+    "CREATE TABLE account (id INTEGER DEFAULT nextval('sequence'));",
+    "CREATE TABLE account (id INTEGER, UNIQUE INDEX named (id));",
+    "CREATE TABLE account (id INTEGER, UNIQUE KEY (id));",
     "ALTER TABLE account ADD COLUMN extra INTEGER;",
     "DROP TABLE account;",
     "CREATE TABLE account AS SELECT id FROM source;",
     "CREATE TEMPORARY TABLE account (id INTEGER);",
     "CREATE TABLE IF NOT EXISTS account (id INTEGER);",
     "CREATE VIEW account AS SELECT id FROM source;",
+    "CREATE TABLE account (id INTEGER[]);",
     "CREATE TABLE account (id SERIAL);",
     "CREATE TABLE account (id INTEGER AUTO_INCREMENT);",
     "CREATE TABLE `account` (id INTEGER);",
@@ -32,6 +36,24 @@ export async function test_sql_boundaries(): Promise<void> {
       ),
     );
   }
+  const defaults = await adapter.analyze(
+    TestSourceSnapshot.create(
+      "defaults.sql",
+      "CREATE TABLE defaults (negative INTEGER DEFAULT -1, enabled BOOLEAN DEFAULT TRUE, label VARCHAR(10) DEFAULT 'ok', created TIMESTAMP DEFAULT CURRENT_TIMESTAMP);",
+    ),
+  );
+  TestValidator.equals(
+    "portable scalar defaults preserve every column",
+    defaults.complete,
+    true,
+  );
+  TestValidator.equals(
+    "explicit defaulted columns",
+    defaults.units
+      .filter((unit) => unit.symbol === "column")
+      .map((unit) => unit.name),
+    ["NEGATIVE", "ENABLED", "LABEL", "CREATED"],
+  );
   const empty = await adapter.analyze(
     TestSourceSnapshot.create("empty.sql", "-- An explicitly empty schema.\n"),
   );

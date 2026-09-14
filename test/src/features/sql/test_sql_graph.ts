@@ -25,7 +25,13 @@ export async function test_sql_graph(): Promise<void> {
             await TestFileSystem.save(directory, {
               "schema.sql":
                 role === "claim" && acknowledged
-                  ? schema
+                  ? schema.replace(/^.*@evidence.*$/gmu, (line) =>
+                      line.includes(
+                        `Verifies the ${symbol === "model" ? "table" : symbol}.`,
+                      )
+                        ? line
+                        : "",
+                    )
                   : schema.replace(/^.*@evidence.*$/gmu, ""),
               "requirement.ts":
                 role === "reference" && acknowledged
