@@ -97,7 +97,7 @@ pnpm exec evidence languages
 pnpm exec evidence languages --format json
 ```
 
-This command reads the shipped registry without loading a config or grammar WASM. It reports one row per certified programming language, including grammar file patterns, supported symbols, public-surface rules, documentation carriers, address rules, and unsupported capabilities. Grammar-only candidates are omitted. See [certified languages](languages.md).
+This command reads the shipped registry without loading a config or grammar WASM. It reports one row per certified programming and database language, including grammar file patterns, supported symbols, public-surface rules, documentation carriers, address rules, and unsupported capabilities. Grammar-only candidates are omitted. See [certified languages](languages.md).
 
 ## Init
 
