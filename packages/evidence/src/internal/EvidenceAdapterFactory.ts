@@ -6,6 +6,7 @@ import { EvidenceJavaAdapter } from "../adapters/java/EvidenceJavaAdapter";
 import { EvidenceJavaScriptAdapter } from "../adapters/javascript/EvidenceJavaScriptAdapter";
 import { EvidenceKotlinAdapter } from "../adapters/kotlin/EvidenceKotlinAdapter";
 import { EvidenceMarkdownAdapter } from "../adapters/markdown/EvidenceMarkdownAdapter";
+import { EvidenceMatlabAdapter } from "../adapters/matlab/EvidenceMatlabAdapter";
 import { EvidencePrismaAdapter } from "../adapters/prisma/EvidencePrismaAdapter";
 import { EvidencePythonAdapter } from "../adapters/python/EvidencePythonAdapter";
 import { EvidenceRubyAdapter } from "../adapters/ruby/EvidenceRubyAdapter";
@@ -27,6 +28,7 @@ export namespace EvidenceAdapterFactory {
     if (type === "javascript") return new EvidenceJavaScriptAdapter();
     if (type === "kotlin") return new EvidenceKotlinAdapter();
     if (type === "markdown") return new EvidenceMarkdownAdapter();
+    if (type === "matlab") return new EvidenceMatlabAdapter();
     if (type === "prisma") return new EvidencePrismaAdapter();
     if (type === "python") return new EvidencePythonAdapter();
     if (type === "ruby") return new EvidenceRubyAdapter();

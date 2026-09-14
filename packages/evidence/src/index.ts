@@ -9,6 +9,7 @@ export { EvidenceJavaAdapter } from "./adapters/java/EvidenceJavaAdapter";
 export { EvidenceJavaScriptAdapter } from "./adapters/javascript/EvidenceJavaScriptAdapter";
 export { EvidenceKotlinAdapter } from "./adapters/kotlin/EvidenceKotlinAdapter";
 export { EvidenceMarkdownAdapter } from "./adapters/markdown/EvidenceMarkdownAdapter";
+export { EvidenceMatlabAdapter } from "./adapters/matlab/EvidenceMatlabAdapter";
 export { EvidencePrismaAdapter } from "./adapters/prisma/EvidencePrismaAdapter";
 export { EvidencePythonAdapter } from "./adapters/python/EvidencePythonAdapter";
 export { EvidenceRubyAdapter } from "./adapters/ruby/EvidenceRubyAdapter";

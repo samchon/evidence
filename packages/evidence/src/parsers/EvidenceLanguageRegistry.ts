@@ -45,6 +45,28 @@ export namespace EvidenceLanguageRegistry {
 
   const LANGUAGES: IEvidenceLanguage[] = [
     {
+      type: "matlab",
+      name: "MATLAB",
+      grammars: [{ id: "matlab", extensions: [".m"], filenames: [] }],
+      adapter: {
+        entry: "EvidenceMatlabAdapter",
+        symbols: ["type", "function", "property"],
+        publicSurface:
+          "Explicit textual MATLAB classdef and primary function declarations with class-folder ownership.",
+        addressing:
+          "File-qualified package and class segments; accessors merge with declared properties and external methods with class ownership.",
+        comments: ["attached percent-line help comments"],
+        unsupported: [
+          "runtime path mutation",
+          "dynamic properties",
+          "legacy classes",
+          "inherited or generated declarations",
+          "Octave extensions",
+          "binary and live scripts",
+        ],
+      },
+    },
+    {
       type: "swift",
       name: "Swift",
       grammars: [{ id: "swift", extensions: [".swift"], filenames: [] }],
@@ -474,29 +496,6 @@ export namespace EvidenceLanguageRegistry {
         "build options and generic instantiation affect reachable APIs",
       ],
       next: "Certify explicit pub declarations and container ownership while reporting usingnamespace and declaration-producing comptime blocks as incomplete.",
-    },
-    {
-      id: "matlab",
-      name: "MATLAB",
-      kind: "programming-language",
-      dialects: ["MATLAB text source"],
-      grammarRepository: "https://github.com/acristoffers/tree-sitter-matlab",
-      grammarLicense: "MIT",
-      wasm: "source-build",
-      wasmNotes:
-        "Inspected releases through v1.3.1 contain no WASM asset; build and verify a pinned source revision.",
-      languageReference:
-        "https://www.mathworks.com/help/matlab/ref/classdef.html",
-      visibility:
-        "class and member access attributes, package and class folders, and file-local function boundaries determine the declared public surface",
-      declarations:
-        "classes, functions, methods, properties, constructors, enumerations, and external method files",
-      blockers: [
-        "package and class-folder ownership with external method dependencies",
-        "help-comment placement and property getter/setter identity",
-        "dynamic properties, path changes, and runtime-created declarations",
-      ],
-      next: "Build and verify pinned WASM, then certify textual MATLAB declarations and documentation without executing MATLAB or inferring Objective-C from the shared .m extension.",
     },
     {
       id: "vue",
