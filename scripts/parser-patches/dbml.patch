@@ -1,0 +1,194 @@
+diff --git a/grammar.js b/grammar.js
+index f74c796..d10c5fc 100644
+--- a/grammar.js
++++ b/grammar.js
+@@ -1,148 +1,49 @@
+-const ANYTHING = /[^\n\r]+/;
+-const NEWLINE = /\r?\n/;
+-const IDENTIFIER = /[a-zA-Z0-9_]+/;
+-const CONTENT = /[^'\"]*/;
+-const CARDINALITY = /[-<>]|<>/;
+-const PREC = {
+-  NOTE: -99,
+-  COLUMN: 2,
+-  SCHEMA: 3,
+-  INDEX: 1,
+-  IDENTIFIER: -1,
+-};
++const IDENTIFIER = /[A-Za-z_][A-Za-z0-9_]*/;
+ 
+ module.exports = grammar({
+   name: "dbml",
+-
+   extras: ($) => [/\s/, $.comment],
+-
++  conflicts: ($) => [[$.schema, $.table]],
+   rules: {
+-    source: ($) => repeat(choice($.definition, $.reference, $.enum)),
+-
++    source: ($) => repeat(choice($.definition, $.reference, $.enum, $.table_partial, $.table_group, $.project)),
++    identifier: ($) => choice(IDENTIFIER, $.quoted_identifier),
++    quoted_identifier: (_) => token(seq('"', repeat(choice(/[^"\\\r\n]/, /\\[^\r\n]/)), '"')),
++    schema: ($) => seq($.identifier, "."),
+     table: ($) => seq(optional($.schema), $.identifier),
+-
+-    column: ($) => prec.left(PREC.COLUMN, seq(optional($.schema), $.identifier, ".", $.identifier)),
+-
+-    definition: ($) =>
+-      seq($.keyword_def, $.table, optional($._alias), $.block),
+-
+-    keyword_def: (_) => choice("Project", "Table", "TableGroup"),
+-
+-    keyword_ref: (_) => "Ref",
+-
+-    keyword_enum: (_) => /[Ee]num/,
+-
+-    reference: ($) =>
+-      seq($.keyword_ref, ":", $.column, CARDINALITY, $.column),
+-
+-    enum: ($) => seq($.keyword_enum, $.identifier, $.enum_block),
+-
+-    _alias: ($) => seq("as", $.identifier),
+-
+-    block: ($) =>
+-      seq("{", repeat(choice($.note, $.item, $.index_definition)), "}"),
+-
+-    enum_block: ($) =>
+-      seq("{", repeat(choice($.enum_item)), "}"),
+-
+-    note: ($) => seq($.note_start, ":", $.string),
+-
+-    note_start: ($) => choice(/[nN]ote/, "database_type"),
+-
+-    default: ($) => seq($.default_start, ":", $.value),
+-
+-    default_start: ($) => "default",
+-
+-    name: ($) => seq($.name_start, ":", $.value),
+-
+-    name_start: ($) => "name",
+-
+-    value: ($) =>
+-      choice(
+-        $.number,
+-        $.string,
+-        $.expression,
+-        $.identifier,
+-        /true|TRUE/,
+-        /false|FALSE/,
+-        /null|NULL/
+-      ),
+-
+-    number: ($) => repeat1(/[0-9]+/),
+-
+-    type: ($) =>
+-      choice(
+-        seq(
+-          "\"",
+-          /[^\[\]\"]+/,
+-          "\"",
+-        ),
+-        /[^\"\s]+/,
+-      ),
+-
+-    item: ($) =>
+-      seq($.identifier, $.type, optional($.setting), NEWLINE),
+-
+-    enum_item: ($) =>
+-      seq($.identifier, optional($.setting), NEWLINE),
+-
+-    string: ($) => choice(seq("'", CONTENT, "'"), seq("'''", CONTENT, "'''"), seq("\"", CONTENT, "\"")),
+-
+-    expression: ($) => seq("`", /[^`]*/, "`"),
+-
+-    setting: ($) =>
+-      seq(
+-        "[",
+-        repeat(
+-          seq(choice($.note, $.default, $.name, $.setting_kind), optional(","))
+-        ),
+-        "]"
+-      ),
+-
+-    setting_kind: ($) =>
+-      choice(
+-        "increment",
+-        "primary key",
+-        "pk",
+-        "null",
+-        "not null",
+-        "unique",
+-        "headercolor",
+-        "type",
+-        "name"
+-      ),
+-
+-    identifier: (_) =>
+-      token(
+-        prec(PREC.IDENTIFIER, seq(optional('"'), IDENTIFIER, optional('"')))
+-      ),
+-
+-    schema: ($) => prec.left(PREC.SCHEMA, seq($.identifier, ".")),
+-
+-    comment: ($) =>
+-      token(
+-        choice(seq("//", /.*/), seq("/*", /[^*]*\*+([^/*][^*]*\*+)*/, "/"))
+-      ),
+-
+-    indexes: (_) => token(prec(PREC.INDEX, /[iI]ndexes/)),
+-
+-    index_definition: ($) => seq($.indexes, $.index_block),
+-
+-    index_block: ($) => seq("{", repeat($.index), "}"),
+-
+-    index: ($) =>
+-      seq(
+-        choice($.identifier, $.expression, $.composite_index),
+-        optional($.setting)
+-      ),
+-
+-    composite_index: ($) =>
+-      seq(
+-        "(",
+-        repeat(
+-          seq(choice($.identifier, $.expression), optional(","))
+-        ),
+-        ")"
+-      ),
++    definition: ($) => seq(choice("Table", "table"), field("name", $.table), optional(seq("as", field("alias", $.identifier))), optional($.setting), field("body", $.block)),
++    block: ($) => seq("{", repeat(choice($.item, $.note, $.index_definition, $.partial_injection)), "}"),
++    item: ($) => seq(field("name", $.identifier), field("type", $.type), optional($.setting)),
++    type: ($) => seq($.table, optional(seq("(", commaSep1(choice($.number, $.identifier)), ")")), repeat("[]")),
++    setting: ($) => seq("[", commaSep1(choice($.note, $.default, $.inline_ref, $.attribute)), "]"),
++    attribute: ($) => choice("primary key", "not null", "pk", "null", "unique", "increment", seq($.identifier, optional(seq(":", $.value)))),
++    default: ($) => seq("default", ":", $.value),
++    value: ($) => choice($.number, $.string, $.expression, $.identifier),
++    number: (_) => /-?[0-9]+(\.[0-9]+)?/,
++    string: (_) => token(choice(seq("'", repeat(choice(/[^'\\\r\n]/, /\\[^\r\n]/)), "'"), seq("'''", repeat(choice(/[^'\\]/, /\\[\s\S]/, /'[^']/, /''[^']/)), "'''"))),
++    expression: (_) => token(seq("`", repeat(choice(/[^`\\]/, /\\[\s\S]/)), "`")),
++    note: ($) => seq(choice("note", "Note"), choice(seq(":", $.string), seq("{", $.string, "}"))),
++    cardinality: (_) => choice(">", "<", "-", "<>"),
++    column: ($) => prec.left(seq(field("table", $.table), ".", field("columns", choice($.identifier, $.composite_columns)))),
++    composite_columns: ($) => seq("(", commaSep1($.identifier), ")"),
++    inline_ref: ($) => seq(choice("ref", "Ref"), ":", $.cardinality, $.column),
++    reference: ($) => seq(choice("Ref", "ref"), optional(field("name", $.identifier)), choice(seq(":", $.relationship), seq("{", $.relationship, "}"))),
++    relationship: ($) => seq(field("from", $.column), $.cardinality, field("to", $.column), optional($.relationship_settings)),
++    relationship_settings: ($) => seq("[", commaSep1($.relationship_setting), "]"),
++    relationship_setting: ($) => seq(choice("delete", "update"), ":", choice("cascade", "restrict", "set null", "set default", "no action")),
++    enum: ($) => seq(choice("Enum", "enum"), field("name", $.table), "{", repeat($.enum_item), "}"),
++    enum_item: ($) => seq($.identifier, optional($.setting)),
++    index_definition: ($) => seq(choice("indexes", "Indexes"), "{", repeat($.index), "}"),
++    index: ($) => seq(choice($.identifier, $.expression, $.composite_index), optional($.setting)),
++    composite_index: ($) => seq("(", commaSep1(choice($.identifier, $.expression)), ")"),
++    table_partial: ($) => seq("TablePartial", $.identifier, optional($.setting), $.block),
++    partial_injection: ($) => seq("~", $.identifier),
++    table_group: ($) => seq("TableGroup", $.identifier, "{", repeat(choice($.table, $.note)), "}"),
++    project: ($) => seq("Project", $.identifier, "{", repeat(choice($.note, $.project_setting)), "}"),
++    project_setting: ($) => seq($.identifier, ":", $.value),
++    comment: (_) => token(choice(seq("//", /[^\r\n]*/), seq("/*", /[^*]*\*+([^/*][^*]*\*+)*/, "/"))),
+   },
+ });
++
++function commaSep1(rule) {
++  return seq(rule, repeat(seq(",", rule)), optional(","));
++}

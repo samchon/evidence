@@ -1,5 +1,7 @@
 import { resolve } from "node:path";
 
+import { EvidenceLanguageRegistry } from "../parsers/EvidenceLanguageRegistry";
+
 import type { IEvidenceClaim } from "../structures/IEvidenceClaim";
 import type { IEvidenceConfig } from "../structures/IEvidenceConfig";
 import type { IEvidenceConfigPlan } from "../structures/IEvidenceConfigPlan";
@@ -76,7 +78,10 @@ function symbols(
   if (population.type === "swagger") return ["operation"];
   if (DATABASE_TYPES.has(population.type))
     return reference ? ["model"] : ["model", "column", "relation"];
-  return reference ? ["type"] : ["type", "function", "property"];
+  const supported: EvidenceSymbol[] = EvidenceLanguageRegistry.list().find(
+    (language) => language.type === population.type,
+  )?.adapter?.symbols ?? ["type", "function", "property"];
+  return reference && supported.includes("type") ? ["type"] : [...supported];
 }
 
 const DATABASE_TYPES = new Set([

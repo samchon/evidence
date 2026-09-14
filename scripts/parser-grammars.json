@@ -1,5 +1,23 @@
 [
   {
+    "id": "dbml",
+    "repository": "https://github.com/dynamotn/tree-sitter-dbml",
+    "version": "grammar-dbml-c67985a56a3edf40b84cbc41d2c0224d074362a8ecb916a1a744c283c035fc15",
+    "commit": "2e2fa5640268c33c3d3f27f7e676f631a9c68fd9",
+    "wasm": {
+      "file": "dbml/tree-sitter-dbml.wasm",
+      "url": "https://github.com/wrtnlabs/evidence/releases/download/grammar-dbml-c67985a56a3edf40b84cbc41d2c0224d074362a8ecb916a1a744c283c035fc15/tree-sitter-dbml.wasm",
+      "sha256": "c67985a56a3edf40b84cbc41d2c0224d074362a8ecb916a1a744c283c035fc15",
+      "size": 30043
+    },
+    "license": {
+      "file": "dbml/LICENSE",
+      "url": "https://raw.githubusercontent.com/dynamotn/tree-sitter-dbml/2e2fa5640268c33c3d3f27f7e676f631a9c68fd9/LICENSE",
+      "sha256": "8e417a16aaad67be7ae75b88078e8250a756597656765b6660cfa276224e81b0",
+      "size": 1097
+    }
+  },
+  {
     "id": "zig",
     "repository": "https://github.com/tree-sitter-grammars/tree-sitter-zig",
     "version": "v1.1.2",
@@ -36,6 +54,24 @@
     }
   },
   {
+    "id": "bigquery",
+    "repository": "https://github.com/takegue/tree-sitter-sql-bigquery",
+    "version": "grammar-bigquery-e77cf21dfae23f6e9a108705e559374acfc110a81a6e26f06df166e627b14299",
+    "commit": "eb53d2486b353f8a3d5f69833b2ae749b4862ba5",
+    "wasm": {
+      "file": "bigquery/tree-sitter-bigquery.wasm",
+      "url": "https://github.com/wrtnlabs/evidence/releases/download/grammar-bigquery-e77cf21dfae23f6e9a108705e559374acfc110a81a6e26f06df166e627b14299/tree-sitter-bigquery.wasm",
+      "sha256": "e77cf21dfae23f6e9a108705e559374acfc110a81a6e26f06df166e627b14299",
+      "size": 7415004
+    },
+    "license": {
+      "file": "bigquery/LICENSE",
+      "url": "https://raw.githubusercontent.com/takegue/tree-sitter-sql-bigquery/eb53d2486b353f8a3d5f69833b2ae749b4862ba5/LICENSE",
+      "sha256": "ddeeb70b50ef1db76a45c059a7fc378320ab80a2fead296ed96c82f14a54dd9c",
+      "size": 1064
+    }
+  },
+  {
     "id": "tsx",
     "repository": "https://github.com/tree-sitter/tree-sitter-typescript",
     "version": "v0.23.2",
@@ -51,6 +87,24 @@
       "url": "https://raw.githubusercontent.com/tree-sitter/tree-sitter-typescript/f975a621f4e7f532fe322e13c4f79495e0a7b2e7/LICENSE",
       "sha256": "49bf33cf78ef5897e4e161ce1517df7de1ae5042a65b6bcfd44401e0fc606559",
       "size": 1080
+    }
+  },
+  {
+    "id": "lua",
+    "repository": "https://github.com/tree-sitter-grammars/tree-sitter-lua",
+    "version": "v0.5.0",
+    "commit": "10fe0054734eec83049514ea2e718b2a56acd0c9",
+    "wasm": {
+      "file": "lua/tree-sitter-lua.wasm",
+      "url": "https://github.com/tree-sitter-grammars/tree-sitter-lua/releases/download/v0.5.0/tree-sitter-lua.wasm",
+      "sha256": "df08a1704e504c70b8dba4a3e6f8e0c99a4fb94e1b1693d2969f53141d09f0d4",
+      "size": 54603
+    },
+    "license": {
+      "file": "lua/LICENSE",
+      "url": "https://raw.githubusercontent.com/tree-sitter-grammars/tree-sitter-lua/10fe0054734eec83049514ea2e718b2a56acd0c9/LICENSE.md",
+      "sha256": "9a32b02e4c917b1ce6b5e79d8ea81e25cefd7f27d89c7235f2afb262c06cf32e",
+      "size": 1079
     }
   },
   {

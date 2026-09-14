@@ -1,11 +1,14 @@
 import { EvidenceDartAdapter } from "../adapters/dart/EvidenceDartAdapter";
 import { EvidenceCAdapter } from "../adapters/c/EvidenceCAdapter";
+import { EvidenceBigQueryAdapter } from "../adapters/bigquery/EvidenceBigQueryAdapter";
 import { EvidenceCppAdapter } from "../adapters/cpp/EvidenceCppAdapter";
 import { EvidenceCSharpAdapter } from "../adapters/csharp/EvidenceCSharpAdapter";
+import { EvidenceDbmlAdapter } from "../adapters/dbml/EvidenceDbmlAdapter";
 import { EvidenceGoAdapter } from "../adapters/go/EvidenceGoAdapter";
 import { EvidenceJavaAdapter } from "../adapters/java/EvidenceJavaAdapter";
 import { EvidenceJavaScriptAdapter } from "../adapters/javascript/EvidenceJavaScriptAdapter";
 import { EvidenceKotlinAdapter } from "../adapters/kotlin/EvidenceKotlinAdapter";
+import { EvidenceLuaAdapter } from "../adapters/lua/EvidenceLuaAdapter";
 import { EvidenceMarkdownAdapter } from "../adapters/markdown/EvidenceMarkdownAdapter";
 import { EvidenceMatlabAdapter } from "../adapters/matlab/EvidenceMatlabAdapter";
 import { EvidencePhpAdapter } from "../adapters/php/EvidencePhpAdapter";
@@ -30,12 +33,15 @@ export namespace EvidenceAdapterFactory {
   export function create(type: EvidenceArtifactType): IEvidenceAdapter {
     if (type === "dart") return new EvidenceDartAdapter();
     if (type === "c") return new EvidenceCAdapter();
+    if (type === "bigquery") return new EvidenceBigQueryAdapter();
     if (type === "cpp") return new EvidenceCppAdapter();
     if (type === "csharp") return new EvidenceCSharpAdapter();
+    if (type === "dbml") return new EvidenceDbmlAdapter();
     if (type === "go") return new EvidenceGoAdapter();
     if (type === "java") return new EvidenceJavaAdapter();
     if (type === "javascript") return new EvidenceJavaScriptAdapter();
     if (type === "kotlin") return new EvidenceKotlinAdapter();
+    if (type === "lua") return new EvidenceLuaAdapter();
     if (type === "markdown") return new EvidenceMarkdownAdapter();
     if (type === "matlab") return new EvidenceMatlabAdapter();
     if (type === "php") return new EvidencePhpAdapter();

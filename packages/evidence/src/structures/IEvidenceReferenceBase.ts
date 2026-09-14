@@ -26,7 +26,7 @@ export interface IEvidenceReferenceBase<
   /**
    * Evidence symbol kinds; accepts one kind or a nonempty array. Defaults by family:
    *
-   * - Programming: type.
+   * - Programming: type when supported; otherwise every supported kind.
    * - Database: model.
    * - Markdown: file, h1, h2, h3, h4.
    * - Swagger: operation.
