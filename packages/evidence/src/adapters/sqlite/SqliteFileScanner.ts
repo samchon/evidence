@@ -233,14 +233,16 @@ export class SqliteFileScanner {
       .sort((left, right) => left.startIndex - right.startIndex);
     const groups: Node[][] = [];
     for (const comment of comments) {
-      const previous = groups.at(-1)?.at(-1);
+      const group = groups.at(-1);
+      const previous = group === undefined ? undefined : group.at(-1);
       if (
+        group !== undefined &&
         previous !== undefined &&
         previous.text.startsWith("--") &&
         comment.text.startsWith("--") &&
         this.adjacent(previous.endIndex, comment.startIndex)
       )
-        groups.at(-1)?.push(comment);
+        group.push(comment);
       else groups.push([comment]);
     }
     return groups.flatMap((group) => {

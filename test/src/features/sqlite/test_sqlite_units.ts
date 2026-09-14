@@ -41,7 +41,7 @@ export async function test_sqlite_units(): Promise<void> {
     "exact semantic names and kinds",
     inventory.units
       .map((unit) => `${unit.symbol}:${EvidenceAccessor.format(unit.identity)}`)
-      .sort(),
+      .sort((left, right) => left.localeCompare(right, "en")),
     [
       'model:main["order.items"]',
       'column:main["order.items"]["id.part"]',
@@ -53,7 +53,7 @@ export async function test_sqlite_units(): Promise<void> {
       "column:temp.scratch.untyped",
       'column:temp.scratch["quote\\\"name"]',
       'column:temp.scratch["back`tick"]',
-    ].sort(),
+    ].sort((left, right) => left.localeCompare(right, "en")),
   );
   for (const unit of inventory.units) {
     TestValidator.equals("one physical declaration site", unit.sites.length, 1);

@@ -46,14 +46,16 @@ export async function test_sqlite_hosts(): Promise<void> {
     [],
   );
   const annotation = inventory.declarations[0];
+  if (annotation === undefined || annotation.location.range === undefined)
+    throw new Error("Missing SQLite annotation source range.");
   TestValidator.equals(
     "UTF-16 offset after astral comment",
-    annotation?.location.range?.start.offset,
+    annotation.location.range.start.offset,
     source.indexOf("@evidence"),
   );
   TestValidator.equals(
     "CRLF line preserved",
-    annotation?.location.range?.start.line,
+    annotation.location.range.start.line,
     2,
   );
   const graph = new EvidenceInventory([inventory]);
