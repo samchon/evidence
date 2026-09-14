@@ -6,4 +6,3 @@ export interface IScalaDocumentationAttachment {
   /** Physical declaration site owned by the semantic unit. */
   siteId: string;
 }
-

@@ -16,4 +16,3 @@ export interface IScalaDocumentation {
   /** Declaration sites to which this documentation attaches. */
   attachments: IScalaDocumentationAttachment[];
 }
-

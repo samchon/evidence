@@ -1,4 +1,4 @@
-﻿import typia from "typia";
+import typia from "typia";
 
 import { EvidenceInventory } from "../../graph/EvidenceInventory";
 import { EvidenceParser } from "../../parsers/EvidenceParser";
@@ -18,7 +18,6 @@ import type { IScalaFileAnalysis } from "./IScalaFileAnalysis";
 import { ScalaDocumentation } from "./ScalaDocumentation";
 import { ScalaFileScanner } from "./ScalaFileScanner";
 import { ScalaExports } from "./ScalaExports";
-
 
 /** Builds Scala source-public inventories from the configured source snapshot. */
 export class ScalaAdapter implements IEvidenceAdapter {
@@ -136,6 +135,7 @@ export class ScalaAdapter implements IEvidenceAdapter {
           declarationIds.get(id) ?? new Set<string>();
         if (
           declaration.symbol !== "function" &&
+          declaration.syntax !== "export_declaration" &&
           previousDeclarations.size !== 0 &&
           !previousDeclarations.has(declaration.id)
         )
@@ -146,7 +146,8 @@ export class ScalaAdapter implements IEvidenceAdapter {
             `Scala public identity '${declaration.identity.join(".")}' has more than one selected declaration.`,
             "Select one source declaration for this package identity before checking coverage.",
           );
-        previousDeclarations.add(declaration.id);
+        if (declaration.syntax !== "export_declaration")
+          previousDeclarations.add(declaration.id);
         declarationIds.set(id, previousDeclarations);
 
         let unit = units.get(id);
@@ -438,4 +439,3 @@ export class ScalaAdapter implements IEvidenceAdapter {
     });
   }
 }
-

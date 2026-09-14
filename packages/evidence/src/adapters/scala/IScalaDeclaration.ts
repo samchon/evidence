@@ -26,4 +26,3 @@ export interface IScalaDeclaration {
   /** Explicit lexical parent declaration. */
   ownerDeclarationId?: string;
 }
-

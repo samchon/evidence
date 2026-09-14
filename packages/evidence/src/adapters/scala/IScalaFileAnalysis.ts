@@ -24,4 +24,3 @@ export interface IScalaFileAnalysis {
   /** Whether every relevant declaration form was understood. */
   complete: boolean;
 }
-

@@ -1,4 +1,4 @@
-﻿import { EvidenceDocumentation } from "../../parsers/EvidenceDocumentation";
+import { EvidenceDocumentation } from "../../parsers/EvidenceDocumentation";
 import type { IEvidenceDocumentation } from "../../structures/IEvidenceDocumentation";
 import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { IScalaDocumentation } from "./IScalaDocumentation";
@@ -27,6 +27,8 @@ export namespace ScalaDocumentation {
   /** Masks HTML examples and Markdown indented code; shared tag parsing handles fences. */
   function mask(input: string): string {
     const characters = input.split("");
+    for (const match of input.matchAll(/\{\{\{[\s\S]*?(?:\}\}\}|$)/gu))
+      hide(characters, match.index, match.index + match[0].length);
     const htmlCode = /<(pre|code)\b[^>]*>[\s\S]*?<\/\1\s*>/giu;
     for (const match of input.matchAll(htmlCode))
       hide(characters, match.index, match.index + match[0].length);
@@ -63,4 +65,3 @@ export namespace ScalaDocumentation {
         characters[index] = " ";
   }
 }
-
