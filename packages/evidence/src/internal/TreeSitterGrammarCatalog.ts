@@ -10,6 +10,27 @@ export namespace TreeSitterGrammarCatalog {
   /** Upstream provenance compiled into the package; payload bytes are acquired separately. */
   const GRAMMARS: IEvidenceGrammar[] = [
     {
+      id: "dbml",
+      repository: "https://github.com/dynamotn/tree-sitter-dbml",
+      version:
+        "grammar-dbml-c67985a56a3edf40b84cbc41d2c0224d074362a8ecb916a1a744c283c035fc15",
+      commit: "2e2fa5640268c33c3d3f27f7e676f631a9c68fd9",
+      wasm: {
+        file: "dbml/tree-sitter-dbml.wasm",
+        url: "https://github.com/wrtnlabs/evidence/releases/download/grammar-dbml-c67985a56a3edf40b84cbc41d2c0224d074362a8ecb916a1a744c283c035fc15/tree-sitter-dbml.wasm",
+        sha256:
+          "c67985a56a3edf40b84cbc41d2c0224d074362a8ecb916a1a744c283c035fc15",
+        size: 30043,
+      },
+      license: {
+        file: "dbml/LICENSE",
+        url: "https://raw.githubusercontent.com/dynamotn/tree-sitter-dbml/2e2fa5640268c33c3d3f27f7e676f631a9c68fd9/LICENSE",
+        sha256:
+          "8e417a16aaad67be7ae75b88078e8250a756597656765b6660cfa276224e81b0",
+        size: 1097,
+      },
+    },
+    {
       id: "typescript",
       repository: "https://github.com/tree-sitter/tree-sitter-typescript",
       version: "v0.23.2",

@@ -2,6 +2,7 @@ import { EvidenceDartAdapter } from "../adapters/dart/EvidenceDartAdapter";
 import { EvidenceCAdapter } from "../adapters/c/EvidenceCAdapter";
 import { EvidenceCppAdapter } from "../adapters/cpp/EvidenceCppAdapter";
 import { EvidenceCSharpAdapter } from "../adapters/csharp/EvidenceCSharpAdapter";
+import { EvidenceDbmlAdapter } from "../adapters/dbml/EvidenceDbmlAdapter";
 import { EvidenceGoAdapter } from "../adapters/go/EvidenceGoAdapter";
 import { EvidenceJavaAdapter } from "../adapters/java/EvidenceJavaAdapter";
 import { EvidenceJavaScriptAdapter } from "../adapters/javascript/EvidenceJavaScriptAdapter";
@@ -31,6 +32,7 @@ export namespace EvidenceAdapterFactory {
     if (type === "c") return new EvidenceCAdapter();
     if (type === "cpp") return new EvidenceCppAdapter();
     if (type === "csharp") return new EvidenceCSharpAdapter();
+    if (type === "dbml") return new EvidenceDbmlAdapter();
     if (type === "go") return new EvidenceGoAdapter();
     if (type === "java") return new EvidenceJavaAdapter();
     if (type === "javascript") return new EvidenceJavaScriptAdapter();

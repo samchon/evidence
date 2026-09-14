@@ -6,6 +6,7 @@ export { EvidenceChecker } from "./EvidenceChecker";
 export { EvidenceCAdapter } from "./adapters/c/EvidenceCAdapter";
 export { EvidenceCppAdapter } from "./adapters/cpp/EvidenceCppAdapter";
 export { EvidenceCSharpAdapter } from "./adapters/csharp/EvidenceCSharpAdapter";
+export { EvidenceDbmlAdapter } from "./adapters/dbml/EvidenceDbmlAdapter";
 export { EvidenceGoAdapter } from "./adapters/go/EvidenceGoAdapter";
 export { EvidenceJavaAdapter } from "./adapters/java/EvidenceJavaAdapter";
 export { EvidenceJavaScriptAdapter } from "./adapters/javascript/EvidenceJavaScriptAdapter";
