@@ -170,6 +170,26 @@ export namespace EvidenceLanguageRegistry {
       },
     },
     {
+      type: "dart",
+      name: "Dart",
+      grammars: [{ id: "dart", extensions: [".dart"], filenames: [] }],
+      adapter: {
+        entry: "EvidenceDartAdapter",
+        symbols: ["type", "function", "property"],
+        publicSurface:
+          "Explicit public Dart declarations across selected defining libraries, reciprocal parts, and static relative exports.",
+        addressing:
+          "File-qualified library names and lexical members, with part and show/hide export aliases sharing semantic identity.",
+        comments: ["attached /// or /** */ Dart documentation"],
+        unsupported: [
+          "package and SDK export URIs",
+          "conditional exports",
+          "augmentation",
+          "inherited or generated members absent from selected source",
+        ],
+      },
+    },
+    {
       type: "php",
       name: "PHP",
       grammars: [{ id: "php", extensions: [".php"], filenames: [] }],
@@ -532,28 +552,6 @@ export namespace EvidenceLanguageRegistry {
   ];
 
   const CANDIDATES: IEvidenceLanguageCandidate[] = [
-    {
-      id: "dart",
-      name: "Dart",
-      kind: "programming-language",
-      dialects: ["Dart source"],
-      grammarRepository: "https://github.com/nielsenko/tree-sitter-dart",
-      grammarLicense: "MIT",
-      wasm: "source-build",
-      wasmNotes:
-        "No upstream release asset is published; build WASM from a pinned source commit with the Tree-sitter CLI.",
-      languageReference: "https://dart.dev/language/libraries",
-      visibility:
-        "identifiers beginning with an underscore are private to a library; other declarations are public unless export combinators hide them",
-      declarations:
-        "libraries, classes, mixins, enums, extensions, extension types, functions, variables, getters, setters, and typedefs",
-      blockers: [
-        "part files share one library-private namespace",
-        "export/show/hide traversal and package URI resolution",
-        "generated members and extension lookup",
-      ],
-      next: "Build and pin ABI-compatible WASM, then certify one library graph with part and export combinator resolution.",
-    },
     {
       id: "objc",
       name: "Objective-C",
