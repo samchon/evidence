@@ -50,6 +50,19 @@
         "query": "(identifier) @name",
         "capture": "evidence_probe"
       }
+    },
+    {
+      "id": "sqlite",
+      "repository": "https://github.com/dhcmrlchtdj/tree-sitter-sqlite",
+      "commit": "993be0a91c0c90b0cc7799e6ff65922390e2cefe",
+      "directory": ".",
+      "license": "LICENSE",
+      "abi": 14,
+      "smoke": {
+        "source": "CREATE TABLE evidence_probe (id INTEGER);",
+        "query": "(identifier) @name",
+        "capture": "evidence_probe"
+      }
     }
   ]
 }

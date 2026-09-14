@@ -50,6 +50,26 @@ export namespace TreeSitterGrammarCatalog {
       },
     },
     {
+      id: "lua",
+      repository: "https://github.com/tree-sitter-grammars/tree-sitter-lua",
+      version: "v0.5.0",
+      commit: "10fe0054734eec83049514ea2e718b2a56acd0c9",
+      wasm: {
+        file: "lua/tree-sitter-lua.wasm",
+        url: "https://github.com/tree-sitter-grammars/tree-sitter-lua/releases/download/v0.5.0/tree-sitter-lua.wasm",
+        sha256:
+          "df08a1704e504c70b8dba4a3e6f8e0c99a4fb94e1b1693d2969f53141d09f0d4",
+        size: 54603,
+      },
+      license: {
+        file: "lua/LICENSE",
+        url: "https://raw.githubusercontent.com/tree-sitter-grammars/tree-sitter-lua/10fe0054734eec83049514ea2e718b2a56acd0c9/LICENSE.md",
+        sha256:
+          "9a32b02e4c917b1ce6b5e79d8ea81e25cefd7f27d89c7235f2afb262c06cf32e",
+        size: 1079,
+      },
+    },
+    {
       id: "javascript",
       repository: "https://github.com/tree-sitter/tree-sitter-javascript",
       version: "v0.25.0",
@@ -373,23 +393,24 @@ export namespace TreeSitterGrammarCatalog {
       },
     },
     {
-      id: "lua",
-      repository: "https://github.com/tree-sitter-grammars/tree-sitter-lua",
-      version: "v0.5.0",
-      commit: "10fe0054734eec83049514ea2e718b2a56acd0c9",
+      id: "sqlite",
+      repository: "https://github.com/dhcmrlchtdj/tree-sitter-sqlite",
+      version:
+        "grammar-sqlite-f3a1767fc368a15eb10b1db906ff1abcf510dc5e38920cfb937fd0960c64fa82",
+      commit: "993be0a91c0c90b0cc7799e6ff65922390e2cefe",
       wasm: {
-        file: "lua/tree-sitter-lua.wasm",
-        url: "https://github.com/tree-sitter-grammars/tree-sitter-lua/releases/download/v0.5.0/tree-sitter-lua.wasm",
+        file: "sqlite/tree-sitter-sqlite.wasm",
+        url: "https://github.com/wrtnlabs/evidence/releases/download/grammar-sqlite-f3a1767fc368a15eb10b1db906ff1abcf510dc5e38920cfb937fd0960c64fa82/tree-sitter-sqlite.wasm",
         sha256:
-          "df08a1704e504c70b8dba4a3e6f8e0c99a4fb94e1b1693d2969f53141d09f0d4",
-        size: 54603,
+          "f3a1767fc368a15eb10b1db906ff1abcf510dc5e38920cfb937fd0960c64fa82",
+        size: 983433,
       },
       license: {
-        file: "lua/LICENSE",
-        url: "https://raw.githubusercontent.com/tree-sitter-grammars/tree-sitter-lua/10fe0054734eec83049514ea2e718b2a56acd0c9/LICENSE.md",
+        file: "sqlite/LICENSE",
+        url: "https://raw.githubusercontent.com/dhcmrlchtdj/tree-sitter-sqlite/993be0a91c0c90b0cc7799e6ff65922390e2cefe/LICENSE",
         sha256:
-          "9a32b02e4c917b1ce6b5e79d8ea81e25cefd7f27d89c7235f2afb262c06cf32e",
-        size: 1079,
+          "d9e7e47e6b65f2ad3cd1770d7ec20d6ac1e5fe8f5177d22c6b273590635e4722",
+        size: 1082,
       },
     },
   ];

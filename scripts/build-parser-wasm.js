@@ -106,6 +106,7 @@ async function main() {
         platform: process.platform,
         architecture: process.arch,
         inputs: first.inputs,
+        patchBase64: first.patch?.toString("base64"),
         reproducible: true,
         wasmSha256: digest,
         runtimeVersion: JSON.parse(
@@ -170,6 +171,20 @@ async function build(recipe, base, name, cli, env) {
   const commit = await run("git", ["-C", checkout, "rev-parse", "HEAD"]);
   if (commit.trim() !== recipe.commit)
     throw new Error("Grammar checkout differs from its source pin.");
+  let patchDigest;
+  let patchBytes;
+  if (recipe.patch) {
+    const patch = path.resolve(root, recipe.patch.file);
+    const patchRoot = path.join(root, "scripts/parser-patches");
+    if (!patch.startsWith(patchRoot + path.sep))
+      throw new Error("Grammar patch escapes scripts/parser-patches.");
+    patchBytes = await readFile(patch);
+    patchDigest = sha256(patchBytes);
+    if (patchDigest !== recipe.patch.sha256)
+      throw new Error("Grammar patch differs from its pinned digest.");
+    await run("git", ["-C", checkout, "apply", "--check", patch]);
+    await run("git", ["-C", checkout, "apply", patch]);
+  }
   const cwd = path.resolve(checkout, recipe.directory);
   if (cwd !== checkout && !cwd.startsWith(checkout + path.sep))
     throw new Error("Grammar directory escapes the checkout.");
@@ -177,10 +192,14 @@ async function build(recipe, base, name, cli, env) {
   const wasm = path.join(checkout, "parser.wasm");
   await run(cli, ["build", "--wasm", "--output", wasm], { cwd, env });
   const inputs = {};
-  const files = [
-    path.join(cwd, "grammar.js"),
-    path.join(checkout, "tree-sitter.json"),
-  ];
+  if (patchDigest) inputs[recipe.patch.file] = patchDigest;
+  const files = [path.join(cwd, "grammar.js")];
+  try {
+    const metadata = path.join(checkout, "tree-sitter.json");
+    inputs["tree-sitter.json"] = sha256(await readFile(metadata));
+  } catch (error) {
+    if (error.code !== "ENOENT") throw error;
+  }
   for (const entry of await readdir(path.join(cwd, "src"), {
     recursive: true,
     withFileTypes: true,
@@ -190,10 +209,18 @@ async function build(recipe, base, name, cli, env) {
     inputs[path.relative(checkout, file).replaceAll("\\", "/")] = sha256(
       await readFile(file),
     );
+  // Read the immutable Git blob so checkout newline conversion cannot change the URL pin.
+  const license = await execute(
+    "git",
+    ["-C", checkout, "show", `${recipe.commit}:${recipe.license}`],
+    { encoding: "buffer", maxBuffer: 16 * 1024 * 1024, windowsHide: true },
+  );
+  inputs[recipe.license] = sha256(license.stdout);
   return {
     bytes: await readFile(wasm),
-    license: await readFile(path.join(checkout, recipe.license)),
+    license: license.stdout,
     inputs,
+    patch: patchBytes,
   };
 }
 

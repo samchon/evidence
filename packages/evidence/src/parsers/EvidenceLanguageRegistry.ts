@@ -54,6 +54,30 @@ export namespace EvidenceLanguageRegistry {
 
   const DATABASES: IEvidenceDatabaseLanguage[] = [
     {
+      type: "sqlite",
+      name: "SQLite",
+      grammars: [
+        { id: "sqlite", extensions: [".sql", ".sqlite"], filenames: [] },
+      ],
+      adapter: {
+        entry: "EvidenceSqliteAdapter",
+        symbols: ["model", "column", "relation"],
+        publicSurface:
+          "Explicit SQLite CREATE TABLE declarations, columns, and foreign keys across selected schema files.",
+        addressing:
+          "File-qualified decoded source names with literal schema and table segments; case-insensitive schema identities are independent of files.",
+        comments: ["adjacent leading SQLite line and block comments"],
+        unsupported: [
+          "runtime database inspection",
+          "schema mutations",
+          "virtual tables",
+          "CREATE TABLE AS",
+          "ATTACH and PRAGMA execution",
+          "views and triggers",
+        ],
+      },
+    },
+    {
       type: "postgresql",
       name: "PostgreSQL",
       grammars: [{ id: "sql", extensions: [".sql"], filenames: [] }],
