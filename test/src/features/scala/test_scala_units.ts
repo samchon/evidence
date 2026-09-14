@@ -130,7 +130,7 @@ export async function test_scala_units(): Promise<void> {
   );
   TestValidator.equals(
     "source inventory serializes",
-    typia.assert<IEvidenceInventory>(JSON.parse(JSON.stringify(inventory))),
+    typia.json.assertParse<IEvidenceInventory>(JSON.stringify(inventory)),
     inventory,
   );
 }

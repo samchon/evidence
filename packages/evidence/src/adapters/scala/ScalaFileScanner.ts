@@ -185,6 +185,10 @@ export class ScalaFileScanner {
           end: this.session.range(node.childrenForFieldName("body")[0] ?? node)
             .start,
         };
+        declaration.site.range = {
+          start: header.start,
+          end: declaration.site.range.end,
+        };
         declaration.site.content = [header, ...declaration.site.content];
         this.attach(node, declaration);
       }
