@@ -8,7 +8,9 @@ import { EvidenceKotlinAdapter } from "../adapters/kotlin/EvidenceKotlinAdapter"
 import { EvidenceLuaAdapter } from "../adapters/lua/EvidenceLuaAdapter";
 import { EvidenceMarkdownAdapter } from "../adapters/markdown/EvidenceMarkdownAdapter";
 import { EvidenceMatlabAdapter } from "../adapters/matlab/EvidenceMatlabAdapter";
+import { EvidencePhpAdapter } from "../adapters/php/EvidencePhpAdapter";
 import { EvidencePrismaAdapter } from "../adapters/prisma/EvidencePrismaAdapter";
+import { EvidencePostgresqlAdapter } from "../adapters/postgresql/EvidencePostgresqlAdapter";
 import { EvidencePythonAdapter } from "../adapters/python/EvidencePythonAdapter";
 import { EvidenceRubyAdapter } from "../adapters/ruby/EvidenceRubyAdapter";
 import { EvidenceScalaAdapter } from "../adapters/scala/EvidenceScalaAdapter";
@@ -33,7 +35,9 @@ export namespace EvidenceAdapterFactory {
     if (type === "lua") return new EvidenceLuaAdapter();
     if (type === "markdown") return new EvidenceMarkdownAdapter();
     if (type === "matlab") return new EvidenceMatlabAdapter();
+    if (type === "php") return new EvidencePhpAdapter();
     if (type === "prisma") return new EvidencePrismaAdapter();
+    if (type === "postgresql") return new EvidencePostgresqlAdapter();
     if (type === "python") return new EvidencePythonAdapter();
     if (type === "ruby") return new EvidenceRubyAdapter();
     if (type === "scala") return new EvidenceScalaAdapter();
