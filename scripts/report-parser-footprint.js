@@ -12,7 +12,10 @@ async function main() {
     path.join(packageDirectory, "package.json"),
   );
   const records = JSON.parse(
-    await readFile(path.join(__dirname, "parser-grammars.json"), "utf8"),
+    await readFile(
+      path.join(packageDirectory, "src/internal/parser-grammars.json"),
+      "utf8",
+    ),
   );
   const compress = promisify(gzip);
 

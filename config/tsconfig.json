@@ -4,6 +4,7 @@
     "lib": ["ES2023"],
     "module": "commonjs",
     "esModuleInterop": true,
+    "resolveJsonModule": true,
     "types": ["node"],
     "declaration": true,
     "newLine": "lf",

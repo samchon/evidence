@@ -31,7 +31,7 @@ The [roadmap](https://github.com/wrtnlabs/evidence/issues/31) owns execution ord
 | `packages/evidence/src/structures` | Shared adapter contract, configuration, parser, source, and semantic inventory interfaces |
 | `packages/evidence/src/typings` | Language identifiers, symbol selectors, and diagnostic severity |
 | `packages/evidence/src/executable` | Small Node CLI bootstraps |
-| `scripts/parser-grammars.json` | Pinned grammar download metadata compiled into the runtime catalog |
+| `packages/evidence/src/internal/parser-grammars.json` | Pinned grammar download metadata imported by the runtime asset reader |
 | `test/src/index.ts` | DynamicExecutor unit-test entry point |
 | `test/src/features/<category>` | Exported logic unit-test functions |
 | `config/package.json` | Private workspace with dependencies for shared configuration |
