@@ -72,7 +72,7 @@ jobs:
             git commit -m "chore(release): bump ${NPM_TAG} to ${RELEASE_VERSION} [skip ci]"
             git push origin HEAD:${GITHUB_REF_NAME}
           fi
-      # `prepack` verifies the compiled parser catalog, builds, and copies README/LICENSE.
+      # `prepack` builds and copies README/LICENSE into the package.
       - name: Publish to npm
         run: pnpm run "package:${NPM_TAG}" --no-git-checks --provenance
 

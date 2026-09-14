@@ -1,6 +1,6 @@
 # Parser assets
 
-The application uses the official CommonJS entry of `web-tree-sitter`, pinned in the `tree-sitter` family catalog. Language WASM files come from individual upstream Tree-sitter release assets. The [grammar manifest](../../packages/evidence/assets/grammars.json) records each release tag, resolved source commit, download URL, SHA-256 checksum, byte length, and license. TypeScript and TSX share an upstream repository and license but use separate grammars.
+The application uses the official CommonJS entry of `web-tree-sitter`, pinned in the `tree-sitter` family catalog. Language WASM files come from individual upstream Tree-sitter release assets. The [grammar manifest](../../packages/evidence/src/internal/parser-grammars.json) records each release tag, resolved source commit, download URL, SHA-256 checksum, byte length, and license. TypeScript and TSX share an upstream repository and license but use separate grammars.
 
 The binding's core WASM comes from its pinned npm dependency. Grammar files and their licenses are committed under `packages/evidence/assets` and included by the package allowlist. Runtime initialization reads the installed core bytes through `require.resolve`; grammar paths resolve from the Evidence package. Neither path depends on the caller's working directory. Checking never downloads grammars or invokes native build tools.
 
