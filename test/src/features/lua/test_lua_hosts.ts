@@ -89,4 +89,26 @@ export async function test_lua_hosts(): Promise<void> {
       "unsupported-annotation-host",
     ],
   );
+  const unsupportedSource = unsupported.sources[0];
+  if (unsupportedSource === undefined)
+    throw new Error("Unsupported carrier source is missing.");
+  const changedLiteral = await adapter.analyze(
+    TestSourceSnapshot.create(
+      "source.lua",
+      unsupportedSource.content.replace(
+        "A string cannot claim coverage.",
+        "A different runtime string.",
+      ),
+    ),
+  );
+  const publicFunction = unsupported.units.find(
+    (unit) => unit.name === "publicFunction",
+  );
+  if (publicFunction === undefined)
+    throw new Error("Public string-returning function is missing.");
+  TestValidator.notEquals(
+    "unsupported tag-looking strings remain semantic content",
+    EvidenceFingerprint.inspect(unsupported, publicFunction.id).fingerprint,
+    EvidenceFingerprint.inspect(changedLiteral, publicFunction.id).fingerprint,
+  );
 }

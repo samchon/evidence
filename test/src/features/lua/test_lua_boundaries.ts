@@ -16,6 +16,7 @@ export async function test_lua_boundaries(): Promise<void> {
     "local M = {}\nlocal alias = M\nalias[key] = 1\nreturn M",
     "local M = {}\nif flag then M.x = 1 end\nreturn M",
     "local M = {}\nM.self = M\nreturn M",
+    "local shared = {}\nreturn { first = { child = shared }, second = { child = shared } }",
     "local M = {}\nfunction M.run() M.x = 1 end\nreturn M",
     "local M = {}\nfunction M:run() self.x = 1 end\nreturn M",
     "local M = {}\nfunction M.run() consume(M) end\nreturn M",

@@ -188,10 +188,11 @@ export class LuaAdapter implements IEvidenceAdapter {
         const groups = this.attachmentGroups(documentation, published);
         if (groups.size === 0 && !this.annotation(analysis, documentation))
           continue;
-        inventory.annotationRanges.push({
-          file: analysis.source.physicalPath,
-          range: documentation.range,
-        });
+        if (groups.size !== 0)
+          inventory.annotationRanges.push({
+            file: analysis.source.physicalPath,
+            range: documentation.range,
+          });
         for (const [siteId, unitIds] of groups) {
           const parsed = this.parse(
             analysis.source,

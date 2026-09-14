@@ -8,7 +8,7 @@ export interface ILuaFileAnalysis {
   /** Original selected source snapshot. */
   source: IEvidenceSourceFile;
 
-  /** Extracted declarations, including non-public boundaries. */
+  /** Public declarations and alias projections established by static initialization. */
   declarations: ILuaDeclaration[];
 
   /** Classified documentation and unsupported annotation carriers. */

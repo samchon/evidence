@@ -311,7 +311,9 @@ export class LuaFileScanner {
       return node.text.slice(1, -1);
     const long = /^\[(=*)\[([\s\S]*)\]\1\]$/u.exec(node.text);
     if (long !== null)
-      return (long[2] ?? "").replace(/^\r?\n/u, "").replace(/\r\n?/gu, "\n");
+      return (long[2] ?? "")
+        .replace(/\r\n|\n\r|\r/gu, "\n")
+        .replace(/^\n/u, "");
     this.problem(
       node,
       "Escaped field names need a Lua byte-string decoder; use an unescaped string key.",
@@ -354,7 +356,11 @@ export class LuaFileScanner {
       };
       value.declaration = declaration;
       this.attach(value.node, declaration);
-    }
+    } else if (declaration.ownerDeclarationId !== owner?.id)
+      this.problem(
+        value.node,
+        "A shared value is exported under different table owners; unique structural ownership is required for aggregate coverage and withdrawal.",
+      );
     this.declarations.push({ ...declaration, address });
     const next = new Set(ancestors).add(value);
     for (const [name, field] of value.fields)
@@ -385,6 +391,7 @@ export class LuaFileScanner {
           (child) => child.type === "variable_list",
         );
         for (const name of names?.namedChildren ?? []) {
+          if (name.type === "comment") continue;
           const root =
             name.descendantsOfType("identifier")[0]?.text ?? name.text;
           if (this.local(root, assignment)) continue;

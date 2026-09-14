@@ -58,6 +58,7 @@ export namespace EvidenceLanguageRegistry {
         comments: ["adjacent --- LuaDoc", "adjacent long Lua comments"],
         unsupported: [
           "dynamic table mutation",
+          "shared values with distinct table owners",
           "metatables",
           "require loader evaluation",
           "computed and numeric keys",

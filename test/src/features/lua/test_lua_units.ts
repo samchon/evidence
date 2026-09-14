@@ -90,4 +90,22 @@ export async function test_lua_units(): Promise<void> {
     new Set(files.units.map((unit) => unit.id)).size,
     2,
   );
+  const longKey = await new EvidenceLuaAdapter().analyze(
+    TestSourceSnapshot.create(
+      "long.lua",
+      "return { [ [=[\rname\n\rpart]=] ] = 1 }",
+    ),
+  );
+  TestValidator.equals(
+    "long string keys normalize Lua newline sequences",
+    longKey.addresses
+      .map((address) => address.segments)
+      .sort((left, right) => left.length - right.length),
+    [["module"], ["module", "name\npart"]],
+  );
+  TestValidator.equals(
+    "long string key stays complete",
+    longKey.diagnostics,
+    [],
+  );
 }
