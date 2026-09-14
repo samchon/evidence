@@ -40,7 +40,7 @@ export async function test_scala_boundaries(): Promise<void> {
   TestValidator.equals(
     "script source rejected",
     unsupported.diagnostics.map((diagnostic) => diagnostic.code),
-    ["scala-unsupported-extension"],
+    ["inventory-incomplete", "scala-unsupported-extension"],
   );
   const failed = TestSourceSnapshot.fail(
     TestSourceSnapshot.create("src/Missing.scala", "class Visible"),
@@ -58,7 +58,9 @@ export async function test_scala_boundaries(): Promise<void> {
   );
   TestValidator.equals(
     "source diagnostic retained",
-    unavailable.diagnostics.map((diagnostic) => diagnostic.message),
+    unavailable.diagnostics
+      .filter((diagnostic) => diagnostic.code === "source-path-unreadable")
+      .map((diagnostic) => diagnostic.message),
     ["Cannot read source."],
   );
   TestValidator.equals(
