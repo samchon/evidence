@@ -9,6 +9,9 @@ async function collectSourceFiles(directory) {
       const location = path.join(directory, entry.name);
       if (entry.isDirectory()) return collectSourceFiles(location);
       if (!entry.isFile()) return [];
+      // Imported JSON records such as the grammar pins are emitted by tsc
+      // alongside compiled sources and must reach lib for the package to load.
+      if (entry.name.endsWith(".json")) return [location];
       if (!entry.name.endsWith(".ts") || entry.name.endsWith(".d.ts"))
         return [];
       return [location];
@@ -47,10 +50,11 @@ async function main() {
   );
   const sources = await collectSourceFiles(sourceRoot);
   const compiled = sources.flatMap(function mapSource(source) {
-    const relative = path.relative(sourceRoot, source).replace(/\.ts$/, "");
+    const relative = path.relative(sourceRoot, source);
+    if (relative.endsWith(".json")) return [path.join(outputRoot, relative)];
     return [
-      path.join(outputRoot, `${relative}.js`),
-      path.join(outputRoot, `${relative}.d.ts`),
+      path.join(outputRoot, relative.replace(/\.ts$/, ".js")),
+      path.join(outputRoot, relative.replace(/\.ts$/, ".d.ts")),
     ];
   });
   const published = [
@@ -73,7 +77,7 @@ async function main() {
       ].join("\n"),
     );
   console.log(
-    `Verified JavaScript and declarations for ${sources.length} Evidence sources.`,
+    `Verified compiled output for ${sources.length} Evidence sources.`,
   );
 }
 
