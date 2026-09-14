@@ -76,6 +76,30 @@ export namespace EvidenceLanguageRegistry {
       },
     },
     {
+      type: "mysql",
+      name: "MySQL",
+      grammars: [{ id: "mysql", extensions: [".sql"], filenames: [] }],
+      adapter: {
+        entry: "EvidenceMysqlAdapter",
+        symbols: ["model", "column", "relation"],
+        publicSurface:
+          "Explicit MySQL CREATE TABLE source declarations with column and table foreign-key ownership.",
+        addressing:
+          "File-qualified, source-case database and table segments; endpoint-derived foreign-key segments.",
+        comments: ["adjacent SQL comments", "table and column COMMENT strings"],
+        unsupported: [
+          "schema migrations",
+          "dynamic SQL",
+          "stored routines",
+          "session modes",
+          "generated columns",
+          "views",
+          "temporary tables",
+          "named CONSTRAINT foreign keys",
+        ],
+      },
+    },
+    {
       type: "sql",
       name: "Portable SQL",
       grammars: [{ id: "sql", extensions: [".sql"], filenames: [] }],

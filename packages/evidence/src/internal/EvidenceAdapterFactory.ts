@@ -9,6 +9,7 @@ import { EvidenceLuaAdapter } from "../adapters/lua/EvidenceLuaAdapter";
 import { EvidenceMarkdownAdapter } from "../adapters/markdown/EvidenceMarkdownAdapter";
 import { EvidenceMatlabAdapter } from "../adapters/matlab/EvidenceMatlabAdapter";
 import { EvidencePhpAdapter } from "../adapters/php/EvidencePhpAdapter";
+import { EvidenceMysqlAdapter } from "../adapters/mysql/EvidenceMysqlAdapter";
 import { EvidencePrismaAdapter } from "../adapters/prisma/EvidencePrismaAdapter";
 import { EvidencePostgresqlAdapter } from "../adapters/postgresql/EvidencePostgresqlAdapter";
 import { EvidencePythonAdapter } from "../adapters/python/EvidencePythonAdapter";
@@ -36,6 +37,7 @@ export namespace EvidenceAdapterFactory {
     if (type === "markdown") return new EvidenceMarkdownAdapter();
     if (type === "matlab") return new EvidenceMatlabAdapter();
     if (type === "php") return new EvidencePhpAdapter();
+    if (type === "mysql") return new EvidenceMysqlAdapter();
     if (type === "prisma") return new EvidencePrismaAdapter();
     if (type === "postgresql") return new EvidencePostgresqlAdapter();
     if (type === "python") return new EvidencePythonAdapter();
