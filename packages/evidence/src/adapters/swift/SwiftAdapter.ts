@@ -65,7 +65,11 @@ export class SwiftAdapter implements IEvidenceAdapter {
         inventory.diagnostics.push(...analysis.diagnostics);
         inventory.complete &&= analysis.complete;
       }
-      const published = this.materializeUnits(inventory, analyses);
+      const published = this.materializeUnits(
+        inventory,
+        analyses,
+        input.root.physical,
+      );
       this.materializeDocumentation(inventory, analyses, published);
       return new EvidenceInventory([inventory]).snapshot();
     } finally {
@@ -117,13 +121,14 @@ export class SwiftAdapter implements IEvidenceAdapter {
   private materializeUnits(
     inventory: IEvidenceInventory,
     analyses: ISwiftFileAnalysis[],
+    moduleRoot: string,
   ): Map<string, string> {
     const published = new Map<string, string>();
     const publicDeclarations = analyses.flatMap((analysis) =>
       analysis.declarations.filter((declaration) => declaration.public),
     );
     for (const declaration of publicDeclarations)
-      published.set(declaration.id, this.unitId(declaration));
+      published.set(declaration.id, this.unitId(declaration, moduleRoot));
 
     const units = new Map<string, IEvidenceUnit>();
     const records = new Map(
@@ -134,7 +139,7 @@ export class SwiftAdapter implements IEvidenceAdapter {
     for (const analysis of analyses)
       for (const declaration of analysis.declarations) {
         if (!declaration.public) continue;
-        const id = this.unitId(declaration);
+        const id = this.unitId(declaration, moduleRoot);
         const parentId =
           declaration.ownerDeclarationId === undefined
             ? undefined
@@ -454,8 +459,8 @@ export class SwiftAdapter implements IEvidenceAdapter {
   }
 
   /** Separates programming kinds while unifying module-scoped overload identities. */
-  private unitId(declaration: ISwiftDeclaration): string {
-    return `swift:${declaration.symbol}:${JSON.stringify(declaration.identity)}`;
+  private unitId(declaration: ISwiftDeclaration, moduleRoot: string): string {
+    return `swift:${JSON.stringify([moduleRoot, declaration.symbol, ...declaration.identity])}`;
   }
 
   /** Marks a declaration conflict as incomplete analysis. */
