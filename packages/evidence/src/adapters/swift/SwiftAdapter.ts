@@ -1,4 +1,4 @@
-import typia from "typia";
+﻿import typia from "typia";
 
 import { EvidenceInventory } from "../../graph/EvidenceInventory";
 import { EvidenceParser } from "../../parsers/EvidenceParser";
@@ -68,7 +68,7 @@ export class SwiftAdapter implements IEvidenceAdapter {
       const published = this.materializeUnits(
         inventory,
         analyses,
-        input.root.physical,
+        input.root.physical ?? input.root.absolute,
       );
       this.materializeDocumentation(inventory, analyses, published);
       return new EvidenceInventory([inventory]).snapshot();
