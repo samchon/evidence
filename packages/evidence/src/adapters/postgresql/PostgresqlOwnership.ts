@@ -23,12 +23,24 @@ export namespace PostgresqlOwnership {
               JSON.stringify(reference.identity),
         );
         const original = matches[0];
-        if (matches.length !== 1 || original === undefined) {
+        const comments = analyses
+          .flatMap((candidate) => candidate.references ?? [])
+          .filter(
+            (candidate) =>
+              candidate.comment &&
+              JSON.stringify(candidate.identity) ===
+                JSON.stringify(reference.identity),
+          );
+        if (
+          matches.length !== 1 ||
+          original === undefined ||
+          (reference.comment && comments.length !== 1)
+        ) {
           analysis.complete = false;
           analysis.diagnostics.push({
             code: "postgresql-unresolved-owner",
             severity: "error",
-            message: `PostgreSQL ${reference.comment ? "COMMENT" : "ALTER"} target '${reference.identity.join(".")}' needs exactly one selected declaration.`,
+            message: `PostgreSQL ${reference.comment ? "COMMENT" : "ALTER"} target '${reference.identity.join(".")}' needs exactly one selected declaration and at most one COMMENT assignment.`,
             repair:
               "Select the schema-qualified CREATE TABLE declaration and remove conflicting definitions.",
             location: {
@@ -42,5 +54,16 @@ export namespace PostgresqlOwnership {
         if (original.ownerDeclarationId !== undefined)
           declaration.ownerDeclarationId = original.ownerDeclarationId;
       }
+    const unavailable = new Set(
+      declarations
+        .filter((declaration) => !declaration.public)
+        .map((declaration) => declaration.id),
+    );
+    for (const declaration of declarations)
+      if (
+        declaration.ownerDeclarationId !== undefined &&
+        unavailable.has(declaration.ownerDeclarationId)
+      )
+        declaration.public = false;
   }
 }

@@ -9,11 +9,10 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Preserves quoted segments, folded names, composite relations, and cross-file additive ownership. */
 export async function test_postgresql_units(): Promise<void> {
-  const inventory = await new EvidencePostgresqlAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
-        "schema.sql",
-        dedent`
+  const snapshot = TestSourceSnapshot.combine([
+    TestSourceSnapshot.create(
+      "schema.sql",
+      dedent`
       CREATE SCHEMA app;
       CREATE TABLE app.Account (ID integer PRIMARY KEY, region integer NOT NULL);
       CREATE TABLE app."Order.Item" (
@@ -23,17 +22,18 @@ export async function test_postgresql_units(): Promise<void> {
         FOREIGN KEY (account_id, region) REFERENCES app.Account (ID, region)
       );
     `,
-        ["schema.sql", "alias.sql"],
-      ),
-      TestSourceSnapshot.create(
-        "extend.sql",
-        dedent`
+      ["schema.sql", "alias.sql"],
+    ),
+    TestSourceSnapshot.create(
+      "extend.sql",
+      dedent`
       ALTER TABLE app.Account ADD COLUMN label text;
+      ALTER TABLE app.Account ADD CONSTRAINT region_fk FOREIGN KEY (ID, region) REFERENCES app.Account (ID, region);
       COMMENT ON COLUMN app.Account.label IS '@evidence spec.md#label Describes the label.';
     `,
-      ),
-    ]),
-  );
+    ),
+  ]);
+  const inventory = await new EvidencePostgresqlAdapter().analyze(snapshot);
 
   TestValidator.equals(
     "complete PostgreSQL inventory",
@@ -60,6 +60,7 @@ export async function test_postgresql_units(): Promise<void> {
         ],
       ],
       ["column", ["app", "account", "label"]],
+      ["relation", ["app", "account", "constraint region_fk"]],
     ],
   );
   for (const unit of inventory.units.filter((unit) => unit.symbol !== "model"))
@@ -100,5 +101,19 @@ export async function test_postgresql_units(): Promise<void> {
         (id) => inventory.units.find((unit) => unit.id === id)?.identity,
       ),
     [["app", "account", "label"]],
+  );
+  const reversed = await new EvidencePostgresqlAdapter().analyze({
+    ...snapshot,
+    files: [...snapshot.files].reverse(),
+  });
+  TestValidator.equals(
+    "extension files may precede CREATE",
+    reversed.diagnostics,
+    [],
+  );
+  TestValidator.equals(
+    "same semantic identity independent of file order",
+    reversed.units.map((unit) => unit.id).sort(),
+    inventory.units.map((unit) => unit.id).sort(),
   );
 }

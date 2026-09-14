@@ -7,6 +7,7 @@ import { EvidenceJavaScriptAdapter } from "../adapters/javascript/EvidenceJavaSc
 import { EvidenceKotlinAdapter } from "../adapters/kotlin/EvidenceKotlinAdapter";
 import { EvidenceMarkdownAdapter } from "../adapters/markdown/EvidenceMarkdownAdapter";
 import { EvidencePrismaAdapter } from "../adapters/prisma/EvidencePrismaAdapter";
+import { EvidencePostgresqlAdapter } from "../adapters/postgresql/EvidencePostgresqlAdapter";
 import { EvidencePythonAdapter } from "../adapters/python/EvidencePythonAdapter";
 import { EvidenceRubyAdapter } from "../adapters/ruby/EvidenceRubyAdapter";
 import { EvidenceRustAdapter } from "../adapters/rust/EvidenceRustAdapter";
@@ -27,6 +28,7 @@ export namespace EvidenceAdapterFactory {
     if (type === "kotlin") return new EvidenceKotlinAdapter();
     if (type === "markdown") return new EvidenceMarkdownAdapter();
     if (type === "prisma") return new EvidencePrismaAdapter();
+    if (type === "postgresql") return new EvidencePostgresqlAdapter();
     if (type === "python") return new EvidencePythonAdapter();
     if (type === "ruby") return new EvidenceRubyAdapter();
     if (type === "rust") return new EvidenceRustAdapter();

@@ -28,7 +28,9 @@ export namespace EvidenceLanguageRegistry {
     type: EvidenceProgrammingType | EvidenceDatabaseType,
     file: string,
   ): IEvidenceLanguageGrammar {
-    const language = [...LANGUAGES, ...DATABASES].find((entry) => entry.type === type);
+    const language = [...LANGUAGES, ...DATABASES].find(
+      (entry) => entry.type === type,
+    );
     if (language === undefined)
       throw new EvidenceParserError(
         "unsupported-language",
@@ -50,7 +52,30 @@ export namespace EvidenceLanguageRegistry {
     return structuredClone(grammar);
   }
 
-  const DATABASES: IEvidenceDatabaseLanguage[] = [];
+  const DATABASES: IEvidenceDatabaseLanguage[] = [
+    {
+      type: "postgresql",
+      name: "PostgreSQL",
+      grammars: [{ id: "sql", extensions: [".sql"], filenames: [] }],
+      adapter: {
+        entry: "EvidencePostgresqlAdapter",
+        symbols: ["model", "column", "relation"],
+        publicSurface:
+          "Explicit schema-qualified PostgreSQL table declarations, columns, foreign keys, and additive ALTER declarations within the selected snapshot.",
+        addressing:
+          "File-qualified schema and table segments; unquoted ASCII names fold to lowercase and quoted names remain literal.",
+        comments: ["adjacent SQL comments", "COMMENT ON TABLE or COLUMN"],
+        unsupported: [
+          "search_path evaluation",
+          "conditional DDL",
+          "inheritance and partitioning",
+          "LIKE, OF, and AS-derived schemas",
+          "destructive ALTER",
+          "executed migrations",
+        ],
+      },
+    },
+  ];
 
   const LANGUAGES: IEvidenceLanguage[] = [
     {

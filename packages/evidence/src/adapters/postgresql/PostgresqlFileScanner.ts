@@ -98,14 +98,14 @@ export class PostgresqlFileScanner {
     const table = this.declaration(node, "model", identity);
     for (const child of columns.namedChildren)
       if (child.type === "column_definition") this.column(child, table);
-      else if (child.type === "constraints")
+      else if (child.type === "constraints") {
         for (const constraint of child.namedChildren)
           if (!this.commentNode(constraint)) this.constraint(constraint, table);
-          else if (!this.commentNode(child))
-            this.problem(
-              child,
-              "Unsupported table member can change the declared PostgreSQL schema.",
-            );
+      } else if (!this.commentNode(child))
+        this.problem(
+          child,
+          "Unsupported table member can change the declared PostgreSQL schema.",
+        );
   }
 
   /** Keeps ordinary columns distinct from separately selectable foreign-key relations. */
@@ -149,12 +149,27 @@ export class PostgresqlFileScanner {
     if (
       node.namedChildren.some((child) => child.type === "keyword_references")
     ) {
+      if (
+        !node.namedChildren.some((child) => child.type === "keyword_foreign") ||
+        node.childForFieldName("name") !== null
+      ) {
+        this.problem(
+          node,
+          "PostgreSQL table foreign keys require FOREIGN KEY without a dialect-specific inline key name.",
+        );
+        return;
+      }
       const columns = node.namedChildren.find(
         (child) => child.type === "ordered_columns",
       );
-      const local = columns
-        ?.descendantsOfType("identifier")
-        .map((child) => PostgresqlIdentity.identifier(child.text));
+      const local = columns?.namedChildren
+        .filter((child) => child.type === "column")
+        .map((child) => {
+          const name = child.childForFieldName("name");
+          return name === null
+            ? undefined
+            : PostgresqlIdentity.identifier(name.text);
+        });
       if (
         local === undefined ||
         local.length === 0 ||
@@ -283,6 +298,17 @@ export class PostgresqlFileScanner {
         );
         if (column !== undefined) this.column(column, table);
       } else if (child.type === "add_constraint") {
+        if (
+          !child.namedChildren.some(
+            (part) => part.type === "keyword_constraint",
+          )
+        ) {
+          this.problem(
+            child,
+            "PostgreSQL named constraints require ADD CONSTRAINT name.",
+          );
+          continue;
+        }
         const nameNode = child.namedChildren.find(
           (part) => part.type === "identifier",
         );
@@ -435,6 +461,12 @@ export class PostgresqlFileScanner {
         .sort((a, b) => a - b)[0];
       const attached =
         next !== undefined &&
+        /^[ \t]*$/u.test(
+          this.source.content.slice(
+            this.source.content.lastIndexOf("\n", first.startIndex - 1) + 1,
+            first.startIndex,
+          ),
+        ) &&
         /^\s*$/u.test(this.source.content.slice(last.endIndex, next));
       const declarations = attached ? (this.nodes.get(next) ?? []) : [];
       const range = {

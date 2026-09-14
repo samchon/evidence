@@ -1,4 +1,4 @@
-import { EvidencePostgresqlAdapter } from "@wrtnlabs/evidence";
+﻿import { EvidencePostgresqlAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -16,6 +16,8 @@ export async function test_postgresql_boundaries(): Promise<void> {
     "CREATE TABLE IF NOT EXISTS app.Item (id integer);",
     "CREATE TEMP TABLE app.Item (id integer);",
     "CREATE TABLE app.Item (id integer AUTO_INCREMENT);",
+    "CREATE TABLE app.Item (id integer, KEY (id) REFERENCES app.Other(id));",
+    "CREATE TABLE app.Item (id integer, FOREIGN KEY named_key (id) REFERENCES app.Other(id));",
     "CREATE TABLE app.`Item` (id integer);",
     "CREATE TABLE app.Item (id integer REFERENCES Other(id));",
     "ALTER TABLE app.Item DROP COLUMN id;",
@@ -23,6 +25,8 @@ export async function test_postgresql_boundaries(): Promise<void> {
     "ALTER TABLE app.Item ADD COLUMN id integer;",
     "COMMENT ON TABLE app.Item IS 'Missing declaration';",
     "CREATE TABLE app.Item (id integer); COMMENT ON TABLE app.Item IS NULL;",
+    "CREATE TABLE app.Item (id integer); COMMENT ON TABLE app.Item IS 'One'; COMMENT ON TABLE app.Item IS 'Two';",
+    `CREATE TABLE app."${"a".repeat(64)}" (id integer);`,
     "CREATE TABLE app.Item (id integer); CREATE TABLE app.Item (id text);",
     "CREATE TABLE app.Item (id integer",
   ]) {
@@ -55,7 +59,7 @@ export async function test_postgresql_boundaries(): Promise<void> {
   );
   failed.complete = false;
   failed.diagnostics.push({
-    code: "read-failed",
+    code: "path-unreadable",
     path: "/project/missing.sql",
     message: "Cannot read selected schema.",
   });
