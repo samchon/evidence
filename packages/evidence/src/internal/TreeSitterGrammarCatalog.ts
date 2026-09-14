@@ -310,5 +310,26 @@ export namespace TreeSitterGrammarCatalog {
         size: 1091,
       },
     },
+    {
+      id: "sql",
+      repository: "https://github.com/DerekStride/tree-sitter-sql",
+      version:
+        "grammar-sql-733a3d695e3ae06e525b6b6cb9ee37436ef390f45dfacb3fb0169871da4434bd",
+      commit: "7b51ecda191d36b92f5a90a8d1bc3faef1c7b8b8",
+      wasm: {
+        file: "sql/tree-sitter-sql.wasm",
+        url: "https://github.com/wrtnlabs/evidence/releases/download/grammar-sql-733a3d695e3ae06e525b6b6cb9ee37436ef390f45dfacb3fb0169871da4434bd/tree-sitter-sql.wasm",
+        sha256:
+          "733a3d695e3ae06e525b6b6cb9ee37436ef390f45dfacb3fb0169871da4434bd",
+        size: 2472281,
+      },
+      license: {
+        file: "sql/LICENSE",
+        url: "https://raw.githubusercontent.com/DerekStride/tree-sitter-sql/7b51ecda191d36b92f5a90a8d1bc3faef1c7b8b8/LICENSE",
+        sha256:
+          "3b3e4e4252d5d7d1c18e1257005f23242bf0580ad619204fd093c99b8c56748d",
+        size: 1069,
+      },
+    },
   ];
 }
