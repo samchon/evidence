@@ -143,6 +143,17 @@ export class MatlabFileScanner {
           "Octave endfunction is outside configured MATLAB syntax.",
           node,
         );
+      const argumentsNode = node.namedChildren.find(
+        (child) => child.type === "arguments",
+      );
+      const legacyClass =
+        name === "class" &&
+        (node.type === "command"
+          ? node.namedChildren.filter(
+              (child) => child.type === "command_argument",
+            ).length > 1
+          : argumentsNode !== undefined &&
+            argumentsNode.namedChildren.length > 1);
       if (
         [
           "addprop",
@@ -152,12 +163,12 @@ export class MatlabFileScanner {
           "eval",
           "evalin",
           "assignin",
-          "class",
           "schema",
           "feval",
           "str2func",
         ].includes(name) ||
-        name.endsWith(".addprop")
+        name.endsWith(".addprop") ||
+        legacyClass
       )
         this.problem(
           "dynamic-surface",

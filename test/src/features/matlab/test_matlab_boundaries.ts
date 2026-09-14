@@ -46,6 +46,18 @@ export async function test_matlab_boundaries(): Promise<void> {
     ).complete,
     true,
   );
+  TestValidator.equals(
+    "class introspection does not create a legacy declaration",
+    (
+      await adapter.analyze(
+        TestSourceSnapshot.create(
+          "src/Dynamic.m",
+          "function value=Dynamic(input)\nvalue=class(input);\nend\n",
+        ),
+      )
+    ).complete,
+    true,
+  );
   for (const extension of [".p", ".mlx", ".mexw64"])
     TestValidator.equals(
       `reject nontext source ${extension}`,
