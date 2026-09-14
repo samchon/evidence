@@ -37,6 +37,8 @@ export async function test_php_hosts(): Promise<void> {
     }
     /** @evidence requirement.md#detached Detached PHPDoc. */
     $local = 1;
+    /** @hidden Hidden type subtree. */
+    class Hidden { public function child() {} }
   `.replaceAll("\n", "\r\n");
   const inventory = await new EvidencePhpAdapter().analyze(
     TestSourceSnapshot.create("src/hosts.php", content),
@@ -80,6 +82,15 @@ export async function test_php_hosts(): Promise<void> {
     inventory.hosts.some((item) =>
       item.unitIds.includes(
         inventory.units.find((unit) => unit.name === "legacy")?.id ?? "",
+      ),
+    ),
+    false,
+  );
+  TestValidator.equals(
+    "withdrawn type removes descendant hosts",
+    inventory.hosts.some((item) =>
+      item.unitIds.includes(
+        inventory.units.find((unit) => unit.name === "child")?.id ?? "",
       ),
     ),
     false,

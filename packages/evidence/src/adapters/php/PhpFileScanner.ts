@@ -235,6 +235,8 @@ export class PhpFileScanner {
     for (const imported of root.descendantsOfType(
       "namespace_use_declaration",
     )) {
+      // Grouped imports have a namespace prefix and cannot name global builtins.
+      if (imported.childForFieldName("body") !== null) continue;
       for (const clause of imported.descendantsOfType("namespace_use_clause")) {
         if (
           (

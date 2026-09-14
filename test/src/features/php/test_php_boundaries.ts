@@ -50,6 +50,17 @@ export async function test_php_boundaries(): Promise<void> {
       ),
     );
   }
+  const grouped = await new EvidencePhpAdapter().analyze(
+    TestSourceSnapshot.create(
+      "grouped.php",
+      "<?php use Vendor\\{function define as publish}; function run() { publish(); }",
+    ),
+  );
+  TestValidator.equals(
+    "namespaced import is not a global runtime builtin",
+    grouped.complete,
+    true,
+  );
   const conflict = await new EvidencePhpAdapter().analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create(
