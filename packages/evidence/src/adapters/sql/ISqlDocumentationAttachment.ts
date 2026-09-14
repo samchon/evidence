@@ -1,4 +1,4 @@
-/** One KDoc carrier attached to a Sql declaration site. */
+/** One documentation carrier attached to a database declaration site. */
 export interface ISqlDocumentationAttachment {
   /** Owning declaration extraction identity. */
   declarationId: string;

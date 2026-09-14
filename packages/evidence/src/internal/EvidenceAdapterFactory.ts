@@ -1,4 +1,3 @@
-import { EvidenceSqlAdapter } from "../adapters/sql/EvidenceSqlAdapter";
 import { EvidenceCAdapter } from "../adapters/c/EvidenceCAdapter";
 import { EvidenceCppAdapter } from "../adapters/cpp/EvidenceCppAdapter";
 import { EvidenceCSharpAdapter } from "../adapters/csharp/EvidenceCSharpAdapter";
@@ -12,6 +11,7 @@ import { EvidencePostgresqlAdapter } from "../adapters/postgresql/EvidencePostgr
 import { EvidencePythonAdapter } from "../adapters/python/EvidencePythonAdapter";
 import { EvidenceRubyAdapter } from "../adapters/ruby/EvidenceRubyAdapter";
 import { EvidenceRustAdapter } from "../adapters/rust/EvidenceRustAdapter";
+import { EvidenceSqlAdapter } from "../adapters/sql/EvidenceSqlAdapter";
 import { EvidenceSwaggerAdapter } from "../adapters/swagger/EvidenceSwaggerAdapter";
 import { EvidenceTypeScriptAdapter } from "../adapters/typescript/EvidenceTypeScriptAdapter";
 import type { IEvidenceAdapter } from "../structures/IEvidenceAdapter";
