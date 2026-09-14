@@ -61,7 +61,7 @@ export default config;
 
 A **claim** selects the files and declarations that must cite evidence. Its **reference** selects what must be covered. Each claim and each element of its reference array has an independent coverage obligation; partial coverage from separate obligations is never pooled.
 
-Use `type` to select the source language, such as `"typescript"`, `"cpp"`, or `"rust"`, and `files` to select its files with globs. File names distinguish syntax variants such as TSX. No separate `language` setting or TypeScript compiler Program is required. `EvidenceDatabaseType` reserves a shared database type family, but Prisma is the only certified database adapter in this release; SQL dialect and DBML identifiers are rejected until their adapters are implemented and certified.
+Use `type` to select the source language, such as `"typescript"`, `"cpp"`, or `"rust"`, and `files` to select its files with globs. File names distinguish syntax variants such as TSX. No separate `language` setting or TypeScript compiler Program is required. `EvidenceDatabaseType` selects the schema language or explicitly configured SQL dialect. Only identifiers with certified adapters are accepted.
 
 Globs resolve from the directory containing `evidence.config.ts`, or from the population's `root`. Patterns are applied in order: `!` excludes matches, and a later positive pattern can include them again. Use `src/**` to select a directory's contents.
 
@@ -181,15 +181,22 @@ For adapter development, `IEvidenceAdapter.analyze(snapshot)` returns an ordinar
 | Programming | Yes | Yes | `type`, `function`, `property` | All / `type` |
 | Markdown | Yes | Yes | `file`, `h1`, `h2`, `h3`, `h4` | All / all |
 | Prisma | Yes | Yes | `model`, `column`, `relation` | All / `model` |
+| BigQuery | Yes | Yes | `model`, `column`, `relation` | All / `model` |
 | Swagger / OpenAPI | Yes | Yes | `operation` | Every operation / every operation |
 
 Every artifact family can cite every other family, including its own. Markdown can cite programming declarations or Swagger operations, and Swagger operations can cite Markdown, programming declarations, database schemas, or other operations.
 
 A `symbol` accepts one selector or a nonempty array. Programming `type` symbols include classes, interfaces, type aliases, and namespaces. Database `model` symbols describe record structures, `column` symbols describe data fields, and `relation` symbols describe connections between models. A foreign-key value is a column; the declaration describing its connection is a relation.
 
-Database schema typings share `IEvidenceDatabaseClaim` and `IEvidenceDatabaseReference`. Prisma is the implemented database adapter. Select the schema language rather than the database server: MongoDB models written in Prisma use `type: "prisma"`.
+Database schema typings share `IEvidenceDatabaseClaim` and `IEvidenceDatabaseReference`. Select the schema language rather than the database server: MongoDB models written in Prisma use `type: "prisma"`.
 
 Prisma files selected for one population are parsed together with `@prisma/prisma-schema-wasm`, which ships with this package. Evidence first uses a parser version visible from the project root and falls back to its pinned copy, so consumers do not install a separate Prisma parser. Parser output decides whether a member is a column or relation; the source scanner only supplies locations and documentation attachment. Views are model units, while enums, composite types, indexes, generators, and datasources do not form units.
+
+BigQuery populations use `type: "bigquery"` with `.sql` or `.bqsql` files. The configured type selects the pinned GoogleSQL grammar independently of other SQL dialects. Explicit `CREATE TABLE` statements expose models, scalar and repeated fields expose columns, and declared foreign keys expose relations. Primary keys constrain column content and do not create relation units. Every key must use `NOT ENFORCED`; Evidence records the declared relationship without claiming that BigQuery enforces it. Temporary tables remain outside the public schema population.
+
+BigQuery addresses are file-qualified declared paths, such as `schema.sql#project.dataset.orders.id`. A backtick pair around `project.dataset.orders` is split into project, dataset, and table segments; omitted qualifiers are never inferred from an ambient database connection. Table paths retain their declared case. Column and named constraint identities normalize case while addresses retain declared spelling. Quoted field names containing a literal dot use an escaped accessor segment, such as `schema.sql#dataset.orders["display.name"]`. A nested `STRUCT` or `ARRAY<STRUCT<...>>` field has an address such as `schema.sql#dataset.orders.details.sku`; each field remains directly owned by its table model. Withdrawing a STRUCT field also withdraws its nested fields. An unnamed foreign key uses the segment `foreign key ` followed by JSON containing its ordered local columns, referenced table path, and ordered referenced columns. Reordering independent constraints preserves these identities. Duplicate table, column, or relation identities are incomplete analysis; declarations do not merge across files.
+
+Adjacent `--`, `#`, and block comments and static `OPTIONS(description=...)` strings document the exact BigQuery table, field, or foreign-key declaration. Consecutive line comments form one documentation host. A blank line detaches a comment; defaults, other option values, and fenced code examples cannot acknowledge evidence. Single, double, and triple quoted descriptions support raw strings, common escaped characters, and Unicode escapes with original UTF-16 source locations. An unsupported description expression or escape is incomplete analysis. Query-derived tables and views, external schemas, `LIKE`, `COPY`, `CLONE`, conditional or replacing table declarations, schema migrations, and other statements outside explicit table declarations are incomplete analysis. Evidence does not execute SQL or discover database state.
 
 `EvidenceJavaScriptAdapter` parses `.js`, `.jsx`, `.mjs`, and `.cjs` with the pinned JavaScript grammar. `.mjs` always uses ESM and `.cjs` always uses CommonJS. A `.js` or `.jsx` file follows the nearest `package.json` `type`; missing metadata defaults to CommonJS. Checked package paths become watch dependencies, and unreadable, malformed, unsupported, or conflicting metadata leaves the inventory incomplete.
 

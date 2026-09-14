@@ -1,4 +1,5 @@
 import { EvidenceSqlAdapter } from "../adapters/sql/EvidenceSqlAdapter";
+import { EvidenceBigQueryAdapter } from "../adapters/bigquery/EvidenceBigQueryAdapter";
 import { EvidenceCAdapter } from "../adapters/c/EvidenceCAdapter";
 import { EvidenceCppAdapter } from "../adapters/cpp/EvidenceCppAdapter";
 import { EvidenceCSharpAdapter } from "../adapters/csharp/EvidenceCSharpAdapter";
@@ -19,6 +20,7 @@ import type { EvidenceArtifactType } from "../typings/EvidenceArtifactType";
 /** Creates only adapters whose complete Evidence behavior is certified. */
 export namespace EvidenceAdapterFactory {
   export function create(type: EvidenceArtifactType): IEvidenceAdapter {
+    if (type === "bigquery") return new EvidenceBigQueryAdapter();
     if (type === "c") return new EvidenceCAdapter();
     if (type === "cpp") return new EvidenceCppAdapter();
     if (type === "csharp") return new EvidenceCSharpAdapter();

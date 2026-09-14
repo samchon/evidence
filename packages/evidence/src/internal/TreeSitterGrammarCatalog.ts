@@ -270,5 +270,26 @@ export namespace TreeSitterGrammarCatalog {
         size: 1069,
       },
     },
+    {
+      id: "bigquery",
+      repository: "https://github.com/takegue/tree-sitter-sql-bigquery",
+      version:
+        "grammar-bigquery-e77cf21dfae23f6e9a108705e559374acfc110a81a6e26f06df166e627b14299",
+      commit: "eb53d2486b353f8a3d5f69833b2ae749b4862ba5",
+      wasm: {
+        file: "bigquery/tree-sitter-bigquery.wasm",
+        url: "https://github.com/wrtnlabs/evidence/releases/download/grammar-bigquery-e77cf21dfae23f6e9a108705e559374acfc110a81a6e26f06df166e627b14299/tree-sitter-bigquery.wasm",
+        sha256:
+          "e77cf21dfae23f6e9a108705e559374acfc110a81a6e26f06df166e627b14299",
+        size: 7415004,
+      },
+      license: {
+        file: "bigquery/LICENSE",
+        url: "https://raw.githubusercontent.com/takegue/tree-sitter-sql-bigquery/eb53d2486b353f8a3d5f69833b2ae749b4862ba5/LICENSE",
+        sha256:
+          "ddeeb70b50ef1db76a45c059a7fc378320ab80a2fead296ed96c82f14a54dd9c",
+        size: 1064,
+      },
+    },
   ];
 }

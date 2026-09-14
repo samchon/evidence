@@ -73,6 +73,32 @@ export namespace EvidenceLanguageRegistry {
         ],
       },
     },
+    {
+      type: "bigquery",
+      name: "BigQuery GoogleSQL",
+      grammars: [
+        { id: "bigquery", extensions: [".sql", ".bqsql"], filenames: [] },
+      ],
+      adapter: {
+        entry: "EvidenceBigQueryAdapter",
+        symbols: ["model", "column", "relation"],
+        publicSurface:
+          "Explicit GoogleSQL CREATE TABLE declarations, nested STRUCT and ARRAY fields, and declared NOT ENFORCED foreign keys.",
+        addressing:
+          "File-qualified project.dataset.table paths with nested field segments and named or endpoint-derived foreign-key segments.",
+        comments: [
+          "adjacent --, #, or block comments",
+          "static OPTIONS description strings",
+        ],
+        unsupported: [
+          "query-derived and external schemas",
+          "conditional or replacing table definitions",
+          "ALTER migrations",
+          "runtime database state",
+          "unsupported string escapes",
+        ],
+      },
+    },
   ];
 
   const LANGUAGES: IEvidenceLanguage[] = [
