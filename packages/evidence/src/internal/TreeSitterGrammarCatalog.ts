@@ -250,6 +250,88 @@ export namespace TreeSitterGrammarCatalog {
       },
     },
     {
+      id: "matlab",
+      repository: "https://github.com/acristoffers/tree-sitter-matlab",
+      version:
+        "grammar-matlab-65d969c986b13b6907b9253307ede8f5c2bd1d31692635a2eab058ec81bb4409",
+      commit: "f03d0347acd8bb05d4edd8c845ac1718729e1fad",
+      wasm: {
+        file: "matlab/tree-sitter-matlab.wasm",
+        url: "https://github.com/wrtnlabs/evidence/releases/download/grammar-matlab-65d969c986b13b6907b9253307ede8f5c2bd1d31692635a2eab058ec81bb4409/tree-sitter-matlab.wasm",
+        sha256:
+          "65d969c986b13b6907b9253307ede8f5c2bd1d31692635a2eab058ec81bb4409",
+        size: 423002,
+      },
+      license: {
+        file: "matlab/LICENSE",
+        url: "https://raw.githubusercontent.com/acristoffers/tree-sitter-matlab/f03d0347acd8bb05d4edd8c845ac1718729e1fad/LICENSE",
+        sha256:
+          "8673f5acd59bfb3bd129760a57f72092d5e3c01e05837532eac9497cf8006a46",
+        size: 1061,
+      },
+    },
+    {
+      id: "swift",
+      repository: "https://github.com/alex-pinkus/tree-sitter-swift",
+      version: "0.7.3",
+      commit: "b8b22bffbb3441780e6471665bacfb263741c86a",
+      wasm: {
+        file: "swift/tree-sitter-swift.wasm",
+        url: "https://github.com/alex-pinkus/tree-sitter-swift/releases/download/0.7.3/tree-sitter-swift.wasm",
+        sha256:
+          "0258a7ef17303a8079ffe0748b3583d59656b5c3e8653fca7b6451b3e6689eb2",
+        size: 3825025,
+      },
+      license: {
+        file: "swift/LICENSE",
+        url: "https://raw.githubusercontent.com/alex-pinkus/tree-sitter-swift/b8b22bffbb3441780e6471665bacfb263741c86a/LICENSE",
+        sha256:
+          "3533cec129bb4bba015c0d61d86dd7c3b7e82110e4d2ff7837a01eff5bad5ccc",
+        size: 1068,
+      },
+    },
+    {
+      id: "scala",
+      repository: "https://github.com/tree-sitter/tree-sitter-scala",
+      version: "v0.26.2",
+      commit: "b931fcc338390925eb893d70ad070033f5856ccf",
+      wasm: {
+        file: "scala/tree-sitter-scala.wasm",
+        url: "https://github.com/tree-sitter/tree-sitter-scala/releases/download/v0.26.2/tree-sitter-scala.wasm",
+        sha256:
+          "37d7fe5a91ca98941dc05493b0c05a0df0f36df5035890fa00b02497c68aaac3",
+        size: 3973559,
+      },
+      license: {
+        file: "scala/LICENSE",
+        url: "https://raw.githubusercontent.com/tree-sitter/tree-sitter-scala/b931fcc338390925eb893d70ad070033f5856ccf/LICENSE",
+        sha256:
+          "1f95ed26e1f4074074c9c7083e61c0a9e4c3b9f435745044995f3beb4ed28575",
+        size: 1091,
+      },
+    },
+    {
+      id: "sql",
+      repository: "https://github.com/DerekStride/tree-sitter-sql",
+      version:
+        "grammar-sql-733a3d695e3ae06e525b6b6cb9ee37436ef390f45dfacb3fb0169871da4434bd",
+      commit: "7b51ecda191d36b92f5a90a8d1bc3faef1c7b8b8",
+      wasm: {
+        file: "sql/tree-sitter-sql.wasm",
+        url: "https://github.com/wrtnlabs/evidence/releases/download/grammar-sql-733a3d695e3ae06e525b6b6cb9ee37436ef390f45dfacb3fb0169871da4434bd/tree-sitter-sql.wasm",
+        sha256:
+          "733a3d695e3ae06e525b6b6cb9ee37436ef390f45dfacb3fb0169871da4434bd",
+        size: 2472281,
+      },
+      license: {
+        file: "sql/LICENSE",
+        url: "https://raw.githubusercontent.com/DerekStride/tree-sitter-sql/7b51ecda191d36b92f5a90a8d1bc3faef1c7b8b8/LICENSE",
+        sha256:
+          "3b3e4e4252d5d7d1c18e1257005f23242bf0580ad619204fd093c99b8c56748d",
+        size: 1069,
+      },
+    },
+    {
       id: "zig",
       repository: "https://github.com/tree-sitter-grammars/tree-sitter-zig",
       version: "v1.1.2",

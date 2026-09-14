@@ -1,0 +1,91 @@
+import {
+  EvidenceLanguageRegistry,
+  EvidenceMatlabAdapter,
+} from "@wrtnlabs/evidence";
+import { TestValidator } from "@nestia/e2e";
+
+import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+
+/** Preserves actionable incompleteness for runtime surfaces, malformed source, and unavailable files. */
+export async function test_matlab_boundaries(): Promise<void> {
+  const adapter = new EvidenceMatlabAdapter();
+  for (const content of [
+    "classdef Dynamic < dynamicprops\nend\n",
+    "function Dynamic()\naddpath('other');\nend\n",
+    "function Dynamic()\neval('classdef X');\nend\n",
+    "function Dynamic()\nobj=class(struct(),'Legacy');\nend\n",
+    "classdef Dynamic\nproperties (Unknown=true)\nvalue\nend\nend\n",
+    "classdef Dynamic\nmethods\nfunction value=get.missing(obj)\nvalue=1;\nend\nend\nend\n",
+    "classdef Dynamic\nproperties\nvalue\n",
+    "classdef Dynamic\nend",
+    "value = 1;\n",
+    "function Other()\nend\n",
+    "function Dynamic()\nendfunction\n",
+    "classdef Dynamic\nproperties (Access={calculateAccess()})\nvalue\nend\nend\n",
+    "classdef Dynamic\nproperties\nvalue\nvalue\nend\nend\n",
+    "@interface Dynamic\n@end\n",
+  ]) {
+    const inventory = await adapter.analyze(
+      TestSourceSnapshot.create("src/Dynamic.m", content),
+    );
+    TestValidator.equals(`incomplete ${content}`, inventory.complete, false);
+    TestValidator.predicate(
+      "actionable diagnostics",
+      inventory.diagnostics.some(
+        (diagnostic) =>
+          diagnostic.severity === "error" && diagnostic.repair.length !== 0,
+      ),
+    );
+  }
+  TestValidator.equals(
+    "class closing semicolon is a supported delimiter",
+    (
+      await adapter.analyze(
+        TestSourceSnapshot.create("src/Dynamic.m", "classdef Dynamic\nend;"),
+      )
+    ).complete,
+    true,
+  );
+  TestValidator.equals(
+    "class introspection does not create a legacy declaration",
+    (
+      await adapter.analyze(
+        TestSourceSnapshot.create(
+          "src/Dynamic.m",
+          "function value=Dynamic(input)\nvalue=class(input);\nend\n",
+        ),
+      )
+    ).complete,
+    true,
+  );
+  for (const extension of [".p", ".mlx", ".mexw64"])
+    TestValidator.equals(
+      `reject nontext source ${extension}`,
+      (
+        await adapter.analyze(
+          TestSourceSnapshot.create(
+            `src/Dynamic${extension}`,
+            "function Dynamic()\nend\n",
+          ),
+        )
+      ).complete,
+      false,
+    );
+  TestValidator.equals(
+    "configured .m uses MATLAB",
+    EvidenceLanguageRegistry.select("matlab", "Shared.m").id,
+    "matlab",
+  );
+  const unavailable = TestSourceSnapshot.create("src/missing.m", "");
+  unavailable.complete = false;
+  unavailable.diagnostics.push({
+    code: "path-unreadable",
+    path: "/project/src/missing.m",
+    message: "Source is unavailable.",
+  });
+  TestValidator.equals(
+    "source failure cannot pass",
+    (await adapter.analyze(unavailable)).complete,
+    false,
+  );
+}
