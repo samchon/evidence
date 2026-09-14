@@ -21,6 +21,7 @@ export async function test_bigquery_failures(): Promise<void> {
     "CREATE TABLE ds.orders (id INT64, ID STRING);",
     "CREATE TABLE ds.orders (id INT64 PRIMARY KEY NOT ENFORCED, PRIMARY KEY (id) NOT ENFORCED);",
     "CREATE TABLE ds.orders (items ARRAY<UnknownType>);",
+    "CREATE TABLE ds.orders (id INT64, CONSTRAINT `escaped\\u0061` FOREIGN KEY (id) REFERENCES ds.other (id) NOT ENFORCED);",
     "CREATE TABLE ds.orders (id INT64, FOREIGN KEY (id) REFERENCES ds.other (id, extra) NOT ENFORCED);",
     "CREATE TABLE ds.orders (id INT64) OPTIONS(description=CONCAT('dynamic', ' value'));",
     "CREATE TABLE ds.orders (id INT64",

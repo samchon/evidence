@@ -45,6 +45,17 @@ export async function test_bigquery_hosts(): Promise<void> {
     description.location.range.start.offset,
     content.indexOf("@evidence", content.indexOf("😀")),
   );
+  TestValidator.equals(
+    "CRLF keeps the original description line",
+    description.location.range.start.line,
+    4,
+  );
+  TestValidator.equals(
+    "Unicode uses original UTF-16 columns",
+    description.location.range.start.column,
+    description.location.range.start.offset -
+      content.lastIndexOf("\n", description.location.range.start.offset),
+  );
   const secret = inventory.units.find((unit) => unit.name === "secret");
   if (secret === undefined) throw new Error("Missing secret field.");
   TestValidator.equals(

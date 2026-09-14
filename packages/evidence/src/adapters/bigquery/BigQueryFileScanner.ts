@@ -143,8 +143,7 @@ export class BigQueryFileScanner {
       this.session.captures("(primary_key) @primary", parameters).length +
       columns.filter(
         (column) =>
-          column.childForFieldName("constraint_clause")?.type ===
-          "constraint_enfoce_option",
+          column.childForFieldName("constraint_clause")?.type === "PRIMARY_KEY",
       ).length;
     if (primaryKeys > 1)
       this.fail(
@@ -252,14 +251,23 @@ export class BigQueryFileScanner {
       return;
     }
     const identifier = node.childForFieldName("constraint_name");
+    const constraintName =
+      identifier === null
+        ? undefined
+        : BigQueryIdentifier.member(identifier.text);
+    if (identifier !== null && constraintName === undefined) {
+      this.fail(
+        identifier,
+        "The named foreign key uses an unsupported identifier escape or qualification.",
+      );
+      return;
+    }
     this.relation(
       node,
       reference,
       model,
       names.filter((name) => name !== undefined),
-      identifier === null
-        ? undefined
-        : BigQueryIdentifier.member(identifier.text),
+      constraintName,
     );
   }
 
