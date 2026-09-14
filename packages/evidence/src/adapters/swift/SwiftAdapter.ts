@@ -230,8 +230,7 @@ export class SwiftAdapter implements IEvidenceAdapter {
     for (const analysis of analyses)
       for (const documentation of analysis.documentation) {
         const groups = this.attachmentGroups(documentation, published);
-        if (groups.size === 0 && !this.annotation(analysis, documentation))
-          continue;
+        if (groups.size === 0) continue;
         inventory.annotationRanges.push({
           file: analysis.source.physicalPath,
           range: documentation.range,

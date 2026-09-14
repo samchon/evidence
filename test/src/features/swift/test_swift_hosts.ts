@@ -97,6 +97,26 @@ export async function test_swift_hosts(): Promise<void> {
     EvidenceFingerprint.inspect(changed, contract.id).fingerprint,
   );
 
+  // A string that resembles an annotation remains semantic implementation content.
+  const literalSource =
+    'public func literal() -> String { "@evidence docs/spec.md#value Literal content." }';
+  const literal = await adapter.analyze(
+    TestSourceSnapshot.create("src/Literal.swift", literalSource),
+  );
+  const literalChanged = await adapter.analyze(
+    TestSourceSnapshot.create(
+      "src/Literal.swift",
+      literalSource.replace("Literal content.", "Changed content."),
+    ),
+  );
+  const literalUnit = literal.units[0];
+  if (literalUnit === undefined) throw new Error("Missing literal function.");
+  TestValidator.notEquals(
+    "unsupported annotation strings remain fingerprint content",
+    EvidenceFingerprint.inspect(literal, literalUnit.id).fingerprint,
+    EvidenceFingerprint.inspect(literalChanged, literalUnit.id).fingerprint,
+  );
+
   for (const tag of [
     "evidence",
     "evidenceExclude",

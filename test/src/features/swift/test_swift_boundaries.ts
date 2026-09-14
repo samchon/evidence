@@ -7,22 +7,38 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 /** Prevents unavailable ownership and compiler expansion from becoming successful smaller inventories. */
 export async function test_swift_boundaries(): Promise<void> {
   const adapter = new EvidenceSwiftAdapter();
-  for (const source of [
-    "extension External { public func run() {} }",
-    "public struct Local {}\npublic extension Local where Value: P { func run() {} }",
-    "@MyMacro public struct Generated {}",
-    'public macro generated() = #externalMacro(module: "X", type: "Y")',
-    dedent`
+  const cases = new Map<string, string>([
+    [
+      "extension External { public func run() {} }",
+      "swift-extension-ownership",
+    ],
+    [
+      "public struct Local {}\npublic extension Local where Value: P { func run() {} }",
+      "swift-constrained-extension",
+    ],
+    ["@MyMacro public struct Generated {}", "swift-attribute-expansion"],
+    [
+      'public macro generated() = #externalMacro(module: "X", type: "Y")',
+      "swift-macro",
+    ],
+    [
+      dedent`
       #if DEBUG
       public func debug() {}
       #else
       public func release() {}
       #endif
     `,
-    "public struct Malformed {",
-    "public struct Synthesized: Codable {}",
-    "public struct Local {}\nextension Local: ExternalProtocol {}",
-  ]) {
+      "swift-conditional-compilation",
+    ],
+    ["public struct Malformed {", "swift-parse-incomplete"],
+    ["public struct Synthesized: Codable {}", "swift-conformance-expansion"],
+    [
+      "public struct Local {}\nextension Local: ExternalProtocol {}",
+      "swift-conformance-expansion",
+    ],
+  ]);
+  for (const [source, code] of cases) {
     const inventory = await adapter.analyze(
       TestSourceSnapshot.create("src/Boundary.swift", source),
     );
@@ -35,7 +51,9 @@ export async function test_swift_boundaries(): Promise<void> {
       "incomplete surface has actionable findings",
       inventory.diagnostics.some(
         (diagnostic) =>
-          diagnostic.severity === "error" && diagnostic.repair.length > 0,
+          diagnostic.code === code &&
+          diagnostic.severity === "error" &&
+          diagnostic.repair.length > 0,
       ),
     );
   }

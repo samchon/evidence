@@ -148,4 +148,46 @@ export async function test_swift_extension_ownership(): Promise<void> {
       ),
     );
   }
+
+  // Explicit public visibility overrides a private extension's member default.
+  const overridden = await adapter.analyze(
+    TestSourceSnapshot.combine([
+      TestSourceSnapshot.create(
+        "src/Original.swift",
+        "public struct Original {}\nprivate extension Original { public struct Nested {} }",
+      ),
+      TestSourceSnapshot.create(
+        "src/PublicNested.swift",
+        "public extension Original.Nested { func visible() {} }",
+      ),
+    ]),
+  );
+  TestValidator.equals(
+    "explicit public nested type remains accessible",
+    overridden.diagnostics,
+    [],
+  );
+  TestValidator.predicate(
+    "nested extension member is selected",
+    overridden.units.some((unit) => unit.name === "visible"),
+  );
+
+  // A real type named static cannot silently merge its instance methods with static members.
+  const collision = await adapter.analyze(
+    TestSourceSnapshot.create(
+      "src/Collision.swift",
+      "public struct Owner { public struct `static` { public func call() {} }\npublic static func call() {} }",
+    ),
+  );
+  TestValidator.equals(
+    "distinct owners cannot collapse through a shared accessor",
+    collision.complete,
+    false,
+  );
+  TestValidator.predicate(
+    "owner collision is actionable",
+    collision.diagnostics.some(
+      (diagnostic) => diagnostic.code === "swift-ownership-conflict",
+    ),
+  );
 }
