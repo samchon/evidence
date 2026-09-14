@@ -54,6 +54,28 @@ export namespace EvidenceLanguageRegistry {
 
   const DATABASES: IEvidenceDatabaseLanguage[] = [
     {
+      type: "postgresql",
+      name: "PostgreSQL",
+      grammars: [{ id: "sql", extensions: [".sql"], filenames: [] }],
+      adapter: {
+        entry: "EvidencePostgresqlAdapter",
+        symbols: ["model", "column", "relation"],
+        publicSurface:
+          "Explicit schema-qualified PostgreSQL table declarations, columns, foreign keys, and additive ALTER declarations within the selected snapshot.",
+        addressing:
+          "File-qualified schema and table segments; unquoted ASCII names fold to lowercase and quoted names remain literal.",
+        comments: ["adjacent SQL comments", "COMMENT ON TABLE or COLUMN"],
+        unsupported: [
+          "search_path evaluation",
+          "conditional DDL",
+          "inheritance and partitioning",
+          "LIKE, OF, and AS-derived schemas",
+          "destructive ALTER",
+          "executed migrations",
+        ],
+      },
+    },
+    {
       type: "sql",
       name: "Portable SQL",
       grammars: [{ id: "sql", extensions: [".sql"], filenames: [] }],
