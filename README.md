@@ -61,7 +61,7 @@ export default config;
 
 A **claim** selects the files and declarations that must cite evidence. Its **reference** selects what must be covered. Each claim and each element of its reference array has an independent coverage obligation; partial coverage from separate obligations is never pooled.
 
-Use `type` to select the source language, such as `"typescript"`, `"cpp"`, or `"rust"`, and `files` to select its files with globs. File names distinguish syntax variants such as TSX. No separate `language` setting or TypeScript compiler Program is required. `EvidenceDatabaseType` groups schema languages. Prisma, portable SQL and DBML are certified database adapters; other SQL dialect identifiers require their own certified adapters.
+Use `type` to select the source language, such as `"typescript"`, `"cpp"`, or `"rust"`, and `files` to select its files with globs. File names distinguish syntax variants such as TSX. No separate `language` setting or TypeScript compiler Program is required. `EvidenceDatabaseType` selects the explicitly configured schema language. Only adapters listed below are accepted; SQL-like file names never cause dialect inference.
 
 Globs resolve from the directory containing `evidence.config.ts`, or from the population's `root`. Patterns are applied in order: `!` excludes matches, and a later positive pattern can include them again. Use `src/**` to select a directory's contents.
 
@@ -181,6 +181,7 @@ For adapter development, `IEvidenceAdapter.analyze(snapshot)` returns an ordinar
 | Programming | Yes | Yes | `type`, `function`, `property` | All / `type` |
 | Markdown | Yes | Yes | `file`, `h1`, `h2`, `h3`, `h4` | All / all |
 | Prisma | Yes | Yes | `model`, `column`, `relation` | All / `model` |
+| PostgreSQL | Yes | Yes | `model`, `column`, `relation` | All / `model` |
 | Portable SQL | Yes | Yes | `model`, `column`, `relation` | All / `model` |
 | DBML | Yes | Yes | `model`, `column`, `relation` | All / `model` |
 | Swagger / OpenAPI | Yes | Yes | `operation` | Every operation / every operation |
@@ -189,7 +190,13 @@ Every artifact family can cite every other family, including its own. Markdown c
 
 A `symbol` accepts one selector or a nonempty array. Programming `type` symbols include classes, interfaces, type aliases, and namespaces. Database `model` symbols describe record structures, `column` symbols describe data fields, and `relation` symbols describe connections between models. A foreign-key value is a column; the declaration describing its connection is a relation.
 
-Database schema typings share `IEvidenceDatabaseClaim` and `IEvidenceDatabaseReference`. Prisma, portable SQL and DBML implement the database family. Select the schema language rather than the database server: MongoDB models written in Prisma use `type: "prisma"`.
+Database schema typings share `IEvidenceDatabaseClaim` and `IEvidenceDatabaseReference`. Select the schema language rather than the database server: MongoDB models written in Prisma use `type: "prisma"`.
+
+`EvidencePostgresqlAdapter` selects `.sql` files explicitly configured as `postgresql` and uses the pinned SQL grammar. Tables are `model` units; explicit columns are `column` units; each foreign key is one `relation` unit owned by its table. Other column and table constraints contribute to table content without creating additional units. `CREATE SCHEMA` supplies structural namespace context and does not add a model obligation. Tables and referenced tables must use explicit `schema.table` names: the checker does not evaluate `search_path` or assume a default schema. PostgreSQL identifiers fold unquoted ASCII letters to lowercase and preserve quoted case and literal dots. Use `schema.sql#app.item.id` or `schema.sql#app["Order.Item"]["Item.ID"]`; file aliases resolve the same schema identity. Anonymous relations use a literal segment containing both ordered endpoint lists, such as `["foreign key [\"owner_id\"] references [\"app\",\"owner\",\"id\"]"]`. Named additive foreign-key constraints use `["constraint owner_fk"]`.
+
+PostgreSQL supports unconditional `ALTER TABLE ADD COLUMN` and named `ADD CONSTRAINT` against exactly one selected table declaration, including declarations in another selected file. Extension sites contribute to the same semantic table and its fingerprint. Adjacent `--` and block comments document declarations; ordinary string values remain inert. `COMMENT ON TABLE` and `COMMENT ON COLUMN` accept ordinary single-quoted strings and attach to exactly one selected declaration, retaining the original UTF-16 offsets through doubled apostrophes. Documentation fences remain examples, and `@internal`, `@hidden`, and `@ignore` withdraw the attached declaration and its descendants. Schema comments, unattached annotations, and unsupported comment targets cannot acknowledge selected units.
+
+The PostgreSQL surface is a declared schema snapshot. Duplicate CREATE declarations, temporary or conditional tables, stateful settings, inherited or partitioned schemas, `LIKE`/`OF`/`AS` derivation, destructive ALTER operations, `COMMENT ... IS NULL`, and other unsupported statements produce incomplete analysis. Names longer than 63 UTF-8 bytes are rejected to avoid server-side truncation ambiguities. The pinned grammar rejects identifiers containing doubled double quotes. It also rejects named foreign keys inside CREATE TABLE; express named foreign keys with the supported ALTER TABLE ADD CONSTRAINT form. The grammar also rejects other valid syntax it does not recognize; those parser errors remain incomplete rather than silently removing units. No database engine, SQL migration, function body, or application code is executed.
 
 Prisma files selected for one population are parsed together with `@prisma/prisma-schema-wasm`, which ships with this package. Evidence first uses a parser version visible from the project root and falls back to its pinned copy, so consumers do not install a separate Prisma parser. Parser output decides whether a member is a column or relation; the source scanner only supplies locations and documentation attachment. Views are model units, while enums, composite types, indexes, generators, and datasources do not form units.
 
