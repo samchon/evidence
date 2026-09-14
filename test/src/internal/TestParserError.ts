@@ -1,7 +1,6 @@
+import { EvidenceParserError } from "@wrtnlabs/evidence";
+import type { EvidenceParserErrorCode } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
-
-import { EvidenceParserError } from "../../../packages/evidence/src/parsers/EvidenceParserError";
-import type { EvidenceParserErrorCode } from "../../../packages/evidence/src/typings/EvidenceParserErrorCode";
 
 /** Requires the precise analysis failure, rather than accepting an unrelated exception. */
 export namespace TestParserError {

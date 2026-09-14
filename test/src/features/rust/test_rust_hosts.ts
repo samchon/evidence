@@ -1,8 +1,7 @@
+import { EvidenceInventory, EvidenceRustAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceInventory } from "../../../../packages/evidence/src/graph/EvidenceInventory";
-import { EvidenceRustAdapter } from "../../../../packages/evidence/src/adapters/rust/EvidenceRustAdapter";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Attaches Rust doc comments and doc attributes while rejecting ordinary carriers. */

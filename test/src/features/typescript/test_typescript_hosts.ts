@@ -1,7 +1,7 @@
+import { EvidenceTypeScriptAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceTypeScriptAdapter } from "../../../../packages/evidence/src/adapters/typescript/EvidenceTypeScriptAdapter";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Binds only declaration JSDoc while retaining unsupported tag-bearing comments as findings. */

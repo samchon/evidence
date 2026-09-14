@@ -1,8 +1,8 @@
+import { EvidenceCSharpAdapter } from "@wrtnlabs/evidence";
+import type { IEvidenceInventory } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceCSharpAdapter } from "../../../../packages/evidence/src/adapters/csharp/EvidenceCSharpAdapter";
-import type { IEvidenceInventory } from "../../../../packages/evidence/src/structures/IEvidenceInventory";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /**

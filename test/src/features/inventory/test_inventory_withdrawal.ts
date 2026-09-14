@@ -1,6 +1,6 @@
+import { EvidenceInventory } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidenceInventory } from "../../../../packages/evidence/src/graph/EvidenceInventory";
 import { TestInventory } from "../../internal/TestInventory";
 
 /** A withdrawal on any merged declaration removes that identity, descendants, and eligible hosts. */

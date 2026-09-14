@@ -1,10 +1,11 @@
+import { EvidenceChecker } from "@wrtnlabs/evidence";
+import type {
+  IEvidenceCheckAnalysis,
+  IEvidenceConfigPlan,
+  IEvidenceConfigPlanReference,
+} from "@wrtnlabs/evidence";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
-
-import { EvidenceChecker } from "../../../packages/evidence/src/EvidenceChecker";
-import type { IEvidenceCheckAnalysis } from "../../../packages/evidence/src/structures/IEvidenceCheckAnalysis";
-import type { IEvidenceConfigPlan } from "../../../packages/evidence/src/structures/IEvidenceConfigPlan";
-import type { IEvidenceConfigPlanReference } from "../../../packages/evidence/src/structures/IEvidenceConfigPlanReference";
 
 /** Builds the shared query-command graph from real TypeScript extraction. */
 export namespace TestQueryAnalysis {

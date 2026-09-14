@@ -1,13 +1,15 @@
+import {
+  EvidenceChecker,
+  EvidenceWatchReporter,
+  EvidenceWatcher,
+} from "@wrtnlabs/evidence";
+import type { EvidenceWatchCycle } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 import typia from "typia";
 
-import { EvidenceChecker } from "../../../../packages/evidence/src/EvidenceChecker";
-import { EvidenceWatcher } from "../../../../packages/evidence/src/commands/EvidenceWatcher";
-import { EvidenceWatchReporter } from "../../../../packages/evidence/src/reporters/EvidenceWatchReporter";
-import type { EvidenceWatchCycle } from "../../../../packages/evidence/src/typings/EvidenceWatchCycle";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
 /** Verifies created and deleted glob matches publish the same reports as fresh checks. */
@@ -91,7 +93,7 @@ export async function test_watch_topology(): Promise<void> {
 
 function config(): string {
   return dedent`
-    import type { IEvidenceConfig } from "@samchon/evidence";
+    import type { IEvidenceConfig } from "@wrtnlabs/evidence";
 
     export default {
       claims: [

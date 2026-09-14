@@ -1,10 +1,9 @@
+import { EvidenceSwaggerAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { once } from "node:events";
 import { createServer, type Server } from "node:http";
 import { join } from "node:path";
-
-import { EvidenceSwaggerAdapter } from "../../../../packages/evidence/src/adapters/swagger/EvidenceSwaggerAdapter";
 
 /** Loads bounded remote Swagger snapshots without relying on a public endpoint. */
 export async function test_swagger_remote(): Promise<void> {

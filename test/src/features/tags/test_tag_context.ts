@@ -1,7 +1,7 @@
+import { EvidenceTagParser } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceTagParser } from "../../../../packages/evidence/src/parsers/EvidenceTagParser";
 import { TestDocumentation } from "../../internal/TestDocumentation";
 
 /**

@@ -1,8 +1,8 @@
+import { EvidenceJavaAdapter } from "@wrtnlabs/evidence";
+import type { IEvidenceInventory } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceJavaAdapter } from "../../../../packages/evidence/src/adapters/java/EvidenceJavaAdapter";
-import type { IEvidenceInventory } from "../../../../packages/evidence/src/structures/IEvidenceInventory";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Reports Java parse and identity uncertainty while preserving source-only boundaries. */

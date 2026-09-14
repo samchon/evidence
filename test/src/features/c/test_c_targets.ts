@@ -1,8 +1,8 @@
+import { EvidenceCAdapter } from "@wrtnlabs/evidence";
+import type { EvidenceTargetResolutionStatus } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceCAdapter } from "../../../../packages/evidence/src/adapters/c/EvidenceCAdapter";
-import type { EvidenceTargetResolutionStatus } from "../../../../packages/evidence/src/typings/EvidenceTargetResolutionStatus";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 

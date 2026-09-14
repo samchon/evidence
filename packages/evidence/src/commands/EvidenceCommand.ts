@@ -12,6 +12,8 @@ import { EvidenceReporter } from "../reporters/EvidenceReporter";
 import { EvidenceWatcher } from "./EvidenceWatcher";
 import { EvidenceWatchReporter } from "../reporters/EvidenceWatchReporter";
 import { EvidenceArtifactTypes } from "../internal/EvidenceArtifactTypes";
+import { EvidenceConfigFormat } from "../internal/EvidenceConfigFormat";
+import type { IEvidenceConfig } from "../structures/IEvidenceConfig";
 import { TreeSitterAssetScope } from "../internal/TreeSitterAssetScope";
 import type { IPackageManifest } from "../internal/IPackageManifest";
 import type { IEvidenceCheckCommand } from "../structures/IEvidenceCheckCommand";
@@ -191,7 +193,7 @@ export namespace EvidenceCommand {
       } catch (cause) {
         return failureResult(
           cause,
-          "Restore the installed @samchon/evidence package manifest.",
+          "Restore the installed @wrtnlabs/evidence package manifest.",
         );
       }
     }
@@ -241,13 +243,20 @@ export namespace EvidenceCommand {
     return result.exitCode;
   }
 
-  /** Creates one typed starter config without overwriting an existing file. */
+  /** Creates a JSON or typed starter config without overwriting an existing file. */
   export async function initialize(file: string): Promise<void> {
+    const format = EvidenceConfigFormat.get(file);
     try {
-      await writeFile(file, INITIAL_CONFIG + "\n", {
-        encoding: "utf8",
-        flag: "wx",
-      });
+      await writeFile(
+        file,
+        (format === "json"
+          ? JSON.stringify(INITIAL_DATA, null, 2)
+          : INITIAL_CONFIG) + "\n",
+        {
+          encoding: "utf8",
+          flag: "wx",
+        },
+      );
     } catch (cause) {
       if (errorCode(cause) === "EEXIST")
         throw new Error(
@@ -565,10 +574,10 @@ const HELP = dedent`
     inspect               Resolve and explain one target in every applicable scope.
     graph                 Export the configured graph as json, mermaid, or dot.
     languages             Report adapters shipped with this package.
-    init                  Create a typed evidence.config.ts without overwriting.
+    init                  Create a TS or JSON config without overwriting.
 
   Options:
-    -c, --config <path>   Select the configuration file.
+    -c, --config <path>   Select a TS/CTS/MTS or JSON configuration file.
         --cwd <path>      Resolve CLI paths from this directory.
         --format <value>  Select the command's output format.
     -o, --output <path>   Write command output to a file.
@@ -591,21 +600,22 @@ const HELP = dedent`
   Watch stays active across cycle exit codes. Ctrl+C cleans up and exits 0.
 `;
 
-const INITIAL_CONFIG = dedent`
-  import type { IEvidenceConfig } from "@samchon/evidence";
+/** Starter data shared by typed and JSON initialization. */
+const INITIAL_DATA: IEvidenceConfig = {
+  claims: [
+    {
+      name: "application",
+      type: "typescript",
+      files: ["src/**/*.ts"],
+      reference: { type: "markdown", files: ["docs/requirements.md"] },
+    },
+  ],
+};
 
-  export default {
-    claims: [
-      {
-        name: "application",
-        type: "typescript",
-        // Replace these globs with the public source and requirements in this project.
-        files: ["src/**/*.ts"],
-        reference: {
-          type: "markdown",
-          files: ["docs/requirements.md"],
-        },
-      },
-    ],
-  } satisfies IEvidenceConfig;
+/** Typed starter configuration with the same defaults as JSON initialization. */
+const INITIAL_CONFIG = dedent`
+  import type { IEvidenceConfig } from "@wrtnlabs/evidence";
+
+  // Replace these globs with the public source and requirements in this project.
+  export default ${JSON.stringify(INITIAL_DATA, null, 2)} satisfies IEvidenceConfig;
 `;

@@ -1,7 +1,7 @@
+import { EvidenceGoAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceGoAdapter } from "../../../../packages/evidence/src/adapters/go/EvidenceGoAdapter";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Keeps ordinary, same-package test, and external test-package identities separate. */

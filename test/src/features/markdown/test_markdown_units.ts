@@ -1,10 +1,8 @@
+import { EvidenceInventory, EvidenceMarkdownAdapter } from "@wrtnlabs/evidence";
+import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceInventory } from "../../../../packages/evidence/src/graph/EvidenceInventory";
-import { EvidenceMarkdownAdapter } from "../../../../packages/evidence/src/adapters/markdown/EvidenceMarkdownAdapter";
-import type { IEvidenceInventory } from "../../../../packages/evidence/src/structures/IEvidenceInventory";
-import type { IEvidenceUnit } from "../../../../packages/evidence/src/structures/IEvidenceUnit";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Materializes only the Markdown file and ATX H1-H4 identities with exact anchors. */

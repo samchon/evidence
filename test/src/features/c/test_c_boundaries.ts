@@ -1,7 +1,7 @@
+import { EvidenceCAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceCAdapter } from "../../../../packages/evidence/src/adapters/c/EvidenceCAdapter";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Keeps C declaration families inside their selected physical file boundary. */

@@ -1,5 +1,7 @@
-import type { EvidenceProgrammingSymbol } from "../../../../packages/evidence/src/typings/EvidenceProgrammingSymbol";
-import type { IEvidenceWithdrawal } from "../../../../packages/evidence/src/structures/IEvidenceWithdrawal";
+import type {
+  EvidenceProgrammingSymbol,
+  IEvidenceWithdrawal,
+} from "@wrtnlabs/evidence";
 import type { IAdapterCertificationAddress } from "./IAdapterCertificationAddress";
 
 /** Exact semantic identity, ownership, sites, addresses, and withdrawal state. */

@@ -1,15 +1,19 @@
+import {
+  EvidenceAccessor,
+  EvidenceFingerprint,
+  EvidenceGraph,
+  EvidenceInventory,
+  EvidenceMarkdownAdapter,
+} from "@wrtnlabs/evidence";
+import type {
+  EvidenceProgrammingSymbol,
+  IEvidenceAddress,
+  IEvidenceInventory,
+  IEvidenceSourceSnapshot,
+  IEvidenceUnit,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidenceAccessor } from "../../../../packages/evidence/src/targets/EvidenceAccessor";
-import { EvidenceFingerprint } from "../../../../packages/evidence/src/graph/EvidenceFingerprint";
-import { EvidenceGraph } from "../../../../packages/evidence/src/graph/EvidenceGraph";
-import { EvidenceInventory } from "../../../../packages/evidence/src/graph/EvidenceInventory";
-import { EvidenceMarkdownAdapter } from "../../../../packages/evidence/src/adapters/markdown/EvidenceMarkdownAdapter";
-import type { IEvidenceAddress } from "../../../../packages/evidence/src/structures/IEvidenceAddress";
-import type { IEvidenceInventory } from "../../../../packages/evidence/src/structures/IEvidenceInventory";
-import type { IEvidenceSourceSnapshot } from "../../../../packages/evidence/src/structures/IEvidenceSourceSnapshot";
-import type { IEvidenceUnit } from "../../../../packages/evidence/src/structures/IEvidenceUnit";
-import type { EvidenceProgrammingSymbol } from "../../../../packages/evidence/src/typings/EvidenceProgrammingSymbol";
 import { TestGraph } from "../TestGraph";
 import { TestSourceSnapshot } from "../TestSourceSnapshot";
 import type { IAdapterCertification } from "./IAdapterCertification";

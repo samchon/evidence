@@ -1,7 +1,6 @@
-import { EvidenceDocumentation } from "../../../packages/evidence/src/parsers/EvidenceDocumentation";
+import { EvidenceDocumentation } from "@wrtnlabs/evidence";
+import type { IEvidenceCommentSyntax, IEvidenceHost } from "@wrtnlabs/evidence";
 import { SourceText } from "../../../packages/evidence/src/internal/SourceText";
-import type { IEvidenceCommentSyntax } from "../../../packages/evidence/src/structures/IEvidenceCommentSyntax";
-import type { IEvidenceHost } from "../../../packages/evidence/src/structures/IEvidenceHost";
 import type { ITestDocumentation } from "./ITestDocumentation";
 
 /** Supplies explicit comment classification to the shared parser without scanning arbitrary source. */

@@ -1,6 +1,6 @@
+import { EvidenceInventory } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidenceInventory } from "../../../../packages/evidence/src/graph/EvidenceInventory";
 import { TestInventory } from "../../internal/TestInventory";
 
 /** Shared filesystem identities retain both public paths and one deterministic declaration location. */

@@ -1,4 +1,4 @@
-import type { IEvidenceParserInput } from "../../../packages/evidence/src/structures/IEvidenceParserInput";
+import type { IEvidenceParserInput } from "@wrtnlabs/evidence";
 
 /** A real declaration and its expected capture under one shipped syntax variant. */
 export interface IParserFixture extends IEvidenceParserInput {

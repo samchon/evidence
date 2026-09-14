@@ -1,7 +1,8 @@
+import type {
+  IEvidenceSourceDiagnostic,
+  IEvidenceSourceSnapshot,
+} from "@wrtnlabs/evidence";
 import { createHash } from "node:crypto";
-
-import type { IEvidenceSourceDiagnostic } from "../../../packages/evidence/src/structures/IEvidenceSourceDiagnostic";
-import type { IEvidenceSourceSnapshot } from "../../../packages/evidence/src/structures/IEvidenceSourceSnapshot";
 
 /** Builds deterministic in-memory discovery results for adapter logic tests. */
 export namespace TestSourceSnapshot {

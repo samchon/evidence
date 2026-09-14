@@ -1,14 +1,18 @@
+import {
+  EvidenceMarkdownAdapter,
+  EvidenceTargetResolver,
+  EvidenceTypeScriptAdapter,
+} from "@wrtnlabs/evidence";
+import type {
+  IEvidenceDeclaration,
+  IEvidenceHost,
+  IEvidenceInventory,
+  IEvidenceTargetResolution,
+  IEvidenceUnit,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceMarkdownAdapter } from "../../../../packages/evidence/src/adapters/markdown/EvidenceMarkdownAdapter";
-import { EvidenceTargetResolver } from "../../../../packages/evidence/src/targets/EvidenceTargetResolver";
-import { EvidenceTypeScriptAdapter } from "../../../../packages/evidence/src/adapters/typescript/EvidenceTypeScriptAdapter";
-import type { IEvidenceDeclaration } from "../../../../packages/evidence/src/structures/IEvidenceDeclaration";
-import type { IEvidenceHost } from "../../../../packages/evidence/src/structures/IEvidenceHost";
-import type { IEvidenceInventory } from "../../../../packages/evidence/src/structures/IEvidenceInventory";
-import type { IEvidenceTargetResolution } from "../../../../packages/evidence/src/structures/IEvidenceTargetResolution";
-import type { IEvidenceUnit } from "../../../../packages/evidence/src/structures/IEvidenceUnit";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Preserves root-relative Markdown paths and literal anchor identities. */

@@ -1,10 +1,9 @@
+import { EvidenceChecker, EvidenceConfigLoader } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidenceChecker } from "../../../../packages/evidence/src/EvidenceChecker";
-import { EvidenceConfigLoader } from "../../../../packages/evidence/src/loaders/EvidenceConfigLoader";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
 /**

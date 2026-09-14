@@ -1,7 +1,7 @@
+import { EvidenceMarkdownAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceMarkdownAdapter } from "../../../../packages/evidence/src/adapters/markdown/EvidenceMarkdownAdapter";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Syntax examples cannot create headings or annotations, while real HTML comments can. */

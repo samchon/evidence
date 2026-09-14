@@ -1,8 +1,8 @@
+import { EvidenceJavaScriptAdapter } from "@wrtnlabs/evidence";
+import type { IEvidenceInventory } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceJavaScriptAdapter } from "../../../../packages/evidence/src/adapters/javascript/EvidenceJavaScriptAdapter";
-import type { IEvidenceInventory } from "../../../../packages/evidence/src/structures/IEvidenceInventory";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Resolves JavaScript aliases, defaults, imports, stars, shadowing, and cycles. */

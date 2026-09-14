@@ -1,8 +1,8 @@
+import { EvidenceGoAdapter } from "@wrtnlabs/evidence";
+import type { IEvidenceInventory } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceGoAdapter } from "../../../../packages/evidence/src/adapters/go/EvidenceGoAdapter";
-import type { IEvidenceInventory } from "../../../../packages/evidence/src/structures/IEvidenceInventory";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Keeps missing ownership, package conflicts, duplicate conditional APIs, and parse errors incomplete. */

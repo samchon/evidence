@@ -1,10 +1,10 @@
+import { EvidenceCommand } from "@wrtnlabs/evidence";
+import type { IEvidenceCommandFailure } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 import typia from "typia";
 
-import { EvidenceCommand } from "../../../../packages/evidence/src/commands/EvidenceCommand";
-import type { IEvidenceCommandFailure } from "../../../../packages/evidence/src/structures/IEvidenceCommandFailure";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
 /** Reports certified registry entries without loading a project configuration. */

@@ -1,8 +1,8 @@
+import { EvidencePythonAdapter } from "@wrtnlabs/evidence";
+import type { IEvidenceInventory } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidencePythonAdapter } from "../../../../packages/evidence/src/adapters/python/EvidencePythonAdapter";
-import type { IEvidenceInventory } from "../../../../packages/evidence/src/structures/IEvidenceInventory";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Supports Python stub declarations, overload sites, Unicode names, and explicit private exports. */

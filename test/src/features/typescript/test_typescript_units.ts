@@ -1,8 +1,8 @@
+import { EvidenceTypeScriptAdapter } from "@wrtnlabs/evidence";
+import type { IEvidenceUnit } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceTypeScriptAdapter } from "../../../../packages/evidence/src/adapters/typescript/EvidenceTypeScriptAdapter";
-import type { IEvidenceUnit } from "../../../../packages/evidence/src/structures/IEvidenceUnit";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Classifies the supported TypeScript declaration matrix and public member paths. */

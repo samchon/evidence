@@ -1,12 +1,14 @@
+import { EvidenceChecker } from "@wrtnlabs/evidence";
+import type {
+  IEvidenceCheckAnalysis,
+  IEvidenceConfigPlan,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidenceChecker } from "../../../../packages/evidence/src/EvidenceChecker";
 import { createEvidenceConfigPlan } from "../../../../packages/evidence/src/internal/createEvidenceConfigPlan";
-import type { IEvidenceCheckAnalysis } from "../../../../packages/evidence/src/structures/IEvidenceCheckAnalysis";
-import type { IEvidenceConfigPlan } from "../../../../packages/evidence/src/structures/IEvidenceConfigPlan";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
 /**

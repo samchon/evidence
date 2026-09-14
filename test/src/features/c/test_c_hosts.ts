@@ -1,8 +1,7 @@
+import { EvidenceCAdapter, EvidenceInventory } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceCAdapter } from "../../../../packages/evidence/src/adapters/c/EvidenceCAdapter";
-import { EvidenceInventory } from "../../../../packages/evidence/src/graph/EvidenceInventory";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Attaches C Doxygen and retains tag-bearing inert carriers as failures. */

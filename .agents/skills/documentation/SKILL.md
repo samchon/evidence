@@ -9,6 +9,8 @@ description: Defines Evidence README, guide, issue, and agent-instruction writin
 
 Write README as the completed product's user guide: purpose, installation, configuration, and usage. Do not include issue or roadmap links, implementation progress, or milestone commentary. Keep delivery status and validation results in the PR.
 
+Document configuration in README only through `evidence.config.ts`. Do not advertise JSON configuration or alternative config file formats there.
+
 The root `README.md` is the only editable package README. `scripts/copy-readme-and-license.js` copies it and LICENSE to the package during `prepack`. Keep repository links usable from npm as well as GitHub. Review the copy script when changing documentation preparation; do not introduce package-installation tests.
 
 Organize guides by their reader and task. Do not invent a website tree or claim that ttsc's website is this package's documentation host. Link to upstream for the compatibility baseline and explain standalone differences where they affect an author.

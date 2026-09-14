@@ -1,10 +1,9 @@
+import { EvidenceCommand, EvidenceConfigLoader } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 
-import { EvidenceCommand } from "../../../../packages/evidence/src/commands/EvidenceCommand";
-import { EvidenceConfigLoader } from "../../../../packages/evidence/src/loaders/EvidenceConfigLoader";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
 /** Creates one typed starter config and refuses every overwrite attempt. */

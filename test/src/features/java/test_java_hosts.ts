@@ -1,8 +1,7 @@
+import { EvidenceInventory, EvidenceJavaAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceInventory } from "../../../../packages/evidence/src/graph/EvidenceInventory";
-import { EvidenceJavaAdapter } from "../../../../packages/evidence/src/adapters/java/EvidenceJavaAdapter";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Attaches Java evidence to Javadoc and rejects inert Java carriers. */

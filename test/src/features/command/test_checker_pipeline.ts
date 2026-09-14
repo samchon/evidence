@@ -1,11 +1,10 @@
+import { EvidenceChecker, EvidenceReporter } from "@wrtnlabs/evidence";
+import type { IEvidenceConfigPlan } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidenceChecker } from "../../../../packages/evidence/src/EvidenceChecker";
-import { EvidenceReporter } from "../../../../packages/evidence/src/reporters/EvidenceReporter";
-import type { IEvidenceConfigPlan } from "../../../../packages/evidence/src/structures/IEvidenceConfigPlan";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
 /** Runs source discovery, two adapters, target resolution, graph policy, and reports. */

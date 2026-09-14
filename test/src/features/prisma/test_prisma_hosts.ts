@@ -1,11 +1,12 @@
+import { EvidenceInventory, EvidencePrismaAdapter } from "@wrtnlabs/evidence";
+import type {
+  IEvidenceDeclaration,
+  IEvidenceHost,
+  IEvidenceInventory,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceInventory } from "../../../../packages/evidence/src/graph/EvidenceInventory";
-import { EvidencePrismaAdapter } from "../../../../packages/evidence/src/adapters/prisma/EvidencePrismaAdapter";
-import type { IEvidenceDeclaration } from "../../../../packages/evidence/src/structures/IEvidenceDeclaration";
-import type { IEvidenceHost } from "../../../../packages/evidence/src/structures/IEvidenceHost";
-import type { IEvidenceInventory } from "../../../../packages/evidence/src/structures/IEvidenceInventory";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Preserves Prisma documentation hosts, withdrawals, and exclusion ledgers. */

@@ -48,7 +48,7 @@ export async function evaluateTypeScriptConfig(
       throw new Error("Compiler launcher or platform binary is not a file.");
   } catch (cause) {
     throw new Error(
-      `Cannot resolve the compiler for ${configFile}. Install it with: pnpm i -D typescript ttsc @samchon/evidence`,
+      `Cannot resolve the compiler for ${configFile}. Install it with: pnpm i -D typescript ttsc @wrtnlabs/evidence`,
       { cause },
     );
   }
@@ -244,23 +244,26 @@ async function findNodeModules(start: string): Promise<string | undefined> {
   }
 }
 
-/** Keeps temporary sources on the config's volume so TypeScript has one rootDir. */
+/** Keeps evaluator files outside dependencies and on the config's volume. */
 async function tempBase(
   configFile: string,
   nodeModules: string | undefined,
 ): Promise<string> {
-  const root = path.parse(configFile).root.toLowerCase();
   const system = await realpath(tmpdir());
-  if (path.parse(system).root.toLowerCase() === root) return system;
   if (
-    nodeModules !== undefined &&
-    path.parse(nodeModules).root.toLowerCase() === root
-  ) {
-    const cache = path.join(nodeModules, ".cache", "evidence");
-    await mkdir(cache, { recursive: true });
-    return realpath(cache);
-  }
-  return path.dirname(configFile);
+    path.parse(system).root.toLowerCase() ===
+    path.parse(configFile).root.toLowerCase()
+  )
+    return system;
+  const root =
+    nodeModules === undefined ||
+    path.parse(nodeModules).root.toLowerCase() !==
+      path.parse(configFile).root.toLowerCase()
+      ? path.dirname(configFile)
+      : path.dirname(nodeModules);
+  const directory = path.join(root, ".tmp", "evidence-config");
+  await mkdir(directory, { recursive: true });
+  return realpath(directory);
 }
 
 async function exists(file: string): Promise<boolean> {

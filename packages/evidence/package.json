@@ -1,5 +1,5 @@
 {
-  "name": "@samchon/evidence",
+  "name": "@wrtnlabs/evidence",
   "version": "0.1.0",
   "description": "Explicit evidence obligations for specifications, skills, code, and tests across languages.",
   "main": "./src/index.ts",
@@ -54,19 +54,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/samchon/evidence.git",
+    "url": "git+https://github.com/wrtnlabs/evidence.git",
     "directory": "packages/evidence"
   },
   "bugs": {
-    "url": "https://github.com/samchon/evidence/issues"
+    "url": "https://github.com/wrtnlabs/evidence/issues"
   },
-  "homepage": "https://github.com/samchon/evidence#readme",
+  "homepage": "https://github.com/wrtnlabs/evidence#readme",
   "keywords": [
     "evidence",
     "traceability",
     "tree-sitter",
     "specifications"
   ],
-  "author": "Jeongho Nam",
+  "author": "Wrtn Technologies",
   "license": "MIT"
 }

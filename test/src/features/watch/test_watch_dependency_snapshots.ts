@@ -1,10 +1,10 @@
+import type { IEvidenceSourceDependency } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { rm, symlink } from "node:fs/promises";
 import { join } from "node:path";
 
 import { WatchDependencySnapshot } from "../../../../packages/evidence/src/internal/WatchDependencySnapshot";
-import type { IEvidenceSourceDependency } from "../../../../packages/evidence/src/structures/IEvidenceSourceDependency";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
 /** Detects content, directory-topology, deletion, and junction-target changes. */

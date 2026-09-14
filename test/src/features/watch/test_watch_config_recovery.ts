@@ -1,10 +1,9 @@
+import { EvidenceChecker, EvidenceWatcher } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidenceChecker } from "../../../../packages/evidence/src/EvidenceChecker";
-import { EvidenceWatcher } from "../../../../packages/evidence/src/commands/EvidenceWatcher";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
 /** Verifies imported config failures, missing roots, and inactive populations recover correctly. */
@@ -94,7 +93,7 @@ export async function test_watch_config_recovery(): Promise<void> {
 function config(): string {
   return dedent`
     import { files, root } from "./helpers/settings";
-    import type { IEvidenceConfig } from "@samchon/evidence";
+    import type { IEvidenceConfig } from "@wrtnlabs/evidence";
 
     export default {
       claims: [

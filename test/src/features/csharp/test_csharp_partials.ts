@@ -1,7 +1,7 @@
+import { EvidenceCSharpAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidenceCSharpAdapter } from "../../../../packages/evidence/src/adapters/csharp/EvidenceCSharpAdapter";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /**

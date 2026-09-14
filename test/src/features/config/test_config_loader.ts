@@ -1,9 +1,9 @@
+import { EvidenceConfigLoader } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidenceConfigLoader } from "../../../../packages/evidence/src/loaders/EvidenceConfigLoader";
 import { evaluateTypeScriptConfig } from "../../../../packages/evidence/src/internal/evaluateTypeScriptConfig";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
@@ -13,7 +13,7 @@ export async function test_config_loader(): Promise<void> {
   const location = join(__dirname, `loader $' ${randomUUID()}`);
   const source = dedent`
     import { files } from "./helpers/files";
-    import type { IEvidenceConfig } from "@samchon/evidence";
+    import type { IEvidenceConfig } from "@wrtnlabs/evidence";
 
     export default {
       claims: [
@@ -112,7 +112,7 @@ export async function test_config_loader(): Promise<void> {
       // A disabled population is validated and planned without touching its missing root.
       await TestFileSystem.save(directory, {
         "evidence.config.ts": dedent`
-          import type { IEvidenceConfig } from "@samchon/evidence";
+          import type { IEvidenceConfig } from "@wrtnlabs/evidence";
 
           export default {
             claims: [

@@ -1,8 +1,8 @@
+import { EvidenceCommand } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidenceCommand } from "../../../../packages/evidence/src/commands/EvidenceCommand";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
 /** Keeps help/version independent and makes operational JSON/output failures explicit. */

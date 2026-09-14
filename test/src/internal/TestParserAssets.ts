@@ -1,7 +1,6 @@
-import type { IEvidenceGrammar } from "../../../packages/evidence/src/structures/IEvidenceGrammar";
+import type { IEvidenceGrammar } from "@wrtnlabs/evidence";
 import { randomUUID } from "node:crypto";
-import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { resolve } from "node:path";
 
 import { TreeSitterAssets } from "../../../packages/evidence/src/internal/TreeSitterAssets";
 import { TreeSitterAssetScope } from "../../../packages/evidence/src/internal/TreeSitterAssetScope";
@@ -13,10 +12,7 @@ export namespace TestParserAssets {
   export async function bytes(grammar: IEvidenceGrammar): Promise<Uint8Array> {
     return TreeSitterAssetScope.run(
       {
-        cacheDirectory: resolve(
-          __dirname,
-          "../../../node_modules/.cache/evidence-parser-fixtures",
-        ),
+        cacheDirectory: resolve(__dirname, "../../.tmp/parser-fixtures"),
         fetch: globalThis.fetch,
         attempts: 3,
         timeoutMilliseconds: 30_000,
@@ -45,13 +41,25 @@ export namespace TestParserAssets {
     }
 
     return TestFileSystem.experiment(
-      join(tmpdir(), `evidence-parser-test-${randomUUID()}`),
+      `parser-runtime-${randomUUID()}`,
       {},
-      async (cacheDirectory) =>
-        TreeSitterAssetScope.run(
-          { cacheDirectory, fetch: fetchFixture },
-          closure,
-        ),
+      async (cacheDirectory) => {
+        // Child config evaluators inherit the same ignored temporary root.
+        const previous = new Map(
+          ["TEMP", "TMP", "TMPDIR"].map((key) => [key, process.env[key]]),
+        );
+        for (const key of previous.keys()) process.env[key] = cacheDirectory;
+        try {
+          return await TreeSitterAssetScope.run(
+            { cacheDirectory, fetch: fetchFixture },
+            closure,
+          );
+        } finally {
+          for (const [key, value] of previous)
+            if (value === undefined) delete process.env[key];
+            else process.env[key] = value;
+        }
+      },
     );
   }
 }

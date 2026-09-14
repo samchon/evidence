@@ -1,34 +1,34 @@
-# @samchon/evidence
+# @wrtnlabs/evidence
 
-An Evidence Graph connects specifications, engineering principles, public code contracts, and tests through explicit citations. `@samchon/evidence` checks that every selected requirement has evidence or a permitted exclusion, and that every citation names a valid target and explains its relationship.
+An Evidence Graph connects specifications, engineering principles, public code contracts, and tests through explicit citations. `@wrtnlabs/evidence` checks that every selected requirement has evidence or a permitted exclusion, and that every citation names a valid target and explains its relationship.
 
-The configuration and graph semantics follow [`@ttsc/evidence`](https://github.com/samchon/ttsc/tree/14a22f077caf23f1bfb8a97b3d9db765912074ef/packages/evidence), with programming-language declarations selected from files through Tree-sitter. The [compatibility ledger](https://github.com/samchon/evidence/blob/master/docs/development/compatibility.md) records preserved behavior, standalone translations, and compiler-dependent boundaries.
+The configuration and graph semantics follow [`@ttsc/evidence`](https://github.com/samchon/ttsc/tree/14a22f077caf23f1bfb8a97b3d9db765912074ef/packages/evidence), with programming-language declarations selected from files through Tree-sitter. The [compatibility ledger](https://github.com/wrtnlabs/evidence/blob/master/docs/development/compatibility.md) records preserved behavior, standalone translations, and compiler-dependent boundaries.
 
 ## Installation
 
 ```bash
-pnpm i -D typescript ttsc @samchon/evidence
+pnpm i -D typescript ttsc @wrtnlabs/evidence
 ```
 
 `typescript` and `ttsc` are required peers supplied by the consumer. The `ttsx` executable comes from `ttsc` and evaluates `evidence.config.ts`.
 
-Follow the [getting-started guide](https://github.com/samchon/evidence/blob/master/docs/getting-started.md) to create one failing obligation, repair it with a real citation, and add an implementation-to-test edge.
+Follow the [getting-started guide](https://github.com/wrtnlabs/evidence/blob/master/docs/getting-started.md) to create one failing obligation, repair it with a real citation, and add an implementation-to-test edge.
 
 ## Guides
 
-- [Evidence Graph contract](https://github.com/samchon/evidence/blob/master/docs/evidence-graph.md)
-- [Configuration reference](https://github.com/samchon/evidence/blob/master/docs/configuration.md)
-- [Tags and targets](https://github.com/samchon/evidence/blob/master/docs/tags-and-targets.md)
-- [CLI reference](https://github.com/samchon/evidence/blob/master/docs/cli.md)
-- [Certified languages](https://github.com/samchon/evidence/blob/master/docs/languages.md)
-- [Migration from `@ttsc/evidence`](https://github.com/samchon/evidence/blob/master/docs/migration-from-ttsc.md)
+- [Evidence Graph contract](https://github.com/wrtnlabs/evidence/blob/master/docs/evidence-graph.md)
+- [Configuration reference](https://github.com/wrtnlabs/evidence/blob/master/docs/configuration.md)
+- [Tags and targets](https://github.com/wrtnlabs/evidence/blob/master/docs/tags-and-targets.md)
+- [CLI reference](https://github.com/wrtnlabs/evidence/blob/master/docs/cli.md)
+- [Certified languages](https://github.com/wrtnlabs/evidence/blob/master/docs/languages.md)
+- [Migration from `@ttsc/evidence`](https://github.com/wrtnlabs/evidence/blob/master/docs/migration-from-ttsc.md)
 
 ## Configuration
 
 Create `evidence.config.ts` at the project root:
 
 ```ts
-import type { IEvidenceConfig } from "@samchon/evidence";
+import type { IEvidenceConfig } from "@wrtnlabs/evidence";
 
 const config: IEvidenceConfig = {
   severity: "error",
@@ -75,7 +75,7 @@ pnpm exec evidence
 
 ```bash
 pnpm exec evidence init
-pnpm exec evidence check --format json --output reports/evidence.json
+pnpm exec evidence check --format json --output reports/check-report.json
 pnpm exec evidence check --watch
 pnpm exec evidence list --language typescript --kind function
 pnpm exec evidence inspect 'src/calculator.ts#add' --format json
@@ -96,7 +96,7 @@ pnpm exec evidence languages
 | `-v, --version` | root | Print the package version without loading a config or project. |
 | `-w, --watch` | check | Run an initial check, then recheck after active dependencies change. |
 
-The [CLI reference](https://github.com/samchon/evidence/blob/master/docs/cli.md) gives each command's accepted options, output contract, and failure status.
+The [CLI reference](https://github.com/wrtnlabs/evidence/blob/master/docs/cli.md) gives each command's accepted options, output contract, and failure status.
 
 ### Watch mode
 
@@ -122,7 +122,7 @@ Text and JSON contain the same deterministic findings and coverage counts. JSON 
 
 The process exits with 0 after complete analysis without error-severity findings, including a warning-only result. It exits with 1 after complete analysis with Evidence errors, and 2 for invalid CLI/configuration or incomplete source and parser analysis. `severity: "off"` and `disabled: true` populations are skipped before source loading; they do not count as completed coverage.
 
-For programmatic loading, import `EvidenceConfigLoader` from `@samchon/evidence` and call `await EvidenceConfigLoader.load("evidence.config.ts")`. It returns the validated `IEvidenceConfig` with authored optional values intact. `EvidenceConfigLoader.plan()` additionally resolves severity and symbol defaults into an `IEvidenceConfigPlan` containing only populations that may load artifacts. Both methods default to `evidence.config.ts` in the current working directory. Supported extensions are `.ts`, `.cts`, and `.mts`.
+For programmatic loading, import `EvidenceConfigLoader` from `@wrtnlabs/evidence` and call `await EvidenceConfigLoader.load("evidence.config.ts")`. It returns the validated `IEvidenceConfig` with authored optional values intact. `EvidenceConfigLoader.plan()` additionally resolves severity and symbol defaults into an `IEvidenceConfigPlan` containing only populations that may load artifacts. Both methods default to `evidence.config.ts` in the current working directory.
 
 `EvidenceChecker.check(configFile)` runs configuration loading, source discovery, adapter analysis, target resolution, and graph evaluation, then returns `IEvidenceCheckReport`. `EvidenceChecker.analyze(configFile)` returns the report together with its exact `IEvidenceGraphInput` and materialized `IEvidenceGraphResult`; `EvidenceChecker.evaluate(plan)` provides the same analysis for an already validated plan. `EvidenceQuery` derives list, inspection, language, and graph reports from that model. `EvidenceReporter`, `EvidenceQueryReporter`, and `EvidenceGraphReporter` render the corresponding output forms.
 
@@ -141,7 +141,7 @@ Source snapshots retain UTF-8 contents, byte digests, physical file identities, 
 For direct syntax analysis, use `EvidenceParser.parse(input, callback)`. The callback receives a borrowed tree and query helpers; copy extracted values into ordinary data before it returns:
 
 ```ts
-import { EvidenceParser } from "@samchon/evidence";
+import { EvidenceParser } from "@wrtnlabs/evidence";
 
 const parser = new EvidenceParser();
 try {
@@ -172,7 +172,7 @@ Concurrent callers share downloads, and cache files are published atomically. Tr
 
 For adapter development, `IEvidenceAdapter.analyze(snapshot)` returns an ordinary `IEvidenceInventory`. `new EvidenceInventory(inventories)` combines adapter-established identities, checks declaration ownership and original source coordinates, and reconciles withdrawal across merged declarations. `select(ids)` returns an independent population with its structural ancestors and eligible hosts; `resolve({ file, segments }, ids)` looks up an exact public address inside that scope. Check `complete` and `diagnostics` before using a population. Reviews have a separate collection and never supply acknowledgements. New languages require adapter certification and a pinned downloadable grammar that parses real declarations through the shared runtime.
 
-`EvidenceDocumentation.read()` maps a classified comment into its original source, and `EvidenceTagParser.parse()` reads acknowledgements, exclusions, reviews, and withdrawal markers from that mapped text. Adapters establish comment identity and attachment before invoking these helpers. `EvidenceAccessor.parse()` and `format()` preserve literal member segments such as `SomeClass["field.name"]`. See the [adapter inventory guide](https://github.com/samchon/evidence/blob/master/docs/development/adapter-inventories.md) for ownership, completeness, and documentation contracts.
+`EvidenceDocumentation.read()` maps a classified comment into its original source, and `EvidenceTagParser.parse()` reads acknowledgements, exclusions, reviews, and withdrawal markers from that mapped text. Adapters establish comment identity and attachment before invoking these helpers. `EvidenceAccessor.parse()` and `format()` preserve literal member segments such as `SomeClass["field.name"]`. See the [adapter inventory guide](https://github.com/wrtnlabs/evidence/blob/master/docs/development/adapter-inventories.md) for ownership, completeness, and documentation contracts.
 
 ## Artifacts and symbol selectors
 
@@ -359,18 +359,22 @@ The package exports `IEvidenceConfig`, `IEvidenceClaim`, `IEvidenceReference`, a
 ```bash
 pnpm install --frozen-lockfile
 pnpm build
-pnpm test
+pnpm start --include config_loader
 pnpm check:format
 ```
 
-The pnpm workspace contains the published library in `packages/evidence` and logic unit tests in `test`. `pnpm build` compiles through `ttsc` with strict `@ttsc/lint` rules, including `@ttsc/evidence`'s `evidence/singular` rule. `pnpm test` runs exported unit-test functions directly through `ttsx` and `@nestia/e2e`'s `DynamicExecutor`.
+The pnpm workspace contains the published library in `packages/evidence` and logic unit tests in `test`. `pnpm build` compiles through `ttsc` with strict `@ttsc/lint` rules, including `@ttsc/evidence`'s `evidence/singular` rule. Run affected local tests with `pnpm start --include <filter>`; repeat `--include` to select several groups. CI runs the complete suite through `pnpm test`. Both commands execute exported unit-test functions through `ttsx` and `@nestia/e2e`'s `DynamicExecutor`.
 
 Dependency versions are centralized in the family catalogs in `pnpm-workspace.yaml`. Each package and the test workspace extend the shared configuration under `config`. VS Code uses Prettier on save through `.vscode/settings.json`.
 
 The root README and LICENSE are authoritative. During package preparation, `scripts/copy-readme-and-license.js` copies them into `packages/evidence`. Workspace imports resolve to TypeScript source; `publishConfig` supplies the compiled entry points, declarations, and CLI.
 
-Grammar download pins live in `scripts/parser-grammars.json` and compile into ordinary package code. After changing pins, run `node scripts/prepare-parser-catalog.js`; `node scripts/prepare-parser-catalog.js --check` verifies the generated catalog without downloading WASM and also runs during `prepack`. Commit the metadata and generated catalog together. Tests automatically obtain real pinned grammars into the ignored `node_modules/.cache/evidence-parser-fixtures` directory, reused by CI. Missing test fixtures require network access; acquisition tests use those verified bytes with a separate disposable cache.
+Grammar download pins live in `scripts/parser-grammars.json` and compile into ordinary package code. After changing pins, run `node scripts/prepare-parser-catalog.js`; `node scripts/prepare-parser-catalog.js --check` verifies the generated catalog without downloading WASM and also runs during `prepack`. Commit the metadata and generated catalog together. Tests automatically obtain real pinned grammars into the ignored `test/.tmp/parser-fixtures` directory, reused by CI. Missing test fixtures require network access; acquisition tests use those verified bytes with a separate disposable cache. Keep temporary test trees and maintenance experiments under `test/.tmp`.
+
+For a grammar without a suitable upstream WASM release, add a recipe to `scripts/parser-builds.json` with its full source commit, grammar subdirectory, license path, ABI, and a real declaration/query probe. The manifest pins the Tree-sitter CLI and WASI SDK versions and download digests. Run `node scripts/build-parser-wasm.js <recipe>` on Linux or Windows x64. It builds two independent checkouts, compares their WASM bytes, and verifies parsing and capture through the installed `web-tree-sitter`. Outputs under `test/.tmp/parser-builds` include the grammar record and source/scanner/toolchain provenance. These are maintainer operations; checking a consumer project never builds a parser.
+
+The `parser-wasm` workflow validates recipes on pull requests. To publish a verified artifact, dispatch it on `master` with the recipe identifier and `publish: true`. Its release tag includes the complete WASM digest, and publication never replaces existing assets. The publication job verifies a cold download through `TreeSitterAssets` and then reads the same cache with network access disabled. Register the resulting grammar record in `scripts/parser-grammars.json` only alongside its implemented, certified adapter.
 
 ## License
 
-MIT, copyright 2026 Jeongho Nam. See [LICENSE](https://github.com/samchon/evidence/blob/master/LICENSE).
+MIT, copyright 2026 Jeongho Nam. See [LICENSE](https://github.com/wrtnlabs/evidence/blob/master/LICENSE).
