@@ -28,7 +28,9 @@ export namespace EvidenceLanguageRegistry {
     type: EvidenceProgrammingType | EvidenceDatabaseType,
     file: string,
   ): IEvidenceLanguageGrammar {
-    const language = [...LANGUAGES, ...DATABASES].find((entry) => entry.type === type);
+    const language = [...LANGUAGES, ...DATABASES].find(
+      (entry) => entry.type === type,
+    );
     if (language === undefined)
       throw new EvidenceParserError(
         "unsupported-language",
@@ -50,7 +52,28 @@ export namespace EvidenceLanguageRegistry {
     return structuredClone(grammar);
   }
 
-  const DATABASES: IEvidenceDatabaseLanguage[] = [];
+  const DATABASES: IEvidenceDatabaseLanguage[] = [
+    {
+      type: "sql",
+      name: "Portable SQL",
+      grammars: [{ id: "sql", extensions: [".sql"], filenames: [] }],
+      adapter: {
+        entry: "EvidenceSqlAdapter",
+        symbols: ["model", "column", "relation"],
+        publicSurface:
+          "Explicit CREATE TABLE declarations in the documented portable DDL subset.",
+        addressing:
+          "Qualified table and column accessors; foreign keys use a literal endpoint-derived member segment.",
+        comments: ["adjacent -- or block documentation"],
+        unsupported: [
+          "schema mutations",
+          "query-derived tables",
+          "dialect extensions",
+          "runtime database discovery",
+        ],
+      },
+    },
+  ];
 
   const LANGUAGES: IEvidenceLanguage[] = [
     {
