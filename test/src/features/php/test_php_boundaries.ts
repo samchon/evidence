@@ -18,6 +18,9 @@ export async function test_php_boundaries(): Promise<void> {
     "<?php use function define as publish; publish('RUNTIME', 1);",
     "<?php eval($code);",
     "<?php spl_autoload_register($loader);",
+    "<?php class Dynamic { function run() { $this->added = 1; } }",
+    "<?php class Dynamic { function run() { $this->added[] = 1; } }",
+    "<?php class Dynamic { function run($name) { $this->$name = 1; } }",
     "<?php class Broken {",
     "<?php class Emoji { public int $\ud83d\ude00 = 1; }",
   ]) {
@@ -59,6 +62,17 @@ export async function test_php_boundaries(): Promise<void> {
   TestValidator.equals(
     "namespaced import is not a global runtime builtin",
     grouped.complete,
+    true,
+  );
+  const declared = await new EvidencePhpAdapter().analyze(
+    TestSourceSnapshot.create(
+      "declared.php",
+      "<?php class Explicit { private int $value = 0; function update() { $this->value = 1; } function read() { return $this->external; } }",
+    ),
+  );
+  TestValidator.equals(
+    "declared property mutation and reads do not invent public fields",
+    declared.complete,
     true,
   );
   const conflict = await new EvidencePhpAdapter().analyze(

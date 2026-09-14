@@ -56,6 +56,7 @@ export class PhpFileScanner {
       );
     this.scanScope(this.session.root, [], undefined);
     this.dynamicSurface(this.session.root);
+    this.dynamicProperties(this.session.root);
     return {
       source: this.source,
       declarations: this.declarations,
@@ -300,6 +301,65 @@ export class PhpFileScanner {
           "conditional-declaration",
           "Declarations in executable blocks have runtime-dependent availability.",
         );
+  }
+
+  /** Distinguishes writes to declared fields from detectable runtime property creation. */
+  private dynamicProperties(root: Node): void {
+    for (const member of root.descendantsOfType("member_access_expression")) {
+      if (member.childForFieldName("object")?.text !== "$this") continue;
+      let written = member;
+      while (
+        written.parent !== null &&
+        written.parent.type === "subscript_expression" &&
+        written.parent.namedChildren[0]?.id === written.id
+      )
+        written = written.parent;
+      const mutation = written.parent;
+      if (mutation === null) continue;
+      if (mutation.type === "update_expression") {
+        if (!mutation.namedChildren.some((child) => child.id === written.id))
+          continue;
+      } else if (
+        ![
+          "assignment_expression",
+          "augmented_assignment_expression",
+          "reference_assignment_expression",
+        ].includes(mutation.type) ||
+        mutation.childForFieldName("left")?.id !== written.id
+      )
+        continue;
+      let container = member.parent;
+      while (
+        container !== null &&
+        !TYPES.has(container.type) &&
+        container.type !== "anonymous_class"
+      )
+        container = container.parent;
+      if (container === null || container.type === "anonymous_class") continue;
+      const ownerNode = container;
+      const owner = this.declarations.find(
+        (declaration) =>
+          declaration.form === ownerNode.type &&
+          declaration.site.range.end.offset === ownerNode.endIndex,
+      );
+      const name = member.childForFieldName("name");
+      if (
+        owner !== undefined &&
+        name?.type === "name" &&
+        this.declarations.some(
+          (declaration) =>
+            declaration.ownerDeclarationId === owner.id &&
+            declaration.symbol === "property" &&
+            declaration.name === `$${name.text}`,
+        )
+      )
+        continue;
+      this.problem(
+        member,
+        "dynamic-property",
+        "Writing a computed $this property or one not declared on this lexical type can add a public property at runtime; declare it explicitly or add inherited-property resolution.",
+      );
+    }
   }
 
   /** Marks unsupported surface-changing syntax as incomplete at its original range. */
