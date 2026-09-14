@@ -11,7 +11,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * forms so the graph denominator cannot silently shrink or grow.
  */
 export async function test_csharp_units(): Promise<void> {
-  // Certified metadata names the exact packaged grammar and adapter boundary.
+  // Certified metadata names the exact pinned grammar and adapter boundary.
   const language = EvidenceLanguageRegistry.list().find(
     (entry) => entry.type === "csharp",
   );

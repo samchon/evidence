@@ -7,7 +7,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Classifies Rust public types, fields, variants, traits, values, and impl items. */
 export async function test_rust_units(): Promise<void> {
-  // Certified metadata must accompany the already packaged Rust grammar.
+  // Certified metadata must accompany the pinned Rust grammar.
   const language = EvidenceLanguageRegistry.list().find(
     (entry) => entry.type === "rust",
   );

@@ -12,12 +12,11 @@ async function main() {
     path.join(packageDirectory, "package.json"),
   );
   const records = JSON.parse(
-    await readFile(path.join(packageDirectory, "assets/grammars.json"), "utf8"),
+    await readFile(path.join(__dirname, "parser-grammars.json"), "utf8"),
   );
   const compress = promisify(gzip);
 
-  async function measure(file) {
-    const bytes = await readFile(file);
+  async function measure(bytes) {
     return {
       bytes: bytes.length,
       gzipBytes: (await compress(bytes, { level: 9 })).length,
@@ -27,8 +26,15 @@ async function main() {
 
   const grammars = [];
   for (const record of records) {
+    const response = await fetch(record.wasm.url, {
+      signal: AbortSignal.timeout(30_000),
+    });
+    if (!response.ok)
+      throw new Error(
+        `Grammar download failed: ${record.id} (HTTP ${response.status})`,
+      );
     const measurement = await measure(
-      path.join(packageDirectory, "assets", record.wasm.file),
+      Buffer.from(await response.arrayBuffer()),
     );
     if (
       measurement.sha256 !== record.wasm.sha256 ||
@@ -58,9 +64,11 @@ async function main() {
       "Each file compressed independently with gzip level 9; sums are not tarball sizes",
     binding: {
       version: bindingManifest.version,
-      commonjs: await measure(bindingEntry),
+      commonjs: await measure(await readFile(bindingEntry)),
       wasm: await measure(
-        requireFromPackage.resolve("web-tree-sitter/web-tree-sitter.wasm"),
+        await readFile(
+          requireFromPackage.resolve("web-tree-sitter/web-tree-sitter.wasm"),
+        ),
       ),
     },
     grammars,

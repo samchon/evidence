@@ -1,4 +1,4 @@
-/** Package fields that make certified parser assets part of the published module. */
+/** Package fields that constrain distribution to runtime code and package documentation. */
 export interface IPackageManifest {
   files: string[];
 }

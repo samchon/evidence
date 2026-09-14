@@ -12,6 +12,7 @@ import { EvidenceReporter } from "../reporters/EvidenceReporter";
 import { EvidenceWatcher } from "./EvidenceWatcher";
 import { EvidenceWatchReporter } from "../reporters/EvidenceWatchReporter";
 import { EvidenceArtifactTypes } from "../internal/EvidenceArtifactTypes";
+import { TreeSitterAssetScope } from "../internal/TreeSitterAssetScope";
 import type { IPackageManifest } from "../internal/IPackageManifest";
 import type { IEvidenceCheckCommand } from "../structures/IEvidenceCheckCommand";
 import type { IEvidenceCommand } from "../structures/IEvidenceCommand";
@@ -214,10 +215,27 @@ export namespace EvidenceCommand {
     } catch {
       // The buffered path owns the established command-error rendering.
     }
-    const result =
-      parsed?.operation === "check" && parsed.watch === true
-        ? await runWatch(parsed, process.cwd())
-        : await run(args);
+    const selected = parsed;
+    const progressMessages = new Set<string>();
+    const result = await TreeSitterAssetScope.run(
+      {
+        progress: (message) => {
+          if (
+            selected !== undefined &&
+            "output" in selected &&
+            selected.output !== undefined
+          )
+            return;
+          if (progressMessages.has(message)) return;
+          progressMessages.add(message);
+          process.stderr.write(`${message}\n`);
+        },
+      },
+      async () =>
+        selected?.operation === "check" && selected.watch === true
+          ? runWatch(selected, process.cwd())
+          : run(args),
+    );
     if (result.stdout !== "") process.stdout.write(result.stdout);
     if (result.stderr !== "") process.stderr.write(result.stderr);
     return result.exitCode;

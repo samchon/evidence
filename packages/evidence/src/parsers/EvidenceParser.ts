@@ -14,7 +14,7 @@ import type { IEvidenceParserInput } from "../structures/IEvidenceParserInput";
 import type { IEvidenceParserOptions } from "../structures/IEvidenceParserOptions";
 import type { IEvidenceParserState } from "../structures/IEvidenceParserState";
 
-/** Lazily loads local grammars and owns a bounded number of independent parse sessions. */
+/** Lazily acquires pinned grammars and owns a bounded number of independent parse sessions. */
 export class EvidenceParser {
   private readonly assets = new TreeSitterAssets();
   private readonly slots: ParserSlots;
