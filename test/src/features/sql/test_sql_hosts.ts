@@ -49,9 +49,11 @@ export async function test_sql_hosts(): Promise<void> {
     1,
   );
   const declaration = inventory.declarations[0];
+  if (declaration === undefined || declaration.location.range === undefined)
+    throw new Error("Missing located SQL evidence.");
   TestValidator.equals(
     "original UTF-16 tag offset",
-    declaration?.location.range?.start.offset,
+    declaration.location.range.start.offset,
     source.indexOf("@evidence docs/spec.md#table"),
   );
   TestValidator.predicate(
@@ -65,7 +67,7 @@ export async function test_sql_hosts(): Promise<void> {
   const hidden = inventory.units
     .filter((unit) => unit.withdrawals.length !== 0)
     .map((unit) => unit.name)
-    .sort();
+    .sort((left, right) => left.localeCompare(right, "en"));
   TestValidator.equals("withdrawal metadata retained", hidden, [
     "OLD",
     "RETIRED",
@@ -101,7 +103,7 @@ export async function test_sql_hosts(): Promise<void> {
     "CREATE TABLE account (id INTEGER);",
   );
   const file = aliasSnapshot.files[0];
-  const address = file?.addresses[0];
+  const address = file === undefined ? undefined : file.addresses[0];
   if (file === undefined || address === undefined)
     throw new Error("Missing alias source.");
   file.addresses.push({

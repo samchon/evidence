@@ -25,7 +25,9 @@ export async function test_sql_units(): Promise<void> {
   TestValidator.equals("complete composite schema", inventory.diagnostics, []);
   TestValidator.equals(
     "exact kinds",
-    inventory.units.map((unit) => unit.symbol).sort(),
+    inventory.units
+      .map((unit) => unit.symbol)
+      .sort((left, right) => left.localeCompare(right, "en")),
     ["column", "column", "model", "relation"],
   );
   const model = inventory.units.find((unit) => unit.symbol === "model");

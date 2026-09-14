@@ -22,7 +22,7 @@ export async function test_sql_certification(): Promise<void> {
       const address = broken.addresses[0];
       if (address !== undefined) address.segments = ["WRONG"];
     }
-    await TestValidator.error(`reject ${mutation} mutation`, () =>
+    TestValidator.error(`reject ${mutation} mutation`, () =>
       DatabaseAdapterCertification.assertInventory(fixture, broken),
     );
   }
