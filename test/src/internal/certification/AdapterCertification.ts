@@ -7,6 +7,7 @@ import {
 } from "@wrtnlabs/evidence";
 import type {
   EvidenceProgrammingSymbol,
+  EvidenceDatabaseSymbol,
   IEvidenceAddress,
   IEvidenceInventory,
   IEvidenceSourceSnapshot,
@@ -17,22 +18,23 @@ import { TestValidator } from "@nestia/e2e";
 import { TestGraph } from "../TestGraph";
 import { TestSourceSnapshot } from "../TestSourceSnapshot";
 import type { IAdapterCertification } from "./IAdapterCertification";
+import type { IDatabaseAdapterCertification } from "./IDatabaseAdapterCertification";
+import type { IAdapterCertificationUnitBase } from "./IAdapterCertificationUnitBase";
 import type { IAdapterCertificationAddress } from "./IAdapterCertificationAddress";
 import type { IAdapterCertificationHost } from "./IAdapterCertificationHost";
 import type { IAdapterCertificationSource } from "./IAdapterCertificationSource";
-import type { IAdapterCertificationUnit } from "./IAdapterCertificationUnit";
 
 /** Runs the same inventory, graph, failure, and mutation contract for every adapter. */
 export namespace AdapterCertification {
   export async function analyze(
-    certification: IAdapterCertification,
+    certification: IAdapterCertification | IDatabaseAdapterCertification,
     sources: IAdapterCertificationSource[] = certification.sources,
   ): Promise<IEvidenceInventory> {
     return certification.adapter.analyze(snapshot(sources));
   }
 
   export function assertInventory(
-    certification: IAdapterCertification,
+    certification: IAdapterCertification | IDatabaseAdapterCertification,
     inventory: IEvidenceInventory,
   ): void {
     TestValidator.equals(
@@ -152,7 +154,7 @@ export namespace AdapterCertification {
   }
 
   export async function assertGraph(
-    certification: IAdapterCertification,
+    certification: IAdapterCertification | IDatabaseAdapterCertification,
   ): Promise<void> {
     const claim = await analyze(certification);
     const reference = await new EvidenceMarkdownAdapter().analyze(
@@ -246,7 +248,7 @@ export namespace AdapterCertification {
   }
 
   export async function assertFailures(
-    certification: IAdapterCertification,
+    certification: IAdapterCertification | IDatabaseAdapterCertification,
   ): Promise<void> {
     for (const failure of [certification.incomplete, certification.malformed]) {
       const inventory = await analyze(certification, failure.sources);
@@ -287,7 +289,7 @@ export namespace AdapterCertification {
   }
 
   export async function assertFingerprint(
-    certification: IAdapterCertification,
+    certification: IAdapterCertification | IDatabaseAdapterCertification,
   ): Promise<void> {
     const original = await analyze(certification);
     const reason = await analyze(
@@ -323,7 +325,7 @@ export namespace AdapterCertification {
   }
 
   export async function assertAmbiguity(
-    certification: IAdapterCertification,
+    certification: IAdapterCertification | IDatabaseAdapterCertification,
   ): Promise<void> {
     const inventory = await analyze(certification);
     const first = requireUnit(
@@ -369,10 +371,12 @@ export namespace AdapterCertification {
     unit: IEvidenceUnit,
     keys: Map<string, string>,
     files: Map<string, string>,
-  ): IAdapterCertificationUnit {
+  ): IAdapterCertificationUnitBase<
+    EvidenceProgrammingSymbol | EvidenceDatabaseSymbol
+  > {
     return {
       key: unitKey(unit),
-      symbol: programmingSymbol(unit.symbol),
+      symbol: declarationSymbol(unit.symbol),
       identity: unit.identity,
       ...(unit.parentId === undefined
         ? {}
@@ -392,8 +396,12 @@ export namespace AdapterCertification {
   }
 
   function normalizeExpectedUnit(
-    unit: IAdapterCertificationUnit,
-  ): IAdapterCertificationUnit {
+    unit: IAdapterCertificationUnitBase<
+      EvidenceProgrammingSymbol | EvidenceDatabaseSymbol
+    >,
+  ): IAdapterCertificationUnitBase<
+    EvidenceProgrammingSymbol | EvidenceDatabaseSymbol
+  > {
     return {
       ...unit,
       addresses: [...unit.addresses].sort(compareAddress),
@@ -455,8 +463,12 @@ export namespace AdapterCertification {
   }
 
   function compareKey(
-    left: IAdapterCertificationUnit,
-    right: IAdapterCertificationUnit,
+    left: IAdapterCertificationUnitBase<
+      EvidenceProgrammingSymbol | EvidenceDatabaseSymbol
+    >,
+    right: IAdapterCertificationUnitBase<
+      EvidenceProgrammingSymbol | EvidenceDatabaseSymbol
+    >,
   ): number {
     return compare(left.key, right.key);
   }
@@ -479,9 +491,20 @@ export namespace AdapterCertification {
     return left < right ? -1 : left > right ? 1 : 0;
   }
 
-  function programmingSymbol(symbol: string): EvidenceProgrammingSymbol {
-    if (symbol === "type" || symbol === "function" || symbol === "property")
+  function declarationSymbol(
+    symbol: string,
+  ): EvidenceProgrammingSymbol | EvidenceDatabaseSymbol {
+    if (
+      symbol === "type" ||
+      symbol === "function" ||
+      symbol === "property" ||
+      symbol === "model" ||
+      symbol === "column" ||
+      symbol === "relation"
+    )
       return symbol;
-    throw new Error(`Certification found a non-programming symbol: ${symbol}`);
+    throw new Error(
+      `Certification found a unsupported declaration symbol: ${symbol}`,
+    );
   }
 }

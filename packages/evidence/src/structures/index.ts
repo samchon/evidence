@@ -103,3 +103,5 @@ export type * from "./IEvidenceWatchOptions";
 
 export type { IEvidenceDatabaseLanguage } from "./IEvidenceDatabaseLanguage";
 export type { IEvidenceDatabaseLanguageAdapter } from "./IEvidenceDatabaseLanguageAdapter";
+
+export type { IEvidenceSupportedDatabaseLanguage } from "./IEvidenceSupportedDatabaseLanguage";
