@@ -6,7 +6,7 @@ import type { IEvidenceGrammar } from "../structures/IEvidenceGrammar";
 import type { ITreeSitterAssetOptions } from "./ITreeSitterAssetOptions";
 import { TreeSitterAssetCache } from "./TreeSitterAssetCache";
 import { TreeSitterAssetScope } from "./TreeSitterAssetScope";
-import { TreeSitterGrammarCatalog } from "./TreeSitterGrammarCatalog";
+import grammars from "./parser-grammars.json";
 
 /**
  * Reads compiled grammar provenance and lazily acquires verified pinned bytes.
@@ -76,14 +76,17 @@ export class TreeSitterAssets {
   }
 
   /**
-   * Validates compiled catalog records and rejects duplicate identifiers.
+   * Validates the packaged grammar pins and rejects duplicate identifiers.
    *
    * list delegates here before exposing metadata, ensuring each grammar has safe
-   * provenance paths and credential-free HTTPS asset URLs.
+   * provenance paths and credential-free HTTPS asset URLs. The pins are imported
+   * from parser-grammars.json as a plain module; no payload bytes are read here.
    */
   private readManifest(): IEvidenceGrammar[] {
     try {
-      const entries = typia.assert(TreeSitterGrammarCatalog.list());
+      const entries: IEvidenceGrammar[] = typia.assert<IEvidenceGrammar[]>(
+        structuredClone(grammars),
+      );
       const ids = new Set<string>();
       for (const entry of entries) {
         if (ids.has(entry.id))
