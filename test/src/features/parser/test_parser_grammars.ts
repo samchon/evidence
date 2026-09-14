@@ -8,6 +8,14 @@ import type { IParserFixture } from "../../internal/IParserFixture";
 export async function test_parser_grammars(): Promise<void> {
   const fixtures: IParserFixture[] = [
     {
+      type: "php",
+      grammar: "php",
+      file: "Contract.php",
+      name: "Contract",
+      content: "<?php class Contract { public int $value = 1; }",
+      query: "(class_declaration name: (name) @name)",
+    },
+    {
       type: "scala",
       grammar: "scala",
       file: "Contract.scala",

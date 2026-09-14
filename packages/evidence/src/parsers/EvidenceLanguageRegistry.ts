@@ -54,6 +54,28 @@ export namespace EvidenceLanguageRegistry {
 
   const DATABASES: IEvidenceDatabaseLanguage[] = [
     {
+      type: "postgresql",
+      name: "PostgreSQL",
+      grammars: [{ id: "sql", extensions: [".sql"], filenames: [] }],
+      adapter: {
+        entry: "EvidencePostgresqlAdapter",
+        symbols: ["model", "column", "relation"],
+        publicSurface:
+          "Explicit schema-qualified PostgreSQL table declarations, columns, foreign keys, and additive ALTER declarations within the selected snapshot.",
+        addressing:
+          "File-qualified schema and table segments; unquoted ASCII names fold to lowercase and quoted names remain literal.",
+        comments: ["adjacent SQL comments", "COMMENT ON TABLE or COLUMN"],
+        unsupported: [
+          "search_path evaluation",
+          "conditional DDL",
+          "inheritance and partitioning",
+          "LIKE, OF, and AS-derived schemas",
+          "destructive ALTER",
+          "executed migrations",
+        ],
+      },
+    },
+    {
       type: "sql",
       name: "Portable SQL",
       grammars: [{ id: "sql", extensions: [".sql"], filenames: [] }],
@@ -102,6 +124,28 @@ export namespace EvidenceLanguageRegistry {
   ];
 
   const LANGUAGES: IEvidenceLanguage[] = [
+    {
+      type: "php",
+      name: "PHP",
+      grammars: [{ id: "php", extensions: [".php"], filenames: [] }],
+      adapter: {
+        entry: "EvidencePhpAdapter",
+        symbols: ["type", "function", "property"],
+        publicSurface:
+          "Explicit namespace declarations and public members in tagged PHP source recognized by tree-sitter-php v0.24.2.",
+        addressing:
+          "File-qualified namespace and owner segments; properties retain their leading dollar sign; constants and methods do not.",
+        comments: ["attached PHPDoc"],
+        unsupported: [
+          "tagless PHP-only input",
+          "trait composition",
+          "conditional declarations",
+          "runtime includes and autoload discovery",
+          "dynamic declaration generation",
+          "inherited and generated members",
+        ],
+      },
+    },
     {
       type: "scala",
       name: "Scala",
@@ -443,29 +487,6 @@ export namespace EvidenceLanguageRegistry {
   ];
 
   const CANDIDATES: IEvidenceLanguageCandidate[] = [
-    {
-      id: "php",
-      name: "PHP",
-      kind: "programming-language",
-      dialects: ["PHP with tags", "PHP-only"],
-      grammarRepository: "https://github.com/tree-sitter/tree-sitter-php",
-      grammarLicense: "MIT",
-      wasm: "release-asset",
-      wasmNotes:
-        "The v0.24.2 release publishes tree-sitter-php.wasm and tree-sitter-php_only.wasm.",
-      languageReference:
-        "https://www.php.net/manual/en/language.oop5.visibility.php",
-      visibility:
-        "top-level declarations are namespace-visible; class members use explicit visibility and default to public where PHP permits omission",
-      declarations:
-        "namespaces, classes, interfaces, traits, enums, functions, methods, properties, constants, and aliases",
-      blockers: [
-        "PHP and PHP-only grammar dialect selection",
-        "Composer/autoload namespace topology",
-        "trait composition, conditional declarations, and runtime includes",
-      ],
-      next: "Certify one namespace-local declared surface for both grammar dialects with trait and conditional boundaries reported as incomplete.",
-    },
     {
       id: "dart",
       name: "Dart",
