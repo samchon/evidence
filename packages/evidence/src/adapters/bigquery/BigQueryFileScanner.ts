@@ -57,10 +57,11 @@ export class BigQueryFileScanner {
         : first.text.startsWith("#")
           ? "#"
           : undefined;
-      while (prefix !== undefined) {
+      while (prefix !== undefined && this.standalone(first.startIndex)) {
         const next = comments[index + 1];
         if (
           next === undefined ||
+          !this.standalone(next.startIndex) ||
           !next.text.startsWith(prefix) ||
           !/^[ \t\r]*\n[ \t]*$/u.test(
             this.source.content.slice(last.endIndex, next.startIndex),
@@ -400,7 +401,10 @@ export class BigQueryFileScanner {
             following.site.range.start.offset,
           );
     const attached =
-      following !== undefined && /^\s*$/u.test(gap) && !/\n\s*\n/u.test(gap);
+      this.standalone(node.startIndex) &&
+      following !== undefined &&
+      /^\s*$/u.test(gap) &&
+      !/\n\s*\n/u.test(gap);
     const opening = node.text.startsWith("/*")
       ? "/*"
       : node.text.startsWith("--")
@@ -420,6 +424,12 @@ export class BigQueryFileScanner {
         ? [{ declarationId: following.id, siteId: following.site.id }]
         : [],
     });
+  }
+
+  /** Keeps trailing source comments from documenting the following declaration. */
+  private standalone(start: number): boolean {
+    const line = this.source.content.lastIndexOf("\n", start - 1) + 1;
+    return this.source.content.slice(line, start).trim() === "";
   }
 
   /** Constructs a serializable site with exact source ranges. */

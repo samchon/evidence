@@ -105,4 +105,29 @@ export async function test_bigquery_hosts(): Promise<void> {
     EvidenceFingerprint.inspect(reviewed, model.id).fingerprint,
     EvidenceFingerprint.inspect(baseline, model.id).fingerprint,
   );
+
+  const trailing = await adapter.analyze(
+    TestSourceSnapshot.create(
+      "trailing.sql",
+      dedent`
+    CREATE TABLE ds.trailing (
+      id INT64, -- @hidden This trailing note must not withdraw the next field.
+      -- @evidence ./spec.ts#contract Documents only the next field.
+      next STRING
+    );
+  `,
+    ),
+  );
+  const next = trailing.units.find((unit) => unit.name === "next");
+  if (next === undefined) throw new Error("Missing following field.");
+  TestValidator.equals(
+    "trailing withdrawal remains detached",
+    next.withdrawals,
+    [],
+  );
+  TestValidator.equals(
+    "following documentation run remains independent",
+    trailing.declarations.map((declaration) => declaration.reason),
+    ["Documents only the next field."],
+  );
 }
