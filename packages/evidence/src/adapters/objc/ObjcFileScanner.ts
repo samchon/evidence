@@ -483,7 +483,8 @@ export class ObjcFileScanner {
       definition:
         form === "implementation" ||
         item.type === "method_definition" ||
-        siteNode.type === "function_definition",
+        siteNode.type === "function_definition" ||
+        (form === "property" && owner?.form === "implementation"),
       site: {
         id: siteId,
         file: this.source.physicalPath,

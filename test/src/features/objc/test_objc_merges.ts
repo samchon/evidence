@@ -100,6 +100,27 @@ export async function test_objc_merges(): Promise<void> {
     ).length,
     2,
   );
+  const duplicateProperty = await adapter.analyze(
+    TestSourceSnapshot.combine([
+      header,
+      TestSourceSnapshot.create(
+        "src/Duplicate.m",
+        "@implementation Contract\n@synthesize stored = _first;\n@synthesize stored = _second;\n@end\n",
+      ),
+    ]),
+  );
+  TestValidator.equals(
+    "duplicate property implementations are incomplete",
+    duplicateProperty.complete,
+    false,
+  );
+  TestValidator.equals(
+    "property implementation conflict is retained",
+    duplicateProperty.diagnostics.filter(
+      (item) => item.code === "objc-definition-conflict",
+    ).length,
+    1,
+  );
 
   const escaped = await adapter.analyze(
     TestSourceSnapshot.combine([

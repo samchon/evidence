@@ -25,7 +25,7 @@ export interface IObjcDeclaration {
   /** Original source declaration and fingerprint content ranges. */
   site: IEvidenceUnitSite;
 
-  /** Whether this declaration independently exposes a public unit. */
+  /** Whether this declaration participates in the public inventory after reconciliation. */
   public: boolean;
 
   /** Allows implementation or extension sites to join an independently public identity. */
