@@ -229,5 +229,25 @@ export namespace TreeSitterGrammarCatalog {
         size: 1075,
       },
     },
+    {
+      id: "kotlin",
+      repository: "https://github.com/tree-sitter-grammars/tree-sitter-kotlin",
+      version: "v1.1.0",
+      commit: "77dd60ea0a9003ce062c9728a513ffe1aaff8c82",
+      wasm: {
+        file: "kotlin/tree-sitter-kotlin.wasm",
+        url: "https://github.com/tree-sitter-grammars/tree-sitter-kotlin/releases/download/v1.1.0/tree-sitter-kotlin.wasm",
+        sha256:
+          "7009d69453bc8735e438b2818a633efb21c88f99782769abba60dffedfab73f7",
+        size: 3441042,
+      },
+      license: {
+        file: "kotlin/LICENSE",
+        url: "https://raw.githubusercontent.com/tree-sitter-grammars/tree-sitter-kotlin/77dd60ea0a9003ce062c9728a513ffe1aaff8c82/LICENSE",
+        sha256:
+          "0eea8dc45e89deeb03c7799bbbc7b4688f365fb274562f4540ecfebdea82e727",
+        size: 1101,
+      },
+    },
   ];
 }
