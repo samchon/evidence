@@ -27,6 +27,7 @@ export { EvidenceSqlAdapter } from "./adapters/sql/EvidenceSqlAdapter";
 export { EvidenceSwiftAdapter } from "./adapters/swift/EvidenceSwiftAdapter";
 export { EvidenceSwaggerAdapter } from "./adapters/swagger/EvidenceSwaggerAdapter";
 export { EvidenceTypeScriptAdapter } from "./adapters/typescript/EvidenceTypeScriptAdapter";
+export { EvidenceZigAdapter } from "./adapters/zig/EvidenceZigAdapter";
 
 export { EvidenceCommand } from "./commands/EvidenceCommand";
 export { EvidenceCommandError } from "./commands/EvidenceCommandError";
