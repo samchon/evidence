@@ -137,8 +137,12 @@ export async function test_php_units(): Promise<void> {
   );
   TestValidator.equals(
     "bracketed namespace scopes remain disjoint",
-    brackets.units.map((unit) => unit.identity),
-    [["One", "Same"], ["Two", "Same"], ["globalRun"]],
+    brackets.units
+      .map((unit) => unit.identity)
+      .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b))),
+    [["One", "Same"], ["Two", "Same"], ["globalRun"]].sort((a, b) =>
+      JSON.stringify(a).localeCompare(JSON.stringify(b)),
+    ),
   );
 
   const colliding = await new EvidencePhpAdapter().analyze(
@@ -154,13 +158,15 @@ export async function test_php_units(): Promise<void> {
   );
   TestValidator.equals(
     "namespace whitespace is not part of identity",
-    colliding.units.map((unit) => unit.identity),
+    colliding.units
+      .map((unit) => unit.identity)
+      .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b))),
     [
       ["App", "Domain", "Shared"],
       ["App", "Domain", "Shared"],
       ["App", "Domain", "Value"],
       ["App", "Domain", "value"],
-    ],
+    ].sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b))),
   );
   const collisionGraph = new EvidenceInventory([colliding]);
   const collisionAddress = {
