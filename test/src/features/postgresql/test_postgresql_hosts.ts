@@ -126,6 +126,17 @@ export async function test_postgresql_hosts(): Promise<void> {
     trailing.declarations,
     [],
   );
+  const separated = await adapter.analyze(
+    TestSourceSnapshot.create(
+      "separated.sql",
+      "-- @evidence spec.md#separated No adjacent owner.\n\nCREATE TABLE app.Item (id integer);",
+    ),
+  );
+  TestValidator.equals(
+    "blank lines detach documentation",
+    separated.declarations,
+    [],
+  );
   const unattached = await adapter.analyze(
     TestSourceSnapshot.create(
       "schema.sql",

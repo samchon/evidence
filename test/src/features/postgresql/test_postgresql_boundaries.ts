@@ -55,6 +55,16 @@ export async function test_postgresql_boundaries(): Promise<void> {
     wrongExtension.complete,
     false,
   );
+  for (const source of [
+    'CREATE SCHEMA "App"; CREATE TABLE "App"."Item" ("LIKE" integer);',
+    `CREATE TABLE app."${"a".repeat(63)}" (id integer);`,
+  ])
+    TestValidator.equals(
+      "quoted keyword and maximum-length identifier remain declarations",
+      (await adapter.analyze(TestSourceSnapshot.create("valid.sql", source)))
+        .diagnostics,
+      [],
+    );
   const failed = TestSourceSnapshot.create(
     "schema.sql",
     "CREATE TABLE app.Item (id integer);",

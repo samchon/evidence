@@ -19,6 +19,7 @@ export async function test_postgresql_units(): Promise<void> {
         "Item.ID" integer,
         account_id integer,
         region integer,
+        single_owner integer REFERENCES app.Owner (id),
         FOREIGN KEY (account_id, region) REFERENCES app.Account (ID, region)
       );
     `,
@@ -43,7 +44,7 @@ export async function test_postgresql_units(): Promise<void> {
   TestValidator.equals(
     "exact schema denominator",
     inventory.units
-      .map((unit) => [unit.symbol, unit.identity])
+      .map((unit) => [String(unit.symbol), unit.identity])
       .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b), "en")),
     [
       ["model", ["app", "account"]],
@@ -53,6 +54,15 @@ export async function test_postgresql_units(): Promise<void> {
       ["column", ["app", "Order.Item", "Item.ID"]],
       ["column", ["app", "Order.Item", "account_id"]],
       ["column", ["app", "Order.Item", "region"]],
+      ["column", ["app", "Order.Item", "single_owner"]],
+      [
+        "relation",
+        [
+          "app",
+          "Order.Item",
+          'foreign key ["single_owner"] references ["app","owner","id"]',
+        ],
+      ],
       [
         "relation",
         [
