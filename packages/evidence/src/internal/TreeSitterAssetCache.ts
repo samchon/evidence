@@ -21,13 +21,28 @@ import type { ITreeSitterAssetPending } from "./ITreeSitterAssetPending";
  * downloads from becoming trusted cache entries across processes.
  */
 export class TreeSitterAssetCache {
-  /** Process-local transfers keyed by immutable cache destination. */
+  /**
+   * Tracks process-local transfers by immutable cache destination.
+   *
+   * Concurrent bytes calls share this pending record so they do not download the
+   * same pinned grammar independently, while consumer counts govern cancellation.
+   */
   private static readonly pending = new Map<string, ITreeSitterAssetPending>();
 
-  /** Captures acquisition controls without performing filesystem or network work. */
+  /**
+   * Captures asset-acquisition controls without performing filesystem or network work.
+   *
+   * bytes applies these controls when it resolves the cache location, downloads a
+   * grammar, and reports progress for this cache instance.
+   */
   public constructor(private readonly options: ITreeSitterAssetOptions) {}
 
-  /** Returns verified caller-owned bytes, automatically repairing missing or damaged cache entries. */
+  /**
+   * Returns verified caller-owned grammar bytes, repairing missing or damaged cache entries.
+   *
+   * The method shares a transfer with concurrent callers but slices its result so
+   * no caller can mutate another caller's buffer.
+   */
   public async bytes(grammar: IEvidenceGrammar): Promise<Uint8Array> {
     const destination = path.join(
       cacheDirectory(this.options.cacheDirectory),

@@ -35,7 +35,12 @@ export class SourceCollector {
   private readonly dependencies = new Map<string, IEvidenceSourceDependency>();
   private readonly diagnostics: IEvidenceSourceDiagnostic[] = [];
 
-  /** Resolves one declared root relative to its configuration file without accessing it yet. */
+  /**
+   * Initializes collection for one declared root relative to its configuration file.
+   *
+   * Construction records lexical and display paths only; scanning later resolves
+   * the filesystem so a caller can configure globs before any access occurs.
+   */
   public constructor(configFile: string, declared: string) {
     this.directory = path.dirname(path.resolve(configFile));
     const absolute = SourcePath.root(configFile, declared);
@@ -46,7 +51,12 @@ export class SourceCollector {
     };
   }
 
-  /** Recursively discovers files selected by ordered globs and records any root failure. */
+  /**
+   * Recursively discovers files selected by ordered globs and records root failures.
+   *
+   * The collector retains failed root paths as dependencies so watch mode can
+   * observe the repair instead of requiring a configuration edit.
+   */
   public async scan(globs: FileGlob): Promise<void> {
     this.watch(this.root.absolute, true);
     try {
@@ -62,7 +72,12 @@ export class SourceCollector {
     }
   }
 
-  /** Loads one exact local source path, retaining its failed path as a watch dependency. */
+  /**
+   * Loads one exact local source path and retains failures as watch dependencies.
+   *
+   * Exact selection rejects remote URLs and reports filesystem errors without
+   * aborting sibling source collection work.
+   */
   public async exact(file: string): Promise<void> {
     if (/^https?:\/\//i.test(file))
       throw new Error(
@@ -90,7 +105,12 @@ export class SourceCollector {
     }
   }
 
-  /** Returns deterministic collected files, dependencies, and diagnostics for one analysis pass. */
+  /**
+   * Returns collected files, dependencies, and diagnostics for one analysis pass.
+   *
+   * Addresses, files, and dependencies are sorted with bytewise comparisons so
+   * equivalent source snapshots do not vary with filesystem traversal order.
+   */
   public snapshot(): IEvidenceSourceSnapshot {
     const files = [...this.files.values()];
     for (const file of files)
@@ -114,7 +134,12 @@ export class SourceCollector {
     };
   }
 
-  /** Walks a physical directory through its logical address while preventing symlink ancestry cycles. */
+  /**
+   * Walks a physical directory through its logical address while preventing symlink cycles.
+   *
+   * The traversal retains both spellings: logical paths form public addresses,
+   * while physical identity detects recursive links and duplicate files.
+   */
   private async walk(
     absolute: string,
     relative: string,
@@ -177,7 +202,12 @@ export class SourceCollector {
     }
   }
 
-  /** Reads one stable physical file, coalescing aliases only after stat-before/stat-after validation. */
+  /**
+   * Reads one stable physical file after validating metadata before and after I/O.
+   *
+   * Alias addresses coalesce only when their device and inode version remains
+   * stable, preventing a changing file from yielding an incoherent snapshot.
+   */
   private async read(
     absolute: string,
     relative: string,
@@ -243,7 +273,12 @@ export class SourceCollector {
     }
   }
 
-  /** Resolves each symlink component while tracking links and enforcing configured path casing. */
+  /**
+   * Resolves each symlink component while tracking links and configured path casing.
+   *
+   * Exact-case validation protects portable source identities, and link tracking
+   * reports cycles before recursive filesystem resolution can loop.
+   */
   private async resolvePhysical(
     absolute: string,
     links: ReadonlySet<string> = new Set(),
@@ -291,7 +326,12 @@ export class SourceCollector {
     return SourcePath.slash(await realpath(current));
   }
 
-  /** Merges a dependency observation, retaining recursive monitoring when any consumer requires it. */
+  /**
+   * Merges a dependency observation and retains recursive monitoring when required.
+   *
+   * Multiple reads of one path share a dependency record; any directory consumer
+   * can promote it to recursive watching without losing earlier observations.
+   */
   private watch(location: string, recursive: boolean): void {
     const existing = this.dependencies.get(location);
     this.dependencies.set(location, {
@@ -300,7 +340,12 @@ export class SourceCollector {
     });
   }
 
-  /** Converts an expected collection failure into a retained diagnostic instead of aborting sibling paths. */
+  /**
+   * Converts an expected collection failure into a retained diagnostic.
+   *
+   * Sibling paths continue scanning, while `SourceFailure` preserves its specific
+   * diagnostic code instead of becoming the caller-supplied fallback category.
+   */
   private report(
     fallback: IEvidenceSourceDiagnostic["code"],
     location: string,
@@ -315,17 +360,32 @@ export class SourceCollector {
   }
 }
 
-/** Uses stable device/inode identity where available, falling back to the resolved path on filesystems without it. */
+/**
+ * Produces stable file identity from device and inode metadata when available.
+ *
+ * Source collection falls back to the resolved physical path on filesystems
+ * without inode support, allowing aliases to coalesce consistently per host.
+ */
 function identity(info: BigIntStats, physical: string): string {
   return info.ino === 0n ? "path:" + physical : `file:${info.dev}:${info.ino}`;
 }
 
-/** Sorts filesystem names without locale rules so snapshots are cross-machine stable. */
+/**
+ * Sorts filesystem names without locale rules.
+ *
+ * Bytewise ordering keeps source snapshots stable across machines whose locale
+ * settings would otherwise order the same directory entries differently.
+ */
 function compare(left: string, right: string): number {
   return left < right ? -1 : left > right ? 1 : 0;
 }
 
-/** Encodes metadata needed to detect a changed file seen through a second alias. */
+/**
+ * Encodes metadata needed to detect a file changed through a second alias.
+ *
+ * Alias coalescing compares this value before accepting another address for a
+ * file already captured in the current source snapshot.
+ */
 function version(info: BigIntStats): string {
   return `${info.size}:${info.mtimeNs}:${info.ctimeNs}`;
 }

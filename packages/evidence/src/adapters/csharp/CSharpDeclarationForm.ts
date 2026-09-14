@@ -1,4 +1,9 @@
-/** Supported C# source form that establishes one semantic declaration. */
+/**
+ * Enumerates C# source forms that establish supported semantic declarations.
+ *
+ * CSharpFileScanner uses the form to select identity and ownership rules before
+ * public accessibility filtering determines the published graph population.
+ */
 export type CSharpDeclarationForm =
   | "class"
   | "struct"

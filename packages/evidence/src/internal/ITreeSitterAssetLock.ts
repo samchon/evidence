@@ -7,9 +7,19 @@ import type { tags } from "typia";
  * the PID permits stale-lock recovery when that owner is no longer alive.
  */
 export interface ITreeSitterAssetLock {
-  /** Positive operating-system process ID that acquired the transfer lock. */
+  /**
+   * Positive operating-system process ID that acquired the transfer lock.
+   *
+   * Stale-lock recovery checks whether this owner remains alive before allowing
+   * another process to replace the serialized cache record.
+   */
   pid: number & tags.Type<"uint32"> & tags.Minimum<1>;
 
-  /** Random acquisition token checked before releasing a lock with the same path. */
+  /**
+   * Random acquisition token checked before releasing a lock with the same path.
+   *
+   * It prevents a former owner from deleting a lock that another process
+   * acquired after crash recovery reused the path.
+   */
   token: string;
 }

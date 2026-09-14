@@ -10,16 +10,36 @@ import type { IZigDocumentation } from "./IZigDocumentation";
  * closed, retaining the physical sites that support each exported address.
  */
 export interface IZigFileAnalysis {
-  /** Original selected source snapshot. */
+  /**
+   * Retains the selected source snapshot that produced this extraction.
+   *
+   * Its physical path and public addresses anchor all later diagnostics, sites,
+   * and public-address materialization for this file.
+   */
   source: IEvidenceSourceFile;
 
-  /** Extracted declarations, including non-public boundaries. */
+  /**
+   * Lists declarations extracted from the file, including non-public boundaries.
+   *
+   * Alias reconciliation filters public records for publication while retaining
+   * source-level ownership information needed to interpret their relationships.
+   */
   declarations: IZigDeclaration[];
 
-  /** Classified documentation and unsupported annotation carriers. */
+  /**
+   * Holds classified documentation and unsupported annotation carriers.
+   *
+   * The adapter parses these records after public units are known so tags cannot
+   * attach to a declaration that never reaches the selected public surface.
+   */
   documentation: IZigDocumentation[];
 
-  /** Failures encountered while establishing the public surface. */
+  /**
+   * Records failures encountered while establishing the public surface.
+   *
+   * These diagnostics reach the final inventory to prevent unsupported source
+   * forms from reducing the coverage population without a reported failure.
+   */
   diagnostics: IEvidenceDiagnostic[];
 
   /**

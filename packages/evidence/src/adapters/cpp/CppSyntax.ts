@@ -7,7 +7,12 @@ import type { CppDeclaratorKind } from "./CppDeclaratorKind";
 import type { ICppDeclaratorShape } from "./ICppDeclaratorShape";
 import type { ICppQualifiedName } from "./ICppQualifiedName";
 
-/** Grammar-specific C++ names, declarators, comments, and declaration modifiers. */
+/**
+ * Provides C++ grammar helpers for names, declarators, comments, and modifiers.
+ *
+ * CppFileScanner uses these helpers to preserve C++-specific spelling and scope
+ * distinctions while it decides which supported declarations form graph units.
+ */
 export namespace CppSyntax {
   export function name(node: Node | null): string | undefined {
     if (node === null) return undefined;

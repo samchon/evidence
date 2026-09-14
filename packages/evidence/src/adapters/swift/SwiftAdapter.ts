@@ -98,7 +98,11 @@ export class SwiftAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Converts parser failures into incomplete source analysis. */
+  /**
+   * Converts parser failures into incomplete source analysis.
+   *
+   * The returned record preserves a source-specific diagnostic so parsing failure cannot shrink coverage.
+   */
   private async scan(
     parser: EvidenceParser,
     source: IEvidenceSourceFile,
@@ -138,7 +142,11 @@ export class SwiftAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Reconciles overload families and retains each physical declaration address. */
+  /**
+   * Reconciles overload families and retains each physical declaration address.
+   *
+   * Conflicting public identities remain incomplete instead of being merged by source order.
+   */
   private materializeUnits(
     inventory: IEvidenceInventory,
     analyses: ISwiftFileAnalysis[],
@@ -226,7 +234,11 @@ export class SwiftAdapter implements IEvidenceAdapter {
     return published;
   }
 
-  /** Allows a protocol requirement and its explicit extension property implementation to share a unit. */
+  /**
+   * Allows a protocol requirement and its explicit extension property implementation to share a unit.
+   *
+   * Other repeated non-function declarations remain conflicts because they do not establish this pairing.
+   */
   private protocolDefault(
     declaration: ISwiftDeclaration,
     previous: Set<string>,
@@ -246,7 +258,11 @@ export class SwiftAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Resolves withdrawals before publishing attached annotation hosts. */
+  /**
+   * Resolves withdrawals before publishing attached annotation hosts.
+   *
+   * Hidden units remain unavailable to ordinary tags while their withdrawal location stays diagnostic context.
+   */
   private materializeDocumentation(
     inventory: IEvidenceInventory,
     analyses: ISwiftFileAnalysis[],
@@ -321,7 +337,11 @@ export class SwiftAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Retains public declaration sites even when they carry no documentation. */
+  /**
+   * Retains public declaration sites even when they carry no documentation.
+   *
+   * Host policies can therefore distinguish an eligible untagged site from missing extraction.
+   */
   private materializeUndocumentedHosts(
     inventory: IEvidenceInventory,
     analysis: ISwiftFileAnalysis,
@@ -374,7 +394,11 @@ export class SwiftAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Groups published semantic owners by their physical declaration site. */
+  /**
+   * Groups published semantic owners by their physical declaration site.
+   *
+   * One documentation carrier can attach to several selected units at the same source occurrence.
+   */
   private attachmentGroups(
     documentation: ISwiftDocumentation,
     published: Map<string, string>,
@@ -390,7 +414,11 @@ export class SwiftAdapter implements IEvidenceAdapter {
     return groups;
   }
 
-  /** Creates an attached or explicitly unsupported documentation carrier. */
+  /**
+   * Creates an attached or explicitly unsupported documentation carrier.
+   *
+   * Unsupported annotation carriers retain repair guidance rather than being discarded.
+   */
   private host(
     source: IEvidenceSourceFile,
     documentation: ISwiftDocumentation,
@@ -415,7 +443,11 @@ export class SwiftAdapter implements IEvidenceAdapter {
     };
   }
 
-  /** Parses Evidence tags only after the adapter establishes their host. */
+  /**
+   * Parses Evidence tags only after the adapter establishes their host.
+   *
+   * Host ownership determines the source context in which authored targets resolve.
+   */
   private parse(
     source: IEvidenceSourceFile,
     documentation: ISwiftDocumentation,
@@ -428,7 +460,11 @@ export class SwiftAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Detects Evidence or withdrawal annotations outside masked examples. */
+  /**
+   * Detects Evidence or withdrawal annotations outside masked examples.
+   *
+   * The result decides whether an otherwise unsupported carrier needs a diagnostic host.
+   */
   private annotation(
     analysis: ISwiftFileAnalysis,
     documentation: ISwiftDocumentation,
@@ -440,7 +476,11 @@ export class SwiftAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Detects acknowledgements and reviews on withdrawn carriers. */
+  /**
+   * Detects acknowledgements and reviews on withdrawn carriers.
+   *
+   * Withdrawal directives themselves are excluded so they can be processed as visibility state.
+   */
   private claimAnnotation(
     analysis: ISwiftFileAnalysis,
     documentation: ISwiftDocumentation,
@@ -452,7 +492,11 @@ export class SwiftAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Recognizes supported annotation names at documentation line boundaries. */
+  /**
+   * Recognizes supported annotation names at documentation line boundaries.
+   *
+   * Restricting the match avoids treating inline prose or example fragments as annotations.
+   */
   private annotationPattern(raw: string, withdrawal: boolean): boolean {
     return withdrawal
       ? /(?:^|[\r\n])[ \t]*@(evidenceExcludeReview|evidenceReview|evidenceExclude|evidence|link|internal|hidden|ignore)\b/u.test(
@@ -463,7 +507,11 @@ export class SwiftAdapter implements IEvidenceAdapter {
         );
   }
 
-  /** Follows explicit parent ownership to propagate withdrawal. */
+  /**
+   * Follows explicit parent ownership to propagate withdrawal.
+   *
+   * The visited set rejects cycles while preserving the nearest valid hidden ancestor.
+   */
   private withdrawn(
     id: string,
     units: Map<string, IEvidenceUnit>,
@@ -479,12 +527,20 @@ export class SwiftAdapter implements IEvidenceAdapter {
       : this.withdrawn(unit.parentId, units, visited);
   }
 
-  /** Separates programming kinds while unifying module-scoped overload identities. */
+  /**
+   * Separates programming kinds while unifying module-scoped overload identities.
+   *
+   * The module root keeps equal source-relative declarations in different selections distinct.
+   */
   private unitId(declaration: ISwiftDeclaration, moduleRoot: string): string {
     return `swift:${JSON.stringify([moduleRoot, declaration.symbol, ...declaration.identity])}`;
   }
 
-  /** Marks a declaration conflict as incomplete analysis. */
+  /**
+   * Marks a declaration conflict as incomplete analysis.
+   *
+   * The diagnostic remains associated with the source analysis that supplied the conflict.
+   */
   private problem(
     inventory: IEvidenceInventory,
     analysis: ISwiftFileAnalysis,

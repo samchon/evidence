@@ -8,15 +8,35 @@ import type { EvidenceSeverity } from "../typings/EvidenceSeverity";
  * preventing a source-order coincidence from discarding a valid obligation.
  */
 export interface IEvidenceUnhostedChecklist {
-  /** Authored checklist declaration retained for later attachment or diagnostics. */
+  /**
+   * Authored checklist declaration retained for later attachment or diagnostics.
+   *
+   * The graph holds this source record until structural ownership establishes
+   * which selected claim units its host can affect.
+   */
   declaration: IEvidenceDeclaration;
 
-  /** Effective severity after claim and reference policy inheritance. */
+  /**
+   * Effective severity after claim and reference policy inheritance.
+   *
+   * This resolved value lets later attachment report the applicable policy
+   * without repeating policy inheritance.
+   */
   severity: EvidenceSeverity;
 
-  /** Index of the owning claim in the resolved configuration plan. */
+  /**
+   * Index of the owning claim in the resolved configuration plan.
+   *
+   * It preserves the claim occurrence that supplied this checklist when plans
+   * contain repeated populations.
+   */
   claim: number;
 
-  /** Index of the owning reference within that claim. */
+  /**
+   * Index of the owning reference within that claim.
+   *
+   * Together with {@link claim}, this identifies the configured reference whose
+   * severity and selection apply to the deferred checklist.
+   */
   reference: number;
 }

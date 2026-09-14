@@ -7,7 +7,12 @@ import type { IEvidenceSourceDiagnostic } from "../structures/IEvidenceSourceDia
  * expected source conditions from unexpected operational errors.
  */
 export class SourceFailure extends Error {
-  /** Creates a failure whose code is preserved when the collector emits a diagnostic. */
+  /**
+   * Creates a source-discovery failure with a reportable diagnostic code.
+   *
+   * `SourceCollector` catches this expected failure at filesystem boundaries and
+   * preserves its category instead of collapsing it into a generic read error.
+   */
   public constructor(
     public readonly code: IEvidenceSourceDiagnostic["code"],
     message: string,

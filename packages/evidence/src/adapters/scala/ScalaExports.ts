@@ -96,7 +96,11 @@ export namespace ScalaExports {
       }
   }
 
-  /** Resolves lexical withdrawals before exports can expose alternate addresses. */
+  /**
+   * Resolves lexical withdrawals before exports can expose alternate addresses.
+   *
+   * Attached withdrawal annotations seed hidden declarations, then explicit parent ownership propagates that state to descendants.
+   */
   function withdrawals(analyses: IScalaFileAnalysis[]): Set<string> {
     const hidden = new Set<string>();
     const declarations = analyses.flatMap((analysis) => analysis.declarations);
@@ -135,7 +139,11 @@ export namespace ScalaExports {
     return hidden;
   }
 
-  /** Requires a namespace path made entirely of singleton objects and package objects. */
+  /**
+   * Requires an export owner path made entirely of singleton and package objects.
+   *
+   * Classes, traits, cycles, and unresolved parent records cannot supply a static source namespace for export resolution.
+   */
   function staticObject(
     declaration: IScalaDeclaration,
     declarations: IScalaDeclaration[],

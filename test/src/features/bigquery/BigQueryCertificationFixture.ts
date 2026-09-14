@@ -8,9 +8,18 @@ import { dedent } from "@typia/utils";
 import type { IDatabaseAdapterCertification } from "../../internal/certification/IDatabaseAdapterCertification";
 import type { IDatabaseAdapterCertificationUnit } from "../../internal/certification/IDatabaseAdapterCertificationUnit";
 
-/** Declares exact GoogleSQL certification expectations independently of its syntax tree. */
+/** Defines independent GoogleSQL expectations for shared database certification.
+ *
+ * The fixture supplies the semantic inventory and failure contract that the
+ * BigQuery adapter must satisfy without deriving expected values from its own
+ * syntax-tree output.
+ */
 export namespace BigQueryCertificationFixture {
-  /** Supplies all selectors, Unicode hosts, withdrawals, failure directions, and mutations. */
+  /** Creates the complete BigQuery adapter certification fixture.
+   *
+   * Shared certification consumes its selectors, documentation hosts,
+   * withdrawals, failure controls, and semantic mutation expectations.
+   */
   export function create(): IDatabaseAdapterCertification {
     const file = "src/certification.bqsql";
     const units = [
@@ -92,7 +101,11 @@ export namespace BigQueryCertificationFixture {
       },
     };
 
-    /** Gives a model or owned member its independently specified address. */
+    /** Creates one independently specified model or owned member expectation.
+     *
+     * The helper derives its canonical address from semantic identity and
+     * assigns non-model records to the fixture's certified model owner.
+     */
     function unit(
       symbol: EvidenceDatabaseSymbol,
       identity: string[],

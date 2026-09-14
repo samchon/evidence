@@ -73,7 +73,11 @@ export async function test_postgresql_graph(): Promise<void> {
   );
 }
 
-/** Places each acknowledgement on a host selected by that claim's database selector. */
+/** Builds PostgreSQL source with one acknowledgement on the selected host kind.
+ *
+ * Unselected model, column, and relation positions receive ordinary prose so
+ * each selector scenario isolates its own eligible documentation carrier.
+ */
 function claimSource(symbol: EvidenceDatabaseSymbol): string {
   return dedent`
     -- ${symbol === "model" ? "@evidence ./reference.ts#contract Covers the model." : "Table declaration."}

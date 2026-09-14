@@ -129,7 +129,11 @@ export class ObjcAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Reconciles public interfaces with compatible extension and implementation sites. */
+  /**
+   * Reconciles public interfaces with compatible extension and implementation sites.
+   *
+   * The resulting map connects every retained physical declaration to its unit.
+   */
   private materializeUnits(
     inventory: IEvidenceInventory,
     analyses: IObjcFileAnalysis[],
@@ -221,7 +225,11 @@ export class ObjcAdapter implements IEvidenceAdapter {
     return published;
   }
 
-  /** Applies merged withdrawals before creating eligible annotation hosts. */
+  /**
+   * Applies merged withdrawals before creating eligible annotation hosts.
+   *
+   * Hidden units cannot receive ordinary claim hosts after inheritance is resolved.
+   */
   private materializeDocumentation(
     inventory: IEvidenceInventory,
     analyses: IObjcFileAnalysis[],
@@ -297,7 +305,11 @@ export class ObjcAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Keeps every undocumented public declaration in the host denominator. */
+  /**
+   * Keeps every undocumented public declaration in the host denominator.
+   *
+   * Grouping by site prevents merged units from manufacturing duplicate hosts.
+   */
   private materializeUndocumentedHosts(
     inventory: IEvidenceInventory,
     analysis: IObjcFileAnalysis,
@@ -350,7 +362,11 @@ export class ObjcAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Groups carrier attachments by their physical declaration site. */
+  /**
+   * Groups carrier attachments by their physical declaration site.
+   *
+   * A host can therefore identify all published units attached at one source span.
+   */
   private attachmentGroups(
     documentation: IObjcDocumentation,
     published: Map<string, string>,
@@ -366,7 +382,11 @@ export class ObjcAdapter implements IEvidenceAdapter {
     return groups;
   }
 
-  /** Records supported ownership or an actionable unsupported carrier. */
+  /**
+   * Records supported ownership or an actionable unsupported carrier.
+   *
+   * Tagged comments without a supported owner remain visible to the graph reporter.
+   */
   private host(
     source: IEvidenceSourceFile,
     documentation: IObjcDocumentation,
@@ -391,7 +411,11 @@ export class ObjcAdapter implements IEvidenceAdapter {
     };
   }
 
-  /** Parses mapped Doxygen after ownership and example masking are established. */
+  /**
+   * Parses mapped Doxygen after ownership and example masking are established.
+   *
+   * Tag parsing receives a host with its resolved unit IDs and original range.
+   */
   private parse(
     source: IEvidenceSourceFile,
     documentation: IObjcDocumentation,
@@ -404,7 +428,11 @@ export class ObjcAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Recognizes annotations and withdrawals on otherwise unsupported carriers. */
+  /**
+   * Recognizes annotations and withdrawals on otherwise unsupported carriers.
+   *
+   * Such carriers require a diagnostic instead of silently dropping author intent.
+   */
   private annotation(
     analysis: IObjcFileAnalysis,
     documentation: IObjcDocumentation,
@@ -416,7 +444,11 @@ export class ObjcAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Detects graph annotations that cannot silently disappear on withdrawn units. */
+  /**
+   * Detects graph annotations that cannot silently disappear on withdrawn units.
+   *
+   * Review and claim tags remain reportable even when their attached unit is hidden.
+   */
   private claimAnnotation(
     analysis: IObjcFileAnalysis,
     documentation: IObjcDocumentation,
@@ -428,7 +460,11 @@ export class ObjcAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Finds tag boundaries in mapped comment text. */
+  /**
+   * Finds tag boundaries in mapped comment text.
+   *
+   * Matching only line starts avoids treating prose or examples as annotations.
+   */
   private annotationPattern(raw: string, withdrawal: boolean): boolean {
     return withdrawal
       ? /(?:^|[\r\n])[ \t]*@(evidenceExcludeReview|evidenceReview|evidenceExclude|evidence|link|internal|hidden|ignore)\b/u.test(
@@ -439,7 +475,11 @@ export class ObjcAdapter implements IEvidenceAdapter {
         );
   }
 
-  /** Follows real parent identities when propagating withdrawals. */
+  /**
+   * Follows real parent identities when propagating withdrawals.
+   *
+   * The visited set prevents malformed ownership cycles from recursing indefinitely.
+   */
   private withdrawn(
     id: string,
     units: Map<string, IEvidenceUnit>,
@@ -455,12 +495,20 @@ export class ObjcAdapter implements IEvidenceAdapter {
       : this.withdrawn(unit.parentId, units, visited);
   }
 
-  /** Keeps selector kinds and segmented nominal identities unambiguous. */
+  /**
+   * Keeps selector kinds and segmented nominal identities unambiguous.
+   *
+   * Symbol kind separates otherwise equal Objective-C name paths in the inventory.
+   */
   private unitId(declaration: IObjcDeclaration): string {
     return `objc:${declaration.symbol}:${JSON.stringify(declaration.identity)}`;
   }
 
-  /** Prevents an ambiguous declaration family from reporting complete analysis. */
+  /**
+   * Prevents an ambiguous declaration family from reporting complete analysis.
+   *
+   * The diagnostic preserves the selected source boundary and repair guidance.
+   */
   private problem(
     inventory: IEvidenceInventory,
     analysis: IObjcFileAnalysis,

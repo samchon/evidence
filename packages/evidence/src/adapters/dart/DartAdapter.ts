@@ -89,7 +89,11 @@ export class DartAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Converts parser failures into incomplete source analysis. */
+  /**
+   * Converts parser failures into incomplete source analysis.
+   *
+   * The returned record preserves file and parser-range diagnostics for the inventory.
+   */
   private async scan(
     parser: EvidenceParser,
     source: IEvidenceSourceFile,
@@ -131,7 +135,11 @@ export class DartAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Reconciles library declarations and retains every physical declaration address. */
+  /**
+   * Reconciles library declarations and retains every physical declaration address.
+   *
+   * This occurs before unit materialization so parts and exports share library identity.
+   */
   private materializeUnits(
     inventory: IEvidenceInventory,
     analyses: IDartFileAnalysis[],
@@ -185,7 +193,11 @@ export class DartAdapter implements IEvidenceAdapter {
     return published;
   }
 
-  /** Resolves withdrawals before publishing attached annotation hosts. */
+  /**
+   * Resolves withdrawals before publishing attached annotation hosts.
+   *
+   * Hidden Dart declarations cannot create claim or review hosts.
+   */
   private materializeDocumentation(
     inventory: IEvidenceInventory,
     analyses: IDartFileAnalysis[],
@@ -261,7 +273,11 @@ export class DartAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Retains public declaration sites even when they carry no documentation. */
+  /**
+   * Retains public declaration sites even when they carry no documentation.
+   *
+   * These hosts keep missing documentation visible to graph evaluation.
+   */
   private materializeUndocumentedHosts(
     inventory: IEvidenceInventory,
     analysis: IDartFileAnalysis,
@@ -314,7 +330,11 @@ export class DartAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Groups published semantic owners by their physical declaration site. */
+  /**
+   * Groups published semantic owners by their physical declaration site.
+   *
+   * One documentation carrier can attach to declarations that share a source span.
+   */
   private attachmentGroups(
     documentation: IDartDocumentation,
     published: Map<string, string>,
@@ -330,7 +350,11 @@ export class DartAdapter implements IEvidenceAdapter {
     return groups;
   }
 
-  /** Creates an attached or explicitly unsupported documentation carrier. */
+  /**
+   * Creates an attached or explicitly unsupported documentation carrier.
+   *
+   * Unsupported carriers remain available for a source-located diagnostic.
+   */
   private host(
     source: IEvidenceSourceFile,
     documentation: IDartDocumentation,
@@ -355,7 +379,11 @@ export class DartAdapter implements IEvidenceAdapter {
     };
   }
 
-  /** Parses Evidence tags only after the adapter establishes their host. */
+  /**
+   * Parses Evidence tags only after the adapter establishes their host.
+   *
+   * Tag parsing requires the resolved attachment and unit ownership.
+   */
   private parse(
     source: IEvidenceSourceFile,
     documentation: IDartDocumentation,
@@ -368,7 +396,11 @@ export class DartAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Detects Evidence or withdrawal annotations outside masked examples. */
+  /**
+   * Detects Evidence or withdrawal annotations outside masked examples.
+   *
+   * Detached annotation carriers still need an unsupported host diagnostic.
+   */
   private annotation(
     analysis: IDartFileAnalysis,
     documentation: IDartDocumentation,
@@ -380,7 +412,11 @@ export class DartAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Detects acknowledgements and reviews on withdrawn carriers. */
+  /**
+   * Detects acknowledgements and reviews on withdrawn carriers.
+   *
+   * Such carriers cannot also produce ordinary claim hosts.
+   */
   private claimAnnotation(
     analysis: IDartFileAnalysis,
     documentation: IDartDocumentation,
@@ -392,7 +428,11 @@ export class DartAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Recognizes supported annotation names at documentation line boundaries. */
+  /**
+   * Recognizes supported annotation names at documentation line boundaries.
+   *
+   * Boundary matching prevents prose and examples from becoming tag syntax.
+   */
   private annotationPattern(raw: string, withdrawal: boolean): boolean {
     return withdrawal
       ? /(?:^|[\r\n])[ \t]*@(evidenceExcludeReview|evidenceReview|evidenceExclude|evidence|link|internal|hidden|ignore)\b/u.test(
@@ -403,7 +443,11 @@ export class DartAdapter implements IEvidenceAdapter {
         );
   }
 
-  /** Follows explicit parent ownership to propagate withdrawal. */
+  /**
+   * Follows explicit parent ownership to propagate withdrawal.
+   *
+   * The visited set terminates malformed ownership cycles.
+   */
   private withdrawn(
     id: string,
     units: Map<string, IEvidenceUnit>,
@@ -419,7 +463,11 @@ export class DartAdapter implements IEvidenceAdapter {
       : this.withdrawn(unit.parentId, units, visited);
   }
 
-  /** Separates defining libraries and programming kinds while merging complementary accessors. */
+  /**
+   * Separates defining libraries and programming kinds while merging complementary accessors.
+   *
+   * Unit IDs remain stable across parts that contribute one public Dart declaration.
+   */
   private unitId(declaration: IDartDeclaration): string {
     return `dart:${declaration.library}:${declaration.symbol}:${JSON.stringify(declaration.identity)}`;
   }

@@ -5,9 +5,19 @@
  * cannot alter a target's grammar or its diagnostic location.
  */
 export interface IEvidenceTargetBody {
-  /** Non-whitespace target token as authored, before target resolution. */
+  /**
+   * Non-whitespace target token as authored, before target resolution.
+   *
+   * Artifact-specific target parsing consumes this spelling while its original
+   * boundary remains available for precise diagnostics.
+   */
   target: string;
 
-  /** Trimmed explanatory prose after the target; it may be empty. */
+  /**
+   * Trimmed explanatory prose after the target.
+   *
+   * It may be empty and never participates in target grammar, selection, or
+   * resolution.
+   */
   remainder: string;
 }

@@ -161,7 +161,12 @@ export namespace MatlabOwnership {
       }
   }
 
-  /** Records unresolved source ownership without shrinking a passing population. */
+  /**
+   * Records unresolved source ownership without shrinking a passing population.
+   *
+   * The ownership pass retains this diagnostic when class-folder or external
+   * declarations cannot be paired, preserving an incomplete result for recovery.
+   */
   function problem(
     analysis: IMatlabFileAnalysis,
     declaration: IMatlabDeclaration,

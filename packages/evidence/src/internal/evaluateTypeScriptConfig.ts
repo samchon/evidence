@@ -179,7 +179,10 @@ export async function evaluateTypeScriptConfig(
   }
 }
 
-/** Starts the isolated evaluator and forwards compiler output without parsing or rewriting it. */
+/** Starts the isolated evaluator and forwards compiler output without parsing or rewriting it.
+ *
+ * Config loading owns the failure boundary, while this helper preserves TypeScript and runtime diagnostics in their original format.
+ */
 function runEvaluator(
   configFile: string,
   args: string[],
@@ -214,12 +217,18 @@ function runEvaluator(
   });
 }
 
-/** Writes child diagnostics to the parent process while preserving compiler formatting. */
+/** Writes child diagnostics to the parent process while preserving compiler formatting.
+ *
+ * The evaluator streams both output channels here so users receive compiler context before config loading rejects.
+ */
 function writeProcessDiagnostic(content: string): void {
   process.stderr.write(content);
 }
 
-/** Uses Node's nearest package boundary for module kind without inheriting application tsconfig settings. */
+/** Determines module kind from Node's nearest package boundary without inheriting application tsconfig settings.
+ *
+ * The temporary evaluator must follow the configuration file's runtime module rules, rather than unrelated compiler options from the application.
+ */
 async function configModule(
   configFile: string,
 ): Promise<"CommonJS" | "ESNext"> {
@@ -240,7 +249,10 @@ async function configModule(
   }
 }
 
-/** Finds the nearest reusable dependency tree so the temporary project resolves the consumer's packages. */
+/** Finds the nearest reusable dependency tree so the temporary project resolves the consumer's packages.
+ *
+ * The evaluator links this tree instead of resolving dependencies from Evidence's own installation location.
+ */
 async function findNodeModules(start: string): Promise<string | undefined> {
   let directory = start;
   for (;;) {
@@ -253,7 +265,10 @@ async function findNodeModules(start: string): Promise<string | undefined> {
   }
 }
 
-/** Keeps evaluator files outside dependencies and on the config's volume for valid relative links. */
+/** Chooses a temporary evaluator directory outside dependencies and on the config's volume.
+ *
+ * Keeping the generated project on that volume permits valid relative links when the system temp directory is on another drive.
+ */
 async function tempBase(
   configFile: string,
   nodeModules: string | undefined,
@@ -275,7 +290,10 @@ async function tempBase(
   return realpath(directory);
 }
 
-/** Treats absent paths as false while preserving unexpected filesystem failures for diagnostics. */
+/** Treats absent paths as false while preserving unexpected filesystem failures for diagnostics.
+ *
+ * Callers can probe optional package and dependency boundaries without hiding permission or device errors.
+ */
 async function exists(file: string): Promise<boolean> {
   try {
     await access(file);

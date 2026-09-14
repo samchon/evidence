@@ -110,7 +110,11 @@ export async function test_mysql_certification(): Promise<void> {
   await DatabaseAdapterCertification.assertAmbiguity(fixture);
 }
 
-/** States expected source addresses and ownership independently of parser output. */
+/** Creates one MySQL unit expectation independently of parser output.
+ *
+ * The helper formats the semantic identity once for its key and source address,
+ * preserving an explicit parent only for members owned by a model.
+ */
 function unit(
   symbol: EvidenceDatabaseSymbol,
   identity: string[],

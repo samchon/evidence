@@ -93,7 +93,11 @@ export async function test_python_leading_comment_graph(): Promise<void> {
   }
 }
 
-/** Evaluates property claims against each heading without permitting unacknowledged hosts. */
+/** Evaluates property claims against the selected Markdown heading.
+ *
+ * The graph enables single-host evidence and resolves only property units, so
+ * the scenario cannot pass through an unacknowledged Python declaration.
+ */
 async function evaluate(
   claim: IEvidenceInventory,
   reference: IEvidenceInventory,

@@ -7,9 +7,17 @@ import { dedent } from "@typia/utils";
 import type { IDatabaseAdapterCertification } from "../../internal/certification/IDatabaseAdapterCertification";
 import type { IDatabaseAdapterCertificationUnit } from "../../internal/certification/IDatabaseAdapterCertificationUnit";
 
-/** Exact portable SQL contract independent of parser output. */
+/** Defines the portable SQL contract for shared database certification.
+ *
+ * This fixture keeps expected declarations, diagnostics, and fingerprint
+ * behavior independent of the SQL scanner output under test.
+ */
 export namespace SqlCertificationFixture {
-  /** Supplies model, column, relation, withdrawal, failure, and fingerprint expectations. */
+  /** Creates the complete portable SQL adapter certification fixture.
+   *
+   * Shared certification uses its model, column, relation, withdrawal, failure,
+   * and fingerprint expectations to verify common database behavior.
+   */
   export function create(): IDatabaseAdapterCertification {
     const file = "src/certification.sql";
     const relation = 'foreign-key:["ID"]->["PARENT"](["ID"])';
@@ -88,7 +96,11 @@ export namespace SqlCertificationFixture {
       },
     };
 
-    /** Constructs one contract-defined unit and canonical address. */
+    /** Creates one contract-defined unit with its canonical source address.
+     *
+     * A supplied parent becomes the explicit model owner; omission preserves a
+     * top-level model record.
+     */
     function unit(
       symbol: EvidenceDatabaseSymbol,
       identity: string[],

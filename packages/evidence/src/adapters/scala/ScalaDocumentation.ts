@@ -3,9 +3,17 @@ import type { IEvidenceDocumentation } from "../../structures/IEvidenceDocumenta
 import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { IScalaDocumentation } from "./IScalaDocumentation";
 
-/** Reads Scaladoc while preserving source mappings and masking code examples. */
+/**
+ * Reads Scaladoc while preserving source mappings and masking code examples.
+ *
+ * Evidence tag parsing receives the masked text so examples cannot create declarations, while original offsets remain valid for diagnostics and hosts.
+ */
 export namespace ScalaDocumentation {
-  /** Maps a classified carrier and removes ineligible example text without moving offsets. */
+  /**
+   * Maps a classified documentation carrier and masks ineligible examples without moving offsets.
+   *
+   * Non-Scaladoc carriers retain the shared parser mapping unchanged because only Scaladoc supports example masking here.
+   */
   export function read(
     source: IEvidenceSourceFile,
     documentation: IScalaDocumentation,
@@ -24,7 +32,11 @@ export namespace ScalaDocumentation {
     };
   }
 
-  /** Masks HTML examples and Markdown indented code; shared tag parsing handles fences. */
+  /**
+   * Masks Scaladoc brace blocks, HTML code elements, and indented Markdown examples.
+   *
+   * Fenced examples are left for the shared tag parser, and replacement spaces preserve every unmasked source position.
+   */
   function mask(input: string): string {
     const characters = input.split("");
     for (const match of input.matchAll(/\{\{\{[\s\S]*?(?:\}\}\}|$)/gu))
@@ -47,7 +59,11 @@ export namespace ScalaDocumentation {
     return characters.join("");
   }
 
-  /** Counts Markdown indentation after the documentation delimiter is removed. */
+  /**
+   * Counts a line's Markdown indentation after its documentation delimiter is removed.
+   *
+   * Tabs advance to the next four-column boundary so mixed indentation uses the same threshold as spaces.
+   */
   function indentation(line: string): number {
     let spaces = 0;
     for (const character of line) {
@@ -58,7 +74,11 @@ export namespace ScalaDocumentation {
     return spaces;
   }
 
-  /** Replaces example characters with spaces while retaining original line boundaries. */
+  /**
+   * Replaces example characters with spaces while retaining original line boundaries.
+   *
+   * Newline and carriage-return characters remain intact so ranges and line numbers continue to map to source.
+   */
   function hide(characters: string[], start: number, end: number): void {
     for (let index = start; index < end; ++index)
       if (characters[index] !== "\n" && characters[index] !== "\r")

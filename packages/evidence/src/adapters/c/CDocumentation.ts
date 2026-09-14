@@ -3,7 +3,12 @@ import type { IEvidenceDocumentation } from "../../structures/IEvidenceDocumenta
 import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { ICDocumentation } from "./ICDocumentation";
 
-/** Reads Doxygen while masking source examples embedded in the comment. */
+/**
+ * Reads C Doxygen documentation while masking embedded source examples.
+ *
+ * The C adapter uses this wrapper around the shared reader so Evidence tags in
+ * code and preformatted examples cannot be mistaken for documentation claims.
+ */
 export namespace CDocumentation {
   export function read(
     source: IEvidenceSourceFile,

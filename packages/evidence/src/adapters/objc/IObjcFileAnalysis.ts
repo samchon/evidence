@@ -10,16 +10,32 @@ import type { IObjcDocumentation } from "./IObjcDocumentation";
  * source is scanned, while this record keeps their physical provenance intact.
  */
 export interface IObjcFileAnalysis {
-  /** Snapshot source and its logical aliases. */
+  /**
+   * Snapshot source and its logical aliases.
+   *
+   * Its physical path anchors sites while aliases supply published files.
+   */
   source: IEvidenceSourceFile;
 
-  /** Physical declaration sites before public identity reconciliation. */
+  /**
+   * Physical declaration sites before public identity reconciliation.
+   *
+   * Later materialization merges compatible interface and implementation records.
+   */
   declarations: IObjcDeclaration[];
 
-  /** Attached and unsupported documentation carriers. */
+  /**
+   * Attached and unsupported documentation carriers.
+   *
+   * Unsupported tagged carriers remain available for actionable diagnostics.
+   */
   documentation: IObjcDocumentation[];
 
-  /** Actionable extraction and parser failures. */
+  /**
+   * Actionable extraction and parser failures.
+   *
+   * Consumers retain these findings instead of accepting a smaller inventory.
+   */
   diagnostics: IEvidenceDiagnostic[];
 
   /**

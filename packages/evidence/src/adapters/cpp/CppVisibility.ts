@@ -1,2 +1,7 @@
-/** Visibility known directly or deferred to a qualified member declaration. */
+/**
+ * Records whether C++ declaration visibility is known or deferred to qualification.
+ *
+ * A qualified member requires later owner resolution, whereas public and
+ * non-public declarations can be filtered directly from their lexical context.
+ */
 export type CppVisibility = "public" | "non-public" | "qualified";

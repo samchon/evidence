@@ -6,9 +6,19 @@ import type { IPrismaModel } from "./IPrismaModel";
  * belong to the selected file set rather than an individual source file.
  */
 export interface IPrismaLoadResult {
-  /** Semantic models materialized from the entire selected schema set. */
+  /**
+   * Semantic models materialized from the entire selected schema set.
+   *
+   * Prisma resolves relations across files, so this collection belongs to the
+   * complete parser input rather than to one selected physical source file.
+   */
   models: IPrismaModel[];
 
-  /** Digest identifying the parser version and complete selected source set. */
+  /**
+   * Digest identifying the parser version and complete selected source set.
+   *
+   * The loader returns this cache identity with its models so callers can retain
+   * a result only while every selected schema source and parser version agree.
+   */
   digest: string;
 }

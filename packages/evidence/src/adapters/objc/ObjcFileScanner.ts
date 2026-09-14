@@ -19,16 +19,32 @@ import type { ObjcDeclarationForm } from "./ObjcDeclarationForm";
  * here because the adapter must prove their common semantic identity later.
  */
 export class ObjcFileScanner {
-  /** Original UTF-16 source coordinates. */
+  /**
+   * Original UTF-16 source coordinates.
+   *
+   * All declaration and comment ranges use this mapper after parser release.
+   */
   private readonly text: SourceText;
 
-  /** Serializable declaration sites, including unpublished implementation sites. */
+  /**
+   * Serializable declaration sites, including unpublished implementation sites.
+   *
+   * Reconciliation later determines which records contribute public units.
+   */
   private readonly declarations: IObjcDeclaration[] = [];
 
-  /** Documentation carriers indexed by their original start offset. */
+  /**
+   * Documentation carriers indexed by their original start offset.
+   *
+   * Offset lookup supports adjacency checks without changing source coordinates.
+   */
   private readonly documentation = new Map<number, IObjcDocumentation>();
 
-  /** Failures that prevent a complete public denominator. */
+  /**
+   * Failures that prevent a complete public denominator.
+   *
+   * The final adapter propagates these diagnostics into an incomplete inventory.
+   */
   private readonly diagnostics: IEvidenceDiagnostic[] = [];
 
   /**
@@ -75,7 +91,11 @@ export class ObjcFileScanner {
     };
   }
 
-  /** Classifies every top-level form without executing preprocessing. */
+  /**
+   * Classifies every top-level form without executing preprocessing.
+   *
+   * Unsupported source surfaces become diagnostics before they can reduce coverage.
+   */
   private topLevel(item: Node): void {
     switch (item.type) {
       case "class_interface":
@@ -116,7 +136,11 @@ export class ObjcFileScanner {
     }
   }
 
-  /** Keeps protocols and named categories in distinct nominal namespaces. */
+  /**
+   * Keeps protocols and named categories in distinct nominal namespaces.
+   *
+   * Their literal owner paths must not collide with ordinary interface declarations.
+   */
   private typeDeclaration(item: Node): void {
     const nameNode = item.namedChildren.find(
       (child) => child.type === "identifier",
@@ -159,7 +183,11 @@ export class ObjcFileScanner {
     for (const member of item.namedChildren) this.member(member, owner);
   }
 
-  /** Traverses grammar wrappers while retaining interface exposure rules. */
+  /**
+   * Traverses grammar wrappers while retaining interface exposure rules.
+   *
+   * Nested members inherit the owning declaration's supported public boundary.
+   */
   private member(item: Node, owner: IObjcDeclaration): void {
     switch (item.type) {
       case "identifier":
@@ -273,7 +301,11 @@ export class ObjcFileScanner {
     }
   }
 
-  /** Associates synthesize/dynamic sites with independently declared properties. */
+  /**
+   * Associates synthesize/dynamic sites with independently declared properties.
+   *
+   * These implementation forms supplement a property identity without inventing one.
+   */
   private propertyImplementation(item: Node, owner: IObjcDeclaration): void {
     let next = true;
     const first = item.namedChildren.find(
@@ -315,7 +347,11 @@ export class ObjcFileScanner {
     }
   }
 
-  /** Builds exact class/instance selectors using only top-level selector components. */
+  /**
+   * Builds exact class/instance selectors using only top-level selector components.
+   *
+   * Prefixes and colons distinguish source-spelled class and instance methods.
+   */
   private selector(item: Node): string | undefined {
     const sign = item.children[0]?.type;
     if (sign !== "+" && sign !== "-") return undefined;
@@ -338,7 +374,11 @@ export class ObjcFileScanner {
     return selector === "" ? undefined : `${sign}${selector}`;
   }
 
-  /** Projects property and ivar names without conflating their runtime storage. */
+  /**
+   * Projects property and ivar names without conflating their runtime storage.
+   *
+   * Each supported declaration retains its own selector category and source site.
+   */
   private properties(
     item: Node,
     site: Node,
@@ -387,7 +427,11 @@ export class ObjcFileScanner {
     }
   }
 
-  /** Includes external C function declarations and definitions; static functions stay private. */
+  /**
+   * Includes external C function declarations and definitions; static functions stay private.
+   *
+   * Linkage determines whether a C function can join the Objective-C public surface.
+   */
   private functionDeclaration(item: Node): void {
     this.signature(item);
     const visible =
@@ -424,7 +468,11 @@ export class ObjcFileScanner {
     }
   }
 
-  /** Separates one declarator from its siblings while retaining shared type and attribute text. */
+  /**
+   * Separates one declarator from its siblings while retaining shared type and attribute text.
+   *
+   * Each declarator receives its own unit site despite a shared declaration header.
+   */
   private declaratorContent(
     site: Node,
     declarators: Node[],
@@ -441,7 +489,11 @@ export class ObjcFileScanner {
     ];
   }
 
-  /** Rejects nested aggregate definitions that would otherwise hide public fields behind a property or return type. */
+  /**
+   * Rejects nested aggregate definitions that would otherwise hide public fields behind a property or return type.
+   *
+   * The scanner preserves incomplete state rather than claiming unsupported nested members.
+   */
   private signature(item: Node): void {
     if (item.type === "compound_statement") return;
     if (
@@ -460,7 +512,11 @@ export class ObjcFileScanner {
     for (const child of item.namedChildren) this.signature(child);
   }
 
-  /** Adds a physical declaration site and attaches only adjacent Doxygen documentation. */
+  /**
+   * Adds a physical declaration site and attaches only adjacent Doxygen documentation.
+   *
+   * Whitespace-only separation is required so unrelated comments cannot claim a host.
+   */
   private add(
     item: Node,
     siteNode: Node,
@@ -519,7 +575,11 @@ export class ObjcFileScanner {
     return declaration;
   }
 
-  /** Collects contiguous Doxygen lines and unsupported annotation-bearing comments. */
+  /**
+   * Collects contiguous Doxygen lines and unsupported annotation-bearing comments.
+   *
+   * Tagged ordinary comments are retained for diagnostics without becoming declarations.
+   */
   private comments(): void {
     for (const comment of this.session.root.descendantsOfType("comment")) {
       const syntax = CSyntax.comment(comment);
@@ -553,7 +613,11 @@ export class ObjcFileScanner {
     }
   }
 
-  /** Marks unsupported syntax incomplete instead of dropping public obligations. */
+  /**
+   * Marks unsupported syntax incomplete instead of dropping public obligations.
+   *
+   * The reported range identifies the source form that requires adapter support.
+   */
   private problem(item: Node, code: string, message: string): void {
     this.diagnostics.push({
       code: `objc-${code}`,

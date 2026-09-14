@@ -75,14 +75,22 @@ export async function test_php_fingerprints(): Promise<void> {
   );
 }
 
-/** Analyzes a single independent source revision. */
+/** Analyzes one independent PHP source revision for fingerprint comparison.
+ *
+ * Each caller receives a fresh inventory so a single textual mutation cannot
+ * share parser or inventory state with the baseline revision.
+ */
 async function analyze(content: string): Promise<IEvidenceInventory> {
   return new EvidencePhpAdapter().analyze(
     TestSourceSnapshot.create("src/contract.php", content),
   );
 }
 
-/** Looks up a unique declaration's review fingerprint. */
+/** Reads the review fingerprint for one uniquely named PHP declaration.
+ *
+ * A missing name fails the scenario immediately because the comparison cannot
+ * establish fingerprint behavior without its intended semantic unit.
+ */
 function fingerprint(inventory: IEvidenceInventory, name: string): string {
   const unit = inventory.units.find((item) => item.name === name);
   if (unit === undefined) throw new Error(`Missing PHP unit ${name}`);

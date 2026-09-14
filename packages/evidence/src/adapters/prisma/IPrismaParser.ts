@@ -4,12 +4,27 @@
  * parser upgrades can change semantic output for unchanged schema text.
  */
 export interface IPrismaParser {
-  /** Parses the complete schema parameter payload into serialized JSON. */
+  /**
+   * Parses the complete schema parameter payload into serialized JSON.
+   *
+   * `PrismaModelLoader` supplies every selected file in the parser's expected
+   * payload shape, then validates the returned JSON as `IPrismaDatamodel`.
+   */
   getDatamodel(parameters: string): string;
 
-  /** Parser version contributing to the whole-set cache identity. */
+  /**
+   * Parser version contributing to the whole-schema cache identity.
+   *
+   * A version change invalidates cached semantic output even when selected source
+   * content has not changed, because parser behavior can alter the datamodel.
+   */
   version: string;
 
-  /** Human-readable implementation origin for diagnostics. */
+  /**
+   * Human-readable implementation origin for diagnostics.
+   *
+   * The loader reports whether resolution selected the consumer project or the
+   * Evidence package copy when parser loading or parsing fails.
+   */
   origin: string;
 }

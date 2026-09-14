@@ -1,4 +1,9 @@
-/** Supported source form that establishes one Go semantic declaration. */
+/**
+ * Supported source form that establishes one Go semantic declaration.
+ *
+ * The Go scanner assigns this classification before materialization so type
+ * aliases, members, and standalone declarations retain their distinct semantics.
+ */
 export type GoDeclarationForm =
   | "defined-type"
   | "type-alias"

@@ -130,7 +130,12 @@ export class MatlabAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Reconciles class member sites and retains each physical declaration address. */
+  /**
+   * Reconciles class member sites and retains each physical declaration address.
+   *
+   * Materialization joins scanner declarations under their resolved class owner
+   * while preserving each physical implementation site for fingerprints and tags.
+   */
   private materializeUnits(
     inventory: IEvidenceInventory,
     analyses: IMatlabFileAnalysis[],
@@ -187,7 +192,12 @@ export class MatlabAdapter implements IEvidenceAdapter {
     return published;
   }
 
-  /** Resolves withdrawals before publishing attached annotation hosts. */
+  /**
+   * Resolves withdrawals before publishing attached annotation hosts.
+   *
+   * A withdrawn declaration must not expose a host that could satisfy coverage,
+   * so this phase establishes effective withdrawal before tag parsing proceeds.
+   */
   private materializeDocumentation(
     inventory: IEvidenceInventory,
     analyses: IMatlabFileAnalysis[],
@@ -263,7 +273,12 @@ export class MatlabAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Retains public declaration sites even when they carry no documentation. */
+  /**
+   * Retains public declaration sites even when they carry no documentation.
+   *
+   * Site preservation keeps the complete public population and its fingerprint
+   * boundary independent of whether a declaration currently has a tag carrier.
+   */
   private materializeUndocumentedHosts(
     inventory: IEvidenceInventory,
     analysis: IMatlabFileAnalysis,
@@ -316,7 +331,12 @@ export class MatlabAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Groups published semantic owners by their physical declaration site. */
+  /**
+   * Groups published semantic owners by their physical declaration site.
+   *
+   * One site can represent several owners through MATLAB accessors and external
+   * implementations, so later annotation attachment needs this retained grouping.
+   */
   private attachmentGroups(
     documentation: IMatlabDocumentation,
     published: Map<string, string>,
@@ -332,7 +352,12 @@ export class MatlabAdapter implements IEvidenceAdapter {
     return groups;
   }
 
-  /** Creates an attached or explicitly unsupported documentation carrier. */
+  /**
+   * Creates an attached or explicitly unsupported documentation carrier.
+   *
+   * This preserves valid MATLAB help for parsing and reports annotation-looking
+   * text whose placement cannot legally document the surrounding declaration.
+   */
   private host(
     source: IEvidenceSourceFile,
     documentation: IMatlabDocumentation,
@@ -357,7 +382,12 @@ export class MatlabAdapter implements IEvidenceAdapter {
     };
   }
 
-  /** Parses Evidence tags only after the adapter establishes their host. */
+  /**
+   * Parses Evidence tags only after the adapter establishes their host.
+   *
+   * Host-first parsing prevents a comment from gaining coverage semantics until
+   * its declaration scope, physical site, and withdrawal state are known.
+   */
   private parse(
     source: IEvidenceSourceFile,
     documentation: IMatlabDocumentation,
@@ -370,7 +400,12 @@ export class MatlabAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Detects Evidence or withdrawal annotations outside masked examples. */
+  /**
+   * Detects Evidence or withdrawal annotations outside masked examples.
+   *
+   * The adapter uses this precheck to distinguish an unsupported carrier from
+   * ordinary prose before it produces a placement diagnostic.
+   */
   private annotation(
     analysis: IMatlabFileAnalysis,
     documentation: IMatlabDocumentation,
@@ -382,7 +417,12 @@ export class MatlabAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Detects acknowledgements and reviews on withdrawn carriers. */
+  /**
+   * Detects acknowledgements and reviews on withdrawn carriers.
+   *
+   * Withdrawal may coexist with prose, but acknowledgement and review tags on
+   * that carrier are rejected because a withdrawn host cannot provide evidence.
+   */
   private claimAnnotation(
     analysis: IMatlabFileAnalysis,
     documentation: IMatlabDocumentation,
@@ -394,7 +434,12 @@ export class MatlabAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Recognizes supported annotation names at documentation line boundaries. */
+  /**
+   * Recognizes supported annotation names at documentation line boundaries.
+   *
+   * Boundary-aware matching avoids treating ordinary prose containing a marker
+   * substring as an Evidence declaration or a withdrawal instruction.
+   */
   private annotationPattern(raw: string, withdrawal: boolean): boolean {
     return withdrawal
       ? /(?:^|[\r\n])[ \t]*@(evidenceExcludeReview|evidenceReview|evidenceExclude|evidence|link|internal|hidden|ignore)\b/u.test(
@@ -405,7 +450,12 @@ export class MatlabAdapter implements IEvidenceAdapter {
         );
   }
 
-  /** Follows explicit parent ownership to propagate withdrawal. */
+  /**
+   * Follows explicit parent ownership to propagate withdrawal.
+   *
+   * A child inherits a withdrawn semantic owner only through the resolved parent
+   * chain, keeping unrelated sites from losing their eligible annotation hosts.
+   */
   private withdrawn(
     id: string,
     units: Map<string, IEvidenceUnit>,
@@ -421,7 +471,12 @@ export class MatlabAdapter implements IEvidenceAdapter {
       : this.withdrawn(unit.parentId, units, visited);
   }
 
-  /** Separates programming kinds while unifying class-folder implementation identities. */
+  /**
+   * Separates programming kinds while unifying class-folder implementation identities.
+   *
+   * This mapping gives MATLAB declarations stable public identities while class
+   * folders and external method files continue to represent the same semantic owner.
+   */
   private unitId(declaration: IMatlabDeclaration): string {
     return `matlab:${declaration.anchor}:${declaration.symbol}:${JSON.stringify(declaration.identity)}`;
   }

@@ -1,4 +1,9 @@
-/** Supported C++ source form that establishes one semantic declaration. */
+/**
+ * Enumerates C++ source forms that establish supported semantic declarations.
+ *
+ * CppFileScanner uses the form to choose identity, ownership, visibility, and
+ * address behavior while unsupported grammar forms remain incomplete diagnostics.
+ */
 export type CppDeclarationForm =
   | "namespace"
   | "class"

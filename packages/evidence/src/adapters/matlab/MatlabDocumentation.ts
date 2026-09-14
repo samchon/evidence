@@ -3,9 +3,19 @@ import type { IEvidenceDocumentation } from "../../structures/IEvidenceDocumenta
 import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { IMatlabDocumentation } from "./IMatlabDocumentation";
 
-/** Reads MATLAB help while preserving source mappings and masking code examples. */
+/**
+ * Reads MATLAB help while preserving source mappings and masking code examples.
+ *
+ * The MATLAB adapter supplies attached help carriers here before shared tag
+ * parsing, preserving source coordinates while examples become ineligible text.
+ */
 export namespace MatlabDocumentation {
-  /** Maps a classified carrier and removes ineligible example text without moving offsets. */
+  /**
+   * Maps a classified carrier and masks ineligible example text without moving offsets.
+   *
+   * The resulting documentation retains its source mapping while annotations in
+   * help examples cannot be parsed as Evidence declarations.
+   */
   export function read(
     source: IEvidenceSourceFile,
     documentation: IMatlabDocumentation,
@@ -23,7 +33,12 @@ export namespace MatlabDocumentation {
     };
   }
 
-  /** Masks HTML examples and Markdown indented code; shared tag parsing handles fences. */
+  /**
+   * Masks HTML examples and Markdown-indented code in MATLAB help text.
+   *
+   * Shared Evidence parsing handles fenced examples separately; this helper only
+   * replaces content whose physical offsets must remain aligned with the source.
+   */
   function mask(input: string): string {
     const characters = input.split("");
     const htmlCode = /<(pre|code)\b[^>]*>[\s\S]*?<\/\1\s*>/giu;
@@ -44,7 +59,12 @@ export namespace MatlabDocumentation {
     return characters.join("");
   }
 
-  /** Counts Markdown indentation after the documentation delimiter is removed. */
+  /**
+   * Counts Markdown indentation after the documentation delimiter is removed.
+   *
+   * `mask` uses the common indentation baseline to identify lines belonging to
+   * an indented example without changing line lengths or coordinates.
+   */
   function indentation(line: string): number {
     let spaces = 0;
     for (const character of line) {
@@ -55,7 +75,12 @@ export namespace MatlabDocumentation {
     return spaces;
   }
 
-  /** Replaces example characters with spaces while retaining original line boundaries. */
+  /**
+   * Replaces example characters with spaces while retaining original line boundaries.
+   *
+   * Preserved newlines and character positions keep parsed tag offsets valid for
+   * source diagnostics after the example text has been hidden.
+   */
   function hide(characters: string[], start: number, end: number): void {
     for (let index = start; index < end; ++index)
       if (characters[index] !== "\n" && characters[index] !== "\r")

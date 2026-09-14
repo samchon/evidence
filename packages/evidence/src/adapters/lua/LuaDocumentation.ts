@@ -3,9 +3,20 @@ import type { IEvidenceDocumentation } from "../../structures/IEvidenceDocumenta
 import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { ILuaDocumentation } from "./ILuaDocumentation";
 
-/** Reads Lua documentation while preserving source mappings and masking code examples. */
+/**
+ * Reads Lua documentation while preserving source mappings and masking examples.
+ *
+ * LuaFileScanner supplies classified carriers to this boundary, which normalizes
+ * their text through the shared mapper and suppresses examples before the tag
+ * parser can treat them as Evidence annotations.
+ */
 export namespace LuaDocumentation {
-  /** Maps a classified carrier and removes ineligible example text without moving offsets. */
+  /**
+   * Maps one classified carrier into shared documentation data.
+   *
+   * Example text is replaced after shared parsing preserves original offsets, so
+   * diagnostics and attachments still cite locations in the source file.
+   */
   export function read(
     source: IEvidenceSourceFile,
     documentation: ILuaDocumentation,
@@ -23,7 +34,12 @@ export namespace LuaDocumentation {
     };
   }
 
-  /** Masks HTML examples and Markdown indented code; shared tag parsing handles fences. */
+  /**
+   * Masks HTML examples and Markdown-indented code in parsed documentation text.
+   *
+   * Shared tag parsing already handles fenced code; this pass preserves all line
+   * boundaries while removing other example regions from annotation recognition.
+   */
   function mask(input: string): string {
     const characters = input.split("");
     const htmlCode = /<(pre|code)\b[^>]*>[\s\S]*?<\/\1\s*>/giu;
@@ -44,7 +60,12 @@ export namespace LuaDocumentation {
     return characters.join("");
   }
 
-  /** Counts Markdown indentation after the documentation delimiter is removed. */
+  /**
+   * Counts visual Markdown indentation after documentation delimiters are removed.
+   *
+   * Tabs advance to the next four-column boundary so indented-code detection
+   * follows Markdown's column semantics instead of raw character count.
+   */
   function indentation(line: string): number {
     let spaces = 0;
     for (const character of line) {
@@ -55,7 +76,12 @@ export namespace LuaDocumentation {
     return spaces;
   }
 
-  /** Replaces example characters with spaces while retaining original line boundaries. */
+  /**
+   * Replaces an example span with spaces while retaining line boundaries.
+   *
+   * Keeping newlines and carriage returns preserves offsets shared with the
+   * original documentation carrier and prevents later source mappings from drifting.
+   */
   function hide(characters: string[], start: number, end: number): void {
     for (let index = start; index < end; ++index)
       if (characters[index] !== "\n" && characters[index] !== "\r")

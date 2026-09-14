@@ -3,9 +3,19 @@ import type { IEvidenceDocumentation } from "../../structures/IEvidenceDocumenta
 import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { IPhpDocumentation } from "./IPhpDocumentation";
 
-/** Reads PHPDoc while preserving source mappings and masking code examples. */
+/**
+ * Reads PHPDoc while preserving source mappings and masking code examples.
+ *
+ * The PHP adapter supplies attached carriers here before shared tag parsing, so
+ * diagnostics retain their original source positions after examples are hidden.
+ */
 export namespace PhpDocumentation {
-  /** Maps a classified carrier and removes ineligible example text without moving offsets. */
+  /**
+   * Maps a classified carrier and removes ineligible example text without moving offsets.
+   *
+   * The returned documentation keeps the shared parser's coordinates while its
+   * masked text prevents annotations in PHPDoc examples from becoming evidence.
+   */
   export function read(
     source: IEvidenceSourceFile,
     documentation: IPhpDocumentation,
@@ -24,7 +34,12 @@ export namespace PhpDocumentation {
     };
   }
 
-  /** Masks HTML examples and Markdown indented code; shared tag parsing handles fences. */
+  /**
+   * Masks HTML examples and Markdown-indented code in parsed PHPDoc text.
+   *
+   * Fenced regions remain the shared tag parser's responsibility; this helper
+   * only removes examples whose characters must retain their mapped offsets.
+   */
   function mask(input: string): string {
     const characters = input.split("");
     const htmlCode = /<(pre|code)\b[^>]*>[\s\S]*?<\/\1\s*>/giu;
@@ -45,7 +60,12 @@ export namespace PhpDocumentation {
     return characters.join("");
   }
 
-  /** Counts Markdown indentation after the documentation delimiter is removed. */
+  /**
+   * Counts Markdown indentation after the documentation delimiter is removed.
+   *
+   * `mask` uses the result to establish the common indentation baseline before
+   * recognizing lines that belong to an indented code example.
+   */
   function indentation(line: string): number {
     let spaces = 0;
     for (const character of line) {
@@ -56,7 +76,12 @@ export namespace PhpDocumentation {
     return spaces;
   }
 
-  /** Replaces example characters with spaces while retaining original line boundaries. */
+  /**
+   * Replaces example characters with spaces while retaining original line boundaries.
+   *
+   * Preserved length and newlines keep offsets from `EvidenceDocumentation` valid
+   * for diagnostics and source-range attachment after masking.
+   */
   function hide(characters: string[], start: number, end: number): void {
     for (let index = start; index < end; ++index)
       if (characters[index] !== "\n" && characters[index] !== "\r")

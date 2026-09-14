@@ -8,7 +8,10 @@ import type { IEvidenceTargetBody } from "./IEvidenceTargetBody";
  * token may be valid under more than one selected reference grammar.
  */
 export namespace EvidenceTargetBody {
-  /** Separates the first unquoted target token from its optional explanation. */
+  /** Separates the first unquoted target token from its optional explanation.
+   *
+   * Tag parsing calls this before target resolution so prose following the target cannot alter its authored address.
+   */
   export function split(value: string): IEvidenceTargetBody {
     const body = value.trim();
     let cursor = 0;

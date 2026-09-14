@@ -15,16 +15,32 @@ import type { IScalaFileAnalysis } from "./IScalaFileAnalysis";
  * a later snapshot-wide pass can resolve singleton forwarding without inventing aliases.
  */
 export class ScalaFileScanner {
-  /** Node-free declaration records. */
+  /**
+   * Collects declaration records that remain valid after parsing closes.
+   *
+   * Each record retains source ranges and lexical ownership without holding a Tree-sitter node.
+   */
   private readonly declarations: IScalaDeclaration[] = [];
 
-  /** Scaladoc and unsupported tag carriers by original source offset. */
+  /**
+   * Indexes Scaladoc and unsupported tag carriers by their original source offset.
+   *
+   * The offset permits adjacent declaration attachment without reparsing the carrier text.
+   */
   private readonly documentation = new Map<number, IScalaDocumentation>();
 
-  /** Explicit exports resolved after every selected file has been scanned. */
+  /**
+   * Collects explicit exports for resolution after every selected file is scanned.
+   *
+   * Deferring resolution lets a forwarding file find declarations from other selected sources.
+   */
   private readonly exports: IScalaExport[] = [];
 
-  /** Surface failures that prevent a passing smaller inventory. */
+  /**
+   * Collects public-surface failures that prevent a passing smaller inventory.
+   *
+   * The returned analysis uses these diagnostics to mark extraction incomplete.
+   */
   private readonly diagnostics: IEvidenceDiagnostic[] = [];
 
   /**
@@ -57,7 +73,11 @@ export class ScalaFileScanner {
     };
   }
 
-  /** Walks declaration scopes without descending into executable bodies or local definitions. */
+  /**
+   * Walks declaration scopes without descending into executable bodies or local definitions.
+   *
+   * Package clauses extend the current namespace, while nested declaration bodies establish lexical owners.
+   */
   private scope(
     nodes: Node[],
     namespace: string[],
@@ -78,7 +98,11 @@ export class ScalaFileScanner {
     }
   }
 
-  /** Selects source declarations and their explicit lexical children. */
+  /**
+   * Selects supported source declarations and their explicit lexical children.
+   *
+   * Unsupported public declaration forms are reported as incomplete instead of being guessed from syntax.
+   */
   private visit(
     node: Node,
     namespace: string[],
@@ -274,7 +298,11 @@ export class ScalaFileScanner {
       );
   }
 
-  /** Retains only statically bound value names, including tuple and multi-name declarations. */
+  /**
+   * Retains only statically bound value names from a Scala binding pattern.
+   *
+   * Identifiers, tuple patterns, and multi-name patterns expand into declarations; visible extractor or typed patterns report a boundary.
+   */
   private bindings(
     pattern: Node,
     node: Node,
@@ -296,7 +324,11 @@ export class ScalaFileScanner {
     return [];
   }
 
-  /** Creates one lexical declaration without synthesizing runtime/compiler members. */
+  /**
+   * Creates one lexical declaration without synthesizing runtime or compiler members.
+   *
+   * The record captures visibility, address, lookup path, source site, and unsupported semantic boundaries for later publication.
+   */
   private declare(
     node: Node,
     nameNode: Node | null,
@@ -381,7 +413,11 @@ export class ScalaFileScanner {
     return declaration;
   }
 
-  /** Excludes every private/protected qualifier and restricted lexical owner. */
+  /**
+   * Determines whether a declaration is publicly visible through its lexical chain.
+   *
+   * Any private or protected modifier, or a restricted owner, excludes the declaration from the public population.
+   */
   private visible(node: Node, owner: IScalaDeclaration | undefined): boolean {
     const modifiers = node.namedChildren.find(
       (child) => child.type === "modifiers",
@@ -393,7 +429,11 @@ export class ScalaFileScanner {
     );
   }
 
-  /** Records named exports from selected singleton objects; dynamic/wildcard paths stay incomplete. */
+  /**
+   * Records supported named exports from selected singleton objects.
+   *
+   * Imports, wildcard selectors, givens, unqualified paths, and dynamic selectors report incomplete resolution rather than creating aliases.
+   */
   private export(
     node: Node,
     namespace: string[],
@@ -479,12 +519,20 @@ export class ScalaFileScanner {
     }
   }
 
-  /** Decodes backtick source names into literal accessor segments. */
+  /**
+   * Decodes a backticked Scala name into its literal accessor segment.
+   *
+   * Unquoted names retain their source text, while only the surrounding backticks are removed.
+   */
   private name(node: Node): string {
     return node.text.startsWith("`") ? node.text.slice(1, -1) : node.text;
   }
 
-  /** Attaches only adjacent Scaladoc across whitespace. */
+  /**
+   * Attaches a Scaladoc carrier only when it immediately precedes a declaration through whitespace.
+   *
+   * Other comments, intervening syntax, and non-Scaladoc blocks remain unattached for unsupported-host handling.
+   */
   private attach(node: Node, declaration: IScalaDeclaration): void {
     const previous = node.previousNamedSibling;
     if (
@@ -504,7 +552,11 @@ export class ScalaFileScanner {
       });
   }
 
-  /** Classifies comments and tag-bearing literal strings without treating them as declarations. */
+  /**
+   * Classifies comments and tag-bearing literal strings without treating them as declarations.
+   *
+   * Scaladoc may attach to a declaration; other tag-shaped carriers remain available for diagnostics.
+   */
   private collectDocumentation(): void {
     for (const node of this.session.root.descendantsOfType([
       "block_comment",
@@ -550,7 +602,11 @@ export class ScalaFileScanner {
     }
   }
 
-  /** Reports an actionable incomplete-analysis boundary at the original syntax range. */
+  /**
+   * Reports an actionable incomplete-analysis boundary at the original syntax range.
+   *
+   * The repair directs authors toward supported explicit declarations before graph evaluation can use the inventory.
+   */
   private problem(code: string, message: string, node: Node): void {
     this.diagnostics.push({
       code: `scala-${code}`,

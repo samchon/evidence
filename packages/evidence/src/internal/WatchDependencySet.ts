@@ -10,7 +10,12 @@ import { SourcePath } from "./SourcePath";
  * broader invalidation boundary without retaining duplicate watcher requests.
  */
 export namespace WatchDependencySet {
-  /** Combines configuration dependencies with every loaded claim and reference inventory. */
+  /**
+   * Combines configuration dependencies with every loaded claim and reference inventory.
+   *
+   * Watch setup uses the merged result so edits to configuration, selected claims,
+   * or selected reference sources can invalidate the published analysis.
+   */
   export function analysis(
     value: IEvidenceCheckAnalysis,
     configuration: IEvidenceSourceDependency[],
@@ -26,7 +31,12 @@ export namespace WatchDependencySet {
     );
   }
 
-  /** Normalizes paths, deduplicates dependencies, and orders them for stable snapshots. */
+  /**
+   * Normalizes, deduplicates, and orders dependency paths for stable snapshots.
+   *
+   * Duplicate paths retain recursive monitoring when any source requires it,
+   * preserving the broadest invalidation boundary in the returned set.
+   */
   export function merge(
     ...groups: IEvidenceSourceDependency[][]
   ): IEvidenceSourceDependency[] {
@@ -44,7 +54,12 @@ export namespace WatchDependencySet {
     );
   }
 
-  /** Checks whether an available set covers every required path at equal or broader recursion. */
+  /**
+   * Checks whether available dependencies cover every required path at equal or broader recursion.
+   *
+   * A recursive requirement cannot be satisfied by an exact watch, while a
+   * recursive available dependency can satisfy an exact requirement for its path.
+   */
   export function contains(
     available: IEvidenceSourceDependency[],
     required: IEvidenceSourceDependency[],

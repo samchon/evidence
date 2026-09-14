@@ -8,25 +8,60 @@ import type { EvidenceProgrammingSymbol } from "../../typings/EvidenceProgrammin
  * aliases can expose one declaration at more than one address.
  */
 export interface IZigDeclaration {
-  /** Stable extraction identity, including its exposed path. */
+  /**
+   * Identifies this extracted declaration at one physical site and exposed path.
+   *
+   * Alias reconciliation uses the key to connect documentation attachments before
+   * it merges alias projections into their canonical semantic unit.
+   */
   id: string;
 
-  /** Canonical source declaration name. */
+  /**
+   * Names the declaration in its defining Zig source container.
+   *
+   * The adapter preserves this canonical name when an alias publishes the same
+   * declaration under a different final public accessor segment.
+   */
   name: string;
 
-  /** Common selector for this declaration. */
+  /**
+   * Classifies the declaration with Evidence's shared programming symbol.
+   *
+   * Unit materialization retains this classification when it merges physical
+   * sites and assigns the declaration's stable semantic identity.
+   */
   symbol: EvidenceProgrammingSymbol;
 
-  /** Canonical lexical ownership path. */
+  /**
+   * Records the declaration's canonical lexical ownership path.
+   *
+   * This path defines semantic identity independently of aliases that expose
+   * the declaration through additional public accessors.
+   */
   identity: string[];
 
-  /** Public accessor, which may differ through an alias. */
+  /**
+   * Lists public accessor segments that reach this physical declaration.
+   *
+   * Alias projections may differ from {@link identity}; publication uses these
+   * segments to create every supported file-qualified public address.
+   */
   address: string[];
 
-  /** Original source site and fingerprint content. */
+  /**
+   * Preserves the declaration's physical source site and fingerprint content.
+   *
+   * Materialization clones this site into the semantic unit so source review
+   * retains its location even after the parser session has closed.
+   */
   site: IEvidenceUnitSite;
 
-  /** Whether this declaration is exposed by the selected source. */
+  /**
+   * Indicates whether the selected source exposes this declaration publicly.
+   *
+   * The adapter publishes only public records, while non-public boundaries can
+   * still be retained during extraction when needed for scanner classification.
+   */
   public: boolean;
 
   /**
@@ -37,6 +72,11 @@ export interface IZigDeclaration {
    */
   alias: boolean;
 
-  /** Explicit containing declaration identity. */
+  /**
+   * Identifies the explicit declaration that lexically owns this member.
+   *
+   * Omission marks a file-level declaration; otherwise materialization maps the
+   * owner to a unit parent so withdrawals propagate through the container tree.
+   */
   ownerDeclarationId?: string;
 }

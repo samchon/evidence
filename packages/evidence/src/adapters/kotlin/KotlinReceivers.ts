@@ -57,7 +57,12 @@ export namespace KotlinReceivers {
       }
   }
 
-  /** Resolves lexical candidates and expands selected alias chains with cycle detection. */
+  /**
+   * Resolves lexical candidates and expands selected alias chains with cycle detection.
+   *
+   * A receiver must identify exactly one selected nominal declaration; ambiguity,
+   * cycles, and file-private visibility outside the declaring file remain unresolved.
+   */
   function lookup(
     reference: IKotlinTypeReference,
     types: Map<string, IKotlinDeclaration[]>,
@@ -100,7 +105,12 @@ export namespace KotlinReceivers {
       : { segments: reference.external, nullable: reference.nullable };
   }
 
-  /** Retains literal Kotlin identifier boundaries inside the receiver address segment. */
+  /**
+   * Retains literal Kotlin identifier boundaries inside the receiver address segment.
+   *
+   * Non-identifier names use Kotlin backticks so punctuation cannot be mistaken
+   * for a separator when the resolved receiver spelling is published.
+   */
   function segment(value: string): string {
     return /^[A-Za-z_][A-Za-z0-9_]*$/u.test(value) ? value : `\`${value}\``;
   }

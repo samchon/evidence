@@ -3,7 +3,12 @@ import type { EvidenceMarkdownRenderedEdge } from "./EvidenceMarkdownRenderedEdg
 import type { IMarkdownFence } from "./IMarkdownFence";
 import type { IMarkdownHeading } from "./IMarkdownHeading";
 
-/** Markdown syntax shared by unit materialization and unreadable-tag diagnostics. */
+/**
+ * Markdown syntax shared by unit materialization and unreadable-tag diagnostics.
+ *
+ * The Markdown adapter uses these lexical helpers before it creates units or
+ * reports annotations that appear in non-readable source regions.
+ */
 export namespace MarkdownSyntax {
   const explicitAnchor = /\s*\{#([A-Za-z0-9][A-Za-z0-9._:-]*)\}\s*$/;
   const letterOrNumber = /^(?:\p{L}|\p{N})$/u;
@@ -124,7 +129,12 @@ export namespace MarkdownSyntax {
     return line.startsWith("    ") || line.startsWith("\t");
   }
 
-  /** Returns whether one column lies inside a closed backtick code span. */
+  /**
+   * Reports whether a column lies inside a closed backtick code span.
+   *
+   * Annotation scanning uses this result to reject tags in inline examples while
+   * ignoring unmatched delimiters that do not establish a Markdown code region.
+   */
   export function inlineCode(line: string, column: number): boolean {
     let cursor = 0;
     while (cursor < line.length) {
@@ -159,7 +169,12 @@ export namespace MarkdownSyntax {
     return false;
   }
 
-  /** Maps one supported ATX depth to its public Markdown selector. */
+  /**
+   * Maps one supported ATX depth to its public Markdown selector.
+   *
+   * Only headings that Evidence materializes as units have selectors; other
+   * depths fail here instead of silently receiving a public symbol.
+   */
   export function symbol(level: number): EvidenceMarkdownSymbol {
     switch (level) {
       case 1:

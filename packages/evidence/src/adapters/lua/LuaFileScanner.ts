@@ -16,22 +16,52 @@ import type { ILuaValue } from "./ILuaValue";
  * supported static initialization and reports dynamic boundaries it cannot prove.
  */
 export class LuaFileScanner {
-  /** Lexical chunk bindings, including private locals. */
+  /**
+   * Stores chunk-level bindings, including private local values.
+   *
+   * Static alias resolution consults this map before publishing globals or a
+   * returned module table, while function-local names use lexical lookup instead.
+   */
   private readonly bindings = new Map<string, ILuaValue>();
 
-  /** Chunk globals form the public surface independently of returned tables. */
+  /**
+   * Stores chunk globals that contribute independent public declarations.
+   *
+   * The scanner publishes these values after a returned table, preserving Lua's
+   * supported static global surface separately from module-table exports.
+   */
   private readonly globals = new Map<string, ILuaValue>();
 
-  /** Values exported by the final literal table return. */
+  /**
+   * Retains the table returned by the supported module-return statement.
+   *
+   * Omission means no valid table return was found; a present table is published
+   * under the module address after all chunk initialization has been processed.
+   */
   private returned: ILuaValue | undefined;
 
-  /** Serializable public declarations and alias projections. */
+  /**
+   * Accumulates serializable public declarations and alias projections.
+   *
+   * Each publication contributes an address projection, while shared values reuse
+   * their first declaration identity to keep aliases from duplicating units.
+   */
   private readonly declarations: ILuaDeclaration[] = [];
 
-  /** Original comment carriers keyed by their final comment offset. */
+  /**
+   * Indexes documentation carriers by the start offset of each comment line.
+   *
+   * Adjacent LuaDoc lines add keys for one extended carrier, allowing later
+   * declaration attachment to find that group's complete original source range.
+   */
   private readonly documentation = new Map<number, ILuaDocumentation>();
 
-  /** Unsupported surface-changing constructs keep the inventory incomplete. */
+  /**
+   * Collects diagnostics for unsupported surface-changing constructs.
+   *
+   * Any entry makes the returned file analysis incomplete, preventing dynamic
+   * Lua behavior from silently reducing the coverage population.
+   */
   private readonly diagnostics: IEvidenceDiagnostic[] = [];
 
   /**
@@ -68,7 +98,12 @@ export class LuaFileScanner {
     };
   }
 
-  /** Accepts deterministic initialization statements without running application code. */
+  /**
+   * Processes deterministic chunk initialization without executing Lua.
+   *
+   * Only supported declarations, assignments, and one static module return can
+   * establish values; other chunk statements receive an incomplete-surface diagnostic.
+   */
   private statement(node: Node): void {
     if (["comment", "hash_bang_line", "empty_statement"].includes(node.type))
       return;
@@ -143,7 +178,12 @@ export class LuaFileScanner {
     );
   }
 
-  /** Reads grammar lists without including interleaved comment extras. */
+  /**
+   * Reads one grammar list while excluding interleaved comments.
+   *
+   * Assignment and return handling need only semantic list entries, so comments
+   * cannot change arity checks or be mistaken for values.
+   */
   private list(node: Node, type: string): Node[] {
     const list = node.namedChildren.find((child) => child.type === type);
     return list === undefined
@@ -151,7 +191,12 @@ export class LuaFileScanner {
       : list.namedChildren.filter((child) => child.type !== "comment");
   }
 
-  /** Resolves literal values and already-established aliases. */
+  /**
+   * Resolves one supported static value or an already established alias.
+   *
+   * Literal values receive the current declaration site, while table and function
+   * aliases retain identity so publication can preserve shared ownership.
+   */
   private value(node: Node, site: Node): ILuaValue | undefined {
     if (node.type === "parenthesized_expression") {
       const child = node.namedChildren.find((item) => item.type !== "comment");
@@ -230,7 +275,12 @@ export class LuaFileScanner {
     return undefined;
   }
 
-  /** Defines one binding or a previously absent literal table member. */
+  /**
+   * Defines one binding or a previously absent literal table member.
+   *
+   * Reassignment, environment writes, and non-table owners are rejected because
+   * they can change a public declaration after its static identity is established.
+   */
   private assign(
     name: Node,
     value: ILuaValue | undefined,
@@ -274,7 +324,12 @@ export class LuaFileScanner {
     this.field(owner, last, value, site);
   }
 
-  /** Rejects replacement instead of keeping an obsolete declaration denominator. */
+  /**
+   * Adds one initial table field while rejecting replacement.
+   *
+   * Replacing a field could leave an obsolete declaration in the coverage
+   * denominator, so only the first non-nil static definition is retained.
+   */
   private field(
     owner: ILuaValue,
     name: string,
@@ -289,7 +344,12 @@ export class LuaFileScanner {
     else if (value.kind !== "nil") owner.fields.set(name, value);
   }
 
-  /** Reads exact accessor segments; numeric keys are deliberately not conflated with strings. */
+  /**
+   * Reads exact static accessor segments from a Lua expression.
+   *
+   * Numeric and computed keys are rejected instead of being conflated with string
+   * members, preserving the target spelling used for bindings and table fields.
+   */
   private path(node: Node): string[] | undefined {
     if (node.type === "identifier") return [node.text];
     if (
@@ -317,7 +377,12 @@ export class LuaFileScanner {
     return undefined;
   }
 
-  /** Preserves literal dotted names and rejects escape-dependent names explicitly. */
+  /**
+   * Decodes a supported literal table key without changing its accessor spelling.
+   *
+   * Unescaped quoted and long strings have deterministic text; escaped strings
+   * require byte-string decoding and therefore produce a diagnostic instead.
+   */
   private key(node: Node): string | undefined {
     if (node.type === "identifier") return node.text;
     if (node.type !== "string") return undefined;
@@ -336,7 +401,12 @@ export class LuaFileScanner {
     return undefined;
   }
 
-  /** Publishes aliases with one canonical identity and explicit table ownership. */
+  /**
+   * Publishes a value address with one canonical identity and table owner.
+   *
+   * Recursive traversal projects table fields, detects cycles, and requires a
+   * shared value to retain the same structural owner across every public alias.
+   */
   private publish(
     value: ILuaValue,
     address: string[],
@@ -382,7 +452,12 @@ export class LuaFileScanner {
       this.publish(field, [...address, name], declaration, next);
   }
 
-  /** Reports deferred writes to exported bindings and table escapes inside functions. */
+  /**
+   * Reports deferred writes and table escapes inside function bodies.
+   *
+   * Function execution can mutate an exported surface after chunk initialization,
+   * so the scanner marks writes, returns, and calls involving public tables incomplete.
+   */
   private deferredMutations(): void {
     for (const fn of this.session.root.descendantsOfType([
       "function_declaration",
@@ -454,7 +529,12 @@ export class LuaFileScanner {
     }
   }
 
-  /** Distinguishes passing a table from reading its known scalar or callable fields. */
+  /**
+   * Detects exported-table references that may expose a mutable surface.
+   *
+   * Reads of known scalar or callable fields remain static, while passing a table,
+   * using `self`, or reaching an unknown field requires runtime alias analysis.
+   */
   private tableReferences(container: Node, site: Node): boolean {
     for (const node of container.descendantsOfType([
       "identifier",
@@ -485,7 +565,12 @@ export class LuaFileScanner {
     return false;
   }
 
-  /** Resolves function parameters and preceding lexical locals without conflating sibling scopes. */
+  /**
+   * Resolves parameters and preceding lexical locals visible at one source node.
+   *
+   * The scope walk excludes later and sibling declarations so deferred-mutation
+   * checks do not mistake a local binding for a write to a public value.
+   */
   private local(name: string, node: Node): boolean {
     let scope = node.parent;
     while (scope !== null && scope.type !== "chunk") {
@@ -527,7 +612,12 @@ export class LuaFileScanner {
     return false;
   }
 
-  /** Groups adjacent LuaDoc line comments and recognizes long documentation comments. */
+  /**
+   * Collects grouped LuaDoc lines and eligible long documentation comments.
+   *
+   * Unsupported tag-bearing carriers are also retained for diagnostics, while
+   * adjacent line comments become one carrier with an extended source range.
+   */
   private comments(): void {
     const source = new SourceText(this.source.content);
     for (const node of this.session.root.descendantsOfType([
@@ -596,7 +686,12 @@ export class LuaFileScanner {
     }
   }
 
-  /** Attaches LuaDoc only to its immediately following static declaration. */
+  /**
+   * Attaches an adjacent LuaDoc carrier to one static declaration site.
+   *
+   * Whitespace-only separation is permitted; any intervening syntax prevents
+   * attachment so a detached comment cannot annotate a later public declaration.
+   */
   private attach(node: Node, declaration: ILuaDeclaration): void {
     const previous = node.previousNamedSibling;
     if (
@@ -618,7 +713,12 @@ export class LuaFileScanner {
       });
   }
 
-  /** Retains actionable source locations for every unproven public surface. */
+  /**
+   * Records one actionable diagnostic for an unproven public surface.
+   *
+   * Every unsupported boundary receives the original node range and makes this
+   * file's inventory incomplete, preserving failure instead of guessing exports.
+   */
   private problem(node: Node, message: string): void {
     this.diagnostics.push({
       code: "lua-dynamic-surface",

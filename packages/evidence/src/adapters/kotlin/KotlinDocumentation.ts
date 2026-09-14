@@ -3,9 +3,19 @@ import type { IEvidenceDocumentation } from "../../structures/IEvidenceDocumenta
 import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { IKotlinDocumentation } from "./IKotlinDocumentation";
 
-/** Reads KDoc while preserving source mappings and masking code examples. */
+/**
+ * Reads KDoc while preserving source mappings and masking code examples.
+ *
+ * KDoc tags can acknowledge Evidence, whereas examples are prose and must not
+ * create declarations despite containing text that resembles an annotation.
+ */
 export namespace KotlinDocumentation {
-  /** Maps a classified carrier and removes ineligible example text without moving offsets. */
+  /**
+   * Maps a classified carrier and removes ineligible example text without moving offsets.
+   *
+   * Only block KDoc receives Kotlin-specific masking; other classified carriers
+   * retain EvidenceDocumentation's normalized text and source mapping unchanged.
+   */
   export function read(
     source: IEvidenceSourceFile,
     documentation: IKotlinDocumentation,
@@ -24,7 +34,12 @@ export namespace KotlinDocumentation {
     };
   }
 
-  /** Masks HTML examples and Markdown indented code; shared tag parsing handles fences. */
+  /**
+   * Masks HTML examples and Markdown indented code while leaving line positions intact.
+   *
+   * Fence handling remains in the shared tag parser because it depends on the
+   * annotation grammar rather than Kotlin documentation syntax.
+   */
   function mask(input: string): string {
     const characters = input.split("");
     const htmlCode = /<(pre|code)\b[^>]*>[\s\S]*?<\/\1\s*>/giu;
@@ -45,7 +60,12 @@ export namespace KotlinDocumentation {
     return characters.join("");
   }
 
-  /** Counts Markdown indentation after the documentation delimiter is removed. */
+  /**
+   * Counts Markdown indentation after the documentation delimiter is removed.
+   *
+   * Tabs advance to their next four-column stop so mixed indentation follows the
+   * same threshold used when identifying indented code examples.
+   */
   function indentation(line: string): number {
     let spaces = 0;
     for (const character of line) {
@@ -56,7 +76,12 @@ export namespace KotlinDocumentation {
     return spaces;
   }
 
-  /** Replaces example characters with spaces while retaining original line boundaries. */
+  /**
+   * Replaces example characters with spaces while retaining original line boundaries.
+   *
+   * Spaces prevent tags inside examples from parsing, and retained CR/LF bytes
+   * preserve the offset mapping used for diagnostics outside those examples.
+   */
   function hide(characters: string[], start: number, end: number): void {
     for (let index = start; index < end; ++index)
       if (characters[index] !== "\n" && characters[index] !== "\r")

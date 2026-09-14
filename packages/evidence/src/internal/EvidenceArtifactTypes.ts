@@ -9,12 +9,18 @@ import type { EvidenceArtifactType } from "../typings/EvidenceArtifactType";
  * extraction and target behavior are complete.
  */
 export namespace EvidenceArtifactTypes {
-  /** Narrows an arbitrary configuration discriminator to a certified artifact type. */
+  /** Narrows a configuration discriminator to a certified artifact type.
+   *
+   * Configuration validation uses this guard before adapter construction, keeping grammar-only candidates outside the supported product surface.
+   */
   export function isSupported(type: string): type is EvidenceArtifactType {
     return SUPPORTED.some((supported) => supported === type);
   }
 
-  /** Returns a defensive copy so callers cannot mutate the module's support baseline. */
+  /** Returns the certified artifact types in a defensive copy.
+   *
+   * Callers can inspect or sort their result without mutating the module-level support baseline used by validation.
+   */
   export function supported(): EvidenceArtifactType[] {
     return [...SUPPORTED];
   }

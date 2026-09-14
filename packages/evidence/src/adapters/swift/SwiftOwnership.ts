@@ -88,7 +88,11 @@ export namespace SwiftOwnership {
       declaration.public &&= visible(declaration, ids, new Set<string>());
   }
 
-  /** Resolves a unique accessible declaration and a finite chain of selected type aliases. */
+  /**
+   * Resolves a unique accessible declaration and a finite chain of selected type aliases.
+   *
+   * A visited path set rejects cycles before they can grant an extension an invented owner.
+   */
   function nominal(
     path: string[],
     types: Map<string, ISwiftDeclaration[]>,
@@ -130,7 +134,11 @@ export namespace SwiftOwnership {
     return undefined;
   }
 
-  /** Uses explicit declaration parents to distinguish literal names from containment. */
+  /**
+   * Uses explicit declaration parents to distinguish literal names from containment.
+   *
+   * This preserves names that contain punctuation without interpreting them as paths.
+   */
   function descends(
     declaration: ISwiftDeclaration,
     parentId: string,
@@ -146,7 +154,11 @@ export namespace SwiftOwnership {
     return false;
   }
 
-  /** Clamps descendant exposure to the effective public owner. */
+  /**
+   * Clamps descendant exposure to the effective public owner.
+   *
+   * Recursive ownership also rejects a malformed parent cycle from the published surface.
+   */
   function visible(
     declaration: ISwiftDeclaration,
     ids: Map<string, ISwiftDeclaration>,

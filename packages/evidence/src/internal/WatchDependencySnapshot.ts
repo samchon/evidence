@@ -18,10 +18,20 @@ import type { IEvidenceSourceDependency } from "../structures/IEvidenceSourceDep
  * which source is read; a content-only check would miss resolution changes.
  */
 export class WatchDependencySnapshot {
-  /** Creates a snapshot from already captured dependency version strings. */
+  /**
+   * Creates a snapshot from already captured dependency version strings.
+   *
+   * capture and select are the only constructors because callers must not invent
+   * values that would falsely validate a watch attempt.
+   */
   private constructor(private readonly versions: ReadonlyMap<string, string>) {}
 
-  /** Asynchronously captures every dependency, encoding inaccessible paths as observable failures. */
+  /**
+   * Captures every dependency asynchronously, encoding inaccessible paths as observable failures.
+   *
+   * Watch publication compares this baseline with a later capture so deletion,
+   * permission failure, and repair all count as distinct filesystem states.
+   */
   public static async capture(
     dependencies: IEvidenceSourceDependency[],
   ): Promise<WatchDependencySnapshot> {
@@ -31,7 +41,12 @@ export class WatchDependencySnapshot {
     return new WatchDependencySnapshot(versions);
   }
 
-  /** Returns whether two snapshots cover the same dependencies at the same versions. */
+  /**
+   * States whether two snapshots cover the same dependencies at the same versions.
+   *
+   * Watch attempts publish only when this equality holds, preventing output from
+   * describing a source state that changed during analysis.
+   */
   public equals(other: WatchDependencySnapshot): boolean {
     if (this.versions.size !== other.versions.size) return false;
     for (const [location, value] of this.versions)
@@ -39,7 +54,12 @@ export class WatchDependencySnapshot {
     return true;
   }
 
-  /** Returns a subset only when all requested dependencies were captured by this stable baseline. */
+  /**
+   * Returns a dependency subset captured by this stable baseline.
+   *
+   * Every requested key must exist in the baseline; omission throws rather than
+   * allowing a narrower snapshot to validate unrelated watch work.
+   */
   public select(
     dependencies: IEvidenceSourceDependency[],
   ): WatchDependencySnapshot {
@@ -57,7 +77,12 @@ export class WatchDependencySnapshot {
   }
 }
 
-/** Reads a stable watch value without throwing on ordinary filesystem disappearance. */
+/**
+ * Reads a stable watch version without throwing on ordinary filesystem disappearance.
+ *
+ * capture uses this value for each dependency so failures become comparable state
+ * and a repaired path invalidates the prior failed snapshot.
+ */
 async function version(dependency: IEvidenceSourceDependency): Promise<string> {
   let link: BigIntStats;
   try {
@@ -99,7 +124,12 @@ async function version(dependency: IEvidenceSourceDependency): Promise<string> {
   return values.join("\u0001");
 }
 
-/** Serializes metadata fields whose change can affect filesystem resolution or reads. */
+/**
+ * Serializes metadata fields whose changes can affect filesystem resolution or reads.
+ *
+ * File and link versions include this component before content or directory entries
+ * so metadata-only replacement is observable to the watch baseline.
+ */
 function metadata(info: BigIntStats): string {
   return [
     info.mode,
@@ -111,7 +141,12 @@ function metadata(info: BigIntStats): string {
   ].join(":");
 }
 
-/** Encodes a directory entry's name and coarse type for recursive invalidation. */
+/**
+ * Encodes a directory entry's name and coarse type for recursive invalidation.
+ *
+ * Recursive directory versions use this value after sorting, so additions,
+ * removals, and entry-type changes invalidate the dependency snapshot.
+ */
 function entryVersion(entry: Dirent): string {
   const kind = entry.isDirectory()
     ? "directory"
@@ -123,29 +158,54 @@ function entryVersion(entry: Dirent): string {
   return `${kind}:${entry.name}`;
 }
 
-/** Sorts directory entries before hashing-independent concatenation. */
+/**
+ * Sorts directory entries before deterministic concatenation.
+ *
+ * Filesystem enumeration order is not stable, so version derives the same string
+ * for an unchanged recursive directory across captures.
+ */
 function compareEntries(left: Dirent, right: Dirent): number {
   return left.name < right.name ? -1 : left.name > right.name ? 1 : 0;
 }
 
-/** Distinguishes exact and recursive observations of the same path. */
+/**
+ * Distinguishes exact and recursive observations of the same filesystem path.
+ *
+ * Snapshot maps use this key so a file watch cannot be substituted for the
+ * broader directory observation required by a recursive dependency.
+ */
 function key(dependency: IEvidenceSourceDependency): string {
   return `${dependency.recursive ? "recursive" : "exact"}:${dependency.path}`;
 }
 
-/** Turns a failed read into versioned state so repair triggers a distinct snapshot. */
+/**
+ * Turns a failed filesystem read into versioned state.
+ *
+ * The encoded error lets later repair produce a different snapshot instead of
+ * making disappearance invisible to the watch publication check.
+ */
 function failure(cause: unknown): string {
   return `error:${errorCode(cause)}:${errorMessage(cause)}`;
 }
 
-/** Extracts platform error codes without assuming every thrown value is an Error. */
+/**
+ * Extracts a platform error code without assuming every thrown value is an Error.
+ *
+ * failure uses UNKNOWN for non-Error values and errors without string codes so
+ * opaque exceptions still become stable observable watch state.
+ */
 function errorCode(cause: unknown): string {
   if (!(cause instanceof Error) || !("code" in cause)) return "UNKNOWN";
   const code: unknown = cause.code;
   return typeof code === "string" ? code : "UNKNOWN";
 }
 
-/** Preserves a human-readable failure component for otherwise opaque watch changes. */
+/**
+ * Preserves a human-readable component for otherwise opaque watch failures.
+ *
+ * Together with errorCode, this distinguishes read failures in snapshot values
+ * while retaining useful context for diagnostics and change detection.
+ */
 function errorMessage(cause: unknown): string {
   return cause instanceof Error ? cause.message : String(cause);
 }

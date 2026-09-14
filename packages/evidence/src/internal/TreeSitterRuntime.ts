@@ -12,7 +12,12 @@ import type { IEvidenceGrammar } from "../structures/IEvidenceGrammar";
  * byte digests and instances are intentionally process-lifetime resources.
  */
 export namespace TreeSitterRuntime {
-  /** Awaits engine initialization before returning the language module keyed by its pinned digest. */
+  /**
+   * Returns the language module for verified grammar bytes after engine initialization.
+   *
+   * The runtime key is the grammar digest, so equivalent metadata objects share
+   * one process-lifetime Language instance regardless of object identity.
+   */
   export async function language(
     grammar: IEvidenceGrammar,
     bytes: Uint8Array,
@@ -21,7 +26,12 @@ export namespace TreeSitterRuntime {
     return languages.get(grammar, bytes);
   }
 
-  /** Initializes the installed engine exactly once on first use, wrapping package-asset failures. */
+  /**
+   * Initializes the installed web-tree-sitter engine once on first use.
+   *
+   * Loading the packaged core WASM from its resolved path avoids cwd-sensitive
+   * fetches, and failures become runtime-initialization diagnostics.
+   */
   const initialization = new Singleton(async () => {
     try {
       // Supplying local bytes avoids cwd-sensitive URLs and any runtime fetch fallback.
@@ -40,7 +50,12 @@ export namespace TreeSitterRuntime {
     }
   });
 
-  /** Shares one language load per immutable digest, independent of input object identity. */
+  /**
+   * Shares one grammar Language load per immutable WASM digest.
+   *
+   * The singleton compares digest strings rather than input objects because all
+   * callers with the same verified bytes can safely reuse one loaded module.
+   */
   const languages = new VariadicSingleton(
     async (grammar: IEvidenceGrammar, bytes: Uint8Array): Promise<Language> => {
       try {

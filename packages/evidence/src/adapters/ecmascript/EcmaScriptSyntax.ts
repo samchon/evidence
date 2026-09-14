@@ -2,7 +2,12 @@ import type { Node } from "web-tree-sitter";
 
 import type { IEvidenceCommentSyntax } from "../../structures/IEvidenceCommentSyntax";
 
-/** Tree-sitter spelling checks shared by TypeScript and JavaScript extraction. */
+/**
+ * Tree-sitter spelling checks shared by TypeScript and JavaScript extraction.
+ *
+ * The scanner uses these narrow syntax helpers to preserve literal names,
+ * bindings, comments, and supported static module forms without compiler evaluation.
+ */
 export namespace EcmaScriptSyntax {
   export function token(node: Node, value: string): boolean {
     return node.children.some(

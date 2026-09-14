@@ -132,7 +132,11 @@ export class ScalaAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Reconciles overload families and retains each physical declaration address. */
+  /**
+   * Reconciles public Scala declarations into semantic units and physical addresses.
+   *
+   * Functions may merge overload sites, while conflicting non-function identities make the inventory incomplete.
+   */
   private materializeUnits(
     inventory: IEvidenceInventory,
     analyses: IScalaFileAnalysis[],
@@ -206,7 +210,11 @@ export class ScalaAdapter implements IEvidenceAdapter {
     return published;
   }
 
-  /** Resolves withdrawals before publishing attached annotation hosts. */
+  /**
+   * Resolves withdrawals before publishing attached documentation hosts.
+   *
+   * Initial parsing records withdrawals on units, then hidden owners suppress attached claims while preserving unsupported carriers for diagnostics.
+   */
   private materializeDocumentation(
     inventory: IEvidenceInventory,
     analyses: IScalaFileAnalysis[],
@@ -282,7 +290,11 @@ export class ScalaAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Retains public declaration sites even when they carry no documentation. */
+  /**
+   * Retains public declaration sites even when they carry no documentation.
+   *
+   * Undocumented hosts let inspection and graph consumers address every visible unit without inventing annotation content.
+   */
   private materializeUndocumentedHosts(
     inventory: IEvidenceInventory,
     analysis: IScalaFileAnalysis,
@@ -335,7 +347,11 @@ export class ScalaAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Groups published semantic owners by their physical declaration site. */
+  /**
+   * Groups published semantic owners by their physical declaration site.
+   *
+   * A single Scaladoc host may attach to several units at one site, while aliases sharing identity are deduplicated.
+   */
   private attachmentGroups(
     documentation: IScalaDocumentation,
     published: Map<string, string>,
@@ -351,7 +367,11 @@ export class ScalaAdapter implements IEvidenceAdapter {
     return groups;
   }
 
-  /** Creates an attached or explicitly unsupported documentation carrier. */
+  /**
+   * Creates an attached host or an explicitly unsupported documentation carrier.
+   *
+   * Missing site ownership produces a host with repair guidance so tag parsing can report an actionable diagnostic.
+   */
   private host(
     source: IEvidenceSourceFile,
     documentation: IScalaDocumentation,
@@ -376,7 +396,11 @@ export class ScalaAdapter implements IEvidenceAdapter {
     };
   }
 
-  /** Parses Evidence tags only after the adapter establishes their host. */
+  /**
+   * Parses Evidence tags only after the adapter establishes their host.
+   *
+   * Host classification determines whether parsed acknowledgements attach to units or remain unsupported diagnostics.
+   */
   private parse(
     source: IEvidenceSourceFile,
     documentation: IScalaDocumentation,
@@ -389,7 +413,11 @@ export class ScalaAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Detects Evidence or withdrawal annotations outside masked examples. */
+  /**
+   * Detects Evidence and withdrawal annotations outside masked documentation examples.
+   *
+   * This broader check keeps tag-bearing unattached carriers available for unsupported-host materialization.
+   */
   private annotation(
     analysis: IScalaFileAnalysis,
     documentation: IScalaDocumentation,
@@ -401,7 +429,11 @@ export class ScalaAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Detects acknowledgements and reviews on withdrawn carriers. */
+  /**
+   * Detects acknowledgement and review annotations on carriers owned by withdrawn units.
+   *
+   * Withdrawal-only tags do not create a visible host after their owning unit has been hidden.
+   */
   private claimAnnotation(
     analysis: IScalaFileAnalysis,
     documentation: IScalaDocumentation,
@@ -413,7 +445,11 @@ export class ScalaAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Recognizes supported annotation names at documentation line boundaries. */
+  /**
+   * Recognizes supported annotation names at documentation line boundaries.
+   *
+   * The withdrawal mode includes internal visibility tags; claim-only mode restricts matching to evidence and review tags.
+   */
   private annotationPattern(raw: string, withdrawal: boolean): boolean {
     return withdrawal
       ? /(?:^|[\r\n])[ \t]*@(evidenceExcludeReview|evidenceReview|evidenceExclude|evidence|link|internal|hidden|ignore)\b/u.test(
@@ -424,7 +460,11 @@ export class ScalaAdapter implements IEvidenceAdapter {
         );
   }
 
-  /** Follows explicit parent ownership to propagate withdrawal. */
+  /**
+   * Follows explicit parent ownership to determine whether a unit is withdrawn.
+   *
+   * A visited set stops malformed ownership cycles, while any direct withdrawal hides the unit and every descendant.
+   */
   private withdrawn(
     id: string,
     units: Map<string, IEvidenceUnit>,
@@ -440,12 +480,20 @@ export class ScalaAdapter implements IEvidenceAdapter {
       : this.withdrawn(unit.parentId, units, visited);
   }
 
-  /** Separates programming kinds while unifying package-scoped overload identities. */
+  /**
+   * Builds a Scala unit identity from programming kind and lexical identity.
+   *
+   * Matching function declarations therefore unify overload sites, while different symbol kinds remain distinct units.
+   */
   private unitId(declaration: IScalaDeclaration): string {
     return `scala:${declaration.symbol}:${JSON.stringify(declaration.identity)}`;
   }
 
-  /** Marks a declaration conflict as incomplete analysis. */
+  /**
+   * Marks a public declaration conflict as incomplete analysis.
+   *
+   * The diagnostic is attached to the contributing source so coverage cannot pass after competing selected declarations share one identity.
+   */
   private problem(
     inventory: IEvidenceInventory,
     analysis: IScalaFileAnalysis,

@@ -9,15 +9,31 @@ import type { IZigDocumentationAttachment } from "./IZigDocumentationAttachment"
  * until alias reconciliation determines the supported documentation host.
  */
 export interface IZigDocumentation {
-  /** Stable identity of this extraction record. */
+  /**
+   * Identifies this physical documentation carrier within its source analysis.
+   *
+   * Attachments use this key before the adapter materializes semantic units.
+   */
   id: string;
 
-  /** Half-open original UTF-16 source span. */
+  /**
+   * Locates the half-open UTF-16 span occupied by the documentation carrier.
+   *
+   * Review fingerprints exclude this range from its attached declaration content.
+   */
   range: IEvidenceSourceRange;
 
-  /** Comment delimiters and annotation rules for this carrier. */
+  /**
+   * Describes delimiters and annotation rules for parsing this carrier.
+   *
+   * Documentation mapping preserves these rules while masking ineligible examples.
+   */
   syntax: IEvidenceCommentSyntax;
 
-  /** Declaration sites to which this documentation attaches. */
+  /**
+   * Lists physical declaration sites directly attached to this carrier.
+   *
+   * Unsupported tagged carriers remain unattached for diagnostic host creation.
+   */
   attachments: IZigDocumentationAttachment[];
 }

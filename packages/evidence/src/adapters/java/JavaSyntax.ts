@@ -2,7 +2,12 @@ import type { Node } from "web-tree-sitter";
 
 import type { IEvidenceCommentSyntax } from "../../structures/IEvidenceCommentSyntax";
 
-/** Grammar-specific Java names, packages, modifiers, literals, and Javadoc. */
+/**
+ * Grammar-specific Java names, packages, modifiers, literals, and Javadoc.
+ *
+ * Java extraction uses these helpers to interpret parser nodes without resolving
+ * compiler symbols, preserving source-spelled ownership and documentation boundaries.
+ */
 export namespace JavaSyntax {
   export function name(node: Node | null): string | undefined {
     return node !== null && node.type === "identifier" ? node.text : undefined;

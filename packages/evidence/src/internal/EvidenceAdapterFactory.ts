@@ -36,7 +36,10 @@ import type { EvidenceArtifactType } from "../typings/EvidenceArtifactType";
  * additions fail here instead of producing a partial inventory downstream.
  */
 export namespace EvidenceAdapterFactory {
-  /** Returns the dedicated adapter for a validated artifact discriminator. */
+  /** Creates the dedicated adapter for a validated artifact discriminator.
+   *
+   * Each call returns a fresh instance so parser and scan state cannot cross an inventory boundary.
+   */
   export function create(type: EvidenceArtifactType): IEvidenceAdapter {
     if (type === "objc") return new EvidenceObjcAdapter();
     if (type === "dart") return new EvidenceDartAdapter();
