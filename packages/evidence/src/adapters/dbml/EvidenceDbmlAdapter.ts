@@ -269,7 +269,7 @@ export class EvidenceDbmlAdapter implements IEvidenceAdapter {
       .flatMap((analysis) =>
         analysis.enums.map((enumeration) => enumeration.content),
       )
-      .sort()
+      .sort(InventoryMerge.compare)
       .join("\n");
     for (const analysis of analyses)
       for (const declaration of analysis.declarations) {
@@ -344,8 +344,10 @@ export class EvidenceDbmlAdapter implements IEvidenceAdapter {
           file: analysis.source.physicalPath,
           range: documentation.annotationRange,
         });
-        for (const id of host.unitIds)
-          units.get(id)?.withdrawals.push(...parsed.withdrawals);
+        for (const id of host.unitIds) {
+          const unit = units.get(id);
+          if (unit !== undefined) unit.withdrawals.push(...parsed.withdrawals);
+        }
       }
     const hidden = new Set(
       inventory.units
@@ -353,7 +355,7 @@ export class EvidenceDbmlAdapter implements IEvidenceAdapter {
           (unit) =>
             unit.withdrawals.length !== 0 ||
             (unit.parentId !== undefined &&
-              (units.get(unit.parentId)?.withdrawals.length ?? 0) !== 0),
+              (units.get(unit.parentId)?.withdrawals?.length ?? 0) !== 0),
         )
         .map((unit) => unit.id),
     );
@@ -377,7 +379,8 @@ export class EvidenceDbmlAdapter implements IEvidenceAdapter {
         )
           continue;
         inventory.hosts.push(host);
-        for (const id of host.unitIds) documented.add(`${id}:${host.siteId}`);
+        for (const id of host.unitIds)
+          documented.add(`${id}:${host.siteId ?? ""}`);
         inventory.declarations.push(...parsed.declarations);
         inventory.reviews.push(...parsed.reviews);
         inventory.diagnostics.push(...parsed.diagnostics);
@@ -404,9 +407,13 @@ export class EvidenceDbmlAdapter implements IEvidenceAdapter {
     const owners = documentation.owners
       .map((identity) => units.get(this.id(identity)))
       .filter((unit) => unit !== undefined);
-    const site = owners[0]?.sites.find(
-      (candidate) => candidate.file === analysis.source.physicalPath,
-    );
+    const first = owners[0];
+    const site =
+      first === undefined
+        ? undefined
+        : first.sites.find(
+            (candidate) => candidate.file === analysis.source.physicalPath,
+          );
     return {
       id: `dbml:${analysis.source.id}:documentation:${documentation.range.start.offset}`,
       file: analysis.source.physicalPath,

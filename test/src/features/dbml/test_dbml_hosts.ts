@@ -30,7 +30,11 @@ export async function test_dbml_hosts(): Promise<void> {
   );
   TestValidator.equals(
     "only eligible documentation creates evidence",
-    inventory.declarations.map((declaration) => declaration.target).sort(),
+    inventory.declarations
+      .map((declaration) => declaration.target)
+      .sort((left, right) =>
+        JSON.stringify(left).localeCompare(JSON.stringify(right), "en"),
+      ),
     ["./spec.md#column", "./spec.md#model"],
   );
   TestValidator.equals(
@@ -70,14 +74,20 @@ export async function test_dbml_hosts(): Promise<void> {
   );
   TestValidator.equals("one physical table inventory", merged.units.length, 2);
   const resolver = new EvidenceInventory([merged]);
-  const primary = resolver.resolve({
-    file: "/project/schema.dbml",
-    segments: ["users", "id"],
-  });
-  const linked = resolver.resolve({
-    file: "/project/linked/schema.dbml",
-    segments: ["users", "id"],
-  });
+  const primary = resolver.resolve(
+    {
+      file: "/project/schema.dbml",
+      segments: ["users", "id"],
+    },
+    merged.units.map((unit) => unit.id),
+  );
+  const linked = resolver.resolve(
+    {
+      file: "/project/linked/schema.dbml",
+      segments: ["users", "id"],
+    },
+    merged.units.map((unit) => unit.id),
+  );
   TestValidator.equals(
     "logical aliases retain semantic identity",
     linked.units.map((unit) => unit.id),

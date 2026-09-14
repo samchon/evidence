@@ -203,9 +203,10 @@ export class DbmlFileScanner {
     const name = node.namedChildren.find(
       (child) => child.type === "identifier",
     );
-    const schemaName = schema?.namedChildren.find(
-      (child) => child.type === "identifier",
-    );
+    const schemaName =
+      schema === undefined
+        ? undefined
+        : schema.namedChildren.find((child) => child.type === "identifier");
     if (name === undefined)
       throw new Error("A DBML table identifier is incomplete.");
     return [

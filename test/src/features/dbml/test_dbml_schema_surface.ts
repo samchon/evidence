@@ -46,12 +46,16 @@ export async function test_dbml_schema_surface(): Promise<void> {
     inventory.units
       .filter((unit) => unit.symbol === "model")
       .map((unit) => unit.identity)
-      .sort(),
+      .sort((left, right) =>
+        JSON.stringify(left).localeCompare(JSON.stringify(right), "en"),
+      ),
     [
       ["core", "users"],
       ["public", "posts"],
       ["public", "profiles"],
-    ].sort(),
+    ].sort((left, right) =>
+      JSON.stringify(left).localeCompare(JSON.stringify(right), "en"),
+    ),
   );
   TestValidator.equals(
     "all declared scalar columns remain columns",
@@ -69,32 +73,44 @@ export async function test_dbml_schema_surface(): Promise<void> {
       .filter(
         (unit) =>
           unit.symbol === "relation" &&
-          unit.identity.at(-1)?.startsWith("$ref:") &&
-          !unit.identity.at(-1)?.includes("["),
+          (unit.identity.at(-1) ?? "").startsWith("$ref:") &&
+          !(unit.identity.at(-1) ?? "").includes("["),
       )
       .map((unit) => [unit.identity.at(-1), unit.identity.slice(0, 2)])
-      .sort(),
+      .sort((left, right) =>
+        JSON.stringify(left).localeCompare(JSON.stringify(right), "en"),
+      ),
     [
       ["$ref:composite", ["public", "posts"]],
       ["$ref:reverse", ["public", "posts"]],
       ["$ref:pair", ["public", "profiles"]],
       ["$ref:network", ["core", "users"]],
-    ].sort(),
+    ].sort((left, right) =>
+      JSON.stringify(left).localeCompare(JSON.stringify(right), "en"),
+    ),
   );
-  const canonical = new EvidenceInventory([inventory]).resolve({
-    file: "/project/schema/main.dbml",
-    segments: ["core", "users", "id"],
-  });
-  const alias = new EvidenceInventory([inventory]).resolve({
-    file: "/project/schema/main.dbml",
-    segments: ["U", "id"],
-  });
+  const canonical = new EvidenceInventory([inventory]).resolve(
+    {
+      file: "/project/schema/main.dbml",
+      segments: ["core", "users", "id"],
+    },
+    inventory.units.map((unit) => unit.id),
+  );
+  const alias = new EvidenceInventory([inventory]).resolve(
+    {
+      file: "/project/schema/main.dbml",
+      segments: ["U", "id"],
+    },
+    inventory.units.map((unit) => unit.id),
+  );
   TestValidator.equals(
     "alias addresses retain one identity",
     alias.units.map((unit) => unit.id),
     canonical.units.map((unit) => unit.id),
   );
   const annotation = inventory.declarations[0];
+  if (annotation === undefined || annotation.location.range === undefined)
+    throw new Error("Expected source-mapped annotation.");
   TestValidator.equals(
     "escaped note decoded to one annotation",
     inventory.declarations.length,
@@ -102,25 +118,28 @@ export async function test_dbml_schema_surface(): Promise<void> {
   );
   TestValidator.equals(
     "Unicode UTF16 annotation start",
-    annotation?.location.range?.start.offset,
+    annotation.location.range.start.offset,
     source.indexOf("@evidence"),
   );
   const literal = inventory.units.find(
     (unit) => unit.identity.at(-1) === "display.name😀",
   );
+  if (literal === undefined || literal.sites[0] === undefined)
+    throw new Error("Expected literal-name declaration site.");
+  const literalSite = literal.sites[0];
   TestValidator.equals(
     "quoted dots remain literal segments",
-    literal?.identity,
+    literal.identity,
     ["public", "posts", "display.name😀"],
   );
   TestValidator.equals(
     "original declaration starts at UTF16 offset",
-    literal?.sites[0]?.range.start.offset,
+    literalSite.range.start.offset,
     source.indexOf('"display.name😀"'),
   );
   TestValidator.equals(
     "original CRLF declaration column",
-    literal?.sites[0]?.range.start.column,
+    literalSite.range.start.column,
     3,
   );
 

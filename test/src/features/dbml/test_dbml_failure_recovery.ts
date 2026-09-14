@@ -86,7 +86,11 @@ export async function test_dbml_failure_recovery(): Promise<void> {
   );
   TestValidator.equals(
     "all cross-file dependencies retained",
-    recovered.dependencies.map((entry) => entry.path).sort(),
+    recovered.dependencies
+      .map((entry) => entry.path)
+      .sort((left, right) =>
+        JSON.stringify(left).localeCompare(JSON.stringify(right), "en"),
+      ),
     ["/project/relations.dbml", "/project/users.dbml"],
   );
   const moved = await adapter.analyze(
@@ -97,8 +101,16 @@ export async function test_dbml_failure_recovery(): Promise<void> {
   );
   TestValidator.equals(
     "moving a model preserves schema identity",
-    recovered.units.map((unit) => unit.id).sort(),
-    moved.units.map((unit) => unit.id).sort(),
+    recovered.units
+      .map((unit) => unit.id)
+      .sort((left, right) =>
+        JSON.stringify(left).localeCompare(JSON.stringify(right), "en"),
+      ),
+    moved.units
+      .map((unit) => unit.id)
+      .sort((left, right) =>
+        JSON.stringify(left).localeCompare(JSON.stringify(right), "en"),
+      ),
   );
   const hidden = await adapter.analyze(
     TestSourceSnapshot.create(
@@ -126,7 +138,7 @@ export async function test_dbml_failure_recovery(): Promise<void> {
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create(
         "relations.dbml",
-        dependent.files[0]!.content.replace(" > ", " - "),
+        (dependent.files[0]?.content ?? "").replace(" > ", " - "),
       ),
       base,
     ]),
