@@ -16,7 +16,10 @@ const SUPPORTED: EvidenceArtifactType[] = [
   "markdown",
   "prisma",
   "swagger",
-  ...EvidenceLanguageRegistry.list()
+  ...[
+    ...EvidenceLanguageRegistry.list(),
+    ...EvidenceLanguageRegistry.databases(),
+  ]
     .filter((language) => language.adapter !== undefined)
     .map((language) => language.type),
 ];
