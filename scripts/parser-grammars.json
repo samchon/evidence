@@ -216,6 +216,42 @@
     }
   },
   {
+    "id": "matlab",
+    "repository": "https://github.com/acristoffers/tree-sitter-matlab",
+    "version": "grammar-matlab-65d969c986b13b6907b9253307ede8f5c2bd1d31692635a2eab058ec81bb4409",
+    "commit": "f03d0347acd8bb05d4edd8c845ac1718729e1fad",
+    "wasm": {
+      "file": "matlab/tree-sitter-matlab.wasm",
+      "url": "https://github.com/wrtnlabs/evidence/releases/download/grammar-matlab-65d969c986b13b6907b9253307ede8f5c2bd1d31692635a2eab058ec81bb4409/tree-sitter-matlab.wasm",
+      "sha256": "65d969c986b13b6907b9253307ede8f5c2bd1d31692635a2eab058ec81bb4409",
+      "size": 423002
+    },
+    "license": {
+      "file": "matlab/LICENSE",
+      "url": "https://raw.githubusercontent.com/acristoffers/tree-sitter-matlab/f03d0347acd8bb05d4edd8c845ac1718729e1fad/LICENSE",
+      "sha256": "8673f5acd59bfb3bd129760a57f72092d5e3c01e05837532eac9497cf8006a46",
+      "size": 1061
+    }
+  },
+  {
+    "id": "swift",
+    "repository": "https://github.com/alex-pinkus/tree-sitter-swift",
+    "version": "0.7.3",
+    "commit": "b8b22bffbb3441780e6471665bacfb263741c86a",
+    "wasm": {
+      "file": "swift/tree-sitter-swift.wasm",
+      "url": "https://github.com/alex-pinkus/tree-sitter-swift/releases/download/0.7.3/tree-sitter-swift.wasm",
+      "sha256": "0258a7ef17303a8079ffe0748b3583d59656b5c3e8653fca7b6451b3e6689eb2",
+      "size": 3825025
+    },
+    "license": {
+      "file": "swift/LICENSE",
+      "url": "https://raw.githubusercontent.com/alex-pinkus/tree-sitter-swift/b8b22bffbb3441780e6471665bacfb263741c86a/LICENSE",
+      "sha256": "3533cec129bb4bba015c0d61d86dd7c3b7e82110e4d2ff7837a01eff5bad5ccc",
+      "size": 1068
+    }
+  },
+  {
     "id": "scala",
     "repository": "https://github.com/tree-sitter/tree-sitter-scala",
     "version": "v0.26.2",
