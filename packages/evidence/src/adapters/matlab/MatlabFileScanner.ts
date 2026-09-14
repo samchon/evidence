@@ -230,7 +230,10 @@ export class MatlabFileScanner {
       );
       if (attributesNode !== undefined) {
         const attributesRange = this.session.range(attributesNode);
-        declaration.site.range.start = attributesRange.start;
+        declaration.site.range = {
+          start: attributesRange.start,
+          end: declaration.site.range.end,
+        };
         declaration.site.content.unshift(attributesRange);
       }
       if (node.type === "property") {
@@ -271,9 +274,13 @@ export class MatlabFileScanner {
           ? nameNode.namedChildren[0]?.text
           : nameNode?.text;
       if (name === undefined) continue;
+      const valueNode = attribute.namedChildren[1];
       const value =
-        attribute.namedChildren[1]?.text?.replace(/^['"]|['"]$/gu, "") ??
-        (nameNode?.type === "not_operator" ? "false" : "true");
+        valueNode === undefined
+          ? nameNode?.type === "not_operator"
+            ? "false"
+            : "true"
+          : valueNode.text.replace(/^['"]|['"]$/gu, "");
       if (
         ![
           "Access",
@@ -308,7 +315,12 @@ export class MatlabFileScanner {
         /Access$/u.test(name) &&
         !["public", "private", "protected", "immutable"].includes(value)
       ) {
-        if (!value.startsWith("?") && !value.startsWith("{"))
+        if (
+          !/^\?[A-Za-z][A-Za-z0-9_.]*$/u.test(value) &&
+          !/^\{\s*\?[A-Za-z][A-Za-z0-9_.]*(?:\s*,\s*\?[A-Za-z][A-Za-z0-9_.]*)*\s*\}$/u.test(
+            value,
+          )
+        )
           this.problem(
             "attribute",
             `Access attribute '${name}' is not a static access designation.`,

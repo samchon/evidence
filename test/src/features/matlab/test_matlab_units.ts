@@ -96,7 +96,7 @@ export async function test_matlab_units(): Promise<void> {
     "exact source declarations",
     inventory.units
       .map((unit) => `${unit.symbol}:${unit.identity.join(".")}`)
-      .sort(),
+      .sort((left, right) => left.localeCompare(right)),
     [
       "type:Contract",
       "property:Contract.documented",
@@ -112,7 +112,7 @@ export async function test_matlab_units(): Promise<void> {
       "property:Contract.Ready",
       "property:Contract.Changed",
       "function:main",
-    ].sort(),
+    ].sort((left, right) => left.localeCompare(right)),
   );
   const derived = inventory.units.find((unit) => unit.name === "derived");
   TestValidator.equals(

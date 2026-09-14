@@ -42,7 +42,9 @@ export async function test_matlab_ownership(): Promise<void> {
   );
   TestValidator.equals(
     "exact package ownership",
-    inventory.units.map((unit) => unit.identity.join(".")).sort(),
+    inventory.units
+      .map((unit) => unit.identity.join("."))
+      .sort((left, right) => left.localeCompare(right)),
     ["pkg.Widget", "pkg.Widget.extra", "pkg.Widget.run"],
   );
   const method = inventory.units.find((unit) => unit.name === "run");

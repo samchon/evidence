@@ -30,11 +30,14 @@ export namespace MatlabOwnership {
           recursive: false,
         });
         const ownerAnalysis = files.get(declaration.externalOwner);
-        const owner = ownerAnalysis?.declarations?.find(
-          (candidate) =>
-            candidate.symbol === "type" &&
-            candidate.ownerDeclarationId === undefined,
-        );
+        const owner =
+          ownerAnalysis === undefined
+            ? undefined
+            : ownerAnalysis.declarations.find(
+                (candidate) =>
+                  candidate.symbol === "type" &&
+                  candidate.ownerDeclarationId === undefined,
+              );
         if (owner === undefined || ownerAnalysis === undefined) {
           problem(
             analysis,
@@ -77,13 +80,15 @@ export namespace MatlabOwnership {
           path: declaration.implementation,
           recursive: false,
         });
-        const external = files
-          .get(declaration.implementation)
-          ?.declarations?.find(
-            (candidate) =>
-              candidate.externalOwner === declaration.anchor &&
-              candidate.name === declaration.name,
-          );
+        const externalAnalysis = files.get(declaration.implementation);
+        const external =
+          externalAnalysis === undefined
+            ? undefined
+            : externalAnalysis.declarations.find(
+                (candidate) =>
+                  candidate.externalOwner === declaration.anchor &&
+                  candidate.name === declaration.name,
+              );
         if (external === undefined)
           problem(
             analysis,

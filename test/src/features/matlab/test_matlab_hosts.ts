@@ -44,14 +44,16 @@ export async function test_matlab_hosts(): Promise<void> {
   TestValidator.equals("complete help extraction", inventory.diagnostics, []);
   TestValidator.equals(
     "exact eligible tags",
-    inventory.declarations.map((declaration) => declaration.target).sort(),
+    inventory.declarations
+      .map((declaration) => declaration.target)
+      .sort((left, right) => left.localeCompare(right)),
     [
       "doc.md#type",
       "doc.md#property",
       "doc.md#inline",
       "doc.md#next",
       "doc.md#function",
-    ].sort(),
+    ].sort((left, right) => left.localeCompare(right)),
   );
   for (const declaration of inventory.declarations)
     TestValidator.equals(
@@ -62,7 +64,9 @@ export async function test_matlab_hosts(): Promise<void> {
   const legacy = inventory.units.find((unit) => unit.name === "legacy");
   TestValidator.equals(
     "withdrawal retained",
-    legacy?.withdrawals?.map((withdrawal) => withdrawal.tag),
+    legacy === undefined
+      ? undefined
+      : legacy.withdrawals.map((withdrawal) => withdrawal.tag),
     ["internal"],
   );
   TestValidator.equals(
