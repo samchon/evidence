@@ -105,7 +105,7 @@ export class ZigAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Reconciles overload families and retains each physical declaration address. */
+  /** Reconciles aliases and retains every physical declaration address. */
   private materializeUnits(
     inventory: IEvidenceInventory,
     analyses: IZigFileAnalysis[],
@@ -140,7 +140,7 @@ export class ZigAdapter implements IEvidenceAdapter {
             analysis,
             "zig-declaration-conflict",
             `Zig public identity '${declaration.identity.join(".")}' has more than one selected declaration.`,
-            "Select one source declaration for this package identity before checking coverage.",
+            "Select one source declaration for this file-qualified identity before checking coverage.",
           );
         previousDeclarations.add(declaration.site.id);
         declarationIds.set(id, previousDeclarations);
@@ -411,7 +411,7 @@ export class ZigAdapter implements IEvidenceAdapter {
       : this.withdrawn(unit.parentId, units, visited);
   }
 
-  /** Separates programming kinds while unifying package-scoped overload identities. */
+  /** Keeps physical files independent while unifying canonical alias identities. */
   private unitId(declaration: IZigDeclaration): string {
     return `zig:${declaration.site.file}:${declaration.symbol}:${JSON.stringify(declaration.identity)}`;
   }

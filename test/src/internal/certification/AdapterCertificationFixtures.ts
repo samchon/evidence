@@ -754,13 +754,13 @@ export namespace AdapterCertificationFixtures {
         {
           file,
           content: dedent`
-        /// ?? ??
+        /// 계약 🔎
         /// @evidence docs/requirements.md#type Implements the certified type.
         pub const Contract = struct {
-          /// ?? ??
+          /// 계약 🔎
           /// @evidence docs/requirements.md#function Implements the certified function.
           pub fn run() i32 { return 1; }
-          /// ? ??
+          /// 값 🔎
           /// @evidence docs/requirements.md#property Implements the certified property.
           value: i32,
           const hidden = 0;

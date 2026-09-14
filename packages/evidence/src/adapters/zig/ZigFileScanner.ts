@@ -1,3 +1,4 @@
+import typia from "typia";
 import type { Node } from "web-tree-sitter";
 
 import type { EvidenceParseSession } from "../../parsers/EvidenceParseSession";
@@ -56,6 +57,12 @@ export class ZigFileScanner {
         continue;
       }
       const field = node.type === "container_field";
+      if (
+        field &&
+        body.type === "enum_declaration" &&
+        node.childForFieldName("name")?.text === "_"
+      )
+        continue;
       const visible =
         field || node.children.some((child) => child.text === "pub");
       if (node.type === "using_namespace_declaration") {
@@ -120,12 +127,31 @@ export class ZigFileScanner {
       return undefined;
     }
     const name = this.name(nameNode);
+    const duplicates = scope.namedChildren.filter((child) => {
+      const candidate =
+        child.childForFieldName("name") ??
+        (child.type === "variable_declaration"
+          ? child.namedChildren.find((part) => part.type === "identifier")
+          : undefined);
+      return (
+        candidate !== null &&
+        candidate !== undefined &&
+        this.name(candidate) === name
+      );
+    });
+    if (duplicates.length > 1)
+      this.problem(
+        "duplicate-name",
+        "This public namespace contains conflicting declarations with the same name.",
+        node,
+      );
     const address = [...(owner?.address ?? []), exposed ?? name];
     const initializer = this.initializer(node);
     const declaredType = node.childForFieldName("type");
     if (
       node.type === "variable_declaration" &&
-      declaredType === null &&
+      (declaredType === null || declaredType.text === "type") &&
+      node.children.some((child) => child.text === "const") &&
       initializer?.type === "identifier"
     ) {
       const matches = scope.namedChildren.filter(
@@ -147,6 +173,16 @@ export class ZigFileScanner {
         );
         return undefined;
       }
+      if (this.scalar(target, scope, new Set<number>()))
+        return this.add(
+          node,
+          name,
+          "property",
+          owner,
+          [...canonical, name],
+          address,
+          false,
+        );
       const original = this.declaration(
         target,
         scope,
@@ -174,13 +210,15 @@ export class ZigFileScanner {
     const primitiveType =
       initializer !== undefined && TYPE_FORMS.has(initializer.type);
     const symbol: EvidenceProgrammingSymbol =
-      node.type === "function_declaration"
-        ? "function"
-        : container !== undefined ||
-            primitiveType ||
-            declaredType?.text === "type"
-          ? "type"
-          : "property";
+      node.type === "container_field"
+        ? "property"
+        : node.type === "function_declaration"
+          ? "function"
+          : container !== undefined ||
+              primitiveType ||
+              declaredType?.text === "type"
+            ? "type"
+            : "property";
     const declaration = this.add(
       node,
       name,
@@ -202,7 +240,8 @@ export class ZigFileScanner {
           ),
         ) ?? false;
       if (
-        returnType?.text === "type" ||
+        (returnType !== null &&
+          this.metaType(returnType, scope, new Set<number>())) ||
         (returnType !== null &&
           (returnType.descendantsOfType([
             ...CONTAINERS,
@@ -210,7 +249,12 @@ export class ZigFileScanner {
             "call_expression",
             "if_type_expression",
           ]).length !== 0 ||
-            CONTAINERS.has(returnType.type))) ||
+            [
+              ...CONTAINERS,
+              "builtin_function",
+              "call_expression",
+              "if_type_expression",
+            ].includes(returnType.type))) ||
         (generic && returnType?.type !== "builtin_type")
       )
         this.problem(
@@ -220,6 +264,21 @@ export class ZigFileScanner {
         );
       return declaration;
     }
+    if (
+      primitiveType &&
+      initializer !== undefined &&
+      initializer.descendantsOfType([
+        ...CONTAINERS,
+        "builtin_function",
+        "call_expression",
+        "if_type_expression",
+      ]).length !== 0
+    )
+      this.problem(
+        "compound-type",
+        "A compound public type contains anonymous or computed members requiring static ownership resolution.",
+        node,
+      );
     if (container !== undefined) {
       if (container.type === "error_set_declaration") {
         for (const member of container.namedChildren.filter(
@@ -266,17 +325,71 @@ export class ZigFileScanner {
       );
     }
     if (
-      node.type === "container_field" &&
       declaredType !== null &&
-      (CONTAINERS.has(declaredType.type) ||
-        declaredType.descendantsOfType([...CONTAINERS]).length !== 0)
+      ([
+        ...CONTAINERS,
+        "builtin_function",
+        "call_expression",
+        "if_type_expression",
+      ].includes(declaredType.type) ||
+        declaredType.descendantsOfType([
+          ...CONTAINERS,
+          "builtin_function",
+          "call_expression",
+          "if_type_expression",
+        ]).length !== 0)
     )
       this.problem(
         "anonymous-field-type",
-        "An anonymous container in a public field type requires nested member ownership; give the type an explicit declaration.",
+        "An anonymous or computed public declaration type requires nested member ownership; give the type an explicit declaration.",
         node,
       );
     return declaration;
+  }
+
+  /** Recognizes aliases of the metatype in function return positions without execution. */
+  private metaType(node: Node, scope: Node, visited: Set<number>): boolean {
+    if (node.text === "type") return true;
+    if (node.type !== "identifier" || visited.has(node.startIndex))
+      return false;
+    visited.add(node.startIndex);
+    const target = scope.namedChildren.find(
+      (child) =>
+        child.type === "variable_declaration" &&
+        child.namedChildren.find((part) => part.type === "identifier")?.text ===
+          node.text,
+    );
+    const initializer =
+      target === undefined ? undefined : this.initializer(target);
+    return (
+      initializer !== undefined && this.metaType(initializer, scope, visited)
+    );
+  }
+
+  /** Distinguishes copied scalar values from identity-preserving namespace aliases. */
+  private scalar(node: Node, scope: Node, visited: Set<number>): boolean {
+    if (visited.has(node.startIndex) || node.type !== "variable_declaration")
+      return false;
+    visited.add(node.startIndex);
+    const declared = node.childForFieldName("type");
+    if (declared !== null)
+      return declared.type === "builtin_type" && declared.text !== "type";
+    const initializer = this.initializer(node);
+    if (initializer === undefined) return false;
+    if (VALUE_FORMS.has(initializer.type)) return true;
+    if (initializer.type !== "identifier") return false;
+    const matches = scope.namedChildren.filter(
+      (child) =>
+        child.type === "variable_declaration" &&
+        child.namedChildren.find((part) => part.type === "identifier")?.text ===
+          initializer.text,
+    );
+    const target = matches[0];
+    return (
+      matches.length === 1 &&
+      target !== undefined &&
+      this.scalar(target, scope, visited)
+    );
   }
 
   /** Copies one physical declaration and its public path before the tree is released. */
@@ -327,7 +440,7 @@ export class ZigFileScanner {
   private name(node: Node): string {
     if (!node.text.startsWith('@"')) return node.text;
     try {
-      return JSON.parse(node.text.slice(1)) as string;
+      return typia.assert<string>(JSON.parse(node.text.slice(1)));
     } catch {
       this.problem(
         "identifier-escape",
@@ -412,7 +525,9 @@ export class ZigFileScanner {
       const opening = doc
         ? "///"
         : node.type === "comment"
-          ? "//"
+          ? node.text.startsWith("//!")
+            ? "//!"
+            : "//"
           : node.type === "multiline_string"
             ? "\\\\"
             : '"';
