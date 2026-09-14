@@ -1,5 +1,6 @@
 import { EvidenceDartAdapter } from "../adapters/dart/EvidenceDartAdapter";
 import { EvidenceCAdapter } from "../adapters/c/EvidenceCAdapter";
+import { EvidenceBigQueryAdapter } from "../adapters/bigquery/EvidenceBigQueryAdapter";
 import { EvidenceCppAdapter } from "../adapters/cpp/EvidenceCppAdapter";
 import { EvidenceCSharpAdapter } from "../adapters/csharp/EvidenceCSharpAdapter";
 import { EvidenceDbmlAdapter } from "../adapters/dbml/EvidenceDbmlAdapter";
@@ -31,6 +32,7 @@ export namespace EvidenceAdapterFactory {
   export function create(type: EvidenceArtifactType): IEvidenceAdapter {
     if (type === "dart") return new EvidenceDartAdapter();
     if (type === "c") return new EvidenceCAdapter();
+    if (type === "bigquery") return new EvidenceBigQueryAdapter();
     if (type === "cpp") return new EvidenceCppAdapter();
     if (type === "csharp") return new EvidenceCSharpAdapter();
     if (type === "dbml") return new EvidenceDbmlAdapter();

@@ -4,6 +4,7 @@ export { EvidenceScalaAdapter } from "./adapters/scala/EvidenceScalaAdapter";
 export { EvidenceChecker } from "./EvidenceChecker";
 
 export { EvidenceCAdapter } from "./adapters/c/EvidenceCAdapter";
+export { EvidenceBigQueryAdapter } from "./adapters/bigquery/EvidenceBigQueryAdapter";
 export { EvidenceCppAdapter } from "./adapters/cpp/EvidenceCppAdapter";
 export { EvidenceCSharpAdapter } from "./adapters/csharp/EvidenceCSharpAdapter";
 export { EvidenceDbmlAdapter } from "./adapters/dbml/EvidenceDbmlAdapter";
