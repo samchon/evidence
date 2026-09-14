@@ -10,6 +10,27 @@ export namespace TreeSitterGrammarCatalog {
   /** Upstream provenance compiled into the package; payload bytes are acquired separately. */
   const GRAMMARS: IEvidenceGrammar[] = [
     {
+      id: "dbml",
+      repository: "https://github.com/dynamotn/tree-sitter-dbml",
+      version:
+        "grammar-dbml-c67985a56a3edf40b84cbc41d2c0224d074362a8ecb916a1a744c283c035fc15",
+      commit: "2e2fa5640268c33c3d3f27f7e676f631a9c68fd9",
+      wasm: {
+        file: "dbml/tree-sitter-dbml.wasm",
+        url: "https://github.com/wrtnlabs/evidence/releases/download/grammar-dbml-c67985a56a3edf40b84cbc41d2c0224d074362a8ecb916a1a744c283c035fc15/tree-sitter-dbml.wasm",
+        sha256:
+          "c67985a56a3edf40b84cbc41d2c0224d074362a8ecb916a1a744c283c035fc15",
+        size: 30043,
+      },
+      license: {
+        file: "dbml/LICENSE",
+        url: "https://raw.githubusercontent.com/dynamotn/tree-sitter-dbml/2e2fa5640268c33c3d3f27f7e676f631a9c68fd9/LICENSE",
+        sha256:
+          "8e417a16aaad67be7ae75b88078e8250a756597656765b6660cfa276224e81b0",
+        size: 1097,
+      },
+    },
+    {
       id: "typescript",
       repository: "https://github.com/tree-sitter/tree-sitter-typescript",
       version: "v0.23.2",
@@ -250,6 +271,27 @@ export namespace TreeSitterGrammarCatalog {
       },
     },
     {
+      id: "dart",
+      repository: "https://github.com/nielsenko/tree-sitter-dart",
+      version:
+        "grammar-dart-0795f78c9c65eae2dbc52ca675cc6d4c5fbf3e5bc5a5eda8d54bcccfef3684d7",
+      commit: "b57d734c84f510bbd524097902cab671e4dbfca9",
+      wasm: {
+        file: "dart/tree-sitter-dart.wasm",
+        url: "https://github.com/wrtnlabs/evidence/releases/download/grammar-dart-0795f78c9c65eae2dbc52ca675cc6d4c5fbf3e5bc5a5eda8d54bcccfef3684d7/tree-sitter-dart.wasm",
+        sha256:
+          "0795f78c9c65eae2dbc52ca675cc6d4c5fbf3e5bc5a5eda8d54bcccfef3684d7",
+        size: 1270232,
+      },
+      license: {
+        file: "dart/LICENSE",
+        url: "https://raw.githubusercontent.com/nielsenko/tree-sitter-dart/b57d734c84f510bbd524097902cab671e4dbfca9/LICENSE",
+        sha256:
+          "37255daf7e1cfaa7f90f56bcfe02d8dd4452587fabec5fae84790344ae3a3be2",
+        size: 1103,
+      },
+    },
+    {
       id: "matlab",
       repository: "https://github.com/acristoffers/tree-sitter-matlab",
       version:
@@ -373,24 +415,24 @@ export namespace TreeSitterGrammarCatalog {
       },
     },
     {
-      id: "dbml",
-      repository: "https://github.com/dynamotn/tree-sitter-dbml",
+      id: "sqlite",
+      repository: "https://github.com/dhcmrlchtdj/tree-sitter-sqlite",
       version:
-        "grammar-dbml-c67985a56a3edf40b84cbc41d2c0224d074362a8ecb916a1a744c283c035fc15",
-      commit: "2e2fa5640268c33c3d3f27f7e676f631a9c68fd9",
+        "grammar-sqlite-f3a1767fc368a15eb10b1db906ff1abcf510dc5e38920cfb937fd0960c64fa82",
+      commit: "993be0a91c0c90b0cc7799e6ff65922390e2cefe",
       wasm: {
-        file: "dbml/tree-sitter-dbml.wasm",
-        url: "https://github.com/wrtnlabs/evidence/releases/download/grammar-dbml-c67985a56a3edf40b84cbc41d2c0224d074362a8ecb916a1a744c283c035fc15/tree-sitter-dbml.wasm",
+        file: "sqlite/tree-sitter-sqlite.wasm",
+        url: "https://github.com/wrtnlabs/evidence/releases/download/grammar-sqlite-f3a1767fc368a15eb10b1db906ff1abcf510dc5e38920cfb937fd0960c64fa82/tree-sitter-sqlite.wasm",
         sha256:
-          "c67985a56a3edf40b84cbc41d2c0224d074362a8ecb916a1a744c283c035fc15",
-        size: 30043,
+          "f3a1767fc368a15eb10b1db906ff1abcf510dc5e38920cfb937fd0960c64fa82",
+        size: 983433,
       },
       license: {
-        file: "dbml/LICENSE",
-        url: "https://raw.githubusercontent.com/dynamotn/tree-sitter-dbml/2e2fa5640268c33c3d3f27f7e676f631a9c68fd9/LICENSE",
+        file: "sqlite/LICENSE",
+        url: "https://raw.githubusercontent.com/dhcmrlchtdj/tree-sitter-sqlite/993be0a91c0c90b0cc7799e6ff65922390e2cefe/LICENSE",
         sha256:
-          "8e417a16aaad67be7ae75b88078e8250a756597656765b6660cfa276224e81b0",
-        size: 1097,
+          "d9e7e47e6b65f2ad3cd1770d7ec20d6ac1e5fe8f5177d22c6b273590635e4722",
+        size: 1082,
       },
     },
   ];

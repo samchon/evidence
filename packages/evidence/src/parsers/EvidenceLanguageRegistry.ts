@@ -54,26 +54,26 @@ export namespace EvidenceLanguageRegistry {
 
   const DATABASES: IEvidenceDatabaseLanguage[] = [
     {
-      type: "dbml",
-      name: "DBML",
-      grammars: [{ id: "dbml", extensions: [".dbml"], filenames: [] }],
+      type: "sqlite",
+      name: "SQLite",
+      grammars: [
+        { id: "sqlite", extensions: [".sql", ".sqlite"], filenames: [] },
+      ],
       adapter: {
-        entry: "EvidenceDbmlAdapter",
+        entry: "EvidenceSqliteAdapter",
         symbols: ["model", "column", "relation"],
         publicSurface:
-          "Selected DBML tables, scalar columns and inline/short/long named or composite relationships.",
+          "Explicit SQLite CREATE TABLE declarations, columns, and foreign keys across selected schema files.",
         addressing:
-          "File-qualified schema/table/member addresses; public-schema shorthand and explicit table aliases retain one identity.",
-        comments: [
-          "adjacent standalone // or block comments",
-          "table and column notes",
-        ],
+          "File-qualified decoded source names with literal schema and table segments; case-insensitive schema identities are independent of files.",
+        comments: ["adjacent leading SQLite line and block comments"],
         unsupported: [
-          "reusable partials",
-          "table groups",
-          "module imports",
-          "optional cardinality modifiers",
-          "runtime schema discovery",
+          "runtime database inspection",
+          "schema mutations",
+          "virtual tables",
+          "CREATE TABLE AS",
+          "ATTACH and PRAGMA execution",
+          "views and triggers",
         ],
       },
     },
@@ -143,9 +143,53 @@ export namespace EvidenceLanguageRegistry {
         ],
       },
     },
+    {
+      type: "dbml",
+      name: "DBML",
+      grammars: [{ id: "dbml", extensions: [".dbml"], filenames: [] }],
+      adapter: {
+        entry: "EvidenceDbmlAdapter",
+        symbols: ["model", "column", "relation"],
+        publicSurface:
+          "Selected DBML tables, scalar columns and inline/short/long named or composite relationships.",
+        addressing:
+          "File-qualified schema/table/member addresses; public-schema shorthand and explicit table aliases retain one identity.",
+        comments: [
+          "adjacent standalone // or block comments",
+          "table and column notes",
+        ],
+        unsupported: [
+          "reusable partials",
+          "table groups",
+          "module imports",
+          "optional cardinality modifiers",
+          "runtime schema discovery",
+        ],
+      },
+    },
   ];
 
   const LANGUAGES: IEvidenceLanguage[] = [
+    {
+      type: "dart",
+      name: "Dart",
+      grammars: [{ id: "dart", extensions: [".dart"], filenames: [] }],
+      adapter: {
+        entry: "EvidenceDartAdapter",
+        symbols: ["type", "function", "property"],
+        publicSurface:
+          "Explicit public Dart declarations across selected defining libraries, reciprocal parts, and static relative exports.",
+        addressing:
+          "File-qualified library names and lexical members, with part and show/hide export aliases sharing semantic identity.",
+        comments: ["attached /// or /** */ Dart documentation"],
+        unsupported: [
+          "package and SDK export URIs",
+          "conditional exports",
+          "augmentation",
+          "inherited or generated members absent from selected source",
+        ],
+      },
+    },
     {
       type: "php",
       name: "PHP",
@@ -509,28 +553,6 @@ export namespace EvidenceLanguageRegistry {
   ];
 
   const CANDIDATES: IEvidenceLanguageCandidate[] = [
-    {
-      id: "dart",
-      name: "Dart",
-      kind: "programming-language",
-      dialects: ["Dart source"],
-      grammarRepository: "https://github.com/nielsenko/tree-sitter-dart",
-      grammarLicense: "MIT",
-      wasm: "source-build",
-      wasmNotes:
-        "No upstream release asset is published; build WASM from a pinned source commit with the Tree-sitter CLI.",
-      languageReference: "https://dart.dev/language/libraries",
-      visibility:
-        "identifiers beginning with an underscore are private to a library; other declarations are public unless export combinators hide them",
-      declarations:
-        "libraries, classes, mixins, enums, extensions, extension types, functions, variables, getters, setters, and typedefs",
-      blockers: [
-        "part files share one library-private namespace",
-        "export/show/hide traversal and package URI resolution",
-        "generated members and extension lookup",
-      ],
-      next: "Build and pin ABI-compatible WASM, then certify one library graph with part and export combinator resolution.",
-    },
     {
       id: "lua",
       name: "Lua",

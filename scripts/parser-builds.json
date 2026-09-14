@@ -13,6 +13,36 @@
   },
   "grammars": [
     {
+      "id": "dbml",
+      "repository": "https://github.com/dynamotn/tree-sitter-dbml",
+      "commit": "2e2fa5640268c33c3d3f27f7e676f631a9c68fd9",
+      "directory": ".",
+      "license": "LICENSE",
+      "abi": 14,
+      "smoke": {
+        "source": "Table users {\n id int [pk]\n}\n",
+        "query": "(definition name: (table (identifier) @name))",
+        "capture": "users"
+      },
+      "patch": {
+        "file": "scripts/parser-patches/dbml.patch",
+        "sha256": "7318df6148a5ed9f9e2116981e641db5a074918e8298b345edc95490d20597f8"
+      }
+    },
+    {
+      "id": "dart",
+      "repository": "https://github.com/nielsenko/tree-sitter-dart",
+      "commit": "b57d734c84f510bbd524097902cab671e4dbfca9",
+      "directory": ".",
+      "license": "LICENSE",
+      "abi": 15,
+      "smoke": {
+        "source": "void evidence_probe() {}",
+        "query": "(identifier) @name",
+        "capture": "evidence_probe"
+      }
+    },
+    {
       "id": "matlab",
       "repository": "https://github.com/acristoffers/tree-sitter-matlab",
       "commit": "f03d0347acd8bb05d4edd8c845ac1718729e1fad",
@@ -52,20 +82,16 @@
       }
     },
     {
-      "id": "dbml",
-      "repository": "https://github.com/dynamotn/tree-sitter-dbml",
-      "commit": "2e2fa5640268c33c3d3f27f7e676f631a9c68fd9",
+      "id": "sqlite",
+      "repository": "https://github.com/dhcmrlchtdj/tree-sitter-sqlite",
+      "commit": "993be0a91c0c90b0cc7799e6ff65922390e2cefe",
       "directory": ".",
       "license": "LICENSE",
       "abi": 14,
       "smoke": {
-        "source": "Table users {\n id int [pk]\n}\n",
-        "query": "(definition name: (table (identifier) @name))",
-        "capture": "users"
-      },
-      "patch": {
-        "file": "scripts/parser-patches/dbml.patch",
-        "sha256": "7318df6148a5ed9f9e2116981e641db5a074918e8298b345edc95490d20597f8"
+        "source": "CREATE TABLE evidence_probe (id INTEGER);",
+        "query": "(identifier) @name",
+        "capture": "evidence_probe"
       }
     }
   ]
