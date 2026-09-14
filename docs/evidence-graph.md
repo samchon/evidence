@@ -1,6 +1,6 @@
 # Evidence Graph contract
 
-Contract version 1 defines how `@samchon/evidence` turns selected artifacts into independent coverage obligations. The serialized `check`, `list`, `inspect`, `graph`, and `languages` reports use `schemaVersion: 1`; a future incompatible report or fingerprint contract requires a new version.
+Contract version 1 defines how `@wrtnlabs/evidence` turns selected artifacts into independent coverage obligations. The serialized `check`, `list`, `inspect`, `graph`, and `languages` reports use `schemaVersion: 1`; a future incompatible report or fingerprint contract requires a new version.
 
 ## Terms
 
@@ -38,7 +38,7 @@ The checker never treats a parser failure as an empty successful population. It 
 Every reference array element is a separate obligation, even when two entries select the same files. Every claim is also independent, even when another claim already covers the same reference unit.
 
 ```ts
-import type { IEvidenceConfig } from "@samchon/evidence";
+import type { IEvidenceConfig } from "@wrtnlabs/evidence";
 
 export default {
   claims: [
@@ -89,7 +89,7 @@ Ordinary coverage requires every selected reference unit to receive at least one
 A Markdown reference with `checklist: true` changes coverage from one answer per requirement to one answer per selected claim host and requirement pair.
 
 ```ts
-import type { IEvidenceClaim } from "@samchon/evidence";
+import type { IEvidenceClaim } from "@wrtnlabs/evidence";
 
 const checklistClaim = {
   name: "every function follows every engineering rule",

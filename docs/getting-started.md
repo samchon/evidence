@@ -7,10 +7,10 @@ This guide creates a two-edge graph: a public implementation cites a Markdown re
 Install Evidence with the TypeScript toolchain that evaluates its typed configuration:
 
 ```bash
-pnpm i -D typescript ttsc @samchon/evidence
+pnpm i -D typescript ttsc @wrtnlabs/evidence
 ```
 
-`ttsc` supplies `ttsx`. Evidence uses it to typecheck and evaluate `evidence.config.ts`; it does not add another config runtime. The package already contains its certified Tree-sitter grammar WASM and licenses. Do not install a grammar package or a compiler for each analyzed language.
+`ttsc` supplies `ttsx`. Evidence uses it to typecheck and evaluate `evidence.config.ts`; it does not add another config runtime. The runtime downloads each certified Tree-sitter grammar into a per-user cache on first use and verifies its pinned checksum. Do not install a grammar package or a compiler for each analyzed language.
 
 Create the starter file:
 
@@ -21,7 +21,7 @@ pnpm exec evidence init
 `init` writes `evidence.config.ts` and refuses to overwrite an existing file. Replace it with this graph:
 
 ```ts
-import type { IEvidenceConfig } from "@samchon/evidence";
+import type { IEvidenceConfig } from "@wrtnlabs/evidence";
 
 export default {
   severity: "error",
