@@ -1,5 +1,7 @@
 import { resolve } from "node:path";
 
+import { EvidenceLanguageRegistry } from "../parsers/EvidenceLanguageRegistry";
+
 import type { IEvidenceConfig } from "../structures/IEvidenceConfig";
 import type { IEvidenceReference } from "../structures/IEvidenceReference";
 import { EvidenceArtifactTypes } from "./EvidenceArtifactTypes";
@@ -22,7 +24,7 @@ export function validateEvidenceConfig(
     validateArtifactType(problems, `${claimPath}.type`, claim.type);
     validateRoot(problems, `${claimPath}.root`, configFile, claim.root);
     validateGlobs(problems, `${claimPath}.files`, claim.files);
-    validateSymbols(problems, `${claimPath}.symbol`, claim.symbol);
+    validateSymbols(problems, `${claimPath}.symbol`, claim.symbol, claim.type);
     if (claim.evidenceExcludeCarriers !== undefined)
       validateGlobs(
         problems,
@@ -43,7 +45,12 @@ export function validateEvidenceConfig(
         : `${claimPath}.reference`;
       validateArtifactType(problems, `${base}.type`, reference.type);
       validateRoot(problems, `${base}.root`, configFile, reference.root);
-      validateSymbols(problems, `${base}.symbol`, reference.symbol);
+      validateSymbols(
+        problems,
+        `${base}.symbol`,
+        reference.symbol,
+        reference.type,
+      );
       if (reference.type === "swagger")
         validateSwaggerSource(problems, `${base}.file`, reference.file);
       else validateGlobs(problems, `${base}.files`, reference.files);
@@ -120,11 +127,21 @@ function validateSymbols(
   problems: string[],
   path: string,
   symbol: string | string[] | undefined,
+  type: string,
 ): void {
   if (Array.isArray(symbol) && symbol.length === 0)
     problems.push(
       `${path}: an empty symbol array selects no evidence units or declaration hosts.`,
     );
+  const supported = EvidenceLanguageRegistry.list().find(
+    (language) => language.type === type,
+  )?.adapter?.symbols;
+  if (supported === undefined || symbol === undefined) return;
+  for (const selected of Array.isArray(symbol) ? symbol : [symbol])
+    if (!supported.some((candidate) => candidate === selected))
+      problems.push(
+        `${path}: '${type}' does not support '${selected}'; select ${supported.join(", ")}.`,
+      );
 }
 
 function validateSwaggerSource(

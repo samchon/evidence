@@ -13,6 +13,23 @@
   },
   "grammars": [
     {
+      "id": "dbml",
+      "repository": "https://github.com/dynamotn/tree-sitter-dbml",
+      "commit": "2e2fa5640268c33c3d3f27f7e676f631a9c68fd9",
+      "directory": ".",
+      "license": "LICENSE",
+      "abi": 14,
+      "smoke": {
+        "source": "Table users {\n id int [pk]\n}\n",
+        "query": "(definition name: (table (identifier) @name))",
+        "capture": "users"
+      },
+      "patch": {
+        "file": "scripts/parser-patches/dbml.patch",
+        "sha256": "7318df6148a5ed9f9e2116981e641db5a074918e8298b345edc95490d20597f8"
+      }
+    },
+    {
       "id": "dart",
       "repository": "https://github.com/nielsenko/tree-sitter-dart",
       "commit": "b57d734c84f510bbd524097902cab671e4dbfca9",
@@ -36,6 +53,19 @@
         "source": "function result = evidence_sum(value)\n  result = value + 1;\nend\n",
         "query": "(function_definition name: (identifier) @name)",
         "capture": "evidence_sum"
+      }
+    },
+    {
+      "id": "bigquery",
+      "repository": "https://github.com/takegue/tree-sitter-sql-bigquery",
+      "commit": "eb53d2486b353f8a3d5f69833b2ae749b4862ba5",
+      "directory": ".",
+      "license": "LICENSE",
+      "abi": 14,
+      "smoke": {
+        "source": "CREATE TABLE evidence_probe (id INTEGER);",
+        "query": "(identifier) @name",
+        "capture": "evidence_probe"
       }
     },
     {

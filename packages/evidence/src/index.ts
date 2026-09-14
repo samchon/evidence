@@ -4,12 +4,15 @@ export { EvidenceScalaAdapter } from "./adapters/scala/EvidenceScalaAdapter";
 export { EvidenceChecker } from "./EvidenceChecker";
 
 export { EvidenceCAdapter } from "./adapters/c/EvidenceCAdapter";
+export { EvidenceBigQueryAdapter } from "./adapters/bigquery/EvidenceBigQueryAdapter";
 export { EvidenceCppAdapter } from "./adapters/cpp/EvidenceCppAdapter";
 export { EvidenceCSharpAdapter } from "./adapters/csharp/EvidenceCSharpAdapter";
+export { EvidenceDbmlAdapter } from "./adapters/dbml/EvidenceDbmlAdapter";
 export { EvidenceGoAdapter } from "./adapters/go/EvidenceGoAdapter";
 export { EvidenceJavaAdapter } from "./adapters/java/EvidenceJavaAdapter";
 export { EvidenceJavaScriptAdapter } from "./adapters/javascript/EvidenceJavaScriptAdapter";
 export { EvidenceKotlinAdapter } from "./adapters/kotlin/EvidenceKotlinAdapter";
+export { EvidenceLuaAdapter } from "./adapters/lua/EvidenceLuaAdapter";
 export { EvidenceSqliteAdapter } from "./adapters/sqlite/EvidenceSqliteAdapter";
 export { EvidenceMarkdownAdapter } from "./adapters/markdown/EvidenceMarkdownAdapter";
 export { EvidenceMatlabAdapter } from "./adapters/matlab/EvidenceMatlabAdapter";

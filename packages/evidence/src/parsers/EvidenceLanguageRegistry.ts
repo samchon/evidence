@@ -124,6 +124,32 @@ export namespace EvidenceLanguageRegistry {
       },
     },
     {
+      type: "bigquery",
+      name: "BigQuery GoogleSQL",
+      grammars: [
+        { id: "bigquery", extensions: [".sql", ".bqsql"], filenames: [] },
+      ],
+      adapter: {
+        entry: "EvidenceBigQueryAdapter",
+        symbols: ["model", "column", "relation"],
+        publicSurface:
+          "Explicit GoogleSQL CREATE TABLE declarations, nested STRUCT and ARRAY fields, and declared NOT ENFORCED foreign keys.",
+        addressing:
+          "File-qualified project.dataset.table paths with nested field segments and named or endpoint-derived foreign-key segments.",
+        comments: [
+          "adjacent --, #, or block comments",
+          "static OPTIONS description strings",
+        ],
+        unsupported: [
+          "query-derived and external schemas",
+          "conditional or replacing table definitions",
+          "ALTER migrations",
+          "runtime database state",
+          "unsupported string escapes",
+        ],
+      },
+    },
+    {
       type: "sql",
       name: "Portable SQL",
       grammars: [{ id: "sql", extensions: [".sql"], filenames: [] }],
@@ -140,6 +166,30 @@ export namespace EvidenceLanguageRegistry {
           "query-derived tables",
           "dialect extensions",
           "runtime database discovery",
+        ],
+      },
+    },
+    {
+      type: "dbml",
+      name: "DBML",
+      grammars: [{ id: "dbml", extensions: [".dbml"], filenames: [] }],
+      adapter: {
+        entry: "EvidenceDbmlAdapter",
+        symbols: ["model", "column", "relation"],
+        publicSurface:
+          "Selected DBML tables, scalar columns and inline/short/long named or composite relationships.",
+        addressing:
+          "File-qualified schema/table/member addresses; public-schema shorthand and explicit table aliases retain one identity.",
+        comments: [
+          "adjacent standalone // or block comments",
+          "table and column notes",
+        ],
+        unsupported: [
+          "reusable partials",
+          "table groups",
+          "module imports",
+          "optional cardinality modifiers",
+          "runtime schema discovery",
         ],
       },
     },
@@ -166,6 +216,29 @@ export namespace EvidenceLanguageRegistry {
           "external C data and aggregate types",
           "compatibility aliases",
           "inherited and synthesized declarations",
+        ],
+      },
+    },
+    {
+      type: "lua",
+      name: "Lua",
+      grammars: [{ id: "lua", extensions: [".lua"], filenames: [] }],
+      adapter: {
+        entry: "EvidenceLuaAdapter",
+        symbols: ["function", "property"],
+        publicSurface:
+          "Explicit globals and statically returned module tables with literal fields and resolved local aliases.",
+        addressing:
+          "File-qualified globals and module fields; tables are properties and dot/colon methods share literal field accessors.",
+        comments: ["adjacent --- LuaDoc", "adjacent long Lua comments"],
+        unsupported: [
+          "dynamic table mutation",
+          "shared values with distinct table owners",
+          "metatables",
+          "require loader evaluation",
+          "computed and numeric keys",
+          "conditional initialization",
+          "escaped field names",
         ],
       },
     },
@@ -552,28 +625,6 @@ export namespace EvidenceLanguageRegistry {
   ];
 
   const CANDIDATES: IEvidenceLanguageCandidate[] = [
-    {
-      id: "lua",
-      name: "Lua",
-      kind: "programming-language",
-      dialects: ["Lua source"],
-      grammarRepository:
-        "https://github.com/tree-sitter-grammars/tree-sitter-lua",
-      grammarLicense: "MIT",
-      wasm: "release-asset",
-      wasmNotes: "The v0.5.0 release publishes tree-sitter-lua.wasm.",
-      languageReference: "https://www.lua.org/manual/5.4/manual.html#3.2",
-      visibility:
-        "lexical local declarations are explicit, but modules and public exports are conventions over globals and returned tables",
-      declarations:
-        "local/global functions and variables, table fields, and returned module tables",
-      blockers: [
-        "the language has no normative module export declaration",
-        "table aliases and mutations are dynamic",
-        "require paths and loader behavior are environment-defined",
-      ],
-      next: "Specify a bounded returned-table module convention before deciding whether Lua can claim a complete public inventory.",
-    },
     {
       id: "zig",
       name: "Zig",

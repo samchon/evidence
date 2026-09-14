@@ -16,6 +16,14 @@ export async function test_parser_grammars(): Promise<void> {
       query: "(class_interface (identifier) @name)",
     },
     {
+      type: "lua",
+      grammar: "lua",
+      file: "contract.lua",
+      name: "run",
+      content: "function run() return 1 end",
+      query: "(function_declaration name: (identifier) @name)",
+    },
+    {
       type: "dart",
       grammar: "dart",
       file: "Contract.dart",
