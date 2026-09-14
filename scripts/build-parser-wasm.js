@@ -106,6 +106,7 @@ async function main() {
         platform: process.platform,
         architecture: process.arch,
         inputs: first.inputs,
+        patchBase64: first.patch?.toString("base64"),
         reproducible: true,
         wasmSha256: digest,
         runtimeVersion: JSON.parse(
@@ -171,12 +172,14 @@ async function build(recipe, base, name, cli, env) {
   if (commit.trim() !== recipe.commit)
     throw new Error("Grammar checkout differs from its source pin.");
   let patchDigest;
+  let patchBytes;
   if (recipe.patch) {
     const patch = path.resolve(root, recipe.patch.file);
     const patchRoot = path.join(root, "scripts/parser-patches");
     if (!patch.startsWith(patchRoot + path.sep))
       throw new Error("Grammar patch escapes scripts/parser-patches.");
-    patchDigest = sha256(await readFile(patch));
+    patchBytes = await readFile(patch);
+    patchDigest = sha256(patchBytes);
     if (patchDigest !== recipe.patch.sha256)
       throw new Error("Grammar patch differs from its pinned digest.");
     await run("git", ["-C", checkout, "apply", "--check", patch]);
@@ -210,6 +213,7 @@ async function build(recipe, base, name, cli, env) {
     bytes: await readFile(wasm),
     license: await readFile(path.join(checkout, recipe.license)),
     inputs,
+    patch: patchBytes,
   };
 }
 
