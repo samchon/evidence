@@ -95,9 +95,11 @@ export class PhpFileScanner {
         child.type === "method_declaration"
       ) {
         this.add(child, child, "function", namespace, owner);
+        const methodName = child.childForFieldName("name");
         if (
           owner !== undefined &&
-          child.childForFieldName("name")?.text?.toLowerCase() === "__construct"
+          methodName !== null &&
+          methodName.text.toLowerCase() === "__construct"
         )
           for (const parameter of child.childForFieldName("parameters")
             ?.namedChildren ?? [])
@@ -152,7 +154,10 @@ export class PhpFileScanner {
     const nameNode =
       item.childForFieldName("name") ??
       (item.type === "const_element" ? item.namedChildren[0] : null);
-    const name = nameNode?.text?.replace(/^&\s*/u, "");
+    const name =
+      nameNode === null || nameNode === undefined
+        ? undefined
+        : nameNode.text.replace(/^&\s*/u, "");
     if (name === undefined || name.length === 0) {
       this.problem(
         item,
@@ -214,7 +219,8 @@ export class PhpFileScanner {
       ...(owner === undefined ? {} : { ownerDeclarationId: owner.id }),
     };
     this.declarations.push(declaration);
-    doc?.attachments?.push({ declarationId: declaration.id, siteId });
+    if (doc !== undefined)
+      doc.attachments.push({ declarationId: declaration.id, siteId });
     return declaration;
   }
 
@@ -231,9 +237,11 @@ export class PhpFileScanner {
     )) {
       if (imported.childForFieldName("type")?.text !== "function") continue;
       for (const clause of imported.descendantsOfType("namespace_use_clause")) {
-        const target = clause.namedChildren[0]?.text
-          ?.replace(/^\\/u, "")
-          ?.toLowerCase();
+        const importedName = clause.namedChildren[0];
+        const target =
+          importedName === undefined
+            ? undefined
+            : importedName.text.replace(/^\\/u, "").toLowerCase();
         const alias = clause.childForFieldName("alias");
         if (target !== undefined && dynamicNames.has(target) && alias !== null)
           dynamicNames.add(alias.text.toLowerCase());

@@ -140,4 +140,49 @@ export async function test_php_units(): Promise<void> {
     brackets.units.map((unit) => unit.identity),
     [["One", "Same"], ["Two", "Same"], ["globalRun"]],
   );
+
+  const colliding = await new EvidencePhpAdapter().analyze(
+    TestSourceSnapshot.create(
+      "collision.php",
+      "<?php namespace App \\ Domain; class Shared {} function Shared() {} const Value = 1, value = 2;",
+    ),
+  );
+  TestValidator.equals(
+    "separate PHP name spaces remain complete",
+    colliding.complete,
+    true,
+  );
+  TestValidator.equals(
+    "namespace whitespace is not part of identity",
+    colliding.units.map((unit) => unit.identity),
+    [
+      ["App", "Domain", "Shared"],
+      ["App", "Domain", "Shared"],
+      ["App", "Domain", "Value"],
+      ["App", "Domain", "value"],
+    ],
+  );
+  const collisionGraph = new EvidenceInventory([colliding]);
+  const collisionAddress = {
+    file: "/project/collision.php",
+    segments: ["App", "Domain", "Shared"],
+  };
+  TestValidator.equals(
+    "type and function with same spelling are ambiguous together",
+    collisionGraph.resolve(
+      collisionAddress,
+      colliding.units.map((unit) => unit.id),
+    ).status,
+    "ambiguous",
+  );
+  TestValidator.equals(
+    "selector disambiguates independent PHP names",
+    collisionGraph.resolve(
+      collisionAddress,
+      colliding.units
+        .filter((unit) => unit.symbol === "function")
+        .map((unit) => unit.id),
+    ).status,
+    "resolved",
+  );
 }
