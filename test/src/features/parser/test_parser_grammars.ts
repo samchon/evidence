@@ -24,6 +24,14 @@ export async function test_parser_grammars(): Promise<void> {
       query: "(class_declaration name: (identifier) @name)",
     },
     {
+      type: "zig",
+      grammar: "zig",
+      file: "contract.zig",
+      name: "run",
+      content: "pub fn run() i32 { return 1; }",
+      query: "(function_declaration name: (identifier) @name)",
+    },
+    {
       type: "php",
       grammar: "php",
       file: "Contract.php",

@@ -24,6 +24,7 @@ import { EvidenceSqliteAdapter } from "../adapters/sqlite/EvidenceSqliteAdapter"
 import { EvidenceSwiftAdapter } from "../adapters/swift/EvidenceSwiftAdapter";
 import { EvidenceSwaggerAdapter } from "../adapters/swagger/EvidenceSwaggerAdapter";
 import { EvidenceTypeScriptAdapter } from "../adapters/typescript/EvidenceTypeScriptAdapter";
+import { EvidenceZigAdapter } from "../adapters/zig/EvidenceZigAdapter";
 import type { IEvidenceAdapter } from "../structures/IEvidenceAdapter";
 import type { EvidenceArtifactType } from "../typings/EvidenceArtifactType";
 
@@ -56,6 +57,7 @@ export namespace EvidenceAdapterFactory {
     if (type === "swift") return new EvidenceSwiftAdapter();
     if (type === "swagger") return new EvidenceSwaggerAdapter();
     if (type === "typescript") return new EvidenceTypeScriptAdapter();
+    if (type === "zig") return new EvidenceZigAdapter();
     throw new Error(
       `Artifact type '${type}' has no certified Evidence adapter.`,
     );
