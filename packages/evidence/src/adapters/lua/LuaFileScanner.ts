@@ -375,17 +375,15 @@ export class LuaFileScanner {
     ])) {
       const body = fn.childForFieldName("body");
       if (body === null) continue;
-      for (const declaration of body.descendantsOfType(
-        "variable_declaration",
-      )) {
-        const values = declaration.descendantsOfType("expression_list")[0];
-        if (values !== undefined && this.tableReferences(values, declaration))
-          this.problem(
-            declaration,
-            "A deferred local alias can mutate an exported table; local alias flow is outside static module initialization.",
-          );
-      }
       for (const assignment of body.descendantsOfType("assignment_statement")) {
+        const values = assignment.namedChildren.find(
+          (child) => child.type === "expression_list",
+        );
+        if (values !== undefined && this.tableReferences(values, assignment))
+          this.problem(
+            assignment,
+            "A deferred alias can mutate an exported table; assignment alias flow is outside static module initialization.",
+          );
         if (assignment.parent?.type === "variable_declaration") continue;
         const names = assignment.namedChildren.find(
           (child) => child.type === "variable_list",
@@ -408,6 +406,12 @@ export class LuaFileScanner {
             );
         }
       }
+      for (const returned of body.descendantsOfType("return_statement"))
+        if (this.tableReferences(returned, returned))
+          this.problem(
+            returned,
+            "A function returns an exported table and creates deferred aliases; only the final chunk module return is supported.",
+          );
       for (const declaration of body.descendantsOfType(
         "function_declaration",
       )) {
@@ -486,6 +490,7 @@ export class LuaFileScanner {
         for (const declaration of scope.namedChildren) {
           if (declaration.startIndex >= node.startIndex) break;
           if (declaration.type === "variable_declaration") {
+            if (declaration.endIndex > node.startIndex) continue;
             const names = declaration.descendantsOfType("variable_list")[0];
             if (
               names !== undefined &&
