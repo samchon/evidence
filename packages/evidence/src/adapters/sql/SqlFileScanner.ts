@@ -168,7 +168,12 @@ export class SqlFileScanner {
       this.problem(node, "Foreign keys require an explicit referenced table.");
       return;
     }
-    const remoteTable = this.reference(target);
+    const decodedRemote = this.reference(target);
+    const remoteTable =
+      decodedRemote === undefined
+        ? undefined
+        : (this.policy.reference?.(decodedRemote, table.address) ??
+          decodedRemote);
     const remoteNodes = children.filter(
       (child) =>
         child.type === "identifier" && child.startIndex >= target.endIndex,
@@ -265,6 +270,8 @@ export class SqlFileScanner {
       if (
         node.type === "comment" &&
         previous !== undefined &&
+        this.standalone(previous.range.start.offset) &&
+        this.standalone(range.start.offset) &&
         this.source.content.slice(
           previous.range.start.offset,
           previous.range.start.offset + 2,
@@ -289,9 +296,8 @@ export class SqlFileScanner {
     }
     for (const documentation of groups) {
       const start = documentation.range.start.offset;
-      const line = this.source.content.lastIndexOf("\n", start - 1) + 1;
       // Trailing comments never document the next table or column.
-      if (this.source.content.slice(line, start).trim() === "") {
+      if (this.standalone(start)) {
         const next = this.output.declarations
           .filter(
             (entry) =>
@@ -322,6 +328,12 @@ export class SqlFileScanner {
       }
       this.output.documentation.push(documentation);
     }
+  }
+
+  /** Requires a documentation run to start before any source token on its line. */
+  private standalone(start: number): boolean {
+    const line = this.source.content.lastIndexOf("\n", start - 1) + 1;
+    return this.source.content.slice(line, start).trim() === "";
   }
 
   /** Identifies actual grammar comments without interpreting SQL literals. */
