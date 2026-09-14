@@ -4,7 +4,7 @@ import type { ILuaDeclaration } from "./ILuaDeclaration";
 /** Borrowed static value used only during a Lua parse callback. */
 export interface ILuaValue {
   /** Value category without executing Lua. */
-  kind: "table" | "function" | "literal";
+  kind: "table" | "function" | "literal" | "nil";
 
   /** Original value declaration used for identity and content. */
   node: Node;

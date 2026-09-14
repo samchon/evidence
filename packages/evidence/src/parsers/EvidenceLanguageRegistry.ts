@@ -45,6 +45,28 @@ export namespace EvidenceLanguageRegistry {
 
   const LANGUAGES: IEvidenceLanguage[] = [
     {
+      type: "lua",
+      name: "Lua",
+      grammars: [{ id: "lua", extensions: [".lua"], filenames: [] }],
+      adapter: {
+        entry: "EvidenceLuaAdapter",
+        symbols: ["function", "property"],
+        publicSurface:
+          "Explicit globals and statically returned module tables with literal fields and resolved local aliases.",
+        addressing:
+          "File-qualified globals and module fields; tables are properties and dot/colon methods share literal field accessors.",
+        comments: ["adjacent --- LuaDoc", "adjacent long Lua comments"],
+        unsupported: [
+          "dynamic table mutation",
+          "metatables",
+          "require loader evaluation",
+          "computed and numeric keys",
+          "conditional initialization",
+          "escaped field names",
+        ],
+      },
+    },
+    {
       type: "kotlin",
       name: "Kotlin",
       grammars: [{ id: "kotlin", extensions: [".kt"], filenames: [] }],
@@ -408,28 +430,6 @@ export namespace EvidenceLanguageRegistry {
         "compiler-generated case-class and enum members",
       ],
       next: "Choose explicit Scala dialect fixtures and certify source declarations without compiler-synthesized members.",
-    },
-    {
-      id: "lua",
-      name: "Lua",
-      kind: "programming-language",
-      dialects: ["Lua source"],
-      grammarRepository:
-        "https://github.com/tree-sitter-grammars/tree-sitter-lua",
-      grammarLicense: "MIT",
-      wasm: "release-asset",
-      wasmNotes: "The v0.5.0 release publishes tree-sitter-lua.wasm.",
-      languageReference: "https://www.lua.org/manual/5.4/manual.html#3.2",
-      visibility:
-        "lexical local declarations are explicit, but modules and public exports are conventions over globals and returned tables",
-      declarations:
-        "local/global functions and variables, table fields, and returned module tables",
-      blockers: [
-        "the language has no normative module export declaration",
-        "table aliases and mutations are dynamic",
-        "require paths and loader behavior are environment-defined",
-      ],
-      next: "Specify a bounded returned-table module convention before deciding whether Lua can claim a complete public inventory.",
     },
     {
       id: "objc",

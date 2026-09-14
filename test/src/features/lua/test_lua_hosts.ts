@@ -1,0 +1,88 @@
+import { EvidenceFingerprint, EvidenceLuaAdapter } from "@wrtnlabs/evidence";
+import { TestValidator } from "@nestia/e2e";
+import { dedent } from "@typia/utils";
+
+import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+
+/** Attaches LuaDoc at original UTF-16 coordinates and keeps code examples and detached carriers inert. */
+export async function test_lua_hosts(): Promise<void> {
+  const content = dedent`
+    --- 한글 📘
+    --- @evidence spec.md#run Covers the run requirement.
+    --- \`\`\`lua
+    --- @evidence spec.md#example A fenced example is inert.
+    --- \`\`\`
+    function run() return 1 end
+    --[=[
+    @internal Hidden table and descendants.
+    ]=]
+    local hidden = { child = 1 }
+    return { hidden = hidden }
+  `.replaceAll("\n", "\r\n");
+  const adapter = new EvidenceLuaAdapter();
+  const inventory = await adapter.analyze(
+    TestSourceSnapshot.create("source.lua", content),
+  );
+
+  TestValidator.equals(
+    "documentation parsing succeeds",
+    inventory.diagnostics,
+    [],
+  );
+  TestValidator.equals(
+    "fence creates no acknowledgement",
+    inventory.declarations.map((declaration) => declaration.target),
+    ["spec.md#run"],
+  );
+  TestValidator.equals(
+    "original UTF-16 annotation offset",
+    inventory.declarations[0]?.location.range?.start.offset,
+    content.indexOf("@evidence spec.md#run"),
+  );
+  const hidden = inventory.units.find((unit) => unit.name === "hidden");
+  TestValidator.equals(
+    "long documentation withdraws owner",
+    hidden?.withdrawals.map((withdrawal) => withdrawal.tag),
+    ["internal"],
+  );
+  TestValidator.equals(
+    "withdrawn descendants have no eligible hosts",
+    inventory.hosts.flatMap((host) => host.unitIds).length,
+    2,
+  );
+  const fn = inventory.units.find((unit) => unit.name === "run");
+  if (fn === undefined) throw new Error("Public function is missing.");
+  const normalized = await adapter.analyze(
+    TestSourceSnapshot.create("source.lua", content.replaceAll("\r\n", "\n")),
+  );
+  TestValidator.equals(
+    "CRLF semantic fingerprints are stable",
+    EvidenceFingerprint.inspect(inventory, fn.id).fingerprint,
+    EvidenceFingerprint.inspect(normalized, fn.id).fingerprint,
+  );
+  const unsupported = await adapter.analyze(
+    TestSourceSnapshot.create(
+      "source.lua",
+      dedent`
+    --- @evidence spec.md#private Private documentation cannot claim coverage.
+    local function hidden() end
+    -- @evidence spec.md#ordinary Ordinary comment is not LuaDoc.
+    function publicFunction() return "@evidence spec.md#string A string cannot claim coverage." end
+  `,
+    ),
+  );
+  TestValidator.equals(
+    "unsupported carriers cannot acknowledge",
+    unsupported.declarations,
+    [],
+  );
+  TestValidator.equals(
+    "unsupported carriers are diagnosed",
+    unsupported.diagnostics.map((diagnostic) => diagnostic.code),
+    [
+      "unsupported-annotation-host",
+      "unsupported-annotation-host",
+      "unsupported-annotation-host",
+    ],
+  );
+}

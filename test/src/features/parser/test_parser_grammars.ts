@@ -8,6 +8,14 @@ import type { IParserFixture } from "../../internal/IParserFixture";
 export async function test_parser_grammars(): Promise<void> {
   const fixtures: IParserFixture[] = [
     {
+      type: "lua",
+      grammar: "lua",
+      file: "contract.lua",
+      name: "run",
+      content: "function run() return 1 end",
+      query: "(function_declaration name: (identifier) @name)",
+    },
+    {
       type: "kotlin",
       grammar: "kotlin",
       file: "Contract.kt",

@@ -5,6 +5,7 @@ import { EvidenceGoAdapter } from "../adapters/go/EvidenceGoAdapter";
 import { EvidenceJavaAdapter } from "../adapters/java/EvidenceJavaAdapter";
 import { EvidenceJavaScriptAdapter } from "../adapters/javascript/EvidenceJavaScriptAdapter";
 import { EvidenceKotlinAdapter } from "../adapters/kotlin/EvidenceKotlinAdapter";
+import { EvidenceLuaAdapter } from "../adapters/lua/EvidenceLuaAdapter";
 import { EvidenceMarkdownAdapter } from "../adapters/markdown/EvidenceMarkdownAdapter";
 import { EvidencePrismaAdapter } from "../adapters/prisma/EvidencePrismaAdapter";
 import { EvidencePythonAdapter } from "../adapters/python/EvidencePythonAdapter";
@@ -25,6 +26,7 @@ export namespace EvidenceAdapterFactory {
     if (type === "java") return new EvidenceJavaAdapter();
     if (type === "javascript") return new EvidenceJavaScriptAdapter();
     if (type === "kotlin") return new EvidenceKotlinAdapter();
+    if (type === "lua") return new EvidenceLuaAdapter();
     if (type === "markdown") return new EvidenceMarkdownAdapter();
     if (type === "prisma") return new EvidencePrismaAdapter();
     if (type === "python") return new EvidencePythonAdapter();
