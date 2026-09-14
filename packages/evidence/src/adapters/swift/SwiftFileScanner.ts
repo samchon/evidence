@@ -256,7 +256,7 @@ export class SwiftFileScanner {
     );
     const staticMember =
       owner !== undefined &&
-      modifiers?.namedChildren?.some((child) =>
+      (modifiers === undefined ? [] : modifiers.namedChildren).some((child) =>
         ["static", "class"].includes(child.text),
       ) === true;
     const address = extension
@@ -275,8 +275,9 @@ export class SwiftFileScanner {
       alias,
       form,
       filePrivate:
-        owner?.filePrivate === true ||
-        modifiers?.namedChildren?.some(
+        (owner?.filePrivate === true &&
+          (owner.form !== "extension" || !visible)) ||
+        (modifiers === undefined ? [] : modifiers.namedChildren).some(
           (child) =>
             child.type === "visibility_modifier" &&
             ["private", "fileprivate"].includes(child.text),
@@ -308,9 +309,10 @@ export class SwiftFileScanner {
           siteId,
         });
     }
-    for (const attribute of modifiers?.namedChildren?.filter(
-      (child) => child.type === "attribute",
-    ) ?? []) {
+    for (const attribute of (modifiers === undefined
+      ? []
+      : modifiers.namedChildren
+    ).filter((child) => child.type === "attribute")) {
       const attributeName = attribute.namedChildren[0]?.text;
       if (
         ![
@@ -343,7 +345,9 @@ export class SwiftFileScanner {
     const modifiers = node.namedChildren.find(
       (child) => child.type === "modifiers",
     );
-    const visibility = modifiers?.namedChildren?.find(
+    const visibility = (
+      modifiers === undefined ? [] : modifiers.namedChildren
+    ).find(
       (child) =>
         child.type === "visibility_modifier" && !child.text.includes("("),
     );

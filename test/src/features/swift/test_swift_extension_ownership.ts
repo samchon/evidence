@@ -80,14 +80,18 @@ export async function test_swift_extension_ownership(): Promise<void> {
   );
   TestValidator.equals(
     "source order cannot change semantic populations",
-    reversed.units.map((unit) => unit.id).sort(),
-    inventory.units.map((unit) => unit.id).sort(),
+    reversed.units
+      .map((unit) => unit.id)
+      .sort((left, right) => left.localeCompare(right)),
+    inventory.units
+      .map((unit) => unit.id)
+      .sort((left, right) => left.localeCompare(right)),
   );
   if (root === undefined) throw new Error("Missing root type.");
   const changed = await adapter.analyze(
     TestSourceSnapshot.combine(
       sources.map((source) =>
-        source.files[0]?.physicalPath?.endsWith("Last.swift") === true
+        source.files.some((file) => file.physicalPath.endsWith("Last.swift"))
           ? TestSourceSnapshot.create(
               "src/Last.swift",
               "public extension Root.Nested { func final() { print(1) } }",

@@ -70,7 +70,7 @@ export async function test_swift_units(): Promise<void> {
     "exact source-public denominator",
     inventory.units
       .map((unit) => `${unit.symbol}:${EvidenceAccessor.format(unit.identity)}`)
-      .sort(),
+      .sort((left, right) => left.localeCompare(right)),
     [
       "type:Contract",
       "property:Contract.readable",
@@ -96,7 +96,7 @@ export async function test_swift_units(): Promise<void> {
       "function:Contract.more",
       "function:Contract.explicitMember",
       "function:Service.helper",
-    ].sort(),
+    ].sort((left, right) => left.localeCompare(right)),
   );
   const contract = inventory.units.find((unit) => unit.name === "Contract");
   const run = inventory.units.find((unit) => unit.name === "run");
@@ -147,7 +147,9 @@ export async function test_swift_units(): Promise<void> {
   );
   TestValidator.equals(
     "source dependencies cover extension owners",
-    inventory.dependencies.map((dependency) => dependency.path).sort(),
+    inventory.dependencies
+      .map((dependency) => dependency.path)
+      .sort((left, right) => left.localeCompare(right)),
     ["/project/src/Additional.swift", "/project/src/Contract.swift"],
   );
 }
