@@ -8,6 +8,7 @@ export { EvidenceGoAdapter } from "./adapters/go/EvidenceGoAdapter";
 export { EvidenceJavaAdapter } from "./adapters/java/EvidenceJavaAdapter";
 export { EvidenceJavaScriptAdapter } from "./adapters/javascript/EvidenceJavaScriptAdapter";
 export { EvidenceKotlinAdapter } from "./adapters/kotlin/EvidenceKotlinAdapter";
+export { EvidenceSqliteAdapter } from "./adapters/sqlite/EvidenceSqliteAdapter";
 export { EvidenceMarkdownAdapter } from "./adapters/markdown/EvidenceMarkdownAdapter";
 export { EvidencePrismaAdapter } from "./adapters/prisma/EvidencePrismaAdapter";
 export { EvidencePythonAdapter } from "./adapters/python/EvidencePythonAdapter";

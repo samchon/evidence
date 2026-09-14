@@ -43,7 +43,7 @@ export async function test_sqlite_boundaries(): Promise<void> {
   const qualified = await new EvidenceSqliteAdapter().analyze(
     TestSourceSnapshot.create(
       "schema.sql",
-      "CREATE TABLE archive.items (id INTEGER PRIMARY KEY, owner INTEGER REFERENCES owners);",
+      "CREATE TABLE archive.items (id INTEGER PRIMARY KEY, owner INTEGER REFERENCES owners MATCH simple ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED);",
     ),
   );
   TestValidator.equals(

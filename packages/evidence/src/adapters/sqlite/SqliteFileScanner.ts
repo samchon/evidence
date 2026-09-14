@@ -157,7 +157,15 @@ export class SqliteFileScanner {
     const names = SqliteSyntax.names(node);
     const constraintName = named ? names[0] : undefined;
     const local = inline ?? names.slice(named ? 1 : 0);
-    const remote = SqliteSyntax.names(clause);
+    const action = clause.namedChildren.findIndex((child) =>
+      ["ON", "MATCH", "NOT", "DEFERRABLE"].includes(child.type),
+    );
+    const remote = clause.namedChildren
+      .slice(0, action < 0 ? undefined : action)
+      .flatMap((child) => {
+        const name = SqliteSyntax.identifier(child);
+        return name === undefined ? [] : [name];
+      });
     const target = remote[0];
     const endpoints = remote.slice(1);
     if (
@@ -201,6 +209,9 @@ export class SqliteFileScanner {
       symbol,
       identity,
       address,
+      ...(identity.length === address.length + 1
+        ? { aliases: [[identity[0] ?? "main", ...address]] }
+        : {}),
       site: {
         id: `${id}:site`,
         file: this.source.physicalPath,

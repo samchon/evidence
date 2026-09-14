@@ -61,7 +61,7 @@ export default config;
 
 A **claim** selects the files and declarations that must cite evidence. Its **reference** selects what must be covered. Each claim and each element of its reference array has an independent coverage obligation; partial coverage from separate obligations is never pooled.
 
-Use `type` to select the source language, such as `"typescript"`, `"cpp"`, or `"rust"`, and `files` to select its files with globs. File names distinguish syntax variants such as TSX. No separate `language` setting or TypeScript compiler Program is required. `EvidenceDatabaseType` reserves a shared database type family, but Prisma is the only certified database adapter in this release; SQL dialect and DBML identifiers are rejected until their adapters are implemented and certified.
+Use `type` to select the source language, such as `"typescript"`, `"cpp"`, or `"rust"`, and `files` to select its files with globs. File names distinguish syntax variants such as TSX. No separate `language` setting or TypeScript compiler Program is required. `EvidenceDatabaseType` defines the shared database family; only registered, certified adapters can analyze its configured languages.
 
 Globs resolve from the directory containing `evidence.config.ts`, or from the population's `root`. Patterns are applied in order: `!` excludes matches, and a later positive pattern can include them again. Use `src/**` to select a directory's contents.
 
@@ -180,16 +180,22 @@ For adapter development, `IEvidenceAdapter.analyze(snapshot)` returns an ordinar
 | --- | --- | --- | --- | --- |
 | Programming | Yes | Yes | `type`, `function`, `property` | All / `type` |
 | Markdown | Yes | Yes | `file`, `h1`, `h2`, `h3`, `h4` | All / all |
-| Prisma | Yes | Yes | `model`, `column`, `relation` | All / `model` |
+| Prisma / SQLite | Yes | Yes | `model`, `column`, `relation` | All / `model` |
 | Swagger / OpenAPI | Yes | Yes | `operation` | Every operation / every operation |
 
 Every artifact family can cite every other family, including its own. Markdown can cite programming declarations or Swagger operations, and Swagger operations can cite Markdown, programming declarations, database schemas, or other operations.
 
 A `symbol` accepts one selector or a nonempty array. Programming `type` symbols include classes, interfaces, type aliases, and namespaces. Database `model` symbols describe record structures, `column` symbols describe data fields, and `relation` symbols describe connections between models. A foreign-key value is a column; the declaration describing its connection is a relation.
 
-Database schema typings share `IEvidenceDatabaseClaim` and `IEvidenceDatabaseReference`. Prisma is the implemented database adapter. Select the schema language rather than the database server: MongoDB models written in Prisma use `type: "prisma"`.
+Database schema typings share `IEvidenceDatabaseClaim` and `IEvidenceDatabaseReference`. Select the schema language rather than the database server: MongoDB models written in Prisma use `type: "prisma"`, and SQLite DDL uses `type: "sqlite"`.
 
 Prisma files selected for one population are parsed together with `@prisma/prisma-schema-wasm`, which ships with this package. Evidence first uses a parser version visible from the project root and falls back to its pinned copy, so consumers do not install a separate Prisma parser. Parser output decides whether a member is a column or relation; the source scanner only supplies locations and documentation attachment. Views are model units, while enums, composite types, indexes, generators, and datasources do not form units.
+
+`EvidenceSqliteAdapter` parses explicitly configured `.sql` and `.sqlite` source with the pinned [SQLite Tree-sitter grammar](https://github.com/dhcmrlchtdj/tree-sitter-sqlite/tree/993be0a91c0c90b0cc7799e6ff65922390e2cefe). Each `CREATE TABLE` forms a `model`, each declared column forms a `column`, and each explicit inline or table foreign key forms a `relation` owned directly by its table. Generated columns, omitted column types, `WITHOUT ROWID`, `STRICT`, inline and composite constraints, and double-quoted, single-quoted, backtick, and bracket names are supported. These are source declarations; Evidence never runs SQLite, evaluates a query, or inspects PRAGMA results.
+
+SQLite identities use ASCII-insensitive schema and declaration names across the selected files. An unqualified ordinary table belongs to `main`, a `TEMP` table belongs to `temp`, and an explicit schema qualifier remains part of identity. A duplicate selected declaration leaves analysis incomplete instead of choosing migration order. Public file-qualified addresses retain decoded source spelling: `schema.sql#Account.owner` or `schema.sql#main["Order.Items"]["id.part"]`. Unqualified declarations also expose `main.Account.owner` or `temp.Account.owner` aliases so same-name tables in different schemas remain addressable; their shared unqualified alias is ambiguous. Named foreign keys use a separate literal segment such as `Account["foreign key:owner_link"]`; anonymous keys use `foreign key:` followed by the JSON local-column array, `->`, and a JSON array containing the referenced table and explicit target columns. An omitted target-column list denotes the referenced primary key without inventing endpoint columns.
+
+A consecutive leading SQLite `--` comment run or one adjacent leading `/* */` or `/** */` block carries evidence, exclusions, reviews, and withdrawals. Blank lines and trailing comments detach documentation; literal strings and fenced examples do not create acknowledgements. Every visible declaration remains an eligible host without documentation, and withdrawing a table withdraws its columns and foreign keys. Explicit qualified schemas can be inventoried without executing `ATTACH`. Virtual tables, views, triggers, `CREATE TABLE AS`, schema mutations, other executable statements, and parser errors leave analysis incomplete with a repair diagnostic. Select a declarative schema snapshot rather than migration scripts.
 
 `EvidenceJavaScriptAdapter` parses `.js`, `.jsx`, `.mjs`, and `.cjs` with the pinned JavaScript grammar. `.mjs` always uses ESM and `.cjs` always uses CommonJS. A `.js` or `.jsx` file follows the nearest `package.json` `type`; missing metadata defaults to CommonJS. Checked package paths become watch dependencies, and unreadable, malformed, unsupported, or conflicting metadata leaves the inventory incomplete.
 
