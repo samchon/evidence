@@ -13,6 +13,9 @@ export class DbmlFileScanner {
   /** Declaration owners keyed by parser-recognized start offsets. */
   private readonly owners = new Map<number, string[][]>();
 
+  /** Line comments already included in one contiguous documentation carrier. */
+  private readonly comments = new Set<number>();
+
   /** Borrows a parser session only for the duration of extraction. */
   public constructor(
     private readonly session: EvidenceParseSession,
@@ -225,36 +228,59 @@ export class DbmlFileScanner {
 
   /** Attaches adjacent comments only to a recognized declaration at the same syntax level. */
   private comment(node: Node): void {
-    let current = node;
-    let next = node.nextNamedSibling;
+    if (this.comments.has(node.startIndex)) return;
+    const block = node.text.startsWith("/*");
+    let last = node;
+    if (!block && this.standalone(node))
+      while (
+        last.nextNamedSibling?.type === "comment" &&
+        last.nextNamedSibling.text.startsWith("//") &&
+        this.standalone(last.nextNamedSibling) &&
+        this.adjacent(last, last.nextNamedSibling)
+      ) {
+        last = last.nextNamedSibling;
+        this.comments.add(last.startIndex);
+      }
+    let current = last;
+    let next = last.nextNamedSibling;
     let adjacent = true;
     while (next?.type === "comment") {
       adjacent &&= this.adjacent(current, next);
       current = next;
       next = next.nextNamedSibling;
     }
-    const lineStart =
-      this.output.source.content.lastIndexOf("\n", node.startIndex - 1) + 1;
-    const standalone =
-      this.output.source.content.slice(lineStart, node.startIndex).trim() ===
-      "";
     const owners =
-      next === null || !standalone || !adjacent || !this.adjacent(current, next)
+      next === null ||
+      !this.standalone(node) ||
+      !adjacent ||
+      !this.adjacent(current, next)
         ? []
         : (this.owners.get(next.startIndex) ?? []);
-    const block = node.text.startsWith("/*");
+    const range = {
+      start: this.session.range(node).start,
+      end: this.session.range(last).end,
+    };
     this.output.documentation.push({
       owners,
-      range: this.session.range(node),
-      annotationRange: this.session.range(node),
+      range,
+      annotationRange: range,
       syntax: {
         opening: block ? "/*" : "//",
         closing: block ? "*/" : "",
-        ...(block ? { linePrefix: "*" } : {}),
+        linePrefix: block ? "*" : "//",
         tagBoundaries: true,
         allowWithdrawal: owners.length !== 0,
       },
     });
+  }
+
+  /** Keeps trailing comments separate from leading documentation runs. */
+  private standalone(node: Node): boolean {
+    const start =
+      this.output.source.content.lastIndexOf("\n", node.startIndex - 1) + 1;
+    return (
+      this.output.source.content.slice(start, node.startIndex).trim() === ""
+    );
   }
 
   /** Requires documentation runs to touch their next declaration without a blank line. */
