@@ -250,6 +250,27 @@ export namespace TreeSitterGrammarCatalog {
       },
     },
     {
+      id: "dart",
+      repository: "https://github.com/nielsenko/tree-sitter-dart",
+      version:
+        "grammar-dart-0795f78c9c65eae2dbc52ca675cc6d4c5fbf3e5bc5a5eda8d54bcccfef3684d7",
+      commit: "b57d734c84f510bbd524097902cab671e4dbfca9",
+      wasm: {
+        file: "dart/tree-sitter-dart.wasm",
+        url: "https://github.com/wrtnlabs/evidence/releases/download/grammar-dart-0795f78c9c65eae2dbc52ca675cc6d4c5fbf3e5bc5a5eda8d54bcccfef3684d7/tree-sitter-dart.wasm",
+        sha256:
+          "0795f78c9c65eae2dbc52ca675cc6d4c5fbf3e5bc5a5eda8d54bcccfef3684d7",
+        size: 1270232,
+      },
+      license: {
+        file: "dart/LICENSE",
+        url: "https://raw.githubusercontent.com/nielsenko/tree-sitter-dart/b57d734c84f510bbd524097902cab671e4dbfca9/LICENSE",
+        sha256:
+          "37255daf7e1cfaa7f90f56bcfe02d8dd4452587fabec5fae84790344ae3a3be2",
+        size: 1103,
+      },
+    },
+    {
       id: "matlab",
       repository: "https://github.com/acristoffers/tree-sitter-matlab",
       version:
