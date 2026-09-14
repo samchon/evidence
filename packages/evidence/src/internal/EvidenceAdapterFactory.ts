@@ -10,6 +10,7 @@ import { EvidenceMatlabAdapter } from "../adapters/matlab/EvidenceMatlabAdapter"
 import { EvidencePrismaAdapter } from "../adapters/prisma/EvidencePrismaAdapter";
 import { EvidencePythonAdapter } from "../adapters/python/EvidencePythonAdapter";
 import { EvidenceRubyAdapter } from "../adapters/ruby/EvidenceRubyAdapter";
+import { EvidenceScalaAdapter } from "../adapters/scala/EvidenceScalaAdapter";
 import { EvidenceRustAdapter } from "../adapters/rust/EvidenceRustAdapter";
 import { EvidenceSwiftAdapter } from "../adapters/swift/EvidenceSwiftAdapter";
 import { EvidenceSwaggerAdapter } from "../adapters/swagger/EvidenceSwaggerAdapter";
@@ -32,6 +33,7 @@ export namespace EvidenceAdapterFactory {
     if (type === "prisma") return new EvidencePrismaAdapter();
     if (type === "python") return new EvidencePythonAdapter();
     if (type === "ruby") return new EvidenceRubyAdapter();
+    if (type === "scala") return new EvidenceScalaAdapter();
     if (type === "rust") return new EvidenceRustAdapter();
     if (type === "swift") return new EvidenceSwiftAdapter();
     if (type === "swagger") return new EvidenceSwaggerAdapter();

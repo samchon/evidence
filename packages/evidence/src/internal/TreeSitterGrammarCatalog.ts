@@ -290,5 +290,25 @@ export namespace TreeSitterGrammarCatalog {
         size: 1068,
       },
     },
+    {
+      id: "scala",
+      repository: "https://github.com/tree-sitter/tree-sitter-scala",
+      version: "v0.26.2",
+      commit: "b931fcc338390925eb893d70ad070033f5856ccf",
+      wasm: {
+        file: "scala/tree-sitter-scala.wasm",
+        url: "https://github.com/tree-sitter/tree-sitter-scala/releases/download/v0.26.2/tree-sitter-scala.wasm",
+        sha256:
+          "37d7fe5a91ca98941dc05493b0c05a0df0f36df5035890fa00b02497c68aaac3",
+        size: 3973559,
+      },
+      license: {
+        file: "scala/LICENSE",
+        url: "https://raw.githubusercontent.com/tree-sitter/tree-sitter-scala/b931fcc338390925eb893d70ad070033f5856ccf/LICENSE",
+        sha256:
+          "1f95ed26e1f4074074c9c7083e61c0a9e4c3b9f435745044995f3beb4ed28575",
+        size: 1091,
+      },
+    },
   ];
 }

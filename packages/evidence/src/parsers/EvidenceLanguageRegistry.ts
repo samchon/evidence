@@ -45,6 +45,28 @@ export namespace EvidenceLanguageRegistry {
 
   const LANGUAGES: IEvidenceLanguage[] = [
     {
+      type: "scala",
+      name: "Scala",
+      grammars: [{ id: "scala", extensions: [".scala"], filenames: [] }],
+      adapter: {
+        entry: "EvidenceScalaAdapter",
+        symbols: ["type", "function", "property"],
+        publicSurface:
+          "Explicit unrestricted Scala 2/3 declarations recognized by tree-sitter-scala v0.26.2 within the selected source snapshot.",
+        addressing:
+          "File-qualified package and lexical owner paths; singleton objects and package objects have explicit quoted owner segments.",
+        comments: ["attached Scaladoc"],
+        unsupported: [
+          "anonymous givens",
+          "wildcard and unresolved exports",
+          "inherited and synthesized members",
+          "macro expansion",
+          "derives and uses clauses",
+          "extractor binding patterns",
+        ],
+      },
+    },
+    {
       type: "matlab",
       name: "MATLAB",
       grammars: [{ id: "matlab", extensions: [".m"], filenames: [] }],
@@ -407,28 +429,6 @@ export namespace EvidenceLanguageRegistry {
         "generated members and extension lookup",
       ],
       next: "Build and pin ABI-compatible WASM, then certify one library graph with part and export combinator resolution.",
-    },
-    {
-      id: "scala",
-      name: "Scala",
-      kind: "programming-language",
-      dialects: ["Scala 2", "Scala 3"],
-      grammarRepository: "https://github.com/tree-sitter/tree-sitter-scala",
-      grammarLicense: "MIT",
-      wasm: "release-asset",
-      wasmNotes: "The v0.26.2 release publishes tree-sitter-scala.wasm.",
-      languageReference:
-        "https://docs.scala-lang.org/scala3/reference/changed-features/access-modifiers.html",
-      visibility:
-        "public by default, with private/protected access qualifiers and Scala 3 private[this] migration behavior",
-      declarations:
-        "packages, classes, traits, objects, enums, definitions, values, variables, type members, givens, extensions, and exports",
-      blockers: [
-        "Scala 2 and Scala 3 surface differences",
-        "package objects, givens, exports, and extension ownership",
-        "compiler-generated case-class and enum members",
-      ],
-      next: "Choose explicit Scala dialect fixtures and certify source declarations without compiler-synthesized members.",
     },
     {
       id: "lua",

@@ -7,6 +7,7 @@ import {
   EvidenceJavaAdapter,
   EvidenceJavaScriptAdapter,
   EvidenceKotlinAdapter,
+  EvidenceScalaAdapter,
   EvidenceMatlabAdapter,
   EvidenceSwiftAdapter,
   EvidencePythonAdapter,
@@ -36,6 +37,7 @@ export namespace AdapterCertificationFixtures {
       rust(),
       java(),
       kotlin(),
+      scala(),
       matlab(),
       swift(),
       csharp(),
@@ -946,6 +948,112 @@ export namespace AdapterCertificationFixtures {
         key("function", ["Contract", "run"]),
         "value = 1;",
         "value = 2;",
+      ),
+    };
+  }
+
+  /** Supplies exact Scala declarations and counterexamples for the common certification gates. */
+  function scala(): IAdapterCertification {
+    const file = "src/Contract.scala";
+    return {
+      type: "scala",
+      adapter: new EvidenceScalaAdapter(),
+      sources: [
+        {
+          file,
+          content: dedent`
+            /**
+             * 계약 한글
+             * @evidence docs/requirements.md#type Implements the certified type.
+             */
+            class Contract {
+                /**
+                 * 실행 한글
+                 * @evidence docs/requirements.md#function Implements the certified function.
+                 */
+                def run(): Int = { return 1 }
+
+                /**
+                 * 값 한글
+                 * @evidence docs/requirements.md#property Implements the certified property.
+                 */
+                val value = 1
+
+                private val hidden = 0
+
+                /** @internal Retired public contract. */
+                val LEGACY = 1
+            }
+          `,
+        },
+      ],
+      units: [
+        unit(file, "type", ["Contract"]),
+        unit(file, "function", ["Contract", "run"], ["Contract"]),
+        unit(file, "property", ["Contract", "value"], ["Contract"]),
+        unit(
+          file,
+          "property",
+          ["Contract", "LEGACY"],
+          ["Contract"],
+          [],
+          ["internal"],
+        ),
+      ],
+      hosts: hosts(
+        key("type", ["Contract"]),
+        key("function", ["Contract", "run"]),
+        key("property", ["Contract", "value"]),
+      ),
+      requirements: requirements(
+        key("type", ["Contract"]),
+        key("function", ["Contract", "run"]),
+        key("property", ["Contract", "value"]),
+      ),
+      excludedUnits: [key("property", ["Contract", "hidden"])],
+      annotationRanges: 4,
+      incomplete: {
+        sources: [
+          {
+            file: "src/first/Conflict.scala",
+            content: "class Conflict {}\n",
+          },
+          {
+            file: "src/second/Conflict.scala",
+            content: "class Conflict {}\n",
+          },
+        ],
+        diagnosticCodes: ["scala-declaration-conflict"],
+      },
+      malformed: {
+        sources: [
+          {
+            file: "src/Malformed.scala",
+            content: "class Malformed { fun run( { }\n",
+          },
+        ],
+        diagnosticCodes: ["scala-parse-incomplete"],
+      },
+      falsePositive: {
+        source: {
+          file: "src/FalsePositive.scala",
+          content: dedent`
+            class FalsePositive {
+                /** @evidence docs/requirements.md#attached Attached documentation. */
+                def run(): String = {
+                    // @evidence docs/requirements.md#comment Ordinary comments are inert.
+                    return "@evidence docs/requirements.md#literal Literal text is inert."
+                }
+            }
+          `,
+        },
+        attachedTarget: "docs/requirements.md#attached",
+        unsupportedAnnotations: 2,
+      },
+      mutation: mutation(
+        key("function", ["Contract", "run"]),
+        "def run(): Int = { return 1 }",
+        "def run(): Int = { return 2 }",
       ),
     };
   }
