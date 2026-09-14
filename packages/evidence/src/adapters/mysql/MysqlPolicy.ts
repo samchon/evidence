@@ -42,7 +42,7 @@ export namespace MysqlPolicy {
     )
       return "Use one table COMMENT option so documentation has one unambiguous owner and value.";
     if (nodes.some((child) => FORBIDDEN.has(child.type)))
-      return "This MySQL table uses unsupported temporary, conditional, generated, inherited, or query-derived schema syntax; provide an unconditional explicit table definition.";
+      return "This table uses an unsupported MySQL construct or syntax from another SQL dialect; provide the documented explicit table subset.";
     for (const child of nodes) {
       if (child.type === "literal" && child.text.startsWith("$"))
         return "Dollar-quoted SQL literals are not MySQL source syntax; use a MySQL string literal.";
@@ -52,7 +52,7 @@ export namespace MysqlPolicy {
       )
         return "PostgreSQL cast syntax is not MySQL source syntax; use a MySQL CAST expression.";
       if (child.type === "identifier" && identifier(child.text) === undefined)
-        return "Use MySQL unquoted or backtick-quoted source names; ANSI_QUOTES and other dialect identifier modes are not inferred.";
+        return "Use supported MySQL names with BMP characters and no NUL or trailing spaces; only unquoted and backtick quoting is supported.";
       if (
         child.type === "object_reference" &&
         child.namedChildren.filter((item) => item.type === "identifier")
