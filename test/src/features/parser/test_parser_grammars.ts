@@ -8,6 +8,14 @@ import type { IParserFixture } from "../../internal/IParserFixture";
 export async function test_parser_grammars(): Promise<void> {
   const fixtures: IParserFixture[] = [
     {
+      type: "swift",
+      grammar: "swift",
+      file: "Contract.swift",
+      name: "Contract",
+      content: "public struct Contract { public var value = 1 }",
+      query: "(class_declaration name: (type_identifier) @name)",
+    },
+    {
       type: "kotlin",
       grammar: "kotlin",
       file: "Contract.kt",
