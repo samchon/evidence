@@ -47,7 +47,7 @@ export async function test_dart_units(): Promise<void> {
     "exact public names and kinds",
     inventory.units
       .map((unit) => `${unit.symbol}:${unit.identity.join(".")}`)
-      .sort(),
+      .sort((left, right) => left.localeCompare(right)),
     [
       "type:Contract",
       "function:Contract.new",
@@ -73,7 +73,7 @@ export async function test_dart_units(): Promise<void> {
       "property:first",
       "property:second",
       "property:top",
-    ].sort(),
+    ].sort((left, right) => left.localeCompare(right)),
   );
   TestValidator.equals(
     "complementary member accessors merge",
