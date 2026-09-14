@@ -296,8 +296,8 @@ export namespace EvidenceQueryProgrammer {
 
   /** Reports only adapters certified and shipped by the runtime registry. */
   export function languages(): IEvidenceLanguagesReport {
-    const languages = EvidenceLanguageRegistry.list()
-      .flatMap((language) =>
+    const languages = [
+      ...EvidenceLanguageRegistry.list().flatMap((language) =>
         language.adapter === undefined
           ? []
           : [
@@ -308,8 +308,20 @@ export namespace EvidenceQueryProgrammer {
                 adapter: language.adapter,
               },
             ],
-      )
-      .sort((left, right) => compare(left.type, right.type));
+      ),
+      ...EvidenceLanguageRegistry.databases().flatMap((language) =>
+        language.adapter === undefined
+          ? []
+          : [
+              {
+                type: language.type,
+                name: language.name,
+                grammars: language.grammars,
+                adapter: language.adapter,
+              },
+            ],
+      ),
+    ].sort((left, right) => compare(left.type, right.type));
     return {
       schemaVersion: 1,
       command: "languages",
@@ -629,7 +641,10 @@ export namespace EvidenceQueryProgrammer {
     const file = targetFile(target);
     const types = new Set<EvidenceArtifactType>();
     if (/\.(?:md|markdown|mdx)$/iu.test(file)) types.add("markdown");
-    for (const language of EvidenceLanguageRegistry.list())
+    for (const language of [
+      ...EvidenceLanguageRegistry.list(),
+      ...EvidenceLanguageRegistry.databases(),
+    ])
       try {
         EvidenceLanguageRegistry.select(language.type, file);
         types.add(language.type);
