@@ -18,10 +18,12 @@ import type { IObjcFileAnalysis } from "./IObjcFileAnalysis";
 import { ObjcDocumentation } from "./ObjcDocumentation";
 import { ObjcFileScanner } from "./ObjcFileScanner";
 
-/** Builds Objc source-public inventories from the configured source snapshot. */
+/** Builds Objective-C source-public inventories from the configured source snapshot. */
 export class ObjcAdapter implements IEvidenceAdapter {
+  /** Configured language discriminator, independent of overlapping extensions. */
   public readonly type = "objc";
 
+  /** Builds an owned serializable inventory and closes every borrowed parser session. */
   public async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {
@@ -40,7 +42,7 @@ export class ObjcAdapter implements IEvidenceAdapter {
         severity: "error",
         message: diagnostic.message,
         repair:
-          "Restore access to the selected Objc source before evaluating coverage.",
+          "Restore access to the selected Objective-C source before evaluating coverage.",
         location: { file: diagnostic.path },
       })),
       dependencies: input.dependencies,
@@ -63,6 +65,7 @@ export class ObjcAdapter implements IEvidenceAdapter {
     }
   }
 
+  /** Converts parser failures into incomplete source inventories. */
   private async scan(
     parser: EvidenceParser,
     source: IEvidenceSourceFile,
@@ -86,7 +89,7 @@ export class ObjcAdapter implements IEvidenceAdapter {
             severity: "error",
             message:
               parserError?.message ??
-              `Objc parsing failed: ${cause instanceof Error ? cause.message : String(cause)}`,
+              `Objective-C parsing failed: ${cause instanceof Error ? cause.message : String(cause)}`,
             repair:
               "Correct the source or add adapter support before evaluating coverage.",
             location: {
@@ -102,6 +105,7 @@ export class ObjcAdapter implements IEvidenceAdapter {
     }
   }
 
+  /** Reconciles public interfaces with compatible extension and implementation sites. */
   private materializeUnits(
     inventory: IEvidenceInventory,
     analyses: IObjcFileAnalysis[],
@@ -115,7 +119,8 @@ export class ObjcAdapter implements IEvidenceAdapter {
     );
     for (const analysis of analyses)
       for (const declaration of analysis.declarations)
-        declaration.public ||= publicIdentities.has(this.unitId(declaration));
+        declaration.public ||=
+          declaration.merge && publicIdentities.has(this.unitId(declaration));
     for (const declaration of analyses
       .flatMap((analysis) => analysis.declarations)
       .filter((declaration) => declaration.public))
@@ -123,11 +128,21 @@ export class ObjcAdapter implements IEvidenceAdapter {
 
     const units = new Map<string, IEvidenceUnit>();
     const declarationIds = new Map<string, Set<string>>();
+    const definitions = new Set<string>();
     const addresses = new Set<string>();
     for (const analysis of analyses)
       for (const declaration of analysis.declarations) {
         if (!declaration.public) continue;
         const id = this.unitId(declaration);
+        if (declaration.definition && definitions.has(id))
+          this.problem(
+            inventory,
+            analysis,
+            "objc-definition-conflict",
+            `Objective-C identity '${declaration.identity.join(".")}' has multiple implementations.`,
+            "Select one implementation for this identity before checking coverage.",
+          );
+        if (declaration.definition) definitions.add(id);
         const parentId =
           declaration.ownerDeclarationId === undefined
             ? undefined
@@ -143,8 +158,8 @@ export class ObjcAdapter implements IEvidenceAdapter {
             inventory,
             analysis,
             "objc-declaration-conflict",
-            `Objc public identity '${declaration.identity.join(".")}' has more than one selected declaration.`,
-            "Select one source declaration for this package identity before checking coverage.",
+            `Objective-C public identity '${declaration.identity.join(".")}' has more than one selected declaration.`,
+            "Select one source declaration for this declared-source identity before checking coverage.",
           );
         if (["interface", "protocol", "category"].includes(declaration.form))
           previousDeclarations.add(declaration.id);
@@ -182,6 +197,7 @@ export class ObjcAdapter implements IEvidenceAdapter {
     return published;
   }
 
+  /** Applies merged withdrawals before creating eligible annotation hosts. */
   private materializeDocumentation(
     inventory: IEvidenceInventory,
     analyses: IObjcFileAnalysis[],
@@ -257,6 +273,7 @@ export class ObjcAdapter implements IEvidenceAdapter {
     }
   }
 
+  /** Keeps every undocumented public declaration in the host denominator. */
   private materializeUndocumentedHosts(
     inventory: IEvidenceInventory,
     analysis: IObjcFileAnalysis,
@@ -309,6 +326,7 @@ export class ObjcAdapter implements IEvidenceAdapter {
     }
   }
 
+  /** Groups carrier attachments by their physical declaration site. */
   private attachmentGroups(
     documentation: IObjcDocumentation,
     published: Map<string, string>,
@@ -324,6 +342,7 @@ export class ObjcAdapter implements IEvidenceAdapter {
     return groups;
   }
 
+  /** Records supported ownership or an actionable unsupported carrier. */
   private host(
     source: IEvidenceSourceFile,
     documentation: IObjcDocumentation,
@@ -343,11 +362,12 @@ export class ObjcAdapter implements IEvidenceAdapter {
         ? {}
         : {
             problem:
-              "Move the annotation into Objcdoc attached to a supported public Objc declaration.",
+              "Move the annotation into Doxygen attached to a supported public Objective-C declaration.",
           }),
     };
   }
 
+  /** Parses mapped Doxygen after ownership and example masking are established. */
   private parse(
     source: IEvidenceSourceFile,
     documentation: IObjcDocumentation,
@@ -360,6 +380,7 @@ export class ObjcAdapter implements IEvidenceAdapter {
     );
   }
 
+  /** Recognizes annotations and withdrawals on otherwise unsupported carriers. */
   private annotation(
     analysis: IObjcFileAnalysis,
     documentation: IObjcDocumentation,
@@ -371,6 +392,7 @@ export class ObjcAdapter implements IEvidenceAdapter {
     );
   }
 
+  /** Detects graph annotations that cannot silently disappear on withdrawn units. */
   private claimAnnotation(
     analysis: IObjcFileAnalysis,
     documentation: IObjcDocumentation,
@@ -382,6 +404,7 @@ export class ObjcAdapter implements IEvidenceAdapter {
     );
   }
 
+  /** Finds tag boundaries in mapped comment text. */
   private annotationPattern(raw: string, withdrawal: boolean): boolean {
     return withdrawal
       ? /(?:^|[\r\n])[ \t]*@(evidenceExcludeReview|evidenceReview|evidenceExclude|evidence|link|internal|hidden|ignore)\b/u.test(
@@ -392,6 +415,7 @@ export class ObjcAdapter implements IEvidenceAdapter {
         );
   }
 
+  /** Follows real parent identities when propagating withdrawals. */
   private withdrawn(
     id: string,
     units: Map<string, IEvidenceUnit>,
@@ -407,10 +431,12 @@ export class ObjcAdapter implements IEvidenceAdapter {
       : this.withdrawn(unit.parentId, units, visited);
   }
 
+  /** Keeps selector kinds and segmented nominal identities unambiguous. */
   private unitId(declaration: IObjcDeclaration): string {
     return `objc:${declaration.symbol}:${JSON.stringify(declaration.identity)}`;
   }
 
+  /** Prevents an ambiguous declaration family from reporting complete analysis. */
   private problem(
     inventory: IEvidenceInventory,
     analysis: IObjcFileAnalysis,

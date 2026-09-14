@@ -199,7 +199,7 @@ export class ObjcFileScanner {
             owner,
             "property",
             owner.public,
-            classProperty ? "+" : "",
+            classProperty ? "class:" : "",
           );
         return;
       }
@@ -229,7 +229,8 @@ export class ObjcFileScanner {
         return;
       }
       case "property_implementation":
-        // Synthesized accessors and backing storage do not add explicit declarations.
+        // Retain explicit property implementation content without inventing accessors.
+        this.propertyImplementation(item, owner);
         return;
       case "function_definition":
       case "declaration":
@@ -241,6 +242,35 @@ export class ObjcFileScanner {
           "surface",
           `Objective-C member form '${item.type}' is not supported.`,
         );
+    }
+  }
+
+  /** Associates synthesize/dynamic sites with independently declared properties. */
+  private propertyImplementation(item: Node, owner: IObjcDeclaration): void {
+    let next = true;
+    const prefix = item.children.some((child) => child.type === "(class)")
+      ? "class:"
+      : "";
+    for (const child of item.children) {
+      if (child.type === ",") next = true;
+      else if (child.type === "identifier" && next) {
+        const name = `${prefix}${child.text}`;
+        const site =
+          item.parent?.type === "implementation_definition"
+            ? item.parent
+            : item;
+        this.add(
+          child,
+          site,
+          name,
+          "property",
+          "property",
+          [...owner.identity, name],
+          false,
+          owner,
+        );
+        next = false;
+      }
     }
   }
 
@@ -369,6 +399,15 @@ export class ObjcFileScanner {
       identity,
       address: identity,
       public: visible,
+      merge:
+        form === "implementation" ||
+        form === "extension" ||
+        (form !== "ivar" &&
+          (owner?.form === "implementation" || owner?.form === "extension")),
+      definition:
+        form === "implementation" ||
+        item.type === "method_definition" ||
+        siteNode.type === "function_definition",
       site: {
         id: siteId,
         file: this.source.physicalPath,
