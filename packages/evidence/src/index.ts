@@ -46,3 +46,4 @@ export { EvidenceTargetResolver } from "./targets/EvidenceTargetResolver";
 
 export type * from "./structures";
 export type * from "./typings";
+export { EvidenceObjcAdapter } from "./adapters/objc/EvidenceObjcAdapter";

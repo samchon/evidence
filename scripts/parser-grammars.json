@@ -214,5 +214,23 @@
       "sha256": "0eea8dc45e89deeb03c7799bbbc7b4688f365fb274562f4540ecfebdea82e727",
       "size": 1101
     }
+  },
+  {
+    "id": "objc",
+    "repository": "https://github.com/tree-sitter-grammars/tree-sitter-objc",
+    "version": "v3.0.2",
+    "commit": "18802acf31d0b5c1c1d50bdbc9eb0e1636cab9ed",
+    "wasm": {
+      "file": "objc/tree-sitter-objc.wasm",
+      "url": "https://github.com/tree-sitter-grammars/tree-sitter-objc/releases/download/v3.0.2/tree-sitter-objc.wasm",
+      "sha256": "155bf61fc94941fa9d07c86cd46895f14dfb2549fb7f646faeb83765af05c970",
+      "size": 5317155
+    },
+    "license": {
+      "file": "objc/LICENSE",
+      "url": "https://raw.githubusercontent.com/tree-sitter-grammars/tree-sitter-objc/18802acf31d0b5c1c1d50bdbc9eb0e1636cab9ed/LICENSE",
+      "sha256": "099c44248f8cf353123211318680e93465587c005a4b3730ce8cb5334de043d6",
+      "size": 1101
+    }
   }
 ]
