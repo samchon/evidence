@@ -1,4 +1,4 @@
-﻿import type { EvidenceDatabaseType } from "../typings/EvidenceDatabaseType";
+import type { EvidenceDatabaseType } from "../typings/EvidenceDatabaseType";
 import type { IEvidenceDatabaseLanguage } from "../structures/IEvidenceDatabaseLanguage";
 import { EvidenceParserError } from "./EvidenceParserError";
 import type { IEvidenceLanguage } from "../structures/IEvidenceLanguage";
