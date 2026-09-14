@@ -4,6 +4,7 @@ import { SourceText } from "../../internal/SourceText";
 import type { EvidenceParseSession } from "../../parsers/EvidenceParseSession";
 import type { IEvidenceDiagnostic } from "../../structures/IEvidenceDiagnostic";
 import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
+import type { IEvidenceSourceRange } from "../../structures/IEvidenceSourceRange";
 import type { EvidenceProgrammingSymbol } from "../../typings/EvidenceProgrammingSymbol";
 import { CSyntax } from "../c/CSyntax";
 import type { IObjcDeclaration } from "./IObjcDeclaration";
@@ -260,10 +261,14 @@ export class ObjcFileScanner {
   /** Associates synthesize/dynamic sites with independently declared properties. */
   private propertyImplementation(item: Node, owner: IObjcDeclaration): void {
     let next = true;
+    const first = item.namedChildren.find(
+      (child) => child.type === "identifier",
+    );
+    const suffix = item.children.findLast((child) => child.type === ";");
     const prefix = item.children.some((child) => child.type === "(class)")
       ? "class:"
       : "";
-    for (const child of item.children) {
+    for (const [index, child] of item.children.entries()) {
       if (child.type === ",") next = true;
       else if (child.type === "identifier" && next) {
         const name = `${prefix}${CSyntax.name(child) ?? child.text}`;
@@ -271,7 +276,7 @@ export class ObjcFileScanner {
           item.parent?.type === "implementation_definition"
             ? item.parent
             : item;
-        this.add(
+        const declaration = this.add(
           child,
           site,
           name,
@@ -281,6 +286,15 @@ export class ObjcFileScanner {
           false,
           owner,
         );
+        const end = item.children
+          .slice(index + 1)
+          .find((node) => node.type === "," || node.type === ";");
+        if (first !== undefined && suffix !== undefined && end !== undefined)
+          declaration.site.content = [
+            this.text.range(site.startIndex, first.startIndex),
+            this.text.range(child.startIndex, end.startIndex),
+            this.text.range(suffix.startIndex, site.endIndex),
+          ];
         next = false;
       }
     }
@@ -340,7 +354,7 @@ export class ObjcFileScanner {
         continue;
       }
       const name = `${prefix}${shape.name}`;
-      this.add(
+      const declaration = this.add(
         declarator,
         site,
         name,
@@ -349,6 +363,11 @@ export class ObjcFileScanner {
         [...owner.identity, name],
         visible,
         owner,
+      );
+      declaration.site.content = this.declaratorContent(
+        site,
+        declarators,
+        declarator,
       );
     }
   }
@@ -360,7 +379,8 @@ export class ObjcFileScanner {
       !CSyntax.storage(item, "static") &&
       !CSyntax.storage(item, "FOUNDATION_STATIC_INLINE") &&
       !CSyntax.storage(item, "NS_INLINE");
-    for (const declarator of item.childrenForFieldName("declarator")) {
+    const declarators = item.childrenForFieldName("declarator");
+    for (const declarator of declarators) {
       const shape = CSyntax.declarator(declarator);
       if (shape === undefined || shape.kind !== "function") {
         if (visible)
@@ -371,7 +391,7 @@ export class ObjcFileScanner {
           );
         continue;
       }
-      this.add(
+      const declaration = this.add(
         declarator,
         item,
         shape.name,
@@ -380,7 +400,30 @@ export class ObjcFileScanner {
         [shape.name],
         visible,
       );
+      if (declarators.length > 1)
+        declaration.site.content = this.declaratorContent(
+          item,
+          declarators,
+          declarator,
+        );
     }
+  }
+
+  /** Separates one declarator from its siblings while retaining shared type and attribute text. */
+  private declaratorContent(
+    site: Node,
+    declarators: Node[],
+    declaration: Node,
+  ): IEvidenceSourceRange[] {
+    const first = declarators[0];
+    const last = declarators.at(-1);
+    if (first === undefined || last === undefined)
+      return [this.session.range(site)];
+    return [
+      this.text.range(site.startIndex, first.startIndex),
+      this.session.range(declaration),
+      this.text.range(last.endIndex, site.endIndex),
+    ];
   }
 
   /** Rejects nested aggregate definitions that would otherwise hide public fields behind a property or return type. */
