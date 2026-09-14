@@ -1,3 +1,4 @@
+export { EvidenceMatlabAdapter } from "./adapters/matlab/EvidenceMatlabAdapter";
 /** Public API. Importing the package performs no project work. */
 export { EvidenceChecker } from "./EvidenceChecker";
 

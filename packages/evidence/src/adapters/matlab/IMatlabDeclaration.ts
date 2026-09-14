@@ -17,8 +17,6 @@ export interface IMatlabDeclaration {
   anchor: string;
   /** Whether the declaration is externally accessible. */
   public: boolean;
-  /** Whether this site merges into a declared property or method. */
-  merge: boolean;
   /** Class-folder owner file required by an external method. */
   externalOwner?: string;
   /** A method signature requiring a selected implementation, unless abstract. */
@@ -29,6 +27,8 @@ export interface IMatlabDeclaration {
   getPublic?: boolean;
   /** Property write access. */
   setPublic?: boolean;
+  /** Additional class-file aliases for an external method. */
+  publicFiles?: string[];
   /** Explicit parent extraction identity. */
   ownerDeclarationId?: string;
   /** Original declaration and fingerprint spans. */

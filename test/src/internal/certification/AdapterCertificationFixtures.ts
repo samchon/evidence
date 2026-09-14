@@ -7,6 +7,7 @@ import {
   EvidenceJavaAdapter,
   EvidenceJavaScriptAdapter,
   EvidenceKotlinAdapter,
+  EvidenceMatlabAdapter,
   EvidencePythonAdapter,
   EvidenceRubyAdapter,
   EvidenceRustAdapter,
@@ -34,6 +35,7 @@ export namespace AdapterCertificationFixtures {
       rust(),
       java(),
       kotlin(),
+      matlab(),
       csharp(),
       c(),
       cpp(),
@@ -739,6 +741,103 @@ export namespace AdapterCertificationFixtures {
         key("function", ["Contract", "run"]),
         "fun run(): Int { return 1 }",
         "fun run(): Int { return 2 }",
+      ),
+    };
+  }
+
+  /** Supplies exact MATLAB declarations and counterexamples for the common certification gates. */
+  function matlab(): IAdapterCertification {
+    const file = "src/Contract.m";
+    return {
+      type: "matlab",
+      adapter: new EvidenceMatlabAdapter(),
+      sources: [
+        {
+          file,
+          content: dedent`
+            classdef Contract
+              % 계약 한글
+              % @evidence docs/requirements.md#type Implements the certified type.
+              methods
+                function value = run(obj)
+                  % @evidence docs/requirements.md#function Implements the certified function.
+                  value = 1;
+                end
+              end
+              properties
+                % @evidence docs/requirements.md#property Implements the certified property.
+                value = 1
+                % @internal Retired public contract.
+                LEGACY = 1
+              end
+              properties (Access=private)
+                hidden = 0
+              end
+            end
+          `,
+        },
+      ],
+      units: [
+        unit(file, "type", ["Contract"]),
+        unit(file, "function", ["Contract", "run"], ["Contract"]),
+        unit(file, "property", ["Contract", "value"], ["Contract"]),
+        unit(
+          file,
+          "property",
+          ["Contract", "LEGACY"],
+          ["Contract"],
+          [],
+          ["internal"],
+        ),
+      ],
+      hosts: hosts(
+        key("type", ["Contract"]),
+        key("function", ["Contract", "run"]),
+        key("property", ["Contract", "value"]),
+      ),
+      requirements: requirements(
+        key("type", ["Contract"]),
+        key("function", ["Contract", "run"]),
+        key("property", ["Contract", "value"]),
+      ),
+      excludedUnits: [key("property", ["Contract", "hidden"])],
+      annotationRanges: 4,
+      incomplete: {
+        sources: [
+          {
+            file: "src/Dynamic.m",
+            content: "classdef Dynamic < dynamicprops\nend\n",
+          },
+        ],
+        diagnosticCodes: ["matlab-dynamic-surface"],
+      },
+      malformed: {
+        sources: [
+          {
+            file: "src/Malformed.m",
+            content: "classdef Malformed\nproperties\nvalue\n",
+          },
+        ],
+        diagnosticCodes: ["matlab-parse-incomplete"],
+      },
+      falsePositive: {
+        source: {
+          file: "src/run.m",
+          content: dedent`
+            function value = run()
+              % @evidence docs/requirements.md#attached Attached documentation.
+              value = "@evidence docs/requirements.md#literal Literal text is inert.";
+              % @evidence docs/requirements.md#comment Body comments are inert.
+            end
+          `,
+        },
+        attachedTarget: "docs/requirements.md#attached",
+        unsupportedAnnotations: 0,
+      },
+      mutation: mutation(
+        key("function", ["Contract", "run"]),
+        "value = 1;",
+        "value = 2;",
       ),
     };
   }

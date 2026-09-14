@@ -1,3 +1,4 @@
+import { EvidenceMatlabAdapter } from "../adapters/matlab/EvidenceMatlabAdapter";
 import { EvidenceCAdapter } from "../adapters/c/EvidenceCAdapter";
 import { EvidenceCppAdapter } from "../adapters/cpp/EvidenceCppAdapter";
 import { EvidenceCSharpAdapter } from "../adapters/csharp/EvidenceCSharpAdapter";
@@ -18,6 +19,7 @@ import type { EvidenceArtifactType } from "../typings/EvidenceArtifactType";
 /** Creates only adapters whose complete Evidence behavior is certified. */
 export namespace EvidenceAdapterFactory {
   export function create(type: EvidenceArtifactType): IEvidenceAdapter {
+    if (type === "matlab") return new EvidenceMatlabAdapter();
     if (type === "c") return new EvidenceCAdapter();
     if (type === "cpp") return new EvidenceCppAdapter();
     if (type === "csharp") return new EvidenceCSharpAdapter();
