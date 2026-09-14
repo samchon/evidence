@@ -1,5 +1,23 @@
 [
   {
+    "id": "zig",
+    "repository": "https://github.com/tree-sitter-grammars/tree-sitter-zig",
+    "version": "v1.1.2",
+    "commit": "b670c8df85a1568f498aa5c8cae42f51a90473c0",
+    "wasm": {
+      "file": "zig/tree-sitter-zig.wasm",
+      "url": "https://github.com/tree-sitter-grammars/tree-sitter-zig/releases/download/v1.1.2/tree-sitter-zig.wasm",
+      "sha256": "54b3b83dd9c62da5815f06132bc3fc914d9dcc780370b32416446a0b7969e8c6",
+      "size": 691726
+    },
+    "license": {
+      "file": "zig/LICENSE",
+      "url": "https://raw.githubusercontent.com/tree-sitter-grammars/tree-sitter-zig/b670c8df85a1568f498aa5c8cae42f51a90473c0/LICENSE",
+      "sha256": "0eea8dc45e89deeb03c7799bbbc7b4688f365fb274562f4540ecfebdea82e727",
+      "size": 1101
+    }
+  },
+  {
     "id": "typescript",
     "repository": "https://github.com/tree-sitter/tree-sitter-typescript",
     "version": "v0.23.2",
@@ -306,21 +324,21 @@
     }
   },
   {
-    "id": "zig",
-    "repository": "https://github.com/tree-sitter-grammars/tree-sitter-zig",
-    "version": "v1.1.2",
-    "commit": "b670c8df85a1568f498aa5c8cae42f51a90473c0",
+    "id": "mysql",
+    "repository": "https://github.com/DerekStride/tree-sitter-sql",
+    "version": "grammar-mysql-9257f0317112cff54be54e45302f2b00330d209df52e662e2572c4f154ecc68a",
+    "commit": "b7057b7d4ca94bb45403435f12cc01cee821daa8",
     "wasm": {
-      "file": "zig/tree-sitter-zig.wasm",
-      "url": "https://github.com/tree-sitter-grammars/tree-sitter-zig/releases/download/v1.1.2/tree-sitter-zig.wasm",
-      "sha256": "54b3b83dd9c62da5815f06132bc3fc914d9dcc780370b32416446a0b7969e8c6",
-      "size": 691726
+      "file": "mysql/tree-sitter-mysql.wasm",
+      "url": "https://github.com/wrtnlabs/evidence/releases/download/grammar-mysql-9257f0317112cff54be54e45302f2b00330d209df52e662e2572c4f154ecc68a/tree-sitter-mysql.wasm",
+      "sha256": "9257f0317112cff54be54e45302f2b00330d209df52e662e2572c4f154ecc68a",
+      "size": 11063017
     },
     "license": {
-      "file": "zig/LICENSE",
-      "url": "https://raw.githubusercontent.com/tree-sitter-grammars/tree-sitter-zig/b670c8df85a1568f498aa5c8cae42f51a90473c0/LICENSE",
-      "sha256": "0eea8dc45e89deeb03c7799bbbc7b4688f365fb274562f4540ecfebdea82e727",
-      "size": 1101
+      "file": "mysql/LICENSE",
+      "url": "https://raw.githubusercontent.com/DerekStride/tree-sitter-sql/b7057b7d4ca94bb45403435f12cc01cee821daa8/LICENSE",
+      "sha256": "3b3e4e4252d5d7d1c18e1257005f23242bf0580ad619204fd093c99b8c56748d",
+      "size": 1069
     }
   }
 ]

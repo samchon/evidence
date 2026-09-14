@@ -37,6 +37,19 @@
         "query": "(identifier) @name",
         "capture": "evidence_probe"
       }
+    },
+    {
+      "id": "mysql",
+      "repository": "https://github.com/DerekStride/tree-sitter-sql",
+      "commit": "b7057b7d4ca94bb45403435f12cc01cee821daa8",
+      "directory": ".",
+      "license": "LICENSE",
+      "abi": 15,
+      "smoke": {
+        "source": "CREATE TABLE evidence_probe (id INTEGER);",
+        "query": "(identifier) @name",
+        "capture": "evidence_probe"
+      }
     }
   ]
 }
