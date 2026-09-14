@@ -6,19 +6,38 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 /** Rejects contradictory part relationships and ambiguous exports while allowing local export shadowing and cycles. */
 export async function test_dart_library_failures(): Promise<void> {
   const adapter = new EvidenceDartAdapter();
-  for (const sources of [
-    ["part 'part.dart';", "class Wrong {}"],
-    ["class Owner {}", "part of 'api.dart'; class Orphan {}"],
-    ["part 'part.dart';", "part of 'other.dart'; class Wrong {}"],
+  for (const [sources, code] of new Map<string[], string>([
+    [["part 'part.dart';", "class Wrong {}"], "dart-part-owner"],
     [
-      "part 'part.dart'; export 'part.dart';",
-      "part of 'api.dart'; class Part {}",
+      ["class Owner {}", "part of 'api.dart'; class Orphan {}"],
+      "dart-part-owner",
     ],
     [
-      "part 'part.dart'; class Conflict {}",
-      "part of 'api.dart'; class Conflict {}",
+      ["part 'part.dart';", "part of 'other.dart'; class Wrong {}"],
+      "dart-part-owner",
     ],
-  ]) {
+    [
+      [
+        "export 'part.dart'; part 'part.dart';",
+        "part of 'api.dart'; class Part {}",
+      ],
+      "dart-export-part",
+    ],
+    [
+      [
+        "part 'part.dart'; class Conflict {}",
+        "part of 'api.dart'; class Conflict {}",
+      ],
+      "dart-declaration-conflict",
+    ],
+    [
+      [
+        "part 'part.dart';",
+        "import 'external.dart'; part of 'api.dart'; class Part {}",
+      ],
+      "dart-part-directives",
+    ],
+  ])) {
     const inventory = await adapter.analyze(
       TestSourceSnapshot.combine(
         sources.map((content, index) =>
@@ -33,6 +52,10 @@ export async function test_dart_library_failures(): Promise<void> {
       "contradictory library graph is incomplete",
       inventory.complete,
       false,
+    );
+    TestValidator.predicate(
+      `verified semantic boundary ${code}`,
+      inventory.diagnostics.some((diagnostic) => diagnostic.code === code),
     );
   }
   for (const local of [false, true]) {
