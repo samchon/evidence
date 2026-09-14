@@ -74,11 +74,11 @@ Every reference uses `IEvidenceReferenceBase` plus one artifact-specific source 
 | --- | --- |
 | Programming claim or reference | `files: string[]` |
 | Markdown claim or reference | `files: string[]` |
-| Prisma claim or reference | `files: string[]`; all selected files form one schema |
+| Database claim or reference (`prisma`, `postgresql`, `mysql`, `sqlite`, `bigquery`, `sql`, `dbml`) | `files: string[]`; all selected files form one schema snapshot |
 | Swagger claim | `files: string[]`; each matching local document contributes operations |
 | Swagger reference | `file: string`; one exact local JSON/YAML path or HTTP(S) URL |
 
-Prisma is the only implemented database adapter. `EvidenceDatabaseType` also reserves `sql`, `postgresql`, `mysql`, `sqlite`, `bigquery`, and `dbml` for the shared public type family, but configuration rejects them until a certified adapter exists.
+Every `EvidenceDatabaseType` value has a certified adapter: `prisma`, `postgresql`, `mysql`, `sqlite`, `bigquery`, `sql`, and `dbml`. Select the schema language rather than the database server; the configured `type` decides which grammar parses a `.sql` file, and Evidence never infers a dialect from parsing. See [certified languages](languages.md) for each dialect's accepted subset.
 
 ## Symbol defaults
 
@@ -86,7 +86,7 @@ Prisma is the only implemented database adapter. `EvidenceDatabaseType` also res
 | --- | --- | --- |
 | Programming | `type`, `function`, `property` | `type` |
 | Markdown | `file`, `h1`, `h2`, `h3`, `h4` | `file`, `h1`, `h2`, `h3`, `h4` |
-| Prisma | `model`, `column`, `relation` | `model` |
+| Database | `model`, `column`, `relation` | `model` |
 | Swagger | `operation` | `operation` |
 
 A selector changes which claim units may host positive evidence or which reference units enter the denominator. Structural ancestors remain addressable for hierarchical coverage. Exclusions may use any supported public declaration in a selected claim file unless `evidenceExcludeCarriers` narrows their locations.

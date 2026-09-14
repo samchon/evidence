@@ -108,7 +108,8 @@ Count each concept separately:
 
 - **Programming languages:** entries returned by `EvidenceLanguageRegistry.list()` that have certified adapters; `evidence languages` renders the current set.
 - **Pinned grammar variants:** unique grammar IDs across the registry entries. TypeScript and TSX use separate grammars; JSX shares the JavaScript grammar.
-- **Artifact formats:** Markdown, Prisma, and Swagger/OpenAPI are three additional non-programming Evidence families. They are not included in the programming-language count.
+- **Database schema languages:** entries returned by `EvidenceLanguageRegistry.databases()` plus the Prisma parser. They share the `model`, `column`, and `relation` symbols and are counted separately from programming languages.
+- **Artifact formats:** Markdown and Swagger/OpenAPI are two additional non-programming Evidence families. They are not included in either language count.
 - **Candidates:** researched entries returned by `EvidenceLanguageRegistry.candidates()`. They are excluded from supported counts until their adapters pass this process.
 
 See [language-candidates.md](language-candidates.md) for the checked candidate matrix and bounded next tasks.
