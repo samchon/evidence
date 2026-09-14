@@ -13,6 +13,7 @@ export { EvidencePrismaAdapter } from "./adapters/prisma/EvidencePrismaAdapter";
 export { EvidencePythonAdapter } from "./adapters/python/EvidencePythonAdapter";
 export { EvidenceRubyAdapter } from "./adapters/ruby/EvidenceRubyAdapter";
 export { EvidenceRustAdapter } from "./adapters/rust/EvidenceRustAdapter";
+export { EvidenceSqlAdapter } from "./adapters/sql/EvidenceSqlAdapter";
 export { EvidenceSwaggerAdapter } from "./adapters/swagger/EvidenceSwaggerAdapter";
 export { EvidenceTypeScriptAdapter } from "./adapters/typescript/EvidenceTypeScriptAdapter";
 
@@ -46,5 +47,3 @@ export { EvidenceTargetResolver } from "./targets/EvidenceTargetResolver";
 
 export type * from "./structures";
 export type * from "./typings";
-
-export { EvidenceSqlAdapter } from "./adapters/sql/EvidenceSqlAdapter";

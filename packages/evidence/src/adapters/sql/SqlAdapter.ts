@@ -47,7 +47,7 @@ export class SqlAdapter implements IEvidenceAdapter {
         severity: "error",
         message: diagnostic.message,
         repair:
-          "Restore access to the selected Sql source before evaluating coverage.",
+          "Restore access to the selected database source before evaluating coverage.",
         location: { file: diagnostic.path },
       })),
       dependencies: input.dependencies,
@@ -95,7 +95,7 @@ export class SqlAdapter implements IEvidenceAdapter {
             severity: "error",
             message:
               parserError?.message ??
-              `Sql parsing failed: ${cause instanceof Error ? cause.message : String(cause)}`,
+              `Database parsing failed: ${cause instanceof Error ? cause.message : String(cause)}`,
             repair:
               "Correct the source or add adapter support before evaluating coverage.",
             location: {

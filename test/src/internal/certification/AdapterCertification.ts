@@ -504,7 +504,7 @@ export namespace AdapterCertification {
     )
       return symbol;
     throw new Error(
-      `Certification found a unsupported declaration symbol: ${symbol}`,
+      `Certification found an unsupported declaration symbol: ${symbol}`,
     );
   }
 }
