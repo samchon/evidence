@@ -1,7 +1,7 @@
 import { EvidenceMysqlAdapter, EvidenceParser } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { TreeSitterAssetScope } from "../../../../../packages/evidence/src/internal/TreeSitterAssetScope";
+import { TreeSitterAssetScope } from "../../../../packages/evidence/src/internal/TreeSitterAssetScope";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestParserAssets } from "../../internal/TestParserAssets";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -14,6 +14,7 @@ export async function test_mysql_parser(): Promise<void> {
   );
   await parser.close();
   if (grammar === undefined) throw new Error("Missing pinned MySQL grammar.");
+  const downloadUrl = grammar.wasm.url;
   const bytes = await TestParserAssets.bytes(grammar);
   const downloads: string[] = [];
   const snapshot = TestSourceSnapshot.create(
@@ -48,8 +49,7 @@ export async function test_mysql_parser(): Promise<void> {
   async function download(input: string | URL | Request): Promise<Response> {
     const url = input instanceof Request ? input.url : String(input);
     downloads.push(url);
-    if (url !== grammar?.wasm.url)
-      throw new Error("Unrelated grammar requested.");
+    if (url !== downloadUrl) throw new Error("Unrelated grammar requested.");
     return new Response(Uint8Array.from(bytes));
   }
 

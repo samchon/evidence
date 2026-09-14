@@ -32,7 +32,7 @@ export async function test_mysql_units(): Promise<void> {
     "exact schema surface",
     inventory.units
       .map((unit) => `${unit.symbol}:${EvidenceAccessor.format(unit.identity)}`)
-      .sort(),
+      .sort((left, right) => left.localeCompare(right)),
     [
       "model:Store.Parent",
       "column:Store.Parent.id",
@@ -42,7 +42,7 @@ export async function test_mysql_units(): Promise<void> {
       "column:Store.Child.parent_id",
       "column:Store.Child.parent_code",
       `relation:Store.Child[${JSON.stringify('foreign-key:["parent_id","parent_code"]->["Store","Parent"](["id","code"])')}]`,
-    ].sort(),
+    ].sort((left, right) => left.localeCompare(right)),
   );
   const child = inventory.units.find((unit) => unit.name === "Child");
   if (child === undefined) throw new Error("Missing child model.");

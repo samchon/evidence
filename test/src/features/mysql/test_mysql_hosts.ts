@@ -40,19 +40,23 @@ export async function test_mysql_hosts(): Promise<void> {
   );
   TestValidator.equals(
     "only attached COMMENT literals acknowledge",
-    original.declarations.map((item) => item.target).sort(),
+    original.declarations
+      .map((item) => item.target)
+      .sort((left, right) => left.localeCompare(right)),
     ["./spec.md#column", "./spec.md#model"],
   );
   TestValidator.equals("review stays separate", original.reviews.length, 1);
   const tag = original.declarations.find((item) =>
     item.target.endsWith("#column"),
   );
+  if (tag === undefined || tag.location.range === undefined)
+    throw new Error("Missing column annotation range.");
   TestValidator.equals(
     "UTF-16 offsets after astral Unicode",
-    tag?.location.range?.start.offset,
+    tag.location.range.start.offset,
     source.indexOf("@evidence ./spec.md#column"),
   );
-  TestValidator.equals("CRLF line mapping", tag?.location.range?.start.line, 3);
+  TestValidator.equals("CRLF line mapping", tag.location.range.start.line, 3);
   const selected = original.units.map((unit) => unit.id);
   TestValidator.equals(
     "withdrawn column remains diagnosed as hidden",
