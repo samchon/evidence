@@ -73,7 +73,7 @@ export async function test_matlab_hosts(): Promise<void> {
     TestValidator.equals(
       `UTF-16 ${declaration.target}`,
       declaration.location.range?.start?.offset,
-      content.indexOf(`@evidence ${declaration.target}`),
+      content.indexOf(`@evidence ${declaration.target} `),
     );
   const legacy = inventory.units.find((unit) => unit.name === "legacy");
   TestValidator.equals(
