@@ -53,7 +53,7 @@ export interface IEvidenceClaimBase<
    * Symbol kinds eligible to host evidence; accepts one kind or a nonempty array.
    * Omit to select every supported kind for the artifact:
    *
-   * - Programming: type, function, property.
+   * - Programming: the language's supported type, function, and property kinds.
    * - Database: model, column, relation.
    * - Markdown: file, h1, h2, h3, h4.
    * - Swagger: operation.

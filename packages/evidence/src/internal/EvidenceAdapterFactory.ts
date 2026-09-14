@@ -7,6 +7,7 @@ import { EvidenceGoAdapter } from "../adapters/go/EvidenceGoAdapter";
 import { EvidenceJavaAdapter } from "../adapters/java/EvidenceJavaAdapter";
 import { EvidenceJavaScriptAdapter } from "../adapters/javascript/EvidenceJavaScriptAdapter";
 import { EvidenceKotlinAdapter } from "../adapters/kotlin/EvidenceKotlinAdapter";
+import { EvidenceLuaAdapter } from "../adapters/lua/EvidenceLuaAdapter";
 import { EvidenceMarkdownAdapter } from "../adapters/markdown/EvidenceMarkdownAdapter";
 import { EvidenceMatlabAdapter } from "../adapters/matlab/EvidenceMatlabAdapter";
 import { EvidencePhpAdapter } from "../adapters/php/EvidencePhpAdapter";
@@ -37,6 +38,7 @@ export namespace EvidenceAdapterFactory {
     if (type === "java") return new EvidenceJavaAdapter();
     if (type === "javascript") return new EvidenceJavaScriptAdapter();
     if (type === "kotlin") return new EvidenceKotlinAdapter();
+    if (type === "lua") return new EvidenceLuaAdapter();
     if (type === "markdown") return new EvidenceMarkdownAdapter();
     if (type === "matlab") return new EvidenceMatlabAdapter();
     if (type === "php") return new EvidencePhpAdapter();
