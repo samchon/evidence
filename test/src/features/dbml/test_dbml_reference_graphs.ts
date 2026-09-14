@@ -40,12 +40,24 @@ export async function test_dbml_reference_graphs(): Promise<void> {
       reference,
       unit.id,
     ).fingerprint;
-    for (const kind of ["evidence", "evidenceReview", "absent"]) {
+    for (const kind of [
+      "evidence",
+      "evidenceReview",
+      "absent",
+      "reviewed",
+      "stale",
+    ]) {
+      const reviewed = kind === "reviewed" || kind === "stale";
+      const documentation = reviewed
+        ? `@evidence ${target} Checks the declared schema contract.\n * @evidenceReview ${target} #${kind === "stale" ? "0000000" : fingerprint} Reviewed the current schema.`
+        : kind === "absent"
+          ? "No acknowledgement."
+          : `@${kind} ${target} ${kind === "evidenceReview" ? `#${fingerprint} ` : ""}Checks the declared schema contract.`;
       const claim = await new EvidenceTypeScriptAdapter().analyze(
         TestSourceSnapshot.create(
           "contract.ts",
           dedent`
-        /** ${kind === "absent" ? "No acknowledgement." : `@${kind} ${target} ${kind === "evidenceReview" ? `#${fingerprint} ` : ""}Checks the declared schema contract.`} */
+        /** ${documentation} */
         export function verify(): void {}
       `,
         ),
@@ -60,6 +72,7 @@ export async function test_dbml_reference_graphs(): Promise<void> {
               {
                 severity: "error",
                 inventory: reference,
+                requireReview: reviewed,
                 unitIds: [unit.id],
                 resolutions: await TestGraph.resolveDeclarations(
                   claim,
@@ -79,9 +92,9 @@ export async function test_dbml_reference_graphs(): Promise<void> {
       TestValidator.equals(
         `${unit.symbol} reference ${kind}`,
         result.success,
-        kind === "evidence",
+        kind === "evidence" || kind === "reviewed",
       );
-      if (kind !== "evidence")
+      if (kind === "evidenceReview" || kind === "absent")
         TestValidator.equals(
           `${unit.symbol} missing evidence remains visible`,
           TestGraph.obligation(result, 0, 0).missingUnitIds,

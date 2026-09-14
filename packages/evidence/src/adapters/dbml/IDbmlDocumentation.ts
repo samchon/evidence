@@ -5,10 +5,13 @@ import type { IEvidenceSourceRange } from "../../structures/IEvidenceSourceRange
 export interface IDbmlDocumentation {
   /** Literal identities of declarations documented by this carrier. */
   owners: string[][];
+
   /** Original comment or note string range. */
   range: IEvidenceSourceRange;
+
   /** Full syntax to omit from semantic fingerprints. */
   annotationRange: IEvidenceSourceRange;
+
   /** Delimiters used by mapped documentation decoding. */
   syntax: IEvidenceCommentSyntax;
 }

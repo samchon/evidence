@@ -287,8 +287,8 @@ export namespace TreeSitterGrammarCatalog {
         file: "dbml/LICENSE",
         url: "https://raw.githubusercontent.com/dynamotn/tree-sitter-dbml/2e2fa5640268c33c3d3f27f7e676f631a9c68fd9/LICENSE",
         sha256:
-          "7b8c69143ac04c4f62ad1552a69892ba8d4bd7b6cd176e8d7dbf09d104e546bf",
-        size: 1118,
+          "8e417a16aaad67be7ae75b88078e8250a756597656765b6660cfa276224e81b0",
+        size: 1097,
       },
     },
   ];

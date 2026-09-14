@@ -5,12 +5,16 @@ import type { EvidenceDatabaseSymbol } from "../../typings/EvidenceDatabaseSymbo
 export interface IDbmlDeclaration {
   /** File-independent schema identity. */
   identity: string[];
+
   /** Model, scalar column, or separate relation selector. */
   symbol: EvidenceDatabaseSymbol;
+
   /** Whitespace-independent syntax tokens excluding documentation. */
   content: string;
+
   /** Exact original declaration span. */
   range: IEvidenceSourceRange;
+
   /** Explicit table alias, when declared. */
   alias?: string;
 }

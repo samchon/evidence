@@ -152,6 +152,11 @@ export async function test_dbml_schema_surface(): Promise<void> {
       ),
     ),
   );
+  TestValidator.equals(
+    "decoded note review retained separately",
+    revised.reviews.length,
+    1,
+  );
   const originalTable = inventory.units.find(
     (unit) => unit.symbol === "model" && unit.identity.at(-1) === "posts",
   );
