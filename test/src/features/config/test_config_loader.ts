@@ -9,8 +9,8 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
 
 /** Loads imported config data in isolation and propagates evaluator failures. */
 export async function test_config_loader(): Promise<void> {
-  // Resolve workspace peers while preserving Unicode, spaces, and literal path characters.
-  const location = join(__dirname, `loader 한글 $' ${randomUUID()}`);
+  // Resolve workspace peers while preserving spaces and literal path characters.
+  const location = join(__dirname, `loader $' ${randomUUID()}`);
   const source = dedent`
     import { files } from "./helpers/files";
     import type { IEvidenceConfig } from "@samchon/evidence";

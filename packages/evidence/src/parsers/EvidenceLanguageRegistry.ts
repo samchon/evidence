@@ -433,50 +433,7 @@ export namespace EvidenceLanguageRegistry {
       next: "Specify a bounded returned-table module convention before deciding whether Lua can claim a complete public inventory.",
     },
     {
-      id: "elixir",
-      name: "Elixir",
-      kind: "programming-language",
-      dialects: ["Elixir source"],
-      grammarRepository: "https://github.com/elixir-lang/tree-sitter-elixir",
-      grammarLicense: "Apache-2.0",
-      wasm: "release-asset",
-      wasmNotes: "The v0.3.5 release publishes tree-sitter-elixir.wasm.",
-      languageReference: "https://hexdocs.pm/elixir/modules-and-functions.html",
-      visibility:
-        "def and defmacro are public while defp and defmacrop are private inside modules",
-      declarations:
-        "modules, public functions and macros by name/arity, protocols, implementations, typespecs, and module attributes",
-      blockers: [
-        "macros and use can generate arbitrary declarations",
-        "aliases/imports affect name resolution",
-        "protocol consolidation and generated documentation",
-      ],
-      next: "Certify explicit def/defmacro name-arity units and report declaration-generating macro boundaries as incomplete.",
-    },
-    {
-      id: "erlang",
-      name: "Erlang",
-      kind: "programming-language",
-      dialects: ["Erlang source", "Erlang header"],
-      grammarRepository: "https://github.com/WhatsApp/tree-sitter-erlang",
-      grammarLicense: "Apache-2.0",
-      wasm: "source-build",
-      wasmNotes:
-        "The 0.20 release has no WASM asset; build WASM from a pinned source commit with the Tree-sitter CLI.",
-      languageReference: "https://www.erlang.org/doc/system/modules.html",
-      visibility:
-        "functions and types become public through explicit export and export_type attributes keyed by name/arity",
-      declarations:
-        "modules, exported functions, exported types, records, callbacks, specifications, and macros",
-      blockers: [
-        "preprocessor macros and include files alter forms",
-        "export_all and conditional compilation",
-        "behaviour callbacks do not establish implementation exports",
-      ],
-      next: "Build and pin WASM, then resolve literal export attributes while treating preprocessing and export_all as explicit completeness boundaries.",
-    },
-    {
-      id: "objective-c",
+      id: "objc",
       name: "Objective-C",
       kind: "programming-language",
       dialects: ["Objective-C", "Objective-C++"],
@@ -519,6 +476,29 @@ export namespace EvidenceLanguageRegistry {
         "build options and generic instantiation affect reachable APIs",
       ],
       next: "Certify explicit pub declarations and container ownership while reporting usingnamespace and declaration-producing comptime blocks as incomplete.",
+    },
+    {
+      id: "matlab",
+      name: "MATLAB",
+      kind: "programming-language",
+      dialects: ["MATLAB text source"],
+      grammarRepository: "https://github.com/acristoffers/tree-sitter-matlab",
+      grammarLicense: "MIT",
+      wasm: "source-build",
+      wasmNotes:
+        "Inspected releases through v1.3.1 contain no WASM asset; build and verify a pinned source revision.",
+      languageReference:
+        "https://www.mathworks.com/help/matlab/ref/classdef.html",
+      visibility:
+        "class and member access attributes, package and class folders, and file-local function boundaries determine the declared public surface",
+      declarations:
+        "classes, functions, methods, properties, constructors, enumerations, and external method files",
+      blockers: [
+        "package and class-folder ownership with external method dependencies",
+        "help-comment placement and property getter/setter identity",
+        "dynamic properties, path changes, and runtime-created declarations",
+      ],
+      next: "Build and verify pinned WASM, then certify textual MATLAB declarations and documentation without executing MATLAB or inferring Objective-C from the shared .m extension.",
     },
     {
       id: "vue",

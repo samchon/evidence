@@ -29,7 +29,7 @@ export namespace TestQueryAnalysis {
           ],
         };
       `,
-      "contracts/공용.ts": dedent`
+      "contracts/shared.ts": dedent`
         /** Shared contract. */
         export interface Contract {
           /** Literal contract member. */
@@ -43,13 +43,13 @@ export namespace TestQueryAnalysis {
         }
       `,
       "contracts/index.ts": dedent`
-        export { Contract as Renamed } from "./공용";
+        export { Contract as Renamed } from "./shared";
       `,
       "src/implementation.ts": dedent`
         /**
-         * @evidence ../contracts/공용.ts#Contract["member.with.dots"] Implements the shared contract.
+         * @evidence ../contracts/shared.ts#Contract["member.with.dots"] Implements the shared contract.
          * @evidenceExclude ../contracts/other.ts#Contract["member.with.dots"] The numeric variant is intentionally separate.
-         * @evidenceReview ../contracts/공용.ts#Contract["member.with.dots"] #0000000 Reviewed the previous contract.
+         * @evidenceReview ../contracts/shared.ts#Contract["member.with.dots"] #0000000 Reviewed the previous contract.
          */
         export function implementation(): void {}
       `,

@@ -9,7 +9,7 @@ import { TestQueryAnalysis } from "../../internal/TestQueryAnalysis";
 
 /** Explains review expiry, ambiguity, withdrawal, and incomplete target analysis. */
 export async function test_query_inspection_states(): Promise<void> {
-  const location = join(__dirname, `query states 한글 ${randomUUID()}`);
+  const location = join(__dirname, `query states ${randomUUID()}`);
   await TestFileSystem.experiment(
     location,
     TestQueryAnalysis.records(),

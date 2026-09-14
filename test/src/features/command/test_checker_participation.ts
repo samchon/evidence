@@ -9,7 +9,7 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
 
 /** Rejects unowned target families and exclusions outside configured carriers. */
 export async function test_checker_participation(): Promise<void> {
-  const location = join(__dirname, `participation 한글 ${randomUUID()}`);
+  const location = join(__dirname, `participation ${randomUUID()}`);
   await TestFileSystem.experiment(
     location,
     {

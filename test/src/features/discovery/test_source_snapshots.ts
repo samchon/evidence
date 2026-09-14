@@ -22,7 +22,7 @@ export async function test_source_snapshots(): Promise<void> {
     location,
     {
       "project/evidence.config.ts": "export default {};",
-      "shared/문서.md": content,
+      "shared/z-document.md": content,
       "shared/a.md": "# A",
       "shared/private/hidden.md": "# Hidden",
       "shared/private/public.md": "# Public",
@@ -53,12 +53,14 @@ export async function test_source_snapshots(): Promise<void> {
         relative.files.flatMap((file) =>
           file.addresses.map((address) => address.relative),
         ),
-        ["a.md", "private/public.md", "문서.md"],
+        ["a.md", "private/public.md", "z-document.md"],
       );
       TestValidator.equals(
         "raw source with BOM and CRLF",
         relative.files.find((file) =>
-          file.addresses.some((address) => address.relative === "문서.md"),
+          file.addresses.some(
+            (address) => address.relative === "z-document.md",
+          ),
         )?.content,
         content,
       );

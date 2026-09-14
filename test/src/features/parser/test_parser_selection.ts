@@ -29,7 +29,7 @@ export async function test_parser_selection(): Promise<void> {
   );
 
   await TestParserError.expect("unsupported-language", () =>
-    EvidenceLanguageRegistry.select("ada", "contract.ads"),
+    EvidenceLanguageRegistry.select("matlab", "contract.m"),
   );
   await TestParserError.expect("unsupported-extension", () =>
     EvidenceLanguageRegistry.select("python", "contract.ts"),

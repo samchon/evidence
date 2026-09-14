@@ -26,6 +26,10 @@ Trace each verified change through callers, public types, serialization, package
 
 ## Testing
 
+Only meaningful logic unit tests are allowed. Hardcoded tests that duplicate type members, registry entries/counts, package allowlists, or source/document spelling are forbidden without exception. Use typia reflection when code needs literal values from a type. Do not test test harnesses or third-party validators. Verify product transformations and failure/recovery behavior with independent inputs and expected semantics.
+
+Use English file and directory names, including disposable test paths. Unicode content and identifiers may be used to verify source behavior.
+
 Follow AutoMovie's unit-test structure: one exported `test_<behavior>` function per `test/src/features/<category>/test_<behavior>.ts` file. The entry point uses `@nestia/e2e`'s `DynamicExecutor` to discover the functions, and tests use `TestValidator` assertions. Keep the test workspace in `test`, not a second `tests` tree.
 
 Open a regression with a doc comment explaining what it verifies, why the behavior matters, and the short scenario. Separate setup, execution, and assertions with blank lines, and comment each scenario's purpose. Call the logic directly. Give changed predicates a negative counterpart and meaningful boundary cases. Tests are exclusively logic unit tests: do not add installation experiments, tarball verification, CLI subprocess tests, or a Node test-runner framework.

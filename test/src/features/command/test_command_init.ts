@@ -4,11 +4,12 @@ import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 
 import { EvidenceCommand } from "../../../../packages/evidence/src/commands/EvidenceCommand";
+import { EvidenceConfigLoader } from "../../../../packages/evidence/src/loaders/EvidenceConfigLoader";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
 /** Creates one typed starter config and refuses every overwrite attempt. */
 export async function test_command_init(): Promise<void> {
-  const location = join(__dirname, `init 한글 ${randomUUID()}`);
+  const location = join(__dirname, `init ${randomUUID()}`);
   await TestFileSystem.experiment(location, {}, async (directory) => {
     // Custom paths resolve from --cwd and create only the requested config.
     const created = await EvidenceCommand.run(
@@ -20,14 +21,7 @@ export async function test_command_init(): Promise<void> {
 
     const file = join(directory, "custom.config.ts");
     const source = await readFile(file, "utf8");
-    TestValidator.predicate(
-      "typed config",
-      source.includes("satisfies IEvidenceConfig"),
-    );
-    TestValidator.predicate(
-      "adaptable paths",
-      source.includes("Replace these globs"),
-    );
+    await EvidenceConfigLoader.load(file);
     TestValidator.equals(
       "only requested config created",
       await readdir(directory),

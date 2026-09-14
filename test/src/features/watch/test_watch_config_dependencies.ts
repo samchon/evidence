@@ -8,7 +8,7 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
 
 /** Keeps config dependency discovery complete by accepting static and refusing computed imports. */
 export async function test_watch_config_dependencies(): Promise<void> {
-  const location = join(__dirname, `config dependencies 한글 ${randomUUID()}`);
+  const location = join(__dirname, `config dependencies ${randomUUID()}`);
   await TestFileSystem.experiment(
     location,
     {

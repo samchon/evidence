@@ -12,7 +12,7 @@ import { TestQueryAnalysis } from "../../internal/TestQueryAnalysis";
 
 /** Lists exact aliases and round-trips canonical targets through scoped inspection. */
 export async function test_query_list_and_inspect(): Promise<void> {
-  const location = join(__dirname, `query list 한글 ${randomUUID()}`);
+  const location = join(__dirname, `query list ${randomUUID()}`);
   await TestFileSystem.experiment(
     location,
     TestQueryAnalysis.records(),

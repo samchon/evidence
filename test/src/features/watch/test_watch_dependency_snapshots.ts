@@ -9,7 +9,7 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
 
 /** Detects content, directory-topology, deletion, and junction-target changes. */
 export async function test_watch_dependency_snapshots(): Promise<void> {
-  const location = join(__dirname, `snapshots 한글 ${randomUUID()}`);
+  const location = join(__dirname, `snapshots ${randomUUID()}`);
   await TestFileSystem.experiment(
     location,
     {

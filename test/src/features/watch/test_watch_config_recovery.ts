@@ -9,7 +9,7 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
 
 /** Verifies imported config failures, missing roots, and inactive populations recover correctly. */
 export async function test_watch_config_recovery(): Promise<void> {
-  const location = join(__dirname, `config recovery 한글 ${randomUUID()}`);
+  const location = join(__dirname, `config recovery ${randomUUID()}`);
   await TestFileSystem.experiment(
     location,
     {

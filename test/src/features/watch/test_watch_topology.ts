@@ -12,7 +12,7 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
 
 /** Verifies created and deleted glob matches publish the same reports as fresh checks. */
 export async function test_watch_topology(): Promise<void> {
-  const location = join(__dirname, `topology 한글 ${randomUUID()}`);
+  const location = join(__dirname, `topology ${randomUUID()}`);
   await TestFileSystem.experiment(
     location,
     {

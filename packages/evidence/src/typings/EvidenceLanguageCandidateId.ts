@@ -6,9 +6,8 @@ export type EvidenceLanguageCandidateId =
   | "dart"
   | "scala"
   | "lua"
-  | "elixir"
-  | "erlang"
-  | "objective-c"
+  | "objc"
   | "zig"
+  | "matlab"
   | "vue"
   | "svelte";
