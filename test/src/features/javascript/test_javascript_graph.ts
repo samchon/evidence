@@ -11,7 +11,14 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Evaluates type, function, and property hosts and fingerprints their source scopes. */
+/** Evaluates JavaScript type, function, and property coverage and fingerprints.
+ *
+ * Exact host selection governs graph obligations while evidence prose remains outside implementation scope.
+ *
+ * 1. Evaluate each symbol kind with and without acknowledgement.
+ * 2. Compare missing IDs.
+ * 3. Verify source-scope fingerprints.
+ */
 export async function test_javascript_graph(): Promise<void> {
   const requirements = await new EvidenceMarkdownAdapter().analyze(
     TestSourceSnapshot.create(

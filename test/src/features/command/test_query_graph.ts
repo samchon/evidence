@@ -8,7 +8,23 @@ import typia from "typia";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestQueryAnalysis } from "../../internal/TestQueryAnalysis";
 
-/** Exports independent obligations and renders untrusted labels as graph data. */
+/**
+ * Exports independent graph obligations and safely renders untrusted target labels.
+ *
+ * Two configured references can name the same target while retaining separate
+ * policy boundaries. Graph formats must serialize the complete report
+ * deterministically and escape labels so citation text cannot become Mermaid or
+ * DOT syntax.
+ *
+ * 1. Build the graph and require two distinct boundaries, four edges, independent
+ *    evidence and exclusion edges, and two evidence-review records with error
+ *    review policies.
+ * 2. Serialize JSON, assert it against the public graph report type, and require
+ *    a repeated serialization to have identical bytes.
+ * 3. Insert quotes, a line break, and Mermaid syntax into a graph node target.
+ * 4. Require Mermaid and DOT to preserve relation styling while escaping the
+ *    hostile text so it cannot add a new graph statement.
+ */
 export async function test_query_graph(): Promise<void> {
   const location = join(__dirname, `query graph ${randomUUID()}`);
   await TestFileSystem.experiment(

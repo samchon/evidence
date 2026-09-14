@@ -6,7 +6,19 @@ import type {
 import { TestValidator } from "@nestia/e2e";
 import typia from "typia";
 
-/** Keeps operational failures persistent and machine output framed as one NDJSON record. */
+/**
+ * Keeps operational failures persistent and machine output framed as one NDJSON record.
+ *
+ * A watch reporter must serialize each cycle independently for machine consumers
+ * while retaining the current operational message and repair guidance in text.
+ *
+ * 1. Construct a failed check cycle with a fixed schema version, cycle number,
+ *    configuration path, failure message, and repair instruction.
+ * 2. Render JSON and require one compact line that type-validates as a watch
+ *    cycle with the same identifier.
+ * 3. Render text and require its cycle status, failure message, and repair
+ *    instruction to remain visible.
+ */
 export function test_watch_reporter(): void {
   const failure: IEvidenceWatchFailureCycle = {
     schemaVersion: 1,

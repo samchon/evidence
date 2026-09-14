@@ -4,7 +4,16 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Attaches Rust doc comments and doc attributes while rejecting ordinary carriers. */
+/** Attaches Rust doc comments and doc attributes to eligible hosts.
+ *
+ * Ordinary carriers cannot create acknowledgements.
+ *
+ * 1. Analyze outer and inner doc comments, doc string attributes, inert rustdoc
+ *    metadata, and tagged ordinary comments, literals, and commented-out code.
+ * 2. Require eligible carriers to attach to their module or public declarations.
+ * 3. Require unsupported carriers to remain visible as diagnostics and inherited
+ *    withdrawal to hide a documented module hierarchy.
+ */
 export async function test_rust_hosts(): Promise<void> {
   const inventory = await new EvidenceRustAdapter().analyze(
     TestSourceSnapshot.combine([

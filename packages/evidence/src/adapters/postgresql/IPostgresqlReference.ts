@@ -1,11 +1,28 @@
-/** Resolves an additional declaration site against a schema-qualified identity. */
+/**
+ * Requests ownership resolution for a PostgreSQL declaration site.
+ *
+ * The adapter uses this record after scanning all files to merge ALTER and
+ * COMMENT sites with the declaration identified by their SQL identity.
+ */
 export interface IPostgresqlReference {
-  /** Local declaration receiving the resolved owner or original identity. */
+  /**
+   * Identifies the local declaration that receives the resolved owner.
+   *
+   * This ID remains stable while resolution replaces its provisional identity.
+   */
   declarationId: string;
 
-  /** Schema-qualified table or column identity. */
+  /**
+   * Names the schema-qualified table or column to resolve.
+   *
+   * Table identities have two segments, while column identities have three.
+   */
   identity: string[];
 
-  /** Whether this is a COMMENT site rather than an ALTER table extension. */
+  /**
+   * Distinguishes a COMMENT site from an ALTER TABLE extension.
+   *
+   * Comment sites retain a separate physical address after ownership resolution.
+   */
   comment: boolean;
 }

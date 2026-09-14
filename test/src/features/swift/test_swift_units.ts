@@ -8,7 +8,13 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Establishes Swift visibility and exact ownership across overloads, protocols, aliases, and cross-file extensions. */
+/** Extracts Swift public units with exact ownership.
+ *
+ * Visibility, overloads, protocols, aliases, and extensions determine public identities.
+ *
+ * 1. Analyze the supported declaration matrix.
+ * 2. Verify units, ownership, and target resolution.
+ */
 export async function test_swift_units(): Promise<void> {
   const snapshot = TestSourceSnapshot.combine([
     TestSourceSnapshot.create(

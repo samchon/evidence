@@ -21,10 +21,35 @@ import type { ICFileAnalysis } from "./ICFileAnalysis";
 import { CDocumentation } from "./CDocumentation";
 import { CFileScanner } from "./CFileScanner";
 
-/** Builds C declared-source inventories from the configured source snapshot. */
+/**
+ * Reconciles C declaration records and Doxygen ownership into graph inventory.
+ *
+ * File scanning records tags, declarators, source sites, and documentation before
+ * publication. Materialization groups compatible declarations within their
+ * physical file boundary, projects supported aliases, then attaches annotations
+ * to the resulting semantic owners. Cross-file name equality is not C linkage
+ * analysis and does not authorize merging units.
+ *
+ * Each analysis owns its parser and output records. Source and syntax failures
+ * remain on the inventory through final ownership validation, preventing partial
+ * extraction from being mistaken for a complete empty population.
+ */
 export class CAdapter implements IEvidenceAdapter {
+  /**
+   * C artifact discriminator for extraction and inventory records.
+   *
+   * A header extension alone does not select C++ semantics; configuration chooses
+   * this adapter and its C-specific declaration and tag namespaces.
+   */
   public readonly type = "c";
 
+  /**
+   * Analyzes captured C source and returns reconciled, serializable records.
+   *
+   * The snapshot is validated and copied before parsing. Compatible declarations
+   * are materialized before documentation so aliases and shared sites retain
+   * correct owners. Parser resources close on both success and failure.
+   */
   public async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {
@@ -58,6 +83,8 @@ export class CAdapter implements IEvidenceAdapter {
         inventory.diagnostics.push(...analysis.diagnostics);
         inventory.complete &&= analysis.complete;
       }
+      // Resolve identity before attaching tags: typedef aliases and shared
+      // declarators must not manufacture extra semantic evidence hosts.
       const published = this.materializeUnits(inventory, analyses);
       this.materializeDocumentation(inventory, analyses, published);
       return new EvidenceInventory([inventory]).snapshot();

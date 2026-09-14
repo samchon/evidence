@@ -11,7 +11,14 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Tests every database selector in both graph roles and prevents reviews from supplying coverage. */
+/** Evaluates SQLite selectors as claim and reference populations.
+ *
+ * Graph role affects obligation ownership, while reviews are retained separately and cannot supply evidence coverage.
+ *
+ * 1. Extract schema and claims for every SQLite selector.
+ * 2. Evaluate covered and missing populations in both roles.
+ * 3. Verify review-only resolutions leave coverage missing.
+ */
 export async function test_sqlite_graph(): Promise<void> {
   const schema = await new EvidenceSqliteAdapter().analyze(
     TestSourceSnapshot.create(

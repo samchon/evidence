@@ -3,9 +3,17 @@ import type { IEvidenceDocumentation } from "../../structures/IEvidenceDocumenta
 import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { ISwiftDocumentation } from "./ISwiftDocumentation";
 
-/** Reads DocC while preserving source mappings and masking code examples. */
+/**
+ * Reads DocC while preserving source mappings and masking code examples.
+ *
+ * SwiftAdapter uses the normalized result for tag parsing after it establishes a documentation host.
+ */
 export namespace SwiftDocumentation {
-  /** Maps a classified carrier and removes ineligible example text without moving offsets. */
+  /**
+   * Maps a classified carrier and removes ineligible example text without moving offsets.
+   *
+   * Preserved line positions let tag diagnostics map back to the original Swift source.
+   */
   export function read(
     source: IEvidenceSourceFile,
     documentation: ISwiftDocumentation,
@@ -24,7 +32,11 @@ export namespace SwiftDocumentation {
     };
   }
 
-  /** Masks HTML examples and Markdown indented code; shared tag parsing handles fences. */
+  /**
+   * Masks HTML examples and Markdown indented code; shared tag parsing handles fences.
+   *
+   * Example text cannot accidentally create Evidence annotations.
+   */
   function mask(input: string): string {
     const characters = input.split("");
     const htmlCode = /<(pre|code)\b[^>]*>[\s\S]*?<\/\1\s*>/giu;
@@ -45,7 +57,11 @@ export namespace SwiftDocumentation {
     return characters.join("");
   }
 
-  /** Counts Markdown indentation after the documentation delimiter is removed. */
+  /**
+   * Counts Markdown indentation after the documentation delimiter is removed.
+   *
+   * The value identifies code blocks relative to the least-indented prose line.
+   */
   function indentation(line: string): number {
     let spaces = 0;
     for (const character of line) {
@@ -56,7 +72,11 @@ export namespace SwiftDocumentation {
     return spaces;
   }
 
-  /** Replaces example characters with spaces while retaining original line boundaries. */
+  /**
+   * Replaces example characters with spaces while retaining original line boundaries.
+   *
+   * Keeping newlines intact preserves offsets for subsequent parsing and diagnostics.
+   */
   function hide(characters: string[], start: number, end: number): void {
     for (let index = start; index < end; ++index)
       if (characters[index] !== "\n" && characters[index] !== "\r")

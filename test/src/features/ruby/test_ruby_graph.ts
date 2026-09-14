@@ -11,7 +11,15 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Evaluates Ruby type, function, and property hosts and semantic fingerprints. */
+/** Evaluates Ruby type, function, and property evidence.
+ *
+ * Each selected host has independent coverage and semantic fingerprint behavior.
+ *
+ * 1. Link Ruby type, singleton method, and constant evidence to Markdown requirements.
+ * 2. Remove each acknowledgement in turn and require the matching requirement to
+ *    become the sole missing obligation.
+ * 3. Compare fingerprints after evidence-text and implementation-body edits.
+ */
 export async function test_ruby_graph(): Promise<void> {
   const requirements = await new EvidenceMarkdownAdapter().analyze(
     TestSourceSnapshot.create(

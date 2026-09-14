@@ -4,7 +4,17 @@ import { dedent } from "@typia/utils";
 
 import { TestDocumentation } from "../../internal/TestDocumentation";
 
-/** Tokenizes the four requested code forms and preserves artifact-specific target spellings. */
+/** Tokenizes source, Markdown, schema, and operation targets without changing their spelling.
+ *
+ * The common tag parser must preserve each target for its artifact-specific resolver,
+ * including a quoted accessor segment whose following prose is the reason.
+ *
+ * 1. Parse TypeScript declaration and member paths, a C++ quoted-member path,
+ *    Markdown, Prisma, and HTTP targets.
+ * 2. Verify all eight target strings and the literal-member reason remain exact.
+ * 3. Require every valid `@evidence` and `@link` entry to be positive evidence
+ *    with no diagnostics.
+ */
 export async function test_tag_targets(): Promise<void> {
   const fixture = TestDocumentation.create(dedent`
     /**

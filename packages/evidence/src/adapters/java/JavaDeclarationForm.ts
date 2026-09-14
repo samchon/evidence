@@ -1,4 +1,9 @@
-/** Supported Java source form that establishes one semantic declaration. */
+/**
+ * Supported Java source form that establishes one semantic declaration.
+ *
+ * The Java scanner records this form to apply the correct visibility, ownership,
+ * and materialization rules to nominal types and their members.
+ */
 export type JavaDeclarationForm =
   | "class"
   | "interface"

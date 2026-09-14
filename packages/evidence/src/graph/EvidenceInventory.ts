@@ -12,12 +12,64 @@ import type { IEvidenceUnit } from "../structures/IEvidenceUnit";
 import type { IEvidenceUnitSite } from "../structures/IEvidenceUnitSite";
 import type { IEvidenceWithdrawal } from "../structures/IEvidenceWithdrawal";
 
-/** Merges language-neutral adapter output and projects independent graph populations. */
+/**
+ * Reconciles adapter records and indexes independently selected evidence populations.
+ *
+ * Construction captures the supplied inventories, merges compatible identities,
+ * and checks source ranges, parent relationships, addresses, and host ownership.
+ * Inconsistent records leave diagnostics and an incomplete inventory instead of
+ * silently disappearing from the denominator. Normalization makes snapshots and
+ * serialization deterministic.
+ *
+ * Selection distinguishes required units from their addressable ancestors and
+ * propagates withdrawals through explicit parent links. Resolution then matches
+ * an exact file and segmented accessor within that scope. Aliases can name one
+ * identity; an address naming several identities remains ambiguous.
+ *
+ * Snapshots, populations, and resolutions are owned copies. Mutating one result
+ * cannot affect this index or a later selection.
+ *
+ * @example
+ * const inventory: EvidenceInventory = new EvidenceInventory([adapterOutput]);
+ * const population: IEvidencePopulation = inventory.select([methodId]);
+ * const target: IEvidenceResolution = inventory.resolve(
+ *   { file: "api.ts", segments: ["Client"] },
+ *   [methodId],
+ * );
+ * // Client may resolve as an aggregate owner while only its method is required.
+ */
 export class EvidenceInventory {
+  /**
+   * Reconciled records owned by this index.
+   *
+   * Validation appends findings here before normalization. Public methods return
+   * copies so callers cannot invalidate the lookup tables by editing a snapshot.
+   */
   private readonly data: IEvidenceInventory;
+
+  /**
+   * Semantic identity lookup over the reconciled units.
+   *
+   * Parent traversal uses these IDs rather than public names. The same table
+   * supports validation of addresses, hosts, and selected identities.
+   */
   private readonly units = new Map<string, IEvidenceUnit>();
+
+  /**
+   * Effective withdrawals for each unit, including its ancestors' directives.
+   *
+   * Validation computes these chains once. Selection excludes affected units,
+   * while resolution retains the directive locations to explain hidden targets.
+   */
   private readonly withdrawals = new Map<string, IEvidenceWithdrawal[]>();
 
+  /**
+   * Captures, reconciles, and validates one or more adapter inventories.
+   *
+   * Shape validation rejects malformed input. Semantic inconsistencies become
+   * inventory diagnostics so callers can inspect the partial records and their
+   * incomplete status rather than receiving an apparently healthy subset.
+   */
   public constructor(inventories: IEvidenceInventory[]) {
     this.data = InventoryMerge.combine(
       structuredClone(typia.assert(inventories)),
@@ -27,20 +79,44 @@ export class EvidenceInventory {
     this.normalize();
   }
 
-  /** Returns an independent serializable snapshot; mutations cannot alter this index. */
+  /**
+   * Returns a serializable copy of the reconciled inventory.
+   *
+   * The copy includes diagnostics and incomplete records. Callers may inspect or
+   * mutate it without changing future selections or resolutions on this index.
+   */
   public snapshot(): IEvidenceInventory {
     return structuredClone(this.data);
   }
 
-  /** Stable schema-order JSON with deterministic array order. */
+  /**
+   * Serializes the normalized inventory in stable schema order.
+   *
+   * Construction has already reconciled and sorted the collections. Serializing
+   * therefore preserves deterministic output without changing selection state or
+   * requiring callers to normalize a snapshot themselves.
+   */
   public serialize(): string {
     return typia.json.stringify(this.data);
   }
 
-  /** Selects explicit identities, includes real ancestors, and reconciles merged withdrawal. */
+  /**
+   * Projects selected identities and the structural context needed to resolve them.
+   *
+   * Required units exclude effective withdrawals, while scopes include their real
+   * ancestors. Hosts are narrowed to selected semantic owners, including hosts
+   * without tags. Unknown requested IDs throw because they indicate an invalid
+   * selection, rather than an empty configured population.
+   *
+   * @example
+   * // Selecting a method retains its class as a resolvable aggregate scope.
+   * // The class does not become an extra required unit unless its ID is selected.
+   */
   public select(ids: string[]): IEvidencePopulation {
     const requested = new Set(ids);
     const scopes = new Set<string>();
+    // Keep the original closure for hidden-target explanations, even when a
+    // requested unit is later removed by an inherited withdrawal.
     for (const id of requested) {
       if (!this.units.has(id))
         throw new Error(`Unknown selected semantic identity: ${id}`);
@@ -50,6 +126,8 @@ export class EvidenceInventory {
       (unit) => requested.has(unit.id) && !this.hidden(unit.id),
     );
     const selected = new Set(visible.map((unit) => unit.id));
+    // Only ancestors of surviving requirements remain visible scopes. An owner
+    // of exclusively withdrawn units must not re-enter through aggregate lookup.
     const visibleScopes = new Set(
       visible.flatMap((unit) =>
         this.ancestors(unit.id).map((ancestor) => ancestor.id),
@@ -76,7 +154,14 @@ export class EvidenceInventory {
     });
   }
 
-  /** Resolves only an exact file/segment address within the requested population's scopes. */
+  /**
+   * Resolves an exact public address inside a selected population's structural scope.
+   *
+   * Aliases resolving to one unit are deduplicated by identity; distinct matching
+   * units remain ambiguous. A withdrawn match carries its withdrawal locations.
+   * Incomplete inventory takes precedence over all apparent matches because
+   * missing extraction may hide another candidate or invalidate the population.
+   */
   public resolve(
     address: IEvidenceAddress,
     ids: string[],
@@ -100,6 +185,8 @@ export class EvidenceInventory {
     const withdrawn = this.data.units.filter(
       (unit) => matching.has(unit.id) && hidden.has(unit.id),
     );
+    // A partial inventory cannot prove uniqueness or absence. Preserve that
+    // uncertainty before choosing resolved, ambiguous, hidden, or missing.
     return structuredClone({
       status: !this.data.complete
         ? "incomplete"
@@ -118,10 +205,24 @@ export class EvidenceInventory {
     });
   }
 
+  /**
+   * Tests whether a semantic identity is removed by its own or an inherited withdrawal.
+   *
+   * The map is populated during validation from the explicit parent chain. Consumers
+   * use this predicate after retaining structural closure, so a hidden ancestor can
+   * still be named in a diagnostic without returning it as a visible requirement.
+   */
   private hidden(id: string): boolean {
     return (this.withdrawals.get(id)?.length ?? 0) !== 0;
   }
 
+  /**
+   * Returns an identity and its reachable structural ancestors in child-to-root order.
+   *
+   * Selection uses this closure for aggregate addresses and inherited withdrawals.
+   * The visited set bounds malformed parent cycles; validation reports the cycle
+   * separately rather than letting a lookup or diagnostic construction loop forever.
+   */
   private ancestors(id: string): IEvidenceUnit[] {
     const output: IEvidenceUnit[] = [];
     const seen = new Set<string>();
@@ -137,6 +238,13 @@ export class EvidenceInventory {
     return output;
   }
 
+  /**
+   * Checks that merged records still describe a coherent source and ownership graph.
+   *
+   * Validation is deliberately non-throwing for semantic contradictions. Each
+   * finding marks the inventory incomplete and remains available to graph reporting,
+   * while malformed runtime input has already failed shape validation at construction.
+   */
   private validate(): void {
     const sources = new Map<string, SourceText>();
     for (const source of this.data.sources) {
@@ -155,6 +263,8 @@ export class EvidenceInventory {
         sources.set(file, text);
       }
     }
+    // Source-coordinate checks run before cross-record ownership checks so every
+    // later site, host, declaration, and review can use the same original text map.
     const sites = new Map<string, IEvidenceUnitSite>();
     for (const annotation of this.data.annotationRanges)
       this.checkLocation(annotation, sources);
@@ -221,6 +331,8 @@ export class EvidenceInventory {
           "inventory-cycle",
           `The parent chain of ${unit.id} contains a cycle.`,
         );
+      // Cache inherited directives per identity. Applying only local withdrawals
+      // would expose a child that an enclosing symbol explicitly withdrew.
       this.withdrawals.set(
         unit.id,
         ancestors.flatMap((ancestor) => ancestor.withdrawals),
@@ -235,6 +347,8 @@ export class EvidenceInventory {
           `Public address names missing identity ${address.unitId}.`,
           { file: address.file },
         );
+    // Annotation attachment is valid only when a host belongs to a declaration
+    // site. A matching file name alone is insufficient for generated or repeated text.
     const hosts = new Map(this.data.hosts.map((host) => [host.id, host]));
     for (const host of this.data.hosts) {
       this.checkLocation(host, sources);
@@ -310,6 +424,13 @@ export class EvidenceInventory {
     }
   }
 
+  /**
+   * Verifies that an optional source range belongs to the recorded source snapshot.
+   *
+   * Adapter records must point into the exact original content, not merely to a
+   * path that happens to exist. Missing source text, absent ranges, and out-of-bounds
+   * coordinates all make later diagnostics and fingerprints unreliable.
+   */
   private checkLocation(
     location: IEvidenceSourceLocation,
     sources: Map<string, SourceText>,
@@ -327,6 +448,13 @@ export class EvidenceInventory {
       );
   }
 
+  /**
+   * Appends one inventory diagnostic and permanently marks this snapshot incomplete.
+   *
+   * This central path keeps all validation failures visible to the graph evaluator.
+   * An optional location is reduced to the portable file/range form accepted by the
+   * report schema, preserving a specific repair site when the source record supplied one.
+   */
   private problem(
     code: string,
     message: string,
@@ -352,6 +480,13 @@ export class EvidenceInventory {
     });
   }
 
+  /**
+   * Deduplicates and canonically orders merged records after validation.
+   *
+   * Normalization does not repair contradictions already reported. It only gives
+   * snapshots, serialized output, and diagnostic ordering a stable representation
+   * when equivalent adapter records arrived from independent scan inputs.
+   */
   private normalize(): void {
     this.data.sources = InventoryMerge.unique(
       this.data.sources,
@@ -389,6 +524,8 @@ export class EvidenceInventory {
         host.origins ?? [host.file],
         (file) => file,
       );
+      // Citation origin is required to explain generated or shared hosts. Keep the
+      // host record for diagnostics instead of silently deleting an invalid entry.
       if (host.origins.length === 0)
         this.problem(
           "inventory-host",

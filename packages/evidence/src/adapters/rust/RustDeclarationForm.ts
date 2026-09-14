@@ -1,4 +1,9 @@
-/** Supported Rust source form that establishes one semantic declaration. */
+/**
+ * Enumerates supported Rust source forms that establish semantic declarations.
+ *
+ * RustFileScanner assigns these forms to lexical records. RustModuleResolver uses
+ * them to apply module, associated-item, and public-occurrence ownership rules.
+ */
 export type RustDeclarationForm =
   | "module"
   | "struct"

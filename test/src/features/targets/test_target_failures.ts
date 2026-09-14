@@ -13,7 +13,20 @@ import { join } from "node:path";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Keeps missing, unselected, withdrawn, ambiguous, and incomplete targets distinct. */
+/** Distinguishes every unresolved target state.
+ *
+ * Missing, unselected, malformed, unsupported, withdrawn, ambiguous, and
+ * incomplete addresses require different diagnostics and recovery behavior.
+ *
+ * 1. Resolve an existing unselected file, a missing file, malformed programming
+ *    spellings, and a host without a supported attachment.
+ * 2. Verify their distinct statuses instead of allowing a guessed edge.
+ * 3. Resolve an internal declaration, competing star exports, and an export graph
+ *    with a missing source name; require withdrawal metadata, ambiguity, and an
+ *    incomplete result that retains the original export diagnostic.
+ * 4. Resolve a missing path against that incomplete graph and require incomplete
+ *    rather than a derivative missing-file result.
+ */
 export async function test_target_failures(): Promise<void> {
   const location = join(__dirname, "failures-" + randomUUID());
 

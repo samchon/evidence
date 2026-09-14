@@ -3,20 +3,42 @@ import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { ILuaDeclaration } from "./ILuaDeclaration";
 import type { ILuaDocumentation } from "./ILuaDocumentation";
 
-/** Node-free Lua extraction retained after a parse session closes. */
+/**
+ * Holds the node-free Lua extraction retained after a parse session closes.
+ *
+ * Static initialization is interpreted only while scanning; this record carries
+ * the resulting public-value candidates into inventory materialization.
+ */
 export interface ILuaFileAnalysis {
-  /** Original selected source snapshot. */
+  /** Retains the selected Lua source file that produced this analysis.
+   *
+   * Its physical identity and configured addresses are used when units and comment hosts are materialized.
+   */
   source: IEvidenceSourceFile;
 
-  /** Public declarations and alias projections established by static initialization. */
+  /** Lists declarations and alias projections established by supported static initialization.
+   *
+   * `LuaAdapter` reconciles these node-free records into public units after scanning ends.
+   */
   declarations: ILuaDeclaration[];
 
-  /** Classified documentation and unsupported annotation carriers. */
+  /** Lists classified LuaDoc and unsupported annotation carriers from this file.
+   *
+   * Tagged unsupported carriers remain available for diagnostics instead of silently disappearing.
+   */
   documentation: ILuaDocumentation[];
 
-  /** Failures encountered while establishing the public surface. */
+  /** Lists failures encountered while establishing the static public surface.
+   *
+   * The adapter forwards them into the inventory together with the `complete` boundary.
+   */
   diagnostics: IEvidenceDiagnostic[];
 
-  /** Whether every relevant declaration form was understood. */
+  /**
+   * States whether static extraction understood every relevant source form.
+   *
+   * A false value keeps unsupported dynamic behavior visible to callers rather
+   * than treating an incomplete table projection as an empty public surface.
+   */
   complete: boolean;
 }

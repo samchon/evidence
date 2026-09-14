@@ -17,7 +17,12 @@ import type { IGoFileAnalysis } from "./IGoFileAnalysis";
 import { SourcePath } from "../../internal/SourcePath";
 import { SourceText } from "../../internal/SourceText";
 
-/** Extracts Go declarations and documentation before package-wide ownership resolution. */
+/**
+ * Extracts Go declarations and documentation before package-wide ownership resolution.
+ *
+ * It keeps physical sites and comment adjacency local to the file while
+ * `GoAdapter` assigns receiver members to their package-wide semantic owners.
+ */
 export class GoFileScanner {
   private readonly declarations: IGoDeclaration[] = [];
   private readonly documentation = new Map<string, IGoDocumentation>();
@@ -27,6 +32,12 @@ export class GoFileScanner {
   private readonly text: SourceText;
   private complete = true;
 
+  /**
+   * Creates a scanner for one Go parse session and selected source file.
+   *
+   * Comment runs are captured first because Go documentation attachment depends
+   * on exact source adjacency rather than declaration-family reconciliation.
+   */
   public constructor(
     private readonly session: EvidenceParseSession,
     private readonly source: IEvidenceSourceFile,
@@ -35,6 +46,12 @@ export class GoFileScanner {
     this.collectCommentRuns();
   }
 
+  /**
+   * Extracts the package clause and supported exported declarations from one file.
+   *
+   * A missing package clause or unsupported relevant form is retained as an
+   * incomplete analysis so package materialization cannot hide it.
+   */
   public scan(): IGoFileAnalysis {
     const packageClause = this.session.root.namedChildren.find(
       (node) => node.type === "package_clause",
@@ -295,7 +312,12 @@ export class GoFileScanner {
     }
   }
 
-  /** Keeps trailing source comments separate from the next declaration's documentation. */
+  /**
+   * Keeps trailing source comments separate from the next declaration's documentation.
+   *
+   * Go attaches documentation only from the leading comment run, so a preceding
+   * declaration's trailing comment must not become evidence for the next one.
+   */
   private standalone(offset: number): boolean {
     const start = this.source.content.lastIndexOf("\n", offset - 1) + 1;
     return /^[ \t]*$/u.test(this.source.content.slice(start, offset));

@@ -19,6 +19,25 @@ Read the project skill and inspect a nearby peer before introducing a new file o
 - Keep executable files small and free of reusable logic. Public imports must not start the CLI, scan a project, or evaluate configuration.
 - Use upstream grammars through the common adapter contract. Do not fork the parser engine or import a language compiler just to cover an unsupported syntax case without a product decision.
 - Update documentation with behavior changes. Run `pnpm format` before an ordinary commit and inspect what it changed.
+- Apply the [documentation skill](../documentation/source-comments.md) to declaration contracts, member JSDoc, implementation rationale, and test scenarios before considering a code change complete.
+- Use constant `Singleton` and `VariadicSingleton` instances with initialization inside their callbacks. Put exported namespace members before internal declarations.
+
+## Explicit Types
+
+Annotate variable bindings, class fields, parameters, and return values, including local intermediates and callbacks. Use the named contract for structured values and preserve meaningful literal or union types. Do not substitute `any` or an assertion for a checked annotation. Apply this to new or changed implementation; a documentation-only edit does not authorize an unrelated annotation migration.
+
+Annotate destructured bindings with the value's contract. A `for...of` binding cannot carry a TypeScript annotation, so explicitly type its iterable or producer. Catch values remain `unknown` until narrowed.
+
+```ts
+const inventory: IEvidenceInventory = index.snapshot();
+const units: IEvidenceUnit[] = inventory.units;
+const selected: string[] = units.map(
+  (unit: IEvidenceUnit): string => unit.id,
+);
+for (const unit of units) {
+  const name: string = unit.name;
+}
+```
 
 ## Consequence Analysis
 
@@ -34,7 +53,7 @@ Create every temporary file and directory only under the gitignored test/.tmp di
 
 Follow AutoMovie's unit-test structure: one exported `test_<behavior>` function per `test/src/features/<category>/test_<behavior>.ts` file. The entry point uses `@nestia/e2e`'s `DynamicExecutor` to discover the functions, and tests use `TestValidator` assertions. Keep the test workspace in `test`, not a second `tests` tree.
 
-Open a regression with a doc comment explaining what it verifies, why the behavior matters, and the short scenario. Separate setup, execution, and assertions with blank lines, and comment each scenario's purpose. Call the logic directly. Give changed predicates a negative counterpart and meaningful boundary cases. Tests are exclusively logic unit tests: do not add installation experiments, tarball verification, CLI subprocess tests, or a Node test-runner framework.
+Call the logic directly. Give changed predicates a negative counterpart and meaningful boundary cases. Follow the [test scenario documentation rules](../documentation/source-comments.md#test-scenarios). Do not add installation experiments, tarball verification, CLI subprocess tests, or a Node test-runner framework.
 
 Take expected inventories and semantics from the contract, not the current parser output. Avoid tests that merely assert a particular implementation spelling. Do not create speculative tests for every reversible documentation change.
 

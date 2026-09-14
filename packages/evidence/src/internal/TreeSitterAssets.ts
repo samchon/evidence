@@ -8,12 +8,27 @@ import { TreeSitterAssetCache } from "./TreeSitterAssetCache";
 import { TreeSitterAssetScope } from "./TreeSitterAssetScope";
 import { TreeSitterGrammarCatalog } from "./TreeSitterGrammarCatalog";
 
-/** Reads compiled provenance and lazily acquires pinned grammar bytes in the user cache. */
+/**
+ * Reads compiled grammar provenance and lazily acquires verified pinned bytes.
+ *
+ * Metadata validation occurs before cache-key or URL use so a corrupted package
+ * catalog cannot redirect filesystem writes or downloads outside the asset boundary.
+ */
 export class TreeSitterAssets {
-  /** Execution-local acquisition controls inherited by independently constructed adapters. */
+  /**
+   * Caches grammar bytes under the inherited and constructor-provided acquisition controls.
+   *
+   * The constructor creates this instance after merging scope controls with local
+   * overrides, so every bytes request follows the same policy.
+   */
   private readonly cache: TreeSitterAssetCache;
 
-  /** Captures optional acquisition overrides without reading or writing any package files. */
+  /**
+   * Captures optional acquisition overrides without accessing grammar assets.
+   *
+   * Scope controls supply defaults, and explicit constructor options take precedence
+   * before a later bytes call resolves a cache entry or download.
+   */
   public constructor(options: ITreeSitterAssetOptions = {}) {
     this.cache = new TreeSitterAssetCache({
       ...TreeSitterAssetScope.current(),
@@ -21,12 +36,22 @@ export class TreeSitterAssets {
     });
   }
 
-  /** Returns independent metadata without initializing WASM, writing the cache, or downloading assets. */
+  /**
+   * Returns validated grammar metadata without initializing WASM or acquiring bytes.
+   *
+   * Consumers can inspect the compiled catalog safely because readManifest rejects
+   * invalid records before they are returned.
+   */
   public async list(): Promise<IEvidenceGrammar[]> {
     return this.readManifest();
   }
 
-  /** Resolves a pinned syntax variant without preparing its bytes. */
+  /**
+   * Resolves one validated pinned grammar by its catalog ID.
+   *
+   * This lookup does not prepare or load the WASM bytes; unknown IDs become an
+   * asset-manifest error with repair guidance.
+   */
   public async grammar(id: string): Promise<IEvidenceGrammar> {
     const grammar = (await this.list()).find((entry) => entry.id === id);
     if (grammar === undefined)
@@ -38,14 +63,24 @@ export class TreeSitterAssets {
     return grammar;
   }
 
-  /** Obtains verified cache bytes or automatically downloads the exact pinned asset. */
+  /**
+   * Obtains a caller-owned copy of verified grammar bytes from the immutable cache.
+   *
+   * Input is cloned and validated before cache acquisition, preventing unsafe
+   * metadata from selecting a filesystem key or network destination.
+   */
   public async bytes(input: IEvidenceGrammar): Promise<Uint8Array> {
     const grammar = structuredClone(typia.assert(input));
     this.validate(grammar);
     return this.cache.bytes(grammar);
   }
 
-  /** Validates compiled catalog records and rejects duplicate identifiers. */
+  /**
+   * Validates compiled catalog records and rejects duplicate identifiers.
+   *
+   * list delegates here before exposing metadata, ensuring each grammar has safe
+   * provenance paths and credential-free HTTPS asset URLs.
+   */
   private readManifest(): IEvidenceGrammar[] {
     try {
       const entries = typia.assert(TreeSitterGrammarCatalog.list());
@@ -68,7 +103,12 @@ export class TreeSitterAssets {
     }
   }
 
-  /** Rejects unsafe metadata before it can choose a filesystem key or download destination. */
+  /**
+   * Rejects unsafe asset metadata before it chooses a filesystem key or network destination.
+   *
+   * Both grammar WASM and license records require relative provenance paths and
+   * credential-free HTTPS URLs to remain within the asset trust boundary.
+   */
   private validate(grammar: IEvidenceGrammar): void {
     for (const asset of [grammar.wasm, grammar.license]) {
       this.location(asset.file);
@@ -86,7 +126,12 @@ export class TreeSitterAssets {
     }
   }
 
-  /** Keeps provenance paths relative on every platform without requiring local asset files. */
+  /**
+   * Requires a provenance path to remain relative on every supported platform.
+   *
+   * This lexical validation rejects empty, absolute, and parent-traversing paths
+   * without requiring the referenced asset file to exist locally.
+   */
   private location(file: string): void {
     if (
       file === "" ||

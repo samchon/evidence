@@ -10,7 +10,19 @@ import { join } from "node:path";
 
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
-/** A failed parser download publishes an incomplete cycle and recovers automatically without any source edit. */
+/**
+ * Publishes an incomplete parser-download cycle and recovers without a source edit.
+ *
+ * A transient grammar acquisition failure must replace the watch result with an
+ * operational failure and retry from the retained inputs once the asset is available.
+ *
+ * 1. Run a Python claim watcher with a pinned TypeScript configuration grammar and
+ *    a Python grammar fetch that first fails as offline.
+ * 2. Require the first published cycle to be incomplete with operational exit 2.
+ * 3. Make the Python grammar fetch available without editing the config or sources.
+ * 4. Require the next cycle to succeed and verify exactly one failed transfer and
+ *    one successful retry occurred before the watcher closes.
+ */
 export async function test_watch_parser_recovery(): Promise<void> {
   const grammar = await new TreeSitterAssets().grammar("python");
   const configGrammar = await new TreeSitterAssets().grammar("typescript");

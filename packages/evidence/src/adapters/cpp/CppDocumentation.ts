@@ -3,7 +3,12 @@ import type { IEvidenceDocumentation } from "../../structures/IEvidenceDocumenta
 import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { ICppDocumentation } from "./ICppDocumentation";
 
-/** Reads C++ Doxygen while masking source examples embedded in the comment. */
+/**
+ * Reads C++ Doxygen documentation while masking embedded source examples.
+ *
+ * The C++ adapter delegates range mapping to the shared reader, then removes
+ * example content so code-like Evidence tags cannot create documentation claims.
+ */
 export namespace CppDocumentation {
   export function read(
     source: IEvidenceSourceFile,

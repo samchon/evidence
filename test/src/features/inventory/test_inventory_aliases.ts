@@ -3,7 +3,22 @@ import { TestValidator } from "@nestia/e2e";
 
 import { TestInventory } from "../../internal/TestInventory";
 
-/** Multiple module-qualified exports keep one obligation while preserving unrelated homonyms. */
+/**
+ * Counts aliases once while preserving exact public addresses and distinct identities.
+ *
+ * A class is exposed through two barrel names, and another declaration supplies
+ * a competing identity. Alias reconciliation must preserve citation paths without
+ * either inflating the denominator or merging unrelated declarations by spelling.
+ *
+ * 1. Combine an inventory with its copy and select the class ID twice. Require
+ *    one complete selected unit and successful lookup through a renamed export.
+ * 2. Check exact file boundaries:
+ *    - The same name in an absent file must remain missing.
+ *    - Changing the barrel filename's case must not resolve the original path.
+ * 3. Publish the second identity under the same address and require ambiguity.
+ * 4. Clear the caller's input, a returned population, and a returned snapshot;
+ *    the previously constructed index must still select the original class.
+ */
 export async function test_inventory_aliases(): Promise<void> {
   const input = TestInventory.create();
   TestInventory.unit(

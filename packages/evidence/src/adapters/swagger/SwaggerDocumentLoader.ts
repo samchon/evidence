@@ -40,8 +40,17 @@ const METHODS: OpenApi.Method[] = [
 ];
 const cache = new Map<string, ISwaggerCacheEntry>();
 
-/** Normalizes Swagger/OpenAPI documents and fingerprints their operations. */
+/** Normalizes Swagger/OpenAPI documents and fingerprints their operations.
+ *
+ * This is the single version-conversion boundary: callers receive detached,
+ * serializable records rather than parser nodes or mutable converter objects.
+ */
 export namespace SwaggerDocumentLoader {
+  /** Loads one source snapshot with digest-keyed success and failure caching.
+   *
+   * Cache entries are cloned on both insertion and return so no caller can
+   * mutate the shared semantic result used by another analysis.
+   */
   export async function load(
     source: IEvidenceSourceFile,
   ): Promise<ISwaggerLoadResult> {

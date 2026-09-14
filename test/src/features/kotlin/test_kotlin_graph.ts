@@ -9,7 +9,12 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Requires every Kotlin selector as a reference, including undocumented declarations and review-only failures. */
+/** Evaluates Kotlin selector coverage, including undocumented and review-only claims.
+ *
+ * Reviews are recorded independently and cannot satisfy missing reference evidence.
+ *
+ * 1. Select each Kotlin symbol kind. 2. Evaluate covered and uncovered claims. 3. Require review-only claims to retain missing IDs.
+ */
 export async function test_kotlin_graph(): Promise<void> {
   const reference = await new EvidenceKotlinAdapter().analyze(
     TestSourceSnapshot.create(

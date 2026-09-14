@@ -7,7 +7,13 @@ import type { IEvidenceLanguagesCommand } from "./IEvidenceLanguagesCommand";
 import type { IEvidenceListCommand } from "./IEvidenceListCommand";
 import type { IEvidenceVersionCommand } from "./IEvidenceVersionCommand";
 
-/** Valid command selected from a complete CLI argument list. */
+/**
+ * Validated operation selected from the complete CLI argument list.
+ *
+ * Parsing rejects unknown, repeated, or incompatible options before producing
+ * this discriminated union. Execution dispatches on operation without reinterpreting
+ * raw tokens or allowing trailing input to escape validation.
+ */
 export type IEvidenceCommand =
   | IEvidenceCheckCommand
   | IEvidenceGraphCommand

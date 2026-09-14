@@ -7,7 +7,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Classifies Java public types, overloads, fields, records, enums, and annotations. */
+/** Classifies Java public types, overloads, fields, records, enums, and annotations.
+ *
+ * The selected surface must retain all public forms and their lexical ownership.
+ *
+ * 1. Analyze the declared Java forms.
+ * 2. Compare symbols and identities.
+ * 3. Verify overloads and owned members retain sites.
+ */
 export async function test_java_units(): Promise<void> {
   // Certified metadata publishes the exact upstream grammar version and source boundary.
   const language = EvidenceLanguageRegistry.list().find(

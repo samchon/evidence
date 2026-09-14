@@ -6,7 +6,12 @@ import type {
   SwaggerV2,
 } from "@typia/interface";
 
-/** Swagger/OpenAPI document versions accepted by the shared converter. */
+/**
+ * Swagger and OpenAPI document versions accepted by the shared converter.
+ *
+ * The Swagger adapter narrows supported parser output to this union before it
+ * extracts operations, keeping version-specific source models behind one input.
+ */
 export type SwaggerDocumentInput =
   | SwaggerV2.IDocument
   | OpenApiV3.IDocument

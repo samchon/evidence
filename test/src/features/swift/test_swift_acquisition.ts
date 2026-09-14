@@ -7,7 +7,13 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestParserAssets } from "../../internal/TestParserAssets";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Acquires only the pinned Swift variant on a cold cache and reproduces complete analysis offline. */
+/** Acquires the pinned Swift parser and reuses it offline.
+ *
+ * Cold and warm analysis must produce the same complete inventory.
+ *
+ * 1. Record cold parser acquisition.
+ * 2. Verify the selected asset and warm offline equivalence.
+ */
 export async function test_swift_acquisition(): Promise<void> {
   const grammar = await new TreeSitterAssets().grammar("swift");
   const bytes = Uint8Array.from(await TestParserAssets.bytes(grammar));

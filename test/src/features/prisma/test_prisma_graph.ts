@@ -18,7 +18,14 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Evaluates Prisma as both a claim and a reviewed reference. */
+/** Evaluates Prisma as a claim and a reviewed reference.
+ *
+ * Prisma model and field populations require correct role-specific evidence; a review alone remains separate from coverage.
+ *
+ * 1. Build Prisma claim and reference inventories.
+ * 2. Evaluate matching, missing, and review-only target resolutions.
+ * 3. Verify graph status and diagnostics for each case.
+ */
 export async function test_prisma_graph(): Promise<void> {
   const specification = await new EvidenceMarkdownAdapter().analyze(
     TestSourceSnapshot.create(

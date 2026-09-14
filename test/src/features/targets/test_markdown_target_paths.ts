@@ -15,7 +15,18 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Preserves root-relative Markdown paths and literal anchor identities. */
+/** Resolves root-relative Markdown paths and literal anchors.
+ *
+ * Markdown target paths and anchors must retain their public spelling through
+ * normalization and resolution.
+ *
+ * 1. Build a Markdown anchor whose file name contains a literal percent sign and
+ *    parse claim declarations with root-relative and backslash-authored paths.
+ * 2. Resolve both supported spellings to that literal dotted anchor.
+ * 3. Require percent-decoded and wrong-case paths to be missing files.
+ * 4. Mark the reference incomplete and require that state to suppress the
+ *    derivative missing-file result.
+ */
 export async function test_markdown_target_paths(): Promise<void> {
   const reference = await new EvidenceMarkdownAdapter().analyze(
     TestSourceSnapshot.create("docs/spec%value.md", "## Pricing {#price.v2}"),

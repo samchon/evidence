@@ -2,17 +2,38 @@ import type { IEvidenceCommentSyntax } from "../../structures/IEvidenceCommentSy
 import type { IEvidenceSourceRange } from "../../structures/IEvidenceSourceRange";
 import type { IMatlabDocumentationAttachment } from "./IMatlabDocumentationAttachment";
 
-/** A MATLAB documentation carrier or tag-bearing unsupported carrier. */
+/**
+ * Represents a MATLAB documentation carrier or tag-bearing unsupported carrier.
+ *
+ * MATLAB help placement has language-specific attachment rules, so this record
+ * preserves both accepted help and tagged text that needs an actionable failure.
+ */
 export interface IMatlabDocumentation {
-  /** Stable identity of this extraction record. */
+  /**
+   * Identifies this physical documentation carrier within one source analysis.
+   *
+   * Attachments use the key before ownership maps declarations to public units.
+   */
   id: string;
 
-  /** Half-open original UTF-16 source span. */
+  /**
+   * Locates the half-open UTF-16 source span occupied by the help text.
+   *
+   * Inventory fingerprints exclude this range when reviewing documented declarations.
+   */
   range: IEvidenceSourceRange;
 
-  /** Comment delimiters and annotation rules for this carrier. */
+  /**
+   * Describes comment delimiters and annotation rules used to parse this carrier.
+   *
+   * MatlabDocumentation relies on the syntax to preserve source offsets while masking examples.
+   */
   syntax: IEvidenceCommentSyntax;
 
-  /** Declaration sites to which this documentation attaches. */
+  /**
+   * Lists physical declaration sites that directly own this help text.
+   *
+   * Unsupported tagged carriers remain unattached so the adapter can report their placement.
+   */
   attachments: IMatlabDocumentationAttachment[];
 }

@@ -9,7 +9,12 @@ import { FileGlob } from "./FileGlob";
 import { SourcePath } from "./SourcePath";
 import { SwaggerRemoteReader } from "../adapters/swagger/SwaggerRemoteReader";
 
-/** Rejects invalid populations and policies before activation can suppress them. */
+/**
+ * Collects all configuration contract violations before plan construction.
+ *
+ * Validation does not stop at the first error so users can repair related
+ * population policy mistakes together, including entries later disabled by severity.
+ */
 export function validateEvidenceConfig(
   config: IEvidenceConfig,
   configFile: string = resolve("evidence.config.ts"),
@@ -86,6 +91,12 @@ export function validateEvidenceConfig(
     );
 }
 
+/**
+ * Requires each configured artifact type to have a complete certified adapter.
+ *
+ * Configuration validation uses the registry-backed artifact list rather than
+ * accepting a parser grammar that cannot produce a supported Evidence inventory.
+ */
 function validateArtifactType(
   problems: string[],
   path: string,
@@ -97,6 +108,12 @@ function validateArtifactType(
   );
 }
 
+/**
+ * Validates file selection through the restricted matcher used by discovery.
+ *
+ * Constructing FileGlob checks every configured pattern before plan construction,
+ * and this helper accumulates its message with the owning configuration path.
+ */
 function validateGlobs(
   problems: string[],
   path: string,
@@ -109,6 +126,12 @@ function validateGlobs(
   }
 }
 
+/**
+ * Validates configured root spelling without requiring the directory to exist.
+ *
+ * SourcePath.root performs the same lexical resolution used by loading, allowing
+ * a valid future directory while rejecting unsafe or invalid root expressions.
+ */
 function validateRoot(
   problems: string[],
   path: string,
@@ -123,6 +146,12 @@ function validateRoot(
   }
 }
 
+/**
+ * Checks explicit symbol selections when a language adapter supplies a supported set.
+ *
+ * Empty arrays select no units, while named selections must match the adapter's
+ * published symbols; artifact types without symbol metadata remain unrestricted.
+ */
 function validateSymbols(
   problems: string[],
   path: string,
@@ -144,6 +173,12 @@ function validateSymbols(
       );
 }
 
+/**
+ * Requires one exact local or supported remote Swagger document source.
+ *
+ * Remote URLs are accepted only through SwaggerRemoteReader; local spellings are
+ * resolved and rejected when they name a directory-like location rather than a file.
+ */
 function validateSwaggerSource(
   problems: string[],
   path: string,
@@ -171,6 +206,12 @@ function validateSwaggerSource(
   }
 }
 
+/**
+ * Converts validation helper failures into stable user-facing problem text.
+ *
+ * Each validator appends this normalized message to the aggregate error so one
+ * malformed value does not prevent reporting the remaining configuration issues.
+ */
 function message(cause: unknown): string {
   return cause instanceof Error ? cause.message : String(cause);
 }

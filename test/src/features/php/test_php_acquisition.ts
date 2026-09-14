@@ -10,7 +10,14 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestParserAssets } from "../../internal/TestParserAssets";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Uses only the selected full PHP grammar and preserves complete results across verified cold and warm acquisition. */
+/** Acquires the selected PHP grammar and preserves warm analysis.
+ *
+ * PHP analysis must load only its configured full grammar and reproduce complete output from an offline cache.
+ *
+ * 1. Analyze PHP input cold while recording parser requests.
+ * 2. Verify the selected variant and complete inventory.
+ * 3. Repeat offline and require equivalent output.
+ */
 export async function test_php_acquisition(): Promise<void> {
   const selected = EvidenceLanguageRegistry.select("php", "contract.php");
   const grammar = await new TreeSitterAssets().grammar(selected.id);

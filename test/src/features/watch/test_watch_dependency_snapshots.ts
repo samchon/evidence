@@ -7,7 +7,21 @@ import { join } from "node:path";
 import { WatchDependencySnapshot } from "../../../../packages/evidence/src/internal/WatchDependencySnapshot";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
-/** Detects content, directory-topology, deletion, and junction-target changes. */
+/**
+ * Detects content, directory-topology, deletion, and junction-target changes.
+ *
+ * Watch dependencies need versioning for exact files, recursive directories, and
+ * followed junctions so each state change can trigger a fresh analysis.
+ *
+ * 1. Capture a recursive root and an exact source, edit the source bytes, and
+ *    require the snapshot to change without a path change.
+ * 2. Create a new file under the recursive root and require directory topology
+ *    to produce a different snapshot.
+ * 3. Delete the exact source and require the missing dependency's version to
+ *    differ, allowing a later repair to be observed.
+ * 4. When Windows junction creation is available, retarget a recursive junction
+ *    from one populated directory to another and require the snapshot to change.
+ */
 export async function test_watch_dependency_snapshots(): Promise<void> {
   const location = join(__dirname, `snapshots ${randomUUID()}`);
   await TestFileSystem.experiment(

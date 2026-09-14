@@ -8,7 +8,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Verifies namespace ownership, public defaults, independent declarators, and PHP property spelling. */
+/** Extracts PHP public units with namespace-aware ownership.
+ *
+ * Public defaults, independent declarators, property spelling, and namespace imports determine the addressable population.
+ *
+ * 1. Analyze PHP namespaces, declarations, properties, and aliases.
+ * 2. Verify exact units, identities, ownership, and target resolution.
+ * 3. Require collision and unsupported cases to remain incomplete.
+ */
 export async function test_php_units(): Promise<void> {
   const source = dedent`
     <?php

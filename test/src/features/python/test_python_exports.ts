@@ -5,7 +5,15 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Resolves Python __all__, package barrels, aliases, namespaces, stars, and cycles. */
+/**
+ * Resolves Python package exports through explicit and transitive public names.
+ *
+ * The combined package fixture exercises __all__ composition, star imports, renamed imports, namespace imports, and later bindings that shadow an earlier binding.
+ *
+ * 1. Analyze the package modules and verify barrel, namespace, and shadowed public addresses.
+ * 2. Verify a renamed barrel address retains the source declaration identity and produces no diagnostics.
+ * 3. Analyze a mutually importing pair and verify its finite exported address set completes without diagnostics.
+ */
 export async function test_python_exports(): Promise<void> {
   const adapter = new EvidencePythonAdapter();
   const inventory = await adapter.analyze(

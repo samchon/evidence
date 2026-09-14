@@ -5,26 +5,59 @@ import type { IDbmlDocumentation } from "./IDbmlDocumentation";
 import type { IDbmlEnum } from "./IDbmlEnum";
 import type { IDbmlRelation } from "./IDbmlRelation";
 
-/** Serializable per-file DBML syntax analysis. */
+/**
+ * Captures all DBML facts extracted from one source file.
+ *
+ * The adapter combines these serializable results after scanning every selected
+ * file, when cross-file relations and enum dependencies can resolve.
+ */
 export interface IDbmlFileAnalysis {
-  /** Source snapshot whose UTF-16 coordinates all ranges use. */
+  /**
+   * Provides the source snapshot that owns every range in this analysis.
+   *
+   * All ranges use this snapshot's UTF-16 offsets rather than normalized positions.
+   */
   source: IEvidenceSourceFile;
 
-  /** Tables and columns established by syntax. */
+  /**
+   * Lists table and column declarations established directly by DBML syntax.
+   *
+   * These declarations become candidates for later Evidence unit materialization.
+   */
   declarations: IDbmlDeclaration[];
 
-  /** Relations pending cross-file endpoint resolution. */
+  /**
+   * Lists relations whose endpoints still need selected-schema resolution.
+   *
+   * A relation may refer to declarations owned by another scanned file.
+   */
   relations: IDbmlRelation[];
 
-  /** Mapped comments and notes, including unsupported annotation carriers. */
+  /**
+   * Retains mapped comments and notes, including unsupported attachment carriers.
+   *
+   * Later parsing can emit precise diagnostics instead of silently dropping annotations.
+   */
   documentation: IDbmlDocumentation[];
 
-  /** Enum semantic text retained in affected table fingerprints. */
+  /**
+   * Lists enum semantics required by affected table fingerprints.
+   *
+   * The adapter applies these nonselectable dependencies to referring declarations.
+   */
   enums: IDbmlEnum[];
 
-  /** Actionable unsupported-syntax and parser failures. */
+  /**
+   * Records actionable parser failures and unsupported syntax.
+   *
+   * Consumers report these diagnostics before treating the file as complete.
+   */
   diagnostics: IEvidenceDiagnostic[];
 
-  /** Whether every selected declaration could be understood. */
+  /**
+   * States whether scanning understood every selected declaration.
+   *
+   * `false` prevents unsupported syntax from shrinking the coverage population.
+   */
   complete: boolean;
 }

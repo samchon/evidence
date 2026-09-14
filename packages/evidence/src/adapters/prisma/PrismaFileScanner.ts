@@ -20,14 +20,52 @@ const BLOCK_KEYWORDS = new Set([
 ]);
 const MEMBER_BLOCKS = new Set(["model", "view", "type"]);
 
-/** Locates Prisma declarations without deciding which declarations exist. */
+/** Locates physical Prisma declarations and documentation without parsing semantics.
+ *
+ * The whole-schema parser remains responsible for deciding which declarations
+ * exist. This scanner supplies its source spans and comment-coordinate maps so
+ * those semantic declarations can own accurate sites and documentation.
+ */
 export class PrismaFileScanner {
+  /** Holds raw source lines in scan order, preserving a final empty line.
+   *
+   * Parallel coordinate arrays translate each line's local positions back to
+   * the immutable source snapshot.
+   */
   private readonly lines: string[];
+
+  /** Stores the UTF-16 offset at which each source line begins.
+   *
+   * Missing defensive entries fall back to the source boundary when malformed
+   * line state is encountered.
+   */
   private readonly lineStarts: number[] = [];
+
+  /** Stores the UTF-16 offset immediately after each line's content.
+   *
+   * Carriage returns are excluded because declaration ranges use content-only
+   * line boundaries.
+   */
   private readonly lineEnds: number[] = [];
+
+  /** Stores the offset of each line's newline character or line terminus.
+   *
+   * Comment-run maps use these positions for newlines introduced between
+   * fragments on different source lines.
+   */
   private readonly newlineOffsets: number[] = [];
+
+  /** Translates scanner offsets into Evidence source ranges.
+   *
+   * All locations and comment carriers use this one coordinate authority.
+   */
   private readonly text: SourceText;
 
+  /** Initializes line and coordinate indexes for one immutable source snapshot.
+   *
+   * The scanner borrows no parser session because it deliberately recognizes
+   * only structural Prisma positions and comments.
+   */
   public constructor(private readonly source: IEvidenceSourceFile) {
     this.text = new SourceText(source.content);
     this.lines = source.content.split("\n");
@@ -41,6 +79,11 @@ export class PrismaFileScanner {
     }
   }
 
+  /** Scans declaration positions and contiguous comment runs for the source.
+   *
+   * It flushes pending comments whenever syntax breaks adjacency, preserving
+   * detached carriers instead of attaching them to a later declaration.
+   */
   public scan(): IPrismaFileAnalysis {
     const locations = new Map<string, IPrismaLocation>();
     const comments: IPrismaCommentRun[] = [];
@@ -50,6 +93,8 @@ export class PrismaFileScanner {
     let addressable = false;
     let commented = false;
 
+    // A run is attached only at the next recognized location; all other syntax
+    // flushes it so a detached comment cannot document a later declaration.
     const flush = (key: string): void => {
       comments.push(...this.runs(pending, key));
       pending = [];
@@ -114,6 +159,11 @@ export class PrismaFileScanner {
     };
   }
 
+  /** Separates code from a line comment while carrying block-comment state.
+   *
+   * Quotes suppress comment delimiters so URL-like and escaped string content
+   * cannot alter declaration scanning or comment attachment.
+   */
   private parts(line: number, initiallyCommented: boolean): IPrismaLineParts {
     const raw = this.lines[line] ?? "";
     const content = raw.endsWith("\r") ? raw.slice(0, -1) : raw;
@@ -208,6 +258,11 @@ export class PrismaFileScanner {
     };
   }
 
+  /** Converts pending fragments into attached and detached documentation runs.
+   *
+   * Ordinary or trailing line comments remain separate carriers, while
+   * non-trailing documentation forms are grouped for one eligible key.
+   */
   private runs(
     pending: IPrismaPendingComment[],
     key: string,
@@ -235,6 +290,11 @@ export class PrismaFileScanner {
     return output;
   }
 
+  /** Builds one mapped run from source-order comment fragments.
+   *
+   * Explicit newline entries preserve a continuous documentation string even
+   * when adjacent source comments occur on different lines.
+   */
   private run(
     comments: IPrismaPendingComment[],
     key: string,
@@ -277,6 +337,11 @@ export class PrismaFileScanner {
   }
 }
 
+/** Recognizes a top-level Prisma block header from structural source text.
+ *
+ * It accepts only known block keywords and valid identifiers, leaving semantic
+ * acceptance to Prisma's whole-schema parser.
+ */
 function blockHead(line: string): IPrismaBlockHead | undefined {
   const fields = line.split(/\s+/u);
   const keyword = fields[0];
@@ -292,17 +357,31 @@ function blockHead(line: string): IPrismaBlockHead | undefined {
   return { keyword, name };
 }
 
+/** Extracts an addressable member name from one nested block line.
+ *
+ * Attribute and closing-brace lines cannot introduce member locations.
+ */
 function memberName(line: string): string | undefined {
   if (line.startsWith("@") || line.startsWith("}")) return undefined;
   const name = line.split(/\s+/u)[0];
   return name !== undefined && PrismaSyntax.identifier(name) ? name : undefined;
 }
 
+/** Counts occurrences of one structural character in code-only source text.
+ *
+ * Callers invoke this only after comment stripping, so braces inside comments
+ * cannot change scanner depth.
+ */
 function count(value: string, character: string): number {
   return Array.from(value).filter((candidate) => candidate === character)
     .length;
 }
 
+/** Trims surrounding whitespace while preserving retained source coordinates.
+ *
+ * The returned arrays stay aligned with the shortened text, allowing later
+ * documentation mapping to identify every retained character precisely.
+ */
 function trimMapped(
   text: string,
   offsets: number[],

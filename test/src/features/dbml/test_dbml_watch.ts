@@ -5,7 +5,14 @@ import { join } from "node:path";
 
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
-/** Rebuilds cross-file DBML relations after newly discovered endpoints, malformed edits and recovery. */
+/** Rebuilds cross-file DBML relations as endpoints are discovered, broken, and repaired.
+ *
+ * A relation with a missing endpoint is incomplete until a new schema source supplies it; subsequent malformed and repaired edits must update the same watch contract.
+ *
+ * 1. Start a watcher with a posts relation whose users endpoint is absent and require an incomplete first cycle.
+ * 2. Add users, then corrupt its table definition and require success followed by incompleteness.
+ * 3. Repair the users source and require the fourth cycle to recover.
+ */
 export async function test_dbml_watch(): Promise<void> {
   await TestFileSystem.experiment(
     "dbml-watch",

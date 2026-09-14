@@ -9,24 +9,51 @@ import type { ISwiftDeclaration } from "./ISwiftDeclaration";
 import type { ISwiftDocumentation } from "./ISwiftDocumentation";
 import type { ISwiftFileAnalysis } from "./ISwiftFileAnalysis";
 
-/** Extracts lexical Swift source without compiler expansion or build-condition evaluation. */
+/**
+ * Extracts lexical Swift source without compiler expansion or build-condition evaluation.
+ *
+ * Extensions and aliases are held apart from nominal declarations because their
+ * semantic ownership can resolve only after all selected files are available.
+ */
 export class SwiftFileScanner {
-  /** Node-free declarations retained after the parser callback. */
+  /**
+   * Node-free declarations retained after the parser callback.
+   *
+   * SwiftOwnership later reconciles them without extending the parse session lifetime.
+   */
   private readonly declarations: ISwiftDeclaration[] = [];
 
-  /** Documentation carriers indexed by their final original offset. */
+  /**
+   * Documentation carriers indexed by their final original offset.
+   *
+   * Declaration scanning uses that offset to attach immediately preceding DocC.
+   */
   private readonly documentation = new Map<number, ISwiftDocumentation>();
 
-  /** Unsupported syntax that prevents a complete denominator. */
+  /**
+   * Unsupported syntax that prevents a complete denominator.
+   *
+   * These findings propagate to the inventory instead of allowing partial coverage to pass.
+   */
   private readonly diagnostics: IEvidenceDiagnostic[] = [];
 
-  /** Borrows the syntax tree only during the active parser callback. */
+  /**
+   * Borrows the syntax tree only during the active parser callback.
+   *
+   * The source supplies durable file identity; node-free records preserve the
+   * ranges needed by later extension reconciliation and documentation hosts.
+   */
   public constructor(
     private readonly session: EvidenceParseSession,
     private readonly source: IEvidenceSourceFile,
   ) {}
 
-  /** Collects public source declarations and conservative semantic boundaries. */
+  /**
+   * Collects public source declarations and conservative semantic boundaries.
+   *
+   * Documentation is classified before traversal so a comment at an extension
+   * site remains attached even if its nominal target resolves in another file.
+   */
   public scan(): ISwiftFileAnalysis {
     this.collectDocumentation();
     for (const node of this.session.root.descendantsOfType([
@@ -49,7 +76,11 @@ export class SwiftFileScanner {
     };
   }
 
-  /** Visits declaration containers, never local function bodies or initializer expressions. */
+  /**
+   * Visits declaration containers, never local function bodies or initializer expressions.
+   *
+   * The boundary prevents local implementation syntax from entering the public declaration inventory.
+   */
   private walk(
     container: Node,
     owner: ISwiftDeclaration | undefined,
@@ -239,7 +270,11 @@ export class SwiftFileScanner {
     }
   }
 
-  /** Publishes source coordinates, ownership, and independently attached DocC. */
+  /**
+   * Publishes source coordinates, ownership, and independently attached DocC.
+   *
+   * The record carries enough source facts for later ownership and host materialization.
+   */
   private declare(
     node: Node,
     owner: ISwiftDeclaration | undefined,
@@ -340,7 +375,11 @@ export class SwiftFileScanner {
     return declaration;
   }
 
-  /** Ignores setter-only restrictions while respecting getter access and contextual defaults. */
+  /**
+   * Ignores setter-only restrictions while respecting getter access and contextual defaults.
+   *
+   * The public surface follows readable-member visibility rather than setter mutability.
+   */
   private visible(node: Node, fallback: boolean): boolean {
     const modifiers = node.namedChildren.find(
       (child) => child.type === "modifiers",
@@ -356,12 +395,20 @@ export class SwiftFileScanner {
       : ["public", "open"].includes(visibility.text);
   }
 
-  /** Decodes backtick identifiers as literal accessor segments. */
+  /**
+   * Decodes backtick identifiers as literal accessor segments.
+   *
+   * The resulting name is used unchanged in semantic identities and public addresses.
+   */
   private name(node: Node): string {
     return node.text.startsWith("`") ? node.text.slice(1, -1) : node.text;
   }
 
-  /** Resolves only explicit, nongeneric nominal paths. */
+  /**
+   * Resolves only explicit, nongeneric nominal paths.
+   *
+   * Unsupported generic or qualified grammar shapes return no target for a visible diagnostic.
+   */
   private path(node: Node): string[] {
     if (node.type === "type_identifier") return [this.name(node)];
     if (
@@ -372,7 +419,11 @@ export class SwiftFileScanner {
     return node.namedChildren.map((child) => this.name(child));
   }
 
-  /** Groups adjacent DocC line comments while keeping unsupported carriers diagnosable. */
+  /**
+   * Groups adjacent DocC line comments while keeping unsupported carriers diagnosable.
+   *
+   * Tag-bearing non-DocC carriers remain records so the adapter can report their invalid placement.
+   */
   private collectDocumentation(): void {
     const nodes = this.session.root.descendantsOfType([
       "comment",
@@ -441,7 +492,11 @@ export class SwiftFileScanner {
     }
   }
 
-  /** Retains actionable failure instead of returning a smaller successful inventory. */
+  /**
+   * Retains actionable failure instead of returning a smaller successful inventory.
+   *
+   * Every reported boundary marks the containing analysis incomplete.
+   */
   private problem(code: string, message: string, node: Node): void {
     this.diagnostics.push({
       code: `swift-${code}`,

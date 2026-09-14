@@ -22,8 +22,10 @@ Complete a review round before repairing its findings. Collect the supported fin
 - Do the source entry points, publishConfig overrides, and package allowlist agree?
 - Do docs and skills describe actual commands and current implementation status?
 - Do tests exercise the failure direction as well as the happy path?
+- Do declarations, public members, implementation decisions, and test scenarios meet the [source documentation requirements](../documentation/source-comments.md), with explanations checked against behavior rather than generic filler?
+- Does introduced or modified implementation follow the [explicit type rules](../development/SKILL.md#explicit-types), without weakening types or introducing anonymous object shapes?
 
-For the scaffold, inspect command-selection logic, inert imports, family catalog references, README preparation, and build configuration. Run logic unit tests only; do not create installation, tarball, or CLI process experiments. Do not invent missing graph features as defects in a foundation-only PR.
+For package or command changes, inspect command selection, inert imports, family catalogs, README preparation, and build configuration. Follow the [development validation rules](../development/SKILL.md#validation).
 
 ## Reporting
 

@@ -1,7 +1,12 @@
 const LETTER = /^\p{L}$/u;
 const NUMBER = /^\p{N}$/u;
 
-/** Shared lexical rules that do not determine Prisma schema semantics. */
+/**
+ * Shared lexical rules that do not determine Prisma schema semantics.
+ *
+ * Target and position helpers use these checks for safe identifier spelling;
+ * the Prisma WASM parser remains the authority on whether a schema is valid.
+ */
 export namespace PrismaSyntax {
   export function identifier(value: string): boolean {
     const characters = Array.from(value);

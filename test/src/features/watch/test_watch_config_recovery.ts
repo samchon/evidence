@@ -6,7 +6,21 @@ import { join } from "node:path";
 
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
-/** Verifies imported config failures, missing roots, and inactive populations recover correctly. */
+/**
+ * Recovers from imported configuration failures and missing active roots.
+ *
+ * A watcher must track active configuration imports and their recovered source
+ * roots while omitting disabled populations from its runtime dependency set.
+ *
+ * 1. Start with an imported active root, a disabled claim, and a covered Markdown
+ *    requirement; require success, the helper dependency, and no disabled-root dependency.
+ * 2. Introduce a type error in the imported helper and require a failed cycle
+ *    that replaces the earlier success.
+ * 3. Repair the helper to select a missing active root; require an incomplete
+ *    cycle whose report equals a fresh checker result.
+ * 4. Create the missing root and covered implementation, then require recovery
+ *    without restarting the watcher.
+ */
 export async function test_watch_config_recovery(): Promise<void> {
   const location = join(__dirname, `config recovery ${randomUUID()}`);
   await TestFileSystem.experiment(

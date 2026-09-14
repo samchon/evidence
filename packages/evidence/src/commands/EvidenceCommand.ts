@@ -30,13 +30,42 @@ import type { EvidenceGraphFormat } from "../typings/EvidenceGraphFormat";
 import type { EvidenceReportFormat } from "../typings/EvidenceReportFormat";
 import type { EvidenceSymbol } from "../typings/EvidenceSymbol";
 
-/** Parses and runs the standalone Evidence command line. */
+/**
+ * Parses and executes the standalone Evidence command contract.
+ *
+ * The executable delegates its argument handling here, while integrations can use
+ * `parse` to inspect a command or `run` to capture a finite command's output.
+ * This boundary validates syntax before configuration loading so malformed input
+ * cannot accidentally scan the caller's project.
+ *
+ * @example
+ * const command: IEvidenceCommand = EvidenceCommand.parse([
+ *   "list",
+ *   "--format",
+ *   "json",
+ * ]);
+ * // command.operation is "list" and its default cwd is ".".
+ */
 export namespace EvidenceCommand {
-  /** Parses the complete argument list and rejects unknown or incompatible input. */
+  /**
+   * Converts a complete argument vector into one validated command object.
+   *
+   * Parsing assigns operation-specific defaults and rejects unknown, duplicate, or
+   * incompatible options before any filesystem access. `check` is implicit when
+   * the first token is absent or an option; `inspect` alone accepts one positional
+   * target. Callers receive an {@link EvidenceCommandError} for repairable syntax
+   * mistakes rather than a configuration or source diagnostic.
+   *
+   * @example
+   * EvidenceCommand.parse(["graph", "--format", "dot"]);
+   * // { operation: "graph", cwd: ".", config: "evidence.config.ts", format: "dot" }
+   */
   export function parse(args: readonly string[]): IEvidenceCommand {
     if (args.length === 1 && (args[0] === "-v" || args[0] === "--version"))
       return { operation: "version" };
 
+    // Copy the caller's vector before consuming the operation; embedding code may
+    // reuse the original argument array after validation.
     const tokens = [...args];
     const operation = command(tokens[0]);
     if (operation !== "check" || tokens[0] === "check") tokens.shift();
@@ -84,6 +113,8 @@ export namespace EvidenceCommand {
         continue;
       }
 
+      // Resolve aliases before admitting a value so duplicate short/long spellings
+      // cannot silently override one another in the normalized command object.
       const key = optionKey(token);
       if (key === undefined)
         throw new EvidenceCommandError(`Unknown Evidence argument '${token}'.`);
@@ -173,7 +204,19 @@ export namespace EvidenceCommand {
     };
   }
 
-  /** Runs a command with buffered output for direct logic tests and embedding. */
+  /**
+   * Executes a finite command and returns its complete buffered result.
+   *
+   * This is the embedding and logic-test entry point: it does not write process
+   * streams and returns parse or operational failures with exit code 2. Text
+   * failures use stderr, while JSON operational failures use stdout to preserve a
+   * parseable report. Watch mode is deliberately excluded because its unbounded
+   * publication lifecycle belongs to {@link EvidenceWatcher} or {@link main}.
+   *
+   * @example
+   * const result: IEvidenceCommandResult = await EvidenceCommand.run(["--help"]);
+   * // result.exitCode === 0 and result.stdout contains the command reference.
+   */
   export async function run(
     args: readonly string[],
     baseCwd: string = process.cwd(),
@@ -207,7 +250,14 @@ export namespace EvidenceCommand {
     return runAnalysis(parsed, baseCwd);
   }
 
-  /** Writes buffered output and returns the status for the executable entry point. */
+  /**
+   * Streams a command result through Node's standard output and error channels.
+   *
+   * The packaged executable calls this method. It reuses the buffered command path
+   * for finite operations, but keeps watch open and sends parser-asset progress to
+   * stderr unless a report file was requested. Repeated progress is deduplicated
+   * because retries can report the same acquisition state more than once.
+   */
   export async function main(
     args: readonly string[],
   ): Promise<EvidenceCommandExitCode> {
@@ -217,6 +267,8 @@ export namespace EvidenceCommand {
     } catch {
       // The buffered path owns the established command-error rendering.
     }
+    // Retain a successful parse only for stream-specific choices; `run` renders
+    // malformed input consistently with all other buffered command failures.
     const selected = parsed;
     const progressMessages = new Set<string>();
     const result = await TreeSitterAssetScope.run(
@@ -243,7 +295,17 @@ export namespace EvidenceCommand {
     return result.exitCode;
   }
 
-  /** Creates a JSON or typed starter config without overwriting an existing file. */
+  /**
+   * Creates a starter configuration in the format implied by its filename.
+   *
+   * JSON receives literal data and TypeScript receives an `IEvidenceConfig`
+   * `satisfies` template with identical defaults. Exclusive creation preserves an
+   * existing author-owned configuration; its collision is rethrown with a focused
+   * repair message instead of being overwritten.
+   *
+   * @example
+   * await EvidenceCommand.initialize("evidence.config.ts");
+   */
   export async function initialize(file: string): Promise<void> {
     const format = EvidenceConfigFormat.get(file);
     try {
@@ -267,6 +329,13 @@ export namespace EvidenceCommand {
   }
 }
 
+/**
+ * Opens the process-owned watch lifecycle and routes each published cycle.
+ *
+ * Watch output is either appended to the requested destination or written through
+ * stdout's completion callback so I/O failures become command failures. The SIGINT
+ * handler only requests shutdown; `finally` removes it and joins watcher cleanup.
+ */
 async function runWatch(
   command: IEvidenceCheckCommand,
   baseCwd: string,
@@ -311,6 +380,12 @@ async function runWatch(
   }
 }
 
+/**
+ * Waits for Node to accept a complete watch block on standard output.
+ *
+ * Watch publication must apply backpressure. Resolving after `write`'s callback
+ * prevents a rapid filesystem change from reordering or losing rendered cycles.
+ */
 async function writeStandardOutput(content: string): Promise<void> {
   await new Promise<undefined>((resolve, reject) => {
     process.stdout.write(content, (cause) => {
@@ -320,7 +395,14 @@ async function writeStandardOutput(content: string): Promise<void> {
   });
 }
 
-/** Runs one checker facade and renders the requested operation from its captured analysis. */
+/**
+ * Runs one analysis and projects it into check, query, or graph output.
+ *
+ * Every operation shares one checker result so list, inspect, and graph describe
+ * the same configuration and source snapshot as the underlying check. A thrown
+ * loading or analysis failure is serialized in the selected report format before
+ * the optional output-file path is attempted.
+ */
 async function runAnalysis(
   command:
     | IEvidenceCheckCommand
@@ -341,6 +423,8 @@ async function runAnalysis(
         analysis.report.exitCode,
         false,
       );
+    // Query projections reuse the captured inventory and diagnostics. Reanalyzing
+    // here could make a report disagree with the command's check boundary.
     const query = new EvidenceQuery(analysis, cwd);
     if (command.operation === "list") {
       const report = query.list(command.language, command.kind);
@@ -401,6 +485,12 @@ async function runAnalysis(
   }
 }
 
+/**
+ * Renders shipped adapter capabilities without loading project configuration.
+ *
+ * `languages` remains useful in a broken project because its data comes from the
+ * package registry, while output handling follows the same contract as analysis.
+ */
 async function runLanguages(
   command: IEvidenceLanguagesCommand,
   baseCwd: string,
@@ -416,6 +506,13 @@ async function runLanguages(
   );
 }
 
+/**
+ * Routes fully rendered output to a buffer or a caller-selected report file.
+ *
+ * Text failures use stderr when no file is requested; JSON is kept on stdout so
+ * machine consumers receive a valid structured failure document. File-write
+ * errors replace the original result because no requested report was delivered.
+ */
 async function writeReport(
   output: string | undefined,
   cwd: string,
@@ -443,6 +540,13 @@ async function writeReport(
   }
 }
 
+/**
+ * Resolves and creates an initialization target for buffered command execution.
+ *
+ * Initializing is intentionally separate from analysis: it needs only its working
+ * directory and configuration path, and reports existing-file conflicts as a
+ * command result instead of loading an unrelated current configuration.
+ */
 async function runInit(
   command: IEvidenceInitCommand,
   baseCwd: string,
@@ -460,6 +564,12 @@ async function runInit(
   }
 }
 
+/**
+ * Classifies the optional leading token as a supported operation.
+ *
+ * A missing token or a leading option starts the default `check` command. Other
+ * bare tokens fail here, before option parsing can attribute them incorrectly.
+ */
 function command(
   token: string | undefined,
 ): Exclude<IEvidenceCommand["operation"], "help" | "version"> {
@@ -477,6 +587,13 @@ function command(
   }
 }
 
+/**
+ * Normalizes supported short and long option spellings to parser map keys.
+ *
+ * The normalized key lets the parser reject duplicate aliases and apply operation
+ * rules once, while an undefined result preserves the user's original token in the
+ * unknown-argument diagnostic.
+ */
 function optionKey(token: string): string | undefined {
   switch (token) {
     case "-c":
@@ -498,6 +615,13 @@ function optionKey(token: string): string | undefined {
   }
 }
 
+/**
+ * Tests whether a normalized option belongs to the selected operation.
+ *
+ * Working-directory selection is shared, while initialization, registry lookup,
+ * and list filtering expose only their meaningful controls. This guard prevents
+ * accepted-but-ignored options from hiding invocation mistakes.
+ */
 function optionAllowed(operation: string, option: string): boolean {
   if (option === "cwd") return true;
   if (operation === "init") return option === "config";
@@ -508,6 +632,12 @@ function optionAllowed(operation: string, option: string): boolean {
   return operation === "list" && (option === "language" || option === "kind");
 }
 
+/**
+ * Adds a report destination only when the user supplied one.
+ *
+ * Omission remains distinct from an empty string, which parse has already rejected;
+ * renderers then choose buffered stdout or stderr behavior from property presence.
+ */
 function optionalOutput(
   values: Map<string, string>,
 ): Pick<IEvidenceCheckCommand, "output"> {
@@ -515,6 +645,12 @@ function optionalOutput(
   return output === undefined ? {} : { output };
 }
 
+/**
+ * Validates the text-or-JSON format shared by report-producing commands.
+ *
+ * Text is the interactive default. Rejecting unknown values before loading keeps a
+ * misspelled formatter from paying the cost of analysis or changing source state.
+ */
 function reportFormat(value: string | undefined): EvidenceReportFormat {
   const format = value ?? "text";
   if (format !== "text" && format !== "json")
@@ -524,6 +660,12 @@ function reportFormat(value: string | undefined): EvidenceReportFormat {
   return format;
 }
 
+/**
+ * Validates the graph-specific output family and supplies its JSON default.
+ *
+ * Graph visualization formats are not general report formats, so this separate
+ * gate keeps `mermaid` and `dot` unavailable to commands that cannot render them.
+ */
 function graphFormat(value: string | undefined): EvidenceGraphFormat {
   const format = value ?? "json";
   if (format !== "json" && format !== "mermaid" && format !== "dot")
@@ -533,6 +675,12 @@ function graphFormat(value: string | undefined): EvidenceGraphFormat {
   return format;
 }
 
+/**
+ * Reads the installed package version without loading project configuration.
+ *
+ * The manifest is shape-checked because executable packaging determines its path;
+ * a broken installation becomes an actionable version-command failure.
+ */
 async function version(): Promise<string> {
   const manifest = typia.json.assertParse<IPackageManifest>(
     await readFile(path.join(__dirname, "../../package.json"), "utf8"),
@@ -540,6 +688,13 @@ async function version(): Promise<string> {
   return manifest.version;
 }
 
+/**
+ * Converts an unexpected command-boundary failure into the stable result shape.
+ *
+ * Exit code 2 distinguishes unavailable or invalid execution from a completed
+ * Evidence violation. Keeping this mapping centralized makes parse, manifest, and
+ * I/O failures present the same repair-oriented terminal contract.
+ */
 function failureResult(cause: unknown, repair: string): IEvidenceCommandResult {
   return {
     exitCode: 2,
@@ -548,16 +703,34 @@ function failureResult(cause: unknown, repair: string): IEvidenceCommandResult {
   };
 }
 
+/**
+ * Extracts a Node-style error code without trusting arbitrary thrown values.
+ *
+ * Filesystem APIs may throw non-Error values in embedding environments. The
+ * initializer uses this narrow probe only to recognize exclusive-create conflicts.
+ */
 function errorCode(cause: unknown): string | undefined {
   if (!(cause instanceof Error) || !("code" in cause)) return undefined;
   const code: unknown = cause.code;
   return typeof code === "string" ? code : undefined;
 }
 
+/**
+ * Produces a printable failure message while preserving native Error text.
+ *
+ * String conversion gives command rendering a deterministic fallback for rejected
+ * promises that throw primitives or foreign error-like objects.
+ */
 function errorMessage(cause: unknown): string {
   return cause instanceof Error ? cause.message : String(cause);
 }
 
+/**
+ * Terminal reference returned before configuration loading for explicit help.
+ *
+ * Keep options, defaults, formats, and exit semantics aligned with `parse` and
+ * command execution so the repair path remains trustworthy after syntax failure.
+ */
 const HELP = dedent`
   Usage: evidence [check] [options]
          evidence list [options]
@@ -600,7 +773,12 @@ const HELP = dedent`
   Watch stays active across cycle exit codes. Ctrl+C cleans up and exits 0.
 `;
 
-/** Starter data shared by typed and JSON initialization. */
+/**
+ * Minimal authored configuration shared by JSON and TypeScript initialization.
+ *
+ * It demonstrates one TypeScript population and one Markdown reference without
+ * claiming that either path is present in the receiving project.
+ */
 const INITIAL_DATA: IEvidenceConfig = {
   claims: [
     {
@@ -612,7 +790,12 @@ const INITIAL_DATA: IEvidenceConfig = {
   ],
 };
 
-/** Typed starter configuration with the same defaults as JSON initialization. */
+/**
+ * TypeScript source template preserving the same data as {@link INITIAL_DATA}.
+ *
+ * `satisfies IEvidenceConfig` gives authors editor validation while leaving the
+ * starter object readable and directly editable after `evidence init`.
+ */
 const INITIAL_CONFIG = dedent`
   import type { IEvidenceConfig } from "@wrtnlabs/evidence";
 

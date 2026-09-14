@@ -9,27 +9,59 @@ import type { IDartDirective } from "./IDartDirective";
 import type { IDartDocumentation } from "./IDartDocumentation";
 import type { IDartFileAnalysis } from "./IDartFileAnalysis";
 
-/** Extracts explicit Dart declarations while leaving library topology to snapshot resolution. */
+/**
+ * Extracts explicit Dart declarations while leaving library topology to snapshot resolution.
+ *
+ * The scanner owns parser-bound nodes for one source only. It emits declarations,
+ * directives, and documentation as independent records so parts and exported
+ * aliases can be reconciled across the selected snapshot.
+ */
 export class DartFileScanner {
-  /** Node-free declarations retained beyond the parser session. */
+  /**
+   * Retains node-free declarations beyond the parser session.
+   *
+   * The adapter consumes these records after the parser callback has closed.
+   */
   private readonly declarations: IDartDeclaration[] = [];
 
-  /** Documentation keyed by the final comment node of each group. */
+  /**
+   * Stores documentation keyed by the final comment node of each group.
+   *
+   * Group identity lets adjacent DartDoc lines become one source carrier.
+   */
   private readonly documentation = new Map<number, IDartDocumentation>();
 
-  /** Unsupported source boundaries that prevent complete analysis. */
+  /**
+   * Stores unsupported source boundaries that prevent complete analysis.
+   *
+   * These diagnostics preserve failed extraction rather than omitting declarations.
+   */
   private readonly diagnostics: IEvidenceDiagnostic[] = [];
 
-  /** Static part and export relationships. */
+  /**
+   * Stores static part and export relationships.
+   *
+   * DartLibraries resolves this topology after every selected file is scanned.
+   */
   private readonly directives: IDartDirective[] = [];
 
-  /** Borrows the active parser session and immutable source. */
+  /**
+   * Borrows the active parser session and immutable source.
+   *
+   * The session supplies syntax and ranges, while source identity is copied into
+   * records that remain valid after the parser callback closes.
+   */
   public constructor(
     private readonly session: EvidenceParseSession,
     private readonly source: IEvidenceSourceFile,
   ) {}
 
-  /** Establishes physical declarations, documentation ownership, and source boundaries. */
+  /**
+   * Establishes physical declarations, documentation ownership, and source boundaries.
+   *
+   * Documentation is collected first so adjacency is decided from original
+   * source positions before directives and declarations consume the tree.
+   */
   public scan(): IDartFileAnalysis {
     this.collectDocumentation();
     this.scope(this.session.root, undefined);
@@ -64,7 +96,11 @@ export class DartFileScanner {
     };
   }
 
-  /** Visits library and nominal scopes without entering initializers or function bodies. */
+  /**
+   * Visits library and nominal scopes without entering initializers or function bodies.
+   *
+   * Executable code cannot add a stable declaration to the static public surface.
+   */
   private scope(body: Node, owner: IDartDeclaration | undefined): void {
     for (const node of body.namedChildren) {
       switch (node.type) {
@@ -145,7 +181,11 @@ export class DartFileScanner {
     }
   }
 
-  /** Gives named extensions their own owner; unnamed extensions remain library-local. */
+  /**
+   * Gives named extensions their own owner while unnamed extensions remain library-local.
+   *
+   * This preserves Dart's distinct public address rules for extension members.
+   */
   private nominal(node: Node, owner: IDartDeclaration | undefined): void {
     let name = node.childForFieldName("name");
     if (name?.type === "extension_type_name")
@@ -175,7 +215,11 @@ export class DartFileScanner {
     if (body !== null) this.scope(body, declaration);
   }
 
-  /** Unwraps class members while preserving metadata and documentation on the whole declaration. */
+  /**
+   * Unwraps class members while preserving metadata and documentation on the whole declaration.
+   *
+   * Attachments must remain on the declaration that defines the public unit.
+   */
   private member(node: Node, owner: IDartDeclaration | undefined): void {
     const declaration = node.namedChildren.find(
       (child) =>
@@ -204,7 +248,11 @@ export class DartFileScanner {
     else this.variables(node, declaration, owner);
   }
 
-  /** Treats getters/setters as one property and explicit constructors/operators as functions. */
+  /**
+   * Treats getters and setters as one property and explicit constructors or operators as functions.
+   *
+   * The classification determines the public selector emitted for the declaration.
+   */
   private signature(
     node: Node,
     signature: Node | null,
@@ -242,7 +290,11 @@ export class DartFileScanner {
     );
   }
 
-  /** Reads only declarator lists, never identifiers nested in initializer expressions. */
+  /**
+   * Reads only declarator lists, never identifiers nested in initializer expressions.
+   *
+   * This prevents referenced names from becoming false variable declarations.
+   */
   private variables(
     node: Node,
     declaration: Node,
@@ -278,7 +330,11 @@ export class DartFileScanner {
       );
   }
 
-  /** Records an explicit declaration and its original UTF-16 content range. */
+  /**
+   * Records an explicit declaration and its original UTF-16 content range.
+   *
+   * Later documentation attachment needs the physical declaration site.
+   */
   private add(
     node: Node,
     name: string | undefined,
@@ -345,7 +401,11 @@ export class DartFileScanner {
     return declaration;
   }
 
-  /** Copies static URI relationships and ordered export filters. */
+  /**
+   * Copies static URI relationships and ordered export filters.
+   *
+   * Library resolution applies filters in source order to determine exported names.
+   */
   private directive(node: Node, kind: IDartDirective["kind"]): void {
     const named = node.namedChildren.find(
       (child) => child.type === "dotted_identifier_list",
@@ -399,7 +459,11 @@ export class DartFileScanner {
     });
   }
 
-  /** Normalizes a named library from identifier segments rather than source whitespace. */
+  /**
+   * Normalizes a named library from identifier segments rather than source whitespace.
+   *
+   * Segment-based identity keeps comments and formatting out of the semantic name.
+   */
   private qualifiedName(node: Node): string {
     return node.namedChildren
       .filter((child) => child.type === "identifier")
@@ -407,7 +471,11 @@ export class DartFileScanner {
       .join(".");
   }
 
-  /** Groups adjacent /// documentation and retains unsupported annotation carriers. */
+  /**
+   * Groups adjacent DartDoc comments and retains unsupported annotation carriers.
+   *
+   * Detached carriers remain available for a truthful host diagnostic.
+   */
   private collectDocumentation(): void {
     const nodes = this.session.root.descendantsOfType([
       "comment",
@@ -475,7 +543,11 @@ export class DartFileScanner {
     }
   }
 
-  /** Preserves unsupported source as an actionable incomplete inventory. */
+  /**
+   * Preserves unsupported source as an actionable incomplete inventory.
+   *
+   * A failed scan cannot make coverage pass with a reduced public population.
+   */
   private problem(code: string, message: string, node: Node): void {
     this.diagnostics.push({
       code: `dart-${code}`,

@@ -1,8 +1,23 @@
-/** One DocC carrier attached to a Swift declaration site. */
+/**
+ * Associates parsed DocC with one Swift declaration site.
+ *
+ * The scanner keeps this relation separate from comment mappings so semantic
+ * assembly can attach documentation without losing its source range.
+ */
 export interface ISwiftDocumentationAttachment {
-  /** Owning declaration extraction identity. */
+  /**
+   * Identifies the declaration that owns the attached DocC mapping.
+   *
+   * This extraction identity remains stable while the adapter constructs units
+   * and their documentation references.
+   */
   declarationId: string;
 
-  /** Physical declaration site owned by the semantic unit. */
+  /**
+   * Identifies the declaration site at which the DocC comment appears.
+   *
+   * The site disambiguates extensions and other declarations contributing to
+   * the same semantic unit.
+   */
   siteId: string;
 }

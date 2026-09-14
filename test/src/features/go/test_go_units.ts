@@ -8,7 +8,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Classifies exported Go declarations, embedded fields, interfaces, and receivers. */
+/** Classifies exported Go declarations, embedded fields, interfaces, and receivers.
+ *
+ * The denominator includes each externally visible form with its lexical owner.
+ *
+ * 1. Analyze exported declarations and members.
+ * 2. Compare symbols and identities.
+ * 3. Verify embedded and receiver members retain owners.
+ */
 export async function test_go_units(): Promise<void> {
   const language = EvidenceLanguageRegistry.list().find(
     (entry) => entry.type === "go",

@@ -2,17 +2,38 @@ import type { IEvidenceCommentSyntax } from "../../structures/IEvidenceCommentSy
 import type { IEvidenceSourceRange } from "../../structures/IEvidenceSourceRange";
 import type { IPhpDocumentationAttachment } from "./IPhpDocumentationAttachment";
 
-/** A PHP documentation carrier or tag-bearing unsupported carrier. */
+/**
+ * Retains one PHPDoc carrier, including a carrier whose placement is unsupported.
+ *
+ * The adapter preserves unsupported tagged text as a diagnostic host so directives
+ * cannot disappear merely because no eligible declaration receives the comment.
+ */
 export interface IPhpDocumentation {
-  /** Stable extraction identity. */
+  /**
+   * Stable scanner identity for this documentation region.
+   *
+   * It distinguishes host records even when nearby declarations share a site.
+   */
   id: string;
 
-  /** Original UTF-16 source range. */
+  /**
+   * Original UTF-16 range occupied by the PHPDoc comment.
+   *
+   * Annotation ranges exclude it from declaration review fingerprints.
+   */
   range: IEvidenceSourceRange;
 
-  /** Classified PHPDoc delimiters. */
+  /**
+   * Delimiter and tag-boundary rules used to map the carrier's text.
+   *
+   * PhpDocumentation also uses this classification to mask examples without moving offsets.
+   */
   syntax: IEvidenceCommentSyntax;
 
-  /** Declaration sites owned by this carrier. */
+  /**
+   * Declaration sites to which this carrier is immediately attached.
+   *
+   * A comment can serve multiple units at one site before withdrawal hides descendants.
+   */
   attachments: IPhpDocumentationAttachment[];
 }

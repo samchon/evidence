@@ -9,7 +9,13 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Uses Prisma's parser for model, view, column, and relation identities. */
+/** Extracts Prisma model, view, column, and relation identities.
+ *
+ * Parser-backed units retain exact owners and relations for the public schema population.
+ *
+ * 1. Analyze a representative Prisma schema.
+ * 2. Verify exact units, owners, identities, and relations.
+ */
 export async function test_prisma_units(): Promise<void> {
   const baseline = await analyze(false, "Int");
 

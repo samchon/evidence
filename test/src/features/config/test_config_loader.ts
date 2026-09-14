@@ -7,7 +7,25 @@ import { join } from "node:path";
 import { evaluateTypeScriptConfig } from "../../../../packages/evidence/src/internal/evaluateTypeScriptConfig";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
-/** Loads imported config data in isolation and propagates evaluator failures. */
+/**
+ * Loads TypeScript configuration dependencies in isolation and preserves failures.
+ *
+ * Configuration evaluation must follow imported modules without checking unrelated
+ * workspace files or leaking configuration logs into report stdout. Validation
+ * still applies to artifact contracts before inactive populations are filtered.
+ *
+ * 1. Use a path containing spaces and literal punctuation; load equivalent ts,
+ *    cts, and mts configurations that import helper globs while an unrelated
+ *    TypeScript file contains a type error.
+ * 2. Emit stdout and stderr from configuration evaluation and require both tokens
+ *    to reach the supplied diagnostic sink.
+ * 3. Configure an unsupported artifact and require its exact claims[0].type path
+ *    and adapter-certification cause in the loading error.
+ * 4. Plan a disabled claim with missing source and reference paths; require the
+ *    correct configuration anchor and no active claims without touching those inputs.
+ * 5. Require runtime exceptions and type errors in an imported helper to reject
+ *    loading rather than return partial configuration data.
+ */
 export async function test_config_loader(): Promise<void> {
   // Resolve workspace peers while preserving spaces and literal path characters.
   const location = join(__dirname, `loader $' ${randomUUID()}`);
@@ -169,6 +187,12 @@ export async function test_config_loader(): Promise<void> {
   );
 }
 
+/**
+ * Captures a loading error for assertions about its configuration coordinates.
+ *
+ * Unexpected success fails the scenario, and non-Error rejections are propagated
+ * so they cannot be mistaken for the diagnostic message under test.
+ */
 async function failure(closure: () => Promise<unknown>): Promise<string> {
   try {
     await closure();

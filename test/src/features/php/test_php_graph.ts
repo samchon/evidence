@@ -9,7 +9,14 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Requires every Php selector as a reference, including undocumented declarations and review-only failures. */
+/** Evaluates PHP selectors as required cross-language references.
+ *
+ * Selected PHP units need evidence, and a retained review alone must not cover an obligation.
+ *
+ * 1. Extract PHP units and matching TypeScript claims for every selector.
+ * 2. Evaluate present and absent acknowledgements.
+ * 3. Verify review-only references remain missing.
+ */
 export async function test_php_graph(): Promise<void> {
   const reference = await new EvidencePhpAdapter().analyze(
     TestSourceSnapshot.create(

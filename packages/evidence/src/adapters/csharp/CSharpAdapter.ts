@@ -19,10 +19,34 @@ import type { ICSharpFileAnalysis } from "./ICSharpFileAnalysis";
 import { CSharpDocumentation } from "./CSharpDocumentation";
 import { CSharpFileScanner } from "./CSharpFileScanner";
 
-/** Builds C# source-public inventories from the configured source snapshot. */
+/**
+ * Reconciles C# public declaration families and XML documentation within a snapshot.
+ *
+ * File analysis records accessibility, partial declarations, and physical sites.
+ * Materialization uses the configured root boundary to merge compatible parts
+ * without combining equal names from unrelated source populations. XML comments
+ * then attach to the reconciled units while retaining their original positions.
+ *
+ * Inventory completeness includes discovery and syntax findings. A partial or
+ * unsupported declaration is not discarded as though the remaining source were
+ * the complete public surface.
+ */
 export class CSharpAdapter implements IEvidenceAdapter {
+  /**
+   * C# artifact discriminator selecting source-public extraction rules.
+   *
+   * The inherited public entry point exposes this value to the adapter contract;
+   * claim and reference roles use the same C# extraction semantics.
+   */
   public readonly type = "csharp";
 
+  /**
+   * Extracts and reconciles one captured C# source population.
+   *
+   * Each call copies its input, scans files, materializes root-scoped identities,
+   * and maps documentation before common validation. The parser is released in
+   * the failure path as well as after a successful inventory snapshot.
+   */
   public async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {
@@ -56,6 +80,8 @@ export class CSharpAdapter implements IEvidenceAdapter {
         inventory.diagnostics.push(...analysis.diagnostics);
         inventory.complete &&= analysis.complete;
       }
+      // Partial names are meaningful only within this configured source boundary.
+      // Pass the root context before reconciling sites and their XML comments.
       const published = this.materializeUnits(
         inventory,
         analyses,

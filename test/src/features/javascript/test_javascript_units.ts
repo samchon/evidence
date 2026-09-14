@@ -4,7 +4,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Classifies JavaScript declarations, public members, and literal names. */
+/** Classifies JavaScript declarations, public members, and literal names.
+ *
+ * The public denominator preserves member ownership and literal accessor segments.
+ *
+ * 1. Analyze exported declarations and members.
+ * 2. Compare identities and symbols.
+ * 3. Verify literal names stay one segment.
+ */
 export async function test_javascript_units(): Promise<void> {
   const inventory = await new EvidenceJavaScriptAdapter().analyze(
     TestSourceSnapshot.create(

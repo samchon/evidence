@@ -19,17 +19,58 @@ import { EcmaScriptFileScanner } from "./EcmaScriptFileScanner";
 import { EcmaScriptModuleResolver } from "./EcmaScriptModuleResolver";
 import type { EcmaScriptType } from "./EcmaScriptType";
 
-/** Shared inventory pipeline for TypeScript and JavaScript adapters. */
+/**
+ * Shares declaration, export, and JSDoc materialization between TypeScript and JavaScript.
+ *
+ * JavaScript first resolves file/package module modes; TypeScript uses its static
+ * module rules. File scanning records units and physical comment attachment, then
+ * export resolution determines which identities are publicly reachable within
+ * the configured root. Only afterward are annotations materialized as hosts and
+ * statements, preserving aliases without duplicating semantic declarations.
+ *
+ * Source, package-scope, and syntax failures all contribute to completeness.
+ * Package dependencies remain observable for watch, and each analysis owns its
+ * parser and copied input rather than retaining prior mutable inventories.
+ */
 export class EcmaScriptAdapter implements IEvidenceAdapter {
+  /**
+   * Selects the language variant and diagnostic name for the shared pipeline.
+   *
+   * Public JavaScript and TypeScript entry points supply these fixed values.
+   * Construction itself performs no package resolution or grammar acquisition.
+   */
   public constructor(
+    /**
+     * Language variant controlling grammar and publication semantics.
+     *
+     * JavaScript additionally resolves module modes from file/package context;
+     * TypeScript follows the selected TypeScript/TSX source forms.
+     */
     public readonly type: EcmaScriptType,
+
+    /**
+     * Human-readable language name included in extraction diagnostics.
+     *
+     * The discriminator supplies behavior; this label explains failures without
+     * changing identity, selection, or target resolution.
+     */
     private readonly name: string,
   ) {}
 
+  /**
+   * Extracts a fresh public module inventory from the supplied source snapshots.
+   *
+   * The input is copied before package resolution or parsing. Export reachability
+   * filters semantic units only after all local declarations are available, and
+   * failures remain in completeness and diagnostics. Native parser resources close
+   * whether publication succeeds or throws.
+   */
   public async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {
     const input = structuredClone(typia.assert(snapshot));
+    // JavaScript export semantics depend on package scope as well as syntax.
+    // Capture that dependency before choosing a file scanner's module mode.
     const moduleResolution =
       this.type === "javascript"
         ? await new EcmaScriptModuleResolver().resolve(input.files)
@@ -87,6 +128,8 @@ export class EcmaScriptAdapter implements IEvidenceAdapter {
         inventory.diagnostics.push(...analysis.diagnostics);
         inventory.complete &&= analysis.complete;
       }
+      // Resolve public reachability against the full local inventory first.
+      // Filtering earlier would lose declarations reached only through re-exports.
       const published = new EcmaScriptExportResolver(
         analyses,
         inventory,

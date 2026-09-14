@@ -11,7 +11,14 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Evaluates C++ type, function, and property evidence and fingerprints. */
+/** Evaluates C++ type, function, and property evidence with semantic fingerprints.
+ *
+ * Graph success requires reciprocal coverage of the exact C++ unit selection, and evidence text alone cannot alter implementation identity.
+ *
+ * 1. Construct covered and uncovered claims for each C++ symbol kind.
+ * 2. Require the graph to expose the full missing reference population when evidence is absent.
+ * 3. Verify a prose-only evidence change leaves the selected unit fingerprint stable.
+ */
 export async function test_cpp_graph(): Promise<void> {
   const requirements = await new EvidenceMarkdownAdapter().analyze(
     TestSourceSnapshot.create(

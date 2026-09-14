@@ -2,7 +2,14 @@ import { TestValidator } from "@nestia/e2e";
 import { DatabaseAdapterCertification } from "../../internal/certification/DatabaseAdapterCertification";
 import { SqlCertificationFixture } from "./SqlCertificationFixture";
 
-/** Certifies exact database inventory and ensures removed units, kinds, hosts, and addresses cannot pass. */
+/** Certifies SQL inventory against exact database adapter expectations.
+ *
+ * Removing a unit, kind, host, or address must fail the fixture rather than weaken its declared contract.
+ *
+ * 1. Construct the SQL certification fixture.
+ * 2. Run shared database certification and its mutation checks.
+ * 3. Require every removal and behavior gate to be rejected.
+ */
 export async function test_sql_certification(): Promise<void> {
   const fixture = SqlCertificationFixture.create();
   const inventory = await DatabaseAdapterCertification.analyze(fixture);

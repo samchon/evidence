@@ -4,7 +4,12 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Attaches LuaDoc at original UTF-16 coordinates and keeps code examples and detached carriers inert. */
+/** Attaches LuaDoc at original UTF-16 coordinates and keeps inert carriers out.
+ *
+ * Declaration-owned LuaDoc can acknowledge units while examples and detached comments cannot.
+ *
+ * 1. Analyze coordinate-sensitive LuaDoc. 2. Compare attached hosts and ranges. 3. Reject examples and detached annotations.
+ */
 export async function test_lua_hosts(): Promise<void> {
   const content = dedent`
     --- 한글 📘

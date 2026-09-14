@@ -29,60 +29,147 @@ import type { EvidenceAcknowledgementKind } from "../typings/EvidenceAcknowledge
 import type { EvidenceSeverity } from "../typings/EvidenceSeverity";
 
 /**
- * Coordinates graph evaluation over one captured input.
+ * Evaluates coverage and review policies over captured, materialized populations.
  *
- * Each evaluation uses a fresh evaluator so diagnostics and coverage state never carry over between calls.
+ * The checker supplies inventories, selected unit IDs, target resolutions, and
+ * reference policies. This facade validates and captures that input; it does not
+ * load files or infer declarations. Each call creates a fresh evaluator and
+ * returns an owned result, isolating prior diagnostics and caller mutations.
+ *
+ * Evaluation preserves the following boundaries:
+ *
+ * 1. Each claim selects its own semantic hosts and exclusion carriers.
+ * 2. Each reference independently judges coverage, exclusions, cardinality,
+ *    checklist answers, and review freshness, even when populations overlap.
+ * 3. Incomplete analysis remains a failure rather than a passing smaller graph.
+ * 4. Findings requiring cross-reference participation are finalized after all
+ *    applicable references have been examined.
+ *
+ * @example
+ * const graph: EvidenceGraph = new EvidenceGraph(materializedInput);
+ * const first: IEvidenceGraphResult = graph.evaluate();
+ * const second: IEvidenceGraphResult = graph.evaluate();
+ * // The results have independent storage and no accumulated evaluator state.
  */
 export class EvidenceGraph {
-  /** Validated input snapshot owned by this graph facade. */
+  /**
+   * Validated input snapshot owned by this facade.
+   *
+   * Evaluators read this captured policy and inventory data. Neither later caller
+   * edits nor modifications to an earlier result can change the snapshot.
+   */
   private readonly input: IEvidenceGraphInput;
 
-  /** Validates and captures the graph input before evaluation. */
+  /**
+   * Validates the input shape and captures an independent graph snapshot.
+   *
+   * Semantic inventory and resolution checks occur during evaluation so their
+   * findings can be reported in graph context. Construction performs no source IO.
+   */
   public constructor(input: IEvidenceGraphInput) {
     this.input = structuredClone(typia.assert(input));
   }
 
-  /** Evaluates the captured input and returns an independently owned result. */
+  /**
+   * Evaluates every independent obligation in the captured input.
+   *
+   * A fresh evaluator prevents coverage sets and deferred diagnostics from leaking
+   * across calls. The returned clone also prevents consumers from mutating records
+   * retained by the facade.
+   */
   public evaluate(): IEvidenceGraphResult {
     return structuredClone(new GraphEvaluator(this.input).evaluate());
   }
 
-  /** Creates a graph facade for one evaluation. */
+  /**
+   * Captures and evaluates input without retaining a graph facade.
+   *
+   * This convenience entry point has the same validation and result ownership as
+   * construction followed by the instance `evaluate` method.
+   */
   public static evaluate(input: IEvidenceGraphInput): IEvidenceGraphResult {
     return new EvidenceGraph(input).evaluate();
   }
 }
 
-/** Tracks coverage and diagnostics for exactly one graph evaluation. */
+/**
+ * Owns coverage accumulation and deferred findings for one graph evaluation.
+ *
+ * Claim and reference contexts keep local populations and resolutions, while this
+ * controller records whether acknowledgements participate anywhere in the graph.
+ * That shared participation state is needed to avoid declaring an unhosted
+ * checklist citation invalid before another applicable reference can explain it.
+ *
+ * The public facade creates a new controller for every evaluation. Its sets and
+ * maps therefore describe one traversal only and must not become facade caches.
+ */
 class GraphEvaluator {
-  /** Acknowledgements handled by at least one complete applicable obligation. */
+  /**
+   * Acknowledgements handled by a complete applicable obligation.
+   *
+   * Final checklist reporting consults this set across references, preventing a
+   * citation accepted elsewhere from receiving a premature unhosted finding.
+   */
   private readonly answeredDeclarations = new Set<string>();
 
-  /** Diagnostics accumulated only for this evaluator invocation. */
+  /**
+   * Findings accumulated during this single traversal.
+   *
+   * Finalization deduplicates equivalent findings after all claims are evaluated.
+   * The array is never reused by a later facade invocation.
+   */
   private readonly diagnostics: IEvidenceDiagnostic[] = [];
 
-  /** Acknowledgements whose participation cannot be decided from incomplete analysis. */
+  /**
+   * Acknowledgements whose participation is uncertain because analysis failed.
+   *
+   * Deferred reporting must not infer invalid ownership from a reference that
+   * could not supply a complete population or resolution.
+   */
   private readonly uncertainDeclarations = new Set<string>();
 
-  /** Checklist acknowledgements awaiting a final decision across applicable references. */
+  /**
+   * Checklist statements awaiting graph-wide participation finalization.
+   *
+   * Each record retains its diagnostic boundary and severity. Later references
+   * can establish that the statement was handled or that its status is uncertain.
+   */
   private readonly unhostedChecklists = new Map<
     string,
     IEvidenceUnhostedChecklist
   >();
 
-  /** Validated graph input shared with this invocation's claim contexts. */
+  /**
+   * Captured facade input used to create this traversal's claim contexts.
+   *
+   * The controller relies on the facade's shape validation and copy ownership;
+   * it adds evaluation state without replacing or reloading source populations.
+   */
   private readonly input: IEvidenceGraphInput;
 
-  /** Binds the already validated input snapshot to a fresh evaluation state. */
+  /**
+   * Binds captured input to empty per-evaluation state.
+   *
+   * The facade owns input validation and cloning. Keeping construction separate
+   * from traversal lets every evaluation start with empty participation sets.
+   */
   public constructor(input: IEvidenceGraphInput) {
     this.input = input;
   }
 
-  /** Evaluates all claims and finalizes diagnostics after cross-reference participation is known. */
+  /**
+   * Evaluates claims, then finalizes findings that depend on reference participation.
+   *
+   * Inactive obligations do not affect completeness. Every active claim and
+   * reference must be complete, and the final diagnostic list must be empty,
+   * before this graph result is successful.
+   */
   public evaluate(): IEvidenceGraphResult {
     const claims = this.input.claims.map((claim, index) =>
       this.evaluateClaim(claim, index),
     );
+    // A citation can participate in another reference. Decide deferred checklist
+    // findings only after every claim has recorded accepted or uncertain usage.
     this.reportUnhostedChecklists();
     const diagnostics = InventoryMerge.unique(this.diagnostics, (diagnostic) =>
       typia.json.stringify(diagnostic),
@@ -102,7 +189,14 @@ class GraphEvaluator {
     };
   }
 
-  /** Creates a claim context and evaluates each active reference independently. */
+  /**
+   * Evaluates one claim and establishes its independent obligation boundaries.
+   *
+   * Disabled claims produce inactive reference records without touching their
+   * inventories. A complete claim with no selected units is likewise inactive;
+   * otherwise an incomplete claim remains active and marks every child
+   * obligation incomplete so missing extraction cannot reduce required coverage.
+   */
   private evaluateClaim(
     claim: IEvidenceGraphClaim,
     claimIndex: number,
@@ -155,7 +249,15 @@ class GraphEvaluator {
     };
   }
 
-  /** Validates the reference population and resolves whether coverage can be evaluated completely. */
+  /**
+   * Prepares one reference obligation and stops before coverage when its inputs are uncertain.
+   *
+   * Reference selection, acknowledgement resolution, and review resolution are
+   * validated at this boundary because each reference owns them independently.
+   * Any incomplete inventory or resolution records participation as uncertain
+   * and returns an incomplete obligation instead of deriving coverage from a
+   * potentially smaller population.
+   */
   private evaluateReference(
     context: IEvidenceGraphClaimContext,
     reference: IEvidenceGraphReference,
@@ -292,7 +394,10 @@ class GraphEvaluator {
   /**
    * Evaluates acknowledgements against one independent reference context.
    *
-   * Coverage, exclusion conflicts, reviews, and cardinality all use this same claim/reference boundary.
+   * Coverage, exclusion conflicts, reviews, and cardinality all use this same
+   * claim/reference boundary. The method retains one edge per accepted statement
+   * so reports can explain both the selected units it covers and the host that
+   * accepted responsibility for them.
    */
   private cover(
     context: IEvidenceGraphReferenceContext,
@@ -526,7 +631,14 @@ class GraphEvaluator {
     );
   }
 
-  /** Computes host-local checklist coverage and reports unanswered selected items. */
+  /**
+   * Computes checklist coverage separately for every selected claim host.
+   *
+   * A checklist does not permit one host's acknowledgement to answer another
+   * host's obligation. Aggregate citations that were diagnosed earlier are kept
+   * as explanations, allowing the result to distinguish an explicitly invalid
+   * aggregate answer from an entirely absent answer.
+   */
   private checklistObligation(
     context: IEvidenceGraphReferenceContext,
     edges: IEvidenceGraphEdge[],
@@ -613,7 +725,13 @@ class GraphEvaluator {
     );
   }
 
-  /** Enforces singleEvidencePerSymbol and uniqueEvidence over positive semantic host coverage. */
+  /**
+   * Enforces cardinality policies over positive coverage edges.
+   *
+   * Exclusions do not count as evidence, and aliases cannot inflate counts
+   * because sets use semantic identities. This runs after edge creation so the
+   * policy observes the same host and target scopes reported to callers.
+   */
   private cardinality(
     context: IEvidenceGraphReferenceContext,
     edges: IEvidenceGraphEdge[],
@@ -674,7 +792,14 @@ class GraphEvaluator {
       }
   }
 
-  /** Reports overlapping evidence and exclusion scopes under the current obligation policy. */
+  /**
+   * Reports duplicate and contradictory acknowledgement scopes before adding an edge.
+   *
+   * Normal coverage permits one aggregate target to cover several selected units,
+   * while checklist coverage also requires the same host to overlap. Comparing
+   * the appropriate scopes prevents an exclusion or repeated annotation from
+   * silently changing the meaning of an earlier acknowledgement.
+   */
   private conflicts(
     declaration: IEvidenceDeclaration,
     targetUnitId: string,
@@ -754,7 +879,11 @@ class GraphEvaluator {
   /**
    * Pairs reviews with acknowledgements by kind, host, and resolved target.
    *
-   * Reviews validate fingerprints but never discharge missing coverage.
+   * Reviews validate fingerprints but never discharge missing coverage. This
+   * phase first validates review statements against resolved acknowledgements,
+   * then enforces required-review freshness only for accepted coverage edges.
+   * A malformed review therefore remains diagnostic evidence without becoming a
+   * substitute for the positive or exclusion statement it names.
    */
   private evaluateReviews(
     context: IEvidenceGraphReferenceContext,
@@ -963,7 +1092,13 @@ class GraphEvaluator {
     }
   }
 
-  /** Tests whether a review belongs to the acknowledgement's semantic host population. */
+  /**
+   * Tests whether a review belongs to an acknowledgement's semantic host population.
+   *
+   * Unattached reviews can match only their exact documentation host. Attached
+   * reviews instead match any shared semantic owner, which preserves alias and
+   * multi-owner attachment semantics without matching a different claim host.
+   */
   private reviewHostMatches(
     review: IEvidenceResolvedReview,
     hostId: string,
@@ -974,18 +1109,36 @@ class GraphEvaluator {
       : this.overlaps(review.hostUnitIds, hostUnitIds);
   }
 
-  /** Selects the review tag corresponding to a positive or exclusion acknowledgement. */
+  /**
+   * Selects the review marker required by an acknowledgement kind.
+   *
+   * Keeping this mapping in one place makes diagnostics and repair text agree
+   * about whether a positive citation needs @evidenceReview or an exclusion
+   * needs @evidenceExcludeReview.
+   */
   private reviewMarker(kind: EvidenceAcknowledgementKind): string {
     return kind === "evidence" ? "@evidenceReview" : "@evidenceExcludeReview";
   }
 
-  /** Formats a known unit identity for a diagnostic or retains an unknown identity verbatim. */
+  /**
+   * Formats a known semantic identity for a diagnostic.
+   *
+   * Resolution records can be stale or invalid, so an unknown identity remains
+   * visible verbatim rather than causing diagnostic construction to fail.
+   */
   private displayUnit(inventory: IEvidenceInventory, id: string): string {
     const unit = inventory.units.find((candidate) => candidate.id === id);
     return unit === undefined ? id : this.display(inventory, unit);
   }
 
-  /** Validates and orders acknowledgement resolutions within one reference obligation. */
+  /**
+   * Validates and orders acknowledgement resolutions within one reference obligation.
+   *
+   * Repeated identical entries collapse to one statement. Conflicting entries
+   * are removed and diagnosed because selecting either outcome would let source
+   * order decide coverage; source-coordinate ordering then stabilizes all valid
+   * edge and diagnostic processing.
+   */
   private resolutions(
     inventory: IEvidenceInventory,
     reference: IEvidenceGraphReference,
@@ -1033,7 +1186,13 @@ class GraphEvaluator {
     );
   }
 
-  /** Validates and orders review resolutions without combining them with acknowledgements. */
+  /**
+   * Validates and orders review resolutions without combining them with acknowledgements.
+   *
+   * Reviews have their own target-resolution lifecycle. Conflicts therefore
+   * invalidate only the review statement and cannot alter acknowledgement
+   * coverage or mask a missing positive citation.
+   */
   private reviewResolutions(
     inventory: IEvidenceInventory,
     reference: IEvidenceGraphReference,
@@ -1078,7 +1237,12 @@ class GraphEvaluator {
     );
   }
 
-  /** Orders annotations by their source coordinates and stable identities. */
+  /**
+   * Orders statements by physical source position and stable identity.
+   *
+   * Missing locations sort before known offsets through an explicit key, making
+   * invalid adapter records deterministic without inventing a source position.
+   */
   private compareStatements(
     x: IEvidenceTargetStatement | undefined,
     y: IEvidenceTargetStatement | undefined,
@@ -1096,7 +1260,13 @@ class GraphEvaluator {
     return InventoryMerge.compare(xKey, yKey);
   }
 
-  /** Tests structural ancestry while bounding traversal through malformed parent cycles. */
+  /**
+   * Tests structural ancestry through explicit parent identities.
+   *
+   * Coverage scopes must not be inferred from display names or accessor text.
+   * The visited set bounds malformed parent cycles so an invalid inventory can
+   * still yield its diagnostic result without hanging graph evaluation.
+   */
   private descends(
     unit: IEvidenceUnit,
     ancestorId: string,
@@ -1115,13 +1285,24 @@ class GraphEvaluator {
     return false;
   }
 
-  /** Tests whether two identity collections share at least one member. */
+  /**
+   * Tests whether two semantic-identity collections share a member.
+   *
+   * Callers use this for host and target scope relations where duplicated aliases
+   * must not change the boolean result.
+   */
   private overlaps(x: string[], y: string[]): boolean {
     const right = new Set(y);
     return x.some((id) => right.has(id));
   }
 
-  /** Formats the preferred public address of a semantic unit for diagnostics. */
+  /**
+   * Formats the preferred public address of a semantic unit for diagnostics.
+   *
+   * An address from a selected source is preferred so the repair text reflects
+   * the configured population. If no public address exists, the semantic name
+   * remains a useful fallback for invalid or partially extracted inventory data.
+   */
   private display(inventory: IEvidenceInventory, unit: IEvidenceUnit): string {
     const selectedFiles = new Set(
       inventory.sources.flatMap((source) =>
@@ -1150,7 +1331,13 @@ class GraphEvaluator {
       : EvidenceFileTarget.format(address);
   }
 
-  /** Applies an obligation's severity and configured coordinates to an existing diagnostic. */
+  /**
+   * Applies an obligation's severity and configured coordinates to an existing diagnostic.
+   *
+   * Inventory diagnostics carry adapter facts but no graph boundary. This wrapper
+   * preserves their repair data while adding the claim/reference identity needed
+   * to distinguish repeated populations in one check result.
+   */
   private context(
     diagnostic: IEvidenceDiagnostic,
     severity: EvidenceSeverity,
@@ -1170,7 +1357,14 @@ class GraphEvaluator {
     };
   }
 
-  /** Creates a graph diagnostic with the most specific available annotation or unit location. */
+  /**
+   * Creates a graph diagnostic with the most specific available repair location.
+   *
+   * A statement location wins because its annotation should be edited; otherwise
+   * a missing-coverage finding points at the selected unit's first declaration
+   * site. Disabled obligations are forbidden from emitting findings, protecting
+   * the inactive-result contract.
+   */
   private problem(
     code: string,
     severity: EvidenceSeverity,
@@ -1203,7 +1397,13 @@ class GraphEvaluator {
     };
   }
 
-  /** Formats the configured claim name and reference position for diagnostic messages. */
+  /**
+   * Formats a claim and optional reference boundary for a diagnostic message.
+   *
+   * Display numbering uses configured indexes rather than array positions, so
+   * filtering or duplicated policies cannot make a report point at another
+   * configuration entry.
+   */
   private label(claim: number, reference?: number): string {
     const input = this.input.claims[claim];
     const name = input?.name;
@@ -1217,12 +1417,22 @@ class GraphEvaluator {
       : `${label} reference ${this.referenceIndex(claim, reference) + 1}`;
   }
 
-  /** Maps an input claim position to its configured stable index. */
+  /**
+   * Maps an input claim position to its configured stable index.
+   *
+   * The positional fallback preserves a usable boundary for malformed or
+   * partially constructed graph input that lacks an indexed claim record.
+   */
   private claimIndex(position: number): number {
     return this.input.claims[position]?.index ?? position;
   }
 
-  /** Maps a reference position to its configured stable index within the claim. */
+  /**
+   * Maps a reference position to its configured stable index within a claim.
+   *
+   * This fallback mirrors claim indexing so diagnostics remain attributable even
+   * while reporting an invalid graph structure.
+   */
   private referenceIndex(claim: number, position: number): number {
     const input = this.input.claims[claim];
     return input === undefined
@@ -1230,7 +1440,13 @@ class GraphEvaluator {
       : (input.references[position]?.index ?? position);
   }
 
-  /** Rejects incompatible checklist and cardinality policies before coverage evaluation. */
+  /**
+   * Rejects policy combinations that have no coherent checklist interpretation.
+   *
+   * Checklist asks every selected host to answer every Markdown item, whereas
+   * cardinality and gathered exclusions impose incompatible global rules. Fail
+   * early rather than producing coverage findings whose denominator is unclear.
+   */
   private validateReferencePolicy(
     claim: IEvidenceGraphClaim,
     reference: IEvidenceGraphReference,
@@ -1259,7 +1475,13 @@ class GraphEvaluator {
       );
   }
 
-  /** Defers an unhosted checklist finding until all applicable references have been evaluated. */
+  /**
+   * Defers an unhosted checklist finding until every reference can participate.
+   *
+   * The same declaration may be an eligible answer under another obligation.
+   * For duplicate deferred records, the error severity is retained over warning
+   * so final reporting cannot weaken the strongest applicable policy.
+   */
   private recordUnhostedChecklist(
     declaration: IEvidenceDeclaration,
     severity: EvidenceSeverity,
@@ -1279,7 +1501,13 @@ class GraphEvaluator {
       });
   }
 
-  /** Reports deferred checklist annotations that remain unanswered and are not uncertain. */
+  /**
+   * Reports deferred checklist annotations that remain conclusively unhosted.
+   *
+   * Accepted participation suppresses the finding, and uncertain participation
+   * suppresses it as well because an incomplete reference cannot prove that the
+   * declaration is ineligible everywhere.
+   */
   private reportUnhostedChecklists(): void {
     for (const record of this.unhostedChecklists.values()) {
       if (
@@ -1301,7 +1529,12 @@ class GraphEvaluator {
     }
   }
 
-  /** Creates a successful inactive result without evaluating reference coverage. */
+  /**
+   * Creates a successful inactive obligation without evaluating coverage.
+   *
+   * The configured unit IDs are retained for query reporting, but no selected,
+   * covered, or missing population is claimed while its policy is disabled.
+   */
   private inactiveObligation(
     claim: number,
     reference: number,
@@ -1318,7 +1551,13 @@ class GraphEvaluator {
     );
   }
 
-  /** Preserves an active obligation whose coverage cannot be evaluated completely. */
+  /**
+   * Creates an active but incomplete obligation after analysis failure.
+   *
+   * It retains configured IDs for inspection while leaving coverage sets empty,
+   * preventing callers from interpreting a partial traversal as an uncovered
+   * or successfully covered population.
+   */
   private incompleteObligation(
     claim: number,
     reference: number,
@@ -1335,7 +1574,13 @@ class GraphEvaluator {
     );
   }
 
-  /** Builds the stable result for one configured claim/reference obligation. */
+  /**
+   * Builds the report record for one configured claim/reference obligation.
+   *
+   * All paths use this constructor so active and completeness flags, configured
+   * coordinates, coverage sets, accepted acknowledgement edges, and optional
+   * host-local checklist coverage remain aligned in exported graph results.
+   */
   private obligation(
     claim: number,
     reference: number,

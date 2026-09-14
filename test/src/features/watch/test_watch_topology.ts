@@ -12,7 +12,21 @@ import typia from "typia";
 
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
-/** Verifies created and deleted glob matches publish the same reports as fresh checks. */
+/**
+ * Publishes created and deleted glob matches as the same reports as fresh checks.
+ *
+ * A watched glob population must change its denominator when selected files appear
+ * or disappear, and each emitted JSON record must be independently consumable.
+ *
+ * 1. Start with a covered pricing requirement and require cycle 1 to match a
+ *    fresh successful check.
+ * 2. Create a refund requirement under the watched glob and require cycle 2 to
+ *    fail with one newly missing unit.
+ * 3. Add the refund citation to the exact implementation and require cycle 3 to
+ *    succeed, then delete the cited requirement.
+ * 4. Require cycle 4 to fail after deletion and verify the four collected JSON
+ *    emissions are NDJSON records with cycle identifiers 1 through 4.
+ */
 export async function test_watch_topology(): Promise<void> {
   const location = join(__dirname, `topology ${randomUUID()}`);
   await TestFileSystem.experiment(

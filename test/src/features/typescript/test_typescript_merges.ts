@@ -5,7 +5,13 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Reconciles overloads and class/interface declarations into stable semantic identities. */
+/** Reconciles TypeScript merged declarations into stable units.
+ *
+ * Overloads and class/interface merges share semantic identity while retaining the sites needed for review.
+ *
+ * 1. Analyze overload and declaration merge inputs.
+ * 2. Verify merged identities, sites, and resolution.
+ */
 export async function test_typescript_merges(): Promise<void> {
   const content = dedent`
     /** Text overload. */

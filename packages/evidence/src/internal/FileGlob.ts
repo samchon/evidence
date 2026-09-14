@@ -1,9 +1,18 @@
 import type { IFileGlobPattern } from "./IFileGlobPattern";
 
-/** The upstream Evidence glob language: *, **, ?, and ordered negation. */
+/**
+ * Matches the restricted Evidence glob language: `*`, `**`, `?`, and ordered negation.
+ *
+ * The matcher operates on portable path segments, keeping selection independent
+ * of host separator conventions and refusing patterns that escape a population root.
+ */
 export class FileGlob {
   private readonly patterns: IFileGlobPattern[];
 
+  /** Compiles ordered patterns and requires at least one positive selection baseline.
+   *
+   * A population with only exclusions would have no defined initial set, so configuration validation rejects it at construction.
+   */
   public constructor(patterns: readonly string[]) {
     this.patterns = patterns.map(compile);
     if (!this.patterns.some((pattern) => !pattern.exclude))
@@ -12,7 +21,10 @@ export class FileGlob {
       );
   }
 
-  /** Applies every matching pattern in declaration order. */
+  /** Applies every matching pattern in declaration order.
+   *
+   * Later matching positives or exclusions replace the inclusion decision made by earlier patterns.
+   */
   public matches(location: string): boolean {
     const segments = split(location);
     let included = false;
@@ -21,7 +33,10 @@ export class FileGlob {
     return included;
   }
 
-  /** Keeps possible descendants, including those restored by a later positive. */
+  /** Determines whether a directory can contain a selected descendant.
+   *
+   * Discovery uses this conservative result to prune traversal without excluding descendants restored by a later positive pattern.
+   */
   public couldMatchDescendant(directory: string): boolean {
     const prefix = split(directory);
     let possible = false;
@@ -37,6 +52,10 @@ export class FileGlob {
   }
 }
 
+/** Parses one authored glob into normalized segments while rejecting ambiguous root escapes.
+ *
+ * `FileGlob` uses the result for portable matching relative to one selected population root.
+ */
 function compile(raw: string): IFileGlobPattern {
   if (raw.trim() === "") throw new Error("Glob strings must not be empty.");
   const exclude = raw.startsWith("!");
@@ -55,6 +74,10 @@ function compile(raw: string): IFileGlobPattern {
   return { segments, exclude };
 }
 
+/** Splits a candidate path into portable relative segments without filesystem resolution.
+ *
+ * Matching operates on these normalized segments so Windows and POSIX separators have identical selection semantics.
+ */
 function split(value: string): string[] {
   let normalized = value.replaceAll("\\", "/");
   while (normalized.startsWith("./")) normalized = normalized.slice(2);
@@ -62,7 +85,10 @@ function split(value: string): string[] {
   return normalized === "" || normalized === "." ? [] : normalized.split("/");
 }
 
-/** Memoization bounds repeated globstar branches to the pattern/path grid. */
+/** Matches a pattern with memoized globstar branches bounded by the pattern and path grid.
+ *
+ * Memoization prevents repeated `**` branches from causing exponential discovery work for long paths.
+ */
 function match(
   pattern: readonly string[],
   segments: readonly string[],
@@ -95,7 +121,11 @@ function match(
   }
 }
 
-/** A question mark consumes one Unicode code point, as in the Go matcher. */
+/**
+ * Matches one segment where star and question mark never cross a separator boundary.
+ *
+ * A question mark consumes one Unicode code point, as in the Go matcher.
+ */
 function matchSegment(pattern: string, value: string): boolean {
   const tokens = Array.from(pattern);
   const characters = Array.from(value);

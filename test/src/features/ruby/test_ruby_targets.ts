@@ -11,7 +11,15 @@ interface IRubyTargetStatus {
   status: EvidenceTargetResolutionStatus;
 }
 
-/** Resolves Ruby containers, method sides, attributes, setters, and operators. */
+/** Resolves Ruby containers, method sides, attributes, setters, and operators.
+ *
+ * Ruby target spelling must preserve the owning container and callable form.
+ *
+ * 1. Build a Ruby reference inventory containing containers, instance and
+ *    singleton methods, attributes, setters, and operators.
+ * 2. Resolve claim tags against every supported spelling and require resolved
+ *    statuses and their intended public units.
+ */
 export async function test_ruby_targets(): Promise<void> {
   const adapter = new EvidenceRubyAdapter();
   const reference = await adapter.analyze(

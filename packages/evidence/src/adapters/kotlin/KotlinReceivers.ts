@@ -3,9 +3,19 @@ import type { IKotlinFileAnalysis } from "./IKotlinFileAnalysis";
 import type { IKotlinResolvedType } from "./IKotlinResolvedType";
 import type { IKotlinTypeReference } from "./IKotlinTypeReference";
 
-/** Resolves explicit nominal receiver names and selected aliases without compiler execution. */
+/**
+ * Resolves explicit nominal receiver names and selected aliases without compiler execution.
+ *
+ * Extension members must acquire the identity of their receiver type, but the
+ * resolver stays within selected source and reports paths needing compiler lookup.
+ */
 export namespace KotlinReceivers {
-  /** Unifies equivalent extension sites before semantic units and addresses are materialized. */
+  /**
+   * Unifies equivalent extension sites before semantic units and addresses are materialized.
+   *
+   * Resolution happens before publication so aliases and nullable spellings do
+   * not create separate units for methods on the same public nominal receiver.
+   */
   export function resolve(analyses: IKotlinFileAnalysis[]): void {
     const types = new Map<string, IKotlinDeclaration[]>();
     for (const declaration of analyses.flatMap(
@@ -47,7 +57,12 @@ export namespace KotlinReceivers {
       }
   }
 
-  /** Resolves lexical candidates and expands selected alias chains with cycle detection. */
+  /**
+   * Resolves lexical candidates and expands selected alias chains with cycle detection.
+   *
+   * A receiver must identify exactly one selected nominal declaration; ambiguity,
+   * cycles, and file-private visibility outside the declaring file remain unresolved.
+   */
   function lookup(
     reference: IKotlinTypeReference,
     types: Map<string, IKotlinDeclaration[]>,
@@ -90,7 +105,12 @@ export namespace KotlinReceivers {
       : { segments: reference.external, nullable: reference.nullable };
   }
 
-  /** Retains literal Kotlin identifier boundaries inside the receiver address segment. */
+  /**
+   * Retains literal Kotlin identifier boundaries inside the receiver address segment.
+   *
+   * Non-identifier names use Kotlin backticks so punctuation cannot be mistaken
+   * for a separator when the resolved receiver spelling is published.
+   */
   function segment(value: string): string {
     return /^[A-Za-z_][A-Za-z0-9_]*$/u.test(value) ? value : `\`${value}\``;
   }

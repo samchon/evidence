@@ -7,10 +7,29 @@ import type { IEvidenceInventory } from "../../structures/IEvidenceInventory";
 import type { IEvidenceSourceSnapshot } from "../../structures/IEvidenceSourceSnapshot";
 import type { EvidenceArtifactType } from "../../typings/EvidenceArtifactType";
 
-/** Builds Markdown units and HTML-comment annotations in the shared inventory. */
+/**
+ * Extracts Markdown file and heading units with HTML-comment annotation hosts.
+ *
+ * Every supplied source is interpreted as Markdown regardless of its extension.
+ * MarkdownScanner owns heading hierarchy, fenced-content boundaries, and comment
+ * attachment; this adapter combines those records with discovery diagnostics and
+ * validates the resulting shared inventory.
+ */
 export class EvidenceMarkdownAdapter implements IEvidenceAdapter {
+  /**
+   * Artifact discriminator selecting Markdown structure and target grammar.
+   *
+   * Population symbol policies can select files or supported exact heading levels.
+   */
   public readonly type: EvidenceArtifactType = "markdown";
 
+  /**
+   * Scans captured Markdown contents into an owned normalized inventory.
+   *
+   * Input is validated and cloned before scanners append units and annotations.
+   * Discovery failures remain attached to the result, preventing unreadable files
+   * from silently reducing the coverage population.
+   */
   public async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {

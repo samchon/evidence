@@ -5,9 +5,20 @@ import type { IDartDeclaration } from "./IDartDeclaration";
 import type { IDartDirective } from "./IDartDirective";
 import type { IDartFileAnalysis } from "./IDartFileAnalysis";
 
-/** Resolves selected Dart library ownership and export aliases without executing package tooling. */
+/**
+ * Resolves selected Dart library ownership and export aliases without executing package tooling.
+ *
+ * Physical scans cannot decide whether a part belongs to a library or whether an
+ * exported spelling denotes an existing unit, so this pass establishes those
+ * relationships before inventory publication and documentation attachment.
+ */
 export namespace DartLibraries {
-  /** Validates reciprocal part ownership and retains missing URI paths for watch invalidation. */
+  /**
+   * Validates reciprocal part ownership and retains missing URI paths for watch invalidation.
+   *
+   * A missing or conflicting part makes the analysis incomplete because treating
+   * it as absent could remove public declarations from the coverage denominator.
+   */
   export function resolve(
     analyses: IDartFileAnalysis[],
     inventory: IEvidenceInventory,
@@ -177,7 +188,11 @@ export namespace DartLibraries {
       }
   }
 
-  /** Projects library and transitive show/hide export addresses without duplicating semantic units. */
+  /**
+   * Projects library and transitive show or hide export addresses without duplicating semantic units.
+   *
+   * One declaration can have several public paths while retaining a single unit identity.
+   */
   export function publish(
     analyses: IDartFileAnalysis[],
     inventory: IEvidenceInventory,
@@ -265,7 +280,11 @@ export namespace DartLibraries {
     }
   }
 
-  /** Applies sequential Dart combinators to one root name. */
+  /**
+   * Applies sequential Dart combinators to one root name.
+   *
+   * Source order determines whether a later show or hide filter keeps the export.
+   */
   function allowed(directive: IDartDirective, name: string): boolean {
     return directive.filters.every((filter) =>
       filter.kind === "show"
@@ -274,12 +293,20 @@ export namespace DartLibraries {
     );
   }
 
-  /** Makes source path separators portable without filesystem access. */
+  /**
+   * Makes source path separators portable without filesystem access.
+   *
+   * Static URI topology must compare the same way on Windows and POSIX hosts.
+   */
   function normalize(file: string): string {
     return path.posix.normalize(file.replaceAll("\\", "/"));
   }
 
-  /** Records a library topology failure on its source analysis. */
+  /**
+   * Records a library topology failure on its source analysis.
+   *
+   * The affected analysis remains incomplete until its URI relationship is repaired.
+   */
   function problem(
     analysis: IDartFileAnalysis,
     code: string,

@@ -11,7 +11,14 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestParserAssets } from "../../internal/TestParserAssets";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Exercises real DBML-only lazy acquisition, offline reuse, independent inventories and preserved query failure. */
+/** Acquires the real DBML grammar lazily and preserves parser behavior from cache.
+ *
+ * DBML analysis must download only its selected grammar, then return an equivalent but independently mutable inventory when offline.
+ *
+ * 1. Fetch the pinned DBML grammar and analyze a table-and-reference schema without diagnostics.
+ * 2. Reanalyze with no network transport and compare the warm inventory with the cold result, then mutate warm units without affecting cold units.
+ * 3. Issue an invalid DBML query and require the parser to retain its query-invalid provenance.
+ */
 export async function test_dbml_parser_acquisition(): Promise<void> {
   const parser = new EvidenceParser();
   const grammar = (await parser.grammars()).find(

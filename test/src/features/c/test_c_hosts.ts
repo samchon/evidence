@@ -4,7 +4,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Attaches C Doxygen and retains tag-bearing inert carriers as failures. */
+/** Attaches C Doxygen evidence and rejects annotations in inert source carriers.
+ *
+ * Only documentation that leads an eligible declaration may satisfy evidence; comments in literals or unsupported positions must remain visible failures.
+ *
+ * 1. Analyze Doxygen comments before supported declarations.
+ * 2. Compare the resulting declarations and attached hosts.
+ * 3. Require tag-bearing inert carriers to produce unsupported-host diagnostics.
+ */
 export async function test_c_hosts(): Promise<void> {
   const inventory = await new EvidenceCAdapter().analyze(
     TestSourceSnapshot.create(

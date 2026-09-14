@@ -6,7 +6,14 @@ import { TestValidator } from "@nestia/e2e";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Preserves actionable incompleteness for runtime surfaces, malformed source, and unavailable files. */
+/** Rejects MATLAB inputs whose public surface cannot be determined safely.
+ *
+ * Dynamic runtime behavior, malformed declarations, unavailable sources, and unsupported file forms must remain incomplete so they cannot shrink coverage.
+ *
+ * 1. Analyze dynamic, malformed, duplicate, and unsupported MATLAB sources.
+ * 2. Require each inventory to be incomplete with an actionable diagnostic.
+ * 3. Verify failed snapshots preserve incompleteness through adapter analysis.
+ */
 export async function test_matlab_boundaries(): Promise<void> {
   const adapter = new EvidenceMatlabAdapter();
   for (const content of [

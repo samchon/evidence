@@ -19,12 +19,31 @@ import { KotlinDocumentation } from "./KotlinDocumentation";
 import { KotlinFileScanner } from "./KotlinFileScanner";
 import { KotlinReceivers } from "./KotlinReceivers";
 
-/** Builds Kotlin source-public inventories from the configured source snapshot. */
+/**
+ * Resolves Kotlin nominal receivers before publishing declaration and KDoc hosts.
+ *
+ * File analysis retains aliases, type parameters, and receiver candidates until
+ * the selected snapshot is available for lookup. Receiver resolution then updates
+ * ownership or records uncertainty before unit materialization. KDoc attachments
+ * join the resulting units through physical declaration sites, preserving the
+ * distinction between a receiver-qualified public path and its original source.
+ */
 export class KotlinAdapter implements IEvidenceAdapter {
-  /** Public configuration discriminator owned by this adapter. */
+  /**
+   * Kotlin discriminator selecting KDoc and receiver-aware declaration rules.
+   *
+   * This fixes the language of inventory records; it does not widen selection to
+   * scripts or compiler-generated declarations absent from the snapshot.
+   */
   public readonly type = "kotlin";
 
-  /** Builds a fresh inventory and releases the bounded parser session. */
+  /**
+   * Extracts and reconciles Kotlin declarations from an owned source snapshot.
+   *
+   * All files are scanned before receiver lookup. Resolution findings contribute
+   * to completeness before units and documentation are published, and the parser
+   * closes after both successful and failed materialization.
+   */
   public async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {
@@ -54,6 +73,8 @@ export class KotlinAdapter implements IEvidenceAdapter {
       const analyses = await Promise.all(
         input.files.map((source) => this.scan(parser, source)),
       );
+      // Alias targets and nominal receivers can be declared in another file.
+      // Resolve them before assigning extension units or accepting their tags.
       KotlinReceivers.resolve(analyses);
       for (const analysis of analyses) {
         inventory.diagnostics.push(...analysis.diagnostics);
@@ -67,7 +88,12 @@ export class KotlinAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Converts parser failures into incomplete source analysis. */
+  /**
+   * Converts parser failures into incomplete source analysis.
+   *
+   * Returning a per-file diagnostic preserves the selected source population so
+   * one failed parse cannot silently remove its declarations from coverage.
+   */
   private async scan(
     parser: EvidenceParser,
     source: IEvidenceSourceFile,
@@ -107,7 +133,12 @@ export class KotlinAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Reconciles overload families and retains each physical declaration address. */
+  /**
+   * Reconciles overload families and retains each physical declaration address.
+   *
+   * Functions sharing a Kotlin identity form one unit with multiple sites, while
+   * other duplicate identities remain a completeness error rather than a merge.
+   */
   private materializeUnits(
     inventory: IEvidenceInventory,
     analyses: IKotlinFileAnalysis[],
@@ -179,7 +210,12 @@ export class KotlinAdapter implements IEvidenceAdapter {
     return published;
   }
 
-  /** Resolves withdrawals before publishing attached annotation hosts. */
+  /**
+   * Resolves withdrawals before publishing attached annotation hosts.
+   *
+   * Tags first populate unit withdrawals, then inherited hidden ownership filters
+   * visible hosts so withdrawn declarations cannot receive acknowledgements.
+   */
   private materializeDocumentation(
     inventory: IEvidenceInventory,
     analyses: IKotlinFileAnalysis[],
@@ -255,7 +291,12 @@ export class KotlinAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Retains public declaration sites even when they carry no documentation. */
+  /**
+   * Retains public declaration sites even when they carry no documentation.
+   *
+   * Evidence needs a host for every visible unit so unhosted checklist results
+   * can identify declarations that have no attached KDoc.
+   */
   private materializeUndocumentedHosts(
     inventory: IEvidenceInventory,
     analysis: IKotlinFileAnalysis,
@@ -308,7 +349,12 @@ export class KotlinAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Groups published semantic owners by their physical declaration site. */
+  /**
+   * Groups published semantic owners by their physical declaration site.
+   *
+   * One KDoc can attach to declarations that share a site, while duplicate unit
+   * IDs within that group are removed before the tag parser creates a host.
+   */
   private attachmentGroups(
     documentation: IKotlinDocumentation,
     published: Map<string, string>,
@@ -324,7 +370,12 @@ export class KotlinAdapter implements IEvidenceAdapter {
     return groups;
   }
 
-  /** Creates an attached or explicitly unsupported documentation carrier. */
+  /**
+   * Creates an attached or explicitly unsupported documentation carrier.
+   *
+   * Annotation parsing still receives an unsupported carrier so misplaced KDoc
+   * produces an actionable diagnostic instead of disappearing from the graph.
+   */
   private host(
     source: IEvidenceSourceFile,
     documentation: IKotlinDocumentation,
@@ -349,7 +400,12 @@ export class KotlinAdapter implements IEvidenceAdapter {
     };
   }
 
-  /** Parses Evidence tags only after the adapter establishes their host. */
+  /**
+   * Parses Evidence tags only after the adapter establishes their host.
+   *
+   * Kotlin-specific documentation normalization runs before the shared parser so
+   * source mappings and masked examples apply consistently to every host.
+   */
   private parse(
     source: IEvidenceSourceFile,
     documentation: IKotlinDocumentation,
@@ -362,7 +418,12 @@ export class KotlinAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Detects Evidence or withdrawal annotations outside masked examples. */
+  /**
+   * Detects Evidence or withdrawal annotations outside masked examples.
+   *
+   * The broad pattern determines whether unowned KDoc needs an unsupported host
+   * for acknowledgements, reviews, and declaration-withdrawal tags.
+   */
   private annotation(
     analysis: IKotlinFileAnalysis,
     documentation: IKotlinDocumentation,
@@ -374,7 +435,12 @@ export class KotlinAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Detects acknowledgements and reviews on withdrawn carriers. */
+  /**
+   * Detects acknowledgements and reviews on withdrawn carriers.
+   *
+   * Withdrawal-only text does not keep a hidden declaration's host alive, but
+   * evidence and review tags still need diagnostics or graph records.
+   */
   private claimAnnotation(
     analysis: IKotlinFileAnalysis,
     documentation: IKotlinDocumentation,
@@ -386,7 +452,12 @@ export class KotlinAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Recognizes supported annotation names at documentation line boundaries. */
+  /**
+   * Recognizes supported annotation names at documentation line boundaries.
+   *
+   * Line anchoring prevents prose and masked examples containing tag-like text
+   * from manufacturing an annotation carrier.
+   */
   private annotationPattern(raw: string, withdrawal: boolean): boolean {
     return withdrawal
       ? /(?:^|[\r\n])[ \t]*@(evidenceExcludeReview|evidenceReview|evidenceExclude|evidence|link|internal|hidden|ignore)\b/u.test(
@@ -397,7 +468,12 @@ export class KotlinAdapter implements IEvidenceAdapter {
         );
   }
 
-  /** Follows explicit parent ownership to propagate withdrawal. */
+  /**
+   * Follows explicit parent ownership to propagate withdrawal.
+   *
+   * The visited set breaks malformed ownership cycles; a unit is hidden when it
+   * or any reachable owner has a withdrawal record.
+   */
   private withdrawn(
     id: string,
     units: Map<string, IEvidenceUnit>,
@@ -413,12 +489,22 @@ export class KotlinAdapter implements IEvidenceAdapter {
       : this.withdrawn(unit.parentId, units, visited);
   }
 
-  /** Separates programming kinds while unifying package-scoped overload identities. */
+  /**
+   * Separates programming kinds while unifying package-scoped overload identities.
+   *
+   * Kotlin function overloads intentionally share an identity, whereas symbol
+   * kind remains part of the key to keep types and properties distinct.
+   */
   private unitId(declaration: IKotlinDeclaration): string {
     return `kotlin:${declaration.symbol}:${JSON.stringify(declaration.identity)}`;
   }
 
-  /** Marks a declaration conflict as incomplete analysis. */
+  /**
+   * Marks a declaration conflict as incomplete analysis.
+   *
+   * The inventory keeps the diagnostic and source location, but cannot claim a
+   * complete public surface while one identity has conflicting declarations.
+   */
   private problem(
     inventory: IEvidenceInventory,
     analysis: IKotlinFileAnalysis,

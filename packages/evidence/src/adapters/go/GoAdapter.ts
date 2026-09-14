@@ -17,10 +17,35 @@ import { GoPackageResolver } from "./GoPackageResolver";
 import type { IGoDocumentation } from "./IGoDocumentation";
 import type { IGoFileAnalysis } from "./IGoFileAnalysis";
 
-/** Builds Go package inventories from the configured source snapshot. */
+/**
+ * Coordinates Go file scanning, package ownership, and documentation materialization.
+ *
+ * A file scan cannot resolve every method owner: receiver types can live in
+ * another selected file of the package. `GoPackageResolver` therefore publishes
+ * identities and addresses after all file analyses exist. Documentation then
+ * joins those identities through recorded declaration sites, including grouped
+ * declarations and package-specific test boundaries.
+ *
+ * The pipeline retains discovery and parse failures before common inventory
+ * validation. It never treats an unresolved receiver as permission to omit a
+ * method and report complete coverage over the remaining units.
+ */
 export class GoAdapter implements IEvidenceAdapter {
+  /**
+   * Go artifact discriminator for the package extraction pipeline.
+   *
+   * This selects Go visibility and receiver rules. Package placement comes from
+   * the selected source records rather than from claim or reference role.
+   */
   public readonly type = "go";
 
+  /**
+   * Builds a Go package inventory from an independently captured input snapshot.
+   *
+   * All files are scanned before package publication and documentation attachment.
+   * Discovery dependencies survive for watch recovery, and the invocation closes
+   * its parser on every path before returning a serializable inventory.
+   */
   public async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {
@@ -54,6 +79,8 @@ export class GoAdapter implements IEvidenceAdapter {
         inventory.diagnostics.push(...analysis.diagnostics);
         inventory.complete &&= analysis.complete;
       }
+      // A receiver declaration can live in another selected package file. Resolve
+      // package ownership before interpreting method comments as evidence hosts.
       const published = new GoPackageResolver(analyses, inventory).publish();
       this.materializeDocumentation(inventory, analyses, published);
       return new EvidenceInventory([inventory]).snapshot();

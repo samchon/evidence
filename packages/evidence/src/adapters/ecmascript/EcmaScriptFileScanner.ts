@@ -17,7 +17,12 @@ import type { IEcmaScriptOwnedUnit } from "./IEcmaScriptOwnedUnit";
 import type { IEcmaScriptStatementContext } from "./IEcmaScriptStatementContext";
 import { EcmaScriptSyntax } from "./EcmaScriptSyntax";
 
-/** Extracts local ECMAScript-family declarations before exports assign addresses. */
+/**
+ * Extracts local ECMAScript-family declarations before exports assign addresses.
+ *
+ * It captures declared ownership, comment attachment, and static module edges;
+ * `EcmaScriptExportResolver` alone decides which local units become public.
+ */
 export class EcmaScriptFileScanner {
   private readonly units = new Map<string, IEcmaScriptOwnedUnit>();
   private readonly excludedRoots = new Set<string>();
@@ -31,6 +36,12 @@ export class EcmaScriptFileScanner {
   private commonJsStaticObject = true;
   private complete = true;
 
+  /**
+   * Creates a scanner for one parsed module and its already-selected semantics.
+   *
+   * Comment ranges are captured while parser nodes are live, then the resulting
+   * analysis can outlast the parse session without retaining native nodes.
+   */
   public constructor(
     private readonly session: EvidenceParseSession,
     private readonly source: IEvidenceSourceFile,
@@ -48,6 +59,12 @@ export class EcmaScriptFileScanner {
     }
   }
 
+  /**
+   * Scans declarations, static imports, and export edges into one module record.
+   *
+   * Unsupported dynamic or malformed public-surface constructs retain diagnostics
+   * and incompleteness instead of disappearing from downstream coverage.
+   */
   public scan(): IEcmaScriptFileAnalysis {
     if (this.mode === "esm") this.collectImports();
     this.scanStatements(this.session.root, {

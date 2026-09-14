@@ -42,7 +42,12 @@ const INERT_ATTRIBUTES = new Set([
   "warn",
 ]);
 
-/** Extracts Rust declarations and documentation before crate/module resolution. */
+/**
+ * Extracts supported Rust declarations and documentation from one parsed source file.
+ *
+ * The scanner deliberately retains node-free records because RustModuleResolver
+ * must continue crate, import, and impl resolution after the parse session closes.
+ */
 export class RustFileScanner {
   private readonly declarations: IRustDeclaration[] = [];
   private readonly documentation = new Map<string, IRustDocumentation>();
@@ -55,6 +60,12 @@ export class RustFileScanner {
   private readonly text: SourceText;
   private complete = true;
 
+  /**
+   * Creates a scanner for one parsed selected Rust source file.
+   *
+   * Documentation is collected during construction while every comment and
+   * attribute node is available for attachment to later declarations.
+   */
   public constructor(
     private readonly session: EvidenceParseSession,
     private readonly source: IEvidenceSourceFile,
@@ -63,6 +74,12 @@ export class RustFileScanner {
     this.collectDocumentation();
   }
 
+  /**
+   * Scans the file and returns its node-free extraction result.
+   *
+   * Unsupported public forms make the returned analysis incomplete so later
+   * coverage evaluation cannot treat an unobserved declaration as absent.
+   */
   public scan(): IRustFileAnalysis {
     this.scanScope(this.session.root, [], undefined);
     return {

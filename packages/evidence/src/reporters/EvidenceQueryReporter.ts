@@ -8,8 +8,21 @@ import type { IEvidenceQueryScope } from "../structures/IEvidenceQueryScope";
 import type { EvidenceQueryReport } from "../typings/EvidenceQueryReport";
 import type { EvidenceReportFormat } from "../typings/EvidenceReportFormat";
 
-/** Renders target discovery, inspection, and language reports. */
+/**
+ * Serializes query projections for people and automation.
+ *
+ * Query commands share their analysis boundary with checks, but expose selected
+ * targets, one target's explanation, or the shipped language catalog. These
+ * renderers preserve that structured data without triggering configuration or
+ * source I/O.
+ */
 export namespace EvidenceQueryReporter {
+  /**
+   * Selects the text or JSON representation for a query result.
+   *
+   * Every representation ends with a newline so callers can write it directly to
+   * stdout or a report file. The command discriminator selects the text layout.
+   */
   export function render(
     report: EvidenceQueryReport,
     format: EvidenceReportFormat,
@@ -17,10 +30,22 @@ export namespace EvidenceQueryReporter {
     return format === "json" ? json(report) : text(report);
   }
 
+  /**
+   * Serializes the complete query report as indented JSON.
+   *
+   * JSON retains all diagnostics and inspection details for tools that should not
+   * infer structure from terminal-oriented text.
+   */
   export function json(report: EvidenceQueryReport): string {
     return JSON.stringify(report, null, 2) + "\n";
   }
 
+  /**
+   * Renders the human-readable layout appropriate to the query command.
+   *
+   * Language discovery has no project configuration, list reports enumerate
+   * filtered units, and inspection reports retain every applicable population.
+   */
   export function text(report: EvidenceQueryReport): string {
     if (report.command === "languages") return languages(report);
     if (report.command === "list") return list(report);
@@ -28,6 +53,12 @@ export namespace EvidenceQueryReporter {
   }
 }
 
+/**
+ * Renders a filtered inventory listing and its analysis diagnostics.
+ *
+ * Filters appear in the heading so a copied terminal report records the selected
+ * population even when its item list is empty.
+ */
 function list(report: IEvidenceListReport): string {
   const filters = [
     report.language === undefined ? undefined : `language=${report.language}`,
@@ -43,6 +74,12 @@ function list(report: IEvidenceListReport): string {
   return lines.join("\n") + "\n";
 }
 
+/**
+ * Expands one public unit into its stable terminal fields.
+ *
+ * Aliases and declaration sites remain separate because one semantic unit may
+ * have several public addresses or physical declarations.
+ */
 function listItem(item: IEvidenceListItem): string[] {
   const lines = [
     `${scope(item.scope)} ${item.symbol} ${item.selection} ${JSON.stringify(item.target)}`,
@@ -59,6 +96,12 @@ function listItem(item: IEvidenceListItem): string[] {
   return lines;
 }
 
+/**
+ * Renders every population's resolution of one requested target.
+ *
+ * An unresolved population is retained in the result rather than being hidden,
+ * which explains why an inspect command may complete with an exit code of one.
+ */
 function inspect(report: IEvidenceInspectReport): string {
   const lines: string[] = [
     `Evidence inspect ${report.status}.`,
@@ -72,6 +115,12 @@ function inspect(report: IEvidenceInspectReport): string {
   return lines.join("\n") + "\n";
 }
 
+/**
+ * Expands one population's selected units, obligations, and acknowledgements.
+ *
+ * The report includes both declared target candidates and resolved units so users
+ * can distinguish spelling ambiguity from graph coverage or review state.
+ */
 function inspectionLines(inspection: IEvidenceInspection): string[] {
   const lines = [`${scope(inspection.scope)} ${inspection.status}`];
   if (inspection.addresses.length !== 0)
@@ -109,6 +158,12 @@ function inspectionLines(inspection: IEvidenceInspection): string[] {
   return lines;
 }
 
+/**
+ * Renders the certified adapter catalog without consulting project configuration.
+ *
+ * Grammar patterns, addressing rules, and documented unsupported forms let an
+ * author choose an available artifact type before writing a configuration.
+ */
 function languages(report: IEvidenceLanguagesReport): string {
   const lines: string[] = [
     "Evidence certified languages.",
@@ -133,6 +188,12 @@ function languages(report: IEvidenceLanguagesReport): string {
   return lines.join("\n") + "\n";
 }
 
+/**
+ * Appends analysis findings in the compact query-report diagnostic layout.
+ *
+ * Query reports retain diagnostics from the shared analysis even if their primary
+ * listing or inspection data was successfully produced.
+ */
 function appendDiagnostics(
   lines: string[],
   diagnostics: IEvidenceDiagnostic[],
@@ -153,6 +214,12 @@ function appendDiagnostics(
   }
 }
 
+/**
+ * Formats the authored claim and optional reference boundary for a query item.
+ *
+ * Names supplement stable numeric indices while artifact types identify which
+ * adapter's target grammar applies to the displayed result.
+ */
 function scope(value: IEvidenceQueryScope): string {
   const claim = `claim[${value.claim}]${value.name === undefined ? "" : ` '${value.name}'`}`;
   return value.reference === undefined

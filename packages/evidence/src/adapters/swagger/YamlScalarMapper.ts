@@ -3,7 +3,12 @@ import type { Scalar } from "yaml";
 import type { IYamlScalarMapping } from "./IYamlScalarMapping";
 import { SourceText } from "../../internal/SourceText";
 
-/** Maps a decoded YAML string scalar back to its original UTF-16 token. */
+/**
+ * Maps a decoded YAML string scalar back to its original UTF-16 token.
+ *
+ * Swagger documentation extraction needs this mapping because YAML escape
+ * decoding changes text length while Evidence diagnostics must address source.
+ */
 export namespace YamlScalarMapper {
   export function map(
     content: string,

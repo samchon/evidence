@@ -3,7 +3,13 @@ import { TestValidator } from "@nestia/e2e";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Keeps identically named declarations in separately configured Swift module roots independent. */
+/** Keeps equal Swift names independent across configured module roots.
+ *
+ * Module-root identity prevents equal declarations from sharing an address.
+ *
+ * 1. Analyze equal names in separate roots.
+ * 2. Verify distinct identities and resolution.
+ */
 export async function test_swift_module_identity(): Promise<void> {
   const adapter = new EvidenceSwiftAdapter();
   const first = await adapter.analyze(

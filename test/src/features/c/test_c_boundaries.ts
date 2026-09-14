@@ -4,7 +4,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Keeps C declaration families inside their selected physical file boundary. */
+/** Keeps C declaration families inside the selected physical file boundary.
+ *
+ * C declarations sharing a spelling across files must not merge into one semantic unit merely because their syntax is compatible.
+ *
+ * 1. Analyze selected C sources containing related declaration and definition forms.
+ * 2. Compare the identities and sites within each physical source boundary.
+ * 3. Require declarations from different files to remain distinct.
+ */
 export async function test_c_boundaries(): Promise<void> {
   const inventory = await new EvidenceCAdapter().analyze(
     TestSourceSnapshot.combine([

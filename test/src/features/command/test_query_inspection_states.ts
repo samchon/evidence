@@ -7,7 +7,21 @@ import { join } from "node:path";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestQueryAnalysis } from "../../internal/TestQueryAnalysis";
 
-/** Explains review expiry, ambiguity, withdrawal, and incomplete target analysis. */
+/**
+ * Distinguishes stale reviews, ambiguous identities, withdrawals, and incomplete inventories during inspection.
+ *
+ * Inspection must show the provenance needed to repair a target while giving
+ * state failures precedence over apparent address shape. The fixture begins with
+ * a reviewed TypeScript property whose authored fingerprint is deliberately stale.
+ *
+ * 1. Inspect that target and require its host, acknowledgement provenance, stale
+ *    authored fingerprint, and a current-fingerprint repair in the graph diagnostic.
+ * 2. Clone the target under the same address, add it to the configured reference,
+ *    and require inspection to classify the collision as ambiguous.
+ * 3. Mark the original site withdrawn and require hidden status with exit 1.
+ * 4. Mark the reference inventory incomplete and require incomplete status with
+ *    operational exit 2.
+ */
 export async function test_query_inspection_states(): Promise<void> {
   const location = join(__dirname, `query states ${randomUUID()}`);
   await TestFileSystem.experiment(

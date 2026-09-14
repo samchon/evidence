@@ -5,18 +5,39 @@ import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { IDbmlEndpoint } from "./IDbmlEndpoint";
 import type { IDbmlFileAnalysis } from "./IDbmlFileAnalysis";
 
-/** Extracts DBML declarations only from the audited parser's structural nodes. */
+/**
+ * Extracts DBML schema facts from audited structural parser nodes.
+ *
+ * It records unsupported syntax as incomplete so selection cannot silently omit
+ * declarations the adapter does not understand.
+ */
 export class DbmlFileScanner {
-  /** Serializable result owned by this scan. */
+  /**
+   * Accumulates the serializable analysis for this source file.
+   *
+   * Later adapter stages resolve its relations, enum dependencies, and documentation carriers.
+   */
   private readonly output: IDbmlFileAnalysis;
 
-  /** Declaration owners keyed by parser-recognized start offsets. */
+  /**
+   * Maps parser-node offsets to declaration identities they own.
+   *
+   * Notes and comments use this map to attach only at the matching syntax level.
+   */
   private readonly owners = new Map<number, string[][]>();
 
-  /** Line comments already included in one contiguous documentation carrier. */
+  /**
+   * Tracks line comments already included in a contiguous documentation carrier.
+   *
+   * Each comment can contribute to at most one attachment run.
+   */
   private readonly comments = new Set<number>();
 
-  /** Borrows a parser session only for the duration of extraction. */
+  /**
+   * Binds the parsed DBML session and its immutable source snapshot.
+   *
+   * Parser nodes are used only during extraction; the returned result contains serializable facts.
+   */
   public constructor(
     private readonly session: EvidenceParseSession,
     source: IEvidenceSourceFile,
@@ -32,7 +53,11 @@ export class DbmlFileScanner {
     };
   }
 
-  /** Extracts every top-level construct and establishes note/comment attachment. */
+  /**
+   * Extracts top-level DBML constructs and their documentation attachments.
+   *
+   * A complete result contains every recognized declaration and explicit unsupported-syntax diagnostic.
+   */
   public scan(): IDbmlFileAnalysis {
     for (const node of this.session.root.namedChildren) {
       if (node.type === "definition") this.table(node);
@@ -69,7 +94,11 @@ export class DbmlFileScanner {
     return this.output;
   }
 
-  /** Retains enum dependencies and rejects duplicate enum values. */
+  /**
+   * Retains enum semantic dependencies and validates their members.
+   *
+   * Duplicate values make the declared schema ambiguous for dependent fingerprints.
+   */
   private enumeration(node: Node): void {
     const name = node.childForFieldName("name");
     if (name === null) throw new Error("A DBML enum has no name.");
@@ -92,7 +121,11 @@ export class DbmlFileScanner {
     });
   }
 
-  /** Publishes a table and the scalar columns that it directly owns. */
+  /**
+   * Publishes a table and scalar columns directly owned by it.
+   *
+   * Nested constructs are handled separately so each declaration has an unambiguous owner.
+   */
   private table(node: Node): void {
     const name = node.childForFieldName("name");
     const body = node.childForFieldName("body");
@@ -155,7 +188,11 @@ export class DbmlFileScanner {
     }
   }
 
-  /** Retains relation endpoints until all selected schema tables are known. */
+  /**
+   * Retains relation endpoints until selected-schema declarations are available.
+   *
+   * Cross-file resolution occurs after every DBML source has been scanned.
+   */
   private relation(node: Node): void {
     const body = node.namedChildren.find(
       (child) => child.type === "relationship",
@@ -183,7 +220,11 @@ export class DbmlFileScanner {
     });
   }
 
-  /** Resolves only syntactic endpoint segments; semantic existence is a later pass. */
+  /**
+   * Reads literal endpoint segments without resolving semantic existence.
+   *
+   * Deferring lookup permits relations between declarations in separate source files.
+   */
   private endpoint(node: Node): IDbmlEndpoint {
     const table = node.childForFieldName("table");
     const columns = node.childForFieldName("columns");
@@ -200,7 +241,11 @@ export class DbmlFileScanner {
     };
   }
 
-  /** Applies DBML's implicit public schema without collapsing literal identifier dots. */
+  /**
+   * Builds a table identity while applying DBML's implicit public schema.
+   *
+   * Literal identifier dots remain part of their quoted segments rather than path separators.
+   */
   private tableName(node: Node): string[] {
     const schema = node.namedChildren.find((child) => child.type === "schema");
     const name = node.namedChildren.find(
@@ -218,7 +263,11 @@ export class DbmlFileScanner {
     ];
   }
 
-  /** Decodes quoted identifiers while retaining their case and literal punctuation. */
+  /**
+   * Decodes quoted identifiers without altering their case or punctuation.
+   *
+   * Literal spelling is required to preserve the DBML identity used by resolution.
+   */
   private identifier(node: Node): string {
     const text = node.text;
     return text.startsWith('"')
@@ -226,7 +275,11 @@ export class DbmlFileScanner {
       : text;
   }
 
-  /** Attaches adjacent comments only to a recognized declaration at the same syntax level. */
+  /**
+   * Attaches adjacent comments only to a recognized declaration at the same level.
+   *
+   * This prevents comments inside nested syntax from documenting an enclosing declaration.
+   */
   private comment(node: Node): void {
     if (this.comments.has(node.startIndex)) return;
     const block = node.text.startsWith("/*");
@@ -274,7 +327,11 @@ export class DbmlFileScanner {
     });
   }
 
-  /** Keeps trailing comments separate from leading documentation runs. */
+  /**
+   * Distinguishes trailing comments from leading documentation runs.
+   *
+   * A comment must start on otherwise blank text before it can attach forward.
+   */
   private standalone(node: Node): boolean {
     const start =
       this.output.source.content.lastIndexOf("\n", node.startIndex - 1) + 1;
@@ -283,7 +340,11 @@ export class DbmlFileScanner {
     );
   }
 
-  /** Requires documentation runs to touch their next declaration without a blank line. */
+  /**
+   * Checks that a documentation run reaches its next declaration without a blank line.
+   *
+   * Separation means the comment has no unambiguous declaration owner.
+   */
   private adjacent(previous: Node, next: Node): boolean {
     const gap = this.output.source.content.slice(
       previous.endIndex,
@@ -292,7 +353,11 @@ export class DbmlFileScanner {
     return gap.trim() === "" && (gap.match(/\n/gu)?.length ?? 0) <= 1;
   }
 
-  /** Attaches table/column notes; enum, index and project notes remain unsupported carriers. */
+  /**
+   * Attaches supported table and column notes to their owners.
+   *
+   * Notes on enums, indexes, and projects remain explicit unsupported annotation carriers.
+   */
   private note(node: Node): void {
     const value = node.namedChildren.find((child) => child.type === "string");
     if (value === undefined)
@@ -315,7 +380,11 @@ export class DbmlFileScanner {
     });
   }
 
-  /** Retains enum semantics without treating their notes/comments as acknowledgements. */
+  /**
+   * Serializes enum semantics without including annotations.
+   *
+   * Documentation acknowledges declarations but does not change the enum fingerprint.
+   */
   private semantic(node: Node): string {
     if (node.type === "comment" || node.type === "note") return "";
     if (
@@ -332,7 +401,11 @@ export class DbmlFileScanner {
       .join("\u0000");
   }
 
-  /** Marks unsupported source as incomplete rather than shrinking selected obligations. */
+  /**
+   * Marks unsupported source as incomplete and records a repairable diagnostic.
+   *
+   * The failure protects coverage from passing against a reduced obligation set.
+   */
   private problem(node: Node, message: string): void {
     this.output.complete = false;
     this.output.diagnostics.push({

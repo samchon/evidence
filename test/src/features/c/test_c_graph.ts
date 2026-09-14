@@ -11,7 +11,14 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Evaluates C type, function, and property evidence and fingerprints. */
+/** Evaluates C type, function, and property evidence with semantic fingerprints.
+ *
+ * Every selected C symbol kind must have reciprocal acknowledgement, while documentation-only edits must not change implementation identity.
+ *
+ * 1. Build claim and reference inventories for each supported C symbol kind.
+ * 2. Require covered declarations to pass and missing declarations to remain obligations.
+ * 3. Compare fingerprints before and after an evidence-prose-only edit.
+ */
 export async function test_c_graph(): Promise<void> {
   const requirements = await new EvidenceMarkdownAdapter().analyze(
     TestSourceSnapshot.create(

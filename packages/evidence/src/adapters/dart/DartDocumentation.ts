@@ -3,9 +3,17 @@ import type { IEvidenceDocumentation } from "../../structures/IEvidenceDocumenta
 import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { IDartDocumentation } from "./IDartDocumentation";
 
-/** Reads Dart documentation while preserving source mappings and masking code examples. */
+/**
+ * Reads Dart documentation while preserving source mappings and masking code examples.
+ *
+ * DartAdapter uses the mapped text before Evidence tags are parsed for each host.
+ */
 export namespace DartDocumentation {
-  /** Maps a classified carrier and removes ineligible example text without moving offsets. */
+  /**
+   * Maps a classified carrier and removes ineligible example text without moving offsets.
+   *
+   * Stable offsets keep tag diagnostics aligned with the original Dart source.
+   */
   export function read(
     source: IEvidenceSourceFile,
     documentation: IDartDocumentation,
@@ -23,7 +31,11 @@ export namespace DartDocumentation {
     };
   }
 
-  /** Masks HTML examples and Markdown indented code; shared tag parsing handles fences. */
+  /**
+   * Masks HTML examples and Markdown indented code while shared tag parsing handles fences.
+   *
+   * Only visible characters are replaced, preserving source line and UTF-16 positions.
+   */
   function mask(input: string): string {
     const characters = input.split("");
     const htmlCode = /<(pre|code)\b[^>]*>[\s\S]*?<\/\1\s*>/giu;
@@ -44,7 +56,11 @@ export namespace DartDocumentation {
     return characters.join("");
   }
 
-  /** Counts Markdown indentation after the documentation delimiter is removed. */
+  /**
+   * Counts Markdown indentation after the documentation delimiter is removed.
+   *
+   * Tabs advance to the next four-column boundary before code-block comparison.
+   */
   function indentation(line: string): number {
     let spaces = 0;
     for (const character of line) {
@@ -55,7 +71,11 @@ export namespace DartDocumentation {
     return spaces;
   }
 
-  /** Replaces example characters with spaces while retaining original line boundaries. */
+  /**
+   * Replaces example characters with spaces while retaining original line boundaries.
+   *
+   * Newlines remain available for the caller's source-offset mapping.
+   */
   function hide(characters: string[], start: number, end: number): void {
     for (let index = start; index < end; ++index)
       if (characters[index] !== "\n" && characters[index] !== "\r")

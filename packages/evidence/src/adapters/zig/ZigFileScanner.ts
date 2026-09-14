@@ -9,24 +9,54 @@ import type { IZigDeclaration } from "./IZigDeclaration";
 import type { IZigDocumentation } from "./IZigDocumentation";
 import type { IZigFileAnalysis } from "./IZigFileAnalysis";
 
-/** Reads declared Zig namespaces without evaluating build or comptime code. */
+/**
+ * Reads declared Zig namespaces without evaluating build or comptime code.
+ *
+ * It preserves physical declarations and alias projections separately, allowing
+ * later materialization to publish several paths for one semantic unit.
+ */
 export class ZigFileScanner {
-  /** Serializable declarations, including intentional alias projections. */
+  /**
+   * Collects serializable declarations, including intentional alias projections.
+   *
+   * Each entry preserves its physical site and public path before the parser
+   * session closes and later reconciliation merges aliases into canonical units.
+   */
   private readonly declarations: IZigDeclaration[] = [];
 
-  /** Documentation grouped by adjacent source lines. */
+  /**
+   * Indexes documentation carriers by their adjacent source-line position.
+   *
+   * Declaration attachment uses this grouping to find contiguous triple-slash
+   * comments without attaching ordinary comments or string literals by proximity.
+   */
   private readonly documentation = new Map<number, IZigDocumentation>();
 
-  /** Unsupported public forms that prevent a complete denominator. */
+  /**
+   * Collects unsupported public forms that prevent a complete population.
+   *
+   * The scan result uses a nonempty set to preserve extraction uncertainty in
+   * the final inventory instead of certifying only the recognized declarations.
+   */
   private readonly diagnostics: IEvidenceDiagnostic[] = [];
 
-  /** Borrows the real syntax tree for the bounded parser callback. */
+  /**
+   * Borrows the real syntax tree for the bounded parser callback.
+   *
+   * The scanner copies source identity and ranges into records before returning,
+   * so no inventory state relies on a parser node after the callback ends.
+   */
   public constructor(
     private readonly session: EvidenceParseSession,
     private readonly source: IEvidenceSourceFile,
   ) {}
 
-  /** Extracts explicit public declarations and classified annotation carriers. */
+  /**
+   * Extracts explicit public declarations and classified annotation carriers.
+   *
+   * Carrier collection precedes alias resolution so documentation retains its
+   * original site while reconciliation decides which unit receives it.
+   */
   public scan(): IZigFileAnalysis {
     this.collectDocumentation();
     this.scope(this.session.root, undefined, [], new Set<number>());
@@ -39,7 +69,12 @@ export class ZigFileScanner {
     };
   }
 
-  /** Visits only namespace members, excluding local function bodies and tests. */
+  /**
+   * Visits supported namespace members while excluding local function bodies and tests.
+   *
+   * Only namespace scope can establish declared public surface, so unsupported
+   * comptime execution and namespace injection become incomplete diagnostics.
+   */
   private scope(
     body: Node,
     owner: IZigDeclaration | undefined,
@@ -93,7 +128,12 @@ export class ZigFileScanner {
     }
   }
 
-  /** Resolves bounded local aliases and establishes container ownership. */
+  /**
+   * Resolves bounded local aliases and establishes container ownership.
+   *
+   * Recursion is restricted to declarations in the current lexical container,
+   * preserving canonical identity while rejecting cycles and ambiguous targets.
+   */
   private declaration(
     node: Node,
     scope: Node,
@@ -346,7 +386,12 @@ export class ZigFileScanner {
     return declaration;
   }
 
-  /** Recognizes aliases of the metatype in function return positions without execution. */
+  /**
+   * Recognizes aliases of Zig's metatype in function return positions without execution.
+   *
+   * Type-producing returns require complete member discovery, so recognizing
+   * them allows the scanner to retain an incomplete boundary rather than infer one.
+   */
   private metaType(node: Node, scope: Node, visited: Set<number>): boolean {
     if (node.text === "type") return true;
     if (node.type !== "identifier" || visited.has(node.startIndex))
@@ -367,7 +412,12 @@ export class ZigFileScanner {
     );
   }
 
-  /** Distinguishes copied scalar values from identity-preserving namespace aliases. */
+  /**
+   * Distinguishes copied scalar values from identity-preserving namespace aliases.
+   *
+   * A scalar alias becomes its own property declaration; other aliases recurse
+   * to their original declaration so they share semantic identity and ownership.
+   */
   private scalar(node: Node, scope: Node, visited: Set<number>): boolean {
     if (visited.has(node.startIndex) || node.type !== "variable_declaration")
       return false;
@@ -395,7 +445,12 @@ export class ZigFileScanner {
     );
   }
 
-  /** Copies one physical declaration and its public path before the tree is released. */
+  /**
+   * Copies one physical declaration and its public path before the tree is released.
+   *
+   * The record includes parser-derived ranges, ownership, and attachment state
+   * so later adapter phases do not retain Tree-sitter nodes beyond the callback.
+   */
   private add(
     node: Node,
     name: string,
@@ -428,7 +483,12 @@ export class ZigFileScanner {
     return declaration;
   }
 
-  /** Identifies a declaration initializer from syntax delimiters rather than source regexes. */
+  /**
+   * Identifies a declaration initializer from syntax delimiters rather than source regexes.
+   *
+   * The first named child following an equals token supplies the supported static
+   * form used for alias, type, and inferred-surface classification.
+   */
   private initializer(node: Node): Node | undefined {
     const equals = node.children.find((child) => child.type === "=");
     return equals === undefined
@@ -439,7 +499,12 @@ export class ZigFileScanner {
         );
   }
 
-  /** Compares equivalent bare and quoted spellings by their decoded identifier. */
+  /**
+   * Compares bare and quoted spellings by their decoded Zig identifier.
+   *
+   * Alias lookup therefore treats a literal identifier and its supported quoted
+   * source spelling as the same declaration name within one lexical container.
+   */
   private sameName(left: Node | null | undefined, right: Node): boolean {
     return (
       left !== undefined &&
@@ -448,7 +513,12 @@ export class ZigFileScanner {
     );
   }
 
-  /** Decodes literal Zig identifiers, preserving dots as a single accessor segment. */
+  /**
+   * Decodes literal Zig identifiers while preserving dots as one accessor segment.
+   *
+   * Unsupported escape syntax emits a diagnostic and returns the original text,
+   * preventing an invented decoded name from changing alias or address identity.
+   */
   private name(node: Node): string {
     if (!node.text.startsWith('@"')) return node.text;
     try {
@@ -464,7 +534,12 @@ export class ZigFileScanner {
     }
   }
 
-  /** Attaches an adjacent /// group to its declaration, never to strings or ordinary comments. */
+  /**
+   * Attaches an adjacent triple-slash group to its declaration.
+   *
+   * Only directly preceding standalone documentation comments qualify, preventing
+   * strings and ordinary comments from creating an accidental documentation host.
+   */
   private attach(node: Node, declaration: IZigDeclaration): void {
     const previous = node.previousNamedSibling;
     if (
@@ -497,7 +572,12 @@ export class ZigFileScanner {
       });
   }
 
-  /** Classifies real comments and tag-bearing strings while retaining UTF-16 positions. */
+  /**
+   * Classifies documentation comments and tag-bearing strings with UTF-16 positions.
+   *
+   * Triple-slash runs form attachable documentation, while other carriers remain
+   * available only when they contain supported annotations that require diagnostics.
+   */
   private collectDocumentation(): void {
     const nodes = this.session.root.descendantsOfType([
       "comment",
@@ -562,7 +642,12 @@ export class ZigFileScanner {
     }
   }
 
-  /** Makes unsupported namespace semantics actionable and incomplete. */
+  /**
+   * Records unsupported namespace semantics as actionable incomplete diagnostics.
+   *
+   * Duplicate suppression keeps one reported source location from producing
+   * repeated errors while ensuring every unsupported public form fails analysis.
+   */
   private problem(code: string, message: string, node: Node): void {
     if (
       this.diagnostics.some(

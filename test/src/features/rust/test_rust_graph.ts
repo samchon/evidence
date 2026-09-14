@@ -11,7 +11,15 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Evaluates Rust type, function, and property evidence and semantic fingerprints. */
+/** Evaluates Rust type, function, and property evidence.
+ *
+ * Graph coverage and review fingerprints depend on each selected semantic unit.
+ *
+ * 1. Link Rust type, function, and property hosts to Markdown requirements.
+ * 2. Remove each acknowledgement and require its corresponding requirement to
+ *    become missing while the remaining graph stays covered.
+ * 3. Compare review fingerprints after metadata-only and declaration-content edits.
+ */
 export async function test_rust_graph(): Promise<void> {
   const requirements = await new EvidenceMarkdownAdapter().analyze(
     TestSourceSnapshot.create(

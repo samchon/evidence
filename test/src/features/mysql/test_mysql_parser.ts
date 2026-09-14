@@ -6,7 +6,14 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestParserAssets } from "../../internal/TestParserAssets";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Acquires only the selected MySQL grammar and reproduces its complete inventory from a warm offline cache. */
+/** Acquires the selected MySQL grammar and reuses it offline.
+ *
+ * Parser acquisition must request only the configured grammar, then reproduce the same complete inventory from its warmed local cache.
+ *
+ * 1. Analyze a MySQL source with a cold parser cache while recording downloads.
+ * 2. Require only MySQL parser assets and a complete cold result.
+ * 3. Analyze again offline and require an equivalent warm inventory.
+ */
 export async function test_mysql_parser(): Promise<void> {
   const parser = new EvidenceParser();
   const grammar = (await parser.grammars()).find(

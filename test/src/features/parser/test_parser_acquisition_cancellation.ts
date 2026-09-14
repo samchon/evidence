@@ -8,7 +8,23 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestParserError } from "../../internal/TestParserError";
 import { TestSignal } from "../../internal/TestSignal";
 
-/** Cancelling one subscriber preserves a shared transfer, while body deadlines bound abandoned network waits. */
+/**
+ * Isolates subscriber cancellation while bounding shared acquisition timeouts.
+ *
+ * Two asset providers can subscribe to one cold transfer. Aborting one caller
+ * must not invalidate another caller's bytes, while an unresponsive transport must
+ * still terminate after the configured finite retry budget.
+ *
+ * 1. Join two providers to a transfer held behind a signal, with cancellation
+ *    attached only to the first subscriber.
+ * 2. Abort the first subscriber and require its asset-cancelled failure, then
+ *    release the transfer and check the survivor:
+ *    - It receives the complete pinned byte length.
+ *    - Exactly one transfer occurred and its transport signal was not aborted.
+ * 3. Use a separate empty cache and a transport that waits for abort; configure
+ *    two attempts with a short deadline and require asset-download failure after
+ *    exactly two timeout aborts.
+ */
 export async function test_parser_acquisition_cancellation(): Promise<void> {
   const grammar = await new TreeSitterAssets().grammar("python");
   const pinned = Uint8Array.from(await TestParserAssets.bytes(grammar));
@@ -21,6 +37,12 @@ export async function test_parser_acquisition_cancellation(): Promise<void> {
       const cancellation = new AbortController();
       let requests = 0;
       let transferAborted = false;
+      /**
+       * Holds a shared download until both subscriber paths can be exercised.
+       *
+       * The captured transport signal distinguishes subscriber cancellation from
+       * aborting the underlying request that the surviving caller still needs.
+       */
       async function transfer(
         _input: string | URL | Request,
         init?: RequestInit,

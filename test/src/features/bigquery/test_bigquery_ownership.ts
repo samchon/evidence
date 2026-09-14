@@ -4,7 +4,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Preserves literal paths, anonymous endpoint identity, inline key hosts, and nested withdrawal. */
+/** Preserves BigQuery ownership for literal paths, endpoint keys, and nested withdrawals.
+ *
+ * The inventory must distinguish declaration identity from syntax that merely resembles a table or member name.
+ *
+ * 1. Analyze qualified and quoted table paths with nested fields and inline keys.
+ * 2. Verify anonymous relation endpoints and key units attach to their declaring model.
+ * 3. Require a withdrawn nested member to remain excluded from the selected hierarchy.
+ */
 export async function test_bigquery_ownership(): Promise<void> {
   const adapter = new EvidenceBigQueryAdapter();
   const first = "FOREIGN KEY (ID) REFERENCES ds.Parent (id) NOT ENFORCED";

@@ -10,27 +10,67 @@ import type { IMatlabDeclaration } from "./IMatlabDeclaration";
 import type { IMatlabDocumentation } from "./IMatlabDocumentation";
 import type { IMatlabFileAnalysis } from "./IMatlabFileAnalysis";
 
-/** Extracts declared MATLAB surfaces without evaluating application code. */
+/**
+ * Extracts declared MATLAB surfaces without evaluating application code.
+ *
+ * The scanner keeps class-folder facts, external signatures, and property
+ * accessors separate because their public owner may be established in another file.
+ */
 export class MatlabFileScanner {
-  /** Serializable declarations including private ownership boundaries. */
+  /**
+   * Serializable declarations including private ownership boundaries.
+   *
+   * `scan` returns this ordered collection to the adapter, which reconciles
+   * public visibility and external owners before materializing Evidence units.
+   */
   private readonly declarations: IMatlabDeclaration[] = [];
 
-  /** Only language-defined attached help carriers. */
+  /**
+   * Language-defined help carriers eligible for later attachment.
+   *
+   * The scanner records only placements MATLAB defines as help, allowing the
+   * adapter to reject annotation-looking text at unsupported positions.
+   */
   private readonly documentation: IMatlabDocumentation[] = [];
 
-  /** Surface failures retained in incomplete inventories. */
+  /**
+   * Surface failures retained in incomplete inventories.
+   *
+   * Unsupported dynamic or ambiguous constructs append diagnostics here so a
+   * scan cannot silently shrink the graph population into a passing result.
+   */
   private readonly diagnostics: IEvidenceDiagnostic[] = [];
 
-  /** Physical path normalized independently of the host operating system. */
+  /**
+   * Physical path normalized independently of the host operating system.
+   *
+   * Ownership and package-folder lookup use this slash-normalized path so
+   * MATLAB identities remain stable across Windows and POSIX hosts.
+   */
   private readonly file: string;
 
-  /** Package-folder identity segments. */
+  /**
+   * Package-folder identity segments extracted from the physical path.
+   *
+   * Declared names include these `+` folder segments when the scanner constructs
+   * a MATLAB public address for a class, function, or member.
+   */
   private readonly packages: string[];
 
-  /** Original UTF-16 source mapper. */
+  /**
+   * Original UTF-16 source mapper for this source snapshot.
+   *
+   * Scanner ranges are translated through this object so sites and diagnostics
+   * use the shared one-based coordinate contract for the original content.
+   */
   private readonly text: SourceText;
 
-  /** Borrows a live syntax tree only during extraction. */
+  /**
+   * Borrows a live syntax tree only during extraction.
+   *
+   * The constructor normalizes the source path and derives package segments once,
+   * so later ownership reconciliation has platform-independent physical identity.
+   */
   public constructor(
     private readonly session: EvidenceParseSession,
     private readonly source: IEvidenceSourceFile,
@@ -43,7 +83,12 @@ export class MatlabFileScanner {
     this.text = new SourceText(source.content);
   }
 
-  /** Selects the primary declaration and recognizes dynamic-source boundaries. */
+  /**
+   * Selects the primary declaration and recognizes dynamic-source boundaries.
+   *
+   * MATLAB file layout determines ownership, so unsupported leading forms become
+   * diagnostics instead of being skipped and shrinking the public population.
+   */
   public scan(): IMatlabFileAnalysis {
     const nodes = this.session.root.namedChildren.filter(
       (node) => node.type !== "comment" && node.type !== "line_continuation",
@@ -194,7 +239,12 @@ export class MatlabFileScanner {
     };
   }
 
-  /** Maps explicit class members and independent read/write visibility. */
+  /**
+   * Maps explicit class members and independent read/write visibility.
+   *
+   * MATLAB property access can make either accessor public, so this phase records
+   * the combined public surface without treating a private accessor as a new unit.
+   */
   private members(block: Node, owner: IMatlabDeclaration): void {
     const attributes = this.attributes(block);
     const access = attributes.get("Access") ?? "public";
@@ -278,7 +328,12 @@ export class MatlabFileScanner {
     }
   }
 
-  /** Reads known static class metadata and rejects unknown surface-changing attributes. */
+  /**
+   * Reads known static class metadata and rejects unknown surface-changing attributes.
+   *
+   * Attribute interpretation controls visibility and ownership; unsupported
+   * attributes become incomplete-analysis diagnostics instead of guessed policy.
+   */
   private attributes(node: Node): Map<string, string> {
     const result = new Map<string, string>();
     const attributes = node.namedChildren.find(
@@ -362,7 +417,12 @@ export class MatlabFileScanner {
     return result;
   }
 
-  /** Creates a site before attaching the appropriate MATLAB help placement. */
+  /**
+   * Creates a declaration site before attaching the appropriate MATLAB help placement.
+   *
+   * Separating site creation from documentation attachment keeps physical content
+   * ownership intact when help belongs after a signature or beside a member.
+   */
   private add(
     node: Node,
     nameNode: Node | null,
@@ -398,7 +458,12 @@ export class MatlabFileScanner {
     return declaration;
   }
 
-  /** Rejects source names that depend on MATLAB runtime name shadowing. */
+  /**
+   * Rejects source names that depend on MATLAB runtime name shadowing.
+   *
+   * The static inventory cannot determine which shadowed function MATLAB will
+   * invoke, so the scanner preserves this ambiguity as an actionable diagnostic.
+   */
   private filename(declaration: IMatlabDeclaration, node: Node): void {
     if (posix.basename(this.file, ".m") !== declaration.name)
       this.problem(
@@ -419,7 +484,12 @@ export class MatlabFileScanner {
       );
   }
 
-  /** Attaches post-signature class/function help and preceding-or-inline member help. */
+  /**
+   * Attaches post-signature class/function help and preceding-or-inline member help.
+   *
+   * MATLAB placement rules differ by declaration form; this method records only
+   * eligible carriers and leaves unsupported nearby comments visible for diagnostics.
+   */
   private attach(node: Node, declaration: IMatlabDeclaration): void {
     const after =
       node.type === "class_definition" || node.type === "function_definition";
@@ -535,14 +605,24 @@ export class MatlabFileScanner {
     });
   }
 
-  /** Distinguishes standalone help lines from a preceding property's inline help. */
+  /**
+   * Distinguishes standalone help lines from a preceding property's inline help.
+   *
+   * Property declarations can carry MATLAB help on the same physical line, so
+   * attachment needs this boundary before it creates a documentation range.
+   */
   private lineStart(node: Node): boolean {
     const start =
       this.source.content.lastIndexOf("\n", node.startIndex - 1) + 1;
     return /^[ \t]*$/u.test(this.source.content.slice(start, node.startIndex));
   }
 
-  /** Preserves unsupported source constructs as actionable incomplete analysis. */
+  /**
+   * Preserves unsupported source constructs as actionable incomplete analysis.
+   *
+   * Each diagnostic records the source range and failure code, ensuring callers
+   * see a failed population rather than an inventory missing uncertain members.
+   */
   private problem(code: string, message: string, node: Node): void {
     this.diagnostics.push({
       code: `matlab-${code}`,

@@ -8,7 +8,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Maps SQL documentation and COMMENT strings while retaining withdrawals and semantic fingerprints. */
+/** Maps PostgreSQL documentation strings to their schema hosts.
+ *
+ * COMMENT annotations, withdrawals, and fingerprints have distinct effects, while unrelated strings cannot acknowledge a unit.
+ *
+ * 1. Analyze documented schema units, withdrawals, and inert text.
+ * 2. Verify targets, resolution, and withdrawal metadata.
+ * 3. Compare fingerprints after documentation and semantic edits.
+ */
 export async function test_postgresql_hosts(): Promise<void> {
   const source = dedent`
     -- Documentation 🐘

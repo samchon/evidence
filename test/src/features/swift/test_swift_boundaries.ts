@@ -4,7 +4,13 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Prevents unavailable ownership and compiler expansion from becoming successful smaller inventories. */
+/** Rejects Swift surfaces with unavailable ownership or compiler expansion.
+ *
+ * These boundaries must remain incomplete rather than reduce the selected population.
+ *
+ * 1. Analyze each unsupported source boundary.
+ * 2. Verify incomplete diagnostics and failed-source handling.
+ */
 export async function test_swift_boundaries(): Promise<void> {
   const adapter = new EvidenceSwiftAdapter();
   const cases = new Map<string, string>([

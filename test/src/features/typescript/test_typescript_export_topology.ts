@@ -5,7 +5,13 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Exercises transitive export space, shadowing, ambiguity, cycles, and emitted extensions. */
+/** Evaluates TypeScript export topology across transitive modules.
+ *
+ * Shadowing, ambiguity, cycles, and emitted extensions determine whether a public export can be resolved safely.
+ *
+ * 1. Analyze transitive export graphs with each topology condition.
+ * 2. Verify public results and incomplete or ambiguous boundaries.
+ */
 export async function test_typescript_export_topology(): Promise<void> {
   const adapter = new EvidenceTypeScriptAdapter();
 

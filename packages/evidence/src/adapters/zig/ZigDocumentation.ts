@@ -3,9 +3,19 @@ import type { IEvidenceDocumentation } from "../../structures/IEvidenceDocumenta
 import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { IZigDocumentation } from "./IZigDocumentation";
 
-/** Reads Zig documentation while preserving source mappings and masking code examples. */
+/**
+ * Reads Zig documentation while preserving source mappings and masking examples.
+ *
+ * ZigAdapter uses this wrapper around the shared reader so annotations in HTML
+ * or indented code examples cannot become claims at the original source host.
+ */
 export namespace ZigDocumentation {
-  /** Maps a classified carrier and removes ineligible example text without moving offsets. */
+  /**
+   * Maps one classified carrier and removes ineligible example text without moving offsets.
+   *
+   * Only triple-slash documentation is masked because other carrier forms exist
+   * solely to report unsupported tag-bearing source text with its original mapping.
+   */
   export function read(
     source: IEvidenceSourceFile,
     documentation: IZigDocumentation,
@@ -24,7 +34,12 @@ export namespace ZigDocumentation {
     };
   }
 
-  /** Masks HTML examples and Markdown indented code; shared tag parsing handles fences. */
+  /**
+   * Masks HTML examples and Markdown indented code in mapped documentation text.
+   *
+   * Fenced code remains the shared tag parser's responsibility, while this pass
+   * preserves offsets by replacing example characters with spaces.
+   */
   function mask(input: string): string {
     const characters = input.split("");
     const htmlCode = /<(pre|code)\b[^>]*>[\s\S]*?<\/\1\s*>/giu;
@@ -45,7 +60,12 @@ export namespace ZigDocumentation {
     return characters.join("");
   }
 
-  /** Counts Markdown indentation after the documentation delimiter is removed. */
+  /**
+   * Counts Markdown indentation after the documentation delimiter is removed.
+   *
+   * Tab stops advance to four-column boundaries so indented example detection
+   * matches Markdown's visual indentation rule for the mapped text.
+   */
   function indentation(line: string): number {
     let spaces = 0;
     for (const character of line) {
@@ -56,7 +76,12 @@ export namespace ZigDocumentation {
     return spaces;
   }
 
-  /** Replaces example characters with spaces while retaining original line boundaries. */
+  /**
+   * Replaces example characters with spaces while retaining original line boundaries.
+   *
+   * Keeping line endings intact preserves Evidence tag offsets and diagnostics
+   * relative to the original source documentation carrier.
+   */
   function hide(characters: string[], start: number, end: number): void {
     for (let index = start; index < end; ++index)
       if (characters[index] !== "\n" && characters[index] !== "\r")

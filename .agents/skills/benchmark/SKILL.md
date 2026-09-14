@@ -9,7 +9,7 @@ description: Defines Evidence benchmark workload integrity, parser/package footp
 
 Name the product revision, runtime, platform, hardware, corpus, supported language set, enabled policies, cache state, and measured phase. Separate config evaluation, discovery, parsing, resolution, graph evaluation, and output when attributing cost.
 
-The scaffold has no performance harness or language adapters yet. Do not claim a parser benchmark or coverage result from bootstrap logic unit tests. Add a benchmark only for an authorized measurement goal.
+Inspect the current harness and adapters before defining a workload. Correctness tests do not establish performance results. Add a benchmark only for an authorized measurement goal.
 
 ## Integrity
 
@@ -23,6 +23,6 @@ Treat a surprising result as a reason to inspect raw data and completeness befor
 
 ## Artifacts And Reporting
 
-Use a run-owned temporary directory, retain the requested reports, and clean only verified run-owned paths after their processes stop. Never recursively clean a shared package-manager or compiler cache.
+Follow the [development rules](../development/SKILL.md#testing) for temporary directories. Retain requested reports and clean only verified run-owned paths after their processes stop. Never recursively clean a shared package-manager or compiler cache.
 
 Preserve commands, raw results, corpus identity, invalid samples, and limitations with the report. Publishing a result or uploading a dashboard requires the corresponding user authorization; measurement alone does not grant it. Use the issue-campaign workflow only when the user separately requests benchmark-driven implementation work.

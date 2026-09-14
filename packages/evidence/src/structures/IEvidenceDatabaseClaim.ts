@@ -5,6 +5,11 @@ import type { IEvidenceClaimBase } from "./IEvidenceClaimBase";
 /**
  * Database schema declarations that cite evidence in documentation comments.
  *
+ * The database adapter determines schema identity, structural relationships, and
+ * eligible documentation carriers. Symbol selection then chooses which models,
+ * columns, or relations owe evidence; parsing failures retain an incomplete
+ * population instead of removing requirements from the check.
+ *
  * Prisma host rules:
  *
  * - Matching files form one schema regardless of extension. A physical file

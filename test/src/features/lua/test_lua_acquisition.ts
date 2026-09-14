@@ -6,7 +6,12 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestParserAssets } from "../../internal/TestParserAssets";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Acquires only the selected real Lua grammar and preserves full inventory on a warm offline run. */
+/** Acquires only the selected Lua grammar and reuses its complete inventory offline.
+ *
+ * Lazy parser loading must avoid unrelated grammars and cached analysis must survive a failing transport.
+ *
+ * 1. Fetch the Lua grammar and analyze source. 2. Reanalyze offline from cache. 3. Compare the complete inventories.
+ */
 export async function test_lua_acquisition(): Promise<void> {
   const parser = new EvidenceParser();
   const grammar = (await parser.grammars()).find((item) => item.id === "lua");

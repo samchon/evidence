@@ -8,7 +8,15 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Verifies COMMENT ownership, inert SQL strings and examples, withdrawals, and review fingerprints. */
+/** Attaches MySQL COMMENT annotations to their owning schema units.
+ *
+ * Documentation strings can acknowledge a declaration, while SQL examples and strings remain inert; withdrawals and fingerprints retain their separate semantics.
+ *
+ * 1. Analyze documented tables, columns, reviews, withdrawals, and inert comment-shaped text.
+ * 2. Verify attachment, CRLF coordinates, target resolution, and withdrawal metadata.
+ * 3. Compare review fingerprints after annotation and semantic edits.
+ * 4. Require ambiguous schema input to remain incomplete.
+ */
 export async function test_mysql_hosts(): Promise<void> {
   const source = dedent`
     /* Unicode 계약 😀 */

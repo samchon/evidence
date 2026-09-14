@@ -1,8 +1,15 @@
 import type { IEvidenceReferenceBase } from "./IEvidenceReferenceBase";
 
 /**
- * Swagger/OpenAPI operations used as evidence. Each operation is a separate
- * unit addressed by a whitespace-free `METHOD:/path` token.
+ * Swagger/OpenAPI operations required by one reference obligation.
+ *
+ * Each operation is a separate unit addressed by a whitespace-free
+ * `METHOD:/path` token. The document boundary belongs to the reference entry,
+ * allowing identical operation tokens in different documents to impose independent
+ * coverage requirements.
+ *
+ * @example
+ * GET:/users/{id}
  */
 export interface IEvidenceSwaggerReference extends IEvidenceReferenceBase<
   "swagger",

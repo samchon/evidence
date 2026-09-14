@@ -1,19 +1,55 @@
 import type { IEvidenceSourceAddress } from "./IEvidenceSourceAddress";
 
-/** One physical UTF-8 file with every selected logical address retained. */
+/**
+ * Captured UTF-8 file content with every selected logical address preserved.
+ *
+ * Discovery deduplicates filesystem identity while retaining aliases, so linked
+ * paths do not create duplicate source populations or disappear from citation
+ * lookup. Hard links can share an ID even when their canonical paths differ.
+ * Adapters read `content` rather than reopening those paths after discovery.
+ *
+ * The source digest covers original bytes for change detection. Review
+ * fingerprints instead describe semantic units and exclude accepted annotation
+ * ranges; substituting a whole-file digest would give them the wrong boundary.
+ */
 export interface IEvidenceSourceFile {
-  /** Filesystem device/inode identity, falling back to realpath if unavailable. */
+  /**
+   * Filesystem identity used to deduplicate the captured source.
+   *
+   * Discovery uses device/inode identity where available and falls back to realpath.
+   * Logical aliases and hard links can therefore share this ID without losing paths.
+   */
   id: string;
 
-  /** Canonical path used to read the file. Hard links can share an id. */
+  /**
+   * Canonical path used to read this file's bytes.
+   *
+   * This path anchors physical declaration sites. Hard-linked paths may share the
+   * same source ID, while logical citation paths remain in `addresses`.
+   */
   physicalPath: string;
 
-  /** Decoded UTF-8 source, preserving line endings and any byte-order mark. */
+  /**
+   * Decoded source text with its original line endings and byte-order mark.
+   *
+   * Declaration ranges and documentation mappings refer to this exact string.
+   * Normalize only where a later semantic digest requires it, not before extraction.
+   */
   content: string;
 
-  /** SHA-256 of the original bytes for cache invalidation, not review fingerprints. */
+  /**
+   * SHA-256 of the original file bytes for cache invalidation.
+   *
+   * This detects source changes, including edits irrelevant to one unit's semantic
+   * fingerprint. Review tokens are constructed separately from unit content.
+   */
   digest: string;
 
-  /** Selected aliases in deterministic path order. */
+  /**
+   * Logical addresses retained in deterministic path order.
+   *
+   * Physical deduplication must preserve each selected alias for target lookup.
+   * Address metadata distinguishes selection spelling from the canonical read path.
+   */
   addresses: IEvidenceSourceAddress[];
 }

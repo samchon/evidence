@@ -11,7 +11,24 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Pairs reviews by semantic host, resolved target, and acknowledgement kind. */
+/**
+ * Pairs reviews by semantic host, resolved target, and acknowledgement kind.
+ *
+ * Real Markdown requirements and TypeScript declarations exercise pairing after
+ * adapter reconciliation. A review on another part of a merged declaration can
+ * belong to the same host, while identical target text on an unrelated function
+ * must not borrow that host's evidence.
+ *
+ * 1. Create Pricing and Tax requirements and compute their current fingerprints.
+ * 2. Put Pricing evidence on an interface and its review on the merged namespace;
+ *    require no review finding for that shared semantic identity.
+ * 3. Add three independent invalid review scenarios and verify that:
+ *    - A positive review of a Tax exclusion produces one wrong-kind finding.
+ *    - A Pricing review on an unrelated host produces one orphan finding.
+ *    - Two reviews on one acknowledgement produce one duplicate finding.
+ * 4. Require no derivative missing-review finding for the wrong-kind pair, so
+ *    the diagnostic identifies the actual repair rather than reporting it twice.
+ */
 export async function test_graph_review_pairing(): Promise<void> {
   const requirements = await new EvidenceMarkdownAdapter().analyze(
     TestSourceSnapshot.create(
@@ -132,6 +149,13 @@ export async function test_graph_review_pairing(): Promise<void> {
   );
 }
 
+/**
+ * Locates a fixture unit by its display name or final identity segment.
+ *
+ * Markdown anchors and TypeScript names use different presentation conventions.
+ * The helper accepts either fixture spelling and throws if extraction loses the
+ * declaration, preventing a missing fixture from weakening the graph setup.
+ */
 function requireUnit(
   inventory: IEvidenceInventory,
   identity: string,
@@ -144,6 +168,12 @@ function requireUnit(
   return unit;
 }
 
+/**
+ * Counts graph findings for one expected review failure code.
+ *
+ * Exact counts distinguish one actionable diagnosis from duplicated or derivative
+ * findings, which a presence-only assertion would not detect.
+ */
 function count(
   result: ReturnType<typeof EvidenceGraph.evaluate>,
   code: string,

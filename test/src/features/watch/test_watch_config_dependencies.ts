@@ -6,7 +6,18 @@ import { join } from "node:path";
 import { ConfigDependencyScanner } from "../../../../packages/evidence/src/internal/ConfigDependencyScanner";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
-/** Keeps config dependency discovery complete by accepting static and refusing computed imports. */
+/**
+ * Keeps config dependency discovery complete by accepting static and refusing computed imports.
+ *
+ * The watcher can monitor a configuration only when its dependency set is known
+ * statically, including the module-scope package metadata used for resolution.
+ *
+ * 1. Scan a configuration with a static local import and require the resolved
+ *    helper source and package.json module scope in its dependencies.
+ * 2. Replace that import with a runtime-computed CommonJS specifier.
+ * 3. Require dependency scanning to reject the computed dependency instead of
+ *    publishing a watch set that could miss a future configuration change.
+ */
 export async function test_watch_config_dependencies(): Promise<void> {
   const location = join(__dirname, `config dependencies ${randomUUID()}`);
   await TestFileSystem.experiment(

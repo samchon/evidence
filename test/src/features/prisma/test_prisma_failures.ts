@@ -3,7 +3,14 @@ import { TestValidator } from "@nestia/e2e";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Keeps rejected or unreadable Prisma schemas incomplete until repaired. */
+/** Keeps rejected and unreadable Prisma schemas incomplete until repair.
+ *
+ * A failing schema remains an active graph participant so coverage cannot pass from a reduced population.
+ *
+ * 1. Analyze rejected and unreadable schemas and inspect their diagnostics.
+ * 2. Evaluate their active claim in the graph and require failure.
+ * 3. Repair the schema and require complete recovery.
+ */
 export async function test_prisma_failures(): Promise<void> {
   const adapter = new EvidencePrismaAdapter();
   const broken = await adapter.analyze(

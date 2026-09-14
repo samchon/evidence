@@ -17,24 +17,111 @@ import type { IEvidenceWatchOptions } from "../structures/IEvidenceWatchOptions"
 import type { EvidenceWatchPublisher } from "../typings/EvidenceWatchPublisher";
 import { EvidenceChecker } from "../EvidenceChecker";
 
-/** Publishes serialized fresh checks whenever an active filesystem dependency changes. */
+/**
+ * Rechecks active dependencies and publishes stable results in sequence.
+ *
+ * Start one watch loop per instance and supply an awaited publisher. Each attempt
+ * reevaluates configuration and source dependencies, then verifies that its input
+ * snapshots stayed stable before publishing. Failed attempts retain dependencies
+ * needed to observe repairs; parser acquisition also retries without a file edit.
+ *
+ * Close stops future publication, interrupts pending delays, and cancels this
+ * watcher's asset subscriptions. Await the watch promise to observe completion
+ * of any analysis or publisher already in progress.
+ *
+ * @example
+ * const watcher: EvidenceWatcher = new EvidenceWatcher("evidence.config.ts");
+ * const watching: Promise<void> = watcher.watch(
+ *   async (cycle: EvidenceWatchCycle): Promise<void> => {
+ *     console.log(cycle.cycle, cycle.status);
+ *   },
+ * );
+ * // When the application shuts down:
+ * await watcher.close();
+ * await watching;
+ */
 export class EvidenceWatcher {
+  /**
+   * Absolute configuration anchor captured before observation begins.
+   *
+   * Later changes to process cwd cannot redirect configuration or dependency scans.
+   */
   private readonly configFile: string;
+
+  /**
+   * Interval between dependency snapshots during idle observation.
+   *
+   * Close can interrupt the pending delay rather than waiting out this interval.
+   */
   private readonly pollIntervalMilliseconds: number;
+
+  /**
+   * Quiet interval used to coalesce related filesystem edits.
+   *
+   * A changed snapshot restarts settling; zero permits immediate reevaluation.
+   */
   private readonly debounceMilliseconds: number;
 
-  /** Retry interval for unavailable parser assets, independent of watched filesystem state. */
+  /**
+   * Retry interval for parser assets that may recover without a filesystem edit.
+   *
+   * Only acquisition-related failures activate this timer; other stable failures
+   * wait for a dependency change.
+   */
   private readonly parserRetryMilliseconds: number;
 
-  /** Cancels only this watcher's parser acquisitions when it closes. */
+  /**
+   * Cancellation owner for parser acquisitions within this watch loop.
+   *
+   * Closing aborts these subscriptions without cancelling unrelated subscribers
+   * that may share the underlying asset transfer.
+   */
   private readonly cancellation = new AbortController();
+
+  /**
+   * Dependencies whose changes can trigger the next evaluation.
+   *
+   * Failures retain previously known paths and newly discovered candidates so
+   * missing imports or targets can recover after repair.
+   */
   private active: IEvidenceSourceDependency[];
+
+  /**
+   * Whether the instance has already entered its single allowed watch loop.
+   *
+   * The guard prevents concurrent loops from sharing cycle and dependency state.
+   */
   private started = false;
+
+  /**
+   * Shutdown state checked between asynchronous analysis and publication phases.
+   *
+   * A completed attempt is discarded if shutdown was requested before publication.
+   */
   private closed = false;
+
+  /**
+   * Resolver that interrupts the current polling or settling delay.
+   *
+   * Each delay clears only its own resolver so stale completion cannot erase a
+   * newer wake callback.
+   */
   private wake: (() => void) | undefined;
+
+  /**
+   * Sequence number of the most recently admitted publication.
+   *
+   * Stable failures advance the sequence like normal reports; unstable attempts
+   * repeat before a new number is committed.
+   */
   private cycles = 0;
 
-  /** Selects the configuration and validates polling, settling, and parser-retry controls. */
+  /**
+   * Captures the configuration anchor and validates observation timing.
+   *
+   * Construction prepares fallback dependencies but does not evaluate configuration
+   * or start polling. Omitted timing options use the documented watch defaults.
+   */
   public constructor(
     configFile: string = "evidence.config.ts",
     options: IEvidenceWatchOptions = {},
@@ -47,12 +134,23 @@ export class EvidenceWatcher {
     this.active = configurationFallback(this.configFile);
   }
 
-  /** Returns an independent snapshot of the paths that can trigger the next cycle. */
+  /**
+   * Returns the current dependency set without exposing mutable watcher state.
+   *
+   * Before the first analysis this contains configuration fallback paths; after
+   * evaluation it includes discovered inputs and repair dependencies.
+   */
   public dependencies(): IEvidenceSourceDependency[] {
     return structuredClone(this.active);
   }
 
-  /** Runs the initial check, then waits until close while publishing stable cycles in order. */
+  /**
+   * Publishes an initial check and subsequent stable reevaluations until shutdown.
+   *
+   * The publisher is awaited, preserving cycle order and applying backpressure.
+   * Starting twice or after close rejects. Analysis failures become cycle data;
+   * a publisher exception escapes and closes the loop in cleanup.
+   */
   public async watch(publish: EvidenceWatchPublisher): Promise<void> {
     if (this.started)
       throw new Error("An Evidence watcher can be started only once.");
@@ -67,6 +165,8 @@ export class EvidenceWatcher {
       this.cycles = attempt.cycle.cycle;
       await publish(attempt.cycle);
       let baseline = attempt.snapshot;
+      // Acquisition can recover while source snapshots remain identical. Keep
+      // that retry deadline independent from ordinary filesystem invalidation.
       let retryAt = attempt.retryParser
         ? Date.now() + this.parserRetryMilliseconds
         : Infinity;
@@ -95,14 +195,25 @@ export class EvidenceWatcher {
     }
   }
 
-  /** Requests shutdown and releases a pending delay without waiting for its full interval. */
+  /**
+   * Requests shutdown and wakes any polling or settling delay immediately.
+   *
+   * Asset subscriptions owned by this watcher are cancelled. This method does not
+   * join the active watch loop; await its watch promise to finish outstanding
+   * analysis or publication work.
+   */
   public async close(): Promise<void> {
     this.closed = true;
     this.cancellation.abort();
     this.wake?.();
   }
 
-  /** Applies execution-local cancellation to every parser created by configuration scanning or analysis. */
+  /**
+   * Runs an attempt under this watcher's execution-local asset cancellation.
+   *
+   * An inherited caller signal remains effective alongside watcher shutdown, and
+   * the scope reaches parsers created by configuration scanning as well as analysis.
+   */
   private async evaluate(): Promise<IEvidenceWatchAttempt> {
     const inherited = TreeSitterAssetScope.current().signal;
     const signal =
@@ -112,6 +223,13 @@ export class EvidenceWatcher {
     return TreeSitterAssetScope.run({ signal }, () => this.evaluateStable());
   }
 
+  /**
+   * Repeats analysis until dependency discovery and source snapshots agree.
+   *
+   * Newly discovered paths enlarge the observed boundary before acceptance. Input
+   * changes during evaluation cause another attempt, while stable failures retain
+   * enough dependency state for a later repair to trigger reevaluation.
+   */
   private async evaluateStable(): Promise<IEvidenceWatchAttempt> {
     for (;;) {
       if (this.isClosed()) {
@@ -144,6 +262,8 @@ export class EvidenceWatcher {
       const afterConfig = await scanConfiguration(this.configFile);
       const scanCause = afterConfig.cause;
       const cause = analysisCause ?? scanCause;
+      // A failed evaluation cannot replace the previous dependency set with a
+      // smaller partial discovery, or repairing a lost input might never wake us.
       const active =
         analysis === undefined
           ? WatchDependencySet.merge(this.active, afterConfig.dependencies)
@@ -170,6 +290,8 @@ export class EvidenceWatcher {
       const after = await WatchDependencySnapshot.capture(
         WatchDependencySet.merge(candidates, active),
       );
+      // Compare the same pre-analysis boundary. A report built across two source
+      // versions must be retried rather than published as a stable cycle.
       if (!before.equals(after.select(candidates))) {
         this.active = active;
         continue;
@@ -189,6 +311,12 @@ export class EvidenceWatcher {
     }
   }
 
+  /**
+   * Waits until watched inputs remain unchanged for one quiet interval.
+   *
+   * Further edits restart the interval. Shutdown and zero debounce skip additional
+   * waiting so the outer loop can handle cancellation or evaluate immediately.
+   */
   private async settle(
     initial: WatchDependencySnapshot,
   ): Promise<WatchDependencySnapshot> {
@@ -203,6 +331,12 @@ export class EvidenceWatcher {
     return previous;
   }
 
+  /**
+   * Waits for a deadline or an explicit shutdown wake, whichever occurs first.
+   *
+   * One completion closure owns timer cleanup and resolver removal, avoiding a
+   * double completion when close races the timer callback.
+   */
   private async pause(milliseconds: number): Promise<void> {
     if (this.isClosed()) return;
     await new Promise<undefined>((resolve) => {
@@ -219,11 +353,23 @@ export class EvidenceWatcher {
     });
   }
 
+  /**
+   * Reads shutdown state after asynchronous boundaries.
+   *
+   * The loop checks this before starting another phase or publishing a completed
+   * attempt, since close can run while an awaited operation is pending.
+   */
   private isClosed(): boolean {
     return this.closed;
   }
 }
 
+/**
+ * Preserves discovered configuration dependencies even when scanning throws.
+ *
+ * Missing or malformed imports must remain observable for recovery; propagating
+ * only the exception would discard the scanner's partial dependency knowledge.
+ */
 async function scanConfiguration(
   configFile: string,
 ): Promise<IConfigDependencyScan> {
@@ -235,6 +381,12 @@ async function scanConfiguration(
   }
 }
 
+/**
+ * Wraps a fresh report with its watch publication sequence.
+ *
+ * Outcome fields are copied from the report so stream consumers and full-report
+ * consumers observe the same completeness and failure semantics.
+ */
 function checkCycle(
   cycle: number,
   analysis: IEvidenceCheckAnalysis,
@@ -251,6 +403,12 @@ function checkCycle(
   };
 }
 
+/**
+ * Builds a watch result when no normal report can represent the attempt.
+ *
+ * The envelope retains configuration context and repair guidance while allowing
+ * the watcher to continue observing the dependencies of this failed cycle.
+ */
 function failureCycle(
   cycle: number,
   configFile: string,
@@ -271,7 +429,12 @@ function failureCycle(
   };
 }
 
-/** Identifies preparation failures that can recover without any source or configuration edit. */
+/**
+ * Identifies parser preparation failures eligible for timed recovery.
+ *
+ * Download, cache, and integrity failures can change independently of watched
+ * inputs; source syntax or configuration errors instead wait for an edit.
+ */
 function parserFailure(cause: unknown): boolean {
   return (
     cause instanceof EvidenceParserError &&
@@ -279,6 +442,12 @@ function parserFailure(cause: unknown): boolean {
   );
 }
 
+/**
+ * Seeds observation before a configuration dependency graph is available.
+ *
+ * Watching the configuration path and its directory permits recovery when the
+ * file or a nearby imported input is initially missing or cannot be evaluated.
+ */
 function configurationFallback(
   configFile: string,
 ): IEvidenceSourceDependency[] {

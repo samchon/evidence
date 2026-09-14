@@ -10,8 +10,17 @@ import type { EvidenceProgrammingType } from "../typings/EvidenceProgrammingType
 import type { IEvidenceMaterializedReference } from "./IEvidenceMaterializedReference";
 import { MarkdownTarget } from "../adapters/markdown/MarkdownTarget";
 
-/** Assigns a declaration to references whose target grammar and files accept it. */
+/**
+ * Chooses reference populations that can interpret an authored target.
+ *
+ * The scoring is conservative: when no grammar signal distinguishes references,
+ * the declaration remains available to all of them rather than losing a valid acknowledgement.
+ */
 export namespace EvidenceTargetApplicability {
+  /** Selects the highest-affinity references while preserving configuration order.
+   *
+   * A tag is retained for every tied viable population when syntax cannot distinguish the intended reference artifact.
+   */
   export function select(
     statement: IEvidenceTargetStatement,
     host: IEvidenceHost,
@@ -44,6 +53,10 @@ export namespace EvidenceTargetApplicability {
   }
 }
 
+/** Scores a target by exact inventory file, recognizable grammar, and artifact spelling.
+ *
+ * Selection compares these scores to narrow an ambiguous target only when the available source evidence is decisive.
+ */
 function affinity(
   target: string,
   host: IEvidenceHost,
@@ -86,6 +99,10 @@ function affinity(
   return isParsedType(type) && recognizes(type, targetFile(target)) ? 2 : 0;
 }
 
+/** Parses against every retained host origin because a physical host can have several logical paths.
+ *
+ * An exact source address may be reachable through multiple configured spellings, each of which can make a target applicable.
+ */
 function parseFileTargets(
   target: string,
   host: IEvidenceHost,
@@ -100,6 +117,10 @@ function parseFileTargets(
   return output;
 }
 
+/** Checks registry recognition without leaking parser-selection failures into affinity scoring.
+ *
+ * Affinity treats an unrecognized grammar spelling as no signal while adapter analysis reports actual parser failures elsewhere.
+ */
 function recognizes(
   type: EvidenceProgrammingType | EvidenceDatabaseType,
   file: string,
@@ -112,6 +133,10 @@ function recognizes(
   }
 }
 
+/** Narrows types backed by the language registry, excluding document artifacts with separate target grammars.
+ *
+ * The registry lookup is valid only for programming and database artifact types.
+ */
 function isParsedType(
   type: string,
 ): type is EvidenceProgrammingType | EvidenceDatabaseType {
@@ -121,6 +146,10 @@ function isParsedType(
   ].some((entry) => entry.type === type);
 }
 
+/** Extracts a decodable file portion while retaining a harmless basename for malformed escapes.
+ *
+ * Target affinity must not throw while inspecting incomplete authored text, because ordinary target parsing owns that diagnostic.
+ */
 function targetFile(target: string): string {
   const hash = target.indexOf("#");
   const encoded = hash < 0 ? target : target.slice(0, hash);
@@ -131,10 +160,18 @@ function targetFile(target: string): string {
   }
 }
 
+/** Identifies conventional Markdown names when no exact selected source is known.
+ *
+ * This supplies a weak affinity signal for Markdown references without claiming that the file exists in their inventory.
+ */
 function markdownLike(file: string): boolean {
   return /\.(?:md|markdown|mdx)$/iu.test(file);
 }
 
+/** Recognizes API operation spelling before a Swagger reference can parse it.
+ *
+ * The cheap lexical check avoids assigning Swagger affinity to ordinary path-like targets.
+ */
 function swaggerLike(target: string): boolean {
   const match = /^([^:\s/]+):\//u.exec(target);
   const method = match?.[1];

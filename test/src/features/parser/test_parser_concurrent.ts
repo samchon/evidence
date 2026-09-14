@@ -8,7 +8,20 @@ import { TestValidator } from "@nestia/e2e";
 import { TestParserError } from "../../internal/TestParserError";
 import { TestSignal } from "../../internal/TestSignal";
 
-/** Concurrent languages retain independent trees and reject queries against another session's nodes. */
+/**
+ * Keeps concurrent language trees independent and enforces session node ownership.
+ *
+ * TypeScript and Python parses run in a two-slot pool and pause while both trees
+ * are live. A node can be valid in one session yet still be invalid for another;
+ * accepting it would mix source coordinates and grammar state across callbacks.
+ *
+ * 1. Start both parses and hold their callbacks until two active sessions exist.
+ * 2. Pass the second session's root to the first session's query and require a
+ *    query-invalid failure while both sessions are still live.
+ * 3. Release the callbacks and require the separate identifier results `alpha`
+ *    and `beta` in their original request order.
+ * 4. Close the parser and require every active slot to be released.
+ */
 export async function test_parser_concurrent(): Promise<void> {
   const parser = new EvidenceParser({ concurrency: 2 });
   const ready = new TestSignal();

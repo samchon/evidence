@@ -2,7 +2,23 @@ import { TestValidator } from "@nestia/e2e";
 
 import { FileGlob } from "../../../../packages/evidence/src/internal/FileGlob";
 
-/** Prunes impossible or fully excluded subtrees while preserving later reinclusion. */
+/**
+ * Prunes impossible or fully excluded subtrees while preserving later reinclusion.
+ *
+ * Traversal may skip directories only when no later pattern can select a
+ * descendant; ordinary directory names, including dependency directories, have
+ * no implicit ignore policy.
+ *
+ * 1. Ask scoped and broad globs about selected ancestors, unselected siblings,
+ *    dependency folders, and a bare directory pattern.
+ * 2. Exclude an entire private subtree and require both it and its descendants
+ *    to be prunable.
+ * 3. Reinclude one private specification and require traversal of only the
+ *    prefixes that could reach that file, while a partial file exclusion keeps
+ *    the private directory traversable.
+ * 4. Append a final private exclusion and require it to override both traversal
+ *    and file matching after an earlier reinclusion.
+ */
 export function test_glob_pruning(): void {
   // Directory names have no implicit ignore policy.
   const scoped = new FileGlob(["lib/contracts/**"]);

@@ -13,7 +13,13 @@ import type { EvidenceSeverity } from "../typings/EvidenceSeverity";
 import type { EvidenceSymbol } from "../typings/EvidenceSymbol";
 import { validateEvidenceConfig } from "./validateEvidenceConfig";
 
-/** Validates every declaration before removing populations that need no artifacts. */
+/**
+ * Validates configuration and derives the immutable enabled-analysis plan.
+ *
+ * Validation precedes filtering so a disabled or off entry cannot hide an
+ * invalid declaration. The plan clones populations to prevent later caller
+ * mutation from changing an in-progress graph evaluation.
+ */
 export function createEvidenceConfigPlan(
   config: IEvidenceConfig,
   configFile?: string,
@@ -54,6 +60,10 @@ export function createEvidenceConfigPlan(
   return { configFile: filename, claims };
 }
 
+/** Narrows a retained severity and defends the invariant established by plan filtering.
+ *
+ * Plan construction has already removed unsupported values, so this helper documents and enforces the remaining configuration contract.
+ */
 function active(severity: EvidenceSeverity): EvidenceActiveSeverity {
   if (severity === "off")
     throw new Error(
@@ -62,10 +72,18 @@ function active(severity: EvidenceSeverity): EvidenceActiveSeverity {
   return severity;
 }
 
+/** Normalizes singular and plural reference syntax without changing reference order.
+ *
+ * Later plan consumers preserve that order when resolving target applicability and reporting configuration results.
+ */
 function referenceList(claim: IEvidenceClaim): IEvidenceReference[] {
   return Array.isArray(claim.reference) ? claim.reference : [claim.reference];
 }
 
+/** Applies artifact defaults only when configuration did not explicitly select symbols.
+ *
+ * An explicit empty or narrowed symbol selection is never replaced by the artifact's broad default population.
+ */
 function symbols(
   population: IEvidenceClaim | IEvidenceReference,
   reference: boolean,

@@ -7,7 +7,15 @@ import type { IEvidenceHost } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-/** Parser-owned comment spans prevent tag-shaped strings and regexes from entering documentation parsing. */
+/** Uses parser-owned comment spans to exclude tag-shaped code text.
+ *
+ * Strings and regular expressions can resemble annotations but only real comment spans may enter documentation parsing.
+ *
+ * 1. Parse source containing a tag-shaped string, regular expression, and real
+ *    documentation comment through the TypeScript syntax tree.
+ * 2. Map only parser-captured comment spans into documentation and parse tags.
+ * 3. Require the real comment's one target while excluding both code-text lookalikes.
+ */
 export async function test_tag_parser_tree_comments(): Promise<void> {
   const content = dedent`
     const example = "/** @evidence ../fake.ts#name Not a comment. */";

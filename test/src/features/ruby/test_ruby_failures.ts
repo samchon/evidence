@@ -4,7 +4,16 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Keeps detectable Ruby metaprogramming and unresolved ownership incomplete. */
+/** Keeps detectable Ruby metaprogramming and unknown ownership incomplete.
+ *
+ * Dynamic surfaces must not produce a smaller public inventory.
+ *
+ * 1. Analyze dynamic directives, generated constants, unknown singleton owners,
+ *    conditional declarations, and malformed source.
+ * 2. Require each analysis to be incomplete with its corresponding diagnostic.
+ * 3. Simulate an unreadable selected source and require its source failure to
+ *    remain in the Ruby inventory.
+ */
 export async function test_ruby_failures(): Promise<void> {
   const dynamic = await new EvidenceRubyAdapter().analyze(
     TestSourceSnapshot.create(

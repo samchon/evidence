@@ -8,7 +8,22 @@ import { join } from "node:path";
 import { SourcePath } from "../../../../packages/evidence/src/internal/SourcePath";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
-/** Deduplicates linked files without losing addresses and diagnoses traversed directory cycles. */
+/**
+ * Deduplicates linked files without losing addresses and diagnoses traversed directory cycles.
+ *
+ * A snapshot identifies one physical file while preserving every selected logical
+ * address, and follows links only while their topology remains acyclic.
+ *
+ * 1. Create directory junction aliases and a hard link to one Prisma schema,
+ *    then require one physical file with all three selected addresses and link
+ *    topology dependencies.
+ * 2. Select through a linked root and require its local relative address while
+ *    preserving the same physical identity as the original snapshot.
+ * 3. Add a junction cycle and require an incomplete snapshot with the
+ *    symlink-cycle diagnostic.
+ * 4. Exclude the cyclic path and require complete discovery with the original
+ *    single physical schema still present.
+ */
 export async function test_source_links(): Promise<void> {
   const location = join(__dirname, "links-" + randomUUID());
 

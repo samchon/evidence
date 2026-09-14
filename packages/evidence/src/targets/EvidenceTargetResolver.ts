@@ -19,16 +19,92 @@ import type { IEvidenceWithdrawal } from "../structures/IEvidenceWithdrawal";
 import type { EvidenceArtifactType } from "../typings/EvidenceArtifactType";
 import type { EvidenceTargetResolutionStatus } from "../typings/EvidenceTargetResolutionStatus";
 
-/** Resolves artifact targets against one selected reference population. */
+/**
+ * Resolves citation targets against one merged, selected reference population.
+ *
+ * A resolver combines scans for a reference, recognizes the target grammar used
+ * by its artifact type, then separates four outcomes: a malformed target, an
+ * inaccessible or missing file, a file outside the population, and an address
+ * that has no selected public declaration. Graph evaluation consumes the result
+ * rather than probing files or reinterpreting citation spelling itself.
+ *
+ * Resolution preserves all plausible origins and public file spellings until it
+ * can prove one semantic identity. That avoids making aliases, hard links, or
+ * multi-origin documentation silently select an arbitrary declaration.
+ *
+ * @example
+ * const resolver: EvidenceTargetResolver = new EvidenceTargetResolver([inventory]);
+ * const result: IEvidenceTargetResolution = await resolver.resolve(
+ *   statement,
+ *   host,
+ *   selectedIds,
+ * );
+ */
 export class EvidenceTargetResolver {
+  /**
+   * Merged address index used for symbol and withdrawal lookup.
+   *
+   * It retains the inventory merger's alias and ambiguity semantics, which the
+   * resolver must not reproduce from a single physical-file spelling.
+   */
   private readonly index: EvidenceInventory;
+
+  /**
+   * Immutable snapshot from which membership and completeness are evaluated.
+   *
+   * All derived file maps come from this same snapshot, preventing a target
+   * decision from mixing metadata acquired at different inventory states.
+   */
   private readonly inventory: IEvidenceInventory;
+
+  /**
+   * Configured artifact fallback when selected IDs reveal no unique type.
+   *
+   * A mixed selected population intentionally has no specialized grammar, so it
+   * falls back to ordinary file-qualified target parsing instead of guessing.
+   */
   private readonly type: EvidenceArtifactType | undefined;
+
+  /**
+   * Normalized public addresses admitted by the reference's selected sources.
+   *
+   * Ordinary targets may resolve only in this set; physical file existence alone
+   * never makes an unselected source part of the coverage denominator.
+   */
   private readonly selectedFiles = new Set<string>();
+
+  /**
+   * Normalized physical source files known to the merged inventory.
+   *
+   * This distinguishes an existing scanned-but-unselected file from a path that
+   * has disappeared or was never part of the evidence input.
+   */
   private readonly physicalFiles = new Set<string>();
+
+  /**
+   * Authored public file spellings grouped by their normalized file identity.
+   *
+   * A target must be tested through every public spelling because address lookup
+   * preserves authored paths as part of the public identity contract.
+   */
   private readonly publicFiles = new Map<string, Set<string>>();
+
+  /**
+   * Selected Markdown roots grouped by Markdown's root-relative path spelling.
+   *
+   * Markdown targets are intentionally resolved from reference roots rather than
+   * relative to the documentation host, so one logical target may map to several
+   * physical selected files before ambiguity is decided.
+   */
   private readonly markdownFiles = new Map<string, Set<string>>();
 
+  /**
+   * Builds lookup state for one reference's inventory snapshots.
+   *
+   * The optional type supplies a grammar only when selected unit IDs do not
+   * establish one. Construction records membership and aliases but performs no
+   * filesystem access; `resolve` defers that work until a citation needs it.
+   */
   public constructor(
     inventories: IEvidenceInventory[],
     type?: EvidenceArtifactType,
@@ -44,6 +120,8 @@ export class EvidenceTargetResolver {
             EvidenceFileTarget.normalize(address.absolute),
           );
     }
+    // Preserve every public spelling for an address because the index resolves
+    // public addresses, while membership checks operate on normalized paths.
     for (const address of this.inventory.addresses) {
       const file = EvidenceFileTarget.normalize(address.file);
       let spellings = this.publicFiles.get(file);
@@ -53,6 +131,8 @@ export class EvidenceTargetResolver {
       }
       spellings.add(address.file);
     }
+    // Markdown references are rooted at selected source addresses. Identify their
+    // physical sources first so non-Markdown files cannot enter this path map.
     const markdownSources = new Set(
       this.inventory.units
         .filter((unit) => unit.type === "markdown")
@@ -78,7 +158,19 @@ export class EvidenceTargetResolver {
     }
   }
 
-  /** Resolves one target without searching unrelated files by name. */
+  /**
+   * Resolves one statement using its owning host and selected unit IDs.
+   *
+   * The host must match the statement because diagnostics and relative origins
+   * belong to that attachment. Specialized Markdown, Prisma, and Swagger target
+   * forms are parsed only for a uniquely identified artifact type. Ordinary file
+   * targets are attempted for each declared host origin, then deduplicated before
+   * index lookup and filesystem classification.
+   *
+   * Incomplete inventories win before an empty or missing-member result. A scan
+   * that omitted declarations cannot prove coverage merely because the remaining
+   * selected population has no match.
+   */
   public async resolve(
     statement: IEvidenceTargetStatement,
     host: IEvidenceHost,
@@ -130,6 +222,8 @@ export class EvidenceTargetResolver {
       } else if (type === "swagger") {
         addresses.push(SwaggerTarget.parse(statement.target));
       } else {
+        // A host can represent merged documentation origins. Retain every unique
+        // lexical origin until candidate resolution exposes a genuine ambiguity.
         const origins = InventoryMerge.unique(
           host.origins ?? [host.file],
           (origin) => EvidenceFileTarget.normalize(origin),
@@ -156,6 +250,8 @@ export class EvidenceTargetResolver {
     const uniqueAddresses = InventoryMerge.unique(addresses, (address) =>
       JSON.stringify([address.file, address.segments]),
     );
+    // Completeness precedes any negative conclusion: a failed scan may have
+    // omitted the declaration that would otherwise satisfy this target.
     if (!this.inventory.complete)
       return this.incomplete(statement, uniqueAddresses);
     if (type === "prisma" || type === "swagger") {
@@ -184,6 +280,8 @@ export class EvidenceTargetResolver {
     if (candidates.length !== 0)
       return this.resolveCandidates(statement, uniqueAddresses, candidates);
 
+    // No selected address matched. Inspect the explicit candidate paths only to
+    // distinguish a missing file from a known but out-of-population source.
     const existing = await Promise.all(
       uniqueAddresses.map((address) => this.exists(address.file)),
     );
@@ -222,6 +320,14 @@ export class EvidenceTargetResolver {
     );
   }
 
+  /**
+   * Converts address-index lookups into one semantic target resolution.
+   *
+   * Multiple candidates may be aliases of one unit, which resolves successfully.
+   * Multiple unit IDs or an index-level ambiguity remain ambiguous. A withdrawal
+   * shadows an otherwise found unit, because a citation cannot acknowledge a
+   * declaration that has been explicitly removed from public coverage.
+   */
   private resolveCandidates(
     statement: IEvidenceTargetStatement,
     addresses: IEvidenceAddress[],
@@ -276,6 +382,8 @@ export class EvidenceTargetResolver {
         diagnostics: [],
       };
     }
+    // Specialized pseudo-files choose a format-specific repair message only after
+    // ordinary candidate resolution found no selected semantic identity.
     const prisma = addresses.every((address) => address.file === "prisma:");
     const swagger = addresses.every((address) => address.file === "swagger:");
     return this.failure(
@@ -300,6 +408,13 @@ export class EvidenceTargetResolver {
     );
   }
 
+  /**
+   * Creates a failed resolution with its one explanatory diagnostic.
+   *
+   * Callers receive candidate addresses, units, and withdrawals even for failure
+   * states so reports can explain the evidence considered without reconstructing
+   * this resolver's normalization and alias work.
+   */
   private failure(
     status: Exclude<EvidenceTargetResolutionStatus, "resolved">,
     addresses: IEvidenceAddress[],
@@ -316,6 +431,12 @@ export class EvidenceTargetResolver {
     };
   }
 
+  /**
+   * Creates the conservative result required when inventory acquisition failed.
+   *
+   * Existing inventory diagnostics are retained with the target-specific error so
+   * authors see both the acquisition cause and why this citation was not trusted.
+   */
   private incomplete(
     statement: IEvidenceTargetStatement,
     addresses: IEvidenceAddress[],
@@ -337,6 +458,12 @@ export class EvidenceTargetResolver {
     };
   }
 
+  /**
+   * Attaches target-resolution details to the statement's original source span.
+   *
+   * Keeping this construction centralized ensures every failure points to the
+   * authored target and owning host, rather than an internal normalized address.
+   */
   private diagnostic(
     statement: IEvidenceTargetStatement,
     code: string,
@@ -354,6 +481,13 @@ export class EvidenceTargetResolver {
     };
   }
 
+  /**
+   * Classifies one candidate path without treating access failure as absence.
+   *
+   * Only regular files can be citation targets. Permission and I/O errors become
+   * `incomplete` so a transient inspection failure cannot be reported as a user
+   * typo or shrink the reference population.
+   */
   private async exists(
     file: string,
   ): Promise<"file" | "other" | "missing" | "incomplete"> {
@@ -365,6 +499,13 @@ export class EvidenceTargetResolver {
     }
   }
 
+  /**
+   * Finds the specialized target grammar implied by selected semantic units.
+   *
+   * An empty selection uses the configured fallback. A homogeneous selection
+   * supplies its own type; a mixed selection deliberately returns undefined so
+   * no one artifact grammar is applied to an unrelated citation.
+   */
   private referenceType(ids: string[]): EvidenceArtifactType | undefined {
     const selected = new Set(ids);
     const types = new Set<EvidenceArtifactType>();
@@ -376,16 +517,34 @@ export class EvidenceTargetResolver {
     return types.size === 1 ? types.values().next().value : undefined;
   }
 
+  /**
+   * Extracts a Node-style error code without assuming an arbitrary thrown value.
+   *
+   * Filesystem APIs may reject with non-Error values, which must remain an
+   * incomplete inspection rather than cause the resolver's classifier to throw.
+   */
   private errorCode(cause: unknown): string | undefined {
     if (!(cause instanceof Error) || !("code" in cause)) return undefined;
     const code: unknown = cause.code;
     return typeof code === "string" ? code : undefined;
   }
 
+  /**
+   * Collapses alias candidates to their semantic unit identity.
+   *
+   * Address multiplicity does not make a target ambiguous when every spelling
+   * designates the same unit.
+   */
   private uniqueUnits(units: IEvidenceUnit[]): IEvidenceUnit[] {
     return InventoryMerge.unique(units, (unit) => unit.id);
   }
 
+  /**
+   * Removes repeated withdrawal records gathered through alias candidates.
+   *
+   * Withdrawals lack one shared unit ID in this result shape, so structural
+   * serialization preserves the merger's full withdrawal identity.
+   */
   private uniqueWithdrawals(
     withdrawals: IEvidenceWithdrawal[],
   ): IEvidenceWithdrawal[] {
@@ -394,6 +553,11 @@ export class EvidenceTargetResolver {
     );
   }
 
+  /**
+   * Formats candidate files in stable lexical order for a diagnostic.
+   *
+   * Sorting prevents host-origin iteration order from changing a report's text.
+   */
   private files(addresses: IEvidenceAddress[]): string {
     return addresses
       .map((address) => address.file)
@@ -401,6 +565,12 @@ export class EvidenceTargetResolver {
       .join("', '");
   }
 
+  /**
+   * Formats the representative accessor after candidate paths share its segments.
+   *
+   * An empty array occurs only in defensive failure construction and deliberately
+   * produces an empty display rather than inventing an accessor.
+   */
   private accessor(addresses: IEvidenceAddress[]): string {
     const first = addresses[0];
     return first === undefined ? "" : EvidenceAccessor.format(first.segments);

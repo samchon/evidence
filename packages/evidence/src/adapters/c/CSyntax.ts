@@ -5,7 +5,12 @@ import type { CDeclarationForm } from "./CDeclarationForm";
 import type { CDeclaratorKind } from "./CDeclaratorKind";
 import type { ICDeclaratorShape } from "./ICDeclaratorShape";
 
-/** Grammar-specific C names, declarators, comments, and declaration modifiers. */
+/**
+ * Provides C grammar helpers for names, declarators, comments, and modifiers.
+ *
+ * CFileScanner uses these syntactic facts to construct declarations and
+ * documentation records without assigning public-surface policy to this namespace.
+ */
 export namespace CSyntax {
   export function name(node: Node | null): string | undefined {
     if (

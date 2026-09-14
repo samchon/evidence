@@ -11,7 +11,14 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Verifies every DBML reference selector against real cross-language targets and missing/review-only evidence. */
+/** Evaluates each DBML model, column, and relation target from a TypeScript claim.
+ *
+ * Evidence and review have distinct graph roles, including when a review fingerprint is current or deliberately stale.
+ *
+ * 1. Select one DBML unit of each reference symbol and calculate its fingerprint.
+ * 2. Evaluate evidence, review-only, absent, reviewed, and stale-review TypeScript claims for each target.
+ * 3. Require only evidence and current required reviews to pass, while absent and review-only cases retain the selected unit as missing.
+ */
 export async function test_dbml_reference_graphs(): Promise<void> {
   const reference = await new EvidenceDbmlAdapter().analyze(
     TestSourceSnapshot.create(

@@ -8,7 +8,15 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Classifies Ruby reopenings, visibility, method sides, constants, and attributes. */
+/** Classifies Ruby public units across reopenings and member forms.
+ *
+ * Visibility, method sides, constants, and attributes determine owned public identities.
+ *
+ * 1. Verify the registered Ruby adapter metadata, then analyze public and hidden
+ *    containers, methods, constants, aliases, attributes, and reopenings.
+ * 2. Require the exact public unit identities, parent ownership, physical sites,
+ *    and property selections while excluding non-public surfaces.
+ */
 export async function test_ruby_units(): Promise<void> {
   // Certified metadata identifies the pinned grammar and declared source boundary.
   const language = EvidenceLanguageRegistry.list().find(

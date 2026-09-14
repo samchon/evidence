@@ -7,7 +7,15 @@ import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Keeps Rust outer attributes attached across whitespace comments without promoting those comments to evidence. */
+/** Keeps Rust outer attributes attached across whitespace comments.
+ *
+ * Intervening comments cannot become evidence merely because they precede an attribute.
+ *
+ * 1. Analyze outer documentation, attributes, and ordinary comments separated by
+ *    whitespace before one public item.
+ * 2. Require only the documentation carrier to attach, ordinary tagged comments
+ *    to remain unsupported, and content edits to affect the intended fingerprints.
+ */
 export async function test_rust_comment_prefixes(): Promise<void> {
   const source = dedent`
     /// 계약 🦀

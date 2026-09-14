@@ -18,12 +18,29 @@ import type { IObjcFileAnalysis } from "./IObjcFileAnalysis";
 import { ObjcDocumentation } from "./ObjcDocumentation";
 import { ObjcFileScanner } from "./ObjcFileScanner";
 
-/** Builds Objective-C source-public inventories from the configured source snapshot. */
+/**
+ * Extracts Objective-C public declarations into merged units and comment hosts.
+ *
+ * Interface, category, and implementation records require a shared ownership model
+ * before documentation can be attributed to semantic API subjects. The adapter
+ * retains each physical site while normalizing published identities and preserving
+ * failures that prevent complete extraction.
+ */
 export class ObjcAdapter implements IEvidenceAdapter {
-  /** Configured language discriminator, independent of overlapping extensions. */
+  /**
+   * Configured language discriminator for Objective-C extraction.
+   *
+   * It selects Objective-C rules even when headers or .m files overlap other
+   * registered language extensions.
+   */
   public readonly type = "objc";
 
-  /** Builds an owned serializable inventory and closes every borrowed parser session. */
+  /**
+   * Builds an owned Objective-C inventory from captured source contents.
+   *
+   * Unit publication precedes documentation materialization, and source or parser
+   * failures retain incomplete state. The runtime closes after accepted scans settle.
+   */
   public async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {
@@ -57,6 +74,8 @@ export class ObjcAdapter implements IEvidenceAdapter {
         inventory.diagnostics.push(...analysis.diagnostics);
         inventory.complete &&= analysis.complete;
       }
+      // Documentation sites must use the published owner identity rather than
+      // treating interface and implementation fragments as unrelated subjects.
       const published = this.materializeUnits(inventory, analyses);
       this.materializeDocumentation(inventory, analyses, published);
       return new EvidenceInventory([inventory]).snapshot();
@@ -65,7 +84,12 @@ export class ObjcAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Converts parser failures into incomplete source inventories. */
+  /**
+   * Extracts declaration records within one borrowed Objective-C parse session.
+   *
+   * Failures retain the physical source and parser range when available, marking
+   * the analysis incomplete instead of accepting an empty public surface.
+   */
   private async scan(
     parser: EvidenceParser,
     source: IEvidenceSourceFile,
@@ -105,7 +129,11 @@ export class ObjcAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Reconciles public interfaces with compatible extension and implementation sites. */
+  /**
+   * Reconciles public interfaces with compatible extension and implementation sites.
+   *
+   * The resulting map connects every retained physical declaration to its unit.
+   */
   private materializeUnits(
     inventory: IEvidenceInventory,
     analyses: IObjcFileAnalysis[],
@@ -197,7 +225,11 @@ export class ObjcAdapter implements IEvidenceAdapter {
     return published;
   }
 
-  /** Applies merged withdrawals before creating eligible annotation hosts. */
+  /**
+   * Applies merged withdrawals before creating eligible annotation hosts.
+   *
+   * Hidden units cannot receive ordinary claim hosts after inheritance is resolved.
+   */
   private materializeDocumentation(
     inventory: IEvidenceInventory,
     analyses: IObjcFileAnalysis[],
@@ -273,7 +305,11 @@ export class ObjcAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Keeps every undocumented public declaration in the host denominator. */
+  /**
+   * Keeps every undocumented public declaration in the host denominator.
+   *
+   * Grouping by site prevents merged units from manufacturing duplicate hosts.
+   */
   private materializeUndocumentedHosts(
     inventory: IEvidenceInventory,
     analysis: IObjcFileAnalysis,
@@ -326,7 +362,11 @@ export class ObjcAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Groups carrier attachments by their physical declaration site. */
+  /**
+   * Groups carrier attachments by their physical declaration site.
+   *
+   * A host can therefore identify all published units attached at one source span.
+   */
   private attachmentGroups(
     documentation: IObjcDocumentation,
     published: Map<string, string>,
@@ -342,7 +382,11 @@ export class ObjcAdapter implements IEvidenceAdapter {
     return groups;
   }
 
-  /** Records supported ownership or an actionable unsupported carrier. */
+  /**
+   * Records supported ownership or an actionable unsupported carrier.
+   *
+   * Tagged comments without a supported owner remain visible to the graph reporter.
+   */
   private host(
     source: IEvidenceSourceFile,
     documentation: IObjcDocumentation,
@@ -367,7 +411,11 @@ export class ObjcAdapter implements IEvidenceAdapter {
     };
   }
 
-  /** Parses mapped Doxygen after ownership and example masking are established. */
+  /**
+   * Parses mapped Doxygen after ownership and example masking are established.
+   *
+   * Tag parsing receives a host with its resolved unit IDs and original range.
+   */
   private parse(
     source: IEvidenceSourceFile,
     documentation: IObjcDocumentation,
@@ -380,7 +428,11 @@ export class ObjcAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Recognizes annotations and withdrawals on otherwise unsupported carriers. */
+  /**
+   * Recognizes annotations and withdrawals on otherwise unsupported carriers.
+   *
+   * Such carriers require a diagnostic instead of silently dropping author intent.
+   */
   private annotation(
     analysis: IObjcFileAnalysis,
     documentation: IObjcDocumentation,
@@ -392,7 +444,11 @@ export class ObjcAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Detects graph annotations that cannot silently disappear on withdrawn units. */
+  /**
+   * Detects graph annotations that cannot silently disappear on withdrawn units.
+   *
+   * Review and claim tags remain reportable even when their attached unit is hidden.
+   */
   private claimAnnotation(
     analysis: IObjcFileAnalysis,
     documentation: IObjcDocumentation,
@@ -404,7 +460,11 @@ export class ObjcAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Finds tag boundaries in mapped comment text. */
+  /**
+   * Finds tag boundaries in mapped comment text.
+   *
+   * Matching only line starts avoids treating prose or examples as annotations.
+   */
   private annotationPattern(raw: string, withdrawal: boolean): boolean {
     return withdrawal
       ? /(?:^|[\r\n])[ \t]*@(evidenceExcludeReview|evidenceReview|evidenceExclude|evidence|link|internal|hidden|ignore)\b/u.test(
@@ -415,7 +475,11 @@ export class ObjcAdapter implements IEvidenceAdapter {
         );
   }
 
-  /** Follows real parent identities when propagating withdrawals. */
+  /**
+   * Follows real parent identities when propagating withdrawals.
+   *
+   * The visited set prevents malformed ownership cycles from recursing indefinitely.
+   */
   private withdrawn(
     id: string,
     units: Map<string, IEvidenceUnit>,
@@ -431,12 +495,20 @@ export class ObjcAdapter implements IEvidenceAdapter {
       : this.withdrawn(unit.parentId, units, visited);
   }
 
-  /** Keeps selector kinds and segmented nominal identities unambiguous. */
+  /**
+   * Keeps selector kinds and segmented nominal identities unambiguous.
+   *
+   * Symbol kind separates otherwise equal Objective-C name paths in the inventory.
+   */
   private unitId(declaration: IObjcDeclaration): string {
     return `objc:${declaration.symbol}:${JSON.stringify(declaration.identity)}`;
   }
 
-  /** Prevents an ambiguous declaration family from reporting complete analysis. */
+  /**
+   * Prevents an ambiguous declaration family from reporting complete analysis.
+   *
+   * The diagnostic preserves the selected source boundary and repair guidance.
+   */
   private problem(
     inventory: IEvidenceInventory,
     analysis: IObjcFileAnalysis,

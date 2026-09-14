@@ -8,8 +8,19 @@ import type { IEvidenceUnit } from "../structures/IEvidenceUnit";
 import type { IEvidenceUnitSite } from "../structures/IEvidenceUnitSite";
 import { InventorySources } from "./InventorySources";
 
-/** Combines adapter-established identities while retaining conflicting analysis as a failure. */
+/**
+ * Combines compatible adapter inventories into one analysis snapshot.
+ *
+ * Conflicts mark the result incomplete instead of choosing whichever adapter
+ * happened to run first, preserving the failure boundary for graph evaluation.
+ */
 export namespace InventoryMerge {
+  /**
+   * Merges compatible source, unit, host, and declaration records into one inventory.
+   *
+   * Conflicting semantic identities remain diagnostics and mark the merged result
+   * incomplete, so input order cannot select an arbitrary graph population.
+   */
   export function combine(inputs: IEvidenceInventory[]): IEvidenceInventory {
     InventorySources.reconcile(inputs);
     const output: IEvidenceInventory = {
@@ -127,6 +138,12 @@ export namespace InventoryMerge {
     return output;
   }
 
+  /**
+   * Deduplicates values by semantic key and orders the result deterministically.
+   *
+   * Later records replace earlier records for the same key before bytewise key
+   * ordering removes source traversal order from serialized output.
+   */
   export function unique<T>(values: T[], key: (value: T) => string): T[] {
     const records = new Map<string, T>();
     for (const value of values) records.set(key(value), value);
@@ -135,11 +152,22 @@ export namespace InventoryMerge {
       .map(([, value]) => value);
   }
 
+  /**
+   * Compares opaque identity strings without locale-dependent ordering.
+   *
+   * Inventory serialization uses this bytewise relation so the same graph sorts
+   * identically across machines with different locale settings.
+   */
   export function compare(x: string, y: string): number {
     return x < y ? -1 : x > y ? 1 : 0;
   }
 
-  /** A direct selection wins when another population loaded the same address as a dependency. */
+  /**
+   * Deduplicates source addresses while preserving direct selection over dependency loading.
+   *
+   * When equivalent addresses collide, a selected address clears the dependency
+   * marker because it represents part of the configured public population.
+   */
   export function sourceAddresses(
     values: IEvidenceSourceAddress[],
   ): IEvidenceSourceAddress[] {
@@ -160,6 +188,12 @@ export namespace InventoryMerge {
       .map(([, value]) => value);
   }
 
+  /**
+   * Serializes structural site identity without its independently merged content spans.
+   *
+   * Unit merging compares this key before unioning content ranges, so compatible
+   * declarations share a physical host without requiring identical extraction order.
+   */
   export function siteKey(site: IEvidenceUnitSite): string {
     return JSON.stringify([
       site.id,
@@ -168,6 +202,12 @@ export namespace InventoryMerge {
     ]);
   }
 
+  /**
+   * Serializes deduplicated content ranges for source-order-independent conflict detection.
+   *
+   * The range values are normalized through {@link unique} before a shared site
+   * can be accepted as equivalent across inventories.
+   */
   export function contentKey(site: IEvidenceUnitSite): string {
     return JSON.stringify(
       unique(
@@ -177,6 +217,12 @@ export namespace InventoryMerge {
     );
   }
 
+  /**
+   * Captures the unit fields that must agree for one semantic identity.
+   *
+   * A mismatch means inventories disagree about the declaration itself and
+   * cannot safely merge their physical sites or public addresses.
+   */
   function unitKey(unit: IEvidenceUnit): string {
     return JSON.stringify([
       unit.type,
@@ -187,6 +233,12 @@ export namespace InventoryMerge {
     ]);
   }
 
+  /**
+   * Captures host attachment semantics that cannot be safely unioned on conflict.
+   *
+   * Hosts with the same ID must retain one source range, site, and attachment
+   * meaning before their unit IDs and origins can be combined.
+   */
   function hostKey(host: IEvidenceHost): string {
     return JSON.stringify([
       host.file,
@@ -197,6 +249,12 @@ export namespace InventoryMerge {
     ]);
   }
 
+  /**
+   * Records a non-recoverable identity disagreement without dropping either record.
+   *
+   * Marking the output incomplete prevents graph evaluation from treating a
+   * reduced or arbitrarily selected merged population as successful.
+   */
   function conflict(
     output: IEvidenceInventory,
     kind: string,

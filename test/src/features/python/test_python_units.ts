@@ -7,7 +7,15 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Classifies Python declarations and keeps class and instance ownership distinct. */
+/**
+ * Classifies Python declarations with distinct class and instance ownership.
+ *
+ * The source fixture combines module declarations, classes, methods, class fields, instance fields, properties, aliases, and hidden forms while language metadata supplies the configured adapter contract.
+ *
+ * 1. Verify the registered Python language metadata names the expected adapter.
+ * 2. Analyze the fixture and verify exact public unit identities and symbols.
+ * 3. Verify hidden and local declarations are excluded while class and instance members retain separate addresses.
+ */
 export async function test_python_units(): Promise<void> {
   const language = EvidenceLanguageRegistry.list().find(
     (entry) => entry.type === "python",

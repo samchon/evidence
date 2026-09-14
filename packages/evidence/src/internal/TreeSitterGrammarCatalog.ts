@@ -1,13 +1,28 @@
 import type { IEvidenceGrammar } from "../structures/IEvidenceGrammar";
 
-/** Generated from scripts/parser-grammars.json by scripts/prepare-parser-catalog.js. */
+/**
+ * Publishes grammar provenance compiled from scripts/parser-grammars.json.
+ *
+ * TreeSitterAssets validates these records before using their paths or URLs. The
+ * catalog contains pins only; TreeSitterAssetCache acquires payload bytes later.
+ */
 export namespace TreeSitterGrammarCatalog {
-  /** Returns independent download pins without reading packaged assets or initializing WASM. */
+  /**
+   * Returns independent grammar download pins without reading assets or initializing WASM.
+   *
+   * Callers receive a fresh literal array from the generated catalog, which
+   * TreeSitterAssets validates before it exposes or acquires an entry.
+   */
   export function list(): IEvidenceGrammar[] {
     return structuredClone(GRAMMARS);
   }
 
-  /** Upstream provenance compiled into the package; payload bytes are acquired separately. */
+  /**
+   * Holds upstream grammar provenance compiled into the package.
+   *
+   * This immutable source defines repository, version, digest, and size pins;
+   * payload bytes are acquired separately through the verified asset cache.
+   */
   const GRAMMARS: IEvidenceGrammar[] = [
     {
       id: "dbml",

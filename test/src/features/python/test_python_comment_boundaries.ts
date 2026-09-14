@@ -4,7 +4,15 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Reports misplaced leading annotations without attaching them to a nearby public declaration. */
+/**
+ * Reports only annotations attached to eligible Python declarations.
+ *
+ * The fixture separates comments from declarations by blank lines, indentation, statement kind, and lexical scope so host selection cannot silently move an acknowledgement.
+ *
+ * 1. Analyze declarations with detached, misindented, private, pass-statement, local, header, inline, and nested comments.
+ * 2. Verify the two adjacent public declarations are the only evidence hosts.
+ * 3. Verify unsupported-host diagnostics and retained annotation ranges count every misplaced tag while discovery remains complete.
+ */
 export async function test_python_comment_boundaries(): Promise<void> {
   const content = dedent`
     class Detached:

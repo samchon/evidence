@@ -12,13 +12,31 @@ import type { EvidenceSymbol } from "../typings/EvidenceSymbol";
 /**
  * Provides queries over one owned analysis snapshot.
  *
- * Population indexes are shared across operations. Input and returned reports are isolated so callers cannot invalidate the context.
+ * Construction clones the supplied check analysis and captures an absolute base
+ * directory for file-qualified target formatting. List, inspect, and graph queries
+ * reuse population indexes without reevaluating configuration or extraction.
+ * Returned reports are cloned so caller mutation cannot invalidate later queries.
+ *
+ * @example
+ * const query: EvidenceQuery = new EvidenceQuery(analysis, process.cwd());
+ * const list: IEvidenceListReport = query.list("typescript", "function");
+ * const first: IEvidenceListReport["items"][number] | undefined = list.items[0];
+ * if (first !== undefined) await query.inspect(first.target);
  */
 export class EvidenceQuery {
-  /** Analysis, target base directory, and population indexes owned by this facade. */
+  /**
+   * Analysis snapshot, target base directory, and reusable population indexes.
+   *
+   * This context owns its input data; programmer results are cloned before leaving the facade.
+   */
   private readonly context: IEvidenceQueryContext;
 
-  /** Captures the analysis and builds the indexes used by subsequent queries. */
+  /**
+   * Captures an analysis snapshot and builds indexes for subsequent queries.
+   *
+   * The base directory is resolved immediately so later process cwd changes do
+   * not redirect file-qualified inspection or target formatting.
+   */
   public constructor(analysis: IEvidenceCheckAnalysis, cwd: string) {
     const snapshot = structuredClone(analysis);
     this.context = {
@@ -28,7 +46,12 @@ export class EvidenceQuery {
     };
   }
 
-  /** Lists selected identities and their addressable ancestors from this snapshot. */
+  /**
+   * Lists selected identities and addressable ancestors with optional display filters.
+   *
+   * Language and kind restrict returned rows without changing the check's diagnostic
+   * or success state. Aliases remain grouped under each population-qualified identity.
+   */
   public list(
     language?: EvidenceArtifactType,
     kind?: EvidenceSymbol,
@@ -38,7 +61,12 @@ export class EvidenceQuery {
     );
   }
 
-  /** Creates a query facade for a single list operation. */
+  /**
+   * Lists targets through a newly owned query snapshot.
+   *
+   * Use an instance when several queries should share population indexes; this
+   * convenience call captures and indexes the supplied analysis for one operation.
+   */
   public static list(
     analysis: IEvidenceCheckAnalysis,
     cwd: string,
@@ -48,14 +76,25 @@ export class EvidenceQuery {
     return new EvidenceQuery(analysis, cwd).list(language, kind);
   }
 
-  /** Resolves a target relative to this facade's base directory. */
+  /**
+   * Resolves a target and gathers its evidence context in applicable populations.
+   *
+   * File-qualified targets use the captured base directory. Artifact-specific
+   * grammars retain their own addressing rules, and each population keeps an
+   * independent resolution, obligation state, acknowledgements, and reviews.
+   */
   public async inspect(target: string): Promise<IEvidenceInspectReport> {
     return structuredClone(
       await EvidenceQueryProgrammer.inspect(this.context, target),
     );
   }
 
-  /** Creates a query facade for a single target inspection. */
+  /**
+   * Inspects one target through a newly captured analysis context.
+   *
+   * Input data is isolated before asynchronous resolution begins. Reuse an instance
+   * when subsequent inspections should share its population indexes.
+   */
   public static async inspect(
     analysis: IEvidenceCheckAnalysis,
     cwd: string,
@@ -64,12 +103,22 @@ export class EvidenceQuery {
     return new EvidenceQuery(analysis, cwd).inspect(target);
   }
 
-  /** Exports the snapshot's independent obligation boundaries and graph edges. */
+  /**
+   * Exports independent obligation boundaries, nodes, acknowledgements, and reviews.
+   *
+   * Node identities include their boundary so repeated populations retain separate
+   * coverage. Reviews remain distinct relations and never become acknowledgement edges.
+   */
   public graph(): IEvidenceGraphReport {
     return structuredClone(EvidenceQueryProgrammer.graph(this.context));
   }
 
-  /** Creates a query facade for a single graph export. */
+  /**
+   * Exports a graph through a newly owned query snapshot.
+   *
+   * The supplied base directory controls file-qualified target display; extraction
+   * and evaluation results come entirely from the provided analysis.
+   */
   public static graph(
     analysis: IEvidenceCheckAnalysis,
     cwd: string,
@@ -77,7 +126,12 @@ export class EvidenceQuery {
     return new EvidenceQuery(analysis, cwd).graph();
   }
 
-  /** Lists registered language capabilities without loading a project analysis. */
+  /**
+   * Lists certified programming and database adapter capabilities.
+   *
+   * This metadata query requires no configuration, source scan, or grammar load and
+   * excludes candidates that only have parsing metadata.
+   */
   public static languages(): IEvidenceLanguagesReport {
     return EvidenceQueryProgrammer.languages();
   }

@@ -4,7 +4,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Keeps explicit Dart declarations, complementary accessors, and lexical privacy in the denominator. */
+/** Classifies Dart declarations, complementary accessors, and lexical privacy in the denominator.
+ *
+ * The selected surface must retain public lexical owners and accessor families while excluding names made private by their Dart spelling.
+ *
+ * 1. Analyze explicit public types, functions, properties, members, constructors, and accessors.
+ * 2. Compare the complete unit symbols and identities.
+ * 3. Verify private declarations are excluded while complementary public accessors share a unit.
+ */
 export async function test_dart_units(): Promise<void> {
   const inventory = await new EvidenceDartAdapter().analyze(
     TestSourceSnapshot.create(

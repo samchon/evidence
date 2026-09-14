@@ -6,24 +6,56 @@ import type { IEvidenceLanguageCandidate } from "../structures/IEvidenceLanguage
 import type { IEvidenceLanguageGrammar } from "../structures/IEvidenceLanguageGrammar";
 import type { EvidenceProgrammingType } from "../typings/EvidenceProgrammingType";
 
-/** Selects pinned syntax from the configured type and exact logical file name. */
+/**
+ * Provides the pinned grammar catalog used to validate parser requests.
+ *
+ * The registry separates certified programming and database languages from
+ * researched candidates. Selecting a grammar validates both the configured type
+ * and the logical filename before any asset acquisition, so an overlapping
+ * extension cannot silently select another language's parser.
+ */
 export namespace EvidenceLanguageRegistry {
-  /** Returns independent metadata; grammar availability does not imply an Evidence adapter. */
+  /**
+   * Returns a copy of the certified programming-language catalog.
+   *
+   * Callers may present this metadata or inspect its grammar provenance without
+   * mutating the registry. A listed grammar has an Evidence adapter, but its
+   * presence does not mean its WASM asset has been acquired by a parser runtime.
+   */
   export function list(): IEvidenceLanguage[] {
     return structuredClone(LANGUAGES);
   }
 
-  /** Returns independently certified database grammar metadata. */
+  /**
+   * Returns a copy of the certified database-language catalog.
+   *
+   * Database types remain separate from programming types because their adapters
+   * expose model, column, and relation semantics rather than lexical declarations.
+   * The copy preserves the registry as the authoritative certification boundary.
+   */
   export function databases(): IEvidenceDatabaseLanguage[] {
     return structuredClone(DATABASES);
   }
 
-  /** Returns researched candidates without advertising them as supported languages. */
+  /**
+   * Returns investigated language candidates that are not yet supported.
+   *
+   * Candidate records communicate grammar and adapter blockers to maintainers.
+   * They intentionally cannot be selected: publishing an unimplemented candidate
+   * as a language would imply an extraction boundary Evidence cannot enforce.
+   */
   export function candidates(): IEvidenceLanguageCandidate[] {
     return structuredClone(CANDIDATES);
   }
 
-  /** Rejects unimplemented grammars and mismatched files without guessing another language. */
+  /**
+   * Selects the grammar registered for one configured type and logical filename.
+   *
+   * Filenames are matched after separator normalization and basename extraction;
+   * a grammar is returned as a copy so parser acquisition cannot alter catalog
+   * metadata. Unsupported types and extensions throw typed parser errors instead
+   * of guessing from a shared extension such as `.sql` or `.h`.
+   */
   export function select(
     type: EvidenceProgrammingType | EvidenceDatabaseType,
     file: string,

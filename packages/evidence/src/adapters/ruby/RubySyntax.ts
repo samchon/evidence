@@ -3,23 +3,52 @@ import type { Node } from "web-tree-sitter";
 import type { IEvidenceCommentSyntax } from "../../structures/IEvidenceCommentSyntax";
 import type { IRubyConstantPath } from "./IRubyConstantPath";
 
-/** Grammar-specific Ruby helpers without public-surface decisions. */
+/**
+ * Provides grammar-level Ruby extraction helpers without public-surface decisions.
+ *
+ * RubyFileScanner uses these functions to recognize statically readable syntax.
+ * Publication, visibility, and reopening policy remain in the scanner and adapter.
+ */
 export namespace RubySyntax {
+  /**
+   * Reads the bare method name from a Ruby call node.
+   *
+   * Directive recognition uses this result only for ordinary identifier calls;
+   * other node forms remain unsupported rather than being guessed from text.
+   */
   export function callName(node: Node): string | undefined {
     if (node.type !== "call") return undefined;
     const method = node.childForFieldName("method");
     return method?.type === "identifier" ? method.text : undefined;
   }
 
+  /**
+   * Returns the direct named arguments of a Ruby call node.
+   *
+   * Attribute, visibility, and alias directives inspect this collection before
+   * accepting literal arguments; non-call nodes deliberately produce no arguments.
+   */
   export function callArguments(node: Node): Node[] {
     if (node.type !== "call") return [];
     return node.childForFieldName("arguments")?.namedChildren ?? [];
   }
 
+  /**
+   * States whether a Ruby call has an explicit receiver.
+   *
+   * The scanner rejects or classifies directives differently when a receiver
+   * changes their lexical effect, so this check does not interpret the receiver.
+   */
   export function hasReceiver(node: Node): boolean {
     return node.type === "call" && node.childForFieldName("receiver") !== null;
   }
 
+  /**
+   * Reads a statically supported Ruby method spelling from a syntax node.
+   *
+   * Direct identifiers, constants, operators, and setters retain their source
+   * text; literal symbols and strings are delegated to literalName.
+   */
   export function methodName(node: Node | null): string | undefined {
     if (node === null) return undefined;
     if (
@@ -32,6 +61,12 @@ export namespace RubySyntax {
     return literalName(node);
   }
 
+  /**
+   * Reads a flattened list of statically literal Ruby names.
+   *
+   * Nested arrays are expanded for directives that accept name lists. One dynamic
+   * element makes the whole result undefined so callers can report uncertainty.
+   */
   export function literalNames(nodes: Node[]): string[] | undefined {
     const output: string[] = [];
     for (const node of nodes) {
@@ -48,6 +83,12 @@ export namespace RubySyntax {
     return output;
   }
 
+  /**
+   * Reads one interpolation-free Ruby symbol or string as a literal name.
+   *
+   * Escape sequences and interpolation make runtime content uncertain, so callers
+   * receive undefined instead of an approximated declaration name.
+   */
   export function literalName(node: Node): string | undefined {
     if (node.type === "simple_symbol") return node.text.slice(1);
     if (node.type !== "string" && node.type !== "delimited_symbol")
@@ -63,6 +104,12 @@ export namespace RubySyntax {
       .join("");
   }
 
+  /**
+   * Converts a supported Ruby constant expression into root-qualified path segments.
+   *
+   * The scanner uses absolute to distinguish `::Name` from lexical lookup while
+   * resolving containers, superclass paths, and generated-constant receivers.
+   */
   export function constantPath(
     node: Node | null,
   ): IRubyConstantPath | undefined {
@@ -86,6 +133,12 @@ export namespace RubySyntax {
         };
   }
 
+  /**
+   * Identifies the normalization rules for a supported Ruby documentation comment.
+   *
+   * Line RDoc and complete embedded RDoc blocks retain tag boundaries and permit
+   * withdrawals. Other comment forms return undefined and cannot become hosts.
+   */
   export function commentSyntax(
     node: Node,
   ): IEvidenceCommentSyntax | undefined {
@@ -110,12 +163,24 @@ export namespace RubySyntax {
     };
   }
 
+  /**
+   * Normalizes the explicit superclass spelling on a Ruby class declaration.
+   *
+   * Reopening reconciliation compares this normalized text only when a superclass
+   * is supplied, preserving the distinction between omission and conflict.
+   */
   export function superclass(node: Node): string | undefined {
     const superclass = node.childForFieldName("superclass");
     if (superclass === null) return undefined;
     return superclass.text.replace(/^\s*</u, "").replace(/\s+/gu, " ").trim();
   }
 
+  /**
+   * Detects calls that generate a runtime constant instead of a declared container.
+   *
+   * RubyFileScanner reports these forms as incomplete because their members cannot
+   * be derived from the declared source model without executing Ruby.
+   */
   export function generatedConstant(node: Node | null): boolean {
     if (node?.type !== "call") return false;
     const method = callName(node);

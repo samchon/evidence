@@ -2,17 +2,40 @@ import type { EvidenceDatabaseType } from "../typings/EvidenceDatabaseType";
 import type { IEvidenceDatabaseLanguageAdapter } from "./IEvidenceDatabaseLanguageAdapter";
 import type { IEvidenceLanguageGrammar } from "./IEvidenceLanguageGrammar";
 
-/** Separates available parsing grammars from certified Evidence extraction. */
+/**
+ * Database-language catalog entry separating grammar availability from schema extraction.
+ *
+ * A parser recognizing schema syntax does not establish model, column, relation,
+ * or documentation ownership. Adapter metadata appears only when those Evidence
+ * boundaries are certified, allowing catalog inspection without overstating support.
+ */
 export interface IEvidenceDatabaseLanguage {
-  /** Configured database language identifier. */
+  /**
+   * Database family discriminator used in population configuration.
+   *
+   * Grammar and adapter selection remain scoped to this configured family.
+   */
   type: EvidenceDatabaseType;
 
-  /** Display name of the configured schema language. */
+  /**
+   * Human-readable schema-language name.
+   *
+   * Capability reports display this label alongside the configuration discriminator.
+   */
   name: string;
 
-  /** Pinned grammar variants and their selected logical file patterns. */
+  /**
+   * Pinned grammar variants and their accepted logical file spellings.
+   *
+   * Reading these selection rules does not acquire or initialize a grammar.
+   */
   grammars: IEvidenceLanguageGrammar[];
 
-  /** Absent until declaration, visibility, ownership, and host extraction are certified. */
+  /**
+   * Certified schema extraction capabilities, when available.
+   *
+   * Omission means grammar availability alone cannot certify Evidence units,
+   * structural ownership, or annotation hosts for the language.
+   */
   adapter?: IEvidenceDatabaseLanguageAdapter;
 }

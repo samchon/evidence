@@ -18,12 +18,31 @@ import type { IZigFileAnalysis } from "./IZigFileAnalysis";
 import { ZigDocumentation } from "./ZigDocumentation";
 import { ZigFileScanner } from "./ZigFileScanner";
 
-/** Builds Zig source-public inventories from the configured source snapshot. */
+/**
+ * Materializes explicit Zig container declarations and their documentation hosts.
+ *
+ * File scanning establishes lexical visibility, supported aliases, and source
+ * attachment before publication. The adapter reconciles those declaration records
+ * into units and public addresses, then applies documentation and withdrawals
+ * through their real owners. It preserves unsupported source forms as incomplete
+ * findings rather than evaluating comptime code to guess a public surface.
+ */
 export class ZigAdapter implements IEvidenceAdapter {
-  /** Public configuration discriminator owned by this adapter. */
+  /**
+   * Zig discriminator for the pinned declared-source extraction rules.
+   *
+   * It fixes grammar and container semantics for both graph roles; it does not
+   * authorize build execution or inferred declarations outside selected source.
+   */
   public readonly type = "zig";
 
-  /** Builds a fresh inventory and releases the bounded parser session. */
+  /**
+   * Extracts a fresh Zig inventory from a validated copy of the snapshot.
+   *
+   * Semantic publication precedes documentation so aliases keep the original
+   * owner and withdrawals. Completeness includes every scan's outcome, and the
+   * invocation releases parser resources on all completion paths.
+   */
   public async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {
@@ -57,6 +76,8 @@ export class ZigAdapter implements IEvidenceAdapter {
         inventory.diagnostics.push(...analysis.diagnostics);
         inventory.complete &&= analysis.complete;
       }
+      // Alias publication must preserve the defining unit before its documentation
+      // and inherited withdrawals can be projected onto eligible hosts.
       const published = this.materializeUnits(inventory, analyses);
       this.materializeDocumentation(inventory, analyses, published);
       return new EvidenceInventory([inventory]).snapshot();
@@ -65,7 +86,12 @@ export class ZigAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Converts parser failures into incomplete source analysis. */
+  /**
+   * Converts parser failures into an explicitly incomplete source analysis.
+   *
+   * Other selected files can still contribute their records, while this source
+   * retains a location-aware diagnostic instead of silently disappearing.
+   */
   private async scan(
     parser: EvidenceParser,
     source: IEvidenceSourceFile,
@@ -105,7 +131,12 @@ export class ZigAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Reconciles aliases and retains every physical declaration address. */
+  /**
+   * Reconciles aliases into units while retaining every physical declaration address.
+   *
+   * Canonical identity deduplicates alias projections, whereas each supported
+   * public accessor contributes an address and its original source site remains reviewable.
+   */
   private materializeUnits(
     inventory: IEvidenceInventory,
     analyses: IZigFileAnalysis[],
@@ -177,7 +208,12 @@ export class ZigAdapter implements IEvidenceAdapter {
     return published;
   }
 
-  /** Resolves withdrawals before publishing attached annotation hosts. */
+  /**
+   * Resolves withdrawals before publishing attached documentation hosts.
+   *
+   * Processing withdrawals first prevents a hidden owner or descendant from
+   * retaining a claim host after its semantic unit becomes ineligible.
+   */
   private materializeDocumentation(
     inventory: IEvidenceInventory,
     analyses: IZigFileAnalysis[],
@@ -253,7 +289,12 @@ export class ZigAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Retains public declaration sites even when they carry no documentation. */
+  /**
+   * Materializes public declaration sites that carry no documentation.
+   *
+   * These hosts preserve uncovered eligible units after attachment and withdrawal
+   * processing, grouping declarations that share one physical source site.
+   */
   private materializeUndocumentedHosts(
     inventory: IEvidenceInventory,
     analysis: IZigFileAnalysis,
@@ -306,7 +347,12 @@ export class ZigAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Groups published semantic owners by their physical declaration site. */
+  /**
+   * Groups published semantic owners by their physical declaration site.
+   *
+   * A documentation carrier can affect several units at one site; each group
+   * becomes one host with deduplicated published unit identities.
+   */
   private attachmentGroups(
     documentation: IZigDocumentation,
     published: Map<string, string>,
@@ -322,7 +368,12 @@ export class ZigAdapter implements IEvidenceAdapter {
     return groups;
   }
 
-  /** Creates an attached or explicitly unsupported documentation carrier. */
+  /**
+   * Creates a host for an attached or explicitly unsupported documentation carrier.
+   *
+   * Unattached tag-bearing source receives an unsupported host so diagnostics
+   * retain a physical location instead of being discarded during materialization.
+   */
   private host(
     source: IEvidenceSourceFile,
     documentation: IZigDocumentation,
@@ -347,7 +398,12 @@ export class ZigAdapter implements IEvidenceAdapter {
     };
   }
 
-  /** Parses Evidence tags only after the adapter establishes their host. */
+  /**
+   * Parses Evidence tags after the adapter establishes their documentation host.
+   *
+   * Host identity and unit membership are required by tag parsing, so parsing
+   * cannot occur while alias and withdrawal eligibility remain unresolved.
+   */
   private parse(
     source: IEvidenceSourceFile,
     documentation: IZigDocumentation,
@@ -360,7 +416,12 @@ export class ZigAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Detects Evidence or withdrawal annotations outside masked examples. */
+  /**
+   * Detects Evidence or withdrawal annotations outside masked examples.
+   *
+   * The result decides whether an unattached carrier must survive as a host for
+   * diagnostics or withdrawal processing rather than being ignored as prose.
+   */
   private annotation(
     analysis: IZigFileAnalysis,
     documentation: IZigDocumentation,
@@ -372,7 +433,12 @@ export class ZigAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Detects acknowledgements and reviews on withdrawn carriers. */
+  /**
+   * Detects claims that remain relevant when a carrier's unit is withdrawn.
+   *
+   * Evidence claims are excluded here, leaving acknowledgement and review tags
+   * available for validation without publishing a hidden declaration host.
+   */
   private claimAnnotation(
     analysis: IZigFileAnalysis,
     documentation: IZigDocumentation,
@@ -384,7 +450,12 @@ export class ZigAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Recognizes supported annotation names at documentation line boundaries. */
+  /**
+   * Recognizes supported annotation names at documentation line boundaries.
+   *
+   * Matching only line-leading tags prevents ordinary prose mentions from
+   * materializing diagnostics or claim hosts.
+   */
   private annotationPattern(raw: string, withdrawal: boolean): boolean {
     return withdrawal
       ? /(?:^|[\r\n])[ \t]*@(evidenceExcludeReview|evidenceReview|evidenceExclude|evidence|link|internal|hidden|ignore)\b/u.test(
@@ -395,7 +466,12 @@ export class ZigAdapter implements IEvidenceAdapter {
         );
   }
 
-  /** Follows explicit parent ownership to propagate withdrawal. */
+  /**
+   * Follows explicit parent ownership to propagate withdrawal eligibility.
+   *
+   * A visited set breaks malformed parent cycles while any withdrawal on an
+   * ancestor hides the complete descendant surface from host publication.
+   */
   private withdrawn(
     id: string,
     units: Map<string, IEvidenceUnit>,
@@ -411,12 +487,22 @@ export class ZigAdapter implements IEvidenceAdapter {
       : this.withdrawn(unit.parentId, units, visited);
   }
 
-  /** Keeps physical files independent while unifying canonical alias identities. */
+  /**
+   * Builds a canonical unit identity without merging declarations across files.
+   *
+   * Source identity prefixes the lexical declaration path so aliases can unify
+   * within their selected file while physically distinct files stay independent.
+   */
   private unitId(declaration: IZigDeclaration): string {
     return `zig:${declaration.site.file}:${declaration.symbol}:${JSON.stringify(declaration.identity)}`;
   }
 
-  /** Marks a declaration conflict as incomplete analysis. */
+  /**
+   * Records a declaration conflict and marks the analysis incomplete.
+   *
+   * The adapter preserves the conflict diagnostic rather than selecting one
+   * ambiguous physical declaration as the sole canonical public unit.
+   */
   private problem(
     inventory: IEvidenceInventory,
     analysis: IZigFileAnalysis,

@@ -1,6 +1,6 @@
 ---
 name: documentation
-description: Defines Evidence README, guide, issue, and agent-instruction writing. Use before writing or modifying documentation, AGENTS.md, or repository skills.
+description: Defines Evidence prose, source JSDoc, implementation comments, test scenario documentation, and agent instructions. Use before writing or modifying documentation, source comments, AGENTS.md, or repository skills.
 ---
 
 # Documentation
@@ -29,7 +29,7 @@ Write repository documents, issues, and PRs in English. Use plain language, conc
 
 Apply these principles to source comments and JSDoc as well. Describe purpose, defaults, and necessary constraints concisely. Preserve classification rules, exclusions, and target semantics when shortening comments; use nested lists where they make those rules easier to scan. Omit essays, repetition, and implementation history.
 
-Document introduced or modified declarations and their members, including interface properties, class fields, constructors, methods, and namespace functions. Describe each member's responsibility, ownership, or constraints; a class or interface description does not replace member documentation. Start each JSDoc with a concise summary. When further explanation is needed, separate the body from the summary with a blank comment line and keep distinct ideas in separate paragraphs. Treat each member's JSDoc and declaration as one block, and separate consecutive member blocks with a blank line.
+Read [source and test documentation](source-comments.md) before writing or reviewing JSDoc, implementation comments, or test scenarios. Apply its requirements to introduced or modified code and to the complete declared scope of a documentation task.
 
 Write each Markdown paragraph on one source line; separate distinct ideas with blank lines. Preserve structural line breaks in lists, tables, and code. The formatter uses `proseWrap: never` and leaves fenced examples unchanged.
 

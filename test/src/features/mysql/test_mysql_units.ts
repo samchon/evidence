@@ -8,7 +8,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Establishes database-qualified owners, composite foreign keys, and aliases without inventing index or inline relations. */
+/** Extracts MySQL schema units with database-qualified ownership.
+ *
+ * Tables, columns, and composite foreign keys must have exact owners and aliases, without inventing relationships from indexes or inline syntax.
+ *
+ * 1. Analyze qualified schemas with composite relations and aliases.
+ * 2. Verify exact units, owners, relation endpoints, and supported addresses.
+ * 3. Require unsupported relation-like constructs to stay absent.
+ */
 export async function test_mysql_units(): Promise<void> {
   const inventory = await new EvidenceMysqlAdapter().analyze(
     TestSourceSnapshot.create(

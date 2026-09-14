@@ -11,33 +11,78 @@ import type { IKotlinDocumentation } from "./IKotlinDocumentation";
 import type { IKotlinFileAnalysis } from "./IKotlinFileAnalysis";
 import type { IKotlinTypeReference } from "./IKotlinTypeReference";
 
-/** Extracts lexical Kotlin declarations without executing scripts or compiler synthesis. */
+/**
+ * Extracts lexical Kotlin declarations without executing scripts or compiler synthesis.
+ *
+ * The scanner retains package, import, receiver, and alias facts so the later
+ * resolver can establish extension ownership without guessing from local syntax.
+ */
 export class KotlinFileScanner {
-  /** Copied declarations retained after the parser callback ends. */
+  /**
+   * Copied declarations retained after the parser callback ends.
+   *
+   * The scanner emits this collection as serializable analysis data for later
+   * receiver resolution and unit materialization.
+   */
   private readonly declarations: IKotlinDeclaration[] = [];
 
-  /** Documentation keyed by original start offset. */
+  /**
+   * Documentation keyed by its original source start offset.
+   *
+   * Adjacent declaration attachment looks up the preceding comment by this
+   * stable parser coordinate while nodes are still borrowed.
+   */
   private readonly documentation = new Map<number, IKotlinDocumentation>();
 
-  /** Failures that prevent a complete public denominator. */
+  /**
+   * Failures that prevent a complete public denominator.
+   *
+   * The emitted analysis derives completeness from this collection so unsupported
+   * Kotlin source cannot make coverage pass by omitting declarations.
+   */
   private readonly diagnostics: IEvidenceDiagnostic[] = [];
 
-  /** Package segments used for snapshot-wide semantic identities. */
+  /**
+   * Package segments used for snapshot-wide semantic identities.
+   *
+   * Every top-level declaration receives this prefix before nested ownership
+   * and extension receiver segments are appended.
+   */
   private packagePath: string[] = [];
 
-  /** Explicit import names used to normalize extension receivers. */
+  /**
+   * Explicit import names used to normalize extension receivers.
+   *
+   * An alias maps its local first segment to the imported nominal path during
+   * receiver candidate construction.
+   */
   private readonly imports = new Map<string, string[]>();
 
-  /** Wildcard imports require dependency resolution for unknown receiver names. */
+  /**
+   * Whether a wildcard import requires dependency resolution for unknown receiver names.
+   *
+   * Its presence prevents the scanner from assuming that an unqualified core
+   * type name necessarily refers to Kotlin's built-in declaration.
+   */
   private wildcardImport = false;
 
-  /** Borrows syntax and source only for the active parse callback. */
+  /**
+   * Borrows syntax and source only for the active parse callback.
+   *
+   * Source identity defines file-private lookup boundaries; serializable ranges
+   * and paths outlive the session in the emitted analysis.
+   */
   public constructor(
     private readonly session: EvidenceParseSession,
     private readonly source: IEvidenceSourceFile,
   ) {}
 
-  /** Returns serializable declarations and conservative boundary diagnostics. */
+  /**
+   * Returns serializable declarations and conservative boundary diagnostics.
+   *
+   * Import collection precedes declaration extraction because receiver lookup
+   * preserves the source-defined alternatives and their order.
+   */
   public scan(): IKotlinFileAnalysis {
     this.collectDocumentation();
     const packageNode = this.session.root.namedChildren.find(
@@ -81,7 +126,12 @@ export class KotlinFileScanner {
     };
   }
 
-  /** Visits declaration scopes, never local function bodies or initializer expressions. */
+  /**
+   * Visits declaration scopes without entering local function bodies or initializer expressions.
+   *
+   * Those regions can execute or introduce local values, neither of which belongs
+   * to the static public declaration surface.
+   */
   private scope(body: Node, owner: IKotlinDeclaration | undefined): void {
     for (const node of body.namedChildren) {
       switch (node.type) {
@@ -160,7 +210,12 @@ export class KotlinFileScanner {
     }
   }
 
-  /** Establishes nominal ownership before reading constructor properties and members. */
+  /**
+   * Establishes nominal ownership before reading constructor properties and members.
+   *
+   * Constructor `val` and `var` parameters, enum entries, and body members use
+   * the emitted type declaration as their semantic owner.
+   */
   private nominal(node: Node, owner: IKotlinDeclaration | undefined): void {
     const declaration = this.add(
       node,
@@ -204,7 +259,12 @@ export class KotlinFileScanner {
     if (body !== undefined) this.scope(body, declaration);
   }
 
-  /** Records one declaration site and checks surface-changing header constructs. */
+  /**
+   * Records one declaration site and checks surface-changing header constructs.
+   *
+   * The method captures a static name, visibility, ownership, and attached KDoc
+   * while reporting modifiers that need compiler or source-set resolution.
+   */
   private add(
     node: Node,
     nameNode: Node | null,
@@ -324,7 +384,12 @@ export class KotlinFileScanner {
     return declaration;
   }
 
-  /** Applies lexical visibility without letting a restricted setter hide a property. */
+  /**
+   * Applies lexical visibility without letting a restricted setter hide a property.
+   *
+   * A member is public unless its owner is nonpublic or its own declaration has
+   * a nonpublic visibility modifier; accessor restrictions do not change it.
+   */
   private visible(node: Node, owner: IKotlinDeclaration | undefined): boolean {
     const modifiers = node.namedChildren.find(
       (child) => child.type === "modifiers",
@@ -339,7 +404,12 @@ export class KotlinFileScanner {
     );
   }
 
-  /** Separates extension declarations from ordinary members and other receiver types. */
+  /**
+   * Separates extension declarations from ordinary members and other receiver types.
+   *
+   * Only a receiver type preceding a function or property name establishes an
+   * extension; later type nodes cannot change its owner identity.
+   */
   private receiver(node: Node, nameNode: Node | null): Node | undefined {
     if (
       node.type !== "function_declaration" &&
@@ -359,7 +429,12 @@ export class KotlinFileScanner {
     return receiver;
   }
 
-  /** Retains nominal lookup paths and makes unresolved type substitution explicit. */
+  /**
+   * Retains nominal lookup paths and makes unresolved type substitution explicit.
+   *
+   * Candidate paths preserve lexical, import, package, and qualified alternatives;
+   * generic and compound receivers carry a problem instead of a guessed owner.
+   */
   private typeReference(
     node: Node,
     owner: IKotlinDeclaration | undefined,
@@ -435,12 +510,22 @@ export class KotlinFileScanner {
     };
   }
 
-  /** Decodes Kotlin backtick names as literal accessor segments. */
+  /**
+   * Decodes Kotlin backtick names as literal accessor segments.
+   *
+   * Removing only the delimiters preserves punctuation or whitespace that the
+   * source author made part of the declaration name.
+   */
   private name(node: Node): string {
     return node.text.startsWith("`") ? node.text.slice(1, -1) : node.text;
   }
 
-  /** Attaches only adjacent KDoc; annotations are already part of the declaration node. */
+  /**
+   * Attaches only adjacent KDoc because annotations already belong to the declaration node.
+   *
+   * Whitespace-only separation prevents a nearby unrelated documentation block
+   * from being attached to the next declaration.
+   */
   private attach(node: Node, declaration: IKotlinDeclaration): void {
     const prefix = this.annotationPrefix(node);
     const previous = prefix.previousNamedSibling;
@@ -464,7 +549,12 @@ export class KotlinFileScanner {
       });
   }
 
-  /** Includes annotation calls that the upstream grammar separates from a declaration. */
+  /**
+   * Includes annotation calls that the upstream grammar separates from a declaration.
+   *
+   * The returned prefix expands the declaration site and KDoc adjacency across
+   * contiguous detached annotation expressions.
+   */
   private annotationPrefix(node: Node): Node {
     let prefix = node;
     while (
@@ -475,7 +565,12 @@ export class KotlinFileScanner {
     return prefix;
   }
 
-  /** Recognizes only an annotation name immediately followed by its parenthesized argument. */
+  /**
+   * Recognizes only an annotation name immediately followed by its parenthesized argument.
+   *
+   * The strict shape avoids treating arbitrary annotated expressions as declaration
+   * prefixes when their expression or spacing could alter source semantics.
+   */
   private detachedAnnotation(node: Node): boolean {
     if (node.type !== "annotated_expression") return false;
     const children = node.namedChildren;
@@ -502,7 +597,12 @@ export class KotlinFileScanner {
     );
   }
 
-  /** Retains real KDoc and unsupported annotation carriers for truthful diagnostics. */
+  /**
+   * Retains real KDoc and unsupported annotation carriers for truthful diagnostics.
+   *
+   * Annotation-shaped text in comments and strings is retained so the common tag
+   * parser can report unsupported placement instead of silently ignoring it.
+   */
   private collectDocumentation(): void {
     for (const node of this.session.root.descendantsOfType([
       "block_comment",
@@ -549,7 +649,12 @@ export class KotlinFileScanner {
     }
   }
 
-  /** Keeps unsupported extraction visible to graph evaluation. */
+  /**
+   * Keeps unsupported extraction visible to graph evaluation.
+   *
+   * Every diagnostic names the Kotlin boundary and source range, causing the
+   * analysis to be incomplete rather than publishing a reduced declaration set.
+   */
   private problem(code: string, message: string, node: Node): void {
     this.diagnostics.push({
       code: `kotlin-${code}`,

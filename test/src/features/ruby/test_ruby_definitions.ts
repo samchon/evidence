@@ -5,7 +5,15 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Merges compatible Ruby reopenings while preserving replacement conflicts. */
+/** Merges compatible Ruby reopenings while retaining replacement conflicts.
+ *
+ * Reopened declarations can share identity, but incompatible definitions must remain incomplete.
+ *
+ * 1. Analyze two compatible `Shop::Sale` class bodies and require one semantic
+ *    type with two physical sites and no diagnostics.
+ * 2. Analyze conflicting container, superclass, constant, attribute, and method
+ *    replacements; require incompleteness, every conflict code, and both method sites.
+ */
 export async function test_ruby_definitions(): Promise<void> {
   const compatible = await new EvidenceRubyAdapter().analyze(
     TestSourceSnapshot.combine([

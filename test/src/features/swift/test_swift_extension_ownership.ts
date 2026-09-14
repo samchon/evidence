@@ -8,7 +8,13 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Resolves extension dependencies independently of source order and preserves protocol implementation ownership. */
+/** Resolves Swift extension ownership independently of source order.
+ *
+ * Extensions preserve protocol implementation ownership through their dependencies.
+ *
+ * 1. Analyze reordered extensions and owners.
+ * 2. Verify ownership, dependencies, and rejected boundaries.
+ */
 export async function test_swift_extension_ownership(): Promise<void> {
   const sources = [
     TestSourceSnapshot.create(

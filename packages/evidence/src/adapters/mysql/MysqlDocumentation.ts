@@ -1,9 +1,17 @@
 import type { IEvidenceDocumentation } from "../../structures/IEvidenceDocumentation";
 import type { IEvidenceSourceRange } from "../../structures/IEvidenceSourceRange";
 
-/** Maps an attached MySQL COMMENT literal without losing original UTF-16 positions. */
+/**
+ * Maps an attached MySQL COMMENT literal without losing original UTF-16 positions.
+ *
+ * The MySQL scanner supplies the literal range after it has established ownership.
+ */
 export namespace MysqlDocumentation {
-  /** Decodes SQL doubled quotes; backslash escapes require server mode and are rejected. */
+  /**
+   * Decodes SQL doubled quotes while rejecting server-mode-dependent backslash escapes.
+   *
+   * Rejection avoids assigning annotation offsets under an unknown MySQL session mode.
+   */
   export function read(
     content: string,
     range: IEvidenceSourceRange,

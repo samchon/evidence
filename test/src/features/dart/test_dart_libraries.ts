@@ -4,7 +4,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Resolves reciprocal parts and transitive show/hide aliases while preserving defining-library identities. */
+/** Resolves Dart parts and transitive export aliases while preserving defining-library identity.
+ *
+ * A library's parts share visible members and reexports share semantic units, but aliases do not erase defining source ownership or hidden-export boundaries.
+ *
+ * 1. Analyze a library with reciprocal parts, generated part, transitive export, show/hide clauses, and an independent file.
+ * 2. Resolve library-visible local, part, generated, and reexported members from every part file.
+ * 3. Require the hidden alias to be missing only through the API, retain its defining-source resolution, and record parts as exact dependencies.
+ */
 export async function test_dart_libraries(): Promise<void> {
   const inventory = await new EvidenceDartAdapter().analyze(
     TestSourceSnapshot.combine([

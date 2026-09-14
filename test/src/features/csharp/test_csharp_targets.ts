@@ -11,10 +11,13 @@ interface ICSharpTargetStatus {
   status: EvidenceTargetResolutionStatus;
 }
 
-/**
- * Resolves C# namespaces, generic arity, indexers, and operator families.
- * Exact and ambiguous paths are paired so a convenient alias cannot select a
- * different semantic owner.
+/** Resolves C# namespaces, generic arity, indexers, and operator families.
+ *
+ * Exact and ambiguous paths are paired so a convenient alias cannot select a different semantic owner.
+ *
+ * 1. Analyze types with overloads, indexers, checked operators, conversions, and generic arities.
+ * 2. Resolve exact type and member paths, including quoted special-member names.
+ * 3. Require a generic-subtree crossing to be missing and an underspecified generic pair to be ambiguous, while overload and indexer families retain two sites.
  */
 export async function test_csharp_targets(): Promise<void> {
   const adapter = new EvidenceCSharpAdapter();

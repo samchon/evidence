@@ -14,7 +14,12 @@ import type { IRustPublicOccurrence } from "./IRustPublicOccurrence";
 import type { IRustResolvedMember } from "./IRustResolvedMember";
 import { SourcePath } from "../../internal/SourcePath";
 
-/** Resolves selected Rust files into crate modules, public aliases, and impl ownership. */
+/**
+ * Resolves selected Rust file analyses into crate modules, public aliases, and impl ownership.
+ *
+ * The resolver joins node-free scan results, then materializes semantic units
+ * and every supported public address in the supplied Evidence inventory.
+ */
 export class RustModuleResolver {
   private readonly declarations = new Map<string, IRustLocatedDeclaration>();
   private readonly childModules = new Map<string, IRustModuleRecord>();
@@ -33,11 +38,24 @@ export class RustModuleResolver {
   private readonly units = new Map<string, IEvidenceUnit>();
   private readonly addresses = new Set<string>();
 
+  /**
+   * Creates a resolver that publishes into one inventory.
+   *
+   * The analyses remain read-only inputs; this instance owns all intermediate
+   * module, export, identity, and diagnostic state for the resolution pass.
+   */
   public constructor(
     private readonly analyses: IRustFileAnalysis[],
     private readonly inventory: IEvidenceInventory,
   ) {}
 
+  /**
+   * Resolves all selected Rust analyses and publishes their public units.
+   *
+   * Resolution runs in dependency order: file-backed modules establish crate
+   * scope before exports and impl members can receive public addresses. The
+   * returned map links scanner declaration IDs to their published unit IDs.
+   */
   public publish(): Map<string, string> {
     this.resolveExternalTargets();
     this.placeFiles();

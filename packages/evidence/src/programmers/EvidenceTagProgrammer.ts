@@ -3,20 +3,42 @@ import { EvidenceTargetBody } from "../internal/EvidenceTargetBody";
 import type { IEvidenceSourceLocation } from "../structures/IEvidenceSourceLocation";
 import type { IEvidenceTagParseResult } from "../structures/IEvidenceTagParseResult";
 
-/** Parses adapter-owned documentation using one invocation's mutable state. */
+/**
+ * Parses Evidence annotations from documentation already mapped to a source host.
+ *
+ * Adapters own comment syntax and provide a normalized documentation map; this
+ * namespace owns only Evidence tag semantics. Its mutable context carries a
+ * pending multiline tag, fenced-code state, and parse result so every emitted
+ * annotation can retain coordinates in the original source file.
+ *
+ * @example
+ *   const result = EvidenceTagProgrammer.parse(context);
+ *   // result.declarations contains valid @evidence and @link annotations.
+ */
 export namespace EvidenceTagProgrammer {
-  /** Validates source mappings and reads annotations while tracking continuations and fences. */
+  /**
+   * Parses valid Evidence tags and diagnostics from one mapped documentation block.
+   *
+   * The function consumes no text outside {@link IEvidenceTagContext.documentation}.
+   * It preserves multiline tag bodies, ignores apparent tags inside fenced code,
+   * and flushes a pending annotation at every boundary that makes continuation
+   * impossible. Invalid tags become diagnostics rather than aborting sibling tags.
+   */
   export function parse(context: IEvidenceTagContext): IEvidenceTagParseResult {
     validate(context);
     let cursor = 0;
     for (const rawLine of context.documentation.text.split("\n")) {
       const line = rawLine.trim();
+      // Coordinates must point at trimmed annotation text while cursor advances
+      // across the untrimmed mapped documentation, including blank-line bytes.
       const start = cursor + rawLine.indexOf(line);
       const end = start + line.length;
       cursor += rawLine.length + 1;
       const delimiter = /^(`{3,}|~{3,})(.*)$/.exec(line);
       if (delimiter !== null) {
         const marker = delimiter[1] ?? "";
+        // Closing fences must use the opening marker character and at least its
+        // length; a shorter marker remains literal code inside the fenced block.
         if (context.fence === "") {
           context.fence = marker[0] ?? "";
           context.fenceLength = marker.length;
@@ -93,7 +115,15 @@ export namespace EvidenceTagProgrammer {
     return context.result;
   }
 
-  /** Rejects documentation maps that escape or disagree with their declared host. */
+  /**
+   * Verifies that a documentation map belongs to its declared source host.
+   *
+   * Offset and end arrays must cover the normalized text exactly and remain
+   * monotonic inside the host range. The source lookup also validates that every
+   * retained boundary can be converted into a public line-and-column location.
+   * Violations are adapter bugs, so this function throws instead of producing a
+   * user-facing annotation diagnostic.
+   */
   function validate(context: IEvidenceTagContext): void {
     if (
       context.documentation.hostId !== context.host.id ||
@@ -118,7 +148,13 @@ export namespace EvidenceTagProgrammer {
     }
   }
 
-  /** Maps documentation offsets to the original host file and source range. */
+  /**
+   * Converts a half-open documentation-text span to an original source location.
+   *
+   * The documentation map can omit or transform syntax such as comment prefixes,
+   * so source offsets cannot be derived from character counts. The final character
+   * uses its mapped end boundary; an empty span uses its mapped start boundary.
+   */
   function location(
     context: IEvidenceTagContext,
     start: number,
@@ -134,7 +170,13 @@ export namespace EvidenceTagProgrammer {
     };
   }
 
-  /** Appends a diagnostic associated with the current annotation host. */
+  /**
+   * Appends a source-located tag diagnostic for the current host.
+   *
+   * Centralizing this projection guarantees parser errors carry the same severity
+   * and host identity as later graph diagnostics, while callers supply the
+   * actionable repair text appropriate to the failed tag rule.
+   */
   function problem(
     context: IEvidenceTagContext,
     code: string,
@@ -152,12 +194,20 @@ export namespace EvidenceTagProgrammer {
     });
   }
 
-  /** Finalizes the pending annotation and clears it before validating its target. */
+  /**
+   * Finalizes the pending tag, appending an annotation or an explanatory diagnostic.
+   *
+   * Pending state is cleared before validation so a failing tag cannot be emitted
+   * again at a later boundary. Attachment, inline-link, target, review-fingerprint,
+   * and reason requirements are checked in that order because each later rule
+   * assumes the preceding source and target interpretation is valid.
+   */
   function flush(context: IEvidenceTagContext): void {
     if (context.pending === undefined) return;
     const tag = context.pending;
     context.pending = undefined;
     const where = location(context, tag.start, tag.end);
+    // Detached comments never provide evidence, even if their tag syntax is valid.
     if (context.host.attachment !== "attached") {
       problem(
         context,
@@ -205,6 +255,8 @@ export namespace EvidenceTagProgrammer {
       if (description.startsWith("#")) {
         const token = description.split(/\s/u)[0] ?? "";
         const prose = description.slice(token.length).trim();
+        // A fingerprint is only consumed when it has the precise short-hash form;
+        // ordinary prose beginning with '#' remains part of the review description.
         if (/^#[0-9a-f]{7}$/.test(token)) {
           fingerprint = token.slice(1);
           description = prose;

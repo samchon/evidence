@@ -5,7 +5,16 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Resolves Rust modules, aliases, fields, and associated items through public files. */
+/** Resolves Rust public modules, aliases, fields, and associated items.
+ *
+ * Target resolution follows public files and preserves associated-item ownership.
+ *
+ * 1. Build a reference crate with module, declaration-file, alias, field, inherent,
+ *    and trait-implementation access paths.
+ * 2. Resolve corresponding evidence tags and require every target to resolve.
+ * 3. Require aliases to share the Sale unit while colliding inherent and trait
+ *    methods remain distinct units.
+ */
 export async function test_rust_targets(): Promise<void> {
   const adapter = new EvidenceRustAdapter();
 

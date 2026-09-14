@@ -8,7 +8,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Keeps Unicode comment coordinates and review fingerprints stable while separating examples and withdrawn tables. */
+/** Attaches SQLite documentation with stable Unicode source coordinates.
+ *
+ * Eligible comments can acknowledge a table or column, while examples and withdrawn tables remain outside normal evidence coverage.
+ *
+ * 1. Analyze documented schema units, Unicode comments, examples, and withdrawals.
+ * 2. Verify coordinates, target resolution, and withdrawal handling.
+ * 3. Compare review fingerprints after annotation and semantic edits.
+ */
 export async function test_sqlite_hosts(): Promise<void> {
   const source = dedent`
     -- 계약 😀

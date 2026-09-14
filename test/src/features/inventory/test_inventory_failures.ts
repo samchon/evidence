@@ -3,7 +3,22 @@ import { TestValidator } from "@nestia/e2e";
 
 import { TestInventory } from "../../internal/TestInventory";
 
-/** Partial sources, conflicting identities, missing parents, and cycles never yield a healthy empty inventory. */
+/**
+ * Preserves incomplete analysis when inventory ownership or identity is inconsistent.
+ *
+ * An empty or partially usable unit list cannot prove successful extraction.
+ * These cases exercise the inventory boundary directly so downstream coverage
+ * cannot conceal failures by selecting fewer declarations.
+ *
+ * 1. Compare a healthy empty inventory with the same input marked incomplete:
+ *    - Empty selection is complete only for the healthy input.
+ *    - Lookup on failed input reports incomplete rather than merely missing.
+ * 2. Give a class an absent parent and require incomplete reconciliation.
+ * 3. Make that class its own parent and require terminating selection with an
+ *    inventory-cycle diagnostic, rather than unbounded ancestor traversal.
+ * 4. Remove the parent and merge copies assigning different symbol categories
+ *    to the same ID; the contradictory identity must remain incomplete.
+ */
 export async function test_inventory_failures(): Promise<void> {
   const empty = TestInventory.create();
   TestValidator.predicate(
@@ -11,6 +26,8 @@ export async function test_inventory_failures(): Promise<void> {
     new EvidenceInventory([empty]).select([]).complete,
   );
   empty.complete = false;
+  // The negative counterpart has the same empty denominator. Only its recorded
+  // extraction state distinguishes failure from a valid empty population.
   const failed = new EvidenceInventory([empty]);
   TestValidator.predicate(
     "empty failure retained",
@@ -38,6 +55,7 @@ export async function test_inventory_failures(): Promise<void> {
   );
 
   box.parentId = "box";
+  // The traversal must terminate even though ownership cannot be normalized.
   const cyclic = new EvidenceInventory([input]);
   TestValidator.predicate(
     "cycle terminates with a failure",

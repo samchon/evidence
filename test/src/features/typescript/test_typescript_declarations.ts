@@ -5,7 +5,13 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Covers ambient, abstract, parameter-property, and dotted namespace declarations. */
+/** Extracts TypeScript declarations across ambient and structural forms.
+ *
+ * Ambient, abstract, parameter-property, and dotted namespace syntax each contribute different public units.
+ *
+ * 1. Analyze the supported declaration matrix.
+ * 2. Verify exact identities, symbols, and ownership.
+ */
 export async function test_typescript_declarations(): Promise<void> {
   const content = dedent`
     export declare class Declared {

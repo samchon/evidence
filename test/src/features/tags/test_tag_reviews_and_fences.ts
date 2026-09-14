@@ -4,7 +4,17 @@ import { dedent } from "@typia/utils";
 
 import { TestDocumentation } from "../../internal/TestDocumentation";
 
-/** Reviews, fenced examples, and prose mentions never become acknowledgements or withdrawals. */
+/** Keeps reviews, fenced examples, and prose separate from acknowledgements.
+ *
+ * Only eligible annotation carriers can create evidence or withdrawals; reviews retain their own record type.
+ *
+ * 1. Parse real tags beside prose, a four-backtick fence, and a shorter closing
+ *    fence that must remain fenced.
+ * 2. Verify the two acknowledgements, multiline evidence reason, and no accidental
+ *    withdrawal.
+ * 3. Verify evidence and exclusion reviews stay distinct, only a shaped fingerprint
+ *    is consumed, and review description prose remains intact.
+ */
 export async function test_tag_reviews_and_fences(): Promise<void> {
   const fixture = TestDocumentation.create(dedent`
     /**

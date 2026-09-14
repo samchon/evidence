@@ -11,7 +11,7 @@ description: Defines the Evidence workspace, current implementation status, prod
 
 Keep programming and database language identifiers in `EvidenceProgrammingType` and `EvidenceDatabaseType`. Database languages share one Claim and one Reference interface. Use `model`, `column`, and `relation` as the common database selectors, and `type`, `function`, and `property` for programming declarations. Classes belong to `type`.
 
-The [roadmap](https://github.com/wrtnlabs/evidence/issues/31) owns execution order. Package setup precedes common type declarations and configuration loading. GitHub issue numbers are stable identifiers; adjust ordering in the roadmap instead of moving issue contents between numbers.
+The [roadmap](https://github.com/wrtnlabs/evidence/issues/31) owns execution order. Follow the [issue campaign skill](../issue-campaign/SKILL.md) when changing issue handoffs or implementation ordering.
 
 ## Layout
 
@@ -48,11 +48,11 @@ Use `typia` for runtime type checks and `@typia/utils` for `dedent`. Keep both i
 
 Keep compiler dependencies in the workspaces that use them, including `config` for its typed lint configuration. The repository root only needs the formatter. Build scripts invoke `ttsc` with its default `tsconfig.json`; shared compiler settings do not declare plugins already discovered from package dependencies.
 
-The application and adapters are authored in TypeScript. `EvidenceParser` uses official `web-tree-sitter` and automatically downloaded, checksum-verified upstream grammars. A language needs an adapter and certification as well as a grammar. Read [the domain skill](evidence/SKILL.md) for the completeness boundary and the root README for acquisition and catalog maintenance. Keep language WASM out of the repository and package allowlist. Use constant `Singleton` and `VariadicSingleton` instances with initialization inside their callbacks; put exported namespace members before internal declarations.
+`EvidenceParser` uses official `web-tree-sitter` and automatically downloaded, checksum-verified upstream grammars. A language needs an adapter and certification as well as a grammar. Read [the domain skill](evidence/SKILL.md) for the completeness boundary and the root README for acquisition and catalog maintenance. Keep language WASM out of the repository and package allowlist.
 
 Adapters implement `IEvidenceAdapter` and return serializable inventories. `EvidenceInventory` reconciles identities, validates ownership, and projects independent populations. `EvidenceTagParser` consumes mapped documentation after the adapter establishes attachment. Follow the [adapter onboarding guide](../../../docs/development/adapter-onboarding.md) for certification and distribution gates and the [adapter inventory guide](../../../docs/development/adapter-inventories.md) for extraction and host records.
 
-Use CommonJS; do not add `type: "module"` or an unsupported Node engine constraint. The public module must remain inert on import. Workspace `main` and `exports` point directly to `./src/index.ts`. JavaScript entry points, declaration paths, and the installed CLI bin belong only in `publishConfig`. CLI bootstrap belongs in `src/executable`; reusable behavior belongs outside it. Compiled package files go to ignored `lib` directories. Run TypeScript tests with `ttsx`. Keep maintenance scripts as plain JavaScript run by Node, without a tsconfig or lint.config under `scripts`. Root README and LICENSE are authoritative and copied by `prepack`; never maintain the generated package copies independently.
+Use CommonJS; do not add `type: "module"` or an unsupported Node engine constraint. Workspace `main` and `exports` point directly to `./src/index.ts`. JavaScript entry points, declaration paths, and the installed CLI bin belong only in `publishConfig`. Compiled package files go to ignored `lib` directories. Follow [development](../development/SKILL.md) for inert entry points, TypeScript execution, and maintenance scripts, and [documentation](../documentation/SKILL.md#readers-and-ownership) for authoritative README/LICENSE ownership.
 
 ## Commands
 
@@ -65,7 +65,7 @@ pnpm check:format
 pnpm release
 ```
 
-`build` compiles and lints `packages/*`. Do not add a separate typecheck command. Run only affected tests locally with `pnpm start --include <filter>`; CI owns the full `pnpm test` run. Both execute `ttsx -P tsconfig.json src/index.ts`, which checks and executes source without a preceding build. Follow AutoMovie's DynamicExecutor and exported `test_` function convention. Tests cover logic directly; do not add package-installation experiments, tarball tests, or CLI process tests.
+`build` compiles and lints `packages/*`. Test commands execute `ttsx -P tsconfig.json src/index.ts`, which checks and executes source without a preceding build. Follow [development validation](../development/SKILL.md#validation) for affected local tests, CI ownership of the full suite, and the prohibition on a separate typecheck command.
 
 Keep CI as independent, single-Ubuntu workflows: `build.yml` runs only the build after dependency setup; `test.yml` runs only tests after dependency setup. Do not add an OS matrix, make tests depend on the build workflow, or prepend a build to `pnpm test`. Keep package compilation in `build` and `prepack`, not an installation-time `prepare` hook.
 

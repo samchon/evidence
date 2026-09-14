@@ -9,12 +9,25 @@ import type { ISqlFileAnalysis } from "./ISqlFileAnalysis";
 import type { ISqlPolicy } from "./ISqlPolicy";
 import { SqlPolicy } from "./SqlPolicy";
 
-/** Copies explicit CREATE TABLE declarations from the shared upstream SQL tree. */
+/** Extracts explicit SQL table declarations from a shared upstream syntax tree.
+ *
+ * The scanner records serializable declarations and comment carriers under a
+ * dialect policy. Unsupported syntax makes the analysis incomplete so omitted
+ * declarations cannot shrink the coverage population.
+ */
 export class SqlFileScanner {
-  /** Serializable extraction owned by this scanner. */
+  /** Holds the mutable serializable result owned by this scan.
+   *
+   * Helpers append records and failures here before `scan` returns the final
+   * node-free analysis.
+   */
   private readonly output: ISqlFileAnalysis;
 
-  /** Preserves the original source, borrowed tree, and configured dialect policy. */
+  /** Initializes one scan over a borrowed parse session and source snapshot.
+   *
+   * The default policy supplies generic SQL behavior; dialect adapters provide
+   * another policy when quoting, identities, or relation syntax differ.
+   */
   public constructor(
     private readonly session: EvidenceParseSession,
     private readonly source: IEvidenceSourceFile,
@@ -29,7 +42,11 @@ export class SqlFileScanner {
     };
   }
 
-  /** Visits top-level statements; unsupported constructs never produce a smaller complete inventory. */
+  /** Visits statements and comments, then returns their serializable analysis.
+   *
+   * Validation precedes extraction so unsupported constructs record a failure
+   * instead of yielding a deceptively complete smaller inventory.
+   */
   public scan(): ISqlFileAnalysis {
     for (const root of this.session.root.namedChildren) {
       if (this.comment(root)) continue;
@@ -57,7 +74,11 @@ export class SqlFileScanner {
     return this.output;
   }
 
-  /** Extracts one table and every explicit column and foreign key. */
+  /** Extracts one table with its explicit columns and foreign-key relations.
+   *
+   * Endpoint checks require declared local columns and explicit remote columns
+   * because inferred schema state would make relation identity unreliable.
+   */
   private table(node: Node): void {
     const reference = node.namedChildren.find(
       (child) => child.type === "object_reference",
@@ -150,7 +171,11 @@ export class SqlFileScanner {
     }
   }
 
-  /** Assigns a stable endpoint-derived anonymous identity and separate relation host. */
+  /** Extracts a relation with explicit local and remote endpoint identities.
+   *
+   * Unnamed relations derive a stable segment from their endpoints; inline
+   * relations share their column's physical site for documentation ownership.
+   */
   private relation(
     node: Node,
     table: ISqlDeclaration,
@@ -211,7 +236,11 @@ export class SqlFileScanner {
     if (column !== undefined) relation.site = structuredClone(column.site);
   }
 
-  /** Creates one physical declaration record with explicit model ownership. */
+  /** Creates one physical declaration record and records its model ownership.
+   *
+   * A policy can project public address spelling into a separate semantic
+   * identity without changing the source location retained in the record.
+   */
   private declaration(
     node: Node,
     symbol: EvidenceDatabaseSymbol,
@@ -239,7 +268,11 @@ export class SqlFileScanner {
     return record;
   }
 
-  /** Decodes qualified names by syntax segments, preserving quoted literal dots. */
+  /** Decodes a qualified reference into separate address segments.
+   *
+   * Individual identifier decoding preserves quoted dots as literal name
+   * content rather than treating them as extra path boundaries.
+   */
   private reference(node: Node): string[] | undefined {
     const names = node.namedChildren
       .filter((child) => child.type === "identifier")
@@ -249,7 +282,11 @@ export class SqlFileScanner {
       : names.filter((name): name is string => name !== undefined);
   }
 
-  /** Rejects identifiers outside the selected dialect instead of inventing an address. */
+  /** Decodes a dialect identifier and reports unsupported spelling.
+   *
+   * Returning no name prevents callers from inventing an address outside the
+   * dialect contract.
+   */
   private identifier(node: Node): string | undefined {
     const name = this.policy.identifier(node.text);
     if (name === undefined)
@@ -260,7 +297,11 @@ export class SqlFileScanner {
     return name;
   }
 
-  /** Groups adjacent line comments and binds leading documentation to the following declaration sites. */
+  /** Groups adjacent line comments and attaches leading runs to declaration sites.
+   *
+   * Detached and trailing carriers remain in the result so annotation handling
+   * can report them without attaching them to a later declaration.
+   */
   private documentation(nodes: Node[]): void {
     const text = new SourceText(this.source.content);
     const groups: ISqlDocumentation[] = [];
@@ -330,18 +371,29 @@ export class SqlFileScanner {
     }
   }
 
-  /** Requires a documentation run to start before any source token on its line. */
+  /** Checks whether a comment starts before any source token on its line.
+   *
+   * Only such a standalone comment can be leading documentation.
+   */
   private standalone(start: number): boolean {
     const line = this.source.content.lastIndexOf("\n", start - 1) + 1;
     return this.source.content.slice(line, start).trim() === "";
   }
 
-  /** Identifies actual grammar comments without interpreting SQL literals. */
+  /** Identifies grammar nodes that represent SQL comments.
+   *
+   * Tree-sitter classification avoids mistaking comment-looking SQL literal
+   * text for documentation syntax.
+   */
   private comment(node: Node): boolean {
     return node.type === "comment" || node.type === "marginalia";
   }
 
-  /** Reports a located unsupported surface and preserves incompleteness. */
+  /** Records a located unsupported construct and marks the result incomplete.
+   *
+   * This failure prevents partial extraction from being accepted as complete
+   * evidence coverage.
+   */
   private problem(node: Node, message: string): void {
     this.output.complete = false;
     this.output.diagnostics.push({

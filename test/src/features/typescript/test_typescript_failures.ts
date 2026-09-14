@@ -4,7 +4,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Makes malformed syntax and missing export dependencies incomplete without reading tag-shaped strings. */
+/** Preserves TypeScript syntax and export failures as incomplete analysis.
+ *
+ * Malformed source and missing export dependencies cannot be masked by tag-shaped strings or prior inventory state.
+ *
+ * 1. Analyze malformed sources and missing export edges.
+ * 2. Verify incomplete status and diagnostics.
+ * 3. Require strings containing tags to remain inert.
+ */
 export async function test_typescript_failures(): Promise<void> {
   const adapter = new EvidenceTypeScriptAdapter();
 

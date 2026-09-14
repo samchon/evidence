@@ -9,21 +9,46 @@ import type { IPhpDeclaration } from "./IPhpDeclaration";
 import type { IPhpDocumentation } from "./IPhpDocumentation";
 import type { IPhpFileAnalysis } from "./IPhpFileAnalysis";
 
-/** Extracts explicit PHP declarations without executing source or resolving runtime loaders. */
+/**
+ * Extracts explicit PHP declarations without executing source or runtime loaders.
+ *
+ * The scanner follows lexical syntax only and reports dynamic surface changes
+ * that would make a static Evidence inventory incomplete.
+ */
 export class PhpFileScanner {
-  /** Serializable declarations collected in lexical order. */
+  /**
+   * Accumulates declarations and diagnostics in lexical source order.
+   *
+   * The output is serializable and does not retain parser-node ownership after scanning.
+   */
   private readonly declarations: IPhpDeclaration[] = [];
 
-  /** PHPDoc carriers, including unsupported attachment positions. */
+  /**
+   * Stores PHPDoc carriers, including unsupported attachment positions.
+   *
+   * Their offsets allow later annotation parsing to report the original source location.
+   */
   private readonly documentation = new Map<number, IPhpDocumentation>();
 
-  /** Failures that prevent a complete declared surface. */
+  /**
+   * Records failures that prevent a complete declared PHP surface.
+   *
+   * The scan returns these diagnostics instead of silently omitting dynamic declarations.
+   */
   private readonly diagnostics: IEvidenceDiagnostic[] = [];
 
-  /** Original UTF-16 source coordinate mapping. */
+  /**
+   * Maps original source content to UTF-16 Evidence coordinates.
+   *
+   * PHPDoc attachment and diagnostics retain positions from this unnormalized snapshot.
+   */
   private readonly text: SourceText;
 
-  /** Owns one borrowed parser session and source snapshot. */
+  /**
+   * Binds one parsed PHP source snapshot for lexical extraction.
+   *
+   * The scanner borrows the parser session only for this operation.
+   */
   public constructor(
     private readonly session: EvidenceParseSession,
     private readonly source: IEvidenceSourceFile,
@@ -31,7 +56,11 @@ export class PhpFileScanner {
     this.text = new SourceText(source.content);
   }
 
-  /** Extracts namespaces, nominal types, functions, and public members. */
+  /**
+   * Extracts namespaces, nominal types, functions, and visible members.
+   *
+   * Dynamic declarations are diagnosed so the output cannot imply a complete static surface.
+   */
   public scan(): IPhpFileAnalysis {
     for (const comment of this.session.root.descendantsOfType("comment")) {
       if (!comment.text.startsWith("/**")) continue;
@@ -69,7 +98,11 @@ export class PhpFileScanner {
     };
   }
 
-  /** Tracks semicolon and bracketed namespace scopes without fabricating namespace units. */
+  /**
+   * Traverses namespace scopes without creating namespace Evidence units.
+   *
+   * Both semicolon and bracketed forms affect lexical ownership of contained declarations.
+   */
   private scanScope(
     node: Node,
     initial: string[],
@@ -144,7 +177,11 @@ export class PhpFileScanner {
     }
   }
 
-  /** Creates one independently fingerprinted declaration and attaches adjacent PHPDoc. */
+  /**
+   * Creates one fingerprinted declaration and attaches adjacent PHPDoc.
+   *
+   * Each declaration keeps its physical site while its identity represents lexical ownership.
+   */
   private add(
     item: Node,
     carrier: Node,
@@ -225,7 +262,11 @@ export class PhpFileScanner {
     return declaration;
   }
 
-  /** Reports dynamic global declarations even when nested inside a function body. */
+  /**
+   * Reports dynamic global declarations, including ones nested in function bodies.
+   *
+   * Runtime declaration creation can add public surface absent from lexical analysis.
+   */
   private dynamicSurface(root: Node): void {
     const dynamicNames = new Set([
       "eval",
@@ -303,7 +344,11 @@ export class PhpFileScanner {
         );
   }
 
-  /** Distinguishes writes to declared fields from detectable runtime property creation. */
+  /**
+   * Distinguishes declared-field writes from detectable runtime property creation.
+   *
+   * Dynamic public fields must be diagnosed because they escape the static inventory.
+   */
   private dynamicProperties(root: Node): void {
     for (const member of root.descendantsOfType("member_access_expression")) {
       if (member.childForFieldName("object")?.text !== "$this") continue;
@@ -362,7 +407,11 @@ export class PhpFileScanner {
     }
   }
 
-  /** Marks unsupported surface-changing syntax as incomplete at its original range. */
+  /**
+   * Records unsupported surface-changing syntax at its original source range.
+   *
+   * Duplicate diagnostics are suppressed while the analysis remains explicitly incomplete.
+   */
   private problem(node: Node, code: string, message: string): void {
     if (
       this.diagnostics.some(
@@ -386,7 +435,11 @@ export class PhpFileScanner {
   }
 }
 
-/** Nominal declarations whose members have an explicit lexical owner. */
+/**
+ * Lists nominal PHP declarations whose members have an explicit lexical owner.
+ *
+ * The scanner uses these node kinds to establish class-like ownership while traversing bodies.
+ */
 const TYPES = new Set([
   "class_declaration",
   "interface_declaration",
@@ -394,7 +447,11 @@ const TYPES = new Set([
   "enum_declaration",
 ]);
 
-/** Syntax that introduces no independently declared public symbol. */
+/**
+ * Lists syntax nodes that introduce no independently declared public symbol.
+ *
+ * Ignoring these nodes keeps traversal focused on syntax that can change the inventory.
+ */
 const IGNORED = new Set([
   "php_tag",
   "php_end_tag",

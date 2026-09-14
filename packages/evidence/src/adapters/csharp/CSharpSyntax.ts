@@ -3,7 +3,12 @@ import type { Node } from "web-tree-sitter";
 import type { IEvidenceCommentSyntax } from "../../structures/IEvidenceCommentSyntax";
 import type { CSharpAccessibility } from "./CSharpAccessibility";
 
-/** Grammar-specific C# names, modifiers, documentation, and special members. */
+/**
+ * Provides C# grammar helpers for names, modifiers, documentation, and special members.
+ *
+ * CSharpFileScanner uses these helpers to classify source constructs and preserve
+ * C# accessibility and member spelling before it builds declaration records.
+ */
 export namespace CSharpSyntax {
   export function name(node: Node | null): string | undefined {
     if (node === null || node.type !== "identifier") return undefined;

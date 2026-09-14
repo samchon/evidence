@@ -9,7 +9,14 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Requires every Zig selector as a reference, including undocumented declarations and review-only failures. */
+/** Evaluates Zig selectors as required cross-language references.
+ *
+ * Selected units require evidence, and reviews remain recorded without supplying missing coverage.
+ *
+ * 1. Extract each Zig selector with matching claims.
+ * 2. Evaluate acknowledged and undocumented populations.
+ * 3. Verify review-only references remain missing.
+ */
 export async function test_zig_graph(): Promise<void> {
   const reference = await new EvidenceZigAdapter().analyze(
     TestSourceSnapshot.create(

@@ -3,7 +3,12 @@ import { TestValidator } from "@nestia/e2e";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Rejects unresolved Kotlin public surfaces while accepting explicit visibility and private counterparts. */
+/** Rejects unresolved Kotlin public surfaces while accepting explicit visibility boundaries.
+ *
+ * Uncertain declarations cannot shrink coverage, while private counterparts remain outside the denominator.
+ *
+ * 1. Analyze unresolved public forms. 2. Require incompleteness. 3. Verify explicit public and private cases select only the public surface.
+ */
 export async function test_kotlin_boundaries(): Promise<void> {
   const adapter = new EvidenceKotlinAdapter();
   const cases = new Map<string, string>([

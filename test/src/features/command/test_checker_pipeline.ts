@@ -7,7 +7,27 @@ import { join } from "node:path";
 
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
-/** Runs source discovery, two adapters, target resolution, graph policy, and reports. */
+/**
+ * Runs a complete two-reference check through discovery, adapters, graph evaluation, and rendering.
+ *
+ * One TypeScript function acknowledges both a Markdown requirement and a public
+ * TypeScript contract. The report must retain their independently configured
+ * indexes, distinguish violations from operational incompleteness, and render a
+ * stable representation that command callers can consume.
+ *
+ * 1. Evaluate the fully annotated fixture and require:
+ *    - A successful zero exit with two covered units and no diagnostics.
+ *    - The authored claim index 2 and reference indexes 3 and 5 in the report.
+ * 2. Render that report as text and JSON; require coverage text, schema version,
+ *    and deterministic repeated JSON serialization.
+ * 3. Remove both acknowledgements and require two missing units, exit 1, and
+ *    diagnostics plus text output that preserve claim, reference, location,
+ *    subject, and repair context.
+ * 4. Re-evaluate those violations as warnings and require a successful exit with
+ *    two warnings.
+ * 5. Point a reference at a missing root and require an incomplete exit rather
+ *    than treating the lost target population as an empty passing denominator.
+ */
 export async function test_checker_pipeline(): Promise<void> {
   const location = join(__dirname, `checker ${randomUUID()}`);
   await TestFileSystem.experiment(

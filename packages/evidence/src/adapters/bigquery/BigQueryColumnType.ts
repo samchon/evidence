@@ -1,8 +1,16 @@
 import type { Node } from "web-tree-sitter";
 
-/** Bounds the grammar's permissive type names to declared GoogleSQL schema types. */
+/** Bounds the grammar's permissive type names to declared GoogleSQL schema types.
+ *
+ * Tree-sitter accepts broader syntax than this adapter can materialize safely,
+ * so the scanner rejects fields outside this explicit semantic surface.
+ */
 export namespace BigQueryColumnType {
-  /** Checks scalar leaves and structural envelopes; the scanner visits every named nested field. */
+  /** Checks scalar leaves and structural envelopes.
+   *
+   * Nested fields are validated separately by the scanner; replacing them with
+   * `FIELD` here verifies only the enclosing ARRAY or STRUCT shape.
+   */
   export function supported(node: Node): boolean {
     const nested = node.namedChildren.filter(
       (child) => child.type === "column_definition",

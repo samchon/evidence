@@ -5,7 +5,15 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Resolves canonical file-qualified targets for Python types, members, and functions. */
+/**
+ * Resolves canonical file-qualified targets for Python declarations.
+ *
+ * The reference and claim snapshots use a type, class property, instance method, and module function to test target parsing against the same public address model used by graph resolution.
+ *
+ * 1. Analyze the Python reference and TypeScript claim inventories.
+ * 2. Resolve each canonical target and verify every resolution succeeds.
+ * 3. Verify the resolved units have the expected type, property, method, and function identities.
+ */
 export async function test_python_targets(): Promise<void> {
   const adapter = new EvidencePythonAdapter();
   const reference = await adapter.analyze(

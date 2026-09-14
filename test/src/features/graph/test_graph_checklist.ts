@@ -16,7 +16,37 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Evaluates every selected TypeScript host against every selected Markdown item. */
+/**
+ * Evaluates checklist coverage separately for every selected TypeScript host.
+ *
+ * A checklist turns each selected reference into an obligation for each host.
+ * The scenario also establishes how aggregates, exclusions, unselected carriers,
+ * and incomplete inputs affect the per-host coverage ledger and diagnostics.
+ *
+ * 1. Evaluate complete, partially documented, and undocumented functions against
+ *    two Markdown rules, then require independent complete and missing sets for
+ *    each host and one missing-checklist diagnostic per incomplete host.
+ * 2. Cite the Markdown file item while selecting its headings and require the
+ *    file alone to be covered; a file acknowledgement must not cascade down.
+ * 3. Let an unselected positive aggregate answer both rules and require one
+ *    aggregate diagnostic that explains both items without duplicate host repairs.
+ * 4. Exercise exclusions on separate hosts and on one host:
+ *    - An exclusion covers its selected subtree only for its own host.
+ *    - Positive evidence on another host stays independent.
+ *    - Opposed acknowledgements and overlapping exclusions produce one conflict
+ *      and one duplicate-exclusion diagnostic for their shared semantic host.
+ * 5. Enable the exclusion prohibition and require the excluded host to owe both
+ *    rules while reporting the forbidden exclusion.
+ * 6. Place acknowledgements on an unselected carrier, then require that it can
+ *    satisfy an ordinary sibling reference but cannot discharge a checklist host.
+ * 7. Vary sibling-reference health and require an incomplete sibling to withhold
+ *    the unhosted conclusion, while a complete empty sibling preserves it.
+ * 8. Give a separately selected aggregate carrier its own refused-aggregate
+ *    repair and require that diagnostic to suppress the deferred unhosted report.
+ * 9. Supply failed and empty reference populations and require respectively:
+ *    - An incomplete obligation with no derivative per-host finding.
+ *    - Only the empty-reference finding and no host-coverage ledger.
+ */
 export async function test_graph_checklist(): Promise<void> {
   const requirements = await new EvidenceMarkdownAdapter().analyze(
     TestSourceSnapshot.create(
@@ -632,6 +662,12 @@ export async function test_graph_checklist(): Promise<void> {
   );
 }
 
+/**
+ * Resolves every acknowledgement in a claim against one selected reference population.
+ *
+ * Checklist fixtures need each declaration's own host so graph evaluation can
+ * distinguish evidence carried by selected hosts from unhosted acknowledgements.
+ */
 async function resolveAll(
   claim: IEvidenceInventory,
   reference: IEvidenceInventory,

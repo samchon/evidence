@@ -12,9 +12,22 @@ import type { IEcmaScriptModuleResolution } from "./IEcmaScriptModuleResolution"
 import type { IJavaScriptPackageJson } from "./IJavaScriptPackageJson";
 import { SourcePath } from "../../internal/SourcePath";
 
-/** Selects ESM or CommonJS semantics and records controlling package metadata. */
+/**
+ * Selects JavaScript module mode for every selected source file.
+ *
+ * `EcmaScriptAdapter` uses this resolver before scanning JavaScript because
+ * `.js` and `.jsx` files inherit ESM or CommonJS semantics from the nearest
+ * package metadata. The resolver also records consulted manifests as watch
+ * dependencies and turns unreadable or conflicting package scopes into
+ * inventory diagnostics.
+ */
 export class EcmaScriptModuleResolver {
-  /** Captures one immutable lazy package resolver for this analysis. */
+  /**
+   * Creates a resolver whose package-scope lookups are isolated to one analysis.
+   *
+   * The lazy cache reads each package directory at most once. Missing manifests
+   * delegate to the parent directory, matching Node's nearest-package scope rule.
+   */
   public constructor() {
     this.packages = new VariadicSingleton(
       async (directory: string): Promise<EcmaScriptModuleMode> => {
@@ -37,6 +50,8 @@ export class EcmaScriptModuleResolver {
           return "commonjs";
         } catch (cause) {
           if (this.absent(cause)) {
+            // A directory without a manifest inherits its parent package scope.
+            // Reaching the filesystem root supplies JavaScript's CommonJS default.
             const parent = path.dirname(directory);
             return parent === directory
               ? "commonjs"
@@ -54,7 +69,13 @@ export class EcmaScriptModuleResolver {
     );
   }
 
-  /** Resolves selected aliases and reports conflicting or unreadable package scopes. */
+  /**
+   * Resolves module modes and watched package manifests for selected sources.
+   *
+   * Every logical address of one source must select the same mode. A mismatch is
+   * reported because parsing one file with either mode alone would make export
+   * semantics depend on an arbitrary alias.
+   */
   public async resolve(
     sources: IEvidenceSourceFile[],
   ): Promise<IEcmaScriptModuleResolution> {
@@ -86,13 +107,27 @@ export class EcmaScriptModuleResolver {
     };
   }
 
-  /** Package boundaries consulted by this analysis. */
+  /**
+   * Package manifests consulted while resolving selected source modes.
+   *
+   * The final resolution exposes these records as watch dependencies.
+   */
   private readonly dependencies = new Map<string, IEvidenceSourceDependency>();
 
-  /** Failures that make module selection incomplete. */
+  /**
+   * Failures that prevent a complete and reliable module-mode selection.
+   *
+   * `resolve` returns them to the adapter, which incorporates them into the
+   * inventory and derives its completeness flag from their presence.
+   */
   private readonly diagnostics: IEvidenceDiagnostic[] = [];
 
-  /** Uses explicit extensions first and memoized package scopes for ordinary JS. */
+  /**
+   * Selects a file's explicit or package-inherited JavaScript module mode.
+   *
+   * `.mjs` and `.cjs` always determine their own mode; other extensions consult
+   * the nearest cached package directory after converting the path to a stable key.
+   */
   private async mode(file: string): Promise<EcmaScriptModuleMode> {
     const extension = path.extname(file).toLowerCase();
     if (extension === ".mjs") return "esm";
@@ -102,20 +137,43 @@ export class EcmaScriptModuleResolver {
     );
   }
 
-  /** Memoizes package metadata once per directory in this analysis. */
+  /**
+   * Memoizes package metadata lookup by normalized directory.
+   *
+   * Its callback also records the manifest before reading it, ensuring watch can
+   * rerun analysis when a missing, changed, or repaired package boundary changes.
+   */
   private readonly packages: VariadicSingleton<
     Promise<EcmaScriptModuleMode>,
     [string]
   >;
 
+  /**
+   * Identifies a missing package manifest without suppressing other read errors.
+   *
+   * Only ENOENT permits parent-scope fallback; permissions and malformed metadata
+   * must leave a diagnostic because their intended module mode is unknown.
+   */
   private absent(cause: unknown): boolean {
     return cause instanceof Error && "code" in cause && cause.code === "ENOENT";
   }
 
+  /**
+   * Converts an unknown read failure into diagnostic text.
+   *
+   * Error messages retain filesystem context while non-Error throws still produce
+   * a useful, deterministic string for the inventory diagnostic.
+   */
   private message(cause: unknown): string {
     return cause instanceof Error ? cause.message : String(cause);
   }
 
+  /**
+   * Appends a package-resolution failure for the adapter to materialize.
+   *
+   * Each call represents a distinct encountered failure; unlike export traversal,
+   * package lookup is memoized so this method does not need an extra deduplication key.
+   */
   private problem(
     code: string,
     message: string,

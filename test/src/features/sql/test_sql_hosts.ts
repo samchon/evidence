@@ -8,7 +8,14 @@ import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Preserves UTF-16 comment attachment, inert examples, withdrawal, and literal qualified addresses. */
+/** Attaches SQL comment annotations while preserving source coordinates.
+ *
+ * Eligible documentation uses UTF-16 positions and literal qualified targets; examples and withdrawals must retain their separate behavior.
+ *
+ * 1. Analyze documented schema units, inert examples, and withdrawn declarations.
+ * 2. Verify attachment, coordinates, targets, and withdrawal metadata.
+ * 3. Require literal qualified addresses to resolve exactly.
+ */
 export async function test_sql_hosts(): Promise<void> {
   const source = dedent`
     /* 문서 🧪

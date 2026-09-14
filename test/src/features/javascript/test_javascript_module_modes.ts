@@ -12,7 +12,14 @@ import { SourcePath } from "../../../../packages/evidence/src/internal/SourcePat
 import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Selects JavaScript module semantics from extensions and nearest package metadata. */
+/** Selects JavaScript module semantics from extensions and nearest package metadata.
+ *
+ * Resolution must use the applicable file extension and package boundary rather than a global module assumption.
+ *
+ * 1. Create sources under contrasting package metadata.
+ * 2. Analyze each extension.
+ * 3. Verify the selected module mode and resulting exports.
+ */
 export async function test_javascript_module_modes(): Promise<void> {
   const language = EvidenceLanguageRegistry.list().find(
     (entry) => entry.type === "javascript",

@@ -6,7 +6,14 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestParserAssets } from "../../internal/TestParserAssets";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Loads only the configured real SQL grammar and preserves complete adapter results through warm offline recovery. */
+/** Loads the configured SQL grammar and preserves offline adapter analysis.
+ *
+ * Cold acquisition must request only SQL parser assets, and the warmed cache must produce the same complete inventory.
+ *
+ * 1. Analyze SQL source cold while recording asset requests.
+ * 2. Verify complete extraction and SQL-only parser state.
+ * 3. Analyze again offline and require equivalent inventory.
+ */
 export async function test_sql_parser(): Promise<void> {
   const grammar = await new TreeSitterAssets().grammar("sql");
   const bytes = await TestParserAssets.bytes(grammar);

@@ -6,7 +6,21 @@ import { join } from "node:path";
 
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
-/** Verifies re-export and syntax changes invalidate graph results and recover in place. */
+/**
+ * Invalidates re-export and syntax changes, then recovers the graph in place.
+ *
+ * Watch cycles must reflect public target aliases and parser failures immediately,
+ * with each non-failed result matching a fresh one-shot checker report.
+ *
+ * 1. Start with a function citing a barrel-exported contract and require the
+ *    initial watcher report to equal a fresh successful check.
+ * 2. Rename the barrel export and require an exit-1 cycle for the now-missing
+ *    public target.
+ * 3. Replace the implementation with invalid TypeScript and require an incomplete
+ *    cycle instead of the previous graph result.
+ * 4. Restore the barrel export and implementation, then require cycle 4 to
+ *    succeed before closing the watcher.
+ */
 export async function test_watch_reexport(): Promise<void> {
   const location = join(__dirname, `reexport ${randomUUID()}`);
   await TestFileSystem.experiment(

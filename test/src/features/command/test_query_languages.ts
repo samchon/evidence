@@ -7,7 +7,19 @@ import typia from "typia";
 
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
-/** Reports certified registry entries without loading a project configuration. */
+/**
+ * Reports certified language support without requiring a project configuration.
+ *
+ * Language metadata is package-level registry data, so an empty directory must
+ * still produce a successful JSON response. A separate failed query must retain
+ * its own command name in the structured operational failure.
+ *
+ * 1. Run languages with JSON output in an empty directory and require exit 0 with
+ *    no stderr.
+ * 2. Run list against a missing config in the same directory and require exit 2.
+ * 3. Parse the failure report and require its command field to remain list rather
+ *    than being attributed to the configuration-free languages operation.
+ */
 export async function test_query_languages(): Promise<void> {
   const location = join(__dirname, `query languages ${randomUUID()}`);
   await TestFileSystem.experiment(location, {}, async (directory) => {

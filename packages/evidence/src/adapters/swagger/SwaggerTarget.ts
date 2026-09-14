@@ -1,7 +1,16 @@
 import type { IEvidenceAddress } from "../../structures/IEvidenceAddress";
 
-/** Parses one whitespace-free Swagger operation target. */
+/** Parses one whitespace-free Swagger operation target.
+ *
+ * Swagger has no physical source-file address, so accepted selectors are placed
+ * in the synthetic `swagger:` file namespace as one atomic segment.
+ */
 export namespace SwaggerTarget {
+  /** Converts a public `METHOD:/path` selector to an Evidence address.
+   *
+   * Validation here matches loader targets so a citation cannot select an
+   * operation shape the adapter would never materialize.
+   */
   export function parse(target: string): IEvidenceAddress {
     if (/\s/u.test(target))
       throw new Error("Remove whitespace from the Swagger operation target.");

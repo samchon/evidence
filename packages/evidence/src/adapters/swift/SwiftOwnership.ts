@@ -1,9 +1,19 @@
 ﻿import type { ISwiftDeclaration } from "./ISwiftDeclaration";
 import type { ISwiftFileAnalysis } from "./ISwiftFileAnalysis";
 
-/** Reconciles extensions against nominal declarations in one configured Swift module. */
+/**
+ * Reconciles extensions against nominal declarations in one configured Swift module.
+ *
+ * The pass resolves selected local aliases without importing compiler metadata,
+ * then propagates visibility from the verified nominal owner to extension members.
+ */
 export namespace SwiftOwnership {
-  /** Resolves local aliases and extension-introduced types before propagating visibility. */
+  /**
+   * Resolves local aliases and extension-introduced types before propagating visibility.
+   *
+   * Repeated passes handle declarations whose owner is another pending extension;
+   * unresolved cycles remain incomplete instead of gaining an invented owner.
+   */
   export function resolve(analyses: ISwiftFileAnalysis[]): void {
     const declarations = analyses.flatMap((analysis) => analysis.declarations);
     const ids = new Map(
@@ -78,7 +88,11 @@ export namespace SwiftOwnership {
       declaration.public &&= visible(declaration, ids, new Set<string>());
   }
 
-  /** Resolves a unique accessible declaration and a finite chain of selected type aliases. */
+  /**
+   * Resolves a unique accessible declaration and a finite chain of selected type aliases.
+   *
+   * A visited path set rejects cycles before they can grant an extension an invented owner.
+   */
   function nominal(
     path: string[],
     types: Map<string, ISwiftDeclaration[]>,
@@ -120,7 +134,11 @@ export namespace SwiftOwnership {
     return undefined;
   }
 
-  /** Uses explicit declaration parents to distinguish literal names from containment. */
+  /**
+   * Uses explicit declaration parents to distinguish literal names from containment.
+   *
+   * This preserves names that contain punctuation without interpreting them as paths.
+   */
   function descends(
     declaration: ISwiftDeclaration,
     parentId: string,
@@ -136,7 +154,11 @@ export namespace SwiftOwnership {
     return false;
   }
 
-  /** Clamps descendant exposure to the effective public owner. */
+  /**
+   * Clamps descendant exposure to the effective public owner.
+   *
+   * Recursive ownership also rejects a malformed parent cycle from the published surface.
+   */
   function visible(
     declaration: ISwiftDeclaration,
     ids: Map<string, ISwiftDeclaration>,

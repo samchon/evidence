@@ -7,10 +7,13 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/**
- * Classifies C# types, members, visibility defaults, and special members.
- * The fixture contrasts public declarations with inaccessible and generated
- * forms so the graph denominator cannot silently shrink or grow.
+/** Classifies C# types, members, visibility defaults, and special members.
+ *
+ * The fixture contrasts public declarations with inaccessible and generated forms so the graph denominator cannot silently shrink or grow.
+ *
+ * 1. Verify registered C# metadata identifies the certified adapter and grammar version.
+ * 2. Analyze public records, interfaces, structs, enums, delegates, fields, events, operators, and nested members across partial files.
+ * 3. Compare the full unit surface, retain two sites for the partial record and overload family, and exclude inaccessible declarations.
  */
 export async function test_csharp_units(): Promise<void> {
   // Certified metadata names the exact pinned grammar and adapter boundary.

@@ -6,7 +6,19 @@ import { join } from "node:path";
 
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
-/** Creates one typed starter config and refuses every overwrite attempt. */
+/**
+ * Initializes one explicitly named TypeScript configuration and protects it from overwrite.
+ *
+ * Initialization resolves custom paths from the supplied working directory. A
+ * successful command must create a loadable starter only at that destination;
+ * a later invocation must preserve the user's existing bytes.
+ *
+ * 1. Run init with a relative custom config path and require a successful, silent result.
+ * 2. Load the emitted config and require the test directory to contain only that file.
+ * 3. Invoke init for the same path again and require:
+ *    - Exit code 2 and an overwrite-refusal diagnostic.
+ *    - Exact preservation of the original file content.
+ */
 export async function test_command_init(): Promise<void> {
   const location = join(__dirname, `init ${randomUUID()}`);
   await TestFileSystem.experiment(location, {}, async (directory) => {

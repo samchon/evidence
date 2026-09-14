@@ -3,8 +3,19 @@ import type { IEvidenceSourceDependency } from "../structures/IEvidenceSourceDep
 
 import { SourcePath } from "./SourcePath";
 
-/** Builds deterministic active watch sets from configuration and inventory inputs. */
+/**
+ * Builds deterministic watch dependency sets from an analysis snapshot.
+ *
+ * Merging upgrades duplicate paths to recursive monitoring, preserving the
+ * broader invalidation boundary without retaining duplicate watcher requests.
+ */
 export namespace WatchDependencySet {
+  /**
+   * Combines configuration dependencies with every loaded claim and reference inventory.
+   *
+   * Watch setup uses the merged result so edits to configuration, selected claims,
+   * or selected reference sources can invalidate the published analysis.
+   */
   export function analysis(
     value: IEvidenceCheckAnalysis,
     configuration: IEvidenceSourceDependency[],
@@ -20,6 +31,12 @@ export namespace WatchDependencySet {
     );
   }
 
+  /**
+   * Normalizes, deduplicates, and orders dependency paths for stable snapshots.
+   *
+   * Duplicate paths retain recursive monitoring when any source requires it,
+   * preserving the broadest invalidation boundary in the returned set.
+   */
   export function merge(
     ...groups: IEvidenceSourceDependency[][]
   ): IEvidenceSourceDependency[] {
@@ -37,6 +54,12 @@ export namespace WatchDependencySet {
     );
   }
 
+  /**
+   * Checks whether available dependencies cover every required path at equal or broader recursion.
+   *
+   * A recursive requirement cannot be satisfied by an exact watch, while a
+   * recursive available dependency can satisfy an exact requirement for its path.
+   */
   export function contains(
     available: IEvidenceSourceDependency[],
     required: IEvidenceSourceDependency[],

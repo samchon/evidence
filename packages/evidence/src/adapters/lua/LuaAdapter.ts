@@ -18,12 +18,31 @@ import type { ILuaFileAnalysis } from "./ILuaFileAnalysis";
 import { LuaDocumentation } from "./LuaDocumentation";
 import { LuaFileScanner } from "./LuaFileScanner";
 
-/** Builds Lua source-public inventories from the configured source snapshot. */
+/**
+ * Materializes statically established Lua declarations and documentation owners.
+ *
+ * The scanner records supported globals, returned-table fields, and local alias
+ * relationships without executing the module. Materialization publishes their
+ * semantic units before LuaDoc becomes evidence hosts, so a shared source value
+ * is not assigned an arbitrary table owner merely because a comment names it.
+ * Source and syntax uncertainty remain part of the final inventory status.
+ */
 export class LuaAdapter implements IEvidenceAdapter {
-  /** Public configuration discriminator owned by this adapter. */
+  /**
+   * Lua discriminator for static global and module-table extraction.
+   *
+   * It selects Lua grammar and documentation rules. Tables remain property units
+   * rather than becoming type declarations by analogy with another language.
+   */
   public readonly type = "lua";
 
-  /** Builds a fresh inventory and releases the bounded parser session. */
+  /**
+   * Analyzes a copied Lua snapshot and returns reconciled public records.
+   *
+   * Declaration materialization precedes comment attachment, and common inventory
+   * validation checks the resulting ownership. The parser closes after success
+   * or failure; returned records contain no borrowed syntax nodes.
+   */
   public async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {
@@ -57,6 +76,8 @@ export class LuaAdapter implements IEvidenceAdapter {
         inventory.diagnostics.push(...analysis.diagnostics);
         inventory.complete &&= analysis.complete;
       }
+      // Publish the scanner-established owners before documentation is interpreted.
+      // Tag text cannot decide which table owns an otherwise ambiguous value.
       const published = this.materializeUnits(inventory, analyses);
       this.materializeDocumentation(inventory, analyses, published);
       return new EvidenceInventory([inventory]).snapshot();
@@ -65,7 +86,12 @@ export class LuaAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Converts parser failures into incomplete source analysis. */
+  /**
+   * Converts one parser failure into incomplete Lua source analysis.
+   *
+   * The returned diagnostic retains the parser category and available range so a
+   * failed file cannot be mistaken for an empty inventory during graph evaluation.
+   */
   private async scan(
     parser: EvidenceParser,
     source: IEvidenceSourceFile,
@@ -105,7 +131,12 @@ export class LuaAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Reconciles literal aliases and retains each physical declaration address. */
+  /**
+   * Materializes literal aliases into units and physical public addresses.
+   *
+   * Shared declarations retain one unit identity while each selected source
+   * address remains visible; conflicting declarations make the inventory incomplete.
+   */
   private materializeUnits(
     inventory: IEvidenceInventory,
     analyses: ILuaFileAnalysis[],
@@ -176,7 +207,12 @@ export class LuaAdapter implements IEvidenceAdapter {
     return published;
   }
 
-  /** Resolves withdrawals before publishing attached annotation hosts. */
+  /**
+   * Resolves withdrawals before publishing attached documentation hosts.
+   *
+   * Withdrawal propagation hides affected units first, then tag parsing publishes
+   * only visible attachment groups or an explicit unsupported annotation host.
+   */
   private materializeDocumentation(
     inventory: IEvidenceInventory,
     analyses: ILuaFileAnalysis[],
@@ -253,7 +289,12 @@ export class LuaAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Retains public declaration sites even when they carry no documentation. */
+  /**
+   * Publishes hosts for visible public declaration sites without documentation.
+   *
+   * These attached hosts preserve physical origin and unit membership for later
+   * graph and query consumers even when no tag carrier was parsed at the site.
+   */
   private materializeUndocumentedHosts(
     inventory: IEvidenceInventory,
     analysis: ILuaFileAnalysis,
@@ -306,7 +347,12 @@ export class LuaAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Groups published semantic owners by their physical declaration site. */
+  /**
+   * Groups published semantic owners by their physical declaration site.
+   *
+   * Multiple attachments at one site share a host and deduplicate unit IDs, while
+   * unpublished declarations do not create annotation ownership.
+   */
   private attachmentGroups(
     documentation: ILuaDocumentation,
     published: Map<string, string>,
@@ -322,7 +368,12 @@ export class LuaAdapter implements IEvidenceAdapter {
     return groups;
   }
 
-  /** Creates an attached or explicitly unsupported documentation carrier. */
+  /**
+   * Creates an attached or explicitly unsupported documentation host.
+   *
+   * A host is attached only when it has both a declaration site and published
+   * units; otherwise its repair guidance explains why tags cannot affect coverage.
+   */
   private host(
     source: IEvidenceSourceFile,
     documentation: ILuaDocumentation,
@@ -347,7 +398,12 @@ export class LuaAdapter implements IEvidenceAdapter {
     };
   }
 
-  /** Parses Evidence tags only after the adapter establishes their host. */
+  /**
+   * Parses Evidence tags after the adapter establishes their host boundary.
+   *
+   * LuaDocumentation supplies normalized, example-masked text, ensuring tags
+   * inherit the attached or unsupported ownership selected by this adapter.
+   */
   private parse(
     source: IEvidenceSourceFile,
     documentation: ILuaDocumentation,
@@ -360,7 +416,12 @@ export class LuaAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Detects Evidence or withdrawal annotations outside masked examples. */
+  /**
+   * Detects Evidence and withdrawal annotations outside masked examples.
+   *
+   * This broader scan decides whether an otherwise unattached carrier still
+   * needs an unsupported host and diagnostic processing.
+   */
   private annotation(
     analysis: ILuaFileAnalysis,
     documentation: ILuaDocumentation,
@@ -372,7 +433,12 @@ export class LuaAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Detects acknowledgements and reviews on withdrawn carriers. */
+  /**
+   * Detects acknowledgement and review annotations on withdrawn carriers.
+   *
+   * Withdrawal-only tags are excluded so hidden declarations do not retain a
+   * carrier unless it can still contribute a claim-level annotation or review.
+   */
   private claimAnnotation(
     analysis: ILuaFileAnalysis,
     documentation: ILuaDocumentation,
@@ -384,7 +450,12 @@ export class LuaAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Recognizes supported annotation names at documentation line boundaries. */
+  /**
+   * Recognizes supported annotation names at documentation line boundaries.
+   *
+   * The withdrawal mode includes hidden and ignore forms; ordinary claim parsing
+   * recognizes only evidence, exclusion, review, link, and internal annotations.
+   */
   private annotationPattern(raw: string, withdrawal: boolean): boolean {
     return withdrawal
       ? /(?:^|[\r\n])[ \t]*@(evidenceExcludeReview|evidenceReview|evidenceExclude|evidence|link|internal|hidden|ignore)\b/u.test(
@@ -395,7 +466,12 @@ export class LuaAdapter implements IEvidenceAdapter {
         );
   }
 
-  /** Follows explicit parent ownership to propagate withdrawal. */
+  /**
+   * Follows explicit parent ownership to determine effective withdrawal.
+   *
+   * A visited set prevents malformed ownership cycles from recursing forever,
+   * while a withdrawn ancestor hides each descendant from documentation hosts.
+   */
   private withdrawn(
     id: string,
     units: Map<string, IEvidenceUnit>,
@@ -411,12 +487,22 @@ export class LuaAdapter implements IEvidenceAdapter {
       : this.withdrawn(unit.parentId, units, visited);
   }
 
-  /** Separates programming kinds while unifying file-scoped identities. */
+  /**
+   * Builds a file-scoped unit identity that distinguishes programming kinds.
+   *
+   * Identity segments and the declaration symbol remain separate, allowing one
+   * Lua file to expose similarly named properties and functions without collision.
+   */
   private unitId(declaration: ILuaDeclaration): string {
     return `lua:${declaration.site.file}:${declaration.symbol}:${JSON.stringify(declaration.identity)}`;
   }
 
-  /** Marks a declaration conflict as incomplete analysis. */
+  /**
+   * Records a declaration conflict and marks the Lua inventory incomplete.
+   *
+   * The diagnostic identifies the selected source file and preserves caller
+   * repair guidance, preventing ambiguous public identity from entering coverage.
+   */
   private problem(
     inventory: IEvidenceInventory,
     analysis: ILuaFileAnalysis,

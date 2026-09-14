@@ -5,7 +5,15 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Reports Rust module, reexport, impl, conditional, macro, and parse uncertainty. */
+/** Preserves Rust module and syntax uncertainty as incomplete analysis.
+ *
+ * Modules, reexports, impls, conditions, macros, and parse failure cannot shrink coverage.
+ *
+ * 1. Analyze missing and ambiguous modules, unresolved reexports and impl owners,
+ *    conditional or expanding attributes, macros, and parse failures.
+ * 2. Require every uncertain source to report incompleteness with its matching
+ *    diagnostic instead of publishing a reduced population.
+ */
 export async function test_rust_failures(): Promise<void> {
   const adapter = new EvidenceRustAdapter();
 

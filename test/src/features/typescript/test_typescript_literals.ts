@@ -4,7 +4,13 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Keeps literal member segments exact and gives anonymous default declarations one address. */
+/** Preserves literal TypeScript member segments and default declaration identity.
+ *
+ * Punctuated member names stay literal, while each anonymous default declaration receives one public address.
+ *
+ * 1. Analyze literal members and anonymous defaults.
+ * 2. Verify exact identities and resolution behavior.
+ */
 export async function test_typescript_literals(): Promise<void> {
   const snapshot = TestSourceSnapshot.combine([
     TestSourceSnapshot.create(

@@ -10,7 +10,13 @@ import { InventoryMerge } from "./InventoryMerge";
 const VERSION = 1;
 const PRESENTED_LENGTH = 7;
 
-/** Memoizes unit content digests and selector-independent scope fingerprints. */
+/**
+ * Computes and memoizes stable fingerprints for inventory units and descendants.
+ *
+ * Fingerprints exclude annotation text and presentation-only whitespace so an
+ * acknowledgement edit does not look like a specification change. The index
+ * owns only references to the immutable analysis inventory.
+ */
 export class EvidenceFingerprintIndex {
   private readonly annotations = new Map<string, IEvidenceSourceRange[]>();
   private readonly children = new Map<string, IEvidenceUnit[]>();
@@ -19,6 +25,10 @@ export class EvidenceFingerprintIndex {
   private readonly sources = new Map<string, IEvidenceSourceFile>();
   private readonly units = new Map<string, IEvidenceUnit>();
 
+  /** Builds source, annotation, and parent indexes once for one inventory snapshot.
+   *
+   * Fingerprint generation reuses these indexes to connect units to their physical content without repeatedly scanning inventory collections.
+   */
   public constructor(inventory: IEvidenceInventory) {
     for (const source of inventory.sources)
       this.sources.set(source.physicalPath, source);
@@ -39,6 +49,12 @@ export class EvidenceFingerprintIndex {
     }
   }
 
+  /**
+   * Returns the root content digest and subtree scope digest for one semantic identity.
+   *
+   * Unknown identities fail rather than producing an empty fingerprint, because
+   * absence would make a stale graph appear unchanged.
+   */
   public inspect(unitId: string): IEvidenceFingerprint {
     const remembered = this.fingerprints.get(unitId);
     if (remembered !== undefined) return remembered;
@@ -77,6 +93,10 @@ export class EvidenceFingerprintIndex {
     return output;
   }
 
+  /** Collects a cycle-safe structural subtree for one unit.
+   *
+   * The visited set prevents malformed parent links from looping fingerprint generation while preserving each reachable child once.
+   */
   private collect(root: IEvidenceUnit): IEvidenceUnit[] {
     const output: IEvidenceUnit[] = [];
     const queue: IEvidenceUnit[] = [root];
@@ -91,6 +111,10 @@ export class EvidenceFingerprintIndex {
     return output;
   }
 
+  /** Adds withdrawal tags to the content contribution because they alter effective scope.
+   *
+   * A unit's fingerprint must change when a withdrawal changes which declarations remain active, even if its source range is unchanged.
+   */
   private contribution(unit: IEvidenceUnit): string {
     const withdrawals = InventoryMerge.unique(
       unit.withdrawals.map((withdrawal) => withdrawal.tag),
@@ -101,6 +125,10 @@ export class EvidenceFingerprintIndex {
       : `${this.contentDigest(unit)}\0withdrawn:${withdrawals.join(",")}`;
   }
 
+  /** Hashes source sites after stripping mapped annotations and normalizing presentation differences.
+   *
+   * Annotation edits are tracked separately, while substantive source changes remain stable across line-ending and trailing-space differences.
+   */
   private contentDigest(unit: IEvidenceUnit): string {
     if (unit.contentDigest !== undefined) return unit.contentDigest;
     const remembered = this.contentDigests.get(unit.id);
@@ -140,6 +168,10 @@ export class EvidenceFingerprintIndex {
     return digest;
   }
 
+  /** Removes only overlapping annotation spans while retaining surrounding source exactly for semantic hashing.
+   *
+   * Ranges are ordered before removal so adjacent or overlapping tags cannot duplicate or erase unrelated source fragments.
+   */
   private withoutAnnotations(
     source: IEvidenceSourceFile,
     range: IEvidenceSourceRange,
@@ -163,6 +195,10 @@ export class EvidenceFingerprintIndex {
   }
 }
 
+/** Orders source spans by position before content fragments are concatenated.
+ *
+ * Stable ordering makes a fingerprint independent of adapter collection order for sites in the same file.
+ */
 function compareRanges(
   x: IEvidenceSourceRange,
   y: IEvidenceSourceRange,
@@ -171,6 +207,10 @@ function compareRanges(
   return start !== 0 ? start : x.end.offset - y.end.offset;
 }
 
+/** Normalizes line endings and trailing whitespace without changing interior source content.
+ *
+ * Fingerprints ignore presentation differences that do not affect the authored declaration body.
+ */
 function normalize(text: string): string {
   const lines = text
     .replaceAll("\r\n", "\n")

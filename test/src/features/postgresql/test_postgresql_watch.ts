@@ -5,7 +5,14 @@ import { join } from "node:path";
 
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
-/** Rebuilds cross-file additive schema ownership after new files, syntax failure, and recovery. */
+/** Rebuilds PostgreSQL cross-file ownership during watch cycles.
+ *
+ * Newly selected files, syntax failures, and repair must replace the current additive schema inventory.
+ *
+ * 1. Start with covered schema input and compare cycles to a fresh check.
+ * 2. Add a selected file and introduce a parse failure.
+ * 3. Repair it and require coverage recovery.
+ */
 export async function test_postgresql_watch(): Promise<void> {
   await TestFileSystem.experiment(
     "postgresql-watch",

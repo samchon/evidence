@@ -10,15 +10,27 @@ import type { EvidenceProgrammingType } from "../typings/EvidenceProgrammingType
 import { EcmaScriptSyntax } from "../adapters/ecmascript/EcmaScriptSyntax";
 import { SourcePath } from "./SourcePath";
 
-/** Finds runtime imports that can change one evaluated TypeScript configuration. */
+/**
+ * Finds static local and package-resolution dependencies of one evaluated config.
+ *
+ * It records dependencies before reads and resolution complete, allowing watch
+ * mode to observe a repaired import rather than remaining stuck on a failed scan.
+ */
 export class ConfigDependencyScanner {
   private readonly dependencies = new Map<string, IEvidenceSourceDependency>();
   private readonly scanned = new Set<string>();
   private readonly parser = new EvidenceParser({ concurrency: 1 });
 
+  /** Creates a dependency scanner for one configuration entry file.
+   *
+   * The scanner owns a private parser and closes it after `scan` completes, so callers receive only serializable watch dependencies.
+   */
   public constructor(private readonly configFile: string) {}
 
-  /** Scans the configuration and every statically reachable local module. */
+  /** Scans the configuration and every statically reachable local module.
+   *
+   * Parser resources close on both success and failure, while already discovered dependencies remain available through `list` for watch recovery.
+   */
   public async scan(): Promise<IEvidenceSourceDependency[]> {
     try {
       if (programmingType(this.configFile) !== undefined)
@@ -30,13 +42,20 @@ export class ConfigDependencyScanner {
     }
   }
 
-  /** Returns paths found before a failed read or parse so repairs remain observable. */
+  /** Returns ordered dependencies discovered before a failed read or parse.
+   *
+   * Watch setup uses this partial result so a repaired module or package boundary can restart a failed configuration cycle.
+   */
   public list(): IEvidenceSourceDependency[] {
     return Array.from(this.dependencies.values()).sort((left, right) =>
       left.path < right.path ? -1 : left.path > right.path ? 1 : 0,
     );
   }
 
+  /** Watches and parses one physical module once, then follows its static specifiers.
+   *
+   * Logical and real paths are both retained because symlink changes can alter resolution even when the parsed physical file is unchanged.
+   */
   private async scanFile(file: string): Promise<void> {
     const logical = SourcePath.slash(path.resolve(file));
     this.watch(logical, false);
@@ -65,6 +84,10 @@ export class ConfigDependencyScanner {
         await this.scanFile(resolved);
   }
 
+  /** Resolves one static specifier while recording paths that can alter its resolution.
+   *
+   * Local, file URL, and package forms use their respective Node-compatible lookup paths before recursive scanning continues.
+   */
   private async resolve(owner: string, specifier: string): Promise<string[]> {
     if (specifier.startsWith("node:") || isBuiltin(specifier)) return [];
     if (specifier.startsWith("file:"))
@@ -96,6 +119,10 @@ export class ConfigDependencyScanner {
     }
   }
 
+  /** Watches package boundaries whose module mode changes temporary config evaluation.
+   *
+   * The nearest `package.json` controls Node module kind, so its appearance or replacement must invalidate the configuration dependency set.
+   */
   private async watchModuleScope(file: string): Promise<void> {
     let directory = path.dirname(file);
     for (;;) {
@@ -112,6 +139,10 @@ export class ConfigDependencyScanner {
     }
   }
 
+  /** Watches each `node_modules` candidate searched by Node package resolution.
+   *
+   * A package installed higher in the directory tree can make a previously unresolved configuration import valid.
+   */
   private async watchPackageResolution(
     owner: string,
     packageName: string,
@@ -135,6 +166,10 @@ export class ConfigDependencyScanner {
     }
   }
 
+  /** Validates an exact resolved module and watches its parent for deletion or replacement.
+   *
+   * The parent dependency lets watch mode notice a module that disappears after resolution has succeeded.
+   */
   private async resolveExact(file: string): Promise<string[]> {
     const location = SourcePath.slash(path.resolve(file));
     this.watch(location, false);
@@ -143,6 +178,10 @@ export class ConfigDependencyScanner {
     throw new Error(`Configuration module '${location}' is not a file.`);
   }
 
+  /** Tries TypeScript-aware local extension candidates in deterministic order.
+   *
+   * The ordered candidates mirror supported config imports so a newly created higher-precedence file can restart resolution.
+   */
   private async resolvePath(base: string): Promise<string[]> {
     const candidates = moduleCandidates(base);
     for (const candidate of candidates) {
@@ -157,6 +196,10 @@ export class ConfigDependencyScanner {
     throw new Error(`Could not resolve local configuration module '${base}'.`);
   }
 
+  /** Retains recursive missing package paths so installation or repair restarts the watch cycle.
+   *
+   * Failed package resolution still establishes dependencies on every searched package root instead of becoming a terminal blind spot.
+   */
   private async watchMissingPackage(
     owner: string,
     specifier: string,
@@ -175,6 +218,10 @@ export class ConfigDependencyScanner {
     }
   }
 
+  /** Merges duplicate dependencies and upgrades them to recursive observation when needed.
+   *
+   * A path reached through several import routes retains the strongest watch requirement without duplicate entries.
+   */
   private watch(location: string, recursive: boolean): void {
     const previous = this.dependencies.get(location);
     this.dependencies.set(location, {
@@ -184,6 +231,10 @@ export class ConfigDependencyScanner {
   }
 }
 
+/** Extracts only statically knowable imports and rejects dynamic dependency expressions.
+ *
+ * Configuration watching can follow a fixed dependency graph, but dynamic `import` or `require` arguments require runtime execution and therefore fail visibly.
+ */
 function collectSpecifiers(session: EvidenceParseSession): string[] {
   const output = new Set<string>();
   for (const statement of session.root.namedChildren) {
@@ -221,6 +272,10 @@ function collectSpecifiers(session: EvidenceParseSession): string[] {
   return Array.from(output);
 }
 
+/** Chooses a parser only for JavaScript-family modules relevant to configuration imports.
+ *
+ * Non-code files can be resolved as dependencies but are not recursively parsed for module specifiers.
+ */
 function programmingType(file: string): EvidenceProgrammingType | undefined {
   const extension = path.extname(file).toLowerCase();
   if ([".ts", ".tsx", ".cts", ".mts"].includes(extension)) return "typescript";
@@ -228,6 +283,10 @@ function programmingType(file: string): EvidenceProgrammingType | undefined {
   return undefined;
 }
 
+/** Produces the supported local TypeScript and JavaScript extension fallback order.
+ *
+ * Local import resolution uses this ordered list to match configuration evaluation and register each candidate for watch recovery.
+ */
 function moduleCandidates(base: string): string[] {
   const extension = path.extname(base).toLowerCase();
   if (extension === ".js" || extension === ".jsx")
@@ -259,14 +318,26 @@ function moduleCandidates(base: string): string[] {
   ]);
 }
 
+/** Replaces an existing extension without applying path normalization.
+ *
+ * Candidate generation preserves the authored base path while trying TypeScript counterparts for JavaScript spellings.
+ */
 function replaceExtension(file: string, extension: string): string {
   return file.slice(0, -path.extname(file).length) + extension;
 }
 
+/** Retains each candidate's first occurrence while eliminating fallback duplicates.
+ *
+ * This preserves deterministic resolution precedence when extension substitution produces the same path twice.
+ */
 function unique(values: string[]): string[] {
   return Array.from(new Set(values));
 }
 
+/** Extracts the package root so subpath resolution watches the owning package boundary.
+ *
+ * Scoped specifiers retain their first two segments; ordinary packages retain only the first segment.
+ */
 function packageSpecifier(specifier: string): string {
   const segments = specifier.split("/");
   return specifier.startsWith("@")
@@ -274,6 +345,10 @@ function packageSpecifier(specifier: string): string {
     : (segments[0] ?? specifier);
 }
 
+/** Identifies expected missing-path errors that resolution can continue past.
+ *
+ * Resolution probes may skip absent candidates, whereas permission and other filesystem failures must remain diagnostic.
+ */
 function absent(cause: unknown): boolean {
   return (
     cause instanceof Error &&

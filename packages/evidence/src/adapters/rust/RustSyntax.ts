@@ -3,8 +3,19 @@ import type { Node } from "web-tree-sitter";
 import type { IEvidenceCommentSyntax } from "../../structures/IEvidenceCommentSyntax";
 import type { RustVisibility } from "./RustVisibility";
 
-/** Grammar-specific Rust names, paths, visibility, attributes, and documentation. */
+/**
+ * Provides grammar-level Rust extraction helpers for names, paths, attributes, and documentation.
+ *
+ * RustFileScanner uses these functions to retain syntax facts. RustModuleResolver
+ * later decides crate reachability and public ownership from the scanner records.
+ */
 export namespace RustSyntax {
+  /**
+   * Reads a supported Rust identifier spelling from a grammar node.
+   *
+   * Scanners use it for declaration and member names; unsupported syntax returns
+   * undefined so extraction can preserve uncertainty instead of inventing a name.
+   */
   export function name(node: Node | null): string | undefined {
     return node !== null &&
       (node.type === "identifier" ||
@@ -14,6 +25,12 @@ export namespace RustSyntax {
       : undefined;
   }
 
+  /**
+   * Classifies the visibility modifier written on a Rust declaration.
+   *
+   * Bare `pub` is externally public, scoped forms are restricted, and omitted
+   * modifiers are private. Module resolution evaluates the resulting boundary.
+   */
   export function visibility(node: Node): RustVisibility {
     const modifier = node.namedChildren.find(
       (child) => child.type === "visibility_modifier",
@@ -22,6 +39,12 @@ export namespace RustSyntax {
     return modifier.text.trim() === "pub" ? "public" : "restricted";
   }
 
+  /**
+   * Reads a statically supported Rust path as ordered segments.
+   *
+   * Generic wrappers are unwrapped while `crate`, `self`, and `super` remain
+   * literal segments for RustModuleResolver to interpret in its current module.
+   */
   export function path(node: Node | null): string[] | undefined {
     if (node === null) return undefined;
     const direct = name(node);
@@ -43,6 +66,12 @@ export namespace RustSyntax {
     return undefined;
   }
 
+  /**
+   * Collects declared type-parameter names from a Rust item.
+   *
+   * Impl ownership resolution uses these names to distinguish local generic
+   * parameters from paths that must resolve to selected nominal declarations.
+   */
   export function typeParameters(node: Node): string[] {
     const parameters = node.childForFieldName("type_parameters");
     if (parameters === null) return [];
@@ -54,7 +83,12 @@ export namespace RustSyntax {
       });
   }
 
-  /** Reads outer attributes across ordinary comments, which Rust treats as whitespace. */
+  /**
+   * Collects outer attributes and outer documentation immediately preceding an item.
+   *
+   * Ordinary comments are skipped because Rust treats them as whitespace. The
+   * returned source order lets scanners attach documentation and inspect attributes.
+   */
   export function attributes(node: Node): Node[] {
     const output: Node[] = [];
     let previous = node.previousNamedSibling;
@@ -70,7 +104,12 @@ export namespace RustSyntax {
     return output.reverse();
   }
 
-  /** Distinguishes whitespace comments from outer and inner documentation attributes. */
+  /**
+   * States whether a comment is ordinary Rust whitespace rather than documentation.
+   *
+   * Attribute collection skips these comments without treating them as evidence
+   * carriers or allowing them to interrupt a valid outer-attribute sequence.
+   */
   export function ordinaryComment(node: Node): boolean {
     return (
       (node.type === "line_comment" || node.type === "block_comment") &&
@@ -79,6 +118,12 @@ export namespace RustSyntax {
     );
   }
 
+  /**
+   * Reads the qualified name from a Rust attribute or its wrapper item.
+   *
+   * Scanner attribute policy uses the name to recognize documentation and report
+   * expansion risks; unsupported attribute shapes return undefined.
+   */
   export function attributeName(node: Node): string | undefined {
     const attribute =
       node.type === "attribute_item" || node.type === "inner_attribute_item"
@@ -93,6 +138,12 @@ export namespace RustSyntax {
     return segments === undefined ? undefined : segments.join("::");
   }
 
+  /**
+   * Returns the value expression of a Rust attribute or its wrapper item.
+   *
+   * Documentation-attribute handling validates this node as a supported static
+   * string before it creates a carrier; absent values return null.
+   */
   export function attributeValue(node: Node): Node | null {
     const attribute =
       node.type === "attribute_item" || node.type === "inner_attribute_item"
@@ -106,10 +157,20 @@ export namespace RustSyntax {
       : (attribute.childForFieldName("value") ?? null);
   }
 
+  /**
+   * States whether a Rust comment uses the outer documentation form.
+   *
+   * The scanner may attach only these comment carriers to following item sites.
+   */
   export function outerDocumentation(node: Node): boolean {
     return isOuterDocumentation(node);
   }
 
+  /**
+   * States whether a Rust comment uses the inner documentation form.
+   *
+   * Inner carriers document their containing module instead of the following item.
+   */
   export function innerDocumentation(node: Node): boolean {
     return (
       (node.type === "line_comment" || node.type === "block_comment") &&
@@ -117,6 +178,12 @@ export namespace RustSyntax {
     );
   }
 
+  /**
+   * Supplies delimiter rules for a Rust comment carrier.
+   *
+   * RustFileScanner uses the returned syntax to map text and preserve tag
+   * coordinates for line, block, ordinary, and documentation comment forms.
+   */
   export function comment(node: Node): IEvidenceCommentSyntax {
     const outer = isOuterDocumentation(node);
     const inner = innerDocumentation(node);
@@ -149,6 +216,12 @@ export namespace RustSyntax {
         };
   }
 
+  /**
+   * Supplies delimiter rules for a supported Rust string literal.
+   *
+   * Annotation scanning uses this result for ordinary and raw strings, whose
+   * contents can report unsupported tags but cannot authorize withdrawals.
+   */
   export function string(node: Node): IEvidenceCommentSyntax | undefined {
     if (node.type === "string_literal")
       return {

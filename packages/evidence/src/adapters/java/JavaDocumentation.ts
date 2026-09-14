@@ -3,7 +3,12 @@ import type { IEvidenceDocumentation } from "../../structures/IEvidenceDocumenta
 import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { IJavaDocumentation } from "./IJavaDocumentation";
 
-/** Reads Javadoc while masking inline and preformatted code examples. */
+/**
+ * Reads Javadoc while masking inline and preformatted code examples.
+ *
+ * The adapter preserves original source coordinates while removing example text
+ * from tag parsing, so code-looking annotations cannot create evidence records.
+ */
 export namespace JavaDocumentation {
   export function read(
     source: IEvidenceSourceFile,

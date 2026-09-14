@@ -2,26 +2,65 @@ import type { EvidenceSeverity } from "../typings/EvidenceSeverity";
 
 import type { IEvidenceReference } from "./IEvidenceReference";
 
-/** Common claim settings, parameterized by artifact type and symbol kind. */
+/**
+ * Shared selection rules for declarations that carry a claim's evidence.
+ *
+ * A claim selects files and symbol kinds whose public declarations may host
+ * acknowledgements. Its references independently select the target units those
+ * hosts must answer. A host remains selected even without a tag, allowing
+ * checklist and cardinality policies to detect an unanswered declaration.
+ *
+ * Configuration planning resolves inherited severity and artifact defaults,
+ * validates disabled declarations, and omits inactive populations from loading
+ * and watch. The generic parameters restrict each artifact's discriminator and
+ * supported selector vocabulary without adding a separate language option.
+ *
+ * @example
+ * const claim: IEvidenceClaimBase<"typescript", "function"> = {
+ *   type: "typescript",
+ *   files: ["src/*.ts"],
+ *   symbol: "function",
+ *   reference: [
+ *     { type: "markdown", files: ["requirements.md"] },
+ *     { type: "swagger", file: "openapi.json" },
+ *   ],
+ * };
+ * // Both reference populations require independent coverage.
+ */
 export interface IEvidenceClaimBase<
   Type extends string,
   SymbolKind extends string,
 > {
-  /** Artifact type of the claim files. */
+  /**
+   * Artifact discriminator selecting the claim's extraction rules.
+   *
+   * This determines which adapter interprets public declarations and eligible
+   * documentation. References can independently select another artifact family.
+   */
   type: Type;
 
-  /** Optional label for diagnostics; it does not affect identity or coverage. */
+  /**
+   * Optional label identifying the claim in diagnostics.
+   *
+   * Names do not establish semantic identity or combine obligations. Two claims
+   * with the same label still require independent coverage.
+   */
   name?: string;
 
   /**
-   * Overrides the root configuration severity. Omit or use `undefined` to inherit.
-   * `"off"` disables this claim and its references.
+   * Overrides the root configuration's diagnostic severity.
+   *
+   * Omit or use `undefined` to inherit. `"off"` disables this claim and its
+   * references after configuration validation, avoiding their source loading.
    */
   severity?: EvidenceSeverity | undefined;
 
   /**
-   * Skip this claim's populations, references, coverage obligations, and watched
-   * inputs. Its configuration shape is still validated.
+   * Disables the claim without removing its authored configuration.
+   *
+   * Skip its populations, references, coverage obligations, and watched inputs.
+   * Its shape is still validated so reenabling it cannot reveal ignored malformed
+   * settings that were accepted only because the claim was inactive.
    *
    * @default false
    */
@@ -51,6 +90,7 @@ export interface IEvidenceClaimBase<
 
   /**
    * Symbol kinds eligible to host evidence; accepts one kind or a nonempty array.
+   *
    * Omit to select every supported kind for the artifact:
    *
    * - Programming: the language's supported type, function, and property kinds.
@@ -74,9 +114,11 @@ export interface IEvidenceClaimBase<
   evidenceExcludeCarriers?: string[];
 
   /**
-   * One reference or a nonempty array, with any artifact family allowed for every
-   * claim. Each reference requires complete coverage independently; coverage is
-   * never pooled between references.
+   * One reference or a nonempty array of independent evidence requirements.
+   *
+   * Every claim may reference any artifact family. Each reference requires complete
+   * coverage independently, including repeated entries selecting the same files.
+   * An acknowledgement accepted under one policy does not bypass another policy.
    */
   reference: IEvidenceReference | IEvidenceReference[];
 }

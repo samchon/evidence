@@ -2,7 +2,12 @@ import type { Node } from "web-tree-sitter";
 
 import type { IEvidenceCommentSyntax } from "../../structures/IEvidenceCommentSyntax";
 
-/** Grammar-specific Go spelling and ownership helpers. */
+/**
+ * Grammar-specific Go spelling and ownership helpers.
+ *
+ * Go extraction uses these helpers to recognize exported identifiers, receivers,
+ * embedded fields, comments, and literal carriers directly from Tree-sitter nodes.
+ */
 export namespace GoSyntax {
   export function name(node: Node | null): string | undefined {
     return node !== null &&

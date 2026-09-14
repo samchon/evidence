@@ -3,7 +3,14 @@ import { TestValidator } from "@nestia/e2e";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Rejects contradictory part relationships and ambiguous exports while allowing local export shadowing and cycles. */
+/** Rejects contradictory Dart library topology and ambiguous exports.
+ *
+ * Library ownership and exported names must be unambiguous, while local shadowing and supported export cycles still have a defined static surface.
+ *
+ * 1. Analyze mismatched part declarations and exports with competing visible names.
+ * 2. Require each contradictory topology or ambiguous export to be incomplete with its expected diagnostic.
+ * 3. Verify local export shadowing and supported cycles remain analyzable.
+ */
 export async function test_dart_library_failures(): Promise<void> {
   const adapter = new EvidenceDartAdapter();
   for (const [sources, code] of new Map<string[], string>([

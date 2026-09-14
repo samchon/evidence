@@ -3,7 +3,12 @@ import type { IEvidenceDocumentation } from "../../structures/IEvidenceDocumenta
 import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { ICSharpDocumentation } from "./ICSharpDocumentation";
 
-/** Reads C# XML documentation while masking code and example elements. */
+/**
+ * Reads C# XML documentation while masking code and example elements.
+ *
+ * The C# adapter retains mapped prose from the shared reader but hides example
+ * content so its code-like text cannot be interpreted as Evidence annotations.
+ */
 export namespace CSharpDocumentation {
   export function read(
     source: IEvidenceSourceFile,

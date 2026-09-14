@@ -3,7 +3,22 @@ import type { IEvidenceCheckCommand } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import assert from "node:assert/strict";
 
-/** Parses aliases, common options, and every reserved or invalid combination. */
+/**
+ * Parses supported command forms while rejecting ambiguous and incompatible arguments.
+ *
+ * The parser is the contract between CLI spelling and typed operations. It must
+ * retain authored paths until execution, assign operation-specific defaults, and
+ * stop invalid combinations before they can choose an unintended action.
+ *
+ * 1. Require bare and explicit check forms to produce the same defaults, and
+ *    require both watch aliases to enable watch on that command.
+ * 2. Parse check, init, list, inspect, graph, and languages forms; verify their
+ *    operation-specific options, defaults, and supported language or kind filters.
+ * 3. Require help and version flags to short-circuit project-option processing.
+ * 4. Reject unknown commands and options, missing values, duplicate settings,
+ *    unsupported formats, unsupported command-option pairs, malformed inspect
+ *    arguments, duplicate watch flags, and invalid language or kind filters.
+ */
 export function test_command_parse(): void {
   // Bare invocation and the explicit command have the same complete defaults.
   const defaults: IEvidenceCheckCommand = {

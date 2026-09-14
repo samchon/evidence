@@ -4,7 +4,14 @@ import { dedent } from "@typia/utils";
 import { join } from "node:path";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
-/** Exercises real configuration selectors in both database graph roles with passing and missing-evidence cases. */
+/** Exercises SQL configuration selectors in both database graph roles.
+ *
+ * The evaluated configuration must preserve covered and missing-evidence behavior for each selected SQL population.
+ *
+ * 1. Run real claim and reference configurations for each selector.
+ * 2. Evaluate matching acknowledgement and missing-evidence cases.
+ * 3. Require the resulting status to match each scenario.
+ */
 export async function test_sql_graph(): Promise<void> {
   const schema = dedent`
     -- @evidence ./requirement.ts#requirement Verifies the table.

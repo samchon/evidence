@@ -18,17 +18,47 @@ import type { ISqlFileAnalysis } from "./ISqlFileAnalysis";
 import { SqlDocumentation } from "./SqlDocumentation";
 import type { ISqlAdapterOptions } from "./ISqlAdapterOptions";
 
-/** Builds database inventories from the configured source snapshot. */
+/**
+ * Materializes SQL-family inventories using an explicitly selected dialect scanner.
+ *
+ * Dialect options own parsing and optional cross-file ownership resolution. This
+ * shared layer manages parser lifetime, semantic declaration grouping, public
+ * addresses, and documentation materialization. It analyzes source declarations
+ * without connecting to a database or executing the supplied SQL.
+ */
 export class SqlAdapter implements IEvidenceAdapter {
-  /** Public configuration discriminator owned by this adapter. */
+  /**
+   * Database family selected by the supplied dialect options.
+   *
+   * The parser uses it for grammar selection; a shared SQL extension does not
+   * override the configured dialect.
+   */
   public readonly type;
 
-  /** Supplies the configured dialect and its independent extraction policy. */
-  public constructor(private readonly options: ISqlAdapterOptions) {
+  /**
+   * Selects a dialect scanner and its optional cross-file ownership resolver.
+   *
+   * Construction records extraction policy without loading source or allocating
+   * a parser runtime; analyze owns those resources for each snapshot.
+   */
+  public constructor(
+    /**
+     * Dialect-specific grammar discriminator and extraction hooks.
+     *
+     * The resolver, when present, runs after all file scans and before unit publication.
+     */
+    private readonly options: ISqlAdapterOptions,
+  ) {
     this.type = options.type;
   }
 
-  /** Builds a fresh inventory and releases the bounded parser session. */
+  /**
+   * Builds an owned SQL inventory through dialect scanning and shared materialization.
+   *
+   * Source and parser failures retain incomplete state. Optional ownership
+   * resolution precedes public grouping and annotation attachment, and native
+   * parser resources close in cleanup after accepted scans settle.
+   */
   public async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {
@@ -58,6 +88,8 @@ export class SqlAdapter implements IEvidenceAdapter {
       const analyses = await Promise.all(
         input.files.map((source) => this.scan(parser, source)),
       );
+      // ALTER or COMMENT ownership may depend on declarations in another file.
+      // Dialect resolution must finish before public IDs and hosts are finalized.
       this.options.resolve?.(analyses);
       for (const analysis of analyses) {
         inventory.diagnostics.push(...analysis.diagnostics);
@@ -71,7 +103,12 @@ export class SqlAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Converts parser failures into incomplete source analysis. */
+  /**
+   * Invokes the configured dialect scanner within a borrowed parse session.
+   *
+   * A failed parse becomes a dialect-prefixed diagnostic with source coordinates
+   * and incomplete state, preserving its effect on the coverage denominator.
+   */
   private async scan(
     parser: EvidenceParser,
     source: IEvidenceSourceFile,
@@ -111,7 +148,13 @@ export class SqlAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Reconciles schema identities and retains each physical declaration address. */
+  /**
+   * Publishes public schema identities with explicit parents and physical aliases.
+   *
+   * Source-local declaration IDs are mapped before parents are assigned. Repeated
+   * declarations require an explicit merge allowance; otherwise a conflict remains
+   * a diagnostic instead of silently combining independent schema definitions.
+   */
   private materializeUnits(
     inventory: IEvidenceInventory,
     analyses: ISqlFileAnalysis[],
@@ -188,7 +231,11 @@ export class SqlAdapter implements IEvidenceAdapter {
     return published;
   }
 
-  /** Resolves withdrawals before publishing attached annotation hosts. */
+  /**
+   * Resolves withdrawals before publishing attached annotation hosts.
+   *
+   * Hidden declaration sites cannot receive claim or review hosts in the inventory.
+   */
   private materializeDocumentation(
     inventory: IEvidenceInventory,
     analyses: ISqlFileAnalysis[],
@@ -264,7 +311,11 @@ export class SqlAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Retains public declaration sites even when they carry no documentation. */
+  /**
+   * Retains public declaration sites even when they carry no documentation.
+   *
+   * These hosts keep missing documentation visible to later graph evaluation.
+   */
   private materializeUndocumentedHosts(
     inventory: IEvidenceInventory,
     analysis: ISqlFileAnalysis,
@@ -317,7 +368,11 @@ export class SqlAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Groups published semantic owners by their physical declaration site. */
+  /**
+   * Groups published semantic owners by their physical declaration site.
+   *
+   * One comment can attach to merged declarations that share a single source range.
+   */
   private attachmentGroups(
     documentation: ISqlDocumentation,
     published: Map<string, string>,
@@ -333,7 +388,11 @@ export class SqlAdapter implements IEvidenceAdapter {
     return groups;
   }
 
-  /** Creates an attached or explicitly unsupported documentation carrier. */
+  /**
+   * Creates an attached or explicitly unsupported documentation carrier.
+   *
+   * Unsupported carriers remain materialized so diagnostics can direct users to a valid site.
+   */
   private host(
     source: IEvidenceSourceFile,
     documentation: ISqlDocumentation,
@@ -358,7 +417,11 @@ export class SqlAdapter implements IEvidenceAdapter {
     };
   }
 
-  /** Parses Evidence tags only after the adapter establishes their host. */
+  /**
+   * Parses Evidence tags only after the adapter establishes their host.
+   *
+   * Tag parsing needs the resolved host identity and attachment decision.
+   */
   private parse(
     source: IEvidenceSourceFile,
     documentation: ISqlDocumentation,
@@ -371,7 +434,11 @@ export class SqlAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Detects Evidence or withdrawal annotations outside masked examples. */
+  /**
+   * Detects Evidence or withdrawal annotations outside masked examples.
+   *
+   * The result retains otherwise detached carriers that require a diagnostic host.
+   */
   private annotation(
     analysis: ISqlFileAnalysis,
     documentation: ISqlDocumentation,
@@ -383,7 +450,11 @@ export class SqlAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Detects acknowledgements and reviews on withdrawn carriers. */
+  /**
+   * Detects acknowledgements and reviews on withdrawn carriers.
+   *
+   * Withdrawal-only carriers do not create ordinary claim hosts.
+   */
   private claimAnnotation(
     analysis: ISqlFileAnalysis,
     documentation: ISqlDocumentation,
@@ -395,7 +466,11 @@ export class SqlAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Recognizes supported annotation names at documentation line boundaries. */
+  /**
+   * Recognizes supported annotation names at documentation line boundaries.
+   *
+   * Boundary matching prevents prose and examples from becoming annotation syntax.
+   */
   private annotationPattern(raw: string, withdrawal: boolean): boolean {
     return withdrawal
       ? /(?:^|[\r\n])[ \t]*@(evidenceExcludeReview|evidenceReview|evidenceExclude|evidence|link|internal|hidden|ignore)\b/u.test(
@@ -406,7 +481,11 @@ export class SqlAdapter implements IEvidenceAdapter {
         );
   }
 
-  /** Follows explicit parent ownership to propagate withdrawal. */
+  /**
+   * Follows explicit parent ownership to propagate withdrawal.
+   *
+   * A visited set preserves termination when malformed ownership would otherwise cycle.
+   */
   private withdrawn(
     id: string,
     units: Map<string, IEvidenceUnit>,
@@ -422,12 +501,20 @@ export class SqlAdapter implements IEvidenceAdapter {
       : this.withdrawn(unit.parentId, units, visited);
   }
 
-  /** Separates database kinds while unifying schema identities. */
+  /**
+   * Separates database kinds while unifying schema identities.
+   *
+   * Unit IDs remain stable across physical declaration sites for one database selector.
+   */
   private unitId(declaration: ISqlDeclaration): string {
     return `${this.type}:${declaration.symbol}:${JSON.stringify(declaration.identity)}`;
   }
 
-  /** Marks a declaration conflict as incomplete analysis. */
+  /**
+   * Marks a declaration conflict as incomplete analysis.
+   *
+   * A conflict must not allow the remaining declarations to appear as a complete population.
+   */
   private problem(
     inventory: IEvidenceInventory,
     analysis: ISqlFileAnalysis,

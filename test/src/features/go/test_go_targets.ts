@@ -5,7 +5,14 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Resolves Go functions and receiver methods through actual declaration and owner files. */
+/** Resolves Go functions and receiver methods through declaration and owner files.
+ *
+ * Receiver ownership and file-relative target paths determine the resolved public declaration.
+ *
+ * 1. Analyze functions and receiver methods.
+ * 2. Resolve supported targets.
+ * 3. Require wrong owner or file paths to remain unresolved.
+ */
 export async function test_go_targets(): Promise<void> {
   const adapter = new EvidenceGoAdapter();
   const reference = await adapter.analyze(

@@ -5,7 +5,13 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Resolves aliases, defaults, type-only edges, imports, stars, and namespace reexports. */
+/** Resolves TypeScript public exports through every supported edge.
+ *
+ * Aliases, defaults, type-only edges, imports, stars, and namespaces change which declarations are public.
+ *
+ * 1. Analyze sources with each export form.
+ * 2. Verify public identities, aliases, and target resolution.
+ */
 export async function test_typescript_exports(): Promise<void> {
   const snapshot = TestSourceSnapshot.combine([
     TestSourceSnapshot.create(

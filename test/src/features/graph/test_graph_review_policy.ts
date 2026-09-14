@@ -15,7 +15,26 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Reports exactly one actionable review state for each accepted acknowledgement. */
+/**
+ * Classifies required evidence reviews by the presence and freshness of fingerprints.
+ *
+ * One requirement is acknowledged by four functions whose review states differ.
+ * The graph should issue the actionable repair for each state once and stop
+ * deriving review freshness when resolution data is incomplete.
+ *
+ * 1. Create missing, unfingerprinted, stale, and current review declarations for
+ *    one Markdown requirement, then enable required reviews.
+ * 2. Require exactly one diagnostic for each repairable state:
+ *    - A missing review.
+ *    - A review with no fingerprint.
+ *    - A review whose fingerprint differs from the current target.
+ * 3. Require every review repair and every graph edge to carry the current
+ *    fingerprint obtained from the target inventory.
+ * 4. Disable the requirement policy and require the same declarations to emit no
+ *    review-freshness diagnostics.
+ * 5. Mark the review resolution incomplete and require an incomplete obligation
+ *    with no derived missing, absent-fingerprint, or stale-review finding.
+ */
 export async function test_graph_review_policy(): Promise<void> {
   const requirements = await new EvidenceMarkdownAdapter().analyze(
     TestSourceSnapshot.create(

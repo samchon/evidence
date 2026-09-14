@@ -14,7 +14,15 @@ import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Checks that first-member evidence covers its requirement and metadata edits preserve owner fingerprints. */
+/**
+ * Covers a requirement from evidence before a Python class's first member.
+ *
+ * The graph fixture makes the leading comment the only acknowledgement for a property, then changes its explanatory text to separate metadata from implementation identity.
+ *
+ * 1. Analyze the Markdown requirement and the class with a leading property comment.
+ * 2. Resolve the declaration into a graph and verify the requirement is covered.
+ * 3. Remove the acknowledgement and verify the exact requirement becomes missing, then compare all subtree fingerprints after metadata and member-body edits.
+ */
 export async function test_python_leading_comment_graph(): Promise<void> {
   const reference = await new EvidenceMarkdownAdapter().analyze(
     TestSourceSnapshot.create(
@@ -85,7 +93,11 @@ export async function test_python_leading_comment_graph(): Promise<void> {
   }
 }
 
-/** Evaluates property claims against each heading without permitting unacknowledged hosts. */
+/** Evaluates property claims against the selected Markdown heading.
+ *
+ * The graph enables single-host evidence and resolves only property units, so
+ * the scenario cannot pass through an unacknowledged Python declaration.
+ */
 async function evaluate(
   claim: IEvidenceInventory,
   reference: IEvidenceInventory,

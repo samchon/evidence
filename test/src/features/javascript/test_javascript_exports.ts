@@ -5,7 +5,14 @@ import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Resolves JavaScript aliases, defaults, imports, stars, shadowing, and cycles. */
+/** Resolves JavaScript aliases, defaults, imports, star exports, shadowing, and cycles.
+ *
+ * Module topology must retain defining identity while exposing supported public aliases.
+ *
+ * 1. Analyze the module graph.
+ * 2. Resolve exported paths.
+ * 3. Verify shadowing and cycles do not merge distinct owners.
+ */
 export async function test_javascript_exports(): Promise<void> {
   const adapter = new EvidenceJavaScriptAdapter();
   const inventory = await adapter.analyze(

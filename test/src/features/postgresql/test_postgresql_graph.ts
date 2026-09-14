@@ -6,7 +6,14 @@ import { join } from "node:path";
 
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
-/** Certifies each PostgreSQL selector in both roles, including missing and review-only evidence. */
+/** Evaluates PostgreSQL selectors as claim and reference populations.
+ *
+ * Selector role determines coverage ownership, and review-only annotations cannot satisfy a missing obligation.
+ *
+ * 1. Build configurations for each PostgreSQL selector in both roles.
+ * 2. Check covered and missing-evidence graph outcomes.
+ * 3. Verify review-only evidence remains uncovered.
+ */
 export async function test_postgresql_graph(): Promise<void> {
   await TestFileSystem.experiment(
     "postgresql-graph",
@@ -66,7 +73,11 @@ export async function test_postgresql_graph(): Promise<void> {
   );
 }
 
-/** Places each acknowledgement on a host selected by that claim's database selector. */
+/** Builds PostgreSQL source with one acknowledgement on the selected host kind.
+ *
+ * Unselected model, column, and relation positions receive ordinary prose so
+ * each selector scenario isolates its own eligible documentation carrier.
+ */
 function claimSource(symbol: EvidenceDatabaseSymbol): string {
   return dedent`
     -- ${symbol === "model" ? "@evidence ./reference.ts#contract Covers the model." : "Table declaration."}

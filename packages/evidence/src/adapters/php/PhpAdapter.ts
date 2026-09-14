@@ -21,12 +21,29 @@ import type { IPhpFileAnalysis } from "./IPhpFileAnalysis";
 import { PhpDocumentation } from "./PhpDocumentation";
 import { PhpFileScanner } from "./PhpFileScanner";
 
-/** Builds PHP source-public inventories from the configured source snapshot. */
+/**
+ * Extracts PHP public identities and documentation with file-context fingerprints.
+ *
+ * Declaration groups and public addresses are materialized before annotations.
+ * Local imports and directives can change declaration meaning without changing
+ * its own source span, so complete inventories incorporate that context into
+ * content digests after normalization.
+ */
 export class PhpAdapter implements IEvidenceAdapter {
-  /** Configured PHP artifact identifier. */
+  /**
+   * Artifact family selecting PHP parsing and source-public extraction.
+   *
+   * The value connects population configuration to this adapter's visibility and
+   * documentation attachment rules.
+   */
   public readonly type = "php";
 
-  /** Builds a serializable inventory while retaining source and parser failures. */
+  /**
+   * Builds a serializable PHP inventory while retaining source and parser failures.
+   *
+   * Input is validated and cloned before scanning. Only a complete normalized
+   * inventory receives context-sensitive digests, and parser resources close in cleanup.
+   */
   public async analyze(
     snapshot: IEvidenceSourceSnapshot,
   ): Promise<IEvidenceInventory> {
@@ -63,6 +80,8 @@ export class PhpAdapter implements IEvidenceAdapter {
       const published = this.materializeUnits(inventory, analyses);
       this.materializeDocumentation(inventory, analyses, published);
       const output = new EvidenceInventory([inventory]).snapshot();
+      // Context hashes depend on valid declaration content ranges. Do not certify
+      // them when normalization has already found an incomplete inventory.
       if (output.complete) this.contextDigests(output, analyses);
       return output;
     } finally {
@@ -70,7 +89,13 @@ export class PhpAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Includes local import and directive changes in review content without widening declaration sites. */
+  /**
+   * Incorporates local imports and directives into declaration review content.
+   *
+   * Context is combined with the existing content digest without widening physical
+   * declaration ranges. All new digests are computed before assignment so iteration
+   * order cannot make later calculations observe partially updated units.
+   */
   private contextDigests(
     inventory: IEvidenceInventory,
     analyses: IPhpFileAnalysis[],
@@ -103,7 +128,12 @@ export class PhpAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Parses one selected file and translates acquisition or syntax failures. */
+  /**
+   * Extracts one PHP file and translates acquisition or syntax failures.
+   *
+   * A failed scan preserves the source and located cause with incomplete state,
+   * allowing the enclosing inventory to explain why coverage cannot be certified.
+   */
   private async scan(
     parser: EvidenceParser,
     source: IEvidenceSourceFile,
@@ -144,7 +174,11 @@ export class PhpAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Creates public identities and rejects duplicate declarations. */
+  /**
+   * Materializes public PHP identities and reports conflicting declarations.
+   *
+   * It retains compatible physical sites under one unit while emitting each configured file address.
+   */
   private materializeUnits(
     inventory: IEvidenceInventory,
     analyses: IPhpFileAnalysis[],
@@ -215,7 +249,11 @@ export class PhpAdapter implements IEvidenceAdapter {
     return published;
   }
 
-  /** Attaches PHPDoc, reconciles withdrawals, and preserves unsupported annotations. */
+  /**
+   * Attaches PHPDoc after unit materialization and reconciles withdrawals.
+   *
+   * Unsupported tagged carriers still receive diagnostic hosts so their directives remain visible.
+   */
   private materializeDocumentation(
     inventory: IEvidenceInventory,
     analyses: IPhpFileAnalysis[],
@@ -291,7 +329,11 @@ export class PhpAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Keeps undocumented public declarations in the claim population. */
+  /**
+   * Creates hosts for public declarations without attached documentation.
+   *
+   * This preserves their claim obligations after withdrawn and documented units are excluded.
+   */
   private materializeUndocumentedHosts(
     inventory: IEvidenceInventory,
     analysis: IPhpFileAnalysis,
@@ -344,7 +386,11 @@ export class PhpAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Groups a shared PHPDoc carrier by its original declaration site. */
+  /**
+   * Groups a PHPDoc carrier's published declarations by physical source site.
+   *
+   * One carrier can attach to multiple units, but each site requires its own host boundary.
+   */
   private attachmentGroups(
     documentation: IPhpDocumentation,
     published: Map<string, string>,
@@ -360,7 +406,11 @@ export class PhpAdapter implements IEvidenceAdapter {
     return groups;
   }
 
-  /** Creates an attached or explicitly unsupported documentation host. */
+  /**
+   * Creates a host for attached documentation or an unsupported tagged carrier.
+   *
+   * The host retains the original source range and eligible unit IDs for tag parsing.
+   */
   private host(
     source: IEvidenceSourceFile,
     documentation: IPhpDocumentation,
@@ -385,7 +435,11 @@ export class PhpAdapter implements IEvidenceAdapter {
     };
   }
 
-  /** Parses tags only after ownership has been established. */
+  /**
+   * Parses evidence tags after the adapter has established their owning host.
+   *
+   * This prevents source-adjacent text from acquiring units through later lexical coincidence.
+   */
   private parse(
     source: IEvidenceSourceFile,
     documentation: IPhpDocumentation,
@@ -398,7 +452,11 @@ export class PhpAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Detects supported tags on otherwise unsupported PHPDoc carriers. */
+  /**
+   * Detects supported annotations on a PHPDoc carrier before it has a host.
+   *
+   * The result decides whether unsupported placement requires an actionable diagnostic host.
+   */
   private annotation(
     analysis: IPhpFileAnalysis,
     documentation: IPhpDocumentation,
@@ -410,7 +468,11 @@ export class PhpAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Distinguishes acknowledgements and reviews from withdrawal-only documentation. */
+  /**
+   * Distinguishes claim annotations from withdrawal-only documentation.
+   *
+   * Withdrawn units suppress ordinary hosts unless the carrier still contains an independent claim.
+   */
   private claimAnnotation(
     analysis: IPhpFileAnalysis,
     documentation: IPhpDocumentation,
@@ -422,7 +484,11 @@ export class PhpAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Recognizes supported tag names at documentation line boundaries. */
+  /**
+   * Recognizes supported tag names at normalized documentation line boundaries.
+   *
+   * Parsing uses PHPDoc masking first so examples cannot accidentally create declarations.
+   */
   private annotationPattern(raw: string, withdrawal: boolean): boolean {
     return withdrawal
       ? /(?:^|[\r\n])[ \t]*@(evidenceExcludeReview|evidenceReview|evidenceExclude|evidence|link|internal|hidden|ignore)\b/u.test(
@@ -433,7 +499,11 @@ export class PhpAdapter implements IEvidenceAdapter {
         );
   }
 
-  /** Checks whether a declaration or lexical ancestor is withdrawn. */
+  /**
+   * Determines whether a unit is withdrawn directly or through its lexical parent.
+   *
+   * The visited set prevents malformed ownership cycles from making withdrawal traversal recurse indefinitely.
+   */
   private withdrawn(
     id: string,
     units: Map<string, IEvidenceUnit>,
@@ -449,7 +519,11 @@ export class PhpAdapter implements IEvidenceAdapter {
       : this.withdrawn(unit.parentId, units, visited);
   }
 
-  /** Normalizes PHP case-insensitive owner and function identities. */
+  /**
+   * Builds the unit ID using PHP's case-insensitive identity rules where applicable.
+   *
+   * Public accessor spelling remains separate so case-sensitive properties retain their address.
+   */
   private unitId(declaration: IPhpDeclaration): string {
     const identity = declaration.identity.map((segment, index) =>
       declaration.symbol === "property" &&
@@ -460,7 +534,11 @@ export class PhpAdapter implements IEvidenceAdapter {
     return `php:${declaration.symbol}:${JSON.stringify(identity)}`;
   }
 
-  /** Retains a declaration conflict as an incomplete inventory. */
+  /**
+   * Records a declaration conflict and marks the inventory incomplete.
+   *
+   * This prevents duplicate public identities from reducing the population to a passing subset.
+   */
   private problem(
     inventory: IEvidenceInventory,
     analysis: IPhpFileAnalysis,

@@ -20,7 +20,12 @@ import type { ICppFileAnalysis } from "./ICppFileAnalysis";
 import type { ICppScopeContext } from "./ICppScopeContext";
 import { SourceText } from "../../internal/SourceText";
 
-/** Extracts explicit C++ declarations and Doxygen without semantic lookup. */
+/**
+ * Extracts explicit C++ declarations and Doxygen without semantic lookup.
+ *
+ * The scanner retains only source-established scopes, aliases, and attachment
+ * facts; `CppAdapter` later resolves publication among those bounded records.
+ */
 export class CppFileScanner {
   private readonly declarations: ICppDeclaration[] = [];
   private readonly aliases: ICppAlias[] = [];
@@ -31,6 +36,12 @@ export class CppFileScanner {
   private readonly text: SourceText;
   private complete = true;
 
+  /**
+   * Creates a scanner for one live C++ parse session and captured source file.
+   *
+   * Documentation collection precedes declaration walking to preserve source
+   * adjacency rather than reconstructing attachment from normalized records.
+   */
   public constructor(
     private readonly session: EvidenceParseSession,
     private readonly source: IEvidenceSourceFile,
@@ -39,6 +50,12 @@ export class CppFileScanner {
     this.collectDocumentation();
   }
 
+  /**
+   * Produces the node-free declarations, aliases, and documentation for one file.
+   *
+   * Unsupported relevant syntax makes this result incomplete so materialization
+   * cannot report success over a reduced public population.
+   */
   public scan(): ICppFileAnalysis {
     const items = this.session.root.namedChildren;
     const population = items.filter((item) => !this.inert(item));
