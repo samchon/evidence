@@ -745,6 +745,7 @@ export namespace AdapterCertificationFixtures {
     };
   }
 
+  /** Supplies exact Kotlin declarations and counterexamples for the common certification gates. */
   function kotlin(): IAdapterCertification {
     const file = "src/Contract.kt";
     return {

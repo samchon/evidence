@@ -44,12 +44,14 @@ export class DartFileScanner {
     const library = this.session.root.namedChildren.find(
       (node) => node.type === "library_name",
     );
-    const libraryName =
+    const libraryNode =
       library === undefined
         ? undefined
         : library.namedChildren.find(
             (node) => node.type === "dotted_identifier_list",
-          )?.text;
+          );
+    const libraryName =
+      libraryNode === undefined ? undefined : this.qualifiedName(libraryNode);
     return {
       source: this.source,
       library: this.source.physicalPath,
@@ -262,7 +264,9 @@ export class DartFileScanner {
         );
       return;
     }
-    for (const variable of list.namedChildren)
+    for (const variable of list.namedChildren.filter(
+      (child) => child.type !== "comment",
+    ))
       this.add(
         node,
         variable.type === "identifier"
@@ -346,7 +350,13 @@ export class DartFileScanner {
     const named = node.namedChildren.find(
       (child) => child.type === "dotted_identifier_list",
     );
-    const uri = node.descendantsOfType("string_literal")[0];
+    const targetNode =
+      node.childForFieldName("uri") ??
+      node.namedChildren.find((child) => child.type === "uri");
+    const uri =
+      targetNode === undefined
+        ? undefined
+        : targetNode.descendantsOfType("string_literal")[0];
     const raw = uri?.text;
     if (
       node.descendantsOfType("configuration_uri").length !== 0 ||
@@ -360,7 +370,11 @@ export class DartFileScanner {
       return;
     }
     const target =
-      named?.text ?? (raw === undefined ? undefined : raw.slice(1, -1));
+      named === undefined
+        ? raw === undefined
+          ? undefined
+          : raw.slice(1, -1)
+        : this.qualifiedName(named);
     if (target === undefined) {
       this.problem(
         "directive-uri",
@@ -383,6 +397,14 @@ export class DartFileScanner {
         })),
       range: this.session.range(node),
     });
+  }
+
+  /** Normalizes a named library from identifier segments rather than source whitespace. */
+  private qualifiedName(node: Node): string {
+    return node.namedChildren
+      .filter((child) => child.type === "identifier")
+      .map((child) => child.text)
+      .join(".");
   }
 
   /** Groups adjacent /// documentation and retains unsupported annotation carriers. */

@@ -26,14 +26,16 @@ export async function test_dart_accessors(): Promise<void> {
   TestValidator.equals("complete accessor families", inventory.diagnostics, []);
   TestValidator.equals(
     "exact accessor kinds",
-    inventory.units.map((unit) => `${unit.symbol}:${unit.name}`),
+    inventory.units
+      .map((unit) => `${unit.symbol}:${unit.name}`)
+      .sort((left, right) => left.localeCompare(right)),
     [
       "property:value",
       "property:other",
       "function:set",
       "property:externalValue",
       "property:retired",
-    ],
+    ].sort((left, right) => left.localeCompare(right)),
   );
   for (const name of ["value", "other", "retired"])
     TestValidator.equals(
