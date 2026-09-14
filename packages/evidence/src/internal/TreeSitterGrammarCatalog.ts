@@ -270,5 +270,26 @@ export namespace TreeSitterGrammarCatalog {
         size: 1069,
       },
     },
+    {
+      id: "dbml",
+      repository: "https://github.com/dynamotn/tree-sitter-dbml",
+      version:
+        "grammar-dbml-c67985a56a3edf40b84cbc41d2c0224d074362a8ecb916a1a744c283c035fc15",
+      commit: "2e2fa5640268c33c3d3f27f7e676f631a9c68fd9",
+      wasm: {
+        file: "dbml/tree-sitter-dbml.wasm",
+        url: "https://github.com/wrtnlabs/evidence/releases/download/grammar-dbml-c67985a56a3edf40b84cbc41d2c0224d074362a8ecb916a1a744c283c035fc15/tree-sitter-dbml.wasm",
+        sha256:
+          "c67985a56a3edf40b84cbc41d2c0224d074362a8ecb916a1a744c283c035fc15",
+        size: 30043,
+      },
+      license: {
+        file: "dbml/LICENSE",
+        url: "https://raw.githubusercontent.com/dynamotn/tree-sitter-dbml/2e2fa5640268c33c3d3f27f7e676f631a9c68fd9/LICENSE",
+        sha256:
+          "7b8c69143ac04c4f62ad1552a69892ba8d4bd7b6cd176e8d7dbf09d104e546bf",
+        size: 1118,
+      },
+    },
   ];
 }

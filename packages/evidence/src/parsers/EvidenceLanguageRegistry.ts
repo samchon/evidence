@@ -53,7 +53,30 @@ export namespace EvidenceLanguageRegistry {
   }
 
   const DATABASES: IEvidenceDatabaseLanguage[] = [
-    { type: "dbml", name: "DBML", grammars: [{ id: "dbml", extensions: [".dbml"], filenames: [] }] },
+    {
+      type: "dbml",
+      name: "DBML",
+      grammars: [{ id: "dbml", extensions: [".dbml"], filenames: [] }],
+      adapter: {
+        entry: "EvidenceDbmlAdapter",
+        symbols: ["model", "column", "relation"],
+        publicSurface:
+          "Selected DBML tables, scalar columns and inline/short/long named or composite relationships.",
+        addressing:
+          "File-qualified schema/table/member addresses; public-schema shorthand and explicit table aliases retain one identity.",
+        comments: [
+          "adjacent standalone // or block comments",
+          "table and column notes",
+        ],
+        unsupported: [
+          "reusable partials",
+          "table groups",
+          "module imports",
+          "optional cardinality modifiers",
+          "runtime schema discovery",
+        ],
+      },
+    },
     {
       type: "sql",
       name: "Portable SQL",

@@ -61,7 +61,7 @@ export default config;
 
 A **claim** selects the files and declarations that must cite evidence. Its **reference** selects what must be covered. Each claim and each element of its reference array has an independent coverage obligation; partial coverage from separate obligations is never pooled.
 
-Use `type` to select the source language, such as `"typescript"`, `"cpp"`, or `"rust"`, and `files` to select its files with globs. File names distinguish syntax variants such as TSX. No separate `language` setting or TypeScript compiler Program is required. `EvidenceDatabaseType` reserves a shared database type family, but Prisma is the only certified database adapter in this release; SQL dialect and DBML identifiers are rejected until their adapters are implemented and certified.
+Use `type` to select the source language, such as `"typescript"`, `"cpp"`, or `"rust"`, and `files` to select its files with globs. File names distinguish syntax variants such as TSX. No separate `language` setting or TypeScript compiler Program is required. `EvidenceDatabaseType` selects the shared database family. Prisma, portable SQL and DBML have certified adapters; other database identifiers require their own certified implementation.
 
 Globs resolve from the directory containing `evidence.config.ts`, or from the population's `root`. Patterns are applied in order: `!` excludes matches, and a later positive pattern can include them again. Use `src/**` to select a directory's contents.
 
@@ -181,15 +181,24 @@ For adapter development, `IEvidenceAdapter.analyze(snapshot)` returns an ordinar
 | Programming | Yes | Yes | `type`, `function`, `property` | All / `type` |
 | Markdown | Yes | Yes | `file`, `h1`, `h2`, `h3`, `h4` | All / all |
 | Prisma | Yes | Yes | `model`, `column`, `relation` | All / `model` |
+| DBML | Yes | Yes | `model`, `column`, `relation` | All / `model` |
 | Swagger / OpenAPI | Yes | Yes | `operation` | Every operation / every operation |
 
 Every artifact family can cite every other family, including its own. Markdown can cite programming declarations or Swagger operations, and Swagger operations can cite Markdown, programming declarations, database schemas, or other operations.
 
 A `symbol` accepts one selector or a nonempty array. Programming `type` symbols include classes, interfaces, type aliases, and namespaces. Database `model` symbols describe record structures, `column` symbols describe data fields, and `relation` symbols describe connections between models. A foreign-key value is a column; the declaration describing its connection is a relation.
 
-Database schema typings share `IEvidenceDatabaseClaim` and `IEvidenceDatabaseReference`. Prisma is the implemented database adapter. Select the schema language rather than the database server: MongoDB models written in Prisma use `type: "prisma"`.
+Database schema typings share `IEvidenceDatabaseClaim` and `IEvidenceDatabaseReference`. Prisma, portable SQL and DBML use these common database selectors. Select the schema language rather than the database server: MongoDB models written in Prisma use `type: "prisma"`.
 
 Prisma files selected for one population are parsed together with `@prisma/prisma-schema-wasm`, which ships with this package. Evidence first uses a parser version visible from the project root and falls back to its pinned copy, so consumers do not install a separate Prisma parser. Parser output decides whether a member is a column or relation; the source scanner only supplies locations and documentation attachment. Views are model units, while enums, composite types, indexes, generators, and datasources do not form units.
+
+`EvidenceDbmlAdapter` analyzes explicitly configured `dbml` files using a pinned MIT-licensed upstream Tree-sitter grammar with an audited, reproducibly built syntax patch. Consumers download verified WASM automatically and install no parser or database tool. Tables are `model` units, all scalar fields remain `column` units, and each inline or standalone Ref adds a separate `relation` owned by one table. Enum declarations and index definitions add no selectable units; enum values contribute to schema fingerprints. Tables default to schema `public`, and names preserve case and quoted literal punctuation. Duplicate table, alias, column, enum or named relation identities, unresolved endpoints and mismatched composite endpoints make analysis incomplete.
+
+DBML addresses are file-qualified: `schema.dbml#public.users.id` and `schema.dbml#users.id` address the same default-schema column. An explicit `Table core.users as U` also exposes `schema.dbml#U.id`. Quoted names stay literal segments, such as `schema.dbml#users["display.name"]`. Schema identities survive file moves, while file-qualified addresses follow their declarations. Named relations use a reserved literal `$ref:` segment: `schema.dbml#posts["$ref:owner"]` for `Ref owner: posts.user_id > users.id`. Anonymous relation segments begin with `$ref:` followed by the JSON tuple of resolved left table, ordered left columns, cardinality, right table and ordered right columns; use the query output to obtain the escaped accessor.
+
+DBML supports inline, short and long Ref forms, schema-qualified and composite endpoints, and `>`, `<`, `-` and `<>` cardinalities. The owning table is the left endpoint for `>` and `<>`, the right endpoint for `<` and standalone `-`, and the declaring table for inline `-`. All endpoint tables and columns must be selected; newly selected files participate in watch invalidation. Relations do not replace their foreign-key columns. Table and column notes and adjacent standalone comments are annotation hosts; an inline relation shares its declaring column's documentation site. Enum/index/project notes, trailing comments, default strings and fenced examples cannot acknowledge evidence. Withdrawal annotations hide the documented unit and its descendants. Annotation-only edits preserve fingerprints; column types, defaults, enum values and relationship semantics affect them.
+
+DBML partial definitions/injection, table groups, module imports, optional `?` cardinality modifiers, checks and records remain outside this declared-source boundary and make selected analysis incomplete. Expand these constructs into supported declarations or add parser/adapter support before checking coverage.
 
 `EvidenceJavaScriptAdapter` parses `.js`, `.jsx`, `.mjs`, and `.cjs` with the pinned JavaScript grammar. `.mjs` always uses ESM and `.cjs` always uses CommonJS. A `.js` or `.jsx` file follows the nearest `package.json` `type`; missing metadata defaults to CommonJS. Checked package paths become watch dependencies, and unreadable, malformed, unsupported, or conflicting metadata leaves the inventory incomplete.
 

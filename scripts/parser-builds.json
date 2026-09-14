@@ -37,6 +37,23 @@
         "query": "(identifier) @name",
         "capture": "evidence_probe"
       }
+    },
+    {
+      "id": "dbml",
+      "repository": "https://github.com/dynamotn/tree-sitter-dbml",
+      "commit": "2e2fa5640268c33c3d3f27f7e676f631a9c68fd9",
+      "directory": ".",
+      "license": "LICENSE",
+      "abi": 14,
+      "smoke": {
+        "source": "Table users {\n id int [pk]\n}\n",
+        "query": "(definition name: (table (identifier) @name))",
+        "capture": "users"
+      },
+      "patch": {
+        "file": "scripts/parser-patches/dbml.patch",
+        "sha256": "7318df6148a5ed9f9e2116981e641db5a074918e8298b345edc95490d20597f8"
+      }
     }
   ]
 }

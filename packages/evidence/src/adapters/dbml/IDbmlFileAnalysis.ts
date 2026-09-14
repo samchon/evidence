@@ -2,6 +2,7 @@
 import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { IDbmlDeclaration } from "./IDbmlDeclaration";
 import type { IDbmlDocumentation } from "./IDbmlDocumentation";
+import type { IDbmlEnum } from "./IDbmlEnum";
 import type { IDbmlRelation } from "./IDbmlRelation";
 
 /** Serializable per-file DBML syntax analysis. */
@@ -15,7 +16,7 @@ export interface IDbmlFileAnalysis {
   /** Mapped comments and notes, including unsupported annotation carriers. */
   documentation: IDbmlDocumentation[];
   /** Enum semantic text retained in affected table fingerprints. */
-  enums: string[];
+  enums: IDbmlEnum[];
   /** Actionable unsupported-syntax and parser failures. */
   diagnostics: IEvidenceDiagnostic[];
   /** Whether every selected declaration could be understood. */
