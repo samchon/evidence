@@ -11,7 +11,9 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *
  * The selected surface must retain all public forms and their lexical ownership.
  *
- * 1. Analyze the declared Java forms. 2. Compare symbols and identities. 3. Verify overloads and owned members retain sites.
+ * 1. Analyze the declared Java forms.
+ * 2. Compare symbols and identities.
+ * 3. Verify overloads and owned members retain sites.
  */
 export async function test_java_units(): Promise<void> {
   // Certified metadata publishes the exact upstream grammar version and source boundary.

@@ -16,7 +16,9 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *
  * Resolution must use the applicable file extension and package boundary rather than a global module assumption.
  *
- * 1. Create sources under contrasting package metadata. 2. Analyze each extension. 3. Verify the selected module mode and resulting exports.
+ * 1. Create sources under contrasting package metadata.
+ * 2. Analyze each extension.
+ * 3. Verify the selected module mode and resulting exports.
  */
 export async function test_javascript_module_modes(): Promise<void> {
   const language = EvidenceLanguageRegistry.list().find(

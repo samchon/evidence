@@ -10,16 +10,28 @@ import type { ILuaDocumentation } from "./ILuaDocumentation";
  * the resulting public-value candidates into inventory materialization.
  */
 export interface ILuaFileAnalysis {
-  /** Original selected source snapshot. */
+  /** Retains the selected Lua source file that produced this analysis.
+   *
+   * Its physical identity and configured addresses are used when units and comment hosts are materialized.
+   */
   source: IEvidenceSourceFile;
 
-  /** Public declarations and alias projections established by static initialization. */
+  /** Lists declarations and alias projections established by supported static initialization.
+   *
+   * `LuaAdapter` reconciles these node-free records into public units after scanning ends.
+   */
   declarations: ILuaDeclaration[];
 
-  /** Classified documentation and unsupported annotation carriers. */
+  /** Lists classified LuaDoc and unsupported annotation carriers from this file.
+   *
+   * Tagged unsupported carriers remain available for diagnostics instead of silently disappearing.
+   */
   documentation: ILuaDocumentation[];
 
-  /** Failures encountered while establishing the public surface. */
+  /** Lists failures encountered while establishing the static public surface.
+   *
+   * The adapter forwards them into the inventory together with the `complete` boundary.
+   */
   diagnostics: IEvidenceDiagnostic[];
 
   /**

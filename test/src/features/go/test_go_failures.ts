@@ -9,7 +9,9 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *
  * Missing ownership, package conflicts, conditional duplicates, and parse errors cannot shrink selected coverage.
  *
- * 1. Analyze each uncertain source form. 2. Require an incomplete inventory and diagnostic. 3. Retain no falsely complete population.
+ * 1. Analyze each uncertain source form.
+ * 2. Require an incomplete inventory and diagnostic.
+ * 3. Retain no falsely complete population.
  */
 export async function test_go_failures(): Promise<void> {
   const adapter = new EvidenceGoAdapter();

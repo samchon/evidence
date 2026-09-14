@@ -8,8 +8,11 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *
  * Public reexports and module files determine the addressable module graph.
  *
- * 1. Analyze inline, file, and reexported modules.
- * 2. Verify identities, links, and resolutions.
+ * 1. Analyze inline, conventional file, private, restricted, wildcard-reexported,
+ *    aliased, and orphan selected modules.
+ * 2. Require reachable units and every expected canonical or alias address.
+ * 3. Repeat the module graph with linked physical files and require logical source
+ *    addresses to preserve the same module identities.
  */
 export async function test_rust_modules(): Promise<void> {
   // Inline, conventional, private, and orphan modules share one selected snapshot.

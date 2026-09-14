@@ -5,8 +5,12 @@ import { TestValidator } from "@nestia/e2e";
  *
  * Dots, spaces, Unicode, escapes, and unsigned numeric names remain distinct target segments.
  *
- * 1. Parse each supported accessor spelling.
- * 2. Verify the exact segment arrays and serialized targets.
+ * 1. Round-trip identifier, quoted, numeric, Unicode, escaped, and empty literal
+ *    segments through formatting and parsing.
+ * 2. Verify numeric brackets and literal dots preserve their intended segment
+ *    boundaries.
+ * 3. Reject empty, malformed, unterminated, noncanonical numeric, quoted, and
+ *    invalid-identifier accessor spellings.
  */
 export async function test_accessor_segments(): Promise<void> {
   const cases: string[][] = [

@@ -18,8 +18,8 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  *    check-non-participating-acknowledgement diagnostic.
  * 2. Replace it with an exclusion for the configured Markdown target, then limit
  *    exclusion carriers to a different source file.
- * 3. Require the misplaced source host to report graph-out-of-scope-host and an
- *    error exit rather than silently accepting or discarding the exclusion.
+ * 3. Require the misplaced source host to report graph-out-of-scope-host with
+ *    exit 1 rather than silently accepting or discarding the exclusion.
  */
 export async function test_checker_participation(): Promise<void> {
   const location = join(__dirname, `participation ${randomUUID()}`);

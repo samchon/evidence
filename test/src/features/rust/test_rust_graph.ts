@@ -15,8 +15,10 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *
  * Graph coverage and review fingerprints depend on each selected semantic unit.
  *
- * 1. Evaluate covered and missing evidence for each selector.
- * 2. Verify fingerprints change only for semantic edits.
+ * 1. Link Rust type, function, and property hosts to Markdown requirements.
+ * 2. Remove each acknowledgement and require its corresponding requirement to
+ *    become missing while the remaining graph stays covered.
+ * 3. Compare review fingerprints after metadata-only and declaration-content edits.
  */
 export async function test_rust_graph(): Promise<void> {
   const requirements = await new EvidenceMarkdownAdapter().analyze(

@@ -9,7 +9,9 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *
  * Source-only analysis must retain failures when parsing or declaration identity is uncertain.
  *
- * 1. Analyze uncertain Java source. 2. Require incompleteness and diagnostics. 3. Preserve source-boundary behavior.
+ * 1. Analyze uncertain Java source.
+ * 2. Require incompleteness and diagnostics.
+ * 3. Preserve source-boundary behavior.
  */
 export async function test_java_failures(): Promise<void> {
   const adapter = new EvidenceJavaAdapter();

@@ -2,9 +2,17 @@
 import type { IEvidenceDocumentation } from "../../structures/IEvidenceDocumentation";
 import type { IDbmlDocumentation } from "./IDbmlDocumentation";
 
-/** Decodes DBML note escapes without losing original UTF-16 annotation positions. */
+/**
+ * Decodes DBML note escapes without losing original UTF-16 annotation positions.
+ *
+ * The adapter uses mapped positions to attach Evidence tags to original source text.
+ */
 export namespace DbmlDocumentation {
-  /** Reads established comment/note ownership and preserves mapped decoded characters. */
+  /**
+   * Reads established comment or note ownership and preserves mapped decoded characters.
+   *
+   * Callers provide a scanner-created carrier after structural ownership is known.
+   */
   export function read(
     content: string,
     hostId: string,

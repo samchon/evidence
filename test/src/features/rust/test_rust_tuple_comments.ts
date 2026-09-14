@@ -11,8 +11,12 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *
  * Comments between field tokens cannot change tuple indexes, visibility, or documentation ownership.
  *
- * 1. Analyze commented tuple fields.
- * 2. Verify indexes, hosts, visibility, and fingerprints.
+ * 1. Analyze public and private tuple fields separated by ordinary comments,
+ *    documentation, attributes, and whitespace.
+ * 2. Require only real public indexes to publish, and attach tags and reviews to
+ *    their physical fields.
+ * 3. Resolve existing and absent numeric targets, then compare fingerprints after
+ *    review-text and field-type edits.
  */
 export async function test_rust_tuple_comments(): Promise<void> {
   const content = dedent`

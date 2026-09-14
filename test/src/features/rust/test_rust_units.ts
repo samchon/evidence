@@ -11,8 +11,10 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *
  * Types, fields, variants, traits, values, and impl items retain exact public ownership.
  *
- * 1. Analyze supported Rust declarations.
- * 2. Verify units, identities, and parents.
+ * 1. Verify registered Rust metadata, then analyze public types, fields, variants,
+ *    trait members, values, inherent members, and trait implementations.
+ * 2. Require the exact public units and identities while excluding private and
+ *    restricted declarations and preserving distinct associated-item ownership.
  */
 export async function test_rust_units(): Promise<void> {
   // Certified metadata must accompany the pinned Rust grammar.

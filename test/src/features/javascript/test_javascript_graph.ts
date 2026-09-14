@@ -15,7 +15,9 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *
  * Exact host selection governs graph obligations while evidence prose remains outside implementation scope.
  *
- * 1. Evaluate each symbol kind with and without acknowledgement. 2. Compare missing IDs. 3. Verify source-scope fingerprints.
+ * 1. Evaluate each symbol kind with and without acknowledgement.
+ * 2. Compare missing IDs.
+ * 3. Verify source-scope fingerprints.
  */
 export async function test_javascript_graph(): Promise<void> {
   const requirements = await new EvidenceMarkdownAdapter().analyze(

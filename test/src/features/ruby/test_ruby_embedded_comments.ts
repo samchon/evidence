@@ -11,8 +11,11 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *
  * Column-zero comments respect blank-line and lexical scope boundaries before they can document a member.
  *
- * 1. Analyze nested declarations with embedded comments.
- * 2. Verify attachment, boundaries, and fingerprint effects.
+ * 1. Analyze nested embedded RDoc under LF, CRLF, and tab-indented source.
+ * 2. Require tags and reviews to attach to their nested owners, withdrawals to
+ *    hide descendants, and metadata-only edits to preserve the ancestor fingerprint.
+ * 3. Require blank lines, lexical boundaries, and mismatched indentation to leave
+ *    tagged carriers unsupported instead of acknowledging a declaration.
  */
 export async function test_ruby_embedded_comments(): Promise<void> {
   const source = dedent`

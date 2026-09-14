@@ -25,8 +25,8 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  *    subject, and repair context.
  * 4. Re-evaluate those violations as warnings and require a successful exit with
  *    two warnings.
- * 5. Make a reference root unreadable and require an incomplete exit rather than
- *    treating the lost target population as an empty passing denominator.
+ * 5. Point a reference at a missing root and require an incomplete exit rather
+ *    than treating the lost target population as an empty passing denominator.
  */
 export async function test_checker_pipeline(): Promise<void> {
   const location = join(__dirname, `checker ${randomUUID()}`);

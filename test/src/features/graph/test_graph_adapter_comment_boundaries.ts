@@ -124,7 +124,13 @@ export async function test_graph_adapter_comment_boundaries(): Promise<void> {
   );
 }
 
-/** Selects the documented public property and the independent Markdown requirement. */
+/**
+ * Evaluates the selected public property against the independent Markdown requirement.
+ *
+ * The helper excludes the control declaration named `Before` and uses the
+ * Markdown heading as the sole required reference, keeping each boundary case
+ * focused on whether its comment attaches to the intended property host.
+ */
 async function evaluate(
   claim: IEvidenceInventory,
   reference: IEvidenceInventory,

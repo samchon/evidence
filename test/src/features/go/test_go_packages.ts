@@ -8,7 +8,9 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *
  * Same-package tests share package identity while external test packages form their own public boundary.
  *
- * 1. Analyze ordinary, package-test, and external-test files. 2. Compare their unit IDs. 3. Require only intended package sharing.
+ * 1. Analyze ordinary, package-test, and external-test files.
+ * 2. Compare their unit IDs.
+ * 3. Require only intended package sharing.
  */
 export async function test_go_packages(): Promise<void> {
   const inventory = await new EvidenceGoAdapter().analyze(

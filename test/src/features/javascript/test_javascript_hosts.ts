@@ -8,7 +8,9 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *
  * Only declaration-owned JSDoc is eligible; JSX and literal text remain inert.
  *
- * 1. Analyze documented declarations. 2. Compare evidence hosts. 3. Reject JSX and literal annotation carriers.
+ * 1. Analyze documented declarations.
+ * 2. Compare evidence hosts.
+ * 3. Reject JSX and literal annotation carriers.
  */
 export async function test_javascript_hosts(): Promise<void> {
   const content = dedent`

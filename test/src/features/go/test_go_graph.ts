@@ -15,7 +15,9 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *
  * Reciprocal coverage uses the exact selected units and evidence prose does not change implementation identity.
  *
- * 1. Build covered and uncovered claims by symbol. 2. Compare missing IDs. 3. Verify a prose-only edit preserves fingerprints.
+ * 1. Build covered and uncovered claims by symbol.
+ * 2. Compare missing IDs.
+ * 3. Verify a prose-only edit preserves fingerprints.
  */
 export async function test_go_graph(): Promise<void> {
   const requirements = await new EvidenceMarkdownAdapter().analyze(

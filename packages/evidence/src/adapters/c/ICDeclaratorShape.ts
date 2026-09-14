@@ -11,12 +11,24 @@ import type { CDeclaratorKind } from "./CDeclaratorKind";
  * to evaluate C types or macros.
  */
 export interface ICDeclaratorShape {
-  /** Declared identifier read from the effective direct declarator. */
+  /**
+   * Declared identifier read from the effective direct declarator.
+   *
+   * The scanner combines it with its enclosing context to create a declaration identity.
+   */
   name: string;
 
-  /** Whether the effective declarator denotes a direct, function, or object entity. */
+  /**
+   * Whether the effective declarator denotes a direct, function, or object entity.
+   *
+   * The scanner routes the shape to callable or object extraction with this classification.
+   */
   kind: CDeclaratorKind;
 
-  /** Original declarator subtree used to derive source sites and diagnostics. */
+  /**
+   * Original declarator subtree used to derive source sites and diagnostics.
+   *
+   * Retaining the node keeps physical locations tied to the declarator that supplied the name.
+   */
   node: Node;
 }

@@ -48,7 +48,11 @@ export namespace BigQueryIdentifier {
     return value === undefined ? undefined : value.toLowerCase();
   }
 
-  /** Accepts documented flexible column characters, including quoted whitespace and Unicode letters. */
+  /**
+   * Accepts documented flexible column characters, including quoted whitespace and Unicode letters.
+   *
+   * Field validation remains separate from table-path validation because their grammars differ.
+   */
   export function column(raw: string): string | undefined {
     const value = member(raw);
     if (value === undefined) return undefined;
@@ -68,7 +72,11 @@ export namespace BigQueryIdentifier {
       : undefined;
   }
 
-  /** Normalizes valid field endpoints independently of case-sensitive table paths. */
+  /**
+   * Normalizes valid field endpoints independently of case-sensitive table paths.
+   *
+   * Foreign-key endpoint comparison needs one stable spelling for supported field names.
+   */
   export function canonicalColumn(raw: string): string | undefined {
     const value = column(raw);
     return value === undefined ? undefined : value.toLowerCase();

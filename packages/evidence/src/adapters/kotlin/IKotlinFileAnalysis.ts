@@ -10,16 +10,28 @@ import type { IKotlinDocumentation } from "./IKotlinDocumentation";
  * this boundary owns source-context facts without retaining parser objects.
  */
 export interface IKotlinFileAnalysis {
-  /** Original selected source snapshot. */
+  /** Retains the selected Kotlin source file that produced this analysis.
+   *
+   * Receiver resolution uses its physical identity for file-private lookup, and materialization uses its addresses for public citations.
+   */
   source: IEvidenceSourceFile;
 
-  /** Extracted declarations, including non-public boundaries. */
+  /** Lists extracted declarations, including non-public lookup boundaries.
+   *
+   * `KotlinReceivers` consumes the records across the snapshot before `KotlinAdapter` selects public units.
+   */
   declarations: IKotlinDeclaration[];
 
-  /** Classified documentation and unsupported annotation carriers. */
+  /** Lists classified KDoc and unsupported annotation carriers from this file.
+   *
+   * The adapter preserves tagged unsupported carriers so they can produce host-level diagnostics.
+   */
   documentation: IKotlinDocumentation[];
 
-  /** Failures encountered while establishing the public surface. */
+  /** Lists failures encountered while establishing this file's public surface.
+   *
+   * The adapter forwards them into the inventory together with the `complete` status.
+   */
   diagnostics: IEvidenceDiagnostic[];
 
   /**

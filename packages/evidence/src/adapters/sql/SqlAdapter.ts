@@ -231,7 +231,11 @@ export class SqlAdapter implements IEvidenceAdapter {
     return published;
   }
 
-  /** Resolves withdrawals before publishing attached annotation hosts. */
+  /**
+   * Resolves withdrawals before publishing attached annotation hosts.
+   *
+   * Hidden declaration sites cannot receive claim or review hosts in the inventory.
+   */
   private materializeDocumentation(
     inventory: IEvidenceInventory,
     analyses: ISqlFileAnalysis[],
@@ -307,7 +311,11 @@ export class SqlAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Retains public declaration sites even when they carry no documentation. */
+  /**
+   * Retains public declaration sites even when they carry no documentation.
+   *
+   * These hosts keep missing documentation visible to later graph evaluation.
+   */
   private materializeUndocumentedHosts(
     inventory: IEvidenceInventory,
     analysis: ISqlFileAnalysis,
@@ -360,7 +368,11 @@ export class SqlAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Groups published semantic owners by their physical declaration site. */
+  /**
+   * Groups published semantic owners by their physical declaration site.
+   *
+   * One comment can attach to merged declarations that share a single source range.
+   */
   private attachmentGroups(
     documentation: ISqlDocumentation,
     published: Map<string, string>,
@@ -376,7 +388,11 @@ export class SqlAdapter implements IEvidenceAdapter {
     return groups;
   }
 
-  /** Creates an attached or explicitly unsupported documentation carrier. */
+  /**
+   * Creates an attached or explicitly unsupported documentation carrier.
+   *
+   * Unsupported carriers remain materialized so diagnostics can direct users to a valid site.
+   */
   private host(
     source: IEvidenceSourceFile,
     documentation: ISqlDocumentation,
@@ -401,7 +417,11 @@ export class SqlAdapter implements IEvidenceAdapter {
     };
   }
 
-  /** Parses Evidence tags only after the adapter establishes their host. */
+  /**
+   * Parses Evidence tags only after the adapter establishes their host.
+   *
+   * Tag parsing needs the resolved host identity and attachment decision.
+   */
   private parse(
     source: IEvidenceSourceFile,
     documentation: ISqlDocumentation,
@@ -414,7 +434,11 @@ export class SqlAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Detects Evidence or withdrawal annotations outside masked examples. */
+  /**
+   * Detects Evidence or withdrawal annotations outside masked examples.
+   *
+   * The result retains otherwise detached carriers that require a diagnostic host.
+   */
   private annotation(
     analysis: ISqlFileAnalysis,
     documentation: ISqlDocumentation,
@@ -426,7 +450,11 @@ export class SqlAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Detects acknowledgements and reviews on withdrawn carriers. */
+  /**
+   * Detects acknowledgements and reviews on withdrawn carriers.
+   *
+   * Withdrawal-only carriers do not create ordinary claim hosts.
+   */
   private claimAnnotation(
     analysis: ISqlFileAnalysis,
     documentation: ISqlDocumentation,
@@ -438,7 +466,11 @@ export class SqlAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Recognizes supported annotation names at documentation line boundaries. */
+  /**
+   * Recognizes supported annotation names at documentation line boundaries.
+   *
+   * Boundary matching prevents prose and examples from becoming annotation syntax.
+   */
   private annotationPattern(raw: string, withdrawal: boolean): boolean {
     return withdrawal
       ? /(?:^|[\r\n])[ \t]*@(evidenceExcludeReview|evidenceReview|evidenceExclude|evidence|link|internal|hidden|ignore)\b/u.test(
@@ -449,7 +481,11 @@ export class SqlAdapter implements IEvidenceAdapter {
         );
   }
 
-  /** Follows explicit parent ownership to propagate withdrawal. */
+  /**
+   * Follows explicit parent ownership to propagate withdrawal.
+   *
+   * A visited set preserves termination when malformed ownership would otherwise cycle.
+   */
   private withdrawn(
     id: string,
     units: Map<string, IEvidenceUnit>,
@@ -465,12 +501,20 @@ export class SqlAdapter implements IEvidenceAdapter {
       : this.withdrawn(unit.parentId, units, visited);
   }
 
-  /** Separates database kinds while unifying schema identities. */
+  /**
+   * Separates database kinds while unifying schema identities.
+   *
+   * Unit IDs remain stable across physical declaration sites for one database selector.
+   */
   private unitId(declaration: ISqlDeclaration): string {
     return `${this.type}:${declaration.symbol}:${JSON.stringify(declaration.identity)}`;
   }
 
-  /** Marks a declaration conflict as incomplete analysis. */
+  /**
+   * Marks a declaration conflict as incomplete analysis.
+   *
+   * A conflict must not allow the remaining declarations to appear as a complete population.
+   */
   private problem(
     inventory: IEvidenceInventory,
     analysis: ISqlFileAnalysis,

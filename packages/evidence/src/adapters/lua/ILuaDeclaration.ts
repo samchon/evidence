@@ -16,22 +16,40 @@ export interface ILuaDeclaration {
    */
   id: string;
 
-  /** Canonical public name. */
+  /** Gives the canonical name selected for this public declaration.
+   *
+   * The adapter retains this source-derived spelling for unit naming and diagnostics while `address` carries its complete path.
+   */
   name: string;
 
-  /** Functions are callable; tables and literal fields are properties. */
+  /** Classifies callable values as functions and tables or scalar fields as properties.
+   *
+   * This Evidence selector is assigned from static value shape without executing the Lua module.
+   */
   symbol: EvidenceProgrammingSymbol;
 
-  /** Canonical file-local public path. */
+  /** Lists the file-local path that establishes this declaration's semantic identity.
+   *
+   * Alias projections share the identity of their original static value even when they publish another address.
+   */
   identity: string[];
 
-  /** Public path for this projection. */
+  /** Lists the public path through which this occurrence projects the value.
+   *
+   * This can differ from `identity` when a local alias or returned table field exposes the same value.
+   */
   address: string[];
 
-  /** Original declaration position and semantic content. */
+  /** Retains the physical source site and content used for Evidence hosts and fingerprints.
+   *
+   * Multiple alias projections can retain separate sites while materializing one semantic unit.
+   */
   site: IEvidenceUnitSite;
 
-  /** Whether the value is reachable through the declared public surface. */
+  /** States whether static initialization makes the value reachable through the public surface.
+   *
+   * The adapter keeps unreachable values for ownership analysis but excludes them from published units and addresses.
+   */
   public: boolean;
 
   /**

@@ -312,7 +312,12 @@ export class GoFileScanner {
     }
   }
 
-  /** Keeps trailing source comments separate from the next declaration's documentation. */
+  /**
+   * Keeps trailing source comments separate from the next declaration's documentation.
+   *
+   * Go attaches documentation only from the leading comment run, so a preceding
+   * declaration's trailing comment must not become evidence for the next one.
+   */
   private standalone(offset: number): boolean {
     const start = this.source.content.lastIndexOf("\n", offset - 1) + 1;
     return /^[ \t]*$/u.test(this.source.content.slice(start, offset));

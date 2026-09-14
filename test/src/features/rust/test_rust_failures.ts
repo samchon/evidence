@@ -9,8 +9,10 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *
  * Modules, reexports, impls, conditions, macros, and parse failure cannot shrink coverage.
  *
- * 1. Analyze every uncertain Rust source form.
- * 2. Verify incomplete diagnostics and retained failures.
+ * 1. Analyze missing and ambiguous modules, unresolved reexports and impl owners,
+ *    conditional or expanding attributes, macros, and parse failures.
+ * 2. Require every uncertain source to report incompleteness with its matching
+ *    diagnostic instead of publishing a reduced population.
  */
 export async function test_rust_failures(): Promise<void> {
   const adapter = new EvidenceRustAdapter();

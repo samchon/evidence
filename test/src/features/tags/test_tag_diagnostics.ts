@@ -8,9 +8,13 @@ import { TestDocumentation } from "../../internal/TestDocumentation";
  *
  * Tag parsing validates its own required form and preserves invalid inputs as findings.
  *
- * 1. Parse malformed evidence, exclusion, and review tags.
- * 2. Verify diagnostic codes and positions.
- * 3. Require invalid reviews to create no review records.
+ * 1. Parse targetless evidence, reasonless evidence, inline links, and malformed
+ *    review fingerprints or descriptions.
+ * 2. Verify their diagnostic codes while preserving artifact-specific target text
+ *    for later resolver validation.
+ * 3. Require malformed reviews to create no review records.
+ * 4. Parse unattached and unsupported hosts, then require a host diagnostic and
+ *    no guessed declaration attachment.
  */
 export async function test_tag_diagnostics(): Promise<void> {
   const fixture = TestDocumentation.create(dedent`

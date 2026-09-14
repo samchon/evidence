@@ -2,25 +2,49 @@ import type { Node } from "web-tree-sitter";
 
 import { MysqlIdentifier } from "./MysqlIdentifier";
 
-/** Validates the explicitly selected MySQL CREATE TABLE source subset. */
+/**
+ * Validates the explicitly selected MySQL CREATE TABLE source subset.
+ *
+ * Shared SQL extraction asks this policy to fail closed when syntax depends on server state.
+ */
 export namespace MysqlPolicy {
-  /** Retains source spelling independently of lower_case_table_names and the host operating system. */
+  /**
+   * Retains source spelling independently of lower_case_table_names and host operating system.
+   *
+   * Snapshot identity cannot safely depend on a database server or filesystem setting.
+   */
   export const identifier = MysqlIdentifier.read;
 
-  /** Ignores column REFERENCES because MySQL does not create a foreign key from that syntax. */
+  /**
+   * Ignores column REFERENCES because MySQL does not create a foreign key from that syntax.
+   *
+   * Only a table-level FOREIGN KEY declaration contributes a relation unit.
+   */
   export const inlineReferences = "ignore" as const;
 
-  /** FOREIGN KEY index names do not name MySQL constraints; endpoints identify the relation. */
+  /**
+   * Ignores FOREIGN KEY index names when identifying MySQL relations.
+   *
+   * The endpoint tuple is stable while an index name does not name the constraint.
+   */
   export const constraintNames = false;
 
-  /** An unqualified REFERENCES target belongs to its explicitly qualified owning database. */
+  /**
+   * Places an unqualified REFERENCES target in its explicitly qualified owning database.
+   *
+   * This supplies a deterministic semantic path without consulting the current database.
+   */
   export function reference(target: string[], owner: string[]): string[] {
     return target.length === 1 && owner.length === 2
       ? [...owner.slice(0, 1), ...target]
       : target;
   }
 
-  /** Rejects environment state and syntax from the shared grammar's other dialects. */
+  /**
+   * Rejects environment state and syntax from the shared grammar's other dialects.
+   *
+   * Returning a reason makes the source analysis incomplete rather than partially inferred.
+   */
   export function validate(node: Node): string | undefined {
     if (node.type === "comment" || node.type === "marginalia") {
       if (node.type === "comment" && !/^--(?:\s|$)/u.test(node.text))
@@ -99,12 +123,20 @@ export namespace MysqlPolicy {
   }
 }
 
-/** Collects a statement's named syntax, keeping strings opaque. */
+/**
+ * Collects a statement's named syntax while keeping strings opaque.
+ *
+ * Policy validation must inspect grammar nodes without treating literal contents as SQL syntax.
+ */
 function descendants(node: Node): Node[] {
   return [node, ...node.namedChildren.flatMap(descendants)];
 }
 
-/** Accepts a bounded set of MySQL options whose schema and documentation ownership are static. */
+/**
+ * Accepts MySQL options whose schema and documentation ownership are static.
+ *
+ * Other options can depend on server behavior outside the selected source snapshot.
+ */
 function tableOption(node: Node): string | undefined {
   const raw = node.text;
   if (
@@ -127,7 +159,11 @@ function tableOption(node: Node): string | undefined {
   return "This MySQL table option is outside the supported ENGINE, COMMENT, character set, collation, and row-format subset.";
 }
 
-/** Keywords and nodes whose effects require state or semantics outside the declared subset. */
+/**
+ * Lists syntax whose effects require state or semantics outside the declared subset.
+ *
+ * Validation uses this set to reject shared-grammar constructs before extraction.
+ */
 const FORBIDDEN = new Set([
   "array",
   "array_size_definition",
@@ -149,7 +185,11 @@ const FORBIDDEN = new Set([
   "keyword_tablespace",
 ]);
 
-/** Accepted direct syntax makes unrelated shared-grammar dialect options fail closed. */
+/**
+ * Lists accepted direct syntax so unrelated shared-grammar dialect options fail closed.
+ *
+ * This boundary limits MySQL extraction to declarations with stable snapshot semantics.
+ */
 const TABLE_CHILDREN = new Set([
   "keyword_create",
   "keyword_table",

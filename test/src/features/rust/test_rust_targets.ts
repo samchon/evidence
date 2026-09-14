@@ -9,8 +9,11 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *
  * Target resolution follows public files and preserves associated-item ownership.
  *
- * 1. Resolve every supported Rust target form.
- * 2. Verify exact statuses and addresses.
+ * 1. Build a reference crate with module, declaration-file, alias, field, inherent,
+ *    and trait-implementation access paths.
+ * 2. Resolve corresponding evidence tags and require every target to resolve.
+ * 3. Require aliases to share the Sale unit while colliding inherent and trait
+ *    methods remain distinct units.
  */
 export async function test_rust_targets(): Promise<void> {
   const adapter = new EvidenceRustAdapter();

@@ -15,8 +15,10 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *
  * Each selected host has independent coverage and semantic fingerprint behavior.
  *
- * 1. Evaluate covered and missing selector populations.
- * 2. Verify graph outcomes and fingerprint invalidation.
+ * 1. Link Ruby type, singleton method, and constant evidence to Markdown requirements.
+ * 2. Remove each acknowledgement in turn and require the matching requirement to
+ *    become the sole missing obligation.
+ * 3. Compare fingerprints after evidence-text and implementation-body edits.
  */
 export async function test_ruby_graph(): Promise<void> {
   const requirements = await new EvidenceMarkdownAdapter().analyze(

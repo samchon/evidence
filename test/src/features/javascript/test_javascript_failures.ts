@@ -8,7 +8,9 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *
  * Dynamic or uncertain export behavior cannot publish a smaller selected denominator.
  *
- * 1. Analyze each unsupported export form. 2. Require incompleteness and diagnostics. 3. Verify no uncertain case passes.
+ * 1. Analyze each unsupported export form.
+ * 2. Require incompleteness and diagnostics.
+ * 3. Verify no uncertain case passes.
  */
 export async function test_javascript_failures(): Promise<void> {
   const adapter = new EvidenceJavaScriptAdapter();

@@ -9,8 +9,10 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *
  * Reopened declarations can share identity, but incompatible definitions must remain incomplete.
  *
- * 1. Analyze compatible reopenings and conflicting replacements.
- * 2. Verify merged units and conflict diagnostics.
+ * 1. Analyze two compatible `Shop::Sale` class bodies and require one semantic
+ *    type with two physical sites and no diagnostics.
+ * 2. Analyze conflicting container, superclass, constant, attribute, and method
+ *    replacements; require incompleteness, every conflict code, and both method sites.
  */
 export async function test_ruby_definitions(): Promise<void> {
   const compatible = await new EvidenceRubyAdapter().analyze(

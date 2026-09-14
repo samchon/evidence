@@ -9,7 +9,9 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *
  * Receiver ownership and file-relative target paths determine the resolved public declaration.
  *
- * 1. Analyze functions and receiver methods. 2. Resolve supported targets. 3. Require wrong owner or file paths to remain unresolved.
+ * 1. Analyze functions and receiver methods.
+ * 2. Resolve supported targets.
+ * 3. Require wrong owner or file paths to remain unresolved.
  */
 export async function test_go_targets(): Promise<void> {
   const adapter = new EvidenceGoAdapter();

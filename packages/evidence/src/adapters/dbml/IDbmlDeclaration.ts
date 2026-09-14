@@ -14,7 +14,11 @@ export interface IDbmlDeclaration {
    */
   identity: string[];
 
-  /** Model, scalar column, or separate relation selector. */
+  /**
+   * Selects a model, scalar column, or separate relation declaration.
+   *
+   * The adapter maps this selector to the public database unit symbol.
+   */
   symbol: EvidenceDatabaseSymbol;
 
   /** Whitespace-independent syntax tokens excluding documentation.
@@ -24,7 +28,11 @@ export interface IDbmlDeclaration {
    */
   content: string;
 
-  /** Exact original declaration span used for its physical site. */
+  /**
+   * Stores the exact original declaration span used for its physical site.
+   *
+   * This range anchors documentation and diagnostics in the selected source file.
+   */
   range: IEvidenceSourceRange;
 
   /** Explicit table alias, when declared.

@@ -6,13 +6,25 @@ import type { ISwaggerOperationLocation } from "./ISwaggerOperationLocation";
  * schema change, while retaining optional source coordinates for diagnostics.
  */
 export interface ISwaggerOperation {
-  /** Uppercase HTTP method forming the target prefix. */
+  /**
+   * Stores the uppercase HTTP method forming the public target prefix.
+   *
+   * Normalization keeps OpenAPI method spelling independent from target matching.
+   */
   method: string;
 
-  /** Absolute OpenAPI path forming the target suffix. */
+  /**
+   * Stores the absolute OpenAPI path forming the public target suffix.
+   *
+   * Its literal path spelling remains distinct from the HTTP method identity.
+   */
   path: string;
 
-  /** Stable public address in `METHOD:/path` form. */
+  /**
+   * Provides the stable public address in `METHOD:/path` form.
+   *
+   * Evidence tags resolve operations through this combined method-and-path identity.
+   */
   target: string;
 
   /** Digest of canonical operation semantics.

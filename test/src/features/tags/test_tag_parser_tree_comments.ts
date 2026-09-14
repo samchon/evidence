@@ -11,8 +11,10 @@ import { dedent } from "@typia/utils";
  *
  * Strings and regular expressions can resemble annotations but only real comment spans may enter documentation parsing.
  *
- * 1. Parse comments alongside strings and regexes containing tags.
- * 2. Verify only parser-reported comments produce annotations.
+ * 1. Parse source containing a tag-shaped string, regular expression, and real
+ *    documentation comment through the TypeScript syntax tree.
+ * 2. Map only parser-captured comment spans into documentation and parse tags.
+ * 3. Require the real comment's one target while excluding both code-text lookalikes.
  */
 export async function test_tag_parser_tree_comments(): Promise<void> {
   const content = dedent`

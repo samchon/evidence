@@ -8,9 +8,17 @@ import { SourceText } from "../../internal/SourceText";
 import type { EvidenceParseSession } from "../../parsers/EvidenceParseSession";
 import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 
-/** Enriches shared SQL extraction with MySQL COMMENT hosts and dialect policy. */
+/**
+ * Enriches shared SQL extraction with MySQL COMMENT hosts and dialect policy.
+ *
+ * This namespace supplies the scanner callback used by the MySQL adapter.
+ */
 export namespace MysqlFileScanner {
-  /** Attaches only table/column COMMENT strings to their exact declaration owner. */
+  /**
+   * Attaches only table and column COMMENT strings to their exact declaration owner.
+   *
+   * Shared SQL scanning supplies declarations; this pass adds dialect-specific documentation.
+   */
   export function scan(
     session: EvidenceParseSession,
     source: IEvidenceSourceFile,
@@ -82,7 +90,11 @@ export namespace MysqlFileScanner {
   }
 }
 
-/** Visits named syntax while keeping all attachment decisions local to declarations. */
+/**
+ * Visits named syntax while keeping all attachment decisions local to declarations.
+ *
+ * String contents remain opaque because they are not grammar nodes in the traversal.
+ */
 function descendants(node: Node): Node[] {
   return [node, ...node.namedChildren.flatMap(descendants)];
 }

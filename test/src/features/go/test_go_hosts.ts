@@ -8,7 +8,9 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *
  * Declaration documentation can host evidence while non-document carriers remain diagnostics.
  *
- * 1. Analyze supported Go doc positions. 2. Compare attached hosts. 3. Reject annotations in inert carriers.
+ * 1. Analyze supported Go doc positions.
+ * 2. Compare attached hosts.
+ * 3. Reject annotations in inert carriers.
  */
 export async function test_go_hosts(): Promise<void> {
   const inventory = await new EvidenceGoAdapter().analyze(

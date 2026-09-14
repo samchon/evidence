@@ -17,10 +17,16 @@ export interface IDartDeclaration {
    */
   id: string;
 
-  /** Declared name, or explicit constructor/operator segment. */
+  /** Gives the declared name or explicit constructor or operator segment.
+   *
+   * The scanner combines this with `identity` and `address`; it is unqualified so diagnostics can retain the source spelling.
+   */
   name: string;
 
-  /** Common programming selector. */
+  /** Classifies the declaration in Evidence's language-independent selector vocabulary.
+   *
+   * Materialization preserves this category while it reconciles declarations with the same Dart name.
+   */
   symbol: EvidenceProgrammingSymbol;
 
   /**
@@ -39,16 +45,28 @@ export interface IDartDeclaration {
    */
   library: string;
 
-  /** Lexical semantic ownership segments. */
+  /** Lists the lexical segments that establish the declaration's semantic identity.
+   *
+   * Library reconciliation prefixes this path with the defining library so parts share their owner's identity.
+   */
   identity: string[];
 
-  /** Public file accessor segments. */
+  /** Lists the public accessor segments used in a selected source address.
+   *
+   * This may differ from `identity` after library exports project a declaration through another file.
+   */
   address: string[];
 
-  /** Original declaration and fingerprint ranges. */
+  /** Retains the physical declaration range and content used by hosts and fingerprints.
+   *
+   * A reconciled unit can collect multiple sites from parts or complementary accessors.
+   */
   site: IEvidenceUnitSite;
 
-  /** Whether this name and all lexical owners are public. */
+  /** States whether this declaration and every lexical owner are publicly visible.
+   *
+   * The adapter excludes private declarations from publication while retaining them for ownership and boundary diagnostics.
+   */
   public: boolean;
 
   /**

@@ -12,7 +12,9 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *
  * The denominator includes each externally visible form with its lexical owner.
  *
- * 1. Analyze exported declarations and members. 2. Compare symbols and identities. 3. Verify embedded and receiver members retain owners.
+ * 1. Analyze exported declarations and members.
+ * 2. Compare symbols and identities.
+ * 3. Verify embedded and receiver members retain owners.
  */
 export async function test_go_units(): Promise<void> {
   const language = EvidenceLanguageRegistry.list().find(

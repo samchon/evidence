@@ -9,7 +9,9 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *
  * Exact target paths preserve class ownership and overload grouping.
  *
- * 1. Analyze nested Java declarations. 2. Resolve valid paths. 3. Require missing or ambiguous paths to retain their statuses.
+ * 1. Analyze nested Java declarations.
+ * 2. Resolve valid paths.
+ * 3. Require missing or ambiguous paths to retain their statuses.
  */
 export async function test_java_targets(): Promise<void> {
   const adapter = new EvidenceJavaAdapter();

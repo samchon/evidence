@@ -9,7 +9,9 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *
  * Module topology must retain defining identity while exposing supported public aliases.
  *
- * 1. Analyze the module graph. 2. Resolve exported paths. 3. Verify shadowing and cycles do not merge distinct owners.
+ * 1. Analyze the module graph.
+ * 2. Resolve exported paths.
+ * 3. Verify shadowing and cycles do not merge distinct owners.
  */
 export async function test_javascript_exports(): Promise<void> {
   const adapter = new EvidenceJavaScriptAdapter();

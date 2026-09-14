@@ -9,15 +9,27 @@ import type { ILuaDocumentationAttachment } from "./ILuaDocumentationAttachment"
  * dynamic or detached source can be reported truthfully rather than discarded.
  */
 export interface ILuaDocumentation {
-  /** Stable identity of this extraction record. */
+  /** Identifies this physical Lua documentation carrier within the scanned file.
+   *
+   * Attachments and generated hosts use this scanner-local ID, which does not name a semantic declaration.
+   */
   id: string;
 
-  /** Half-open original UTF-16 source span. */
+  /** Locates the carrier's original half-open UTF-16 source span.
+   *
+   * The adapter preserves this range for diagnostics and annotation-range exclusion.
+   */
   range: IEvidenceSourceRange;
 
-  /** Comment delimiters and annotation rules for this carrier. */
+  /** Defines the delimiters and annotation-reading rules for this comment carrier.
+   *
+   * Documentation parsing uses the syntax instead of guessing from raw Lua source text.
+   */
   syntax: IEvidenceCommentSyntax;
 
-  /** Declaration sites to which this documentation attaches. */
+  /** Lists declaration sites that accept this carrier as attached LuaDoc.
+   *
+   * The scanner establishes attachment from source adjacency before static value reconciliation.
+   */
   attachments: ILuaDocumentationAttachment[];
 }

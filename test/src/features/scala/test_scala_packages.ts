@@ -6,7 +6,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 /**
  * Builds Scala identities across packages, companion namespaces, and literal names.
  *
- * The fixture combines chained and braced packages with companion objects, implicit declarations, extension classes, type aliases, and backticked segments.
+ * The fixture combines chained and braced packages with companion objects, implicit declarations, an implicit class, type aliases, and backticked segments.
  *
  * 1. Analyze the package fixture and require no diagnostics.
  * 2. Verify the exact symbol-qualified identities for package, companion, implicit, extension, alias, and literal declarations.

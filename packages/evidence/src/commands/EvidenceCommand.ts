@@ -208,9 +208,10 @@ export namespace EvidenceCommand {
    * Executes a finite command and returns its complete buffered result.
    *
    * This is the embedding and logic-test entry point: it does not write process
-   * streams and translates parse or operational failures into stderr with exit
-   * code 2. Watch mode is deliberately excluded because its unbounded publication
-   * lifecycle belongs to {@link EvidenceWatcher} or {@link main}.
+   * streams and returns parse or operational failures with exit code 2. Text
+   * failures use stderr, while JSON operational failures use stdout to preserve a
+   * parseable report. Watch mode is deliberately excluded because its unbounded
+   * publication lifecycle belongs to {@link EvidenceWatcher} or {@link main}.
    *
    * @example
    * const result: IEvidenceCommandResult = await EvidenceCommand.run(["--help"]);

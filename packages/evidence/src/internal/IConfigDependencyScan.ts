@@ -7,9 +7,21 @@ import type { IEvidenceSourceDependency } from "../structures/IEvidenceSourceDep
  * observe the repair that makes evaluation possible again.
  */
 export interface IConfigDependencyScan {
-  /** File and directory dependencies that must invalidate configuration evaluation. */
+  /**
+   * File and directory dependencies that must invalidate configuration evaluation.
+   *
+   * `ConfigDependencyScanner` records resolved module files, package boundaries,
+   * and missing resolution candidates here so watch mode can rerun evaluation
+   * after either a content edit or a filesystem-topology repair.
+   */
   dependencies: IEvidenceSourceDependency[];
 
-  /** Read, parse, or resolution failure after any recoverable dependencies were recorded. */
+  /**
+   * Read, parse, or resolution failure after recoverable dependencies were recorded.
+   *
+   * Omission means scanning completed. When present, callers retain
+   * `dependencies` instead of replacing them with an empty watch set that
+   * could miss the change which repairs the configuration graph.
+   */
   cause?: unknown;
 }

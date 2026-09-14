@@ -8,25 +8,53 @@ import type { EvidenceProgrammingSymbol } from "../../typings/EvidenceProgrammin
  * accessors, so this record retains those physical facts until ownership is known.
  */
 export interface IMatlabDeclaration {
-  /** Unique extraction site identity. */
+  /**
+   * Identifies this physical declaration extracted from the selected source.
+   *
+   * Documentation attachments and later ownership links use it before unit IDs exist.
+   */
   id: string;
 
-  /** Literal declaration name. */
+  /**
+   * Stores the literal MATLAB identifier from the declaration.
+   *
+   * The resolver appends it to its owner path when creating a public unit address.
+   */
   name: string;
 
-  /** Common selector. */
+  /**
+   * Classifies the declaration in Evidence's shared programming selector model.
+   *
+   * This distinguishes types, functions, and properties during graph selection.
+   */
   symbol: EvidenceProgrammingSymbol;
 
-  /** Package and lexical owner segments. */
+  /**
+   * Names package and lexical-owner segments that define semantic identity.
+   *
+   * Ownership reconciliation may replace this path for an external class method.
+   */
   identity: string[];
 
-  /** Public file accessor segments. */
+  /**
+   * Names the public accessor segments projected from a selected source file.
+   *
+   * The array remains distinct from identity because external methods have class-file aliases.
+   */
   address: string[];
 
-  /** Physical file establishing semantic ownership. */
+  /**
+   * Identifies the physical file that establishes this declaration's ownership.
+   *
+   * The resolver uses this anchor to match external members with their class definition.
+   */
   anchor: string;
 
-  /** Whether the declaration is externally accessible. */
+  /**
+   * States whether static MATLAB visibility exposes this declaration publicly.
+   *
+   * Ownership and accessor reconciliation can further restrict an initially visible record.
+   */
   public: boolean;
 
   /**
@@ -45,13 +73,25 @@ export interface IMatlabDeclaration {
    */
   implementation?: string;
 
-  /** A getter or setter that belongs to an existing property. */
+  /**
+   * Identifies a getter or setter that contributes to an existing property unit.
+   *
+   * Omission means this declaration is independently materialized rather than an accessor.
+   */
   accessor?: "get" | "set";
 
-  /** Property read access. */
+  /**
+   * Records whether the declared property has public read access.
+   *
+   * It determines whether a matching getter can remain on the public surface.
+   */
   getPublic?: boolean;
 
-  /** Property write access. */
+  /**
+   * Records whether the declared property has public write access.
+   *
+   * It determines whether a matching setter can remain on the public surface.
+   */
   setPublic?: boolean;
 
   /**
@@ -62,9 +102,17 @@ export interface IMatlabDeclaration {
    */
   publicFiles?: string[];
 
-  /** Explicit parent extraction identity. */
+  /**
+   * References the scanner-local parent declaration when one exists.
+   *
+   * Omission denotes a top-level function or class before ownership reconciliation.
+   */
   ownerDeclarationId?: string;
 
-  /** Original declaration and fingerprint spans. */
+  /**
+   * Holds physical declaration and content spans for hosts and fingerprints.
+   *
+   * Materialized units retain these ranges even when ownership joins several files.
+   */
   site: IEvidenceUnitSite;
 }

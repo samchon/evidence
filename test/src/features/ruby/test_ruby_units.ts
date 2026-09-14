@@ -12,8 +12,10 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *
  * Visibility, method sides, constants, and attributes determine owned public identities.
  *
- * 1. Analyze representative Ruby declarations.
- * 2. Verify units, reopened sites, parents, and properties.
+ * 1. Verify the registered Ruby adapter metadata, then analyze public and hidden
+ *    containers, methods, constants, aliases, attributes, and reopenings.
+ * 2. Require the exact public unit identities, parent ownership, physical sites,
+ *    and property selections while excluding non-public surfaces.
  */
 export async function test_ruby_units(): Promise<void> {
   // Certified metadata identifies the pinned grammar and declared source boundary.

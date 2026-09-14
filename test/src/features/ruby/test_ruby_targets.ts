@@ -15,8 +15,10 @@ interface IRubyTargetStatus {
  *
  * Ruby target spelling must preserve the owning container and callable form.
  *
- * 1. Resolve every supported Ruby target kind.
- * 2. Verify exact statuses and public addresses.
+ * 1. Build a Ruby reference inventory containing containers, instance and
+ *    singleton methods, attributes, setters, and operators.
+ * 2. Resolve claim tags against every supported spelling and require resolved
+ *    statuses and their intended public units.
  */
 export async function test_ruby_targets(): Promise<void> {
   const adapter = new EvidenceRubyAdapter();

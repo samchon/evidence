@@ -4,12 +4,24 @@
  * hierarchy and duplicate-anchor handling can decide public unit ownership.
  */
 export interface IMarkdownHeading {
-  /** ATX depth used to establish structural containment. */
+  /**
+   * Stores the ATX depth used to establish structural containment.
+   *
+   * Only supported depths can create nested public Markdown units.
+   */
   level: number;
 
-  /** Visible heading text after marker normalization. */
+  /**
+   * Stores visible heading text after marker normalization.
+   *
+   * The adapter exposes this text as the human-readable unit name.
+   */
   title: string;
 
-  /** Candidate anchor before duplicate disambiguation. */
+  /**
+   * Stores the candidate anchor before duplicate disambiguation.
+   *
+   * Later materialization uses it to form a stable public address.
+   */
   anchor: string;
 }

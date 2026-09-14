@@ -6,9 +6,17 @@
  * materialization to attach the member to the exact selected parent unit.
  */
 export interface ICTypeContext {
-  /** Scanner-local declaration key for the enclosing aggregate or enum. */
+  /**
+   * Scanner-local declaration key for the enclosing aggregate or enum.
+   *
+   * Nested declarations retain it until the adapter resolves their selected parent unit.
+   */
   declarationId: string;
 
-  /** Canonical enclosing path prepended to each nested member identity. */
+  /**
+   * Canonical enclosing path prepended to each nested member identity.
+   *
+   * It keeps member identity separate from any tag or typedef public address.
+   */
   identity: string[];
 }

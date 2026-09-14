@@ -146,7 +146,11 @@ export class EvidenceDbmlAdapter implements IEvidenceAdapter {
     }
   }
 
-  /** Establishes file-independent tables and detects conflicting schema declarations or aliases. */
+  /**
+   * Establishes file-independent tables and detects conflicting schema declarations or aliases.
+   *
+   * Relation resolution uses this map after every selected DBML file has been scanned.
+   */
   private aliases(
     inventory: IEvidenceInventory,
     analyses: IDbmlFileAnalysis[],
@@ -187,7 +191,11 @@ export class EvidenceDbmlAdapter implements IEvidenceAdapter {
     return aliases;
   }
 
-  /** Resolves endpoint existence, ordered composite arity, direction and owning model. */
+  /**
+   * Resolves endpoint existence, ordered composite arity, direction, and owning model.
+   *
+   * Resolved relations become semantic declarations before units and hosts are materialized.
+   */
   private relations(
     inventory: IEvidenceInventory,
     analyses: IDbmlFileAnalysis[],
@@ -249,7 +257,11 @@ export class EvidenceDbmlAdapter implements IEvidenceAdapter {
       }
   }
 
-  /** Rejects missing or ambiguous semantic endpoints instead of dropping a relation obligation. */
+  /**
+   * Rejects missing or ambiguous semantic endpoints instead of dropping a relation obligation.
+   *
+   * Returning no endpoint preserves the failure in inventory completeness.
+   */
   private endpoint(
     inventory: IEvidenceInventory,
     analysis: IDbmlFileAnalysis,
@@ -282,7 +294,11 @@ export class EvidenceDbmlAdapter implements IEvidenceAdapter {
     return { table, columns: endpoint.columns };
   }
 
-  /** Publishes one semantic identity and each declaration's physical file address. */
+  /**
+   * Publishes one semantic identity and each declaration's physical file address.
+   *
+   * Aliased schema declarations can therefore share a unit while retaining their source sites.
+   */
   private units(
     inventory: IEvidenceInventory,
     analyses: IDbmlFileAnalysis[],
@@ -347,14 +363,22 @@ export class EvidenceDbmlAdapter implements IEvidenceAdapter {
       }
   }
 
-  /** Hashes semantic declaration text and enum dependencies without documentation syntax. */
+  /**
+   * Hashes semantic declaration text and enum dependencies without documentation syntax.
+   *
+   * Review fingerprints change for schema behavior, not annotation prose.
+   */
   private digest(declaration: IDbmlDeclaration, enums: string): string {
     return createHash("sha256")
       .update((declaration.content + "\n" + enums).replace(/\r\n/gu, "\n"))
       .digest("hex");
   }
 
-  /** Applies withdrawals first, then retains every visible documented or undocumented host. */
+  /**
+   * Applies withdrawals first, then retains every visible documented or undocumented host.
+   *
+   * Hidden declarations must not create hosts that can satisfy graph obligations.
+   */
   private documentation(
     inventory: IEvidenceInventory,
     analyses: IDbmlFileAnalysis[],
@@ -422,7 +446,11 @@ export class EvidenceDbmlAdapter implements IEvidenceAdapter {
           });
   }
 
-  /** Creates a source-mapped carrier sharing one declaration site for inline column relations. */
+  /**
+   * Creates a source-mapped carrier sharing one declaration site for inline column relations.
+   *
+   * The shared site lets one DBML note acknowledge the column and its inline relation.
+   */
   private host(
     analysis: IDbmlFileAnalysis,
     documentation: IDbmlDocumentation,
@@ -454,7 +482,11 @@ export class EvidenceDbmlAdapter implements IEvidenceAdapter {
     };
   }
 
-  /** Parses notes and comments only after structural ownership is known. */
+  /**
+   * Parses notes and comments only after structural ownership is known.
+   *
+   * Tag parsing needs the resolved unit IDs and attachment status of each carrier.
+   */
   private parse(
     analysis: IDbmlFileAnalysis,
     documentation: IDbmlDocumentation,
@@ -467,12 +499,20 @@ export class EvidenceDbmlAdapter implements IEvidenceAdapter {
     );
   }
 
-  /** Encodes literal schema segments without conflating punctuation or file placement. */
+  /**
+   * Encodes literal schema segments without conflating punctuation or file placement.
+   *
+   * JSON serialization preserves a stable unit key for segments containing dots or separators.
+   */
   private id(identity: string[]): string {
     return `dbml:${JSON.stringify(identity)}`;
   }
 
-  /** Preserves missing schema facts as actionable incomplete analysis. */
+  /**
+   * Preserves missing schema facts as actionable incomplete analysis.
+   *
+   * The diagnostic prevents unresolved DBML declarations from silently shrinking coverage.
+   */
   private problem(
     inventory: IEvidenceInventory,
     analysis: IDbmlFileAnalysis,

@@ -706,7 +706,6 @@ export class PythonFileScanner {
     if (!position.unitIds.includes(unitId)) position.unitIds.push(unitId);
   }
 
-  /** Attaches adjacent source lines even when the grammar places a comment outside the body block. */
   /**
    * Attaches the immediately preceding standalone comment run to a declaration.
    *
@@ -792,7 +791,6 @@ export class PythonFileScanner {
     documentation.attachments.push({ positionId, siteId, unitId });
   }
 
-  /** Retains every parsed comment, grouping only consecutive standalone lines at one indent. */
   /**
    * Collects contiguous Python comment runs eligible for declaration attachment.
    *
@@ -831,7 +829,6 @@ export class PythonFileScanner {
     }
   }
 
-  /** Refuses trailing code comments as leading declaration documentation. */
   /**
    * Checks whether a comment begins on an otherwise empty source line.
    *

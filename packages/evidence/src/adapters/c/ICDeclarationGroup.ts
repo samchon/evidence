@@ -9,9 +9,17 @@ import type { ICDeclaration } from "./ICDeclaration";
  * definitions before it publishes a single Evidence unit.
  */
 export interface ICDeclarationGroup {
-  /** File-qualified identifier shared by every member of the group. */
+  /**
+   * File-qualified identifier shared by every member of the group.
+   *
+   * The adapter uses it as the materialized unit ID within this physical source boundary.
+   */
   id: string;
 
-  /** Declarations whose forms and definitions must be mutually compatible. */
+  /**
+   * Declarations whose forms and definitions must be mutually compatible.
+   *
+   * Their sites and addresses become the selected unit only after validation succeeds.
+   */
   declarations: ICDeclaration[];
 }

@@ -11,8 +11,10 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *
  * Intervening comments cannot become evidence merely because they precede an attribute.
  *
- * 1. Analyze attributes with whitespace comments.
- * 2. Verify host attachment, inert comments, and fingerprints.
+ * 1. Analyze outer documentation, attributes, and ordinary comments separated by
+ *    whitespace before one public item.
+ * 2. Require only the documentation carrier to attach, ordinary tagged comments
+ *    to remain unsupported, and content edits to affect the intended fingerprints.
  */
 export async function test_rust_comment_prefixes(): Promise<void> {
   const source = dedent`

@@ -8,7 +8,9 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *
  * Assignment order determines exported identity and aliases cannot expose an unproved dynamic surface.
  *
- * 1. Analyze CommonJS replacement and alias assignments. 2. Compare exported units. 3. Require unsupported dynamic exports to remain incomplete.
+ * 1. Analyze CommonJS replacement and alias assignments.
+ * 2. Compare exported units.
+ * 3. Require unsupported dynamic exports to remain incomplete.
  */
 export async function test_javascript_commonjs(): Promise<void> {
   const inventory = await new EvidenceJavaScriptAdapter().analyze(

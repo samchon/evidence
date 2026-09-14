@@ -9,15 +9,27 @@ import type { IDartDocumentationAttachment } from "./IDartDocumentationAttachmen
  * the adapter can report a misplaced annotation instead of silently ignoring it.
  */
 export interface IDartDocumentation {
-  /** Stable identity of this extraction record. */
+  /** Identifies this physical documentation carrier within the scanned source.
+   *
+   * Attachments and generated hosts use this scanner-local identity; it does not name a semantic declaration.
+   */
   id: string;
 
-  /** Half-open original UTF-16 source span. */
+  /** Locates the carrier's original half-open UTF-16 source span.
+   *
+   * The adapter preserves this position for diagnostics and annotation-range exclusion.
+   */
   range: IEvidenceSourceRange;
 
-  /** Comment delimiters and annotation rules for this carrier. */
+  /** Defines the delimiters and annotation-reading rules for this carrier.
+   *
+   * Documentation parsing uses this syntax instead of reinterpreting raw Dart source text.
+   */
   syntax: IEvidenceCommentSyntax;
 
-  /** Declaration sites to which this documentation attaches. */
+  /** Lists supported declaration sites that accept this carrier as documentation.
+   *
+   * Attachments are established by source adjacency before library and unit reconciliation.
+   */
   attachments: IDartDocumentationAttachment[];
 }

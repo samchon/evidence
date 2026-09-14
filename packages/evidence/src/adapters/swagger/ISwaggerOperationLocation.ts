@@ -7,9 +7,17 @@ import type { IYamlScalarMapping } from "./IYamlScalarMapping";
  * semantics for values that do not map to one source token.
  */
 export interface ISwaggerOperationLocation {
-  /** Full operation node span used as the unit site. */
+  /**
+   * Locates the full operation node used as the physical unit site.
+   *
+   * The range keeps diagnostics and fingerprints tied to the original document.
+   */
   range: IEvidenceSourceRange;
 
-  /** Character-level mapping for a description scalar, when source-backed. */
+  /**
+   * Maps description characters when the scalar has a source-backed location.
+   *
+   * Omission means converted or aliased content has no direct scalar token.
+   */
   description?: IYamlScalarMapping;
 }

@@ -2,28 +2,63 @@ import type { Node } from "web-tree-sitter";
 
 import type { IEvidenceCommentSyntax } from "../../structures/IEvidenceCommentSyntax";
 
-/** Grammar-specific Python syntax helpers without semantic export decisions. */
+/**
+ * Provides grammar-specific Python syntax helpers without export decisions.
+ *
+ * PythonFileScanner uses these helpers to recognize supported declaration and
+ * documentation shapes while keeping public-surface policy in the scanner.
+ */
 export namespace PythonSyntax {
+  /**
+   * Unwraps a decorated definition to its underlying declaration node.
+   *
+   * Callers retain the wrapper separately when its range or decorators affect
+   * documentation attachment and static-versus-instance member classification.
+   */
   export function definition(node: Node): Node {
     return node.type === "decorated_definition"
       ? (node.childForFieldName("definition") ?? node)
       : node;
   }
 
+  /**
+   * Returns an identifier's source spelling when the node is a simple name.
+   *
+   * Other grammar forms remain unsupported instead of being coerced into a
+   * potentially incorrect declaration or binding name.
+   */
   export function name(node: Node | null): string | undefined {
     return node?.type === "identifier" ? node.text : undefined;
   }
 
+  /**
+   * Extracts the leftmost identifier from a Python type-alias declaration.
+   *
+   * The scanner requires this static name before it can create an owned type
+   * unit or a module binding for the alias.
+   */
   export function typeAliasName(node: Node): string | undefined {
     const left = node.childForFieldName("left");
     if (left === null) return undefined;
     return left.descendantsOfType("identifier")[0]?.text;
   }
 
+  /**
+   * Returns the simple left-side name of an assignment expression.
+   *
+   * Destructuring and attribute assignments intentionally return no name so the
+   * scanner can distinguish unsupported dynamic surfaces from declarations.
+   */
   export function assignmentName(node: Node): string | undefined {
     return name(node.childForFieldName("left"));
   }
 
+  /**
+   * Collects canonical decorator spellings from a decorated declaration wrapper.
+   *
+   * Method scanning uses these spellings to recognize static, class, property,
+   * and cached-property ownership without evaluating arbitrary decorators.
+   */
   export function decoratorNames(wrapper: Node): string[] {
     if (wrapper.type !== "decorated_definition") return [];
     return wrapper.namedChildren
@@ -35,6 +70,12 @@ export namespace PythonSyntax {
       });
   }
 
+  /**
+   * Returns the first parameter name of a function definition when recoverable.
+   *
+   * Initializer scanning treats this name as the instance receiver for direct
+   * field assignments; missing or complex forms do not establish instance fields.
+   */
   export function parameterName(node: Node): string | undefined {
     const parameters = node.childForFieldName("parameters");
     if (parameters === null) return undefined;
@@ -44,16 +85,34 @@ export namespace PythonSyntax {
     return first.descendantsOfType("identifier")[0]?.text;
   }
 
+  /**
+   * Returns the direct object name of an attribute expression.
+   *
+   * Instance-field extraction combines this with {@link attributeName} to accept
+   * only assignments on the initializer's statically identified receiver.
+   */
   export function attributeObject(node: Node): string | undefined {
     if (node.type !== "attribute") return undefined;
     return name(node.childForFieldName("object"));
   }
 
+  /**
+   * Returns the direct member name of an attribute expression.
+   *
+   * A non-attribute expression has no eligible member name and remains outside
+   * the scanner's supported direct-receiver assignment form.
+   */
   export function attributeName(node: Node): string | undefined {
     if (node.type !== "attribute") return undefined;
     return name(node.childForFieldName("attribute"));
   }
 
+  /**
+   * Builds documentation mapping syntax for a non-interpolated string literal.
+   *
+   * Interpolated strings are omitted because runtime interpolation prevents the
+   * scanner from treating their text as stable Evidence documentation.
+   */
   export function stringSyntax(node: Node): IEvidenceCommentSyntax | undefined {
     if (
       node.type !== "string" ||
@@ -75,6 +134,12 @@ export namespace PythonSyntax {
     };
   }
 
+  /**
+   * Returns the line-comment syntax used for Python comment documentation.
+   *
+   * The fixed mapping lets adjacent standalone `#` comment runs support Evidence
+   * tags with the same withdrawal behavior as supported docstrings.
+   */
   export function commentSyntax(): IEvidenceCommentSyntax {
     return {
       opening: "#",
@@ -85,6 +150,12 @@ export namespace PythonSyntax {
     };
   }
 
+  /**
+   * Resolves a supported literal list or tuple expression to its string members.
+   *
+   * Static `+` composition and parentheses are accepted for `__all__`; any
+   * dynamic value returns undefined so the scanner preserves incompleteness.
+   */
   export function literalSequence(node: Node | null): string[] | undefined {
     if (node === null) return undefined;
     if (node.type === "parenthesized_expression")
@@ -107,6 +178,12 @@ export namespace PythonSyntax {
     return output;
   }
 
+  /**
+   * Reads one plain static Python string literal for an export-name sequence.
+   *
+   * Escapes, line breaks, and prefixes other than `u` or `U` are rejected so
+   * the literal value need not be interpreted by executing Python syntax.
+   */
   export function literalString(node: Node): string | undefined {
     const syntax = stringSyntax(node);
     if (syntax === undefined) return undefined;
@@ -123,6 +200,12 @@ export namespace PythonSyntax {
       : value;
   }
 
+  /**
+   * Returns the leading expression node when a suite begins with a docstring.
+   *
+   * Leading comments are skipped, but the first executable statement must be a
+   * supported string expression for attachment to the enclosing declaration.
+   */
   export function docstring(body: Node | null): Node | undefined {
     if (body === null) return undefined;
     const statement = body.namedChildren.find(
@@ -135,6 +218,12 @@ export namespace PythonSyntax {
       : undefined;
   }
 
+  /**
+   * Splits a supported docstring expression into its source string literals.
+   *
+   * Bytes and f-string components are excluded because their runtime semantics
+   * cannot supply stable documentation text for Evidence annotations.
+   */
   export function docstringParts(node: Node): Node[] | undefined {
     const strings =
       node.type === "string"
@@ -151,6 +240,12 @@ export namespace PythonSyntax {
     return strings;
   }
 
+  /**
+   * Detects a `TypeAlias` annotation on a simple assignment.
+   *
+   * The scanner uses this syntactic marker to classify the assigned declaration
+   * as a type unit while leaving other assignments as properties.
+   */
   export function typeAliasAnnotation(node: Node): boolean {
     const annotation = node.childForFieldName("type")?.text;
     return (
@@ -159,6 +254,12 @@ export namespace PythonSyntax {
     );
   }
 
+  /**
+   * Serializes a supported identifier, attribute, call, or parenthesized decorator expression.
+   *
+   * Decorator recognition requires only the callable's dotted spelling; other
+   * expression forms remain unclassified rather than being evaluated.
+   */
   function qualified(node: Node | undefined): string | undefined {
     if (node === undefined) return undefined;
     if (node.type === "identifier") return node.text;
@@ -176,6 +277,12 @@ export namespace PythonSyntax {
     return undefined;
   }
 
+  /**
+   * Checks whether a string literal can participate in a static Python docstring.
+   *
+   * Bytes and formatted literals are rejected because they cannot provide stable
+   * source text without runtime evaluation.
+   */
   function docstringLiteral(node: Node): boolean {
     const syntax = stringSyntax(node);
     if (syntax === undefined) return false;
