@@ -382,6 +382,16 @@ export class ScalaFileScanner {
     owner: IScalaDeclaration | undefined,
   ): void {
     if (owner?.public === false) return;
+    if (
+      this.session.root.descendantsOfType("import_declaration").length !== 0
+    ) {
+      this.problem(
+        "export-resolution",
+        "Exports in files with imports require import and shadowing resolution.",
+        node,
+      );
+      return;
+    }
     const path = node
       .childrenForFieldName("path")
       .filter((child) => child.isNamed);
