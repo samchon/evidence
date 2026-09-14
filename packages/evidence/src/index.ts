@@ -12,6 +12,7 @@ export { EvidenceJavaScriptAdapter } from "./adapters/javascript/EvidenceJavaScr
 export { EvidenceKotlinAdapter } from "./adapters/kotlin/EvidenceKotlinAdapter";
 export { EvidenceMarkdownAdapter } from "./adapters/markdown/EvidenceMarkdownAdapter";
 export { EvidenceMatlabAdapter } from "./adapters/matlab/EvidenceMatlabAdapter";
+export { EvidencePhpAdapter } from "./adapters/php/EvidencePhpAdapter";
 export { EvidencePrismaAdapter } from "./adapters/prisma/EvidencePrismaAdapter";
 export { EvidencePostgresqlAdapter } from "./adapters/postgresql/EvidencePostgresqlAdapter";
 export { EvidencePythonAdapter } from "./adapters/python/EvidencePythonAdapter";
