@@ -16,11 +16,11 @@ export async function test_mysql_graph(): Promise<void> {
             ? `export default { claims: [{ type: "mysql", files: ["schema.sql"], symbol: "${symbol}", reference: { type: "typescript", files: ["contract.ts"], symbol: "function" } }] };`
             : `export default { claims: [{ type: "typescript", files: ["contract.ts"], symbol: "function", reference: { type: "mysql", files: ["schema.sql"], symbol: "${symbol}" } }] };`,
           "schema.sql": dedent`
-            /** @evidence ./contract.ts#run Verifies the model. */
+            ${mysqlClaims && symbol === "model" ? "/** @evidence ./contract.ts#run Verifies the model. */" : ""}
             CREATE TABLE Child (
-              /** @evidence ./contract.ts#run Verifies the column. */
+              ${mysqlClaims && symbol === "column" ? "/** @evidence ./contract.ts#run Verifies the column. */" : ""}
               parent_id INT,
-              /** @evidence ./contract.ts#run Verifies the relation. */
+              ${mysqlClaims && symbol === "relation" ? "/** @evidence ./contract.ts#run Verifies the relation. */" : ""}
               FOREIGN KEY parent_fk (parent_id) REFERENCES Parent (id)
             );
           `,

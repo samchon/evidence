@@ -13,6 +13,13 @@ export namespace MysqlPolicy {
   /** FOREIGN KEY index names do not name MySQL constraints; endpoints identify the relation. */
   export const constraintNames = false;
 
+  /** An unqualified REFERENCES target belongs to its explicitly qualified owning database. */
+  export function reference(target: string[], owner: string[]): string[] {
+    return target.length === 1 && owner.length === 2
+      ? [...owner.slice(0, 1), ...target]
+      : target;
+  }
+
   /** Rejects environment state and syntax from the shared grammar's other dialects. */
   export function validate(node: Node): string | undefined {
     if (node.type === "comment" || node.type === "marginalia") {
@@ -113,6 +120,7 @@ function tableOption(node: Node): string | undefined {
 
 /** Keywords and nodes whose effects require state or semantics outside the declared subset. */
 const FORBIDDEN = new Set([
+  "array_size_definition",
   "keyword_temporary",
   "keyword_temp",
   "keyword_unlogged",

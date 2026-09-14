@@ -121,4 +121,36 @@ export async function test_mysql_units(): Promise<void> {
     ).status,
     "resolved",
   );
+
+  const localReference = await new EvidenceMysqlAdapter().analyze(
+    TestSourceSnapshot.create(
+      "qualified.sql",
+      "CREATE TABLE Store.Child (parent_id INT, FOREIGN KEY (parent_id) REFERENCES Parent (id));",
+    ),
+  );
+  const explicitReference = await new EvidenceMysqlAdapter().analyze(
+    TestSourceSnapshot.create(
+      "qualified.sql",
+      "CREATE TABLE Store.Child (parent_id INT, FOREIGN KEY (parent_id) REFERENCES Store.Parent (id));",
+    ),
+  );
+  TestValidator.equals(
+    "relative database reference remains complete",
+    localReference.diagnostics,
+    [],
+  );
+  TestValidator.equals(
+    "explicit database reference remains complete",
+    explicitReference.diagnostics,
+    [],
+  );
+  TestValidator.equals(
+    "database qualification has one foreign-key identity",
+    localReference.units
+      .filter((unit) => unit.symbol === "relation")
+      .map((unit) => unit.id),
+    explicitReference.units
+      .filter((unit) => unit.symbol === "relation")
+      .map((unit) => unit.id),
+  );
 }

@@ -17,6 +17,7 @@ export async function test_mysql_certification(): Promise<void> {
         file: "schema.sql",
         content: dedent`
       /* 계약 😀 */
+
       CREATE TABLE Parent (id INT PRIMARY KEY);
       /** @evidence ./docs/requirements.md#model Verifies the child model. */
       CREATE TABLE Child (
