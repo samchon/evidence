@@ -252,6 +252,7 @@ export class RustFileScanner {
     let index = 0;
     const prefixes: Node[] = [];
     for (const child of body.namedChildren) {
+      if (RustSyntax.ordinaryComment(child)) continue;
       if (
         child.type === "attribute_item" ||
         RustSyntax.outerDocumentation(child)

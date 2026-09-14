@@ -941,7 +941,8 @@ export class RubyFileScanner {
           candidate.syntax !== undefined &&
           this.lineLeading(candidate.range) &&
           candidate.range.end.offset <= node.startIndex &&
-          candidate.range.start.column === node.startPosition.column + 1,
+          (candidate.syntax.opening.startsWith("=begin") ||
+            candidate.range.start.column === node.startPosition.column + 1),
       )
       .sort((left, right) => right.range.end.offset - left.range.end.offset)[0];
     if (documentation === undefined) return undefined;

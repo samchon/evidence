@@ -233,7 +233,11 @@ export class GoFileScanner {
     )
       return;
     const documentation = this.commentDocumentation.get(this.nodeKey(previous));
-    if (documentation === undefined) return;
+    if (
+      documentation === undefined ||
+      !this.standalone(documentation.range.start.offset)
+    )
+      return;
     if (
       /\r?\n[ \t]*\r?\n/u.test(
         this.source.content.slice(
@@ -263,12 +267,13 @@ export class GoFileScanner {
       const sequence: Node[] = [first];
       consumed.add(this.nodeKey(first));
       let last = first;
-      if (first.text.startsWith("//")) {
+      if (first.text.startsWith("//") && this.standalone(first.startIndex)) {
         let next = last.nextNamedSibling;
         while (
           next !== null &&
           next.type === "comment" &&
           next.text.startsWith("//") &&
+          this.standalone(next.startIndex) &&
           next.startPosition.column === first.startPosition.column &&
           !/\r?\n[ \t]*\r?\n/u.test(
             this.source.content.slice(last.endIndex, next.startIndex),
@@ -288,6 +293,12 @@ export class GoFileScanner {
       for (const comment of sequence)
         this.commentDocumentation.set(this.nodeKey(comment), documentation);
     }
+  }
+
+  /** Keeps trailing source comments separate from the next declaration's documentation. */
+  private standalone(offset: number): boolean {
+    const start = this.source.content.lastIndexOf("\n", offset - 1) + 1;
+    return /^[ \t]*$/u.test(this.source.content.slice(start, offset));
   }
 
   private collectLiteralAnnotations(): void {
