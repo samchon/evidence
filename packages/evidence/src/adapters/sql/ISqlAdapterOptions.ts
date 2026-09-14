@@ -7,11 +7,13 @@ import type { ISqlFileAnalysis } from "./ISqlFileAnalysis";
 export interface ISqlAdapterOptions {
   /** Explicit configured dialect; parsing never guesses another language. */
   type: EvidenceDatabaseType;
+
   /** Copies the dialect syntax tree into serializable declarations and hosts. */
   scan: (
     session: EvidenceParseSession,
     source: IEvidenceSourceFile,
   ) => ISqlFileAnalysis;
+
   /** Reconciles dialect-defined ownership across selected files before publication. */
   resolve?: (analyses: ISqlFileAnalysis[]) => void;
 }
