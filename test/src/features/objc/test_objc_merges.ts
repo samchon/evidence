@@ -120,10 +120,12 @@ export async function test_objc_merges(): Promise<void> {
   );
   TestValidator.equals(
     "decoded nominal and selector identities",
-    escaped.units.map((unit) => [unit.identity, unit.sites.length]),
-    [
-      [["Widget"], 2],
-      [["Widget", "-run"], 2],
-    ],
+    escaped.units
+      .map(
+        (unit) =>
+          `${unit.symbol}:${unit.identity.join("/")}:${unit.sites.length}`,
+      )
+      .sort((left, right) => left.localeCompare(right)),
+    ["function:Widget/-run:2", "type:Widget:2"],
   );
 }

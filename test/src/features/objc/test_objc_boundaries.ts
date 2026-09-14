@@ -57,7 +57,7 @@ export async function test_objc_boundaries(): Promise<void> {
   TestValidator.equals(
     "Objective-C++ explicitly unsupported",
     overlap.diagnostics.map((item) => item.code),
-    ["objc-unsupported-extension", "inventory-incomplete"],
+    ["inventory-incomplete", "objc-unsupported-extension"],
   );
 
   const guards = await adapter.analyze(
@@ -92,7 +92,7 @@ export async function test_objc_boundaries(): Promise<void> {
   TestValidator.equals(
     "duplicate primary interfaces are incomplete",
     conflicting.diagnostics.map((item) => item.code),
-    ["objc-declaration-conflict", "inventory-incomplete"],
+    ["inventory-incomplete", "objc-declaration-conflict"],
   );
 
   const privacy = await adapter.analyze(
@@ -125,6 +125,6 @@ export async function test_objc_boundaries(): Promise<void> {
   TestValidator.equals(
     "source diagnostic retained",
     failure.diagnostics.map((item) => item.code),
-    ["source-path-unreadable", "inventory-incomplete"],
+    ["inventory-incomplete", "source-path-unreadable"],
   );
 }
