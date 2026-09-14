@@ -34,15 +34,19 @@ export async function test_lua_hosts(): Promise<void> {
     inventory.declarations.map((declaration) => declaration.target),
     ["spec.md#run"],
   );
+  const declaration = inventory.declarations[0];
+  if (declaration === undefined || declaration.location.range === undefined)
+    throw new Error("Attached annotation range is missing.");
   TestValidator.equals(
     "original UTF-16 annotation offset",
-    inventory.declarations[0]?.location.range?.start.offset,
+    declaration.location.range.start.offset,
     content.indexOf("@evidence spec.md#run"),
   );
   const hidden = inventory.units.find((unit) => unit.name === "hidden");
+  if (hidden === undefined) throw new Error("Hidden table is missing.");
   TestValidator.equals(
     "long documentation withdraws owner",
-    hidden?.withdrawals.map((withdrawal) => withdrawal.tag),
+    hidden.withdrawals.map((withdrawal) => withdrawal.tag),
     ["internal"],
   );
   TestValidator.equals(

@@ -1,9 +1,9 @@
 import { AdapterCertification } from "../../internal/certification/AdapterCertification";
-import { luaCertificationFixture } from "../../internal/certification/LuaCertificationFixture";
+import { LuaCertificationFixture } from "../../internal/certification/LuaCertificationFixture";
 
 /** Exercises exact Lua ownership, failures, graph coverage, alias ambiguity, and fingerprint integrity. */
 export async function test_lua_certification(): Promise<void> {
-  const fixture = luaCertificationFixture();
+  const fixture = LuaCertificationFixture.create();
 
   AdapterCertification.assertInventory(
     fixture,

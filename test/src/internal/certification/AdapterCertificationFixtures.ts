@@ -18,7 +18,7 @@ import type {
 } from "@wrtnlabs/evidence";
 import { dedent } from "@typia/utils";
 
-import { luaCertificationFixture } from "./LuaCertificationFixture";
+import { LuaCertificationFixture } from "./LuaCertificationFixture";
 import type { IAdapterCertification } from "./IAdapterCertification";
 import type { IAdapterCertificationAddress } from "./IAdapterCertificationAddress";
 import type { IAdapterCertificationRequirement } from "./IAdapterCertificationRequirement";
@@ -35,7 +35,7 @@ export namespace AdapterCertificationFixtures {
       rust(),
       java(),
       kotlin(),
-      luaCertificationFixture(),
+      LuaCertificationFixture.create(),
       csharp(),
       c(),
       cpp(),

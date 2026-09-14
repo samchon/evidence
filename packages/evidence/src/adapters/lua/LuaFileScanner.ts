@@ -86,14 +86,8 @@ export class LuaFileScanner {
         );
         return;
       }
-      const names =
-        assignment.namedChildren
-          .find((child) => child.type === "variable_list")
-          ?.namedChildren.filter((child) => child.type !== "comment") ?? [];
-      const values =
-        assignment.namedChildren
-          .find((child) => child.type === "expression_list")
-          ?.namedChildren.filter((child) => child.type !== "comment") ?? [];
+      const names = this.list(assignment, "variable_list");
+      const values = this.list(assignment, "expression_list");
       if (
         names.length !== 1 ||
         values.length !== 1 ||
@@ -115,10 +109,7 @@ export class LuaFileScanner {
       return;
     }
     if (node.type === "return_statement") {
-      const values =
-        node.namedChildren
-          .find((child) => child.type === "expression_list")
-          ?.namedChildren.filter((child) => child.type !== "comment") ?? [];
+      const values = this.list(node, "expression_list");
       const value =
         values.length === 1 && values[0] !== undefined
           ? this.value(values[0], node)
@@ -137,6 +128,14 @@ export class LuaFileScanner {
     );
   }
 
+  /** Reads grammar lists without including interleaved comment extras. */
+  private list(node: Node, type: string): Node[] {
+    const list = node.namedChildren.find((child) => child.type === type);
+    return list === undefined
+      ? []
+      : list.namedChildren.filter((child) => child.type !== "comment");
+  }
+
   /** Resolves literal values and already-established aliases. */
   private value(node: Node, site: Node): ILuaValue | undefined {
     if (node.type === "parenthesized_expression") {
@@ -151,10 +150,10 @@ export class LuaFileScanner {
       ].includes(node.type)
     ) {
       const path = this.path(node);
-      let value =
-        path === undefined ? undefined : this.bindings.get(path[0] ?? "");
-      for (const segment of path?.slice(1) ?? [])
-        value = value?.fields.get(segment);
+      if (path === undefined) return undefined;
+      let value = this.bindings.get(path[0] ?? "");
+      for (const segment of path.slice(1))
+        value = value === undefined ? undefined : value.fields.get(segment);
       if (value === undefined)
         this.problem(
           node,
@@ -247,7 +246,8 @@ export class LuaFileScanner {
       return;
     }
     let owner = this.bindings.get(first);
-    for (const segment of path.slice(1, -1)) owner = owner?.fields.get(segment);
+    for (const segment of path.slice(1, -1))
+      owner = owner === undefined ? undefined : owner.fields.get(segment);
     const last = path.at(-1);
     if (owner?.kind !== "table" || last === undefined) {
       this.problem(
@@ -408,7 +408,9 @@ export class LuaFileScanner {
           continue;
         const name = declaration.childForFieldName("name");
         const root =
-          name?.descendantsOfType("identifier")[0]?.text ?? name?.text;
+          name === null
+            ? undefined
+            : (name.descendantsOfType("identifier")[0]?.text ?? name.text);
         if (root !== undefined && !this.local(root, declaration))
           this.problem(
             declaration,
@@ -450,7 +452,8 @@ export class LuaFileScanner {
       if (value?.kind !== "table" || value.declaration === undefined) continue;
       const path = this.path(node);
       if (path === undefined) return true;
-      for (const segment of path.slice(1)) value = value?.fields.get(segment);
+      for (const segment of path.slice(1))
+        value = value === undefined ? undefined : value.fields.get(segment);
       if (value === undefined || value.kind === "table") return true;
     }
     return false;
@@ -465,7 +468,8 @@ export class LuaFileScanner {
       ) {
         const parameters = scope.childForFieldName("parameters");
         if (
-          parameters?.namedChildren.some(
+          parameters !== null &&
+          parameters.namedChildren.some(
             (child) => child.type === "identifier" && child.text === name,
           )
         )
@@ -477,7 +481,8 @@ export class LuaFileScanner {
           if (declaration.type === "variable_declaration") {
             const names = declaration.descendantsOfType("variable_list")[0];
             if (
-              names?.namedChildren.some(
+              names !== undefined &&
+              names.namedChildren.some(
                 (child) => child.type === "identifier" && child.text === name,
               )
             )
@@ -578,10 +583,12 @@ export class LuaFileScanner {
       )
     )
       return;
-    this.documentation.get(previous.startIndex)?.attachments.push({
-      declarationId: declaration.id,
-      siteId: declaration.site.id,
-    });
+    const documentation = this.documentation.get(previous.startIndex);
+    if (documentation !== undefined)
+      documentation.attachments.push({
+        declarationId: declaration.id,
+        siteId: declaration.site.id,
+      });
   }
 
   /** Retains actionable source locations for every unproven public surface. */

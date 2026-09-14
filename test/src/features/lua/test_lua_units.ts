@@ -33,7 +33,7 @@ export async function test_lua_units(): Promise<void> {
     "exact public denominator",
     inventory.units
       .map((unit) => `${unit.symbol}:${EvidenceAccessor.format(unit.identity)}`)
-      .sort(),
+      .sort((left, right) => left.localeCompare(right)),
     [
       "property:module",
       "property:module.value",
@@ -43,7 +43,7 @@ export async function test_lua_units(): Promise<void> {
       "function:module.method",
       "property:module.copy",
       "function:globalFunction",
-    ].sort(),
+    ].sort((left, right) => left.localeCompare(right)),
   );
   const selected = inventory.units.map((unit) => unit.id);
   const graph = new EvidenceInventory([inventory]);
