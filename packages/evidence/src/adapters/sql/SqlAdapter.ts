@@ -137,7 +137,7 @@ export class SqlAdapter implements IEvidenceAdapter {
         const previousDeclarations =
           declarationIds.get(id) ?? new Set<string>();
         if (
-          !declaration.merge &&
+          declaration.merge !== true &&
           previousDeclarations.size !== 0 &&
           !previousDeclarations.has(declaration.id)
         )
@@ -148,7 +148,8 @@ export class SqlAdapter implements IEvidenceAdapter {
             `Database identity '${declaration.identity.join(".")}' has more than one selected declaration.`,
             "Select one source declaration for this schema identity before checking coverage.",
           );
-        if (!declaration.merge) previousDeclarations.add(declaration.id);
+        if (declaration.merge !== true)
+          previousDeclarations.add(declaration.id);
         declarationIds.set(id, previousDeclarations);
 
         let unit = units.get(id);
