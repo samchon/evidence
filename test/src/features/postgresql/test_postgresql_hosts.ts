@@ -126,6 +126,17 @@ export async function test_postgresql_hosts(): Promise<void> {
     trailing.declarations,
     [],
   );
+  const leading = await adapter.analyze(
+    TestSourceSnapshot.create(
+      "leading.sql",
+      "CREATE TABLE app.Item (id integer); -- A trailing comment.\n-- @evidence spec.md#leading Documents the next table.\nCREATE TABLE app.Other (id integer);",
+    ),
+  );
+  TestValidator.equals(
+    "trailing prose does not consume the following documentation run",
+    leading.declarations.map((declaration) => declaration.target),
+    ["spec.md#leading"],
+  );
   const separated = await adapter.analyze(
     TestSourceSnapshot.create(
       "separated.sql",

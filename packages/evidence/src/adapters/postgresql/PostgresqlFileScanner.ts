@@ -451,8 +451,15 @@ export class PostgresqlFileScanner {
     for (let index = 0; index < comments.length; ++index) {
       const first = comments[index];
       if (first === undefined) continue;
+      const standalone = /^[ \t]*$/u.test(
+        this.source.content.slice(
+          this.source.content.lastIndexOf("\n", first.startIndex - 1) + 1,
+          first.startIndex,
+        ),
+      );
       let last = first;
       while (
+        standalone &&
         first.type === "comment" &&
         comments[index + 1]?.type === "comment"
       ) {
@@ -472,12 +479,7 @@ export class PostgresqlFileScanner {
         .sort((a, b) => a - b)[0];
       const attached =
         next !== undefined &&
-        /^[ \t]*$/u.test(
-          this.source.content.slice(
-            this.source.content.lastIndexOf("\n", first.startIndex - 1) + 1,
-            first.startIndex,
-          ),
-        ) &&
+        standalone &&
         /^[ \t]*(?:\r?\n[ \t]*)?$/u.test(
           this.source.content.slice(last.endIndex, next),
         );
