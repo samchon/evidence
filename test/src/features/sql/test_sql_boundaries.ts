@@ -51,8 +51,9 @@ export async function test_sql_boundaries(): Promise<void> {
     "explicit defaulted columns",
     defaults.units
       .filter((unit) => unit.symbol === "column")
-      .map((unit) => unit.name),
-    ["NEGATIVE", "ENABLED", "LABEL", "CREATED"],
+      .map((unit) => unit.name)
+      .sort((left, right) => left.localeCompare(right, "en")),
+    ["CREATED", "ENABLED", "LABEL", "NEGATIVE"],
   );
   const empty = await adapter.analyze(
     TestSourceSnapshot.create("empty.sql", "-- An explicitly empty schema.\n"),

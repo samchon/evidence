@@ -1,4 +1,4 @@
-import { EvidenceChecker } from "@wrtnlabs/evidence";
+import { EvidenceAccessor, EvidenceChecker } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
@@ -20,6 +20,15 @@ export async function test_sql_graph(): Promise<void> {
     { "schema.sql": schema, "requirement.ts": "export const requirement = 1;" },
     async (directory) => {
       for (const symbol of ["model", "column", "relation"] as const) {
+        const accessor =
+          symbol === "model"
+            ? "ACCOUNT"
+            : symbol === "column"
+              ? "ACCOUNT.ID"
+              : EvidenceAccessor.format([
+                  "ACCOUNT",
+                  'foreign-key:["ID"]->["PARENT"](["ID"])',
+                ]);
         for (const role of ["claim", "reference"] as const) {
           for (const acknowledged of [true, false]) {
             await TestFileSystem.save(directory, {
@@ -35,7 +44,7 @@ export async function test_sql_graph(): Promise<void> {
                   : schema.replace(/^.*@evidence.*$/gmu, ""),
               "requirement.ts":
                 role === "reference" && acknowledged
-                  ? "/** @evidence ./schema.sql#ACCOUNT Verifies the selected database surface. */\nexport const requirement = 1;"
+                  ? `/** @evidence ./schema.sql#${accessor} Verifies the selected database surface. */\nexport const requirement = 1;`
                   : "export const requirement = 1;",
               "evidence.config.ts":
                 role === "claim"
