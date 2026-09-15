@@ -4,7 +4,8 @@ import { randomUUID } from "node:crypto";
 import { readdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { EvidTreeSitterAssets } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssets";
+import { TreeSitterAssetCache } from "../../../../packages/evidence/src/internal/TreeSitterAssetCache";
+import { TreeSitterAssets } from "../../../../packages/evidence/src/internal/TreeSitterAssets";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestParserError } from "../../internal/TestParserError";
 
@@ -24,16 +25,18 @@ import { TestParserError } from "../../internal/TestParserError";
  *    to fail instead of accepting the damaged entry.
  * 4. Restore network access and require one repair download, successful offline
  *    reuse afterward, and no transient files beside the verified cache entry.
+ * 5. Omit cache overrides from a project working directory and require the grammar
+ *    below that project's `node_modules/.cache/evidence` directory.
  */
 export async function test_parser_assets(): Promise<void> {
-  const original = new EvidTreeSitterAssets();
+  const original = new TreeSitterAssets();
   const grammar = await original.grammar("python");
   const pinned = Uint8Array.from(await TestParserAssets.bytes(grammar));
   const directory = join(__dirname, "assets-" + randomUUID());
 
   await TestFileSystem.experiment(directory, {}, async (location) => {
     const requests: string[] = [];
-    const assets = new EvidTreeSitterAssets({
+    const assets = new TreeSitterAssets({
       cacheDirectory: location,
       fetch: async (input) => {
         requests.push(String(input));
@@ -58,7 +61,7 @@ export async function test_parser_assets(): Promise<void> {
     );
 
     // A separate resolver performs no request with verified cache bytes, including no HEAD.
-    const offline = new EvidTreeSitterAssets({
+    const offline = new TreeSitterAssets({
       cacheDirectory: location,
       attempts: 1,
       fetch: async () => {
@@ -91,6 +94,36 @@ export async function test_parser_assets(): Promise<void> {
     TestValidator.equals(
       "no transient files remain",
       await readdir(join(location, "grammars-v1")),
+      [`${String(grammar.wasm.sha256)}.wasm`],
+    );
+
+    const projectDirectory = join(location, "project");
+    await TestFileSystem.save(projectDirectory, {});
+    const previousWorkingDirectory = process.cwd();
+    const previousCacheDirectory = process.env["EVIDENCE_CACHE_DIR"];
+    delete process.env["EVIDENCE_CACHE_DIR"];
+    try {
+      process.chdir(projectDirectory);
+      await new TreeSitterAssetCache({
+        fetch: async (): Promise<Response> => new Response(pinned),
+      }).bytes(grammar);
+    } finally {
+      process.chdir(previousWorkingDirectory);
+      if (previousCacheDirectory === undefined)
+        delete process.env["EVIDENCE_CACHE_DIR"];
+      else process.env["EVIDENCE_CACHE_DIR"] = previousCacheDirectory;
+    }
+    TestValidator.equals(
+      "project-local default cache",
+      await readdir(
+        join(
+          projectDirectory,
+          "node_modules",
+          ".cache",
+          "evidence",
+          "grammars-v1",
+        ),
+      ),
       [`${String(grammar.wasm.sha256)}.wasm`],
     );
   });

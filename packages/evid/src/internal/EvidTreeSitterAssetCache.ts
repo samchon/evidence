@@ -1,6 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
 import { mkdir, open, readFile, rename, rm, stat } from "node:fs/promises";
-import { homedir } from "node:os";
 import path from "node:path";
 import type { ReadableStreamReadResult } from "node:stream/web";
 import { setTimeout as delay } from "node:timers/promises";
@@ -245,10 +244,10 @@ export class EvidTreeSitterAssetCache {
 }
 
 /**
- * Selects the explicit, environment, or platform cache root without creating it.
+ * Selects the explicit, environment, or project-local cache root without creating it.
  *
  * Acquisition owns directory creation so resolving a location never changes the
- * project or user cache as a side effect.
+ * project cache as a side effect.
  */
 function cacheDirectory(override: string | undefined): string {
   const configured = override ?? process.env["EVIDENCE_CACHE_DIR"];
@@ -261,23 +260,7 @@ function cacheDirectory(override: string | undefined): string {
       );
     return path.normalize(configured);
   }
-  if (process.platform === "win32")
-    return path.join(
-      process.env["LOCALAPPDATA"] ?? path.join(homedir(), "AppData", "Local"),
-      "wrtnlabs",
-      "evidence",
-      "Cache",
-    );
-  if (process.platform === "darwin")
-    return path.join(homedir(), "Library", "Caches", "wrtnlabs", "evidence");
-  const xdg = process.env["XDG_CACHE_HOME"];
-  return path.join(
-    xdg !== undefined && path.isAbsolute(xdg)
-      ? xdg
-      : path.join(homedir(), ".cache"),
-    "wrtnlabs",
-    "evidence",
-  );
+  return path.join(process.cwd(), "node_modules", ".cache", "evidence");
 }
 
 /**

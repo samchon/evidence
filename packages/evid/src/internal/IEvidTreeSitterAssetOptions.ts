@@ -4,13 +4,14 @@
  * These options influence one caller's cache and transfer lifetime; they do
  * not alter catalog provenance or the bytes accepted into the shared cache.
  */
-export interface IEvidTreeSitterAssetOptions {
+export interface ITreeSitterAssetOptions {
   /**
    * Writable root for the immutable grammar cache.
    *
-   * Omission first uses `EVIDENCE_CACHE_DIR`, then the platform user's cache
-   * location. `EvidTreeSitterAssetCache` places verified grammar bytes below this
-   * root and never treats it as catalog provenance.
+   * Omission first uses `EVIDENCE_CACHE_DIR`, then
+   * `node_modules/.cache/evidence` under the current working directory.
+   * `TreeSitterAssetCache` places verified grammar bytes below this root and
+   * never treats it as catalog provenance.
    */
   cacheDirectory?: string;
 
