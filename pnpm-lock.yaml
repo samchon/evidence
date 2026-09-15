@@ -142,7 +142,7 @@ importers:
       '@nestia/e2e':
         specifier: catalog:samchon
         version: 13.0.2
-      evid:
+      '@wrtnlabs/evidence':
         specifier: workspace:*
         version: link:../packages/evidence
     devDependencies:
