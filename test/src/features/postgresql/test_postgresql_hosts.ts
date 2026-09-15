@@ -1,8 +1,8 @@
-import { EvidFingerprint, EvidInventory, EvidPostgresqlAdapter } from "evid";
+import { EvidenceFingerprint, EvidenceInventory, EvidencePostgresqlAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Maps PostgreSQL documentation strings to their schema hosts.
@@ -35,9 +35,9 @@ export async function test_postgresql_hosts(): Promise<void> {
      */
     CREATE TABLE app.Example (id integer);
   `.replaceAll("\n", "\r\n");
-  const adapter = new EvidPostgresqlAdapter();
+  const adapter = new EvidencePostgresqlAdapter();
   const inventory = await adapter.analyze(
-    EvidTestSourceSnapshot.create("schema.sql", source),
+    EvidenceTestSourceSnapshot.create("schema.sql", source),
   );
 
   TestValidator.equals(
@@ -63,7 +63,7 @@ export async function test_postgresql_hosts(): Promise<void> {
   }
   TestValidator.equals(
     "withdrawn descendant target",
-    new EvidInventory([inventory]).resolve(
+    new EvidenceInventory([inventory]).resolve(
       { file: "/project/schema.sql", segments: ["app", "hidden", "secret"] },
       inventory.units.map((unit) => unit.id),
     ).status,
@@ -74,41 +74,41 @@ export async function test_postgresql_hosts(): Promise<void> {
   );
   if (table === undefined) throw new Error("Missing table.");
   const rewritten = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "schema.sql",
       source.replace("Describes the value.", "Explains the same value."),
     ),
   );
   TestValidator.equals(
     "annotation-only COMMENT edit preserves review",
-    EvidFingerprint.inspect(inventory, table.id).fingerprint,
-    EvidFingerprint.inspect(rewritten, table.id).fingerprint,
+    EvidenceFingerprint.inspect(inventory, table.id).fingerprint,
+    EvidenceFingerprint.inspect(rewritten, table.id).fingerprint,
   );
   const changed = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "schema.sql",
       source.replace("id integer", "id bigint"),
     ),
   );
   TestValidator.notEquals(
     "column type edit invalidates table review",
-    EvidFingerprint.inspect(inventory, table.id).fingerprint,
-    EvidFingerprint.inspect(changed, table.id).fingerprint,
+    EvidenceFingerprint.inspect(inventory, table.id).fingerprint,
+    EvidenceFingerprint.inspect(changed, table.id).fingerprint,
   );
   const plain = "CREATE TABLE app.Item (id integer);";
   const withoutComment = await adapter.analyze(
-    EvidTestSourceSnapshot.create("comment.sql", plain),
+    EvidenceTestSourceSnapshot.create("comment.sql", plain),
   );
   const withComment = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "comment.sql",
       `${plain}\nCOMMENT ON TABLE app.Item IS '@evidenceReview spec.md#table Review metadata only.';`,
     ),
   );
   TestValidator.equals(
     "adding COMMENT documentation preserves table fingerprint",
-    EvidFingerprint.inspect(withoutComment, table.id).fingerprint,
-    EvidFingerprint.inspect(withComment, table.id).fingerprint,
+    EvidenceFingerprint.inspect(withoutComment, table.id).fingerprint,
+    EvidenceFingerprint.inspect(withComment, table.id).fingerprint,
   );
   TestValidator.equals(
     "COMMENT review never acknowledges",
@@ -121,7 +121,7 @@ export async function test_postgresql_hosts(): Promise<void> {
     1,
   );
   const trailing = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "trailing.sql",
       "CREATE TABLE app.Item (id integer); -- @evidence spec.md#trailing No next owner.\nCREATE TABLE app.Other (id integer);",
     ),
@@ -132,7 +132,7 @@ export async function test_postgresql_hosts(): Promise<void> {
     [],
   );
   const leading = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "leading.sql",
       "CREATE TABLE app.Item (id integer); -- A trailing comment.\n-- @evidence spec.md#leading Documents the next table.\nCREATE TABLE app.Other (id integer);",
     ),
@@ -143,7 +143,7 @@ export async function test_postgresql_hosts(): Promise<void> {
     ["spec.md#leading"],
   );
   const separated = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "separated.sql",
       "-- @evidence spec.md#separated No adjacent owner.\n\nCREATE TABLE app.Item (id integer);",
     ),
@@ -154,7 +154,7 @@ export async function test_postgresql_hosts(): Promise<void> {
     [],
   );
   const unattached = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "schema.sql",
       "CREATE TABLE app.Item (id integer);\n-- @evidence spec.md#lost No owner.\n",
     ),

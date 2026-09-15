@@ -1,9 +1,9 @@
-import { EvidPythonAdapter } from "evid";
-import type { IEvidInventory } from "evid";
+import { EvidencePythonAdapter } from "evidence";
+import type { IEvidenceInventory } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Resolves Python package exports through explicit and transitive public names.
@@ -20,10 +20,10 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    completes without diagnostics.
  */
 export async function test_python_exports(): Promise<void> {
-  const adapter = new EvidPythonAdapter();
+  const adapter = new EvidencePythonAdapter();
   const inventory = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "pkg/dep.py",
         dedent`
           __all__ = ["Service", "_forced"]
@@ -35,14 +35,14 @@ export async function test_python_exports(): Promise<void> {
           _forced = 1
         `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "pkg/extras.py",
         dedent`
           def extra():
               return None
         `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "pkg/__init__.py",
         dedent`
           from .dep import Service as Renamed, _forced as forced
@@ -52,14 +52,14 @@ export async function test_python_exports(): Promise<void> {
           __all__ += ["extra"]
         `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "pkg/namespace.py",
         dedent`
           import pkg.dep as api
           __all__ = ["api"]
         `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "pkg/import-wins.py",
         dedent`
           class Value:
@@ -69,7 +69,7 @@ export async function test_python_exports(): Promise<void> {
           __all__ = ["Value"]
         `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "pkg/declaration-wins.py",
         dedent`
           from .dep import Service as Value
@@ -121,8 +121,8 @@ export async function test_python_exports(): Promise<void> {
   TestValidator.equals("complete Python exports", inventory.diagnostics, []);
 
   const cycle = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "cycle/a.py",
         dedent`
           from .b import b
@@ -130,7 +130,7 @@ export async function test_python_exports(): Promise<void> {
           __all__ = ["a", "b"]
         `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "cycle/b.py",
         dedent`
           from .a import a
@@ -148,7 +148,7 @@ export async function test_python_exports(): Promise<void> {
   TestValidator.equals("complete Python cycle", cycle.diagnostics, []);
 }
 
-function addresses(inventory: IEvidInventory, file: string): string[] {
+function addresses(inventory: IEvidenceInventory, file: string): string[] {
   return inventory.addresses
     .filter((address) => address.file === file)
     .map((address) => address.segments.join("."))

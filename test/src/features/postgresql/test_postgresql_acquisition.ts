@@ -1,13 +1,13 @@
 import {
-  EvidPostgresqlAdapter,
-  EvidTreeSitterAssetScope,
-  EvidTreeSitterAssets,
-} from "evid";
+  EvidencePostgresqlAdapter,
+  EvidenceTreeSitterAssetScope,
+  EvidenceTreeSitterAssets,
+} from "evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
-import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
+import { EvidenceTestParserAssets } from "../../internal/EvidenceTestParserAssets";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Acquires PostgreSQL's pinned parser variant and reuses it offline.
@@ -20,18 +20,18 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Repeat offline and require equivalent analysis.
  */
 export async function test_postgresql_acquisition(): Promise<void> {
-  const grammar = await new EvidTreeSitterAssets().grammar("sql");
-  const bytes = await EvidTestParserAssets.bytes(grammar);
-  const source = EvidTestSourceSnapshot.create(
+  const grammar = await new EvidenceTreeSitterAssets().grammar("sql");
+  const bytes = await EvidenceTestParserAssets.bytes(grammar);
+  const source = EvidenceTestSourceSnapshot.create(
     "schema.sql",
     "CREATE TABLE app.Item (id integer);",
   );
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     "postgresql-acquisition",
     {},
     async (cacheDirectory) => {
       const requests: string[] = [];
-      const cold = await EvidTreeSitterAssetScope.run(
+      const cold = await EvidenceTreeSitterAssetScope.run(
         {
           cacheDirectory,
           fetch: async (input) => {
@@ -39,13 +39,13 @@ export async function test_postgresql_acquisition(): Promise<void> {
             return new Response(Uint8Array.from(bytes));
           },
         },
-        async () => new EvidPostgresqlAdapter().analyze(source),
+        async () => new EvidencePostgresqlAdapter().analyze(source),
       );
       TestValidator.equals("cold complete schema", cold.diagnostics, []);
       TestValidator.equals("only selected pinned grammar requested", requests, [
         grammar.wasm.url,
       ]);
-      const warm = await EvidTreeSitterAssetScope.run(
+      const warm = await EvidenceTreeSitterAssetScope.run(
         {
           cacheDirectory,
           attempts: 1,
@@ -53,7 +53,7 @@ export async function test_postgresql_acquisition(): Promise<void> {
             throw new Error("Offline PostgreSQL cache must not fetch.");
           },
         },
-        async () => new EvidPostgresqlAdapter().analyze(source),
+        async () => new EvidencePostgresqlAdapter().analyze(source),
       );
       TestValidator.equals("offline equivalent inventory", warm, cold);
     },

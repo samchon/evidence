@@ -1,9 +1,9 @@
-import { EvidCppAdapter, EvidLanguageRegistry } from "evid";
-import type { IEvidInventory, IEvidUnit } from "evid";
+import { EvidenceCppAdapter, EvidenceLanguageRegistry } from "evidence";
+import type { IEvidenceInventory, IEvidenceUnit } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Classifies the public C++ surface across namespaces, types, callables, and
@@ -20,7 +20,7 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  */
 export async function test_cpp_units(): Promise<void> {
   // Certified metadata names the exact grammar and explicit declared surface.
-  const language = EvidLanguageRegistry.list().find(
+  const language = EvidenceLanguageRegistry.list().find(
     (entry) => entry.type === "cpp",
   );
   if (language?.adapter === undefined)
@@ -28,7 +28,7 @@ export async function test_cpp_units(): Promise<void> {
   TestValidator.equals(
     "certified C++ adapter",
     language.adapter.entry,
-    "EvidCppAdapter",
+    "EvidenceCppAdapter",
   );
   TestValidator.equals(
     "published C++ grammar version",
@@ -36,8 +36,8 @@ export async function test_cpp_units(): Promise<void> {
     true,
   );
 
-  const inventory = await new EvidCppAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const inventory = await new EvidenceCppAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "include/shop.hpp",
       dedent`
         namespace shop::models {
@@ -178,7 +178,7 @@ export async function test_cpp_units(): Promise<void> {
   TestValidator.equals("C++ enumerator parent", ready.parentId, state.id);
 }
 
-function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
+function requireUnit(inventory: IEvidenceInventory, identity: string): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.join(".") === identity,
   );

@@ -1,9 +1,9 @@
-import { EvidCSharpAdapter } from "evid";
-import type { IEvidInventory } from "evid";
+import { EvidenceCSharpAdapter } from "evidence";
+import type { IEvidenceInventory } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Reports C# partial, preprocessing, and syntax uncertainty without
@@ -19,13 +19,13 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Require every affected inventory to be incomplete with a diagnostic.
  */
 export async function test_csharp_failures(): Promise<void> {
-  const adapter = new EvidCSharpAdapter();
+  const adapter = new EvidenceCSharpAdapter();
 
   // Duplicate public types must opt into one compatible partial identity.
   const duplicate = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create("src/First.cs", "public class Sale {}\n"),
-      EvidTestSourceSnapshot.create("src/Second.cs", "public class Sale {}\n"),
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create("src/First.cs", "public class Sale {}\n"),
+      EvidenceTestSourceSnapshot.create("src/Second.cs", "public class Sale {}\n"),
     ]),
   );
   TestValidator.equals("duplicate C# type", duplicate.complete, false);
@@ -37,12 +37,12 @@ export async function test_csharp_failures(): Promise<void> {
 
   // Partial parts cannot disagree about accessibility or declaration form.
   const partialConflict = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/Public.cs",
         "public partial class Contract {}\n",
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/Internal.cs",
         "internal partial struct Contract {}\n",
       ),
@@ -66,12 +66,12 @@ export async function test_csharp_failures(): Promise<void> {
 
   // Record classes and record structs cannot form one partial declaration.
   const recordConflict = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/Record.cs",
         "public partial record Contract;\n",
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/RecordStruct.cs",
         "public partial record struct Contract;\n",
       ),
@@ -90,7 +90,7 @@ export async function test_csharp_failures(): Promise<void> {
 
   // Tree-sitter cannot choose the active preprocessor branch without build symbols.
   const conditional = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Conditional.cs",
       dedent`
         #if DEBUG
@@ -111,7 +111,7 @@ export async function test_csharp_failures(): Promise<void> {
 
   // Explicit interface implementations are reachable through the interface unit only.
   const explicitInterface = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Explicit.cs",
       dedent`
         public interface IService
@@ -164,7 +164,7 @@ export async function test_csharp_failures(): Promise<void> {
 
   // Source generators are not executed; selected declarations remain explicit.
   const generatedBoundary = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Model.cs",
       dedent`
         [GenerateBuilder]
@@ -190,7 +190,7 @@ export async function test_csharp_failures(): Promise<void> {
 
   // Tree-sitter syntax errors never become a healthy partial inventory.
   const malformed = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Broken.cs",
       "public class Broken { public void Run( { }\n",
     ),
@@ -205,7 +205,7 @@ export async function test_csharp_failures(): Promise<void> {
   );
 }
 
-function hasCode(inventory: IEvidInventory, code: string): boolean {
+function hasCode(inventory: IEvidenceInventory, code: string): boolean {
   return inventory.diagnostics.some((diagnostic) => diagnostic.code === code);
 }
 

@@ -1,8 +1,8 @@
-import { EvidFingerprint, EvidInventory, EvidKotlinAdapter } from "evid";
+import { EvidenceFingerprint, EvidenceInventory, EvidenceKotlinAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Preserves KDoc coordinates, lexical withdrawals, and fingerprints without
@@ -37,9 +37,9 @@ export async function test_kotlin_hosts(): Promise<void> {
      */
     fun sample() = 1
   `.replaceAll("\n", "\r\n");
-  const adapter = new EvidKotlinAdapter();
+  const adapter = new EvidenceKotlinAdapter();
   const inventory = await adapter.analyze(
-    EvidTestSourceSnapshot.create("src/Contract.kt", source),
+    EvidenceTestSourceSnapshot.create("src/Contract.kt", source),
   );
 
   TestValidator.equals(
@@ -66,7 +66,7 @@ export async function test_kotlin_hosts(): Promise<void> {
     3,
   );
   const selected = inventory.units.map((unit) => unit.id);
-  const graph = new EvidInventory([inventory]);
+  const graph = new EvidenceInventory([inventory]);
   TestValidator.equals(
     "withdrawn descendant target",
     graph.resolve(
@@ -103,7 +103,7 @@ export async function test_kotlin_hosts(): Promise<void> {
   const contract = inventory.units.find((unit) => unit.name === "Contract");
   if (contract === undefined) throw new Error("Missing contract unit.");
   const rewritten = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Contract.kt",
       source.replace(
         "Implements the value.",
@@ -113,19 +113,19 @@ export async function test_kotlin_hosts(): Promise<void> {
   );
   TestValidator.equals(
     "descendant annotation does not stale ancestor review",
-    EvidFingerprint.inspect(inventory, contract.id).fingerprint,
-    EvidFingerprint.inspect(rewritten, contract.id).fingerprint,
+    EvidenceFingerprint.inspect(inventory, contract.id).fingerprint,
+    EvidenceFingerprint.inspect(rewritten, contract.id).fingerprint,
   );
   const changed = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Contract.kt",
       source.replace("= 1", "= 2"),
     ),
   );
   TestValidator.notEquals(
     "semantic subtree edit changes fingerprint",
-    EvidFingerprint.inspect(inventory, contract.id).fingerprint,
-    EvidFingerprint.inspect(changed, contract.id).fingerprint,
+    EvidenceFingerprint.inspect(inventory, contract.id).fingerprint,
+    EvidenceFingerprint.inspect(changed, contract.id).fingerprint,
   );
 
   // Every Evid tag kind on an ordinary comment remains an unsupported carrier.
@@ -137,7 +137,7 @@ export async function test_kotlin_hosts(): Promise<void> {
     "link",
   ]) {
     const unsupported = await adapter.analyze(
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/Unsupported.kt",
         `// @${tag} docs/spec.md#contract Unsupported carrier.\nfun run() = 1\n`,
       ),

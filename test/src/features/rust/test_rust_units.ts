@@ -1,8 +1,8 @@
-import { EvidLanguageRegistry, EvidRustAdapter } from "evid";
+import { EvidenceLanguageRegistry, EvidenceRustAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Classifies Rust's public declaration and member matrix.
@@ -18,7 +18,7 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  */
 export async function test_rust_units(): Promise<void> {
   // Certified metadata must accompany the pinned Rust grammar.
-  const language = EvidLanguageRegistry.list().find(
+  const language = EvidenceLanguageRegistry.list().find(
     (entry) => entry.type === "rust",
   );
   if (language === undefined)
@@ -26,12 +26,12 @@ export async function test_rust_units(): Promise<void> {
   TestValidator.equals(
     "certified Rust adapter",
     language.adapter?.entry,
-    "EvidRustAdapter",
+    "EvidenceRustAdapter",
   );
 
   // Public source forms cover every shared symbol kind and explicit associated policy.
-  const inventory = await new EvidRustAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const inventory = await new EvidenceRustAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/lib.rs",
       dedent`
         pub struct Sale<T> {

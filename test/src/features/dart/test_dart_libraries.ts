@@ -1,8 +1,8 @@
-import { EvidDartAdapter, EvidInventory } from "evid";
+import { EvidenceDartAdapter, EvidenceInventory } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Resolves Dart parts and transitive export aliases while preserving
@@ -20,9 +20,9 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    defining-source resolution, and record parts as exact dependencies.
  */
 export async function test_dart_libraries(): Promise<void> {
-  const inventory = await new EvidDartAdapter().analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+  const inventory = await new EvidenceDartAdapter().analyze(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/api.dart",
         dedent`
       library app.api;
@@ -32,7 +32,7 @@ export async function test_dart_libraries(): Promise<void> {
       int local() => 1;
     `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/models.dart",
         dedent`
       part of 'api.dart';
@@ -40,19 +40,19 @@ export async function test_dart_libraries(): Promise<void> {
       class _Private { int child = 1; }
     `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/generated.g.dart",
         "part of app.api; final generated = 1;",
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/bridge.dart",
         "export 'external.dart';",
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/external.dart",
         "class Exported { int value = 2; } final excluded = 1;",
       ),
-      EvidTestSourceSnapshot.create("other/independent.dart", "class Model {}"),
+      EvidenceTestSourceSnapshot.create("other/independent.dart", "class Model {}"),
     ]),
   );
 
@@ -62,7 +62,7 @@ export async function test_dart_libraries(): Promise<void> {
     inventory.units.filter((unit) => unit.name === "Model").length,
     2,
   );
-  const graph = new EvidInventory([inventory]);
+  const graph = new EvidenceInventory([inventory]);
   const ids = inventory.units.map((unit) => unit.id);
   for (const file of ["api.dart", "models.dart", "generated.g.dart"])
     for (const segments of [

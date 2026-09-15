@@ -1,12 +1,12 @@
-import { EvidCommand, EvidQuery } from "evid";
-import type { IEvidInspectReport, IEvidListReport } from "evid";
+import { EvidenceCommand, EvidenceQuery } from "evidence";
+import type { IEvidenceInspectReport, IEvidenceListReport } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 import typia from "typia";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
-import { EvidTestQueryAnalysis } from "../../internal/EvidTestQueryAnalysis";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
+import { EvidenceTestQueryAnalysis } from "../../internal/EvidenceTestQueryAnalysis";
 
 /**
  * Lists canonical aliases and round-trips each reference target through scoped
@@ -28,15 +28,15 @@ import { EvidTestQueryAnalysis } from "../../internal/EvidTestQueryAnalysis";
  */
 export async function test_query_list_and_inspect(): Promise<void> {
   const location = join(__dirname, `query list ${randomUUID()}`);
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     location,
-    EvidTestQueryAnalysis.records(),
+    EvidenceTestQueryAnalysis.records(),
     async (directory) => {
-      const analysis = await EvidTestQueryAnalysis.analyze(directory);
+      const analysis = await EvidenceTestQueryAnalysis.analyze(directory);
       const baseline = structuredClone(analysis.report);
 
       // Property selection exposes each selected property and its aggregate type.
-      const listing = EvidQuery.list(analysis, directory);
+      const listing = EvidenceQuery.list(analysis, directory);
       const references = listing.items.filter(
         (item) => item.scope.role === "reference",
       );
@@ -81,7 +81,7 @@ export async function test_query_list_and_inspect(): Promise<void> {
 
       // Every listed reference target resolves back to its exact semantic identity.
       for (const item of references) {
-        const inspected = await EvidQuery.inspect(
+        const inspected = await EvidenceQuery.inspect(
           analysis,
           directory,
           item.target,
@@ -96,7 +96,7 @@ export async function test_query_list_and_inspect(): Promise<void> {
       }
 
       // Listing filters change only emitted rows; the complete graph stays untouched.
-      const filtered = EvidQuery.list(
+      const filtered = EvidenceQuery.list(
         analysis,
         directory,
         "typescript",
@@ -121,11 +121,11 @@ export async function test_query_list_and_inspect(): Promise<void> {
       );
 
       // The public command dispatch emits the same canonical target and resolves it.
-      const commandList = await EvidCommand.run(
+      const commandList = await EvidenceCommand.run(
         ["list", "--format", "json"],
         directory,
       );
-      const commandListing = typia.json.assertParse<IEvidListReport>(
+      const commandListing = typia.json.assertParse<IEvidenceListReport>(
         commandList.stdout,
       );
       const commandItem = commandListing.items.find(
@@ -133,11 +133,11 @@ export async function test_query_list_and_inspect(): Promise<void> {
       );
       if (commandItem === undefined)
         throw new Error("Missing command-listed query identity.");
-      const commandInspect = await EvidCommand.run(
+      const commandInspect = await EvidenceCommand.run(
         ["inspect", commandItem.target, "--format", "json"],
         directory,
       );
-      const commandInspection = typia.json.assertParse<IEvidInspectReport>(
+      const commandInspection = typia.json.assertParse<IEvidenceInspectReport>(
         commandInspect.stdout,
       );
       TestValidator.equals(

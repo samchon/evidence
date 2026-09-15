@@ -1,9 +1,9 @@
-import { EvidChecker, EvidWatcher } from "evid";
+import { EvidenceChecker, EvidenceWatcher } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
 
 /**
  * Replaces stale MySQL inventories during watch cycles.
@@ -18,7 +18,7 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
  * 3. Repair the source and require the next cycle to recover coverage.
  */
 export async function test_mysql_watch(): Promise<void> {
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     "mysql-watch",
     {
       "evidence.config.ts": dedent`
@@ -30,7 +30,7 @@ export async function test_mysql_watch(): Promise<void> {
     },
     async (directory) => {
       const config = join(directory, "evidence.config.ts");
-      const watcher = new EvidWatcher(config, {
+      const watcher = new EvidenceWatcher(config, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
       });
@@ -40,11 +40,11 @@ export async function test_mysql_watch(): Promise<void> {
           TestValidator.equals(
             `fresh cycle ${cycle.cycle}`,
             cycle.report,
-            await EvidChecker.check(config),
+            await EvidenceChecker.check(config),
           );
           if (cycle.cycle === 1) {
             TestValidator.equals("initial coverage", cycle.success, true);
-            await EvidTestFileSystem.save(directory, {
+            await EvidenceTestFileSystem.save(directory, {
               "schemas/extra.sql": "CREATE TABLE Extra (value INT);",
             });
           } else if (cycle.cycle === 2) {
@@ -53,7 +53,7 @@ export async function test_mysql_watch(): Promise<void> {
               cycle.success,
               false,
             );
-            await EvidTestFileSystem.save(directory, {
+            await EvidenceTestFileSystem.save(directory, {
               "schemas/extra.sql":
                 "CREATE TABLE Extra (value INT); ALTER TABLE Extra ADD COLUMN changed INT;",
             });
@@ -63,7 +63,7 @@ export async function test_mysql_watch(): Promise<void> {
               cycle.status,
               "incomplete",
             );
-            await EvidTestFileSystem.save(directory, {
+            await EvidenceTestFileSystem.save(directory, {
               "schemas/extra.sql": "CREATE TABLE Extra (",
             });
           } else if (cycle.cycle === 4) {
@@ -72,7 +72,7 @@ export async function test_mysql_watch(): Promise<void> {
               cycle.status,
               "incomplete",
             );
-            await EvidTestFileSystem.save(directory, {
+            await EvidenceTestFileSystem.save(directory, {
               "schemas/extra.sql":
                 "/** @internal Retired schema. */\nCREATE TABLE Extra (value INT);",
             });

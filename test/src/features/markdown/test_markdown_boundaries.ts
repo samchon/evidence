@@ -1,9 +1,9 @@
-import { EvidMarkdownAdapter } from "evid";
-import type { IEvidDeclaration, IEvidHost, IEvidUnit } from "evid";
+import { EvidenceMarkdownAdapter } from "evidence";
+import type { IEvidenceDeclaration, IEvidenceHost, IEvidenceUnit } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Excludes Markdown syntax examples from heading and annotation discovery.
@@ -178,13 +178,13 @@ export async function test_markdown_boundaries(): Promise<void> {
 
     ## Real child
   `;
-  const inventory = await new EvidMarkdownAdapter().analyze(
-    EvidTestSourceSnapshot.create("guide.md", content),
+  const inventory = await new EvidenceMarkdownAdapter().analyze(
+    EvidenceTestSourceSnapshot.create("guide.md", content),
   );
 
   TestValidator.equals(
     "only real headings materialize",
-    inventory.units.map((unit: IEvidUnit): string => unit.name).sort(compare),
+    inventory.units.map((unit: IEvidenceUnit): string => unit.name).sort(compare),
     [
       "After backticked rendered close",
       "After close then open",
@@ -216,19 +216,19 @@ export async function test_markdown_boundaries(): Promise<void> {
   TestValidator.equals(
     "only real HTML annotations are parsed",
     inventory.declarations
-      .map((entry: IEvidDeclaration): string => entry.target)
+      .map((entry: IEvidenceDeclaration): string => entry.target)
       .sort(compare),
     ["docs/spec.md#heading", "docs/spec.md#rule"],
   );
-  const tagged: IEvidUnit | undefined = inventory.units.find(
-    (unit: IEvidUnit): boolean => unit.identity.at(-1) === "tagged-comment",
+  const tagged: IEvidenceUnit | undefined = inventory.units.find(
+    (unit: IEvidenceUnit): boolean => unit.identity.at(-1) === "tagged-comment",
   );
-  const declaration: IEvidDeclaration | undefined = inventory.declarations.find(
-    (entry: IEvidDeclaration): boolean =>
+  const declaration: IEvidenceDeclaration | undefined = inventory.declarations.find(
+    (entry: IEvidenceDeclaration): boolean =>
       entry.target === "docs/spec.md#heading",
   );
-  const host: IEvidHost | undefined = inventory.hosts.find(
-    (entry: IEvidHost): boolean => entry.id === declaration?.hostId,
+  const host: IEvidenceHost | undefined = inventory.hosts.find(
+    (entry: IEvidenceHost): boolean => entry.id === declaration?.hostId,
   );
   TestValidator.equals(
     "heading-line annotation attaches to that heading",

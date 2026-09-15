@@ -1,9 +1,9 @@
-import { EvidBigQueryAdapter, EvidGraph, EvidTypeScriptAdapter } from "evid";
+import { EvidenceBigQueryAdapter, EvidenceGraph, EvidenceTypeScriptAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Evaluates acknowledgement coverage for each BigQuery model, column, and
@@ -20,7 +20,7 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    referenced unit as missing.
  */
 export async function test_bigquery_graph(): Promise<void> {
-  const adapter = new EvidBigQueryAdapter();
+  const adapter = new EvidenceBigQueryAdapter();
   for (const symbol of ["model", "column", "relation"] as const) {
     const target =
       symbol === "model"
@@ -33,7 +33,7 @@ export async function test_bigquery_graph(): Promise<void> {
         ? "@evidence ./contract.ts#contract Matches the declared contract."
         : "No acknowledgement.";
       const inventory = await adapter.analyze(
-        EvidTestSourceSnapshot.create(
+        EvidenceTestSourceSnapshot.create(
           "schema.sql",
           dedent`
         /* ${symbol === "model" ? annotation : "Orders"} */
@@ -46,8 +46,8 @@ export async function test_bigquery_graph(): Promise<void> {
       `,
         ),
       );
-      const contract = await new EvidTypeScriptAdapter().analyze(
-        EvidTestSourceSnapshot.create(
+      const contract = await new EvidenceTypeScriptAdapter().analyze(
+        EvidenceTestSourceSnapshot.create(
           "contract.ts",
           dedent`
         /** ${acknowledged ? `@evidence ./schema.sql#${target} Implements the schema declaration.` : "No acknowledgement."} */
@@ -70,7 +70,7 @@ export async function test_bigquery_graph(): Promise<void> {
         const reference = claimRole ? contract : inventory;
         const claimIds = claimRole ? ids : contractIds;
         const referenceIds = claimRole ? contractIds : ids;
-        const graph = EvidGraph.evaluate({
+        const graph = EvidenceGraph.evaluate({
           claims: [
             {
               severity: "error",
@@ -81,7 +81,7 @@ export async function test_bigquery_graph(): Promise<void> {
                   severity: "error",
                   inventory: reference,
                   unitIds: referenceIds,
-                  resolutions: await EvidTestGraph.resolveDeclarations(
+                  resolutions: await EvidenceTestGraph.resolveDeclarations(
                     claim,
                     reference,
                     referenceIds,
@@ -98,7 +98,7 @@ export async function test_bigquery_graph(): Promise<void> {
         );
         TestValidator.equals(
           "missing population remains exact",
-          EvidTestGraph.obligation(graph, 0, 0).missingUnitIds,
+          EvidenceTestGraph.obligation(graph, 0, 0).missingUnitIds,
           acknowledged ? [] : referenceIds,
         );
       }

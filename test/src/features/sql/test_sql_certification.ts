@@ -1,6 +1,6 @@
 import { TestValidator } from "@nestia/e2e";
-import { EvidDatabaseAdapterCertification } from "../../internal/certification/EvidDatabaseAdapterCertification";
-import { EvidSqlCertificationFixture } from "./EvidSqlCertificationFixture";
+import { EvidenceDatabaseAdapterCertification } from "../../internal/certification/EvidenceDatabaseAdapterCertification";
+import { EvidenceSqlCertificationFixture } from "./EvidenceSqlCertificationFixture";
 
 /**
  * Certifies SQL inventory against exact database adapter expectations.
@@ -13,13 +13,13 @@ import { EvidSqlCertificationFixture } from "./EvidSqlCertificationFixture";
  * 3. Require every removal and behavior gate to be rejected.
  */
 export async function test_sql_certification(): Promise<void> {
-  const fixture = EvidSqlCertificationFixture.create();
-  const inventory = await EvidDatabaseAdapterCertification.analyze(fixture);
-  EvidDatabaseAdapterCertification.assertInventory(fixture, inventory);
-  await EvidDatabaseAdapterCertification.assertGraph(fixture);
-  await EvidDatabaseAdapterCertification.assertFailures(fixture);
-  await EvidDatabaseAdapterCertification.assertFingerprint(fixture);
-  await EvidDatabaseAdapterCertification.assertAmbiguity(fixture);
+  const fixture = EvidenceSqlCertificationFixture.create();
+  const inventory = await EvidenceDatabaseAdapterCertification.analyze(fixture);
+  EvidenceDatabaseAdapterCertification.assertInventory(fixture, inventory);
+  await EvidenceDatabaseAdapterCertification.assertGraph(fixture);
+  await EvidenceDatabaseAdapterCertification.assertFailures(fixture);
+  await EvidenceDatabaseAdapterCertification.assertFingerprint(fixture);
+  await EvidenceDatabaseAdapterCertification.assertAmbiguity(fixture);
   for (const mutation of ["unit", "kind", "host", "address"]) {
     const broken = structuredClone(inventory);
     if (mutation === "unit") broken.units.pop();
@@ -32,7 +32,7 @@ export async function test_sql_certification(): Promise<void> {
       if (address !== undefined) address.segments = ["WRONG"];
     }
     TestValidator.error(`reject ${mutation} mutation`, () =>
-      EvidDatabaseAdapterCertification.assertInventory(fixture, broken),
+      EvidenceDatabaseAdapterCertification.assertInventory(fixture, broken),
     );
   }
 }

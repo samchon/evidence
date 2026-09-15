@@ -1,8 +1,8 @@
-import { EvidBigQueryAdapter } from "evid";
+import { EvidenceBigQueryAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Preserves BigQuery ownership for literal paths, endpoint keys, and nested
@@ -18,7 +18,7 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    hierarchy.
  */
 export async function test_bigquery_ownership(): Promise<void> {
-  const adapter = new EvidBigQueryAdapter();
+  const adapter = new EvidenceBigQueryAdapter();
   const first = "FOREIGN KEY (ID) REFERENCES ds.Parent (id) NOT ENFORCED";
   const second = "FOREIGN KEY (id) REFERENCES ds.parent (id) NOT ENFORCED";
   const source = dedent`
@@ -32,7 +32,7 @@ export async function test_bigquery_ownership(): Promise<void> {
     );
   `;
   const inventory = await adapter.analyze(
-    EvidTestSourceSnapshot.create("schema.sql", source),
+    EvidenceTestSourceSnapshot.create("schema.sql", source),
   );
   TestValidator.equals(
     "valid ownership declarations",
@@ -75,7 +75,7 @@ export async function test_bigquery_ownership(): Promise<void> {
     source,
   );
   const reordered = await adapter.analyze(
-    EvidTestSourceSnapshot.create("schema.sql", reorderedSource),
+    EvidenceTestSourceSnapshot.create("schema.sql", reorderedSource),
   );
   TestValidator.equals(
     "anonymous key identities ignore declaration order",
@@ -89,7 +89,7 @@ export async function test_bigquery_ownership(): Promise<void> {
   );
 
   const inline = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "inline.sql",
       dedent`
     CREATE TABLE ds.inline_key (

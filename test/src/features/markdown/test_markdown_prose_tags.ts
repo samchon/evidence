@@ -1,9 +1,9 @@
-import { EvidMarkdownAdapter } from "evid";
-import type { IEvidDiagnostic } from "evid";
+import { EvidenceMarkdownAdapter } from "evidence";
+import type { IEvidenceDiagnostic } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Reports annotation-looking lines rendered as prose while preserving HTML
@@ -41,8 +41,8 @@ export async function test_markdown_prose_tags(): Promise<void> {
     \`}
     <!-- @evidence docs/spec.md#real Supplies real evidence. -->
   `;
-  const inventory = await new EvidMarkdownAdapter().analyze(
-    EvidTestSourceSnapshot.create("guide.md", content),
+  const inventory = await new EvidenceMarkdownAdapter().analyze(
+    EvidenceTestSourceSnapshot.create("guide.md", content),
   );
 
   TestValidator.equals(
@@ -67,7 +67,7 @@ export async function test_markdown_prose_tags(): Promise<void> {
   );
 }
 
-function line(diagnostic: IEvidDiagnostic): number {
+function line(diagnostic: IEvidenceDiagnostic): number {
   const location = diagnostic.location;
   if (location === undefined || location.range === undefined)
     throw new Error(`Markdown diagnostic ${diagnostic.code} has no range.`);

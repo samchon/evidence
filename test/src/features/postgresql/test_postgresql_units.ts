@@ -1,8 +1,8 @@
-import { EvidInventory, EvidPostgresqlAdapter } from "evid";
+import { EvidenceInventory, EvidencePostgresqlAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Extracts PostgreSQL schema units with exact quoted and folded identities.
@@ -15,8 +15,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Require exact address behavior for quoted segments.
  */
 export async function test_postgresql_units(): Promise<void> {
-  const snapshot = EvidTestSourceSnapshot.combine([
-    EvidTestSourceSnapshot.create(
+  const snapshot = EvidenceTestSourceSnapshot.combine([
+    EvidenceTestSourceSnapshot.create(
       "schema.sql",
       dedent`
       CREATE SCHEMA app;
@@ -31,7 +31,7 @@ export async function test_postgresql_units(): Promise<void> {
     `,
       ["schema.sql", "alias.sql"],
     ),
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "extend.sql",
       dedent`
       ALTER TABLE app.Account ADD COLUMN label text;
@@ -40,7 +40,7 @@ export async function test_postgresql_units(): Promise<void> {
     `,
     ),
   ]);
-  const inventory = await new EvidPostgresqlAdapter().analyze(snapshot);
+  const inventory = await new EvidencePostgresqlAdapter().analyze(snapshot);
 
   TestValidator.equals(
     "complete PostgreSQL inventory",
@@ -87,7 +87,7 @@ export async function test_postgresql_units(): Promise<void> {
       inventory.units.find((owner) => owner.id === unit.parentId)?.identity,
       unit.identity.slice(0, 2),
     );
-  const graph = new EvidInventory([inventory]);
+  const graph = new EvidenceInventory([inventory]);
   const selected = inventory.units.map((unit) => unit.id);
   TestValidator.equals(
     "literal-dot file alias",
@@ -122,7 +122,7 @@ export async function test_postgresql_units(): Promise<void> {
     ),
     [["app", "account", "label"]],
   );
-  const reversed = await new EvidPostgresqlAdapter().analyze({
+  const reversed = await new EvidencePostgresqlAdapter().analyze({
     ...snapshot,
     files: [...snapshot.files].reverse(),
   });

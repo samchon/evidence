@@ -1,11 +1,11 @@
-import { EvidSourceLoader, EvidSourcePath } from "evid";
+import { EvidenceSourceLoader, EvidenceSourcePath } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { link, symlink } from "node:fs/promises";
 import { join } from "node:path";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
 
 /**
  * Deduplicates linked files without losing addresses and diagnoses traversed
@@ -30,7 +30,7 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 export async function test_source_links(): Promise<void> {
   const location: string = join(__dirname, "links-" + randomUUID());
 
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     location,
     {
       "project/evidence.config.ts": "export default {};",
@@ -58,7 +58,7 @@ export async function test_source_links(): Promise<void> {
       );
       const config: string = join(directory, "project/evidence.config.ts");
 
-      const snapshot = await EvidSourceLoader.glob(config, {
+      const snapshot = await EvidenceSourceLoader.glob(config, {
         files: ["**/*.prisma"],
       });
 
@@ -80,7 +80,7 @@ export async function test_source_links(): Promise<void> {
         "project fingerprint root",
         snapshot.files[0]?.fingerprintRoot,
         {
-          physicalPath: EvidSourcePath.slash(join(directory, "project")),
+          physicalPath: EvidenceSourcePath.slash(join(directory, "project")),
           fingerprintPath: ".",
         },
       );
@@ -94,12 +94,12 @@ export async function test_source_links(): Promise<void> {
           "link topology dependency",
           snapshot.dependencies.some(
             (entry) =>
-              entry.path === EvidSourcePath.slash(join(directory, dependency)),
+              entry.path === EvidenceSourcePath.slash(join(directory, dependency)),
           ),
         );
 
       // A linked root retains its own logical path space.
-      const linkedRoot = await EvidSourceLoader.glob(config, {
+      const linkedRoot = await EvidenceSourceLoader.glob(config, {
         root: "alias",
         files: ["*.prisma"],
       });
@@ -126,7 +126,7 @@ export async function test_source_links(): Promise<void> {
         "linked root fingerprint mapping",
         linkedRoot.files[0]?.fingerprintRoot,
         {
-          physicalPath: EvidSourcePath.slash(join(directory, "schema")),
+          physicalPath: EvidenceSourcePath.slash(join(directory, "schema")),
           fingerprintPath: "alias",
         },
       );
@@ -138,10 +138,10 @@ export async function test_source_links(): Promise<void> {
         "junction",
       );
 
-      const cyclic = await EvidSourceLoader.glob(config, {
+      const cyclic = await EvidenceSourceLoader.glob(config, {
         files: ["**/*.prisma"],
       });
-      const excluded = await EvidSourceLoader.glob(config, {
+      const excluded = await EvidenceSourceLoader.glob(config, {
         files: ["**/*.prisma", "!loop/**"],
       });
 

@@ -1,8 +1,8 @@
-import { EvidDbmlAdapter } from "evid";
+import { EvidenceDbmlAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Preserves DBML line-comment continuation and fence state at shared inline
@@ -36,8 +36,8 @@ export async function test_dbml_line_comments(): Promise<void> {
       reviewer_id int [ref: > users.id]
     }
   `.replace(/\n/gu, "\r\n");
-  const inventory = await new EvidDbmlAdapter().analyze(
-    EvidTestSourceSnapshot.create("schema.dbml", source),
+  const inventory = await new EvidenceDbmlAdapter().analyze(
+    EvidenceTestSourceSnapshot.create("schema.dbml", source),
   );
 
   TestValidator.equals(

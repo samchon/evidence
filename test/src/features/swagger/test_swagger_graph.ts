@@ -1,22 +1,22 @@
 import {
-  EvidFingerprint,
-  EvidGraph,
-  EvidMarkdownAdapter,
-  EvidSwaggerAdapter,
-  EvidTargetResolver,
-  EvidTypeScriptAdapter,
-} from "evid";
+  EvidenceFingerprint,
+  EvidenceGraph,
+  EvidenceMarkdownAdapter,
+  EvidenceSwaggerAdapter,
+  EvidenceTargetResolver,
+  EvidenceTypeScriptAdapter,
+} from "evidence";
 import type {
-  IEvidDeclaration,
-  IEvidHost,
-  IEvidInventory,
-  IEvidUnit,
-} from "evid";
+  IEvidenceDeclaration,
+  IEvidenceHost,
+  IEvidenceInventory,
+  IEvidenceUnit,
+} from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Evaluates Swagger as a claim and cross-artifact reference.
@@ -29,8 +29,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Verify graph outcomes and resolution statuses.
  */
 export async function test_swagger_graph(): Promise<void> {
-  const specification = await new EvidMarkdownAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const specification = await new EvidenceMarkdownAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "docs/spec.md",
       dedent`
         ## Members {#members}
@@ -40,14 +40,14 @@ export async function test_swagger_graph(): Promise<void> {
     ),
   );
   const members = requireUnit(specification, "members");
-  const specificationFingerprint = EvidFingerprint.inspect(
+  const specificationFingerprint = EvidenceFingerprint.inspect(
     specification,
     members.id,
   ).fingerprint;
 
   // The operation description claims the Markdown requirement and records its review.
-  const swagger = await new EvidSwaggerAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const swagger = await new EvidenceSwaggerAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "openapi.yaml",
       swaggerDocument(dedent`
         Creates a member.
@@ -58,14 +58,14 @@ export async function test_swagger_graph(): Promise<void> {
     ),
   );
   const operation = requireUnit(swagger, "POST:/members");
-  const operationFingerprint = EvidFingerprint.inspect(
+  const operationFingerprint = EvidenceFingerprint.inspect(
     swagger,
     operation.id,
   ).fingerprint;
 
   // A TypeScript claim can cite the file-independent Swagger operation target.
-  const client = await new EvidTypeScriptAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const client = await new EvidenceTypeScriptAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/client.ts",
       dedent`
         /**
@@ -77,7 +77,7 @@ export async function test_swagger_graph(): Promise<void> {
     ),
   );
   const createMember = requireUnit(client, "createMember");
-  const graph = EvidGraph.evaluate({
+  const graph = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -88,12 +88,12 @@ export async function test_swagger_graph(): Promise<void> {
             severity: "error",
             inventory: specification,
             unitIds: [members.id],
-            resolutions: await EvidTestGraph.resolveDeclarations(
+            resolutions: await EvidenceTestGraph.resolveDeclarations(
               swagger,
               specification,
               [members.id],
             ),
-            reviewResolutions: await EvidTestGraph.resolveReviews(
+            reviewResolutions: await EvidenceTestGraph.resolveReviews(
               swagger,
               specification,
               [members.id],
@@ -111,12 +111,12 @@ export async function test_swagger_graph(): Promise<void> {
             severity: "error",
             inventory: swagger,
             unitIds: [operation.id],
-            resolutions: await EvidTestGraph.resolveDeclarations(
+            resolutions: await EvidenceTestGraph.resolveDeclarations(
               client,
               swagger,
               [operation.id],
             ),
-            reviewResolutions: await EvidTestGraph.resolveReviews(
+            reviewResolutions: await EvidenceTestGraph.resolveReviews(
               client,
               swagger,
               [operation.id],
@@ -139,8 +139,8 @@ export async function test_swagger_graph(): Promise<void> {
   );
 
   // Target grammar and exact operation lookup report distinct failures.
-  const failures = await new EvidTypeScriptAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const failures = await new EvidenceTypeScriptAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/failures.ts",
       dedent`
         /** @evidence POST /members Contains whitespace instead of a colon. */
@@ -154,7 +154,7 @@ export async function test_swagger_graph(): Promise<void> {
       `,
     ),
   );
-  const resolver = new EvidTargetResolver([swagger]);
+  const resolver = new EvidenceTargetResolver([swagger]);
   const unitIds = [operation.id];
   TestValidator.equals(
     "spaced Swagger target",
@@ -191,14 +191,14 @@ export async function test_swagger_graph(): Promise<void> {
   );
 
   // Equal addresses in separate documents become ambiguous when selected together.
-  const duplicate = await new EvidSwaggerAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const duplicate = await new EvidenceSwaggerAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "duplicate.yaml",
       swaggerDocument("Duplicate."),
     ),
   );
   const duplicateOperation = requireUnit(duplicate, "POST:/members");
-  const ambiguous = new EvidTargetResolver([swagger, duplicate]);
+  const ambiguous = new EvidenceTargetResolver([swagger, duplicate]);
   const declaration = requireDeclaration(client, "POST:/members");
   TestValidator.equals(
     "separate document ambiguity",
@@ -236,7 +236,7 @@ function swaggerDocument(description: string): string {
   `;
 }
 
-function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
+function requireUnit(inventory: IEvidenceInventory, identity: string): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === identity || candidate.identity.at(-1) === identity,
@@ -246,9 +246,9 @@ function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
 }
 
 function requireDeclaration(
-  inventory: IEvidInventory,
+  inventory: IEvidenceInventory,
   target: string,
-): IEvidDeclaration {
+): IEvidenceDeclaration {
   const declaration = inventory.declarations.find(
     (candidate) => candidate.target === target,
   );
@@ -258,9 +258,9 @@ function requireDeclaration(
 }
 
 function requireHost(
-  inventory: IEvidInventory,
-  declaration: IEvidDeclaration,
-): IEvidHost {
+  inventory: IEvidenceInventory,
+  declaration: IEvidenceDeclaration,
+): IEvidenceHost {
   const host = inventory.hosts.find(
     (candidate) => candidate.id === declaration.hostId,
   );

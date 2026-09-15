@@ -1,9 +1,9 @@
-import { EvidChecker, EvidWatcher } from "evid";
+import { EvidenceChecker, EvidenceWatcher } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
 
 /**
  * Rebuilds PHP coverage after source and configuration changes.
@@ -16,7 +16,7 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
  * 3. Repair the source and change the selector, requiring fresh passing coverage.
  */
 export async function test_php_watch(): Promise<void> {
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     "php-watch",
     {
       "evidence.config.ts": dedent`
@@ -31,7 +31,7 @@ export async function test_php_watch(): Promise<void> {
     },
     async (directory) => {
       const file = join(directory, "evidence.config.ts");
-      const watcher = new EvidWatcher(file, {
+      const watcher = new EvidenceWatcher(file, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
       });
@@ -41,11 +41,11 @@ export async function test_php_watch(): Promise<void> {
           TestValidator.equals(
             `fresh Php cycle ${cycle.cycle}`,
             cycle.report,
-            await EvidChecker.check(file),
+            await EvidenceChecker.check(file),
           );
           if (cycle.cycle === 1) {
             TestValidator.equals("initial Php coverage", cycle.success, true);
-            await EvidTestFileSystem.save(directory, {
+            await EvidenceTestFileSystem.save(directory, {
               "contracts/Extra.php": "<?php const extra = 2;\n",
             });
           } else if (cycle.cycle === 2) {
@@ -54,7 +54,7 @@ export async function test_php_watch(): Promise<void> {
               cycle.success,
               false,
             );
-            await EvidTestFileSystem.save(directory, {
+            await EvidenceTestFileSystem.save(directory, {
               "contracts/Extra.php": "<?php class Broken {\n",
             });
           } else if (cycle.cycle === 3) {
@@ -63,7 +63,7 @@ export async function test_php_watch(): Promise<void> {
               cycle.status,
               "incomplete",
             );
-            await EvidTestFileSystem.save(directory, {
+            await EvidenceTestFileSystem.save(directory, {
               "contracts/Extra.php":
                 "<?php /** @internal Hidden helper. */ class Extra { private const extra = 2; }\n",
             });
@@ -73,7 +73,7 @@ export async function test_php_watch(): Promise<void> {
               cycle.success,
               true,
             );
-            await EvidTestFileSystem.save(directory, {
+            await EvidenceTestFileSystem.save(directory, {
               "evidence.config.ts": dedent`
             export default { claims: [{ type: "typescript", files: ["claims.ts"], reference: { type: "php", files: ["contracts/*.php"], symbol: "type" } }] };
           `,

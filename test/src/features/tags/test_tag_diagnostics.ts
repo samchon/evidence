@@ -1,8 +1,8 @@
-import { EvidTagParser } from "evid";
+import { EvidenceTagParser } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestDocumentation } from "../../internal/EvidTestDocumentation";
+import { EvidenceTestDocumentation } from "../../internal/EvidenceTestDocumentation";
 
 /**
  * Reports common annotation failures without applying reference-specific syntax
@@ -20,7 +20,7 @@ import { EvidTestDocumentation } from "../../internal/EvidTestDocumentation";
  *    guessed declaration attachment.
  */
 export async function test_tag_diagnostics(): Promise<void> {
-  const fixture = EvidTestDocumentation.create(dedent`
+  const fixture = EvidenceTestDocumentation.create(dedent`
     /**
      * @evidence
      * @evidence ../source.ts#value
@@ -35,7 +35,7 @@ export async function test_tag_diagnostics(): Promise<void> {
      * @evidenceReview docs/spec.md#rule #a3f9c1d
      */
   `);
-  const result = EvidTagParser.parse(
+  const result = EvidenceTagParser.parse(
     fixture.content,
     fixture.host,
     fixture.documentation,
@@ -67,12 +67,12 @@ export async function test_tag_diagnostics(): Promise<void> {
   TestValidator.equals("invalid reviews add no reviews", result.reviews, []);
 
   for (const attachment of ["unattached", "unsupported"] as const) {
-    const unowned = EvidTestDocumentation.create(
+    const unowned = EvidenceTestDocumentation.create(
       "/** @evidence ../source.ts#value Supplies evidence. */",
       undefined,
       attachment,
     );
-    const parsed = EvidTagParser.parse(
+    const parsed = EvidenceTagParser.parse(
       unowned.content,
       unowned.host,
       unowned.documentation,

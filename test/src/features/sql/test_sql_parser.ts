@@ -1,13 +1,13 @@
 import {
-  EvidParser,
-  EvidSqlAdapter,
-  EvidTreeSitterAssetScope,
-  EvidTreeSitterAssets,
-} from "evid";
+  EvidenceParser,
+  EvidenceSqlAdapter,
+  EvidenceTreeSitterAssetScope,
+  EvidenceTreeSitterAssets,
+} from "evidence";
 import { TestValidator } from "@nestia/e2e";
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
-import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
+import { EvidenceTestParserAssets } from "../../internal/EvidenceTestParserAssets";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Loads the configured SQL grammar and preserves offline adapter analysis.
@@ -20,18 +20,18 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Analyze again offline and require equivalent inventory.
  */
 export async function test_sql_parser(): Promise<void> {
-  const grammar = await new EvidTreeSitterAssets().grammar("sql");
-  const bytes = await EvidTestParserAssets.bytes(grammar);
-  const snapshot = EvidTestSourceSnapshot.create(
+  const grammar = await new EvidenceTreeSitterAssets().grammar("sql");
+  const bytes = await EvidenceTestParserAssets.bytes(grammar);
+  const snapshot = EvidenceTestSourceSnapshot.create(
     "schema.sql",
     "CREATE TABLE account (id INTEGER);",
   );
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     "sql-parser-cache",
     {},
     async (cacheDirectory) => {
       const requests: string[] = [];
-      const cold = await EvidTreeSitterAssetScope.run(
+      const cold = await EvidenceTreeSitterAssetScope.run(
         {
           cacheDirectory,
           fetch: async (input) => {
@@ -39,7 +39,7 @@ export async function test_sql_parser(): Promise<void> {
             return new Response(Uint8Array.from(bytes));
           },
         },
-        async () => new EvidSqlAdapter().analyze(snapshot),
+        async () => new EvidenceSqlAdapter().analyze(snapshot),
       );
       TestValidator.equals("cold SQL source complete", cold.complete, true);
       TestValidator.equals(
@@ -47,19 +47,19 @@ export async function test_sql_parser(): Promise<void> {
         requests,
         [grammar.wasm.url],
       );
-      const warm = await EvidTreeSitterAssetScope.run(
+      const warm = await EvidenceTreeSitterAssetScope.run(
         {
           cacheDirectory,
           fetch: async () => {
             throw new Error("offline");
           },
         },
-        async () => new EvidSqlAdapter().analyze(snapshot),
+        async () => new EvidenceSqlAdapter().analyze(snapshot),
       );
       TestValidator.equals("warm offline inventory equivalence", warm, cold);
     },
   );
-  const parser = new EvidParser();
+  const parser = new EvidenceParser();
   try {
     const names = await parser.parse(
       {

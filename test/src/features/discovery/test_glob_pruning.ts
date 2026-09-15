@@ -1,6 +1,6 @@
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidFileGlob } from "evid";
+import { EvidenceFileGlob } from "evidence";
 
 /**
  * Prunes impossible or fully excluded subtrees while preserving later
@@ -22,8 +22,8 @@ import { EvidFileGlob } from "evid";
  */
 export function test_glob_pruning(): void {
   // Directory names have no implicit ignore policy.
-  const scoped = new EvidFileGlob(["lib/contracts/**"]);
-  const broad = new EvidFileGlob(["**/*.md"]);
+  const scoped = new EvidenceFileGlob(["lib/contracts/**"]);
+  const broad = new EvidenceFileGlob(["**/*.md"]);
 
   TestValidator.predicate(
     "selected ancestor",
@@ -43,17 +43,17 @@ export function test_glob_pruning(): void {
   );
   TestValidator.predicate(
     "bare directory has no descendants",
-    !new EvidFileGlob(["src"]).couldMatchDescendant("src"),
+    !new EvidenceFileGlob(["src"]).couldMatchDescendant("src"),
   );
 
   // A subtree-wide exclusion can prune; a later positive restores only viable prefixes.
-  const excluded = new EvidFileGlob(["**/*.md", "!private/**"]);
-  const restored = new EvidFileGlob([
+  const excluded = new EvidenceFileGlob(["**/*.md", "!private/**"]);
+  const restored = new EvidenceFileGlob([
     "**/*.md",
     "!private/**",
     "private/public/spec.md",
   ]);
-  const partial = new EvidFileGlob(["**/*", "!private/*.md"]);
+  const partial = new EvidenceFileGlob(["**/*", "!private/*.md"]);
 
   TestValidator.predicate(
     "excluded directory",
@@ -81,7 +81,7 @@ export function test_glob_pruning(): void {
   );
 
   // A later exclusion still overrides a previously restored selection.
-  const removedAgain = new EvidFileGlob([
+  const removedAgain = new EvidenceFileGlob([
     "**/*",
     "!private/**",
     "private/public/**",

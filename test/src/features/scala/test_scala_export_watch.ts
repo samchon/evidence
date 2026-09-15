@@ -1,8 +1,8 @@
-import { EvidChecker, EvidWatcher } from "evid";
+import { EvidenceChecker, EvidenceWatcher } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
 
 /**
  * Recomputes Scala export coverage when a source declaration changes
@@ -20,7 +20,7 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
  *    complete coverage after recovery.
  */
 export async function test_scala_export_watch(): Promise<void> {
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     "scala-export-watch",
     {
       "evidence.config.ts": dedent`
@@ -35,7 +35,7 @@ export async function test_scala_export_watch(): Promise<void> {
     },
     async (directory) => {
       const file = join(directory, "evidence.config.ts");
-      const watcher = new EvidWatcher(file, {
+      const watcher = new EvidenceWatcher(file, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
       });
@@ -45,7 +45,7 @@ export async function test_scala_export_watch(): Promise<void> {
           TestValidator.equals(
             `fresh export cycle ${cycle.cycle}`,
             cycle.report,
-            await EvidChecker.check(file),
+            await EvidenceChecker.check(file),
           );
           if (cycle.cycle === 1) {
             TestValidator.equals(
@@ -53,7 +53,7 @@ export async function test_scala_export_watch(): Promise<void> {
               cycle.success,
               true,
             );
-            await EvidTestFileSystem.save(directory, {
+            await EvidenceTestFileSystem.save(directory, {
               "contracts/Origin.scala":
                 "object Origin { private val value = 1 }",
             });
@@ -63,7 +63,7 @@ export async function test_scala_export_watch(): Promise<void> {
               cycle.status,
               "incomplete",
             );
-            await EvidTestFileSystem.save(directory, {
+            await EvidenceTestFileSystem.save(directory, {
               "contracts/Origin.scala":
                 "object Origin { val value = 2; val extra = 1 }",
             });
@@ -73,7 +73,7 @@ export async function test_scala_export_watch(): Promise<void> {
               cycle.success,
               false,
             );
-            await EvidTestFileSystem.save(directory, {
+            await EvidenceTestFileSystem.save(directory, {
               "contracts/Origin.scala": "object Origin { val value = 2 }",
             });
           } else {

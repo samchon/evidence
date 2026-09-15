@@ -1,9 +1,9 @@
-import { EvidTypeScriptAdapter } from "evid";
-import type { IEvidUnit } from "evid";
+import { EvidenceTypeScriptAdapter } from "evidence";
+import type { IEvidenceUnit } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Extracts TypeScript declarations across ambient and structural forms.
@@ -50,8 +50,8 @@ export async function test_typescript_declarations(): Promise<void> {
       function implicit(): void;
     }
   `;
-  const inventory = await new EvidTypeScriptAdapter().analyze(
-    EvidTestSourceSnapshot.create("src/declarations.d.ts", content),
+  const inventory = await new EvidenceTypeScriptAdapter().analyze(
+    EvidenceTestSourceSnapshot.create("src/declarations.d.ts", content),
   );
 
   TestValidator.equals(
@@ -117,13 +117,13 @@ export async function test_typescript_declarations(): Promise<void> {
   );
 
   // Every TypeScript declaration-file extension makes namespace members ambient.
-  const extensions = await new EvidTypeScriptAdapter().analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+  const extensions = await new EvidenceTypeScriptAdapter().analyze(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/module.d.mts",
         "export namespace Mts { function run(): void; }",
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/common.d.cts",
         "export namespace Cts { function run(): void; }",
       ),
@@ -144,10 +144,10 @@ export async function test_typescript_declarations(): Promise<void> {
 }
 
 function requireUnit(
-  units: IEvidUnit[],
-  symbol: IEvidUnit["symbol"],
+  units: IEvidenceUnit[],
+  symbol: IEvidenceUnit["symbol"],
   identity: string,
-): IEvidUnit {
+): IEvidenceUnit {
   const unit = units.find(
     (entry) => entry.symbol === symbol && entry.identity.join(".") === identity,
   );

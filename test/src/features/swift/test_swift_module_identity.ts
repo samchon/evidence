@@ -1,7 +1,7 @@
-import { EvidInventory, EvidSwiftAdapter } from "evid";
+import { EvidenceInventory, EvidenceSwiftAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Keeps equal Swift names independent across configured module roots.
@@ -12,9 +12,9 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 2. Verify distinct identities and resolution.
  */
 export async function test_swift_module_identity(): Promise<void> {
-  const adapter = new EvidSwiftAdapter();
+  const adapter = new EvidenceSwiftAdapter();
   const first = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "Contract.swift",
       "public struct Contract {}",
       ["Contract.swift"],
@@ -22,14 +22,14 @@ export async function test_swift_module_identity(): Promise<void> {
     ),
   );
   const second = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "Other.swift",
       "public struct Contract {}",
       ["Other.swift"],
       "/project/Second",
     ),
   );
-  const inventory = new EvidInventory([first, second]);
+  const inventory = new EvidenceInventory([first, second]);
   const combined = inventory.snapshot();
 
   TestValidator.equals(

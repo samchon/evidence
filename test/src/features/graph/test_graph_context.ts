@@ -1,9 +1,9 @@
-import { EvidGraph } from "evid";
-import type { IEvidGraphInput } from "evid";
+import { EvidenceGraph } from "evidence";
+import type { IEvidenceGraphInput } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestInventory } from "../../internal/EvidTestInventory";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestInventory } from "../../internal/EvidenceTestInventory";
 
 /**
  * Keeps graph state isolated across repeated evaluations and reference
@@ -25,64 +25,64 @@ import { EvidTestInventory } from "../../internal/EvidTestInventory";
  *    successful graph, proving that each facade captures its own input.
  */
 export async function test_graph_context(): Promise<void> {
-  const inventory = EvidTestInventory.create();
-  const unit = EvidTestInventory.unit(
+  const inventory = EvidenceTestInventory.create();
+  const unit = EvidenceTestInventory.unit(
     inventory,
     "claim",
     ["Claim"],
     "type",
     "export const first = 1, second = 2;",
   );
-  const host = EvidTestInventory.host(
+  const host = EvidenceTestInventory.host(
     inventory,
     "host",
     unit.sites[0]?.id ?? "",
     [unit.id],
     "/** Shared documentation. */",
   );
-  const exclusion = EvidTestGraph.declaration(
+  const exclusion = EvidenceTestGraph.declaration(
     inventory,
     "exclude",
     host,
     "evidenceExclude",
     "target",
   );
-  const reference = EvidTestInventory.create();
-  const target = EvidTestInventory.unit(
+  const reference = EvidenceTestInventory.create();
+  const target = EvidenceTestInventory.unit(
     reference,
     "target",
     ["Target"],
     "type",
     "export class Box { value = 1; }",
   );
-  const input: IEvidGraphInput = {
+  const input: IEvidenceGraphInput = {
     claims: [
       {
         severity: "error",
         inventory,
         unitIds: [unit.id],
-        references: [false, true].map((noEvidExclude) => ({
+        references: [false, true].map((noEvidenceExclude) => ({
           severity: "error",
           inventory: reference,
           unitIds: [target.id],
-          resolutions: [EvidTestGraph.resolved(exclusion, target)],
-          noEvidExclude,
+          resolutions: [EvidenceTestGraph.resolved(exclusion, target)],
+          noEvidenceExclude,
         })),
       },
     ],
   };
-  const graph = new EvidGraph(input);
+  const graph = new EvidenceGraph(input);
   const first = graph.evaluate();
   const baseline = structuredClone(first);
 
   TestValidator.equals(
     "permitted exclusion",
-    EvidTestGraph.obligation(first, 0, 0).coveredUnitIds,
+    EvidenceTestGraph.obligation(first, 0, 0).coveredUnitIds,
     [target.id],
   );
   TestValidator.equals(
     "independent prohibition",
-    EvidTestGraph.obligation(first, 0, 1).missingUnitIds,
+    EvidenceTestGraph.obligation(first, 0, 1).missingUnitIds,
     [target.id],
   );
   TestValidator.equals(
@@ -100,7 +100,7 @@ export async function test_graph_context(): Promise<void> {
   TestValidator.equals("fresh graph evaluation", graph.evaluate(), baseline);
   TestValidator.equals(
     "separate empty graph",
-    new EvidGraph(input).evaluate(),
+    new EvidenceGraph(input).evaluate(),
     { success: true, claims: [], diagnostics: [] },
   );
 }

@@ -1,7 +1,7 @@
-import { EvidLuaAdapter } from "evid";
+import { EvidenceLuaAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Rejects smaller Lua inventories for dynamic exports and recovers on static
@@ -14,7 +14,7 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    snapshot and require recovery.
  */
 export async function test_lua_boundaries(): Promise<void> {
-  const adapter = new EvidLuaAdapter();
+  const adapter = new EvidenceLuaAdapter();
   const cases = [
     'local M = require("dependency")\nreturn M',
     "local M = {}\nsetmetatable(M, {})\nreturn M",
@@ -45,7 +45,7 @@ export async function test_lua_boundaries(): Promise<void> {
   ];
   for (const content of cases) {
     const inventory = await adapter.analyze(
-      EvidTestSourceSnapshot.create("module.lua", content),
+      EvidenceTestSourceSnapshot.create("module.lua", content),
     );
 
     TestValidator.equals(
@@ -64,7 +64,7 @@ export async function test_lua_boundaries(): Promise<void> {
     );
   }
   const repaired = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "module.lua",
       "function run(x) local t = {}\nt.x = 1\nx = 2\nreturn x end",
     ),
@@ -76,7 +76,7 @@ export async function test_lua_boundaries(): Promise<void> {
   );
   TestValidator.equals("fresh static recovery", repaired.complete, true);
   const reading = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "module.lua",
       "local M = { value = -1 }\nfunction M.run() local value = M.value\nprint(M.value)\nreturn value end\nreturn M",
     ),
@@ -87,7 +87,7 @@ export async function test_lua_boundaries(): Promise<void> {
     [],
   );
   const multiline = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "module.lua",
       "local\nfunction hidden() end\nlocal\nvalue = 1\nfunction visible() end",
     ),
@@ -99,7 +99,7 @@ export async function test_lua_boundaries(): Promise<void> {
   );
   for (const file of ["module.LUA", "module.txt"]) {
     const unsupported = await adapter.analyze(
-      EvidTestSourceSnapshot.create(file, "function run() end"),
+      EvidenceTestSourceSnapshot.create(file, "function run() end"),
     );
     TestValidator.equals(
       "only advertised source spelling is accepted",
@@ -107,7 +107,7 @@ export async function test_lua_boundaries(): Promise<void> {
       false,
     );
   }
-  const failed = EvidTestSourceSnapshot.create(
+  const failed = EvidenceTestSourceSnapshot.create(
     "module.lua",
     "function run() end",
   );

@@ -1,7 +1,7 @@
-import { EvidDartAdapter } from "evid";
+import { EvidenceDartAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Keeps unresolved Dart topology and unsupported changes incomplete.
@@ -16,7 +16,7 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    extension, and retain an unreadable-source failure.
  */
 export async function test_dart_boundaries(): Promise<void> {
-  const adapter = new EvidDartAdapter();
+  const adapter = new EvidenceDartAdapter();
   for (const [content, code] of new Map<string, string>([
     ["part 'missing.g.dart'; class Existing {}", "dart-unresolved-library"],
     ["part of missing.library; class Model {}", "dart-part-owner"],
@@ -29,7 +29,7 @@ export async function test_dart_boundaries(): Promise<void> {
     ["int get value => 1; int get value => 2;", "dart-declaration-conflict"],
   ])) {
     const inventory = await adapter.analyze(
-      EvidTestSourceSnapshot.create("src/boundary.dart", content),
+      EvidenceTestSourceSnapshot.create("src/boundary.dart", content),
     );
     TestValidator.equals(`incomplete ${content}`, inventory.complete, false);
     TestValidator.predicate(
@@ -47,7 +47,7 @@ export async function test_dart_boundaries(): Promise<void> {
     "extension on String { int local() => 1; }",
   ]) {
     const inventory = await adapter.analyze(
-      EvidTestSourceSnapshot.create("src/accepted.dart", content),
+      EvidenceTestSourceSnapshot.create("src/accepted.dart", content),
     );
     TestValidator.equals(
       `explicit source ${content}`,
@@ -56,7 +56,7 @@ export async function test_dart_boundaries(): Promise<void> {
     );
   }
   const wrong = await adapter.analyze(
-    EvidTestSourceSnapshot.create("src/code.DART", "class Contract {}"),
+    EvidenceTestSourceSnapshot.create("src/code.DART", "class Contract {}"),
   );
   TestValidator.equals(
     "unadvertised extension is incomplete",
@@ -70,8 +70,8 @@ export async function test_dart_boundaries(): Promise<void> {
     ),
   );
   const failed = await adapter.analyze(
-    EvidTestSourceSnapshot.fail(
-      EvidTestSourceSnapshot.create("src/unavailable.dart", ""),
+    EvidenceTestSourceSnapshot.fail(
+      EvidenceTestSourceSnapshot.create("src/unavailable.dart", ""),
       {
         code: "path-unreadable",
         path: "/project/src/unavailable.dart",

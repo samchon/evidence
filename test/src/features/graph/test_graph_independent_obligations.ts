@@ -1,9 +1,9 @@
-import { EvidGraph } from "evid";
-import type { IEvidGraphClaim } from "evid";
+import { EvidenceGraph } from "evidence";
+import type { IEvidenceGraphClaim } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestInventory } from "../../internal/EvidTestInventory";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestInventory } from "../../internal/EvidenceTestInventory";
 
 /**
  * Keeps overlapping claims and repeated references as independent coverage
@@ -27,8 +27,8 @@ import { EvidTestInventory } from "../../internal/EvidTestInventory";
  *    - Exactly one forbidden-exclusion finding identifies claim 0, reference 1.
  */
 export async function test_graph_independent_obligations(): Promise<void> {
-  const reference = EvidTestInventory.create();
-  const target = EvidTestInventory.unit(
+  const reference = EvidenceTestInventory.create();
+  const target = EvidenceTestInventory.unit(
     reference,
     "target",
     ["Target"],
@@ -36,22 +36,22 @@ export async function test_graph_independent_obligations(): Promise<void> {
     "export class Box { value = 1; }",
   );
 
-  const firstClaim = EvidTestInventory.create();
-  const firstUnit = EvidTestInventory.unit(
+  const firstClaim = EvidenceTestInventory.create();
+  const firstUnit = EvidenceTestInventory.unit(
     firstClaim,
     "first-claim",
     ["FirstClaim"],
     "type",
     "export const first = 1, second = 2;",
   );
-  const firstHost = EvidTestInventory.host(
+  const firstHost = EvidenceTestInventory.host(
     firstClaim,
     "first-host",
     firstUnit.sites[0]?.id ?? "",
     [firstUnit.id],
     "/** Shared documentation. */",
   );
-  const firstEvid = EvidTestGraph.declaration(
+  const firstEvid = EvidenceTestGraph.declaration(
     firstClaim,
     "first-evidence",
     firstHost,
@@ -71,14 +71,14 @@ export async function test_graph_independent_obligations(): Promise<void> {
   ]);
   uncoveredClaim.name = "secondary";
 
-  const independent = EvidGraph.evaluate({
+  const independent = EvidenceGraph.evaluate({
     claims: [
       claim(firstClaim, firstUnit.id, [
         {
           severity: "error",
           inventory: reference,
           unitIds: [target.id],
-          resolutions: [EvidTestGraph.resolved(firstEvid, target)],
+          resolutions: [EvidenceTestGraph.resolved(firstEvid, target)],
         },
       ]),
       uncoveredClaim,
@@ -87,12 +87,12 @@ export async function test_graph_independent_obligations(): Promise<void> {
 
   TestValidator.equals(
     "first claim covered",
-    EvidTestGraph.obligation(independent, 0, 0).missingUnitIds,
+    EvidenceTestGraph.obligation(independent, 0, 0).missingUnitIds,
     [],
   );
   TestValidator.equals(
     "second claim remains missing",
-    EvidTestGraph.obligation(independent, 1, 0).missingUnitIds,
+    EvidenceTestGraph.obligation(independent, 1, 0).missingUnitIds,
     [target.id],
   );
   TestValidator.equals(
@@ -118,43 +118,43 @@ export async function test_graph_independent_obligations(): Promise<void> {
   );
 
   // Identical reference populations retain their own exclusion policies.
-  const exclusionClaim = EvidTestInventory.create();
-  const exclusionUnit = EvidTestInventory.unit(
+  const exclusionClaim = EvidenceTestInventory.create();
+  const exclusionUnit = EvidenceTestInventory.unit(
     exclusionClaim,
     "exclusion-claim",
     ["ExclusionClaim"],
     "type",
     "export const first = 1, second = 2;",
   );
-  const exclusionHost = EvidTestInventory.host(
+  const exclusionHost = EvidenceTestInventory.host(
     exclusionClaim,
     "exclusion-host",
     exclusionUnit.sites[0]?.id ?? "",
     [exclusionUnit.id],
     "/** Shared documentation. */",
   );
-  const exclusion = EvidTestGraph.declaration(
+  const exclusion = EvidenceTestGraph.declaration(
     exclusionClaim,
     "exclusion",
     exclusionHost,
     "evidenceExclude",
     "target",
   );
-  const repeated = EvidGraph.evaluate({
+  const repeated = EvidenceGraph.evaluate({
     claims: [
       claim(exclusionClaim, exclusionUnit.id, [
         {
           severity: "error",
           inventory: reference,
           unitIds: [target.id],
-          resolutions: [EvidTestGraph.resolved(exclusion, target)],
+          resolutions: [EvidenceTestGraph.resolved(exclusion, target)],
         },
         {
           severity: "error",
           inventory: reference,
           unitIds: [target.id],
-          resolutions: [EvidTestGraph.resolved(exclusion, target)],
-          noEvidExclude: true,
+          resolutions: [EvidenceTestGraph.resolved(exclusion, target)],
+          noEvidenceExclude: true,
         },
       ]),
     ],
@@ -162,12 +162,12 @@ export async function test_graph_independent_obligations(): Promise<void> {
 
   TestValidator.equals(
     "permitted exclusion covers first reference",
-    EvidTestGraph.obligation(repeated, 0, 0).coveredUnitIds,
+    EvidenceTestGraph.obligation(repeated, 0, 0).coveredUnitIds,
     [target.id],
   );
   TestValidator.equals(
     "forbidden exclusion leaves second reference missing",
-    EvidTestGraph.obligation(repeated, 0, 1).missingUnitIds,
+    EvidenceTestGraph.obligation(repeated, 0, 1).missingUnitIds,
     [target.id],
   );
   TestValidator.equals(
@@ -195,10 +195,10 @@ export async function test_graph_independent_obligations(): Promise<void> {
  * indices.
  */
 function claim(
-  inventory: IEvidGraphClaim["inventory"],
+  inventory: IEvidenceGraphClaim["inventory"],
   unitId: string,
-  references: IEvidGraphClaim["references"],
-): IEvidGraphClaim {
+  references: IEvidenceGraphClaim["references"],
+): IEvidenceGraphClaim {
   return {
     severity: "error",
     inventory,

@@ -1,8 +1,8 @@
-import { EvidTagParser } from "evid";
+import { EvidenceTagParser } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestDocumentation } from "../../internal/EvidTestDocumentation";
+import { EvidenceTestDocumentation } from "../../internal/EvidenceTestDocumentation";
 
 /**
  * Parses supported comment styles with exact CRLF source locations.
@@ -18,7 +18,7 @@ import { EvidTestDocumentation } from "../../internal/EvidTestDocumentation";
  *    retains its original line and column.
  */
 export async function test_tag_comment_styles(): Promise<void> {
-  const html = EvidTestDocumentation.create(
+  const html = EvidenceTestDocumentation.create(
     dedent`
     <!--
       @evidence docs/spec.md#rule Implements the rule.
@@ -34,7 +34,7 @@ export async function test_tag_comment_styles(): Promise<void> {
       allowWithdrawal: false,
     },
   );
-  const htmlResult = EvidTagParser.parse(
+  const htmlResult = EvidenceTagParser.parse(
     html.content,
     html.host,
     html.documentation,
@@ -57,7 +57,7 @@ export async function test_tag_comment_styles(): Promise<void> {
     1,
   );
 
-  const prisma = EvidTestDocumentation.create(
+  const prisma = EvidenceTestDocumentation.create(
     dedent`
     /// @evidence prisma:Sale.price Implements the column.
     /// @namespace Shop
@@ -71,7 +71,7 @@ export async function test_tag_comment_styles(): Promise<void> {
       allowWithdrawal: true,
     },
   );
-  const prismaResult = EvidTagParser.parse(
+  const prismaResult = EvidenceTagParser.parse(
     prisma.content,
     prisma.host,
     prisma.documentation,

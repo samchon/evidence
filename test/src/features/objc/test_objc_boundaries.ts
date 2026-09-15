@@ -1,8 +1,8 @@
-import { EvidLanguageRegistry, EvidObjcAdapter } from "evid";
+import { EvidenceLanguageRegistry, EvidenceObjcAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Rejects Objective-C inputs with unsupported public surfaces.
@@ -15,12 +15,12 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Verify a source failure remains incomplete.
  */
 export async function test_objc_boundaries(): Promise<void> {
-  const adapter = new EvidObjcAdapter();
+  const adapter = new EvidenceObjcAdapter();
   TestValidator.equals(
     "configured types distinguish the shared MATLAB and Objective-C extension",
     [
-      EvidLanguageRegistry.select("objc", "src/Shared.m").id,
-      EvidLanguageRegistry.select("matlab", "src/Shared.m").id,
+      EvidenceLanguageRegistry.select("objc", "src/Shared.m").id,
+      EvidenceLanguageRegistry.select("matlab", "src/Shared.m").id,
     ],
     ["objc", "matlab"],
   );
@@ -38,7 +38,7 @@ export async function test_objc_boundaries(): Promise<void> {
     "@interface Contract\n#if FEATURE\n@property int conditional;\n#endif\n@end\n",
   ]) {
     const inventory = await adapter.analyze(
-      EvidTestSourceSnapshot.create("src/Unsupported.h", content),
+      EvidenceTestSourceSnapshot.create("src/Unsupported.h", content),
     );
     TestValidator.equals(
       `surface is incomplete: ${content}`,
@@ -54,7 +54,7 @@ export async function test_objc_boundaries(): Promise<void> {
   }
   for (const file of ["src/Contract.m", "src/Contract.h"]) {
     const inventory = await adapter.analyze(
-      EvidTestSourceSnapshot.create(file, "@interface Contract\n@end\n"),
+      EvidenceTestSourceSnapshot.create(file, "@interface Contract\n@end\n"),
     );
     TestValidator.equals(
       `configured Objective-C source ${file}`,
@@ -63,12 +63,12 @@ export async function test_objc_boundaries(): Promise<void> {
     );
     TestValidator.equals(
       "selected grammar wins overlapping extension",
-      EvidLanguageRegistry.select("objc", file).id,
+      EvidenceLanguageRegistry.select("objc", file).id,
       "objc",
     );
   }
   const overlap = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Contract.mm",
       "@interface Contract\n@end\n",
     ),
@@ -80,7 +80,7 @@ export async function test_objc_boundaries(): Promise<void> {
   );
 
   const guards = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Guarded.h",
       dedent`
     #ifndef GUARDED_H
@@ -103,12 +103,12 @@ export async function test_objc_boundaries(): Promise<void> {
     ["Guarded"],
   );
   const conflicting = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/First.h",
         "@interface Conflict\n@end\n",
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/Second.h",
         "@interface Conflict\n@end\n",
       ),
@@ -121,9 +121,9 @@ export async function test_objc_boundaries(): Promise<void> {
   );
 
   const privacy = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create("src/Public.h", "int run(void);\n"),
-      EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create("src/Public.h", "int run(void);\n"),
+      EvidenceTestSourceSnapshot.create(
         "src/Private.m",
         "static int run(void) { return 0; }\n@implementation Private\n- (void)hidden {}\n@end\n",
       ),
@@ -135,7 +135,7 @@ export async function test_objc_boundaries(): Promise<void> {
     [["run", 1]],
   );
 
-  const failed = EvidTestSourceSnapshot.create(
+  const failed = EvidenceTestSourceSnapshot.create(
     "src/Failure.m",
     "@interface Contract\n@end\n",
   );

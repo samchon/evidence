@@ -1,8 +1,8 @@
-import { EvidInventory, EvidRubyAdapter } from "evid";
+import { EvidenceInventory, EvidenceRubyAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Attaches Ruby RDoc only at supported documentation hosts.
@@ -16,8 +16,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Require all unsupported annotation carriers to remain diagnosable.
  */
 export async function test_ruby_hosts(): Promise<void> {
-  const inventory = await new EvidRubyAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const inventory = await new EvidenceRubyAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "lib/contracts.rb",
       dedent`
         # @evidence docs/requirements.md#type Implements the class.
@@ -91,8 +91,8 @@ export async function test_ruby_hosts(): Promise<void> {
     7,
   );
 
-  const withdrawn = await new EvidRubyAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const withdrawn = await new EvidenceRubyAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "lib/hidden.rb",
       dedent`
         # @internal This class and its descendants are internal.
@@ -102,7 +102,7 @@ export async function test_ruby_hosts(): Promise<void> {
       `,
     ),
   );
-  const population = new EvidInventory([withdrawn]).select(
+  const population = new EvidenceInventory([withdrawn]).select(
     withdrawn.units.map((unit) => unit.id),
   );
   TestValidator.equals(

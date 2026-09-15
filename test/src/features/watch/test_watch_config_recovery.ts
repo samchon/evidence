@@ -1,10 +1,10 @@
-import { EvidChecker, EvidWatcher } from "evid";
+import { EvidenceChecker, EvidenceWatcher } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
 
 /**
  * Recovers from imported configuration failures and missing active roots.
@@ -24,7 +24,7 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
  */
 export async function test_watch_config_recovery(): Promise<void> {
   const location = join(__dirname, `config recovery ${randomUUID()}`);
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     location,
     {
       "evidence.config.ts": config(),
@@ -35,7 +35,7 @@ export async function test_watch_config_recovery(): Promise<void> {
     async (directory) => {
       const configFile = join(directory, "evidence.config.ts");
       const helper = join(directory, "helpers", "settings.ts");
-      const watcher = new EvidWatcher(configFile, {
+      const watcher = new EvidenceWatcher(configFile, {
         pollIntervalMilliseconds: 20,
         debounceMilliseconds: 20,
       });
@@ -59,7 +59,7 @@ export async function test_watch_config_recovery(): Promise<void> {
               (dependency) => !dependency.includes("disabled-source"),
             ),
           );
-          await EvidTestFileSystem.save(directory, {
+          await EvidenceTestFileSystem.save(directory, {
             "helpers/settings.ts": `export const root: string = 123;\nexport const files = ["**/*.ts"];\n`,
           });
           return;
@@ -68,7 +68,7 @@ export async function test_watch_config_recovery(): Promise<void> {
         // The current imported type error replaces the old success with a failure cycle.
         if (cycle.cycle === 2) {
           TestValidator.equals("config failure status", cycle.status, "failed");
-          await EvidTestFileSystem.save(directory, {
+          await EvidenceTestFileSystem.save(directory, {
             "helpers/settings.ts": settings("missing-source"),
           });
           return;
@@ -82,7 +82,7 @@ export async function test_watch_config_recovery(): Promise<void> {
         TestValidator.equals(
           `fresh config report ${cycle.cycle}`,
           cycle.report,
-          await EvidChecker.check(configFile),
+          await EvidenceChecker.check(configFile),
         );
         if (cycle.cycle === 3) {
           TestValidator.equals(
@@ -90,7 +90,7 @@ export async function test_watch_config_recovery(): Promise<void> {
             cycle.status,
             "incomplete",
           );
-          await EvidTestFileSystem.save(directory, {
+          await EvidenceTestFileSystem.save(directory, {
             "missing-source/implementation.ts": implementation(),
           });
           return;
@@ -108,7 +108,7 @@ export async function test_watch_config_recovery(): Promise<void> {
 function config(): string {
   return dedent`
     import { files, root } from "./helpers/settings";
-    import type { IEvidConfig } from "evid";
+    import type { IEvidenceConfig } from "evidence";
 
     export default {
       claims: [
@@ -135,7 +135,7 @@ function config(): string {
           },
         },
       ],
-    } satisfies IEvidConfig;
+    } satisfies IEvidenceConfig;
   `;
 }
 

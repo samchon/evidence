@@ -1,14 +1,14 @@
-import { EvidRubyAdapter } from "evid";
-import type { EvidTargetResolutionStatus } from "evid";
+import { EvidenceRubyAdapter } from "evidence";
+import type { EvidenceTargetResolutionStatus } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
-interface IEvidRubyTargetStatus {
+interface IEvidenceRubyTargetStatus {
   target: string | undefined;
-  status: EvidTargetResolutionStatus;
+  status: EvidenceTargetResolutionStatus;
 }
 
 /**
@@ -22,9 +22,9 @@ interface IEvidRubyTargetStatus {
  *    statuses and their intended public units.
  */
 export async function test_ruby_targets(): Promise<void> {
-  const adapter = new EvidRubyAdapter();
+  const adapter = new EvidenceRubyAdapter();
   const reference = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "lib/shop/sale.rb",
       dedent`
         module Shop
@@ -41,7 +41,7 @@ export async function test_ruby_targets(): Promise<void> {
     ),
   );
   const claim = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "test/verify.rb",
       dedent`
         module Verify
@@ -64,7 +64,7 @@ export async function test_ruby_targets(): Promise<void> {
     [],
   );
   TestValidator.equals("complete Ruby target claim", claim.diagnostics, []);
-  const resolutions = await EvidTestGraph.resolveDeclarations(
+  const resolutions = await EvidenceTestGraph.resolveDeclarations(
     claim,
     reference,
     reference.units.map((unit) => unit.id),
@@ -80,7 +80,7 @@ export async function test_ruby_targets(): Promise<void> {
         status: resolution.resolution.status,
       }))
       .sort(compareTarget),
-    (<IEvidRubyTargetStatus[]>[
+    (<IEvidenceRubyTargetStatus[]>[
       {
         target: '../lib/shop/sale.rb#Shop.Sale["[]"]',
         status: "resolved",
@@ -114,8 +114,8 @@ export async function test_ruby_targets(): Promise<void> {
 }
 
 function compareTarget(
-  left: IEvidRubyTargetStatus,
-  right: IEvidRubyTargetStatus,
+  left: IEvidenceRubyTargetStatus,
+  right: IEvidenceRubyTargetStatus,
 ): number {
   return compare(left.target ?? "", right.target ?? "");
 }

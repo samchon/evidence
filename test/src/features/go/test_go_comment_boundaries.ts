@@ -1,7 +1,7 @@
-import { EvidFingerprint, EvidGoAdapter, EvidInventory } from "evid";
+import { EvidenceFingerprint, EvidenceGoAdapter, EvidenceInventory } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Separates trailing Go comments from leading documentation runs.
@@ -22,10 +22,10 @@ export async function test_go_comment_boundaries(): Promise<void> {
     var Earlier = 3 /* @evidenceReview docs/spec.md#review Cannot review Later. */
                     var Later = 4
   `;
-  const adapter = new EvidGoAdapter();
+  const adapter = new EvidenceGoAdapter();
   for (const content of [source, source.replaceAll("\n", "\r\n")]) {
     const inventory = await adapter.analyze(
-      EvidTestSourceSnapshot.create("sale/values.go", content),
+      EvidenceTestSourceSnapshot.create("sale/values.go", content),
     );
     const units = new Map(
       inventory.units.map((unit) => [unit.id, unit.identity.join(".")]),
@@ -61,7 +61,7 @@ export async function test_go_comment_boundaries(): Promise<void> {
       content.indexOf("@evidence docs/spec.md#after"),
     );
     const rewritten = await adapter.analyze(
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "sale/values.go",
         content.replace(
           "Documents After itself.",
@@ -73,21 +73,21 @@ export async function test_go_comment_boundaries(): Promise<void> {
     if (after === undefined) throw new Error("Missing After.");
     TestValidator.equals(
       "leading metadata does not move fingerprints",
-      EvidFingerprint.inspect(inventory, after.id).fingerprint,
-      EvidFingerprint.inspect(rewritten, after.id).fingerprint,
+      EvidenceFingerprint.inspect(inventory, after.id).fingerprint,
+      EvidenceFingerprint.inspect(rewritten, after.id).fingerprint,
     );
   }
 
   // A trailing withdrawal must not hide the following public declaration.
   const withdrawal = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "sale/values.go",
       "package sale\nvar Before = 1 // @internal Cannot withdraw After.\n               var After = 2\n",
     ),
   );
   TestValidator.equals(
     "trailing withdrawal hides no units",
-    new EvidInventory([withdrawal]).select(
+    new EvidenceInventory([withdrawal]).select(
       withdrawal.units.map((unit) => unit.id),
     ).hidden,
     [],
@@ -96,7 +96,7 @@ export async function test_go_comment_boundaries(): Promise<void> {
   // Standalone block documentation still attaches, and a blank line still separates a run.
   for (const gap of ["\n", "\n\n"]) {
     const inventory = await adapter.analyze(
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "sale/values.go",
         `package sale\n/* @evidence docs/spec.md#block Documents the block. */${gap}var Value = 1\n`,
       ),

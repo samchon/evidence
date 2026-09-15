@@ -1,0 +1,30 @@
+/**
+ * Records one scanner-approved ownership link from XML documentation to a C#
+ * declaration site.
+ *
+ * IEvidenceCSharpDocumentation stores these physical links while parsing is still
+ * close to source syntax. EvidenceCSharpAdapter resolves the declaration record to
+ * a published semantic unit and groups links by site when it creates Evidence
+ * hosts.
+ */
+export interface IEvidenceCSharpDocumentationAttachment {
+  /**
+   * Identifies the scanner-local declaration that receives this XML
+   * documentation.
+   *
+   * EvidenceCSharpAdapter looks up this key in its published-declaration map to
+   * find the semantic unit. It is not a stable unit ID because partial
+   * declarations can later merge into one family.
+   */
+  declarationId: string;
+
+  /**
+   * Identifies the physical declaration site that owns the resulting Evidence
+   * host.
+   *
+   * Grouping by this value keeps documentation attached to the source
+   * occurrence that established adjacency, so separate partial declarations
+   * cannot borrow each other's comments.
+   */
+  siteId: string;
+}

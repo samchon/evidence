@@ -1,8 +1,8 @@
-import { EvidInventory, EvidMatlabAdapter } from "evid";
+import { EvidenceInventory, EvidenceMatlabAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Assigns external MATLAB methods to their selected package class.
@@ -18,7 +18,7 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 4. Require missing class or implementation inputs to remain incomplete.
  */
 export async function test_matlab_ownership(): Promise<void> {
-  const cls = EvidTestSourceSnapshot.create(
+  const cls = EvidenceTestSourceSnapshot.create(
     "src/+pkg/@Widget/Widget.m",
     dedent`
     classdef Widget
@@ -32,20 +32,20 @@ export async function test_matlab_ownership(): Promise<void> {
     end
   `.concat("\n"),
   );
-  const run = EvidTestSourceSnapshot.create(
+  const run = EvidenceTestSourceSnapshot.create(
     "src/+pkg/@Widget/run.m",
     "function run(obj)\n% Method help.\nend\n",
   );
-  const secret = EvidTestSourceSnapshot.create(
+  const secret = EvidenceTestSourceSnapshot.create(
     "src/+pkg/@Widget/secret.m",
     "function secret(obj)\nend\n",
   );
-  const additional = EvidTestSourceSnapshot.create(
+  const additional = EvidenceTestSourceSnapshot.create(
     "src/+pkg/@Widget/extra.m",
     "function extra(obj)\nend\n",
   );
-  const inventory = await new EvidMatlabAdapter().analyze(
-    EvidTestSourceSnapshot.combine([cls, run, secret, additional]),
+  const inventory = await new EvidenceMatlabAdapter().analyze(
+    EvidenceTestSourceSnapshot.combine([cls, run, secret, additional]),
   );
 
   TestValidator.equals(
@@ -71,7 +71,7 @@ export async function test_matlab_ownership(): Promise<void> {
     method?.sites?.length,
     2,
   );
-  const graph = new EvidInventory([inventory]);
+  const graph = new EvidenceInventory([inventory]);
   for (const file of ["Widget.m", "run.m"])
     TestValidator.equals(
       `external address ${file}`,
@@ -119,15 +119,15 @@ export async function test_matlab_ownership(): Promise<void> {
         dependency.recursive && dependency.path.endsWith("/@Widget"),
     ),
   );
-  const reversed = await new EvidMatlabAdapter().analyze(
-    EvidTestSourceSnapshot.combine([additional, secret, run, cls]),
+  const reversed = await new EvidenceMatlabAdapter().analyze(
+    EvidenceTestSourceSnapshot.combine([additional, secret, run, cls]),
   );
   TestValidator.equals(
     "snapshot order does not alter ownership",
     reversed,
     inventory,
   );
-  const missing = await new EvidMatlabAdapter().analyze(run);
+  const missing = await new EvidenceMatlabAdapter().analyze(run);
   TestValidator.equals("missing class cannot pass", missing.complete, false);
   TestValidator.predicate(
     "actionable legacy boundary",
@@ -135,7 +135,7 @@ export async function test_matlab_ownership(): Promise<void> {
       (diagnostic) => diagnostic.code === "matlab-class-folder",
     ),
   );
-  const missingImplementation = await new EvidMatlabAdapter().analyze(cls);
+  const missingImplementation = await new EvidenceMatlabAdapter().analyze(cls);
   TestValidator.equals(
     "missing implementations cannot pass",
     missingImplementation.complete,

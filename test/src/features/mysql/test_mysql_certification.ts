@@ -1,10 +1,10 @@
-import { EvidAccessor, EvidMysqlAdapter } from "evid";
-import type { EvidDatabaseSymbol } from "evid";
+import { EvidenceAccessor, EvidenceMysqlAdapter } from "evidence";
+import type { EvidenceDatabaseSymbol } from "evidence";
 import { dedent } from "@typia/utils";
 
-import { EvidDatabaseAdapterCertification } from "../../internal/certification/EvidDatabaseAdapterCertification";
-import type { IEvidDatabaseAdapterCertification } from "../../internal/certification/IEvidDatabaseAdapterCertification";
-import type { IEvidDatabaseAdapterCertificationUnit } from "../../internal/certification/IEvidDatabaseAdapterCertificationUnit";
+import { EvidenceDatabaseAdapterCertification } from "../../internal/certification/EvidenceDatabaseAdapterCertification";
+import type { IEvidenceDatabaseAdapterCertification } from "../../internal/certification/IEvidenceDatabaseAdapterCertification";
+import type { IEvidenceDatabaseAdapterCertificationUnit } from "../../internal/certification/IEvidenceDatabaseAdapterCertificationUnit";
 
 /**
  * Applies the shared database certification contract to MySQL.
@@ -18,9 +18,9 @@ import type { IEvidDatabaseAdapterCertificationUnit } from "../../internal/certi
  */
 export async function test_mysql_certification(): Promise<void> {
   const relation = 'foreign-key:["parent_id"]->["Parent"](["id"])';
-  const fixture: IEvidDatabaseAdapterCertification = {
+  const fixture: IEvidenceDatabaseAdapterCertification = {
     type: "mysql",
-    adapter: new EvidMysqlAdapter(),
+    adapter: new EvidenceMysqlAdapter(),
     sources: [
       {
         file: "schema.sql",
@@ -52,7 +52,7 @@ export async function test_mysql_certification(): Promise<void> {
       { attachment: "attached", units: ["column:Child.parent_id"] },
       {
         attachment: "attached",
-        units: [`relation:${EvidAccessor.format(["Child", relation])}`],
+        units: [`relation:${EvidenceAccessor.format(["Child", relation])}`],
       },
     ],
     requirements: [
@@ -62,7 +62,7 @@ export async function test_mysql_certification(): Promise<void> {
         target: "./docs/requirements.md#column",
       },
       {
-        unit: `relation:${EvidAccessor.format(["Child", relation])}`,
+        unit: `relation:${EvidenceAccessor.format(["Child", relation])}`,
         target: "./docs/requirements.md#relation",
       },
     ],
@@ -102,14 +102,14 @@ export async function test_mysql_certification(): Promise<void> {
     },
   };
 
-  EvidDatabaseAdapterCertification.assertInventory(
+  EvidenceDatabaseAdapterCertification.assertInventory(
     fixture,
-    await EvidDatabaseAdapterCertification.analyze(fixture),
+    await EvidenceDatabaseAdapterCertification.analyze(fixture),
   );
-  await EvidDatabaseAdapterCertification.assertGraph(fixture);
-  await EvidDatabaseAdapterCertification.assertFailures(fixture);
-  await EvidDatabaseAdapterCertification.assertFingerprint(fixture);
-  await EvidDatabaseAdapterCertification.assertAmbiguity(fixture);
+  await EvidenceDatabaseAdapterCertification.assertGraph(fixture);
+  await EvidenceDatabaseAdapterCertification.assertFailures(fixture);
+  await EvidenceDatabaseAdapterCertification.assertFingerprint(fixture);
+  await EvidenceDatabaseAdapterCertification.assertAmbiguity(fixture);
 }
 
 /**
@@ -119,11 +119,11 @@ export async function test_mysql_certification(): Promise<void> {
  * preserving an explicit parent only for members owned by a model.
  */
 function unit(
-  symbol: EvidDatabaseSymbol,
+  symbol: EvidenceDatabaseSymbol,
   identity: string[],
   parent?: string,
-): IEvidDatabaseAdapterCertificationUnit {
-  const accessor = EvidAccessor.format(identity);
+): IEvidenceDatabaseAdapterCertificationUnit {
+  const accessor = EvidenceAccessor.format(identity);
   return {
     key: `${symbol}:${accessor}`,
     symbol,

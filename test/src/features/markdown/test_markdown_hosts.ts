@@ -1,8 +1,8 @@
-import { EvidMarkdownAdapter } from "evid";
+import { EvidenceMarkdownAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Attaches Markdown HTML comments to supported heading hosts.
@@ -32,8 +32,8 @@ export async function test_markdown_hosts(): Promise<void> {
     #### Supported again
     <!-- @evidenceExclude docs/spec.md#optional This part does not apply. -->
   `.replaceAll("\n", "\r\n");
-  const inventory = await new EvidMarkdownAdapter().analyze(
-    EvidTestSourceSnapshot.create("guide.md", content),
+  const inventory = await new EvidenceMarkdownAdapter().analyze(
+    EvidenceTestSourceSnapshot.create("guide.md", content),
   );
 
   TestValidator.equals(

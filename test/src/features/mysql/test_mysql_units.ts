@@ -1,8 +1,8 @@
-import { EvidAccessor, EvidInventory, EvidMysqlAdapter } from "evid";
+import { EvidenceAccessor, EvidenceInventory, EvidenceMysqlAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Extracts MySQL schema units with database-qualified ownership.
@@ -15,8 +15,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Require unsupported relation-like constructs to stay absent.
  */
 export async function test_mysql_units(): Promise<void> {
-  const inventory = await new EvidMysqlAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const inventory = await new EvidenceMysqlAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "schema.sql",
       dedent`
       CREATE TABLE \`Store\`.\`Parent\` (id INT PRIMARY KEY, code INT);
@@ -36,7 +36,7 @@ export async function test_mysql_units(): Promise<void> {
   TestValidator.equals(
     "exact schema surface",
     inventory.units
-      .map((unit) => `${unit.symbol}:${EvidAccessor.format(unit.identity)}`)
+      .map((unit) => `${unit.symbol}:${EvidenceAccessor.format(unit.identity)}`)
       .sort((left, right) => left.localeCompare(right)),
     [
       "model:Store.Parent",
@@ -58,7 +58,7 @@ export async function test_mysql_units(): Promise<void> {
       .every((unit) => unit.parentId === child.id),
   );
   const selected = inventory.units.map((unit) => unit.id);
-  const graph = new EvidInventory([inventory]);
+  const graph = new EvidenceInventory([inventory]);
   TestValidator.equals(
     "logical alias preserves database ownership",
     graph.resolve(
@@ -83,8 +83,8 @@ export async function test_mysql_units(): Promise<void> {
     "missing",
   );
 
-  const literal = await new EvidMysqlAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const literal = await new EvidenceMysqlAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "literal.sql",
       "CREATE TABLE `Order Detail` (`value.part` INT, `상품 이름` TEXT);",
     ),
@@ -94,7 +94,7 @@ export async function test_mysql_units(): Promise<void> {
     literal.diagnostics,
     [],
   );
-  const literalGraph = new EvidInventory([literal]);
+  const literalGraph = new EvidenceInventory([literal]);
   const literalSelected = literal.units.map((unit) => unit.id);
   TestValidator.equals(
     "dotted column remains one segment",
@@ -127,14 +127,14 @@ export async function test_mysql_units(): Promise<void> {
     "resolved",
   );
 
-  const localReference = await new EvidMysqlAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const localReference = await new EvidenceMysqlAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "qualified.sql",
       "CREATE TABLE Store.Child (parent_id INT, FOREIGN KEY (parent_id) REFERENCES Parent (id));",
     ),
   );
-  const explicitReference = await new EvidMysqlAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const explicitReference = await new EvidenceMysqlAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "qualified.sql",
       "CREATE TABLE Store.Child (parent_id INT, FOREIGN KEY (parent_id) REFERENCES Store.Parent (id));",
     ),

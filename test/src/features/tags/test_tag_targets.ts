@@ -1,8 +1,8 @@
-import { EvidTagParser } from "evid";
+import { EvidenceTagParser } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestDocumentation } from "../../internal/EvidTestDocumentation";
+import { EvidenceTestDocumentation } from "../../internal/EvidenceTestDocumentation";
 
 /**
  * Tokenizes source, Markdown, schema, and operation targets without changing
@@ -19,7 +19,7 @@ import { EvidTestDocumentation } from "../../internal/EvidTestDocumentation";
  *    with no diagnostics.
  */
 export async function test_tag_targets(): Promise<void> {
-  const fixture = EvidTestDocumentation.create(dedent`
+  const fixture = EvidenceTestDocumentation.create(dedent`
     /**
      * @evidence ../calculator.ts#add Checks arithmetic.
      * @evidence ../SomeClass.ts#SomeClass.member Checks the member.
@@ -31,7 +31,7 @@ export async function test_tag_targets(): Promise<void> {
      * @evidence POST:/sales Follows the operation.
      */
   `);
-  const result = EvidTagParser.parse(
+  const result = EvidenceTagParser.parse(
     fixture.content,
     fixture.host,
     fixture.documentation,

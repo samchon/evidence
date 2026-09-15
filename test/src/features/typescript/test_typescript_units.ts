@@ -1,9 +1,9 @@
-import { EvidTypeScriptAdapter } from "evid";
-import type { IEvidUnit } from "evid";
+import { EvidenceTypeScriptAdapter } from "evidence";
+import type { IEvidenceUnit } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Classifies TypeScript's supported public declaration matrix.
@@ -67,8 +67,8 @@ export async function test_typescript_units(): Promise<void> {
 
     export enum Ignored { A }
   `;
-  const inventory = await new EvidTypeScriptAdapter().analyze(
-    EvidTestSourceSnapshot.create("src/contracts.ts", content),
+  const inventory = await new EvidenceTypeScriptAdapter().analyze(
+    EvidenceTestSourceSnapshot.create("src/contracts.ts", content),
   );
 
   const actual = inventory.units
@@ -132,10 +132,10 @@ export async function test_typescript_units(): Promise<void> {
 }
 
 function requireUnit(
-  units: IEvidUnit[],
-  symbol: IEvidUnit["symbol"],
+  units: IEvidenceUnit[],
+  symbol: IEvidenceUnit["symbol"],
   identity: string,
-): IEvidUnit {
+): IEvidenceUnit {
   const unit = units.find(
     (entry) => entry.symbol === symbol && entry.identity.join(".") === identity,
   );

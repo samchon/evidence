@@ -1,11 +1,11 @@
-import { EvidChecker } from "evid";
-import type { IEvidConfigPlan } from "evid";
+import { EvidenceChecker } from "evidence";
+import type { IEvidenceConfigPlan } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
 
 /**
  * Rejects acknowledgements that lie outside a claim's target and exclusion
@@ -25,7 +25,7 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
  */
 export async function test_checker_participation(): Promise<void> {
   const location = join(__dirname, `participation ${randomUUID()}`);
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     location,
     {
       "evidence.config.ts": "export default {};\n",
@@ -39,7 +39,7 @@ export async function test_checker_participation(): Promise<void> {
       const plan = createPlan(directory);
 
       // A syntactically distinct target family is diagnosed instead of discarded.
-      const unrelated = await EvidChecker.evaluate(plan);
+      const unrelated = await EvidenceChecker.evaluate(plan);
       TestValidator.predicate(
         "non-participating target",
         unrelated.report.diagnostics.some(
@@ -49,7 +49,7 @@ export async function test_checker_participation(): Promise<void> {
       );
 
       // A matching exclusion remains invalid when its host file misses the carrier globs.
-      await EvidTestFileSystem.save(directory, {
+      await EvidenceTestFileSystem.save(directory, {
         "src/implementation.ts": dedent`
           /** @evidenceExclude docs/spec.md#requirement This requirement does not apply. */
           export function implementation(): void {}
@@ -60,7 +60,7 @@ export async function test_checker_participation(): Promise<void> {
         throw new Error("Missing participation fixture claim.");
       claim.population.evidenceExcludeCarriers = ["src/exclusions.ts"];
 
-      const misplaced = await EvidChecker.evaluate(plan);
+      const misplaced = await EvidenceChecker.evaluate(plan);
       TestValidator.predicate(
         "misplaced exclusion",
         misplaced.report.diagnostics.some(
@@ -76,7 +76,7 @@ export async function test_checker_participation(): Promise<void> {
   );
 }
 
-function createPlan(directory: string): IEvidConfigPlan {
+function createPlan(directory: string): IEvidenceConfigPlan {
   return {
     configFile: join(directory, "evidence.config.ts"),
     claims: [

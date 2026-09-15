@@ -1,8 +1,8 @@
-import { EvidParser, EvidTreeSitterAssetScope, EvidZigAdapter } from "evid";
+import { EvidenceParser, EvidenceTreeSitterAssetScope, EvidenceZigAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
-import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
+import { EvidenceTestParserAssets } from "../../internal/EvidenceTestParserAssets";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Acquires Zig's pinned grammar and reuses it offline.
@@ -15,12 +15,12 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Repeat offline and require equivalent analysis.
  */
 export async function test_zig_acquisition(): Promise<void> {
-  const parser = new EvidParser();
+  const parser = new EvidenceParser();
   const grammars = await parser.grammars();
   await parser.close();
   const grammar = grammars.find((item) => item.id === "zig");
   if (grammar === undefined) throw new Error("Missing pinned Zig grammar.");
-  const bytes = await EvidTestParserAssets.bytes(grammar);
+  const bytes = await EvidenceTestParserAssets.bytes(grammar);
   const requests: string[] = [];
   async function fetchGrammar(
     input: string | URL | Request,
@@ -32,21 +32,21 @@ export async function test_zig_acquisition(): Promise<void> {
   async function offline(): Promise<Response> {
     throw new Error("The warm Zig analysis must use its verified cache.");
   }
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     "zig-acquisition",
     {},
     async (cacheDirectory) => {
-      const snapshot = EvidTestSourceSnapshot.create(
+      const snapshot = EvidenceTestSourceSnapshot.create(
         "src/Contract.zig",
         "pub const Contract = struct { value: i32, }; ",
       );
-      const cold = await EvidTreeSitterAssetScope.run(
+      const cold = await EvidenceTreeSitterAssetScope.run(
         { cacheDirectory, fetch: fetchGrammar },
-        async () => new EvidZigAdapter().analyze(snapshot),
+        async () => new EvidenceZigAdapter().analyze(snapshot),
       );
-      const warm = await EvidTreeSitterAssetScope.run(
+      const warm = await EvidenceTreeSitterAssetScope.run(
         { cacheDirectory, fetch: offline },
-        async () => new EvidZigAdapter().analyze(snapshot),
+        async () => new EvidenceZigAdapter().analyze(snapshot),
       );
 
       TestValidator.equals(

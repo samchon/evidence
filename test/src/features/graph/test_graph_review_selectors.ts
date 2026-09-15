@@ -1,15 +1,15 @@
 import {
-  EvidFingerprint,
-  EvidGraph,
-  EvidMarkdownAdapter,
-  EvidTypeScriptAdapter,
-} from "evid";
-import type { IEvidGraphReference, IEvidInventory, IEvidUnit } from "evid";
+  EvidenceFingerprint,
+  EvidenceGraph,
+  EvidenceMarkdownAdapter,
+  EvidenceTypeScriptAdapter,
+} from "evidence";
+import type { IEvidenceGraphReference, IEvidenceInventory, IEvidenceUnit } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Reuses one current review across selected scopes and public aliases of the
@@ -30,8 +30,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    same expected pricing fingerprint.
  */
 export async function test_graph_review_selectors(): Promise<void> {
-  const requirements = await new EvidMarkdownAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const requirements = await new EvidenceMarkdownAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "docs/spec.md",
       dedent`
         ## Pricing {#pricing}
@@ -47,12 +47,12 @@ export async function test_graph_review_selectors(): Promise<void> {
   );
   const pricing = requireUnit(requirements, "pricing");
   const coupons = requireUnit(requirements, "coupons");
-  const expected = EvidFingerprint.inspect(
+  const expected = EvidenceFingerprint.inspect(
     requirements,
     pricing.id,
   ).fingerprint;
-  const claim = await new EvidTypeScriptAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const claim = await new EvidenceTypeScriptAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/sale.ts",
       dedent`
         /**
@@ -64,25 +64,25 @@ export async function test_graph_review_selectors(): Promise<void> {
     ),
   );
   const price = requireUnit(claim, "price");
-  const references: IEvidGraphReference[] = [];
+  const references: IEvidenceGraphReference[] = [];
   for (const unitIds of [[pricing.id], [coupons.id]])
     references.push({
       severity: "error",
       inventory: requirements,
       unitIds,
-      resolutions: await EvidTestGraph.resolveDeclarations(
+      resolutions: await EvidenceTestGraph.resolveDeclarations(
         claim,
         requirements,
         unitIds,
       ),
-      reviewResolutions: await EvidTestGraph.resolveReviews(
+      reviewResolutions: await EvidenceTestGraph.resolveReviews(
         claim,
         requirements,
         unitIds,
       ),
       requireReview: true,
     });
-  const result = EvidGraph.evaluate({
+  const result = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -110,7 +110,7 @@ export async function test_graph_review_selectors(): Promise<void> {
   );
 }
 
-function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
+function requireUnit(inventory: IEvidenceInventory, identity: string): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === identity || candidate.identity.at(-1) === identity,

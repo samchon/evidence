@@ -1,8 +1,8 @@
-import { EvidCSharpAdapter, EvidInventory } from "evid";
+import { EvidenceCSharpAdapter, EvidenceInventory } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Attaches C# XML documentation and rejects inert source carriers.
@@ -18,8 +18,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    hidden.
  */
 export async function test_csharp_hosts(): Promise<void> {
-  const inventory = await new EvidCSharpAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const inventory = await new EvidenceCSharpAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/Contracts.cs",
       dedent`
         /// <summary>
@@ -114,9 +114,9 @@ export async function test_csharp_hosts(): Promise<void> {
     10,
   );
 
-  const withdrawn = await new EvidCSharpAdapter().analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+  const withdrawn = await new EvidenceCSharpAdapter().analyze(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/Hidden.cs",
         dedent`
           public partial class Hidden
@@ -125,7 +125,7 @@ export async function test_csharp_hosts(): Promise<void> {
           }
         `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/Hidden.Partial.cs",
         dedent`
           /// @internal Every selected part belongs to one withdrawn type.
@@ -137,7 +137,7 @@ export async function test_csharp_hosts(): Promise<void> {
       ),
     ]),
   );
-  const population = new EvidInventory([withdrawn]).select(
+  const population = new EvidenceInventory([withdrawn]).select(
     withdrawn.units.map((unit) => unit.id),
   );
   TestValidator.equals(

@@ -1,8 +1,8 @@
-import { EvidInventory, EvidRustAdapter } from "evid";
+import { EvidenceInventory, EvidenceRustAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Attaches Rust doc comments and doc attributes to eligible hosts.
@@ -16,10 +16,10 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    withdrawal to hide a documented module hierarchy.
  */
 export async function test_rust_hosts(): Promise<void> {
-  const inventory = await new EvidRustAdapter().analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create("src/lib.rs", "pub mod api;\n"),
-      EvidTestSourceSnapshot.create(
+  const inventory = await new EvidenceRustAdapter().analyze(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create("src/lib.rs", "pub mod api;\n"),
+      EvidenceTestSourceSnapshot.create(
         "src/api.rs",
         dedent`
           //! @evidence docs/requirements.md#module Implements the module.
@@ -100,10 +100,10 @@ export async function test_rust_hosts(): Promise<void> {
     [],
   );
 
-  const withdrawn = await new EvidRustAdapter().analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create("src/lib.rs", "pub mod hidden;\n"),
-      EvidTestSourceSnapshot.create(
+  const withdrawn = await new EvidenceRustAdapter().analyze(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create("src/lib.rs", "pub mod hidden;\n"),
+      EvidenceTestSourceSnapshot.create(
         "src/hidden.rs",
         dedent`
           //! @internal This module and its public descendants are internal.
@@ -115,7 +115,7 @@ export async function test_rust_hosts(): Promise<void> {
       ),
     ]),
   );
-  const population = new EvidInventory([withdrawn]).select(
+  const population = new EvidenceInventory([withdrawn]).select(
     withdrawn.units.map((unit) => unit.id),
   );
   TestValidator.equals(

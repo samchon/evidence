@@ -1,8 +1,8 @@
-import { EvidDartAdapter } from "evid";
+import { EvidenceDartAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Classifies Dart accessor families without reclassifying a function named set.
@@ -18,8 +18,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Verify a withdrawn accessor family is hidden and has no eligible host.
  */
 export async function test_dart_accessors(): Promise<void> {
-  const inventory = await new EvidDartAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const inventory = await new EvidenceDartAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/accessors.dart",
       dedent`
     int get value => 1;

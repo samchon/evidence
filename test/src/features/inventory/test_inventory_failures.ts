@@ -1,7 +1,7 @@
-import { EvidInventory } from "evid";
+import { EvidenceInventory } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestInventory } from "../../internal/EvidTestInventory";
+import { EvidenceTestInventory } from "../../internal/EvidenceTestInventory";
 
 /**
  * Preserves incomplete analysis when inventory ownership or identity is
@@ -22,15 +22,15 @@ import { EvidTestInventory } from "../../internal/EvidTestInventory";
  *    the same ID; the contradictory identity must remain incomplete.
  */
 export async function test_inventory_failures(): Promise<void> {
-  const empty = EvidTestInventory.create();
+  const empty = EvidenceTestInventory.create();
   TestValidator.predicate(
     "healthy empty population",
-    new EvidInventory([empty]).select([]).complete,
+    new EvidenceInventory([empty]).select([]).complete,
   );
   empty.complete = false;
   // The negative counterpart has the same empty denominator. Only its recorded
   // extraction state distinguishes failure from a valid empty population.
-  const failed = new EvidInventory([empty]);
+  const failed = new EvidenceInventory([empty]);
   TestValidator.predicate(
     "empty failure retained",
     !failed.select([]).complete,
@@ -42,8 +42,8 @@ export async function test_inventory_failures(): Promise<void> {
     "incomplete",
   );
 
-  const input = EvidTestInventory.create();
-  const box = EvidTestInventory.unit(
+  const input = EvidenceTestInventory.create();
+  const box = EvidenceTestInventory.unit(
     input,
     "box",
     ["Box"],
@@ -53,12 +53,12 @@ export async function test_inventory_failures(): Promise<void> {
   );
   TestValidator.predicate(
     "missing parent fails",
-    !new EvidInventory([input]).snapshot().complete,
+    !new EvidenceInventory([input]).snapshot().complete,
   );
 
   box.parentId = "box";
   // The traversal must terminate even though ownership cannot be normalized.
-  const cyclic = new EvidInventory([input]);
+  const cyclic = new EvidenceInventory([input]);
   TestValidator.predicate(
     "cycle terminates with a failure",
     !cyclic.select(["box"]).complete,
@@ -75,6 +75,6 @@ export async function test_inventory_failures(): Promise<void> {
   for (const unit of conflict.units) unit.symbol = "property";
   TestValidator.predicate(
     "contradictory identity cannot merge",
-    !new EvidInventory([input, conflict]).snapshot().complete,
+    !new EvidenceInventory([input, conflict]).snapshot().complete,
   );
 }

@@ -1,5 +1,5 @@
-import { EvidAdapterCertification } from "../../internal/certification/EvidAdapterCertification";
-import { EvidAdapterCertificationFixtures } from "../../internal/certification/EvidAdapterCertificationFixtures";
+import { EvidenceAdapterCertification } from "../../internal/certification/EvidenceAdapterCertification";
+import { EvidenceAdapterCertificationFixtures } from "../../internal/certification/EvidenceAdapterCertificationFixtures";
 
 /**
  * Certifies mutation-sensitive fingerprints and ambiguous target handling.
@@ -14,8 +14,8 @@ import { EvidAdapterCertificationFixtures } from "../../internal/certification/E
  * 3. Inject a competing target and require the resolver to report ambiguity.
  */
 export async function test_adapter_certification_mutations(): Promise<void> {
-  for (const certification of EvidAdapterCertificationFixtures.all()) {
-    await EvidAdapterCertification.assertFingerprint(certification);
-    await EvidAdapterCertification.assertAmbiguity(certification);
+  for (const certification of EvidenceAdapterCertificationFixtures.all()) {
+    await EvidenceAdapterCertification.assertFingerprint(certification);
+    await EvidenceAdapterCertification.assertAmbiguity(certification);
   }
 }

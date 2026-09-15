@@ -29,10 +29,10 @@ Annotate variable bindings, class fields, parameters, and return values, includi
 Annotate destructured bindings with the value's contract. A `for...of` binding cannot carry a TypeScript annotation, so explicitly type its iterable or producer. Catch values remain `unknown` until narrowed.
 
 ```ts
-const inventory: IEvidInventory = index.snapshot();
-const units: IEvidUnit[] = inventory.units;
+const inventory: IEvidenceInventory = index.snapshot();
+const units: IEvidenceUnit[] = inventory.units;
 const selected: string[] = units.map(
-  (unit: IEvidUnit): string => unit.id,
+  (unit: IEvidenceUnit): string => unit.id,
 );
 for (const unit of units) {
   const name: string = unit.name;

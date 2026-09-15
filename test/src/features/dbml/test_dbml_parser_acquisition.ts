@@ -1,15 +1,15 @@
 import {
-  EvidDbmlAdapter,
-  EvidParser,
-  EvidParserError,
-  EvidTreeSitterAssetScope,
-} from "evid";
+  EvidenceDbmlAdapter,
+  EvidenceParser,
+  EvidenceParserError,
+  EvidenceTreeSitterAssetScope,
+} from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
-import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
+import { EvidenceTestParserAssets } from "../../internal/EvidenceTestParserAssets";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Acquires the real DBML grammar lazily and preserves parser behavior from
@@ -26,36 +26,36 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    query-invalid provenance.
  */
 export async function test_dbml_parser_acquisition(): Promise<void> {
-  const parser = new EvidParser();
+  const parser = new EvidenceParser();
   const grammar = (await parser.grammars()).find(
     (entry) => entry.id === "dbml",
   );
   await parser.close();
   if (grammar === undefined) throw new Error("The DBML grammar pin is absent.");
-  const source = EvidTestSourceSnapshot.create(
+  const source = EvidenceTestSourceSnapshot.create(
     "schema.dbml",
     dedent`
     Table users { id int }
     Table posts { user_id int [ref: > users.id] }
   `,
   );
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     "dbml-acquisition",
     {},
     async (cacheDirectory) => {
       const requested: string[] = [];
-      const cold = await EvidTreeSitterAssetScope.run(
+      const cold = await EvidenceTreeSitterAssetScope.run(
         {
           cacheDirectory,
           fetch: async (input) => {
             const url = input instanceof Request ? input.url : String(input);
             requested.push(url);
             return new Response(
-              Uint8Array.from(await EvidTestParserAssets.bytes(grammar)),
+              Uint8Array.from(await EvidenceTestParserAssets.bytes(grammar)),
             );
           },
         },
-        async () => new EvidDbmlAdapter().analyze(source),
+        async () => new EvidenceDbmlAdapter().analyze(source),
       );
       TestValidator.equals("only selected DBML variant acquired", requested, [
         grammar.wasm.url,
@@ -65,14 +65,14 @@ export async function test_dbml_parser_acquisition(): Promise<void> {
         cold.diagnostics,
         [],
       );
-      const warm = await EvidTreeSitterAssetScope.run(
+      const warm = await EvidenceTreeSitterAssetScope.run(
         {
           cacheDirectory,
           fetch: async () => {
             throw new Error("Offline: no network transport.");
           },
         },
-        async () => new EvidDbmlAdapter().analyze(source),
+        async () => new EvidenceDbmlAdapter().analyze(source),
       );
       TestValidator.equals(
         "offline warm inventory equals cold inventory",
@@ -85,8 +85,8 @@ export async function test_dbml_parser_acquisition(): Promise<void> {
         cold.units.length,
         5,
       );
-      await EvidTreeSitterAssetScope.run({ cacheDirectory }, async () => {
-        const queryParser = new EvidParser();
+      await EvidenceTreeSitterAssetScope.run({ cacheDirectory }, async () => {
+        const queryParser = new EvidenceParser();
         try {
           let code: string | undefined;
           try {
@@ -99,7 +99,7 @@ export async function test_dbml_parser_acquisition(): Promise<void> {
               (session) => session.captures("(not_a_dbml_node) @missing"),
             );
           } catch (cause) {
-            if (!(cause instanceof EvidParserError)) throw cause;
+            if (!(cause instanceof EvidenceParserError)) throw cause;
             code = cause.code;
           }
           TestValidator.equals(

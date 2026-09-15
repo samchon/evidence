@@ -1,8 +1,8 @@
-import { EvidAccessor, EvidInventory, EvidObjcAdapter } from "evid";
+import { EvidenceAccessor, EvidenceInventory, EvidenceObjcAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Reconciles Objective-C headers and implementations into owned public units.
@@ -15,9 +15,9 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Require diagnostics-free complete extraction.
  */
 export async function test_objc_units(): Promise<void> {
-  const inventory = await new EvidObjcAdapter().analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+  const inventory = await new EvidenceObjcAdapter().analyze(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/Widget.h",
         dedent`
       @class NSObject;
@@ -47,7 +47,7 @@ export async function test_objc_units(): Promise<void> {
     `,
         ["src/Widget.h", "alias/Widget.h"],
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/Widget.m",
         dedent`
       #import "Widget.h"
@@ -79,7 +79,7 @@ export async function test_objc_units(): Promise<void> {
   TestValidator.equals(
     "exact public surface",
     inventory.units
-      .map((unit) => `${unit.symbol}:${EvidAccessor.format(unit.identity)}`)
+      .map((unit) => `${unit.symbol}:${EvidenceAccessor.format(unit.identity)}`)
       .sort((left, right) => left.localeCompare(right)),
     [
       "type:Widget",
@@ -116,7 +116,7 @@ export async function test_objc_units(): Promise<void> {
     method.parentId,
     widget.id,
   );
-  const graph = new EvidInventory([inventory]);
+  const graph = new EvidenceInventory([inventory]);
   const selected = inventory.units.map((unit) => unit.id);
   for (const file of [
     "/project/src/Widget.h",

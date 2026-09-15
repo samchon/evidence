@@ -1,7 +1,7 @@
-import { EvidFingerprint, EvidInventory, EvidZigAdapter } from "evid";
+import { EvidenceFingerprint, EvidenceInventory, EvidenceZigAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Preserves Zig aliases, withdrawals, and copied-value independence.
@@ -23,9 +23,9 @@ export async function test_zig_aliases(): Promise<void> {
     pub const first = scalar;
     pub const second = first;
   `;
-  const adapter = new EvidZigAdapter();
+  const adapter = new EvidenceZigAdapter();
   const inventory = await adapter.analyze(
-    EvidTestSourceSnapshot.create("src/Aliases.zig", content),
+    EvidenceTestSourceSnapshot.create("src/Aliases.zig", content),
   );
 
   TestValidator.equals("complete alias graph", inventory.diagnostics, []);
@@ -58,30 +58,30 @@ export async function test_zig_aliases(): Promise<void> {
     ["renamed", "run"],
   );
   const annotation = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Aliases.zig",
       content.replace("Exposes the function.", "Explains its public name."),
     ),
   );
   const semantic = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Aliases.zig",
       content.replace("return 1", "return 2"),
     ),
   );
   TestValidator.equals(
     "alias documentation preserves canonical fingerprint",
-    EvidFingerprint.inspect(annotation, callable.id).fingerprint,
-    EvidFingerprint.inspect(inventory, callable.id).fingerprint,
+    EvidenceFingerprint.inspect(annotation, callable.id).fingerprint,
+    EvidenceFingerprint.inspect(inventory, callable.id).fingerprint,
   );
   TestValidator.notEquals(
     "private implementation edit invalidates exposed fingerprint",
-    EvidFingerprint.inspect(semantic, callable.id).fingerprint,
-    EvidFingerprint.inspect(inventory, callable.id).fingerprint,
+    EvidenceFingerprint.inspect(semantic, callable.id).fingerprint,
+    EvidenceFingerprint.inspect(inventory, callable.id).fingerprint,
   );
 
   const withdrawn = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Aliases.zig",
       content
         .replace(
@@ -94,7 +94,7 @@ export async function test_zig_aliases(): Promise<void> {
         ),
     ),
   );
-  const graph = new EvidInventory([withdrawn]);
+  const graph = new EvidenceInventory([withdrawn]);
   for (const name of ["run", "renamed"])
     TestValidator.equals(
       `withdrawal reaches ${name}`,

@@ -1,0 +1,52 @@
+import type { IEvidenceDiagnostic } from "../../structures/IEvidenceDiagnostic";
+import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
+import type { IEvidenceSqlDeclaration } from "./IEvidenceSqlDeclaration";
+import type { IEvidenceSqlDocumentation } from "./IEvidenceSqlDocumentation";
+
+/**
+ * Retains a node-free SQL extraction after its parse session closes.
+ *
+ * SQL adapters transfer this serializable analysis to later inventory and
+ * documentation phases without retaining Tree-sitter nodes or session state.
+ */
+export interface IEvidenceSqlFileAnalysis {
+  /**
+   * Preserves the selected source snapshot whose coordinates records use.
+   *
+   * Consumers use this source to retain the physical file boundary of every
+   * declaration, comment, and diagnostic.
+   */
+  source: IEvidenceSourceFile;
+
+  /**
+   * Contains declarations extracted from recognized schema syntax.
+   *
+   * The collection includes non-public structural boundaries needed to build a
+   * faithful inventory before public selection is projected.
+   */
+  declarations: IEvidenceSqlDeclaration[];
+
+  /**
+   * Contains classified comments and unsupported annotation carriers.
+   *
+   * Detached carriers remain here so later phases can report their annotations
+   * instead of treating absence of an attachment as absence of Evidence.
+   */
+  documentation: IEvidenceSqlDocumentation[];
+
+  /**
+   * Records failures encountered while establishing the schema surface.
+   *
+   * These diagnostics explain why callers must not trust a partial extraction
+   * as a complete selected population.
+   */
+  diagnostics: IEvidenceDiagnostic[];
+
+  /**
+   * States whether every relevant declaration form was understood.
+   *
+   * A false value prevents unsupported source from making coverage pass by
+   * shrinking the discovered inventory.
+   */
+  complete: boolean;
+}

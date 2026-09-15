@@ -1,8 +1,8 @@
-import { EvidParser } from "evid";
+import { EvidenceParser } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import type { IEvidParserFixture } from "../../internal/IEvidParserFixture";
+import type { IEvidenceParserFixture } from "../../internal/IEvidenceParserFixture";
 
 /**
  * Parses and queries representative declarations across registered language
@@ -22,7 +22,7 @@ import type { IEvidParserFixture } from "../../internal/IEvidParserFixture";
  * 4. Close the parser in cleanup, including when an earlier assertion fails.
  */
 export async function test_parser_grammars(): Promise<void> {
-  const fixtures: IEvidParserFixture[] = [
+  const fixtures: IEvidenceParserFixture[] = [
     {
       type: "objc",
       grammar: "objc",
@@ -195,7 +195,7 @@ export async function test_parser_grammars(): Promise<void> {
       query: "(class name: (constant) @name)",
     },
   ];
-  const parser = new EvidParser();
+  const parser = new EvidenceParser();
 
   try {
     TestValidator.equals(

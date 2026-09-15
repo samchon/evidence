@@ -1,8 +1,8 @@
-import { EvidGraph } from "evid";
+import { EvidenceGraph } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestInventory } from "../../internal/EvidTestInventory";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestInventory } from "../../internal/EvidenceTestInventory";
 
 /**
  * Applies host eligibility and distinguishes failed analysis from empty or
@@ -29,44 +29,44 @@ import { EvidTestInventory } from "../../internal/EvidTestInventory";
  *    finding, no missing units, and no per-host cardinality findings.
  */
 export async function test_graph_hosts_and_failures(): Promise<void> {
-  const reference = EvidTestInventory.create();
-  const target = EvidTestInventory.unit(
+  const reference = EvidenceTestInventory.create();
+  const target = EvidenceTestInventory.unit(
     reference,
     "target",
     ["Target"],
     "type",
     "export class Box { value = 1; }",
   );
-  const claim = EvidTestInventory.create();
-  const selected = EvidTestInventory.unit(
+  const claim = EvidenceTestInventory.create();
+  const selected = EvidenceTestInventory.unit(
     claim,
     "selected",
     ["Selected"],
     "type",
     "export const first = 1, second = 2;",
   );
-  const carrier = EvidTestInventory.unit(
+  const carrier = EvidenceTestInventory.unit(
     claim,
     "carrier",
     ["Carrier"],
     "property",
     "export const unrelated = 3;",
   );
-  const carrierHost = EvidTestInventory.host(
+  const carrierHost = EvidenceTestInventory.host(
     claim,
     "carrier-host",
     carrier.sites[0]?.id ?? "",
     [carrier.id],
     "/** Class documentation. */",
   );
-  const misplacedEvid = EvidTestGraph.declaration(
+  const misplacedEvid = EvidenceTestGraph.declaration(
     claim,
     "misplaced-evidence",
     carrierHost,
     "evidence",
     "target",
   );
-  const acceptedExclusion = EvidTestGraph.declaration(
+  const acceptedExclusion = EvidenceTestGraph.declaration(
     claim,
     "accepted-exclusion",
     carrierHost,
@@ -74,7 +74,7 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
     "target",
   );
 
-  const carrierResult = EvidGraph.evaluate({
+  const carrierResult = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -86,8 +86,8 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
             inventory: reference,
             unitIds: [target.id],
             resolutions: [
-              EvidTestGraph.resolved(misplacedEvid, target),
-              EvidTestGraph.resolved(acceptedExclusion, target),
+              EvidenceTestGraph.resolved(misplacedEvid, target),
+              EvidenceTestGraph.resolved(acceptedExclusion, target),
             ],
           },
         ],
@@ -104,12 +104,12 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
   );
   TestValidator.equals(
     "public exclusion carrier covers",
-    EvidTestGraph.obligation(carrierResult, 0, 0).missingUnitIds,
+    EvidenceTestGraph.obligation(carrierResult, 0, 0).missingUnitIds,
     [],
   );
 
   // An explicit empty carrier selection refuses the same exclusion and leaves coverage missing.
-  const restricted = EvidGraph.evaluate({
+  const restricted = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -121,7 +121,7 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
             severity: "error",
             inventory: reference,
             unitIds: [target.id],
-            resolutions: [EvidTestGraph.resolved(acceptedExclusion, target)],
+            resolutions: [EvidenceTestGraph.resolved(acceptedExclusion, target)],
           },
         ],
       },
@@ -130,7 +130,7 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
 
   TestValidator.equals(
     "restricted carrier",
-    EvidTestGraph.obligation(restricted, 0, 0).missingUnitIds,
+    EvidenceTestGraph.obligation(restricted, 0, 0).missingUnitIds,
     [target.id],
   );
 
@@ -143,7 +143,7 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
     description: "The target was reviewed.",
     location: { file: carrierHost.file, range: carrierHost.range },
   });
-  const reviewOnly = EvidGraph.evaluate({
+  const reviewOnly = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -163,7 +163,7 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
 
   TestValidator.equals(
     "review supplies no coverage",
-    EvidTestGraph.obligation(reviewOnly, 0, 0).missingUnitIds,
+    EvidenceTestGraph.obligation(reviewOnly, 0, 0).missingUnitIds,
     [target.id],
   );
 
@@ -176,7 +176,7 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
     message: "The reference file could not be read.",
     repair: "Restore access to the reference file.",
   });
-  const failed = EvidGraph.evaluate({
+  const failed = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -189,7 +189,7 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
             unitIds: [target.id],
             resolutions: [],
             uniqueEvid: true,
-            singleEvidPerSymbol: true,
+            singleEvidencePerSymbol: true,
           },
         ],
       },
@@ -198,7 +198,7 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
 
   TestValidator.equals(
     "failed obligation incomplete",
-    EvidTestGraph.obligation(failed, 0, 0).complete,
+    EvidenceTestGraph.obligation(failed, 0, 0).complete,
     false,
   );
   TestValidator.equals(
@@ -226,7 +226,7 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
   );
 
   // Completeness itself prevents a successful result even if a resolver supplied no finding.
-  const unresolved = EvidTestGraph.resolved(acceptedExclusion, target);
+  const unresolved = EvidenceTestGraph.resolved(acceptedExclusion, target);
   unresolved.resolution = {
     status: "incomplete",
     addresses: [],
@@ -234,7 +234,7 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
     withdrawals: [],
     diagnostics: [],
   };
-  const uncertain = EvidGraph.evaluate({
+  const uncertain = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -259,12 +259,12 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
   );
   TestValidator.equals(
     "incomplete resolution suppresses missing coverage",
-    EvidTestGraph.obligation(uncertain, 0, 0).missingUnitIds,
+    EvidenceTestGraph.obligation(uncertain, 0, 0).missingUnitIds,
     [],
   );
 
   // A healthy empty reference reports the population cause once and evaluates no hosts.
-  const empty = EvidGraph.evaluate({
+  const empty = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -273,11 +273,11 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
         references: [
           {
             severity: "error",
-            inventory: EvidTestInventory.create(),
+            inventory: EvidenceTestInventory.create(),
             unitIds: [],
             resolutions: [],
             uniqueEvid: true,
-            singleEvidPerSymbol: true,
+            singleEvidencePerSymbol: true,
           },
         ],
       },
@@ -293,7 +293,7 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
   );
   TestValidator.equals(
     "empty reference has no missing units",
-    EvidTestGraph.obligation(empty, 0, 0).missingUnitIds,
+    EvidenceTestGraph.obligation(empty, 0, 0).missingUnitIds,
     [],
   );
   TestValidator.equals(

@@ -1,8 +1,8 @@
-import { EvidKotlinAdapter } from "evid";
+import { EvidenceKotlinAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Resolves Kotlin extension receivers across nominal names and selected
@@ -15,8 +15,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    3. Compare the resulting unit identities.
  */
 export async function test_kotlin_receiver_identity(): Promise<void> {
-  const snapshot = EvidTestSourceSnapshot.combine([
-    EvidTestSourceSnapshot.create(
+  const snapshot = EvidenceTestSourceSnapshot.combine([
+    EvidenceTestSourceSnapshot.create(
       "src/Receiver.kt",
       dedent`
       package example
@@ -26,7 +26,7 @@ export async function test_kotlin_receiver_identity(): Promise<void> {
       fun String.sizeHint() = 1
     `,
     ),
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Extensions.kt",
       dedent`
       package example
@@ -37,7 +37,7 @@ export async function test_kotlin_receiver_identity(): Promise<void> {
     `,
     ),
   ]);
-  const inventory = await new EvidKotlinAdapter().analyze(snapshot);
+  const inventory = await new EvidenceKotlinAdapter().analyze(snapshot);
 
   TestValidator.equals("resolved nominal receivers", inventory.diagnostics, []);
   const functions = inventory.units.filter(
@@ -58,13 +58,13 @@ export async function test_kotlin_receiver_identity(): Promise<void> {
   );
 
   // Same-spelled private aliases belong to their own file even inside one package.
-  const privateAliases = await new EvidKotlinAdapter().analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+  const privateAliases = await new EvidenceKotlinAdapter().analyze(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/Text.kt",
         "package example\nprivate typealias Local = String\nfun Local.run() = 1\n",
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/Number.kt",
         "package example\nprivate typealias Local = Int\nfun Local.run() = 2\n",
       ),
@@ -82,13 +82,13 @@ export async function test_kotlin_receiver_identity(): Promise<void> {
       .sort((a, b) => String(a).localeCompare(String(b))),
     ["extension(kotlin.Int)", "extension(kotlin.String)"],
   );
-  const inaccessible = await new EvidKotlinAdapter().analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+  const inaccessible = await new EvidenceKotlinAdapter().analyze(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/Private.kt",
         "private typealias Local = String\n",
       ),
-      EvidTestSourceSnapshot.create("src/Use.kt", "fun Local.run() = 1\n"),
+      EvidenceTestSourceSnapshot.create("src/Use.kt", "fun Local.run() = 1\n"),
     ]),
   );
   TestValidator.equals(

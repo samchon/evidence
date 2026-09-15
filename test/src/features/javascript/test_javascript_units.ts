@@ -1,8 +1,8 @@
-import { EvidJavaScriptAdapter } from "evid";
+import { EvidenceJavaScriptAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Classifies JavaScript declarations, public members, and literal names.
@@ -15,8 +15,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Verify literal names stay one segment.
  */
 export async function test_javascript_units(): Promise<void> {
-  const inventory = await new EvidJavaScriptAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const inventory = await new EvidenceJavaScriptAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/contracts.mjs",
       dedent`
         export class Service {
@@ -84,13 +84,13 @@ export async function test_javascript_units(): Promise<void> {
     [],
   );
 
-  const defaults = await new EvidJavaScriptAdapter().analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+  const defaults = await new EvidenceJavaScriptAdapter().analyze(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/default-arrow.mjs",
         "export default async () => 1;",
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/default-value.mjs",
         "export default { enabled: true };",
       ),

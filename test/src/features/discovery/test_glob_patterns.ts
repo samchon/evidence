@@ -1,6 +1,6 @@
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidFileGlob } from "evid";
+import { EvidenceFileGlob } from "evidence";
 
 /**
  * Preserves upstream wildcard boundaries, Unicode characters, and ordered
@@ -22,8 +22,8 @@ import { EvidFileGlob } from "evid";
  */
 export async function test_glob_patterns(): Promise<void> {
   // A single star stays in one segment; globstar also accepts no intermediate directory.
-  const shallow = new EvidFileGlob(["docs/*.md"]);
-  const recursive = new EvidFileGlob(["docs/**/*.md"]);
+  const shallow = new EvidenceFileGlob(["docs/*.md"]);
+  const recursive = new EvidenceFileGlob(["docs/**/*.md"]);
 
   TestValidator.predicate("shallow file", shallow.matches("docs/spec.md"));
   TestValidator.predicate(
@@ -40,7 +40,7 @@ export async function test_glob_patterns(): Promise<void> {
   );
 
   // Separators normalize, but case and the order of exclusions remain significant.
-  const ordered = new EvidFileGlob([
+  const ordered = new EvidenceFileGlob([
     "docs\\**\\*.md",
     "!docs/private/**",
     "docs/private/public.md",
@@ -64,7 +64,7 @@ export async function test_glob_patterns(): Promise<void> {
   );
 
   // A question mark consumes one code point, including one outside the BMP.
-  const character = new EvidFileGlob(["scripts/check-?.ts"]);
+  const character = new EvidenceFileGlob(["scripts/check-?.ts"]);
 
   TestValidator.predicate(
     "Unicode character",
@@ -76,15 +76,15 @@ export async function test_glob_patterns(): Promise<void> {
   );
   TestValidator.predicate(
     "bare directory",
-    !new EvidFileGlob(["docs/"]).matches("docs/spec.md"),
+    !new EvidenceFileGlob(["docs/"]).matches("docs/spec.md"),
   );
   TestValidator.predicate(
     "literal bracket",
-    new EvidFileGlob(["docs/[a].md"]).matches("docs/[a].md"),
+    new EvidenceFileGlob(["docs/[a].md"]).matches("docs/[a].md"),
   );
   TestValidator.predicate(
     "no character class extension",
-    !new EvidFileGlob(["docs/[a].md"]).matches("docs/a.md"),
+    !new EvidenceFileGlob(["docs/[a].md"]).matches("docs/a.md"),
   );
 
   // Invalid glob syntax must reject before filesystem discovery.
@@ -100,6 +100,6 @@ export async function test_glob_patterns(): Promise<void> {
     ["docs//*.md"],
   ])
     await TestValidator.error("invalid glob selection", async () => {
-      new EvidFileGlob(patterns);
+      new EvidenceFileGlob(patterns);
     });
 }

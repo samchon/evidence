@@ -1,4 +1,4 @@
-import { EvidSwaggerAdapter } from "evid";
+import { EvidenceSwaggerAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { once } from "node:events";
@@ -36,7 +36,7 @@ export async function test_swagger_remote(): Promise<void> {
   const origin = await listen(server);
 
   try {
-    const adapter = new EvidSwaggerAdapter();
+    const adapter = new EvidenceSwaggerAdapter();
     const config = join(__dirname, "evidence.config.ts");
     const first = await adapter.load(
       config,

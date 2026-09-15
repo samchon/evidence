@@ -1,8 +1,8 @@
-import { EvidCAdapter } from "evid";
+import { EvidenceCAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Keeps C declaration families inside the selected physical file boundary.
@@ -16,9 +16,9 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Require declarations from different files to remain distinct.
  */
 export async function test_c_boundaries(): Promise<void> {
-  const inventory = await new EvidCAdapter().analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+  const inventory = await new EvidenceCAdapter().analyze(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "include/contracts.h",
         dedent`
           #ifndef CONTRACTS_H
@@ -37,14 +37,14 @@ export async function test_c_boundaries(): Promise<void> {
           #endif
         ` + "\n",
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "include/cycle.h",
         dedent`
           #pragma once
           #include "contracts.h"
         ` + "\n",
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/contracts.c",
         dedent`
           #include "../include/contracts.h"

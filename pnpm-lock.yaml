@@ -94,7 +94,7 @@ importers:
         specifier: catalog:typescript
         version: 7.0.2
 
-  packages/evid:
+  packages/evidence:
     dependencies:
       '@prisma/prisma-schema-wasm':
         specifier: catalog:prisma
@@ -142,9 +142,9 @@ importers:
       '@nestia/e2e':
         specifier: catalog:samchon
         version: 13.0.2
-      evid:
+      '@wrtnlabs/evidence':
         specifier: workspace:*
-        version: link:../packages/evid
+        version: link:../packages/evidence
     devDependencies:
       '@ttsc/evidence':
         specifier: catalog:typescript

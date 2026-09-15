@@ -1,8 +1,8 @@
-import { EvidSwiftAdapter } from "evid";
+import { EvidenceSwiftAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Rejects Swift surfaces with unavailable ownership or compiler expansion.
@@ -14,7 +14,7 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 2. Verify incomplete diagnostics and failed-source handling.
  */
 export async function test_swift_boundaries(): Promise<void> {
-  const adapter = new EvidSwiftAdapter();
+  const adapter = new EvidenceSwiftAdapter();
   const cases = new Map<string, string>([
     [
       "extension External { public func run() {} }",
@@ -48,7 +48,7 @@ export async function test_swift_boundaries(): Promise<void> {
   ]);
   for (const [source, code] of cases) {
     const inventory = await adapter.analyze(
-      EvidTestSourceSnapshot.create("src/Boundary.swift", source),
+      EvidenceTestSourceSnapshot.create("src/Boundary.swift", source),
     );
     TestValidator.equals(
       "unsupported source remains incomplete",
@@ -66,8 +66,8 @@ export async function test_swift_boundaries(): Promise<void> {
     );
   }
   const sourceFailure = await adapter.analyze(
-    EvidTestSourceSnapshot.fail(
-      EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.fail(
+      EvidenceTestSourceSnapshot.create(
         "src/Missing.swift",
         "public struct Present {}",
       ),
@@ -84,7 +84,7 @@ export async function test_swift_boundaries(): Promise<void> {
     false,
   );
   const wrongExtension = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Contract.kt",
       "public struct Present {}",
     ),
@@ -95,9 +95,9 @@ export async function test_swift_boundaries(): Promise<void> {
     false,
   );
   const internalOwner = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create("src/Owner.swift", "struct Internal {}"),
-      EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create("src/Owner.swift", "struct Internal {}"),
+      EvidenceTestSourceSnapshot.create(
         "src/Extension.swift",
         "public extension Internal { func exposed() {} }",
       ),

@@ -1,8 +1,8 @@
-import { EvidDartAdapter, EvidInventory } from "evid";
+import { EvidenceDartAdapter, EvidenceInventory } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Parses Dart directives by their URI fields despite annotations and trivia.
@@ -17,9 +17,9 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Verify annotation strings do not create dependencies.
  */
 export async function test_dart_directive_syntax(): Promise<void> {
-  const inventory = await new EvidDartAdapter().analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+  const inventory = await new EvidenceDartAdapter().analyze(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/api.dart",
         dedent`
       library app . api;
@@ -27,14 +27,14 @@ export async function test_dart_directive_syntax(): Promise<void> {
       @Deprecated('not-a-part.dart') part 'part.dart';
     `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/part.dart",
         dedent`
       part of app.api;
       int first = 1, /* declaration trivia */ second = 2;
     `,
       ),
-      EvidTestSourceSnapshot.create("src/external.dart", "class Exported {}"),
+      EvidenceTestSourceSnapshot.create("src/external.dart", "class Exported {}"),
     ]),
   );
 
@@ -50,7 +50,7 @@ export async function test_dart_directive_syntax(): Promise<void> {
       .map((unit) => unit.name),
     ["first", "second"],
   );
-  const graph = new EvidInventory([inventory]);
+  const graph = new EvidenceInventory([inventory]);
   for (const name of ["first", "second", "Exported"])
     TestValidator.equals(
       `${name} resolves through actual URI`,

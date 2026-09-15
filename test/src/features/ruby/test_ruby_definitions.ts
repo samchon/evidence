@@ -1,9 +1,9 @@
-import { EvidRubyAdapter } from "evid";
-import type { IEvidInventory, IEvidUnit } from "evid";
+import { EvidenceRubyAdapter } from "evidence";
+import type { IEvidenceInventory, IEvidenceUnit } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Merges compatible Ruby reopenings while retaining replacement conflicts.
@@ -18,9 +18,9 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    sites.
  */
 export async function test_ruby_definitions(): Promise<void> {
-  const compatible = await new EvidRubyAdapter().analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+  const compatible = await new EvidenceRubyAdapter().analyze(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "lib/shop/sale.rb",
         dedent`
           module Shop
@@ -30,7 +30,7 @@ export async function test_ruby_definitions(): Promise<void> {
           end
         `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "lib/shop/sale_extensions.rb",
         dedent`
           module Shop
@@ -54,8 +54,8 @@ export async function test_ruby_definitions(): Promise<void> {
     2,
   );
 
-  const conflicting = await new EvidRubyAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const conflicting = await new EvidenceRubyAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "lib/conflicts.rb",
       dedent`
         module Conflict
@@ -110,7 +110,7 @@ export async function test_ruby_definitions(): Promise<void> {
   );
 }
 
-function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
+function requireUnit(inventory: IEvidenceInventory, identity: string): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.join(".") === identity,
   );

@@ -1,11 +1,11 @@
-import { createEvidConfigPlan, EvidChecker } from "evid";
-import type { IEvidCheckAnalysis, IEvidConfigPlan } from "evid";
+import { createEvidenceConfigPlan, EvidenceChecker } from "evidence";
+import type { IEvidenceCheckAnalysis, IEvidenceConfigPlan } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
 
 /**
  * Runs one graph through Markdown, Prisma, Swagger, implementation, and test
@@ -33,11 +33,11 @@ export async function test_cross_language_graph(): Promise<void> {
   const location = join(__dirname, `cross-language-${randomUUID()}`);
   const records = fixtureRecords();
 
-  await EvidTestFileSystem.experiment(location, records, async (directory) => {
+  await EvidenceTestFileSystem.experiment(location, records, async (directory) => {
     const plan = createPlan(directory);
 
     // The baseline has six independent obligations spanning every artifact family.
-    const complete = await EvidChecker.evaluate(plan);
+    const complete = await EvidenceChecker.evaluate(plan);
     assertCompleteGraph(complete, "baseline");
 
     TestValidator.equals(
@@ -70,10 +70,10 @@ export async function test_cross_language_graph(): Promise<void> {
     );
 
     // Removing one implementation citation breaks only its Markdown obligation.
-    await EvidTestFileSystem.save(directory, {
+    await EvidenceTestFileSystem.save(directory, {
       "src/sale.ts": implementationSource(false),
     });
-    const removedCitation = await EvidChecker.evaluate(plan);
+    const removedCitation = await EvidenceChecker.evaluate(plan);
 
     TestValidator.equals(
       "removed citation exit",
@@ -92,7 +92,7 @@ export async function test_cross_language_graph(): Promise<void> {
     assertDiagnostic(removedCitation, "graph-missing-acknowledgement", 0, 0);
 
     // Adding one requirement expands the denominator instead of passing silently.
-    await EvidTestFileSystem.save(directory, {
+    await EvidenceTestFileSystem.save(directory, {
       "src/sale.ts": requireRecord(records, "src/sale.ts"),
       "docs/implementation.md": dedent`
         ## Implementation {#implementation}
@@ -104,7 +104,7 @@ export async function test_cross_language_graph(): Promise<void> {
         The sale service exposes a public cancellation function.
       `,
     });
-    const addedRequirement = await EvidChecker.evaluate(plan);
+    const addedRequirement = await EvidenceChecker.evaluate(plan);
 
     TestValidator.equals(
       "new requirement exit",
@@ -123,14 +123,14 @@ export async function test_cross_language_graph(): Promise<void> {
     assertDiagnostic(addedRequirement, "graph-missing-acknowledgement", 0, 0);
 
     // Renaming a barrel export invalidates the test's file-qualified public target.
-    await EvidTestFileSystem.save(directory, {
+    await EvidenceTestFileSystem.save(directory, {
       "docs/implementation.md": requireRecord(
         records,
         "docs/implementation.md",
       ),
       "src/index.ts": 'export { createSale as makeSale } from "./sale";\n',
     });
-    const renamedExport = await EvidChecker.evaluate(plan);
+    const renamedExport = await EvidenceChecker.evaluate(plan);
 
     TestValidator.equals(
       "renamed export exit",
@@ -151,11 +151,11 @@ export async function test_cross_language_graph(): Promise<void> {
     assertDiagnostic(renamedExport, "graph-missing-acknowledgement", 1, 0);
 
     // A malformed Swagger document interrupts both directions that depend on it.
-    await EvidTestFileSystem.save(directory, {
+    await EvidenceTestFileSystem.save(directory, {
       "src/index.ts": requireRecord(records, "src/index.ts"),
       "openapi.yaml": "openapi: [",
     });
-    const malformedSwagger = await EvidChecker.evaluate(plan);
+    const malformedSwagger = await EvidenceChecker.evaluate(plan);
 
     TestValidator.equals(
       "malformed parser exit",
@@ -194,10 +194,10 @@ export async function test_cross_language_graph(): Promise<void> {
     );
 
     // Repairing every mutation restores the exact complete graph in the same process.
-    await EvidTestFileSystem.save(directory, {
+    await EvidenceTestFileSystem.save(directory, {
       "openapi.yaml": requireRecord(records, "openapi.yaml"),
     });
-    const repaired = await EvidChecker.evaluate(plan);
+    const repaired = await EvidenceChecker.evaluate(plan);
     assertCompleteGraph(repaired, "repaired");
   });
 }
@@ -280,8 +280,8 @@ function swaggerSource(): string {
   `;
 }
 
-function createPlan(directory: string): IEvidConfigPlan {
-  return createEvidConfigPlan(
+function createPlan(directory: string): IEvidenceConfigPlan {
+  return createEvidenceConfigPlan(
     {
       severity: "error",
       claims: [
@@ -354,7 +354,7 @@ function createPlan(directory: string): IEvidConfigPlan {
 }
 
 function assertCompleteGraph(
-  analysis: IEvidCheckAnalysis,
+  analysis: IEvidenceCheckAnalysis,
   scenario: string,
 ): void {
   TestValidator.equals(
@@ -383,7 +383,7 @@ function assertCompleteGraph(
 }
 
 function assertDiagnostic(
-  analysis: IEvidCheckAnalysis,
+  analysis: IEvidenceCheckAnalysis,
   code: string,
   claim: number,
   reference: number,

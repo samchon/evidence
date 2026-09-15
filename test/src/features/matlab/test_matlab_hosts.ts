@@ -1,8 +1,8 @@
-import { EvidFingerprint, EvidMatlabAdapter } from "evid";
+import { EvidenceFingerprint, EvidenceMatlabAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Attaches MATLAB help annotations only at supported declaration sites.
@@ -60,9 +60,9 @@ export async function test_matlab_hosts(): Promise<void> {
   `
     .concat("\n")
     .replaceAll("\n", "\r\n");
-  const adapter = new EvidMatlabAdapter();
+  const adapter = new EvidenceMatlabAdapter();
   const inventory = await adapter.analyze(
-    EvidTestSourceSnapshot.create("src/Contract.m", content),
+    EvidenceTestSourceSnapshot.create("src/Contract.m", content),
   );
 
   TestValidator.equals("complete help extraction", inventory.diagnostics, []);
@@ -101,25 +101,25 @@ export async function test_matlab_hosts(): Promise<void> {
   const unit = inventory.units.find((candidate) => candidate.name === "run");
   if (unit === undefined) throw new Error("Missing function inventory.");
   const annotation = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Contract.m",
       content.replace("Function documentation.", "Updated documentation."),
     ),
   );
   const semantic = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Contract.m",
       content.replace('result = "', 'result = "Changed '),
     ),
   );
   TestValidator.equals(
     "annotation stable review",
-    EvidFingerprint.inspect(inventory, unit.id).fingerprint,
-    EvidFingerprint.inspect(annotation, unit.id).fingerprint,
+    EvidenceFingerprint.inspect(inventory, unit.id).fingerprint,
+    EvidenceFingerprint.inspect(annotation, unit.id).fingerprint,
   );
   TestValidator.notEquals(
     "semantic review invalidation",
-    EvidFingerprint.inspect(inventory, unit.id).fingerprint,
-    EvidFingerprint.inspect(semantic, unit.id).fingerprint,
+    EvidenceFingerprint.inspect(inventory, unit.id).fingerprint,
+    EvidenceFingerprint.inspect(semantic, unit.id).fingerprint,
   );
 }

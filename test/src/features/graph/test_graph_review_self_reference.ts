@@ -1,10 +1,10 @@
-import { EvidFingerprint, EvidGraph, EvidMarkdownAdapter } from "evid";
-import type { IEvidInventory, IEvidUnit } from "evid";
+import { EvidenceFingerprint, EvidenceGraph, EvidenceMarkdownAdapter } from "evidence";
+import type { IEvidenceInventory, IEvidenceUnit } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Accepts a Markdown section's current review of its own evidence target.
@@ -28,7 +28,7 @@ export async function test_graph_review_self_reference(): Promise<void> {
     `,
   );
   const bareRule = requireUnit(bare, "review-discipline");
-  const expected = EvidFingerprint.inspect(bare, bareRule.id).fingerprint;
+  const expected = EvidenceFingerprint.inspect(bare, bareRule.id).fingerprint;
   const reviewed = await analyze(
     dedent`
       ## Review discipline {#review-discipline}
@@ -45,11 +45,11 @@ export async function test_graph_review_self_reference(): Promise<void> {
 
   TestValidator.equals(
     "writing review leaves target fingerprint stable",
-    EvidFingerprint.inspect(reviewed, reviewedRule.id).fingerprint,
+    EvidenceFingerprint.inspect(reviewed, reviewedRule.id).fingerprint,
     expected,
   );
 
-  const result = EvidGraph.evaluate({
+  const result = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -60,12 +60,12 @@ export async function test_graph_review_self_reference(): Promise<void> {
             severity: "error",
             inventory: reviewed,
             unitIds: [reviewedRule.id],
-            resolutions: await EvidTestGraph.resolveDeclarations(
+            resolutions: await EvidenceTestGraph.resolveDeclarations(
               reviewed,
               reviewed,
               [reviewedRule.id],
             ),
-            reviewResolutions: await EvidTestGraph.resolveReviews(
+            reviewResolutions: await EvidenceTestGraph.resolveReviews(
               reviewed,
               reviewed,
               [reviewedRule.id],
@@ -88,9 +88,9 @@ export async function test_graph_review_self_reference(): Promise<void> {
  * Keeping the file path and document-relative base stable isolates the inserted
  * acknowledgement and review spans from target-resolution or identity changes.
  */
-async function analyze(content: string): Promise<IEvidInventory> {
-  return new EvidMarkdownAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+async function analyze(content: string): Promise<IEvidenceInventory> {
+  return new EvidenceMarkdownAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "rules.md",
       content,
       ["rules.md"],
@@ -99,7 +99,7 @@ async function analyze(content: string): Promise<IEvidInventory> {
   );
 }
 
-function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
+function requireUnit(inventory: IEvidenceInventory, identity: string): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.at(-1) === identity,
   );

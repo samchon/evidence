@@ -1,15 +1,15 @@
-import { EvidChecker } from "evid";
+import { EvidenceChecker } from "evidence";
 import type {
-  IEvidCheckObligation,
-  IEvidCheckClaim,
-  IEvidCheckReport,
-  IEvidDiagnostic,
-} from "evid";
+  IEvidenceCheckObligation,
+  IEvidenceCheckClaim,
+  IEvidenceCheckReport,
+  IEvidenceDiagnostic,
+} from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
 
 /**
  * Keeps uncovered requirements visible after literal rendered-tag examples.
@@ -35,10 +35,10 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
  */
 export async function test_markdown_literal_pre_graph(): Promise<void> {
   const location: string = join(__dirname, `literal pre graph ${randomUUID()}`);
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     location,
     {
-      "evid.json": JSON.stringify({
+      "evidence.json": JSON.stringify({
         claims: [
           {
             type: "typescript",
@@ -56,18 +56,18 @@ export async function test_markdown_literal_pre_graph(): Promise<void> {
       "rules.md": literalRules(),
     },
     async (directory: string): Promise<void> => {
-      const config: string = join(directory, "evid.json");
-      const literal: IEvidCheckReport = await EvidChecker.check(config);
+      const config: string = join(directory, "evidence.json");
+      const literal: IEvidenceCheckReport = await EvidenceChecker.check(config);
       assertMissingSecond("literal rendered tags", literal);
 
-      await EvidTestFileSystem.save(directory, {
+      await EvidenceTestFileSystem.save(directory, {
         "rules.md": renderedRules(),
       });
-      const rendered: IEvidCheckReport = await EvidChecker.check(config);
+      const rendered: IEvidenceCheckReport = await EvidenceChecker.check(config);
       assertMissingSecond("genuine rendered block", rendered);
 
-      await EvidTestFileSystem.save(directory, {
-        "evid.json": JSON.stringify({
+      await EvidenceTestFileSystem.save(directory, {
+        "evidence.json": JSON.stringify({
           claims: [
             {
               type: "markdown",
@@ -84,7 +84,7 @@ export async function test_markdown_literal_pre_graph(): Promise<void> {
         "claim.md": orderedClaim(),
         "rules.md": literalRules(),
       });
-      const ordered: IEvidCheckReport = await EvidChecker.check(config);
+      const ordered: IEvidenceCheckReport = await EvidenceChecker.check(config);
       assertMissingSecond("ordered rendered boundaries", ordered);
     },
   );
@@ -97,9 +97,9 @@ export async function test_markdown_literal_pre_graph(): Promise<void> {
  * proves that content made inert by rendered boundaries did not cover the
  * second.
  */
-function assertMissingSecond(label: string, report: IEvidCheckReport): void {
-  const claim: IEvidCheckClaim | undefined = report.claims[0];
-  const obligation: IEvidCheckObligation | undefined =
+function assertMissingSecond(label: string, report: IEvidenceCheckReport): void {
+  const claim: IEvidenceCheckClaim | undefined = report.claims[0];
+  const obligation: IEvidenceCheckObligation | undefined =
     claim === undefined ? undefined : claim.obligations[0];
   if (obligation === undefined)
     throw new Error(`${label} report has no graph obligation.`);
@@ -113,7 +113,7 @@ function assertMissingSecond(label: string, report: IEvidCheckReport): void {
   TestValidator.equals(
     `${label} missing acknowledgement`,
     report.diagnostics.filter(
-      (diagnostic: IEvidDiagnostic): boolean =>
+      (diagnostic: IEvidenceDiagnostic): boolean =>
         diagnostic.code === "graph-missing-acknowledgement",
     ).length,
     1,

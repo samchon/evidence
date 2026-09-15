@@ -1,7 +1,7 @@
-import { EvidPostgresqlAdapter } from "evid";
+import { EvidencePostgresqlAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Rejects PostgreSQL schemas whose selected population depends on unresolved
@@ -15,7 +15,7 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Verify wrong extensions and failed sources cannot pass.
  */
 export async function test_postgresql_boundaries(): Promise<void> {
-  const adapter = new EvidPostgresqlAdapter();
+  const adapter = new EvidencePostgresqlAdapter();
   for (const source of [
     "CREATE TABLE Item (id integer);",
     "CREATE SCHEMA `app`;",
@@ -43,7 +43,7 @@ export async function test_postgresql_boundaries(): Promise<void> {
     "CREATE TABLE app.Item (id integer",
   ]) {
     const inventory = await adapter.analyze(
-      EvidTestSourceSnapshot.create("schema.sql", source),
+      EvidenceTestSourceSnapshot.create("schema.sql", source),
     );
     TestValidator.equals(`incomplete: ${source}`, inventory.complete, false);
     TestValidator.predicate(
@@ -55,7 +55,7 @@ export async function test_postgresql_boundaries(): Promise<void> {
     );
   }
   const wrongExtension = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "schema.ts",
       "CREATE TABLE app.Item (id integer);",
     ),
@@ -73,12 +73,12 @@ export async function test_postgresql_boundaries(): Promise<void> {
       "quoted keyword and maximum-length identifier remain declarations",
       (
         await adapter.analyze(
-          EvidTestSourceSnapshot.create("valid.sql", source),
+          EvidenceTestSourceSnapshot.create("valid.sql", source),
         )
       ).diagnostics,
       [],
     );
-  const failed = EvidTestSourceSnapshot.create(
+  const failed = EvidenceTestSourceSnapshot.create(
     "schema.sql",
     "CREATE TABLE app.Item (id integer);",
   );

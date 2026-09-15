@@ -1,5 +1,5 @@
-import { EvidDocumentation, EvidParser, EvidTagParser } from "evid";
-import type { IEvidHost } from "evid";
+import { EvidenceDocumentation, EvidenceParser, EvidenceTagParser } from "evidence";
+import type { IEvidenceHost } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -22,7 +22,7 @@ export async function test_tag_parser_tree_comments(): Promise<void> {
     /** @evidence ../real.ts#run Verifies the function. */
     export function test_run() {}
   `;
-  const parser = new EvidParser();
+  const parser = new EvidenceParser();
   try {
     const targets = await parser.parse(
       { type: "typescript", file: "/project/test.ts", content },
@@ -31,7 +31,7 @@ export async function test_tag_parser_tree_comments(): Promise<void> {
           .captures("(comment) @documentation")
           .flatMap((capture) => {
             const range = session.range(capture.node);
-            const host: IEvidHost = {
+            const host: IEvidenceHost = {
               id: "test-doc",
               file: "/project/test.ts",
               range,
@@ -39,7 +39,7 @@ export async function test_tag_parser_tree_comments(): Promise<void> {
               unitIds: ["test-run"],
               attachment: "attached",
             };
-            const documentation = EvidDocumentation.read(
+            const documentation = EvidenceDocumentation.read(
               content,
               host.id,
               range,
@@ -51,7 +51,7 @@ export async function test_tag_parser_tree_comments(): Promise<void> {
                 allowWithdrawal: true,
               },
             );
-            return EvidTagParser.parse(
+            return EvidenceTagParser.parse(
               content,
               host,
               documentation,

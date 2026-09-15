@@ -1,8 +1,8 @@
-import { EvidCppAdapter, EvidInventory } from "evid";
+import { EvidenceCppAdapter, EvidenceInventory } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Attaches C++ Doxygen evidence and reports annotations in unsupported
@@ -16,8 +16,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Require inert annotated carriers to remain diagnostics.
  */
 export async function test_cpp_hosts(): Promise<void> {
-  const inventory = await new EvidCppAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const inventory = await new EvidenceCppAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/contracts.cpp",
       dedent`
         /**
@@ -112,8 +112,8 @@ export async function test_cpp_hosts(): Promise<void> {
     7,
   );
 
-  const withdrawn = await new EvidCppAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const withdrawn = await new EvidenceCppAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "include/hidden.hpp",
       dedent`
         /** @internal This declaration withdraws the merged class. */
@@ -126,7 +126,7 @@ export async function test_cpp_hosts(): Promise<void> {
       `,
     ),
   );
-  const population = new EvidInventory([withdrawn]).select(
+  const population = new EvidenceInventory([withdrawn]).select(
     withdrawn.units.map((unit) => unit.id),
   );
   TestValidator.equals(

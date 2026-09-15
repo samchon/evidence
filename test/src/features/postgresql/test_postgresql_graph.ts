@@ -1,10 +1,10 @@
-import { EvidChecker } from "evid";
-import type { EvidDatabaseSymbol } from "evid";
+import { EvidenceChecker } from "evidence";
+import type { EvidenceDatabaseSymbol } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
 
 /**
  * Evaluates PostgreSQL selectors as claim and reference populations.
@@ -17,7 +17,7 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
  * 3. Verify review-only evidence remains uncovered.
  */
 export async function test_postgresql_graph(): Promise<void> {
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     "postgresql-graph",
     {
       "claim.sql": dedent`
@@ -47,29 +47,29 @@ export async function test_postgresql_graph(): Promise<void> {
             direction === "claim"
               ? claimSource(symbol)
               : "/** @evidence ./reference.sql#app.other Covers the table subtree. */\nexport function claim() {}\n";
-          await EvidTestFileSystem.save(directory, {
+          await EvidenceTestFileSystem.save(directory, {
             "evidence.config.ts": configuration,
             [filename]: original,
           });
           const path = join(directory, "evidence.config.ts");
-          const complete = await EvidChecker.check(path);
+          const complete = await EvidenceChecker.check(path);
           TestValidator.equals(
             `${symbol} ${direction} succeeds`,
             complete.success,
             true,
           );
           for (const marker of ["Ordinary prose", "@evidenceReview"]) {
-            await EvidTestFileSystem.save(directory, {
+            await EvidenceTestFileSystem.save(directory, {
               [filename]: original.replaceAll("@evidence", marker),
             });
-            const missing = await EvidChecker.check(path);
+            const missing = await EvidenceChecker.check(path);
             TestValidator.equals(
               `${symbol} ${direction} ${marker} does not cover`,
               missing.success,
               false,
             );
           }
-          await EvidTestFileSystem.save(directory, { [filename]: original });
+          await EvidenceTestFileSystem.save(directory, { [filename]: original });
         }
     },
   );
@@ -81,7 +81,7 @@ export async function test_postgresql_graph(): Promise<void> {
  * Unselected model, column, and relation positions receive ordinary prose so
  * each selector scenario isolates its own eligible documentation carrier.
  */
-function claimSource(symbol: EvidDatabaseSymbol): string {
+function claimSource(symbol: EvidenceDatabaseSymbol): string {
   return dedent`
     -- ${symbol === "model" ? "@evidence ./reference.ts#contract Covers the model." : "Table declaration."}
     CREATE TABLE app.Item (

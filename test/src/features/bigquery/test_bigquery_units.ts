@@ -1,8 +1,8 @@
-import { EvidBigQueryAdapter, EvidFingerprint } from "evid";
+import { EvidenceBigQueryAdapter, EvidenceFingerprint } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Classifies BigQuery tables, fields, and declared keys with their full
@@ -28,9 +28,9 @@ export async function test_bigquery_units(): Promise<void> {
       CONSTRAINT customer_key FOREIGN KEY (customer_id) REFERENCES \`acme-prod.sales.customers\` (id) NOT ENFORCED
     ) OPTIONS(description="Orders schema");
   `;
-  const adapter = new EvidBigQueryAdapter();
+  const adapter = new EvidenceBigQueryAdapter();
   const inventory = await adapter.analyze(
-    EvidTestSourceSnapshot.create("schema.sql", content, [
+    EvidenceTestSourceSnapshot.create("schema.sql", content, [
       "schema.sql",
       "alias.sql",
     ]),
@@ -88,7 +88,7 @@ export async function test_bigquery_units(): Promise<void> {
   );
 
   const moved = await adapter.analyze(
-    EvidTestSourceSnapshot.create("moved.sql", content),
+    EvidenceTestSourceSnapshot.create("moved.sql", content),
   );
   TestValidator.equals(
     "schema identity independent of file",
@@ -97,18 +97,18 @@ export async function test_bigquery_units(): Promise<void> {
   );
   TestValidator.equals(
     "file move preserves review",
-    EvidFingerprint.inspect(moved, model.id).fingerprint,
-    EvidFingerprint.inspect(inventory, model.id).fingerprint,
+    EvidenceFingerprint.inspect(moved, model.id).fingerprint,
+    EvidenceFingerprint.inspect(inventory, model.id).fingerprint,
   );
   const changed = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "schema.sql",
       content.replace("quantity INT64", "quantity NUMERIC"),
     ),
   );
   TestValidator.notEquals(
     "nested semantic edit invalidates table review",
-    EvidFingerprint.inspect(changed, model.id).fingerprint,
-    EvidFingerprint.inspect(inventory, model.id).fingerprint,
+    EvidenceFingerprint.inspect(changed, model.id).fingerprint,
+    EvidenceFingerprint.inspect(inventory, model.id).fingerprint,
   );
 }

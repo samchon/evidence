@@ -1,9 +1,9 @@
-import { EvidRustAdapter } from "evid";
-import type { IEvidInventory } from "evid";
+import { EvidenceRustAdapter } from "evidence";
+import type { IEvidenceInventory } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Preserves Rust module and syntax uncertainty as incomplete analysis.
@@ -17,11 +17,11 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    diagnostic instead of publishing a reduced population.
  */
 export async function test_rust_failures(): Promise<void> {
-  const adapter = new EvidRustAdapter();
+  const adapter = new EvidenceRustAdapter();
 
   // File modules must have exactly one selected conventional source.
   const missing = await adapter.analyze(
-    EvidTestSourceSnapshot.create("src/lib.rs", "pub mod missing;\n"),
+    EvidenceTestSourceSnapshot.create("src/lib.rs", "pub mod missing;\n"),
   );
   TestValidator.equals("missing Rust module", missing.complete, false);
   TestValidator.equals(
@@ -31,10 +31,10 @@ export async function test_rust_failures(): Promise<void> {
   );
 
   const ambiguousModule = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create("src/lib.rs", "pub mod sale;\n"),
-      EvidTestSourceSnapshot.create("src/sale.rs", "pub struct Flat;\n"),
-      EvidTestSourceSnapshot.create("src/sale/mod.rs", "pub struct Nested;\n"),
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create("src/lib.rs", "pub mod sale;\n"),
+      EvidenceTestSourceSnapshot.create("src/sale.rs", "pub struct Flat;\n"),
+      EvidenceTestSourceSnapshot.create("src/sale/mod.rs", "pub struct Nested;\n"),
     ]),
   );
   TestValidator.equals(
@@ -50,15 +50,15 @@ export async function test_rust_failures(): Promise<void> {
 
   // Path overrides are explicit unsupported module ownership, even if selected.
   const overridden = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/lib.rs",
         dedent`
           #[path = "generated.rs"]
           pub mod api;
         `,
       ),
-      EvidTestSourceSnapshot.create("src/generated.rs", "pub struct Api;\n"),
+      EvidenceTestSourceSnapshot.create("src/generated.rs", "pub struct Api;\n"),
     ]),
   );
   TestValidator.equals("Rust path override", overridden.complete, false);
@@ -70,7 +70,7 @@ export async function test_rust_failures(): Promise<void> {
 
   // Conditional declarations and members cannot be treated as one certain API.
   const conditional = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/lib.rs",
       dedent`
         #[cfg(feature = "conditional")]
@@ -93,7 +93,7 @@ export async function test_rust_failures(): Promise<void> {
   );
 
   const conditionalTuple = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/lib.rs",
       dedent`
         pub struct Pair(
@@ -115,7 +115,7 @@ export async function test_rust_failures(): Promise<void> {
   );
 
   const dynamicDocumentation = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/lib.rs",
       dedent`
         #[doc = include_str!("service.md")]
@@ -136,7 +136,7 @@ export async function test_rust_failures(): Promise<void> {
 
   // Item macros can add declarations; a macro invocation inside a body cannot.
   const macros = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/lib.rs",
       dedent`
         make_items!();
@@ -171,7 +171,7 @@ export async function test_rust_failures(): Promise<void> {
 
   // Blanket and external owners have no single selected nominal identity.
   const blanket = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/lib.rs",
       dedent`
         pub trait Service {
@@ -192,7 +192,7 @@ export async function test_rust_failures(): Promise<void> {
   );
 
   const externalOwner = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/lib.rs",
       dedent`
         impl remote::Sale {
@@ -213,7 +213,7 @@ export async function test_rust_failures(): Promise<void> {
   );
 
   const duplicateMember = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/lib.rs",
       dedent`
         pub struct Sale;
@@ -241,7 +241,7 @@ export async function test_rust_failures(): Promise<void> {
 
   // Competing wildcard exports and recursive module aliases stay incomplete.
   const ambiguousExport = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/lib.rs",
       dedent`
         mod first {
@@ -268,7 +268,7 @@ export async function test_rust_failures(): Promise<void> {
   );
 
   const recursiveExport = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/lib.rs",
       dedent`
         pub mod recursive {
@@ -290,7 +290,7 @@ export async function test_rust_failures(): Promise<void> {
 
   // Tree-sitter syntax errors never become a healthy empty inventory.
   const malformed = await adapter.analyze(
-    EvidTestSourceSnapshot.create("src/lib.rs", "pub fn broken( {\n"),
+    EvidenceTestSourceSnapshot.create("src/lib.rs", "pub fn broken( {\n"),
   );
   TestValidator.equals("malformed Rust source", malformed.complete, false);
   TestValidator.equals(
@@ -302,6 +302,6 @@ export async function test_rust_failures(): Promise<void> {
   );
 }
 
-function hasCode(inventory: IEvidInventory, code: string): boolean {
+function hasCode(inventory: IEvidenceInventory, code: string): boolean {
   return inventory.diagnostics.some((diagnostic) => diagnostic.code === code);
 }

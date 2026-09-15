@@ -1,8 +1,8 @@
-import { EvidRubyAdapter } from "evid";
+import { EvidenceRubyAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Keeps detectable Ruby metaprogramming and unknown ownership incomplete.
@@ -16,8 +16,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    remain in the Ruby inventory.
  */
 export async function test_ruby_failures(): Promise<void> {
-  const dynamic = await new EvidRubyAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const dynamic = await new EvidenceRubyAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "lib/dynamic.rb",
       dedent`
         module Dynamic
@@ -73,8 +73,8 @@ export async function test_ruby_failures(): Promise<void> {
   ])
     TestValidator.predicate(`Ruby failure ${code}`, codes.has(code));
 
-  const malformed = await new EvidRubyAdapter().analyze(
-    EvidTestSourceSnapshot.create("lib/broken.rb", "module Broken\n"),
+  const malformed = await new EvidenceRubyAdapter().analyze(
+    EvidenceTestSourceSnapshot.create("lib/broken.rb", "module Broken\n"),
   );
   TestValidator.equals("malformed Ruby inventory", malformed.complete, false);
   TestValidator.predicate(
@@ -84,9 +84,9 @@ export async function test_ruby_failures(): Promise<void> {
     ),
   );
 
-  const sourceFailure = await new EvidRubyAdapter().analyze(
-    EvidTestSourceSnapshot.fail(
-      EvidTestSourceSnapshot.create("lib/source.rb", "VALUE = 1\n"),
+  const sourceFailure = await new EvidenceRubyAdapter().analyze(
+    EvidenceTestSourceSnapshot.fail(
+      EvidenceTestSourceSnapshot.create("lib/source.rb", "VALUE = 1\n"),
       {
         code: "path-unreadable",
         path: "/project/lib/missing.rb",

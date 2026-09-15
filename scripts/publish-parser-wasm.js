@@ -14,7 +14,7 @@ async function main() {
   const grammar = JSON.parse(
     await readFile(path.join(directory, "grammar.json"), "utf8"),
   );
-  const repository = process.env.GITHUB_REPOSITORY || "wrtnlabs/evid";
+  const repository = process.env.GITHUB_REPOSITORY || "wrtnlabs/evidence";
   if (grammar.version !== `grammar-${grammar.id}-${grammar.wasm.sha256}`)
     throw new Error(
       "Grammar release must be addressed by its complete digest.",
@@ -31,7 +31,7 @@ async function main() {
   );
   const {
     TreeSitterAssets,
-  } = require("../packages/evid/lib/internal/EvidTreeSitterAssets");
+  } = require("../packages/evidence/lib/internal/EvidenceTreeSitterAssets");
   const destination = await mkdtemp(path.join(temporary, "published-parser-"));
   const preflight = new TreeSitterAssets({
     cacheDirectory: destination,

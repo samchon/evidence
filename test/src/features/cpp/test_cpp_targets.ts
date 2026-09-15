@@ -1,14 +1,14 @@
-import { EvidCppAdapter } from "evid";
-import type { EvidTargetResolutionStatus } from "evid";
+import { EvidenceCppAdapter } from "evidence";
+import type { EvidenceTargetResolutionStatus } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
-interface IEvidCppTargetStatus {
+interface IEvidenceCppTargetStatus {
   target: string | undefined;
-  status: EvidTargetResolutionStatus;
+  status: EvidenceTargetResolutionStatus;
 }
 
 /**
@@ -23,9 +23,9 @@ interface IEvidCppTargetStatus {
  *    status.
  */
 export async function test_cpp_targets(): Promise<void> {
-  const adapter = new EvidCppAdapter();
+  const adapter = new EvidenceCppAdapter();
   const reference = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "include/models.hpp",
       dedent`
         namespace shop {
@@ -53,7 +53,7 @@ export async function test_cpp_targets(): Promise<void> {
     ),
   );
   const claim = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "test/verify.cpp",
       dedent`
         /**
@@ -80,7 +80,7 @@ export async function test_cpp_targets(): Promise<void> {
     [],
   );
   TestValidator.equals("complete C++ target claim", claim.diagnostics, []);
-  const resolutions = await EvidTestGraph.resolveDeclarations(
+  const resolutions = await EvidenceTestGraph.resolveDeclarations(
     claim,
     reference,
     reference.units.map((unit) => unit.id),
@@ -96,7 +96,7 @@ export async function test_cpp_targets(): Promise<void> {
         status: resolution.resolution.status,
       }))
       .sort(compareTarget),
-    (<IEvidCppTargetStatus[]>[
+    (<IEvidenceCppTargetStatus[]>[
       {
         target: "../include/models.hpp#public_api.Sale.total",
         status: "resolved",
@@ -137,8 +137,8 @@ export async function test_cpp_targets(): Promise<void> {
 }
 
 function compareTarget(
-  left: IEvidCppTargetStatus,
-  right: IEvidCppTargetStatus,
+  left: IEvidenceCppTargetStatus,
+  right: IEvidenceCppTargetStatus,
 ): number {
   return compare(left.target ?? "", right.target ?? "");
 }

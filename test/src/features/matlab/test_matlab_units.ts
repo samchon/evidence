@@ -1,8 +1,8 @@
-import { EvidInventory, EvidMatlabAdapter } from "evid";
+import { EvidenceInventory, EvidenceMatlabAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Extracts MATLAB's public class and top-level function denominator.
@@ -17,9 +17,9 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Resolve an aliased public property through the inventory.
  */
 export async function test_matlab_units(): Promise<void> {
-  const inventory = await new EvidMatlabAdapter().analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+  const inventory = await new EvidenceMatlabAdapter().analyze(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/Contract.m",
         dedent`
       classdef (Hidden) Contract < handle
@@ -86,7 +86,7 @@ export async function test_matlab_units(): Promise<void> {
     `.concat("\n"),
         ["src/Contract.m", "alias/Contract.m"],
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/main.m",
         dedent`
       function value = main()
@@ -98,7 +98,7 @@ export async function test_matlab_units(): Promise<void> {
       end
     `.concat("\n"),
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/private/secret.m",
         "function secret()\nend\n",
       ),
@@ -155,7 +155,7 @@ export async function test_matlab_units(): Promise<void> {
     inventory.hosts.length,
     inventory.units.reduce((count, unit) => count + unit.sites.length, 0),
   );
-  const graph = new EvidInventory([inventory]);
+  const graph = new EvidenceInventory([inventory]);
   TestValidator.equals(
     "logical alias",
     graph.resolve(

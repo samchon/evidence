@@ -1,7 +1,7 @@
-import { EvidInventory } from "evid";
+import { EvidenceInventory } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestInventory } from "../../internal/EvidTestInventory";
+import { EvidenceTestInventory } from "../../internal/EvidenceTestInventory";
 
 /**
  * Propagates withdrawal from a merged declaration to its descendants and hosts.
@@ -22,15 +22,15 @@ import { EvidTestInventory } from "../../internal/EvidTestInventory";
  *    missing.
  */
 export async function test_inventory_withdrawal(): Promise<void> {
-  const first = EvidTestInventory.create();
-  EvidTestInventory.unit(
+  const first = EvidenceTestInventory.create();
+  EvidenceTestInventory.unit(
     first,
     "box",
     ["Box"],
     "type",
     "export class Box { value = 1; }",
   );
-  EvidTestInventory.unit(
+  EvidenceTestInventory.unit(
     first,
     "value",
     ["Box", "value"],
@@ -38,15 +38,15 @@ export async function test_inventory_withdrawal(): Promise<void> {
     "value = 1",
     "box",
   );
-  EvidTestInventory.host(
+  EvidenceTestInventory.host(
     first,
     "box-doc",
     "box-site",
     ["box"],
     "/** Class documentation. */",
   );
-  const second = EvidTestInventory.create();
-  const merged = EvidTestInventory.unit(
+  const second = EvidenceTestInventory.create();
+  const merged = EvidenceTestInventory.unit(
     second,
     "box",
     ["Box"],
@@ -58,11 +58,11 @@ export async function test_inventory_withdrawal(): Promise<void> {
     tag: "internal",
     location: {
       file: "/project/source.ts",
-      range: EvidTestInventory.range(second, "/** Class documentation. */"),
+      range: EvidenceTestInventory.range(second, "/** Class documentation. */"),
     },
   });
 
-  const index = new EvidInventory([first, second]);
+  const index = new EvidenceInventory([first, second]);
   const selected = index.select(["box", "value"]);
 
   TestValidator.predicate(

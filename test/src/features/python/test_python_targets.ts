@@ -1,9 +1,9 @@
-import { EvidPythonAdapter } from "evid";
+import { EvidencePythonAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Resolves canonical file-qualified targets for Python declarations.
@@ -18,10 +18,10 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    function identities.
  */
 export async function test_python_targets(): Promise<void> {
-  const adapter = new EvidPythonAdapter();
+  const adapter = new EvidencePythonAdapter();
   const reference = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/sale.py",
         dedent`
           class Sale:
@@ -31,7 +31,7 @@ export async function test_python_targets(): Promise<void> {
                   return 0
         `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/calculator.py",
         dedent`
           def add(left, right):
@@ -41,7 +41,7 @@ export async function test_python_targets(): Promise<void> {
     ]),
   );
   const claim = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "test/test_sale.py",
       dedent`
         def verify():
@@ -55,7 +55,7 @@ export async function test_python_targets(): Promise<void> {
       `,
     ),
   );
-  const resolutions = await EvidTestGraph.resolveDeclarations(
+  const resolutions = await EvidenceTestGraph.resolveDeclarations(
     claim,
     reference,
     reference.units.map((unit) => unit.id),

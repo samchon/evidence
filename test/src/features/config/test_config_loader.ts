@@ -1,12 +1,12 @@
-import { evaluateTypeScriptConfig, EvidConfigLoader } from "evid";
-import type { IEvidConfig } from "evid";
+import { evaluateTypeScriptConfig, EvidenceConfigLoader } from "evidence";
+import type { IEvidenceConfig } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { rm } from "node:fs/promises";
 import { join } from "node:path";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
 
 /**
  * Loads TypeScript configuration dependencies in isolation and preserves
@@ -37,7 +37,7 @@ export async function test_config_loader(): Promise<void> {
   const location = join(__dirname, `loader $' ${randomUUID()}`);
   const source = dedent`
     import { files } from "./helpers/files";
-    import type { IEvidConfig } from "evid";
+    import type { IEvidenceConfig } from "evidence";
 
     export default {
       claims: [
@@ -47,10 +47,10 @@ export async function test_config_loader(): Promise<void> {
           reference: { type: "markdown", files: ["docs/**"] },
         },
       ],
-    } satisfies IEvidConfig;
+    } satisfies IEvidenceConfig;
   `;
 
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     location,
     {
       "helpers/files.ts": dedent`
@@ -68,9 +68,9 @@ export async function test_config_loader(): Promise<void> {
       // All module extensions load imports without checking the unrelated source.
       for (const extension of ["ts", "cts", "mts"]) {
         const filename = `evidence.config.${extension}`;
-        await EvidTestFileSystem.save(directory, { [filename]: source });
+        await EvidenceTestFileSystem.save(directory, { [filename]: source });
 
-        const output = await EvidConfigLoader.load(join(directory, filename));
+        const output = await EvidenceConfigLoader.load(join(directory, filename));
 
         TestValidator.equals(
           `${extension} imported globs`,
@@ -81,7 +81,7 @@ export async function test_config_loader(): Promise<void> {
 
       // The evaluator supplies its own compiler project after resolving consumer dependencies.
       await rm(join(directory, "tsconfig.json"));
-      const isolated: IEvidConfig = await EvidConfigLoader.load(
+      const isolated: IEvidenceConfig = await EvidenceConfigLoader.load(
         join(directory, "evidence.config.ts"),
       );
       TestValidator.equals(
@@ -91,7 +91,7 @@ export async function test_config_loader(): Promise<void> {
       );
 
       // Evaluator stdout and stderr share the diagnostic sink instead of process stdout.
-      await EvidTestFileSystem.save(directory, {
+      await EvidenceTestFileSystem.save(directory, {
         "evidence.config.ts": dedent`
           console.log("config-output-token");
           console.error("config-error-token");
@@ -118,7 +118,7 @@ export async function test_config_loader(): Promise<void> {
       );
 
       // Unsupported artifact identifiers fail with their exact configuration path.
-      await EvidTestFileSystem.save(directory, {
+      await EvidenceTestFileSystem.save(directory, {
         "evidence.config.ts": dedent`
           export default {
             claims: [
@@ -132,7 +132,7 @@ export async function test_config_loader(): Promise<void> {
         `,
       });
       const unsupported = await failure(() =>
-        EvidConfigLoader.load(join(directory, "evidence.config.ts")),
+        EvidenceConfigLoader.load(join(directory, "evidence.config.ts")),
       );
 
       TestValidator.predicate(
@@ -143,9 +143,9 @@ export async function test_config_loader(): Promise<void> {
       );
 
       // A disabled population is validated and planned without touching its missing root.
-      await EvidTestFileSystem.save(directory, {
+      await EvidenceTestFileSystem.save(directory, {
         "evidence.config.ts": dedent`
-          import type { IEvidConfig } from "evid";
+          import type { IEvidenceConfig } from "evidence";
 
           export default {
             claims: [
@@ -160,11 +160,11 @@ export async function test_config_loader(): Promise<void> {
                 },
               },
             ],
-          } satisfies IEvidConfig;
+          } satisfies IEvidenceConfig;
         `,
       });
 
-      const inactive = await EvidConfigLoader.plan(
+      const inactive = await EvidenceConfigLoader.plan(
         join(directory, "evidence.config.ts"),
       );
 
@@ -176,7 +176,7 @@ export async function test_config_loader(): Promise<void> {
       TestValidator.equals("inactive populations", inactive.claims, []);
 
       // Runtime exceptions reject the loader promise instead of returning data.
-      await EvidTestFileSystem.save(directory, {
+      await EvidenceTestFileSystem.save(directory, {
         "evidence.config.ts": dedent`
           throw new Error("Config failed during evaluation");
           export default {};
@@ -184,11 +184,11 @@ export async function test_config_loader(): Promise<void> {
       });
 
       await TestValidator.error("runtime exception", () =>
-        EvidConfigLoader.load(join(directory, "evidence.config.ts")),
+        EvidenceConfigLoader.load(join(directory, "evidence.config.ts")),
       );
 
       // Imported type errors reach the caller through the evaluator failure.
-      await EvidTestFileSystem.save(directory, {
+      await EvidenceTestFileSystem.save(directory, {
         "evidence.config.ts": source,
         "helpers/files.ts": dedent`
           export const files: string[] = [123];
@@ -196,7 +196,7 @@ export async function test_config_loader(): Promise<void> {
       });
 
       await TestValidator.error("imported TypeScript error", () =>
-        EvidConfigLoader.load(join(directory, "evidence.config.ts")),
+        EvidenceConfigLoader.load(join(directory, "evidence.config.ts")),
       );
     },
   );

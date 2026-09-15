@@ -144,7 +144,7 @@ export default {
     "typescript/unbound-method": "error",
     "typescript/use-unknown-in-catch-callback-variable": "error",
 
-    // EvidNode API and runtime traps.
+    // EvidenceNode API and runtime traps.
     "unicorn/error-message": "error",
     "unicorn/new-for-builtins": "error",
     "unicorn/no-await-in-promise-methods": "error",

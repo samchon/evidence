@@ -1,7 +1,7 @@
-import { EvidGraph, EvidPrismaAdapter } from "evid";
+import { EvidenceGraph, EvidencePrismaAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Keeps rejected and unreadable Prisma schemas incomplete until repair.
@@ -14,9 +14,9 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Repair the schema and require complete recovery.
  */
 export async function test_prisma_failures(): Promise<void> {
-  const adapter = new EvidPrismaAdapter();
+  const adapter = new EvidencePrismaAdapter();
   const broken = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "prisma/schema.prisma",
       "model Sale {\n  id String @id\n",
     ),
@@ -36,7 +36,7 @@ export async function test_prisma_failures(): Promise<void> {
   );
 
   // An incomplete claim remains active and cannot pass as an empty host population.
-  const graph = EvidGraph.evaluate({
+  const graph = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -59,7 +59,7 @@ export async function test_prisma_failures(): Promise<void> {
 
   // Repairing the same schema produces a complete parser inventory on the next run.
   const repaired = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "prisma/schema.prisma",
       "model Sale {\n  id String @id\n}\n",
     ),
@@ -72,8 +72,8 @@ export async function test_prisma_failures(): Promise<void> {
   );
 
   const unreadable = await adapter.analyze(
-    EvidTestSourceSnapshot.fail(
-      EvidTestSourceSnapshot.create("prisma/available.prisma", ""),
+    EvidenceTestSourceSnapshot.fail(
+      EvidenceTestSourceSnapshot.create("prisma/available.prisma", ""),
       {
         code: "path-unreadable",
         path: "/project/prisma/missing.prisma",

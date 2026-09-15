@@ -16,7 +16,7 @@ Use a short `@example` where an input, call, or counterexample clarifies target 
 /**
  * Literal accessor segments naming a declaration within its public file.
  *
- * A dot inside one segment belongs to that name. EvidAccessor preserves
+ * A dot inside one segment belongs to that name. EvidenceAccessor preserves
  * this boundary when serializing the path for a citation.
  *
  * @example

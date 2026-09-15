@@ -1,7 +1,7 @@
-import { EvidLanguageRegistry, EvidParser } from "evid";
+import { EvidenceLanguageRegistry, EvidenceParser } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestParserError } from "../../internal/EvidTestParserError";
+import { EvidenceTestParserError } from "../../internal/EvidenceTestParserError";
 
 /**
  * Selects grammar variants from declared language and case-sensitive source
@@ -26,50 +26,50 @@ export async function test_parser_selection(): Promise<void> {
   // Ambiguous headers follow the configured type; TSX remains a TypeScript variant.
   TestValidator.equals(
     "C header",
-    EvidLanguageRegistry.select("c", "include/value.h").id,
+    EvidenceLanguageRegistry.select("c", "include/value.h").id,
     "c",
   );
   TestValidator.equals(
     "C++ header",
-    EvidLanguageRegistry.select("cpp", "include/value.h").id,
+    EvidenceLanguageRegistry.select("cpp", "include/value.h").id,
     "cpp",
   );
   TestValidator.equals(
     "Windows TSX path",
-    EvidLanguageRegistry.select("typescript", "C:\\src\\View.tsx").id,
+    EvidenceLanguageRegistry.select("typescript", "C:\\src\\View.tsx").id,
     "tsx",
   );
   TestValidator.equals(
     "Ruby named file",
-    EvidLanguageRegistry.select("ruby", "Gemfile").id,
+    EvidenceLanguageRegistry.select("ruby", "Gemfile").id,
     "ruby",
   );
 
   TestValidator.equals(
     "MATLAB source",
-    EvidLanguageRegistry.select("matlab", "contract.m").id,
+    EvidenceLanguageRegistry.select("matlab", "contract.m").id,
     "matlab",
   );
-  await EvidTestParserError.expect("unsupported-extension", () =>
-    EvidLanguageRegistry.select("python", "contract.ts"),
+  await EvidenceTestParserError.expect("unsupported-extension", () =>
+    EvidenceLanguageRegistry.select("python", "contract.ts"),
   );
-  await EvidTestParserError.expect("unsupported-extension", () =>
-    EvidLanguageRegistry.select("typescript", "contract.TS"),
+  await EvidenceTestParserError.expect("unsupported-extension", () =>
+    EvidenceLanguageRegistry.select("typescript", "contract.TS"),
   );
-  await EvidTestParserError.expect("unsupported-extension", () =>
-    EvidLanguageRegistry.select("ruby", "gemfile"),
+  await EvidenceTestParserError.expect("unsupported-extension", () =>
+    EvidenceLanguageRegistry.select("ruby", "gemfile"),
   );
 
   // Mutating inspection results must not modify later selections or certification metadata.
-  const languages = EvidLanguageRegistry.list();
+  const languages = EvidenceLanguageRegistry.list();
   for (const language of languages) language.grammars.splice(0);
   TestValidator.equals(
     "registry is isolated",
-    EvidLanguageRegistry.select("python", "contract.py").id,
+    EvidenceLanguageRegistry.select("python", "contract.py").id,
     "python",
   );
 
-  const parser = new EvidParser();
+  const parser = new EvidenceParser();
   try {
     TestValidator.equals(
       "no eager language initialization",

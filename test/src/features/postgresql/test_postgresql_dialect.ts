@@ -1,7 +1,7 @@
-import { EvidPostgresqlAdapter, EvidSqlAdapter } from "evid";
+import { EvidencePostgresqlAdapter, EvidenceSqlAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Uses configured PostgreSQL naming for a source that portable SQL also
@@ -15,12 +15,12 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Require PostgreSQL-specific identities and resolution results.
  */
 export async function test_postgresql_dialect(): Promise<void> {
-  const snapshot = EvidTestSourceSnapshot.create(
+  const snapshot = EvidenceTestSourceSnapshot.create(
     "schema.sql",
     "CREATE TABLE App.Item (ID INTEGER);",
   );
-  const postgres = await new EvidPostgresqlAdapter().analyze(snapshot);
-  const portable = await new EvidSqlAdapter().analyze(snapshot);
+  const postgres = await new EvidencePostgresqlAdapter().analyze(snapshot);
+  const portable = await new EvidenceSqlAdapter().analyze(snapshot);
 
   TestValidator.equals("PostgreSQL complete", postgres.diagnostics, []);
   TestValidator.equals("portable SQL complete", portable.diagnostics, []);

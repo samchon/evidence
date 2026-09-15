@@ -1,15 +1,15 @@
 import {
-  EvidFingerprint,
-  EvidGraph,
-  EvidMarkdownAdapter,
-  EvidTypeScriptAdapter,
-} from "evid";
-import type { IEvidInventory, IEvidUnit } from "evid";
+  EvidenceFingerprint,
+  EvidenceGraph,
+  EvidenceMarkdownAdapter,
+  EvidenceTypeScriptAdapter,
+} from "evidence";
+import type { IEvidenceInventory, IEvidenceUnit } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Pairs reviews by semantic host, resolved target, and acknowledgement kind.
@@ -31,8 +31,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    diagnostic identifies the actual repair rather than reporting it twice.
  */
 export async function test_graph_review_pairing(): Promise<void> {
-  const requirements = await new EvidMarkdownAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const requirements = await new EvidenceMarkdownAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "docs/spec.md",
       dedent`
         ## Pricing {#pricing}
@@ -47,16 +47,16 @@ export async function test_graph_review_pairing(): Promise<void> {
   );
   const pricing = requireUnit(requirements, "pricing");
   const tax = requireUnit(requirements, "tax");
-  const pricingFingerprint = EvidFingerprint.inspect(
+  const pricingFingerprint = EvidenceFingerprint.inspect(
     requirements,
     pricing.id,
   ).fingerprint;
-  const taxFingerprint = EvidFingerprint.inspect(
+  const taxFingerprint = EvidenceFingerprint.inspect(
     requirements,
     tax.id,
   ).fingerprint;
-  const claims = await new EvidTypeScriptAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const claims = await new EvidenceTypeScriptAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/pairing.ts",
       dedent`
         /** @evidence docs/spec.md#pricing Implements the pricing rule. */
@@ -91,7 +91,7 @@ export async function test_graph_review_pairing(): Promise<void> {
     (name) => requireUnit(claims, name).id,
   );
   const selected = [pricing.id, tax.id];
-  const result = EvidGraph.evaluate({
+  const result = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -102,12 +102,12 @@ export async function test_graph_review_pairing(): Promise<void> {
             severity: "error",
             inventory: requirements,
             unitIds: selected,
-            resolutions: await EvidTestGraph.resolveDeclarations(
+            resolutions: await EvidenceTestGraph.resolveDeclarations(
               claims,
               requirements,
               selected,
             ),
-            reviewResolutions: await EvidTestGraph.resolveReviews(
+            reviewResolutions: await EvidenceTestGraph.resolveReviews(
               claims,
               requirements,
               selected,
@@ -157,7 +157,7 @@ export async function test_graph_review_pairing(): Promise<void> {
  * The helper accepts either fixture spelling and throws if extraction loses the
  * declaration, preventing a missing fixture from weakening the graph setup.
  */
-function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
+function requireUnit(inventory: IEvidenceInventory, identity: string): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === identity || candidate.identity.at(-1) === identity,
@@ -173,7 +173,7 @@ function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
  * derivative findings, which a presence-only assertion would not detect.
  */
 function count(
-  result: ReturnType<typeof EvidGraph.evaluate>,
+  result: ReturnType<typeof EvidenceGraph.evaluate>,
   code: string,
 ): number {
   return result.diagnostics.filter((diagnostic) => diagnostic.code === code)

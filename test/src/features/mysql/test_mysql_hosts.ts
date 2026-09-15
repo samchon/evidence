@@ -1,8 +1,8 @@
-import { EvidFingerprint, EvidInventory, EvidMysqlAdapter } from "evid";
+import { EvidenceFingerprint, EvidenceInventory, EvidenceMysqlAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Attaches MySQL COMMENT annotations to their owning schema units.
@@ -37,9 +37,9 @@ export async function test_mysql_hosts(): Promise<void> {
      */
     CREATE TABLE Example (id INT);
   `.replaceAll("\n", "\r\n");
-  const adapter = new EvidMysqlAdapter();
+  const adapter = new EvidenceMysqlAdapter();
   const original = await adapter.analyze(
-    EvidTestSourceSnapshot.create("schema.sql", source),
+    EvidenceTestSourceSnapshot.create("schema.sql", source),
   );
 
   TestValidator.equals(
@@ -69,7 +69,7 @@ export async function test_mysql_hosts(): Promise<void> {
   const selected = original.units.map((unit) => unit.id);
   TestValidator.equals(
     "withdrawn column remains diagnosed as hidden",
-    new EvidInventory([original]).resolve(
+    new EvidenceInventory([original]).resolve(
       { file: "/project/schema.sql", segments: ["Contract", "retired"] },
       selected,
     ).status,
@@ -78,7 +78,7 @@ export async function test_mysql_hosts(): Promise<void> {
   const model = original.units.find((unit) => unit.name === "Contract");
   if (model === undefined) throw new Error("Missing Contract model.");
   const annotated = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "schema.sql",
       source.replace(
         "Verifies the column.",
@@ -88,22 +88,22 @@ export async function test_mysql_hosts(): Promise<void> {
   );
   TestValidator.equals(
     "COMMENT annotation edits preserve ancestor review",
-    EvidFingerprint.inspect(original, model.id).fingerprint,
-    EvidFingerprint.inspect(annotated, model.id).fingerprint,
+    EvidenceFingerprint.inspect(original, model.id).fingerprint,
+    EvidenceFingerprint.inspect(annotated, model.id).fingerprint,
   );
   const changed = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "schema.sql",
       source.replace("id INT COMMENT", "id BIGINT COMMENT"),
     ),
   );
   TestValidator.notEquals(
     "column type edit invalidates ancestor review",
-    EvidFingerprint.inspect(original, model.id).fingerprint,
-    EvidFingerprint.inspect(changed, model.id).fingerprint,
+    EvidenceFingerprint.inspect(original, model.id).fingerprint,
+    EvidenceFingerprint.inspect(changed, model.id).fingerprint,
   );
   const escaped = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "escaped.sql",
       "CREATE TABLE Escaped (id INT COMMENT 'Owner''s note.\n@evidence ./spec.md#escaped Verifies escaped prose.');",
     ),
@@ -114,9 +114,9 @@ export async function test_mysql_hosts(): Promise<void> {
     ["./spec.md#escaped"],
   );
   const ambiguous = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create("one.sql", "CREATE TABLE Same (id INT);"),
-      EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create("one.sql", "CREATE TABLE Same (id INT);"),
+      EvidenceTestSourceSnapshot.create(
         "two.sql",
         "CREATE TABLE Same (other INT);",
       ),

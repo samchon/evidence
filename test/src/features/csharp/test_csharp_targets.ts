@@ -1,14 +1,14 @@
-import { EvidCSharpAdapter } from "evid";
-import type { EvidTargetResolutionStatus } from "evid";
+import { EvidenceCSharpAdapter } from "evidence";
+import type { EvidenceTargetResolutionStatus } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
-interface IEvidCSharpTargetStatus {
+interface IEvidenceCSharpTargetStatus {
   target: string | undefined;
-  status: EvidTargetResolutionStatus;
+  status: EvidenceTargetResolutionStatus;
 }
 
 /**
@@ -25,9 +25,9 @@ interface IEvidCSharpTargetStatus {
  *    two sites.
  */
 export async function test_csharp_targets(): Promise<void> {
-  const adapter = new EvidCSharpAdapter();
+  const adapter = new EvidenceCSharpAdapter();
   const reference = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Models.cs",
       dedent`
         namespace Shop;
@@ -59,7 +59,7 @@ export async function test_csharp_targets(): Promise<void> {
     ),
   );
   const claim = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Verify.cs",
       dedent`
         /// <summary>
@@ -88,7 +88,7 @@ export async function test_csharp_targets(): Promise<void> {
     [],
   );
   TestValidator.equals("complete C# target claim", claim.diagnostics, []);
-  const resolutions = await EvidTestGraph.resolveDeclarations(
+  const resolutions = await EvidenceTestGraph.resolveDeclarations(
     claim,
     reference,
     reference.units.map((unit) => unit.id),
@@ -103,7 +103,7 @@ export async function test_csharp_targets(): Promise<void> {
         status: resolution.resolution.status,
       }))
       .sort(compareTarget),
-    (<IEvidCSharpTargetStatus[]>[
+    (<IEvidenceCSharpTargetStatus[]>[
       { target: "Models.cs#Shop.Sale", status: "resolved" },
       { target: "Models.cs#Shop.Sale.Total", status: "resolved" },
       { target: "Models.cs#Shop.Sale.Calculate", status: "resolved" },
@@ -149,8 +149,8 @@ export async function test_csharp_targets(): Promise<void> {
 }
 
 function compareTarget(
-  left: IEvidCSharpTargetStatus,
-  right: IEvidCSharpTargetStatus,
+  left: IEvidenceCSharpTargetStatus,
+  right: IEvidenceCSharpTargetStatus,
 ): number {
   return compare(left.target ?? "", right.target ?? "");
 }

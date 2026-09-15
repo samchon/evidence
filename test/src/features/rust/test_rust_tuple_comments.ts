@@ -1,7 +1,7 @@
-import { EvidFingerprint, EvidInventory, EvidRustAdapter } from "evid";
+import { EvidenceFingerprint, EvidenceInventory, EvidenceRustAdapter } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Preserves Rust tuple-field identity across interleaved comments.
@@ -31,9 +31,9 @@ export async function test_rust_tuple_comments(): Promise<void> {
       pub i64,
     );
   `;
-  const adapter = new EvidRustAdapter();
+  const adapter = new EvidenceRustAdapter();
   const inventory = await adapter.analyze(
-    EvidTestSourceSnapshot.create("src/lib.rs", content),
+    EvidenceTestSourceSnapshot.create("src/lib.rs", content),
   );
   const units = new Map(
     inventory.units.map((unit) => [unit.id, unit.identity.join(".")]),
@@ -71,7 +71,7 @@ export async function test_rust_tuple_comments(): Promise<void> {
     inventory.declarations.find((item) => item.target === "docs/spec.md#first")
       ?.hostId,
   );
-  const graph = new EvidInventory([inventory]);
+  const graph = new EvidenceInventory([inventory]);
   for (const [segment, status] of [
     ["0", "resolved"],
     ["1", "missing"],
@@ -88,7 +88,7 @@ export async function test_rust_tuple_comments(): Promise<void> {
     );
 
   const edited = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/lib.rs",
       content.replace(
         "Reviewed the first field.",
@@ -97,7 +97,7 @@ export async function test_rust_tuple_comments(): Promise<void> {
     ),
   );
   const changed = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/lib.rs",
       content.replace("*/ i32", "*/ u32"),
     ),
@@ -107,13 +107,13 @@ export async function test_rust_tuple_comments(): Promise<void> {
     if (unit === undefined) throw new Error(`Missing ${name}.`);
     TestValidator.equals(
       "review metadata is excluded",
-      EvidFingerprint.inspect(inventory, unit.id).fingerprint,
-      EvidFingerprint.inspect(edited, unit.id).fingerprint,
+      EvidenceFingerprint.inspect(inventory, unit.id).fingerprint,
+      EvidenceFingerprint.inspect(edited, unit.id).fingerprint,
     );
     TestValidator.notEquals(
       "real field content is retained",
-      EvidFingerprint.inspect(inventory, unit.id).fingerprint,
-      EvidFingerprint.inspect(changed, unit.id).fingerprint,
+      EvidenceFingerprint.inspect(inventory, unit.id).fingerprint,
+      EvidenceFingerprint.inspect(changed, unit.id).fingerprint,
     );
   }
 }

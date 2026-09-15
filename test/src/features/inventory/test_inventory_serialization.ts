@@ -1,7 +1,7 @@
-import { EvidInventory } from "evid";
+import { EvidenceInventory } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestInventory } from "../../internal/EvidTestInventory";
+import { EvidenceTestInventory } from "../../internal/EvidenceTestInventory";
 
 /**
  * Normalizes duplicate inventory inputs without losing selection or annotation
@@ -23,15 +23,15 @@ import { EvidTestInventory } from "../../internal/EvidTestInventory";
  *    conflict.
  */
 export async function test_inventory_serialization(): Promise<void> {
-  const input = EvidTestInventory.create();
-  EvidTestInventory.unit(
+  const input = EvidenceTestInventory.create();
+  EvidenceTestInventory.unit(
     input,
     "box",
     ["Box"],
     "type",
     "export class Box { value = 1; }",
   );
-  const host = EvidTestInventory.host(
+  const host = EvidenceTestInventory.host(
     input,
     "box-doc",
     "box-site",
@@ -75,12 +75,12 @@ export async function test_inventory_serialization(): Promise<void> {
   const repeatedSite = repeatedUnit.sites[0];
   if (originalSite === undefined || repeatedSite === undefined)
     throw new Error("Missing fixture declaration site.");
-  const body = EvidTestInventory.range(input, "value = 1");
+  const body = EvidenceTestInventory.range(input, "value = 1");
   originalSite.content.push(body);
   repeatedSite.content = [body, ...repeatedSite.content, body];
 
-  const forward = new EvidInventory([input, second]);
-  const reverse = new EvidInventory([second, input]);
+  const forward = new EvidenceInventory([input, second]);
+  const reverse = new EvidenceInventory([second, input]);
 
   TestValidator.equals(
     "deterministic serialization",
@@ -124,6 +124,6 @@ export async function test_inventory_serialization(): Promise<void> {
         if (range.start.offset === body.start.offset) range.start.line += 1;
   TestValidator.predicate(
     "conflicting content coordinates fail",
-    !new EvidInventory([input, invalid]).snapshot().complete,
+    !new EvidenceInventory([input, invalid]).snapshot().complete,
   );
 }

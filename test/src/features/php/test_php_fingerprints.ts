@@ -1,9 +1,9 @@
-import { EvidFingerprint, EvidPhpAdapter } from "evid";
-import type { IEvidInventory } from "evid";
+import { EvidenceFingerprint, EvidencePhpAdapter } from "evidence";
+import type { IEvidenceInventory } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Tracks PHP review fingerprints across semantic ownership changes.
@@ -83,9 +83,9 @@ export async function test_php_fingerprints(): Promise<void> {
  * Each caller receives a fresh inventory so a single textual mutation cannot
  * share parser or inventory state with the baseline revision.
  */
-async function analyze(content: string): Promise<IEvidInventory> {
-  return new EvidPhpAdapter().analyze(
-    EvidTestSourceSnapshot.create("src/contract.php", content),
+async function analyze(content: string): Promise<IEvidenceInventory> {
+  return new EvidencePhpAdapter().analyze(
+    EvidenceTestSourceSnapshot.create("src/contract.php", content),
   );
 }
 
@@ -95,8 +95,8 @@ async function analyze(content: string): Promise<IEvidInventory> {
  * A missing name fails the scenario immediately because the comparison cannot
  * establish fingerprint behavior without its intended semantic unit.
  */
-function fingerprint(inventory: IEvidInventory, name: string): string {
+function fingerprint(inventory: IEvidenceInventory, name: string): string {
   const unit = inventory.units.find((item) => item.name === name);
   if (unit === undefined) throw new Error(`Missing PHP unit ${name}`);
-  return EvidFingerprint.inspect(inventory, unit.id).fingerprint;
+  return EvidenceFingerprint.inspect(inventory, unit.id).fingerprint;
 }

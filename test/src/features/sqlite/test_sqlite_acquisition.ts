@@ -1,13 +1,13 @@
 import {
-  EvidSqliteAdapter,
-  EvidTreeSitterAssetScope,
-  EvidTreeSitterAssets,
-} from "evid";
+  EvidenceSqliteAdapter,
+  EvidenceTreeSitterAssetScope,
+  EvidenceTreeSitterAssets,
+} from "evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
-import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
+import { EvidenceTestParserAssets } from "../../internal/EvidenceTestParserAssets";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Acquires SQLite's configured WASM parser and reuses it offline.
@@ -20,19 +20,19 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Repeat offline and require equivalent analysis.
  */
 export async function test_sqlite_acquisition(): Promise<void> {
-  const grammar = await new EvidTreeSitterAssets().grammar("sqlite");
-  const bytes = Uint8Array.from(await EvidTestParserAssets.bytes(grammar));
-  const source = EvidTestSourceSnapshot.create(
+  const grammar = await new EvidenceTreeSitterAssets().grammar("sqlite");
+  const bytes = Uint8Array.from(await EvidenceTestParserAssets.bytes(grammar));
+  const source = EvidenceTestSourceSnapshot.create(
     "schema.sql",
     'CREATE TABLE "Cold.Cache" ([id] INTEGER PRIMARY KEY) STRICT;',
   );
 
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     "sqlite-acquisition",
     {},
     async (cacheDirectory) => {
       const requests: string[] = [];
-      const cold = await EvidTreeSitterAssetScope.run(
+      const cold = await EvidenceTreeSitterAssetScope.run(
         {
           cacheDirectory,
           fetch: async (input) => {
@@ -40,9 +40,9 @@ export async function test_sqlite_acquisition(): Promise<void> {
             return new Response(bytes);
           },
         },
-        async () => new EvidSqliteAdapter().analyze(source),
+        async () => new EvidenceSqliteAdapter().analyze(source),
       );
-      const warm = await EvidTreeSitterAssetScope.run(
+      const warm = await EvidenceTreeSitterAssetScope.run(
         {
           cacheDirectory,
           attempts: 1,
@@ -52,7 +52,7 @@ export async function test_sqlite_acquisition(): Promise<void> {
             );
           },
         },
-        async () => new EvidSqliteAdapter().analyze(source),
+        async () => new EvidenceSqliteAdapter().analyze(source),
       );
 
       TestValidator.equals("one necessary pinned dialect transfer", requests, [

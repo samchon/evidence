@@ -1,9 +1,9 @@
-import { EvidTypeScriptAdapter } from "evid";
-import type { IEvidInventory } from "evid";
+import { EvidenceTypeScriptAdapter } from "evidence";
+import type { IEvidenceInventory } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Resolves TypeScript public exports through every supported edge.
@@ -15,8 +15,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 2. Verify public identities, aliases, and target resolution.
  */
 export async function test_typescript_exports(): Promise<void> {
-  const snapshot = EvidTestSourceSnapshot.combine([
-    EvidTestSourceSnapshot.create(
+  const snapshot = EvidenceTestSourceSnapshot.combine([
+    EvidenceTestSourceSnapshot.create(
       "src/dep.ts",
       dedent`
         export interface Shape { side: number; }
@@ -25,15 +25,15 @@ export async function test_typescript_exports(): Promise<void> {
         export enum Ignored { VALUE }
       `,
     ),
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/star.ts",
       "export const starred = true;",
     ),
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/default-interface.ts",
       "export default interface DefaultContract { value: string; }",
     ),
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/index.ts",
       dedent`
         export { Shape as RenamedShape, run as execute } from "./dep";
@@ -54,7 +54,7 @@ export async function test_typescript_exports(): Promise<void> {
       `,
     ),
   ]);
-  const inventory = await new EvidTypeScriptAdapter().analyze(snapshot);
+  const inventory = await new EvidenceTypeScriptAdapter().analyze(snapshot);
   const index = addresses(inventory, "/project/src/index.ts");
 
   TestValidator.equals("public barrel addresses", index, [
@@ -100,15 +100,15 @@ export async function test_typescript_exports(): Promise<void> {
   TestValidator.equals("complete export traversal", inventory.diagnostics, []);
 
   // Drive-letter paths must stay absolute while resolving relative reexports.
-  const windows = await new EvidTypeScriptAdapter().analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+  const windows = await new EvidenceTypeScriptAdapter().analyze(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/Windows-Dependency.ts",
         "export interface WindowsContract { value: string; }",
         undefined,
         "D:/project",
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/windows-index.ts",
         'export { WindowsContract } from "./windows-dependency";',
         undefined,
@@ -124,7 +124,7 @@ export async function test_typescript_exports(): Promise<void> {
   TestValidator.equals("complete Windows traversal", windows.diagnostics, []);
 }
 
-function addresses(inventory: IEvidInventory, file: string): string[] {
+function addresses(inventory: IEvidenceInventory, file: string): string[] {
   return inventory.addresses
     .filter((address) => address.file === file)
     .map((address) => address.segments.join("."))

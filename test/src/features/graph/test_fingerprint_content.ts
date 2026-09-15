@@ -1,9 +1,9 @@
-import { EvidFingerprint, EvidTypeScriptAdapter } from "evid";
-import type { IEvidInventory, IEvidUnit } from "evid";
+import { EvidenceFingerprint, EvidenceTypeScriptAdapter } from "evidence";
+import type { IEvidenceInventory, IEvidenceUnit } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Fingerprints TypeScript declaration content independently of annotations and
@@ -42,9 +42,9 @@ export async function test_fingerprint_content(): Promise<void> {
   const sale = requireUnit(original, "Sale");
   const price = requireUnit(original, "price");
   const first = requireUnit(original, "first");
-  const saleFingerprint = EvidFingerprint.inspect(original, sale.id);
-  const priceFingerprint = EvidFingerprint.inspect(original, price.id);
-  const firstFingerprint = EvidFingerprint.inspect(original, first.id);
+  const saleFingerprint = EvidenceFingerprint.inspect(original, sale.id);
+  const priceFingerprint = EvidenceFingerprint.inspect(original, price.id);
+  const firstFingerprint = EvidenceFingerprint.inspect(original, first.id);
 
   TestValidator.equals("fingerprint version", saleFingerprint.version, 2);
   TestValidator.equals(
@@ -63,7 +63,7 @@ export async function test_fingerprint_content(): Promise<void> {
   incomplete.complete = false;
 
   await TestValidator.error("incomplete inventory", async () =>
-    EvidFingerprint.inspect(incomplete, sale.id),
+    EvidenceFingerprint.inspect(incomplete, sale.id),
   );
 
   // Annotation prose, fingerprints, and checkout line endings do not change reviewed content.
@@ -75,7 +75,7 @@ export async function test_fingerprint_content(): Promise<void> {
 
   TestValidator.equals(
     "annotation, line endings, and trailing whitespace ignored",
-    EvidFingerprint.inspect(annotated, requireUnit(annotated, "Sale").id)
+    EvidenceFingerprint.inspect(annotated, requireUnit(annotated, "Sale").id)
       .fingerprint,
     saleFingerprint.fingerprint,
   );
@@ -90,7 +90,7 @@ export async function test_fingerprint_content(): Promise<void> {
 
   TestValidator.equals(
     "member content expires leaf review",
-    EvidFingerprint.inspect(
+    EvidenceFingerprint.inspect(
       changedMember,
       requireUnit(changedMember, "price").id,
     ).fingerprint === priceFingerprint.fingerprint,
@@ -98,7 +98,7 @@ export async function test_fingerprint_content(): Promise<void> {
   );
   TestValidator.equals(
     "member content expires container review",
-    EvidFingerprint.inspect(
+    EvidenceFingerprint.inspect(
       changedMember,
       requireUnit(changedMember, "Sale").id,
     ).fingerprint === saleFingerprint.fingerprint,
@@ -112,7 +112,7 @@ export async function test_fingerprint_content(): Promise<void> {
 
   TestValidator.equals(
     "ordinary comment expires leaf review",
-    EvidFingerprint.inspect(
+    EvidenceFingerprint.inspect(
       changedComment,
       requireUnit(changedComment, "price").id,
     ).fingerprint === priceFingerprint.fingerprint,
@@ -128,7 +128,7 @@ export async function test_fingerprint_content(): Promise<void> {
 
   TestValidator.equals(
     "unrelated declaration preserves scope",
-    EvidFingerprint.inspect(
+    EvidenceFingerprint.inspect(
       changedSiblings,
       requireUnit(changedSiblings, "Sale").id,
     ).fingerprint,
@@ -136,7 +136,7 @@ export async function test_fingerprint_content(): Promise<void> {
   );
   TestValidator.equals(
     "sibling declarator preserves leaf",
-    EvidFingerprint.inspect(
+    EvidenceFingerprint.inspect(
       changedSiblings,
       requireUnit(changedSiblings, "first").id,
     ).fingerprint,
@@ -150,9 +150,9 @@ export async function test_fingerprint_content(): Promise<void> {
  * Keeping the path fixed ensures comparisons isolate edited declaration content
  * rather than fingerprint changes caused by rebinding to another source.
  */
-async function analyze(content: string): Promise<IEvidInventory> {
-  return new EvidTypeScriptAdapter().analyze(
-    EvidTestSourceSnapshot.create("src/contracts.ts", content),
+async function analyze(content: string): Promise<IEvidenceInventory> {
+  return new EvidenceTypeScriptAdapter().analyze(
+    EvidenceTestSourceSnapshot.create("src/contracts.ts", content),
   );
 }
 
@@ -163,7 +163,7 @@ async function analyze(content: string): Promise<IEvidInventory> {
  * Missing extraction fails explicitly instead of comparing an unrelated
  * fallback unit.
  */
-function requireUnit(inventory: IEvidInventory, name: string): IEvidUnit {
+function requireUnit(inventory: IEvidenceInventory, name: string): IEvidenceUnit {
   const unit = inventory.units.find((candidate) => candidate.name === name);
   if (unit === undefined) throw new Error(`Missing fingerprint unit: ${name}`);
   return unit;

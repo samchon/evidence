@@ -1,7 +1,7 @@
-import type { IEvidConfig } from "evid";
+import type { IEvidenceConfig } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { createEvidConfigPlan } from "evid";
+import { createEvidenceConfigPlan } from "evidence";
 
 /**
  * Resolves artifact defaults and severity inheritance without losing authored
@@ -28,7 +28,7 @@ import { createEvidConfigPlan } from "evid";
  * 5. With root severity off, retain only the claim that explicitly overrides it.
  */
 export function test_config_resolution(): void {
-  const config: IEvidConfig = {
+  const config: IEvidenceConfig = {
     severity: "warning",
     claims: [
       {
@@ -79,7 +79,7 @@ export function test_config_resolution(): void {
     ],
   };
 
-  const plan = createEvidConfigPlan(config);
+  const plan = createEvidenceConfigPlan(config);
   const programming = plan.claims[0];
   const database = plan.claims[1];
   const swagger = plan.claims[2];
@@ -173,7 +173,7 @@ export function test_config_resolution(): void {
   );
 
   // A claim can override the root default, while an inherited root off removes the claim.
-  const rootOff = createEvidConfigPlan({
+  const rootOff = createEvidenceConfigPlan({
     severity: "off",
     claims: [
       {
