@@ -1,6 +1,6 @@
-import { EvidSqlAdapter } from "evid";
+import { EvidenceSqlAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Rejects portable SQL constructs that could change the selected schema.
@@ -13,7 +13,7 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Verify an understood empty schema remains complete without fabricated units.
  */
 export async function test_sql_boundaries(): Promise<void> {
-  const adapter = new EvidSqlAdapter();
+  const adapter = new EvidenceSqlAdapter();
   for (const content of [
     "CREATE TABLE account (id INTEGER DEFAULT nextval('sequence'));",
     "CREATE TABLE account (id INTEGER, UNIQUE INDEX named (id));",
@@ -34,7 +34,7 @@ export async function test_sql_boundaries(): Promise<void> {
     "CREATE TABLE account (id INTEGER, ID INTEGER);",
   ]) {
     const result = await adapter.analyze(
-      EvidTestSourceSnapshot.create("schema.sql", content),
+      EvidenceTestSourceSnapshot.create("schema.sql", content),
     );
     TestValidator.equals(`incomplete: ${content}`, result.complete, false);
     TestValidator.predicate(
@@ -46,7 +46,7 @@ export async function test_sql_boundaries(): Promise<void> {
     );
   }
   const defaults = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "defaults.sql",
       "CREATE TABLE defaults (negative INTEGER DEFAULT -1, enabled BOOLEAN DEFAULT TRUE, label VARCHAR(10) DEFAULT 'ok', created TIMESTAMP DEFAULT CURRENT_TIMESTAMP);",
     ),
@@ -65,7 +65,7 @@ export async function test_sql_boundaries(): Promise<void> {
     ["CREATED", "ENABLED", "LABEL", "NEGATIVE"],
   );
   const empty = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "empty.sql",
       "-- An explicitly empty schema.\n",
     ),

@@ -1,8 +1,8 @@
-import { EvidTypeScriptAdapter } from "evid";
+import { EvidenceTypeScriptAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Binds TypeScript JSDoc only to supported declaration hosts.
@@ -44,8 +44,8 @@ export async function test_typescript_hosts(): Promise<void> {
     function reviewedLocally(): void {}
     export const text = "@evidence docs/spec.md#string This is a string.";
   `;
-  const inventory = await new EvidTypeScriptAdapter().analyze(
-    EvidTestSourceSnapshot.create("src/hosts.ts", content),
+  const inventory = await new EvidenceTypeScriptAdapter().analyze(
+    EvidenceTestSourceSnapshot.create("src/hosts.ts", content),
   );
 
   TestValidator.equals(

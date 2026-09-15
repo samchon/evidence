@@ -1,15 +1,15 @@
 import {
-  EvidBigQueryAdapter,
-  EvidParser,
-  EvidTreeSitterAssetScope,
-  EvidTreeSitterAssets,
-} from "evid";
+  EvidenceBigQueryAdapter,
+  EvidenceParser,
+  EvidenceTreeSitterAssetScope,
+  EvidenceTreeSitterAssets,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
-import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
-import { EvidTestParserError } from "../../internal/EvidTestParserError";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
+import { EvidenceTestParserAssets } from "../../internal/EvidenceTestParserAssets";
+import { EvidenceTestParserError } from "../../internal/EvidenceTestParserError";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Acquires the selected GoogleSQL grammar and reuses its cached inventory
@@ -26,18 +26,18 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    unsupported GoogleSQL query capture.
  */
 export async function test_bigquery_acquisition(): Promise<void> {
-  const grammar = await new EvidTreeSitterAssets().grammar("bigquery");
-  const bytes = await EvidTestParserAssets.bytes(grammar);
-  const source = EvidTestSourceSnapshot.create(
+  const grammar = await new EvidenceTreeSitterAssets().grammar("bigquery");
+  const bytes = await EvidenceTestParserAssets.bytes(grammar);
+  const source = EvidenceTestSourceSnapshot.create(
     "schema.bqsql",
     "CREATE TABLE ds.orders (items ARRAY<STRUCT<sku STRING>>);",
   );
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     "bigquery-acquisition",
     {},
     async (cacheDirectory) => {
       const requests: string[] = [];
-      const cold = await EvidTreeSitterAssetScope.run(
+      const cold = await EvidenceTreeSitterAssetScope.run(
         {
           cacheDirectory,
           fetch: async (input) => {
@@ -45,7 +45,7 @@ export async function test_bigquery_acquisition(): Promise<void> {
             return new Response(Uint8Array.from(bytes));
           },
         },
-        async () => new EvidBigQueryAdapter().analyze(source),
+        async () => new EvidenceBigQueryAdapter().analyze(source),
       );
       TestValidator.equals("only configured grammar downloaded", requests, [
         grammar.wasm.url,
@@ -55,7 +55,7 @@ export async function test_bigquery_acquisition(): Promise<void> {
         cold.diagnostics,
         [],
       );
-      const warm = await EvidTreeSitterAssetScope.run(
+      const warm = await EvidenceTreeSitterAssetScope.run(
         {
           cacheDirectory,
           attempts: 1,
@@ -63,13 +63,13 @@ export async function test_bigquery_acquisition(): Promise<void> {
             throw new Error("offline");
           },
         },
-        async () => new EvidBigQueryAdapter().analyze(source),
+        async () => new EvidenceBigQueryAdapter().analyze(source),
       );
       TestValidator.equals("warm offline inventory is equivalent", warm, cold);
     },
   );
 
-  const parser = new EvidParser();
+  const parser = new EvidenceParser();
   try {
     await parser.parse(
       {
@@ -90,7 +90,7 @@ export async function test_bigquery_acquisition(): Promise<void> {
       parser.state().languages,
       ["bigquery"],
     );
-    await EvidTestParserError.expect("unsupported-extension", () =>
+    await EvidenceTestParserError.expect("unsupported-extension", () =>
       parser.parse(
         {
           type: "bigquery",
@@ -100,7 +100,7 @@ export async function test_bigquery_acquisition(): Promise<void> {
         () => undefined,
       ),
     );
-    await EvidTestParserError.expect("query-invalid", () =>
+    await EvidenceTestParserError.expect("query-invalid", () =>
       parser.parse(
         {
           type: "bigquery",

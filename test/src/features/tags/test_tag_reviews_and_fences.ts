@@ -1,9 +1,9 @@
-import { EvidTagParser } from "evid";
-import type { IEvidDiagnostic } from "evid";
+import { EvidenceTagParser } from "@wrtnlabs/evidence";
+import type { IEvidenceDiagnostic } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestDocumentation } from "../../internal/EvidTestDocumentation";
+import { EvidenceTestDocumentation } from "../../internal/EvidenceTestDocumentation";
 
 /**
  * Keeps reviews, fenced examples, and prose separate from acknowledgements.
@@ -24,7 +24,7 @@ import { EvidTestDocumentation } from "../../internal/EvidTestDocumentation";
  *    fingerprint is consumed, and review description prose remains intact.
  */
 export async function test_tag_reviews_and_fences(): Promise<void> {
-  const fixture = EvidTestDocumentation.create(dedent`
+  const fixture = EvidenceTestDocumentation.create(dedent`
     /**
      * A sentence mentioning @internal is ordinary prose.
      * ~~~~typescript
@@ -55,7 +55,7 @@ export async function test_tag_reviews_and_fences(): Promise<void> {
      * @evidence ../unclosed.ts#fake This remains fenced through the host end.
      */
   `);
-  const result = EvidTagParser.parse(
+  const result = EvidenceTagParser.parse(
     fixture.content,
     fixture.host,
     fixture.documentation,
@@ -97,7 +97,7 @@ export async function test_tag_reviews_and_fences(): Promise<void> {
   TestValidator.equals(
     "fence cannot supply a reason",
     result.diagnostics.map(
-      (diagnostic: IEvidDiagnostic): string => diagnostic.code,
+      (diagnostic: IEvidenceDiagnostic): string => diagnostic.code,
     ),
     ["missing-evidence-reason"],
   );

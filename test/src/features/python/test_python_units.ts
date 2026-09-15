@@ -1,8 +1,11 @@
-import { EvidLanguageRegistry, EvidPythonAdapter } from "evid";
+import {
+  EvidenceLanguageRegistry,
+  EvidencePythonAdapter,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Classifies Python declarations with distinct class and instance ownership.
@@ -17,7 +20,7 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    members retain separate addresses.
  */
 export async function test_python_units(): Promise<void> {
-  const language = EvidLanguageRegistry.list().find(
+  const language = EvidenceLanguageRegistry.list().find(
     (entry) => entry.type === "python",
   );
   if (language === undefined)
@@ -25,11 +28,11 @@ export async function test_python_units(): Promise<void> {
   TestValidator.equals(
     "certified Python adapter",
     language.adapter?.entry,
-    "EvidPythonAdapter",
+    "EvidencePythonAdapter",
   );
 
-  const inventory = await new EvidPythonAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const inventory = await new EvidencePythonAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/sale.py",
       dedent`
         type JsonValue = dict[str, str]

@@ -1,10 +1,13 @@
-import { EvidWatchDependencySnapshot, type IEvidSourceDependency } from "evid";
+import {
+  EvidenceWatchDependencySnapshot,
+  type IEvidenceSourceDependency,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { rm, symlink } from "node:fs/promises";
 import { join } from "node:path";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
 
 /**
  * Detects content, directory-topology, deletion, and junction-target changes.
@@ -24,7 +27,7 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
  */
 export async function test_watch_dependency_snapshots(): Promise<void> {
   const location = join(__dirname, `snapshots ${randomUUID()}`);
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     location,
     {
       "root/source.ts": "export const value = 1;\n",
@@ -34,32 +37,36 @@ export async function test_watch_dependency_snapshots(): Promise<void> {
     async (directory) => {
       const root = join(directory, "root");
       const source = join(root, "source.ts");
-      const dependencies: IEvidSourceDependency[] = [
+      const dependencies: IEvidenceSourceDependency[] = [
         { path: root, recursive: true },
         { path: source, recursive: false },
       ];
-      const initial = await EvidWatchDependencySnapshot.capture(dependencies);
+      const initial =
+        await EvidenceWatchDependencySnapshot.capture(dependencies);
 
       // File bytes change even when the source remains at the same exact path.
-      await EvidTestFileSystem.save(directory, {
+      await EvidenceTestFileSystem.save(directory, {
         "root/source.ts": "export const value = 2;\n",
       });
-      const edited = await EvidWatchDependencySnapshot.capture(dependencies);
+      const edited =
+        await EvidenceWatchDependencySnapshot.capture(dependencies);
       TestValidator.predicate("content edit detected", !initial.equals(edited));
 
       // A recursive dependency records immediate names so new glob candidates appear.
-      await EvidTestFileSystem.save(directory, {
+      await EvidenceTestFileSystem.save(directory, {
         "root/created.ts": "export const created = true;\n",
       });
-      const created = await EvidWatchDependencySnapshot.capture(dependencies);
+      const created =
+        await EvidenceWatchDependencySnapshot.capture(dependencies);
       TestValidator.predicate(
         "directory creation detected",
         !edited.equals(created),
       );
 
       // Missing exact paths retain a version that changes when they are repaired.
-      await EvidTestFileSystem.erase(source);
-      const deleted = await EvidWatchDependencySnapshot.capture(dependencies);
+      await EvidenceTestFileSystem.erase(source);
+      const deleted =
+        await EvidenceWatchDependencySnapshot.capture(dependencies);
       TestValidator.predicate(
         "file deletion detected",
         !created.equals(deleted),
@@ -72,11 +79,14 @@ export async function test_watch_dependency_snapshots(): Promise<void> {
       } catch {
         return;
       }
-      const linked: IEvidSourceDependency[] = [{ path: link, recursive: true }];
-      const firstTarget = await EvidWatchDependencySnapshot.capture(linked);
+      const linked: IEvidenceSourceDependency[] = [
+        { path: link, recursive: true },
+      ];
+      const firstTarget = await EvidenceWatchDependencySnapshot.capture(linked);
       await rm(link, { recursive: true, force: true });
       await symlink(join(directory, "target-b"), link, "junction");
-      const secondTarget = await EvidWatchDependencySnapshot.capture(linked);
+      const secondTarget =
+        await EvidenceWatchDependencySnapshot.capture(linked);
 
       TestValidator.predicate(
         "junction retarget detected",

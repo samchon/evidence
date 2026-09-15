@@ -1,8 +1,8 @@
-import { EvidSqliteAdapter } from "evid";
+import { EvidenceSqliteAdapter } from "@wrtnlabs/evidence";
 import { dedent } from "@typia/utils";
 
-import { EvidDatabaseAdapterCertification } from "../../internal/certification/EvidDatabaseAdapterCertification";
-import type { IEvidDatabaseAdapterCertification } from "../../internal/certification/IEvidDatabaseAdapterCertification";
+import { EvidenceDatabaseAdapterCertification } from "../../internal/certification/EvidenceDatabaseAdapterCertification";
+import type { IEvidenceDatabaseAdapterCertification } from "../../internal/certification/IEvidenceDatabaseAdapterCertification";
 
 /**
  * Applies shared database certification to independently specified SQLite
@@ -16,9 +16,9 @@ import type { IEvidDatabaseAdapterCertification } from "../../internal/certifica
  * 3. Require every declared gate to pass.
  */
 export async function test_sqlite_certification(): Promise<void> {
-  const fixture: IEvidDatabaseAdapterCertification = {
+  const fixture: IEvidenceDatabaseAdapterCertification = {
     type: "sqlite",
-    adapter: new EvidSqliteAdapter(),
+    adapter: new EvidenceSqliteAdapter(),
     sources: [
       {
         file: "schema.sql",
@@ -131,12 +131,12 @@ export async function test_sqlite_certification(): Promise<void> {
     },
   };
 
-  EvidDatabaseAdapterCertification.assertInventory(
+  EvidenceDatabaseAdapterCertification.assertInventory(
     fixture,
-    await EvidDatabaseAdapterCertification.analyze(fixture),
+    await EvidenceDatabaseAdapterCertification.analyze(fixture),
   );
-  await EvidDatabaseAdapterCertification.assertGraph(fixture);
-  await EvidDatabaseAdapterCertification.assertFailures(fixture);
-  await EvidDatabaseAdapterCertification.assertFingerprint(fixture);
-  await EvidDatabaseAdapterCertification.assertAmbiguity(fixture);
+  await EvidenceDatabaseAdapterCertification.assertGraph(fixture);
+  await EvidenceDatabaseAdapterCertification.assertFailures(fixture);
+  await EvidenceDatabaseAdapterCertification.assertFingerprint(fixture);
+  await EvidenceDatabaseAdapterCertification.assertAmbiguity(fixture);
 }

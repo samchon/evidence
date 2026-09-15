@@ -1,9 +1,12 @@
-import { EvidBigQueryAdapter, EvidTypeScriptAdapter } from "evid";
+import {
+  EvidenceBigQueryAdapter,
+  EvidenceTypeScriptAdapter,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Resolves BigQuery targets with quoted segments and source-file aliases
@@ -19,8 +22,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    retain their failure status.
  */
 export async function test_bigquery_targets(): Promise<void> {
-  const reference = await new EvidBigQueryAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const reference = await new EvidenceBigQueryAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "schema.sql",
       dedent`
     CREATE TABLE \`acme-prod.dataset.orders\` (\`display name\` STRING);
@@ -28,8 +31,8 @@ export async function test_bigquery_targets(): Promise<void> {
       ["schema.sql", "alias.sql"],
     ),
   );
-  const claims = await new EvidTypeScriptAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const claims = await new EvidenceTypeScriptAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "claims.ts",
       dedent`
     /** @evidence ./schema.sql#["acme-prod"].dataset.orders["display name"] Cites the literal field. */
@@ -49,7 +52,7 @@ export async function test_bigquery_targets(): Promise<void> {
   const selected = reference.units
     .filter((unit) => unit.symbol === "column")
     .map((unit) => unit.id);
-  const resolutions = await EvidTestGraph.resolveDeclarations(
+  const resolutions = await EvidenceTestGraph.resolveDeclarations(
     claims,
     reference,
     selected,

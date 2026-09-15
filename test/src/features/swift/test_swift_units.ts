@@ -1,8 +1,12 @@
-import { EvidAccessor, EvidInventory, EvidSwiftAdapter } from "evid";
+import {
+  EvidenceAccessor,
+  EvidenceInventory,
+  EvidenceSwiftAdapter,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Extracts Swift public units with exact ownership.
@@ -14,8 +18,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 2. Verify units, ownership, and target resolution.
  */
 export async function test_swift_units(): Promise<void> {
-  const snapshot = EvidTestSourceSnapshot.combine([
-    EvidTestSourceSnapshot.create(
+  const snapshot = EvidenceTestSourceSnapshot.combine([
+    EvidenceTestSourceSnapshot.create(
       "src/Contract.swift",
       dedent`
       /// Public contract.
@@ -49,7 +53,7 @@ export async function test_swift_units(): Promise<void> {
     `,
       ["src/Contract.swift", "alias/Contract.swift"],
     ),
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Additional.swift",
       dedent`
       public extension Alias {
@@ -67,13 +71,13 @@ export async function test_swift_units(): Promise<void> {
     `,
     ),
   ]);
-  const inventory = await new EvidSwiftAdapter().analyze(snapshot);
+  const inventory = await new EvidenceSwiftAdapter().analyze(snapshot);
 
   TestValidator.equals("complete Swift surface", inventory.diagnostics, []);
   TestValidator.equals(
     "exact source-public denominator",
     inventory.units
-      .map((unit) => `${unit.symbol}:${EvidAccessor.format(unit.identity)}`)
+      .map((unit) => `${unit.symbol}:${EvidenceAccessor.format(unit.identity)}`)
       .sort((left, right) => left.localeCompare(right)),
     [
       "type:Contract",
@@ -120,7 +124,7 @@ export async function test_swift_units(): Promise<void> {
     more?.parentId,
     contract?.id,
   );
-  const graph = new EvidInventory([inventory]);
+  const graph = new EvidenceInventory([inventory]);
   const selected = inventory.units.map((unit) => unit.id);
   TestValidator.equals(
     "logical source alias",

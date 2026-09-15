@@ -1,8 +1,8 @@
-import { EvidPythonAdapter } from "evid";
+import { EvidencePythonAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Attaches evidence from valid Python docstring and comment hosts.
@@ -18,8 +18,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    declarations and report the exercised unsupported cases.
  */
 export async function test_python_hosts(): Promise<void> {
-  const inventory = await new EvidPythonAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const inventory = await new EvidencePythonAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/hosts.py",
       dedent`
         def documented():

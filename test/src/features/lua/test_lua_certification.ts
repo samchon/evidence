@@ -1,5 +1,5 @@
-import { EvidAdapterCertification } from "../../internal/certification/EvidAdapterCertification";
-import { EvidLuaCertificationFixture } from "../../internal/certification/EvidLuaCertificationFixture";
+import { EvidenceAdapterCertification } from "../../internal/certification/EvidenceAdapterCertification";
+import { EvidenceLuaCertificationFixture } from "../../internal/certification/EvidenceLuaCertificationFixture";
 
 /**
  * Certifies Lua ownership, failures, graph coverage, ambiguity, and
@@ -12,14 +12,14 @@ import { EvidLuaCertificationFixture } from "../../internal/certification/EvidLu
  *    ambiguity and fingerprint behavior.
  */
 export async function test_lua_certification(): Promise<void> {
-  const fixture = EvidLuaCertificationFixture.create();
+  const fixture = EvidenceLuaCertificationFixture.create();
 
-  EvidAdapterCertification.assertInventory(
+  EvidenceAdapterCertification.assertInventory(
     fixture,
-    await EvidAdapterCertification.analyze(fixture),
+    await EvidenceAdapterCertification.analyze(fixture),
   );
-  await EvidAdapterCertification.assertGraph(fixture);
-  await EvidAdapterCertification.assertFailures(fixture);
-  await EvidAdapterCertification.assertFingerprint(fixture);
-  await EvidAdapterCertification.assertAmbiguity(fixture);
+  await EvidenceAdapterCertification.assertGraph(fixture);
+  await EvidenceAdapterCertification.assertFailures(fixture);
+  await EvidenceAdapterCertification.assertFingerprint(fixture);
+  await EvidenceAdapterCertification.assertAmbiguity(fixture);
 }

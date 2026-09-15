@@ -1,15 +1,15 @@
 import {
-  EvidFingerprint,
-  EvidGraph,
-  EvidMarkdownAdapter,
-  EvidRustAdapter,
-} from "evid";
-import type { IEvidInventory, IEvidUnit } from "evid";
+  EvidenceFingerprint,
+  EvidenceGraph,
+  EvidenceMarkdownAdapter,
+  EvidenceRustAdapter,
+} from "@wrtnlabs/evidence";
+import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Evaluates Rust type, function, and property evidence.
@@ -23,8 +23,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    edits.
  */
 export async function test_rust_graph(): Promise<void> {
-  const requirements = await new EvidMarkdownAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const requirements = await new EvidenceMarkdownAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "docs/requirements.md",
       dedent`
         ## Service {#service}
@@ -41,8 +41,8 @@ export async function test_rust_graph(): Promise<void> {
       `,
     ),
   );
-  const implementation = await new EvidRustAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const implementation = await new EvidenceRustAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/contracts.rs",
       dedent`
         /// @evidence docs/requirements.md#service Implements the public type.
@@ -67,7 +67,7 @@ export async function test_rust_graph(): Promise<void> {
     requireUnit(implementation, "VALUE"),
   ];
 
-  const complete = EvidGraph.evaluate({
+  const complete = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -78,7 +78,7 @@ export async function test_rust_graph(): Promise<void> {
             severity: "error",
             inventory: requirements,
             unitIds: requirementUnits.map((unit) => unit.id),
-            resolutions: await EvidTestGraph.resolveDeclarations(
+            resolutions: await EvidenceTestGraph.resolveDeclarations(
               implementation,
               requirements,
               requirementUnits.map((unit) => unit.id),
@@ -97,7 +97,7 @@ export async function test_rust_graph(): Promise<void> {
     missing.declarations = missing.declarations.filter(
       (declaration) => !declaration.target.endsWith(`#${anchor}`),
     );
-    const partial = EvidGraph.evaluate({
+    const partial = EvidenceGraph.evaluate({
       claims: [
         {
           severity: "error",
@@ -108,7 +108,7 @@ export async function test_rust_graph(): Promise<void> {
               severity: "error",
               inventory: requirements,
               unitIds: requirementUnits.map((unit) => unit.id),
-              resolutions: await EvidTestGraph.resolveDeclarations(
+              resolutions: await EvidenceTestGraph.resolveDeclarations(
                 missing,
                 requirements,
                 requirementUnits.map((unit) => unit.id),
@@ -120,7 +120,7 @@ export async function test_rust_graph(): Promise<void> {
     });
     TestValidator.equals(
       `missing Rust ${anchor} acknowledgement`,
-      EvidTestGraph.obligation(partial, 0, 0).missingUnitIds,
+      EvidenceTestGraph.obligation(partial, 0, 0).missingUnitIds,
       [required.id],
     );
   }
@@ -143,13 +143,13 @@ export async function test_rust_graph(): Promise<void> {
 
   TestValidator.equals(
     "Rust evidence metadata preserves fingerprint",
-    EvidFingerprint.inspect(original, originalUnit.id).fingerprint,
-    EvidFingerprint.inspect(editedReason, reasonUnit.id).fingerprint,
+    EvidenceFingerprint.inspect(original, originalUnit.id).fingerprint,
+    EvidenceFingerprint.inspect(editedReason, reasonUnit.id).fingerprint,
   );
   TestValidator.notEquals(
     "Rust implementation moves fingerprint",
-    EvidFingerprint.inspect(original, originalUnit.id).fingerprint,
-    EvidFingerprint.inspect(editedBody, bodyUnit.id).fingerprint,
+    EvidenceFingerprint.inspect(original, originalUnit.id).fingerprint,
+    EvidenceFingerprint.inspect(editedBody, bodyUnit.id).fingerprint,
   );
 
   // A sibling struct field has its own source site and fingerprint.
@@ -159,8 +159,8 @@ export async function test_rust_graph(): Promise<void> {
   const firstEdited = requireUnit(fieldsEdited, "first");
   TestValidator.equals(
     "Rust sibling field fingerprint isolation",
-    EvidFingerprint.inspect(fieldsOriginal, firstOriginal.id).fingerprint,
-    EvidFingerprint.inspect(fieldsEdited, firstEdited.id).fingerprint,
+    EvidenceFingerprint.inspect(fieldsOriginal, firstOriginal.id).fingerprint,
+    EvidenceFingerprint.inspect(fieldsEdited, firstEdited.id).fingerprint,
   );
 
   // Impl-level bounds contribute to every associated member declared inside it.
@@ -170,17 +170,17 @@ export async function test_rust_graph(): Promise<void> {
   const methodEdited = requireUnit(implEdited, "calculate");
   TestValidator.notEquals(
     "Rust impl header moves member fingerprint",
-    EvidFingerprint.inspect(implOriginal, methodOriginal.id).fingerprint,
-    EvidFingerprint.inspect(implEdited, methodEdited.id).fingerprint,
+    EvidenceFingerprint.inspect(implOriginal, methodOriginal.id).fingerprint,
+    EvidenceFingerprint.inspect(implEdited, methodEdited.id).fingerprint,
   );
 }
 
 async function fingerprintInventory(
   reason: string,
   statement: string,
-): Promise<IEvidInventory> {
-  return new EvidRustAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+): Promise<IEvidenceInventory> {
+  return new EvidenceRustAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/fingerprint.rs",
       dedent`
         /// @evidence docs/requirements.md#run ${reason}
@@ -192,9 +192,9 @@ async function fingerprintInventory(
   );
 }
 
-async function fieldInventory(second: string): Promise<IEvidInventory> {
-  return new EvidRustAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+async function fieldInventory(second: string): Promise<IEvidenceInventory> {
+  return new EvidenceRustAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/fields.rs",
       dedent`
         pub struct Fields {
@@ -206,9 +206,11 @@ async function fieldInventory(second: string): Promise<IEvidInventory> {
   );
 }
 
-async function implementationInventory(bound: string): Promise<IEvidInventory> {
-  return new EvidRustAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+async function implementationInventory(
+  bound: string,
+): Promise<IEvidenceInventory> {
+  return new EvidenceRustAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/implementation.rs",
       dedent`
         pub struct Sale;
@@ -224,7 +226,10 @@ async function implementationInventory(bound: string): Promise<IEvidInventory> {
   );
 }
 
-function requireUnit(inventory: IEvidInventory, name: string): IEvidUnit {
+function requireUnit(
+  inventory: IEvidenceInventory,
+  name: string,
+): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === name || candidate.identity.at(-1) === name,

@@ -1,12 +1,12 @@
-import { EvidGraphReporter, EvidQuery } from "evid";
-import type { IEvidGraphReport } from "evid";
+import { EvidenceGraphReporter, EvidenceQuery } from "@wrtnlabs/evidence";
+import type { IEvidenceGraphReport } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 import typia from "typia";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
-import { EvidTestQueryAnalysis } from "../../internal/EvidTestQueryAnalysis";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
+import { EvidenceTestQueryAnalysis } from "../../internal/EvidenceTestQueryAnalysis";
 
 /**
  * Exports independent graph obligations and safely renders untrusted target
@@ -28,12 +28,12 @@ import { EvidTestQueryAnalysis } from "../../internal/EvidTestQueryAnalysis";
  */
 export async function test_query_graph(): Promise<void> {
   const location = join(__dirname, `query graph ${randomUUID()}`);
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     location,
-    EvidTestQueryAnalysis.records(),
+    EvidenceTestQueryAnalysis.records(),
     async (directory) => {
-      const analysis = await EvidTestQueryAnalysis.analyze(directory, 2);
-      const report = EvidQuery.graph(analysis, directory);
+      const analysis = await EvidenceTestQueryAnalysis.analyze(directory, 2);
+      const report = EvidenceQuery.graph(analysis, directory);
 
       // Equal targets in two configured references retain separate obligation IDs.
       TestValidator.equals(
@@ -69,15 +69,15 @@ export async function test_query_graph(): Promise<void> {
       );
 
       // JSON is a deterministic and structurally validated lossless report.
-      const json = EvidGraphReporter.json(report);
+      const json = EvidenceGraphReporter.json(report);
       TestValidator.equals(
         "graph JSON structure",
-        typia.json.assertParse<IEvidGraphReport>(json),
+        typia.json.assertParse<IEvidenceGraphReport>(json),
         report,
       );
       TestValidator.equals(
         "deterministic graph JSON",
-        EvidGraphReporter.json(report),
+        EvidenceGraphReporter.json(report),
         json,
       );
 
@@ -86,8 +86,8 @@ export async function test_query_graph(): Promise<void> {
       const node = hostile.nodes.find((candidate) => candidate.role !== "host");
       if (node === undefined) throw new Error("Missing graph identity node.");
       node.target = 'safe"]\nattacker --> victim["';
-      const mermaid = EvidGraphReporter.mermaid(hostile);
-      const dot = EvidGraphReporter.dot(hostile);
+      const mermaid = EvidenceGraphReporter.mermaid(hostile);
+      const dot = EvidenceGraphReporter.dot(hostile);
       TestValidator.predicate(
         "visual relation kinds",
         mermaid.includes("-.->") &&

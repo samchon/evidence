@@ -1,10 +1,10 @@
 import {
-  EvidConfigDependencyScanner,
-  EvidConfigLoader,
-  EvidWatchDependencySnapshot,
-  type IEvidConfig,
-  type IEvidSourceDependency,
-} from "evid";
+  EvidenceConfigDependencyScanner,
+  EvidenceConfigLoader,
+  EvidenceWatchDependencySnapshot,
+  type IEvidenceConfig,
+  type IEvidenceSourceDependency,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { execFileSync } from "node:child_process";
@@ -12,7 +12,7 @@ import { randomUUID } from "node:crypto";
 import { createRequire } from "node:module";
 import { join } from "node:path";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
 
 /**
  * Follows runtime JavaScript files selected by legacy package resolution.
@@ -48,7 +48,7 @@ export async function test_watch_package_runtime_entries(): Promise<void> {
     __dirname,
     `watch package runtime entries ${randomUUID()}`,
   );
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     location,
     {
       "package.json": JSON.stringify({ type: "commonjs" }),
@@ -136,17 +136,18 @@ export async function test_watch_package_runtime_entries(): Promise<void> {
     },
     async (directory: string): Promise<void> => {
       const configFile: string = join(directory, "evidence.config.ts");
-      const config: IEvidConfig = await EvidConfigLoader.load(configFile);
+      const config: IEvidenceConfig =
+        await EvidenceConfigLoader.load(configFile);
       TestValidator.equals(
         "legacy runtime severity",
         config.severity,
         "warning",
       );
 
-      const dependencies: IEvidSourceDependency[] =
-        await new EvidConfigDependencyScanner(configFile).scan();
+      const dependencies: IEvidenceSourceDependency[] =
+        await new EvidenceConfigDependencyScanner(configFile).scan();
       const paths: string[] = dependencies.map(
-        (dependency: IEvidSourceDependency): string =>
+        (dependency: IEvidenceSourceDependency): string =>
           dependency.path.replaceAll("\\", "/"),
       );
       const selected: string[] = ["entry.js", "sub.js"];
@@ -176,42 +177,42 @@ export async function test_watch_package_runtime_entries(): Promise<void> {
         [],
       );
 
-      const baseline: EvidWatchDependencySnapshot =
-        await EvidWatchDependencySnapshot.capture(dependencies);
-      await EvidTestFileSystem.save(directory, {
+      const baseline: EvidenceWatchDependencySnapshot =
+        await EvidenceWatchDependencySnapshot.capture(dependencies);
+      await EvidenceTestFileSystem.save(directory, {
         "node_modules/legacy-settings/entry.ts": `export default ("error" as "error" | "off");\n`,
       });
-      const inactiveEdit: EvidWatchDependencySnapshot =
-        await EvidWatchDependencySnapshot.capture(dependencies);
+      const inactiveEdit: EvidenceWatchDependencySnapshot =
+        await EvidenceWatchDependencySnapshot.capture(dependencies);
       TestValidator.predicate(
         "compiler substitute edit remains stable",
         baseline.equals(inactiveEdit),
       );
-      await EvidTestFileSystem.save(directory, {
+      await EvidenceTestFileSystem.save(directory, {
         "node_modules/legacy-settings/entry.js": `module.exports = "warning"; // active edit\n`,
       });
-      const activeEdit: EvidWatchDependencySnapshot =
-        await EvidWatchDependencySnapshot.capture(dependencies);
+      const activeEdit: EvidenceWatchDependencySnapshot =
+        await EvidenceWatchDependencySnapshot.capture(dependencies);
       TestValidator.predicate(
         "runtime entry edit invalidates snapshot",
         !baseline.equals(activeEdit),
       );
 
-      await EvidTestFileSystem.save(directory, {
+      await EvidenceTestFileSystem.save(directory, {
         "node_modules/legacy-settings/package.json": JSON.stringify({
           main: "entry",
           types: "entry.ts",
         }),
       });
-      const extensionlessConfig: IEvidConfig =
-        await EvidConfigLoader.load(configFile);
+      const extensionlessConfig: IEvidenceConfig =
+        await EvidenceConfigLoader.load(configFile);
       TestValidator.equals(
         "extensionless main severity",
         extensionlessConfig.severity,
         "warning",
       );
-      const extensionless: IEvidSourceDependency[] =
-        await new EvidConfigDependencyScanner(configFile).scan();
+      const extensionless: IEvidenceSourceDependency[] =
+        await new EvidenceConfigDependencyScanner(configFile).scan();
       TestValidator.predicate(
         "extensionless main runtime entry",
         dependencyPaths(extensionless).includes(
@@ -222,21 +223,21 @@ export async function test_watch_package_runtime_entries(): Promise<void> {
         ),
       );
 
-      await EvidTestFileSystem.save(directory, {
+      await EvidenceTestFileSystem.save(directory, {
         "node_modules/legacy-settings/package.json": JSON.stringify({
           main: "nested",
           types: "entry.ts",
         }),
       });
-      const directoryConfig: IEvidConfig =
-        await EvidConfigLoader.load(configFile);
+      const directoryConfig: IEvidenceConfig =
+        await EvidenceConfigLoader.load(configFile);
       TestValidator.equals(
         "directory main severity",
         directoryConfig.severity,
         "warning",
       );
-      const directoryEntry: IEvidSourceDependency[] =
-        await new EvidConfigDependencyScanner(configFile).scan();
+      const directoryEntry: IEvidenceSourceDependency[] =
+        await new EvidenceConfigDependencyScanner(configFile).scan();
       TestValidator.predicate(
         "directory main runtime entry",
         dependencyPaths(directoryEntry).includes(
@@ -260,8 +261,8 @@ export async function test_watch_package_runtime_entries(): Promise<void> {
         "runtime rejects recursive index package",
         runtimeRejected,
       );
-      const recursiveScanner: EvidConfigDependencyScanner =
-        new EvidConfigDependencyScanner(recursiveFile);
+      const recursiveScanner: EvidenceConfigDependencyScanner =
+        new EvidenceConfigDependencyScanner(recursiveFile);
       let scannerRejected: boolean = false;
       try {
         await recursiveScanner.scan();
@@ -287,8 +288,8 @@ export async function test_watch_package_runtime_entries(): Promise<void> {
         "Node rejects extensionless terminal index",
         (): unknown => createRequire(bareIndexFile)("extensionless-index"),
       );
-      const bareIndexScanner: EvidConfigDependencyScanner =
-        new EvidConfigDependencyScanner(bareIndexFile);
+      const bareIndexScanner: EvidenceConfigDependencyScanner =
+        new EvidenceConfigDependencyScanner(bareIndexFile);
       await TestValidator.error(
         "scanner rejects extensionless terminal index",
         async (): Promise<void> => {
@@ -312,7 +313,7 @@ export async function test_watch_package_runtime_entries(): Promise<void> {
       );
       let evaluatorRejectedEsm: boolean = false;
       try {
-        await EvidConfigLoader.load(extensionlessEsm);
+        await EvidenceConfigLoader.load(extensionlessEsm);
       } catch {
         evaluatorRejectedEsm = true;
       }
@@ -320,8 +321,8 @@ export async function test_watch_package_runtime_entries(): Promise<void> {
         "evaluator rejects extensionless ESM package subpath",
         evaluatorRejectedEsm,
       );
-      const extensionlessScanner: EvidConfigDependencyScanner =
-        new EvidConfigDependencyScanner(extensionlessEsm);
+      const extensionlessScanner: EvidenceConfigDependencyScanner =
+        new EvidenceConfigDependencyScanner(extensionlessEsm);
       let scannerRejectedEsm: boolean = false;
       try {
         await extensionlessScanner.scan();
@@ -334,15 +335,15 @@ export async function test_watch_package_runtime_entries(): Promise<void> {
       );
 
       const explicitEsm: string = join(directory, "esm-explicit.config.mts");
-      const explicitConfig: IEvidConfig =
-        await EvidConfigLoader.load(explicitEsm);
+      const explicitConfig: IEvidenceConfig =
+        await EvidenceConfigLoader.load(explicitEsm);
       TestValidator.equals(
         "explicit ESM package subpath severity",
         explicitConfig.severity,
         "warning",
       );
-      const explicitDependencies: IEvidSourceDependency[] =
-        await new EvidConfigDependencyScanner(explicitEsm).scan();
+      const explicitDependencies: IEvidenceSourceDependency[] =
+        await new EvidenceConfigDependencyScanner(explicitEsm).scan();
       TestValidator.predicate(
         "explicit ESM package subpath observed",
         dependencyPaths(explicitDependencies).includes(
@@ -371,8 +372,8 @@ export async function test_watch_package_runtime_entries(): Promise<void> {
           }).trim(),
           expectedOutput,
         );
-        const selectedDependencies: IEvidSourceDependency[] =
-          await new EvidConfigDependencyScanner(ownerFile).scan();
+        const selectedDependencies: IEvidenceSourceDependency[] =
+          await new EvidenceConfigDependencyScanner(ownerFile).scan();
         TestValidator.predicate(
           `${owner} scanner selection`,
           dependencyPaths(selectedDependencies).includes(
@@ -394,8 +395,8 @@ export async function test_watch_package_runtime_entries(): Promise<void> {
         "Node rejects incomplete ESM scope",
         nodeRejectedScope,
       );
-      const invalidScopeScanner: EvidConfigDependencyScanner =
-        new EvidConfigDependencyScanner(invalidScopeFile);
+      const invalidScopeScanner: EvidenceConfigDependencyScanner =
+        new EvidenceConfigDependencyScanner(invalidScopeFile);
       let scannerRejectedScope: boolean = false;
       try {
         await invalidScopeScanner.scan();
@@ -428,7 +429,7 @@ export async function test_watch_package_runtime_entries(): Promise<void> {
         ["object", {}],
       ];
       for (const [label, main] of legacyMainCases) {
-        await EvidTestFileSystem.save(directory, {
+        await EvidenceTestFileSystem.save(directory, {
           "node_modules/coerced-main/package.json": JSON.stringify({ main }),
         });
         TestValidator.equals(
@@ -438,14 +439,14 @@ export async function test_watch_package_runtime_entries(): Promise<void> {
             .replaceAll("\\", "/"),
           coercedIndex,
         );
-        const selected: IEvidSourceDependency[] =
-          await new EvidConfigDependencyScanner(coercedOwner).scan();
+        const selected: IEvidenceSourceDependency[] =
+          await new EvidenceConfigDependencyScanner(coercedOwner).scan();
         TestValidator.predicate(
           `${label} main scanner selection`,
           dependencyPaths(selected).includes(coercedIndex),
         );
       }
-      await EvidTestFileSystem.save(directory, {
+      await EvidenceTestFileSystem.save(directory, {
         "node_modules/coerced-main/package.json": `\uFEFF${JSON.stringify({ main: null })}`,
       });
       TestValidator.equals(
@@ -455,19 +456,19 @@ export async function test_watch_package_runtime_entries(): Promise<void> {
           .replaceAll("\\", "/"),
         coercedIndex,
       );
-      const bomDependencies: IEvidSourceDependency[] =
-        await new EvidConfigDependencyScanner(coercedOwner).scan();
+      const bomDependencies: IEvidenceSourceDependency[] =
+        await new EvidenceConfigDependencyScanner(coercedOwner).scan();
       TestValidator.predicate(
         "BOM manifest scanner selection",
         dependencyPaths(bomDependencies).includes(coercedIndex),
       );
-      const bomSnapshot: EvidWatchDependencySnapshot =
-        await EvidWatchDependencySnapshot.capture(bomDependencies);
-      await EvidTestFileSystem.save(directory, {
+      const bomSnapshot: EvidenceWatchDependencySnapshot =
+        await EvidenceWatchDependencySnapshot.capture(bomDependencies);
+      await EvidenceTestFileSystem.save(directory, {
         "node_modules/coerced-main/index.js": `module.exports = "edited";\n`,
       });
-      const editedIndex: EvidWatchDependencySnapshot =
-        await EvidWatchDependencySnapshot.capture(bomDependencies);
+      const editedIndex: EvidenceWatchDependencySnapshot =
+        await EvidenceWatchDependencySnapshot.capture(bomDependencies);
       TestValidator.predicate(
         "coerced main index edit invalidates snapshot",
         !bomSnapshot.equals(editedIndex),
@@ -480,7 +481,7 @@ export async function test_watch_package_runtime_entries(): Promise<void> {
       ).replaceAll("\\", "/");
       const dotMains: string[] = [".", "./", "./child/.."];
       for (const main of dotMains) {
-        await EvidTestFileSystem.save(directory, {
+        await EvidenceTestFileSystem.save(directory, {
           "node_modules/dot-main/nested/package.json": JSON.stringify({ main }),
         });
         TestValidator.equals(
@@ -490,8 +491,8 @@ export async function test_watch_package_runtime_entries(): Promise<void> {
           }).trim(),
           "dot index",
         );
-        const selected: IEvidSourceDependency[] =
-          await new EvidConfigDependencyScanner(dotOwner).scan();
+        const selected: IEvidenceSourceDependency[] =
+          await new EvidenceConfigDependencyScanner(dotOwner).scan();
         TestValidator.predicate(
           `${main} main scanner index`,
           dependencyPaths(selected).includes(dotIndex),
@@ -507,8 +508,8 @@ export async function test_watch_package_runtime_entries(): Promise<void> {
  * Watch records retain native paths; slash normalization keeps expected values
  * stable on Windows and POSIX runners.
  */
-function dependencyPaths(dependencies: IEvidSourceDependency[]): string[] {
-  return dependencies.map((dependency: IEvidSourceDependency): string =>
+function dependencyPaths(dependencies: IEvidenceSourceDependency[]): string[] {
+  return dependencies.map((dependency: IEvidenceSourceDependency): string =>
     dependency.path.replaceAll("\\", "/"),
   );
 }

@@ -1,14 +1,14 @@
 import { TestValidator } from "@nestia/e2e";
 import {
-  EvidConfigDependencyScanner,
-  EvidConfigLoader,
-  EvidCommand,
-} from "evid";
-import type { IEvidConfig } from "evid";
+  EvidenceConfigDependencyScanner,
+  EvidenceConfigLoader,
+  EvidenceCommand,
+} from "@wrtnlabs/evidence";
+import type { IEvidenceConfig } from "@wrtnlabs/evidence";
 import assert from "node:assert/strict";
 import { join } from "node:path";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
 
 /**
  * Preserves JSON configuration semantics through loading, dependency scanning,
@@ -29,7 +29,7 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
  *    initialization at the same destination and reject new YAML destinations.
  */
 export async function test_config_json(): Promise<void> {
-  const config: IEvidConfig = {
+  const config: IEvidenceConfig = {
     claims: [
       {
         name: "require('./missing-module')",
@@ -39,19 +39,19 @@ export async function test_config_json(): Promise<void> {
       },
     ],
   };
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     "json-config",
     {
-      "evid.json": JSON.stringify(config),
+      "evidence.json": JSON.stringify(config),
       "evidence.config.ts": `export default ${JSON.stringify(config)};`,
       "evidence.yaml": JSON.stringify(config),
       "evidence.yml": JSON.stringify(config),
       "broken.json": "{",
     },
     async (directory) => {
-      const json = join(directory, "evid.json");
-      const fromJson = await EvidConfigLoader.plan(json);
-      const fromTs = await EvidConfigLoader.plan(
+      const json = join(directory, "evidence.json");
+      const fromJson = await EvidenceConfigLoader.plan(json);
+      const fromTs = await EvidenceConfigLoader.plan(
         join(directory, "evidence.config.ts"),
       );
       TestValidator.equals(
@@ -61,26 +61,28 @@ export async function test_config_json(): Promise<void> {
       );
       TestValidator.equals("JSON config anchoring", fromJson.configFile, json);
 
-      const dependencies = await new EvidConfigDependencyScanner(json).scan();
+      const dependencies = await new EvidenceConfigDependencyScanner(
+        json,
+      ).scan();
       TestValidator.predicate(
         "JSON strings are not imports",
         dependencies.every((entry) => !entry.path.includes("missing-module")),
       );
       for (const name of ["evidence.yaml", "evidence.yml", "broken.json"])
         await assert.rejects(() =>
-          EvidConfigLoader.plan(join(directory, name)),
+          EvidenceConfigLoader.plan(join(directory, name)),
         );
 
       // Initialization creates usable JSON and refuses extensions and existing destinations.
       const created = join(directory, "created.json");
-      await EvidCommand.initialize(created);
-      await EvidConfigLoader.plan(created);
-      await assert.rejects(() => EvidCommand.initialize(created));
+      await EvidenceCommand.initialize(created);
+      await EvidenceConfigLoader.plan(created);
+      await assert.rejects(() => EvidenceCommand.initialize(created));
       await assert.rejects(() =>
-        EvidCommand.initialize(join(directory, "new.yaml")),
+        EvidenceCommand.initialize(join(directory, "new.yaml")),
       );
       await assert.rejects(() =>
-        EvidCommand.initialize(join(directory, "new.yml")),
+        EvidenceCommand.initialize(join(directory, "new.yml")),
       );
     },
   );

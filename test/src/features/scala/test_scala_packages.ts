@@ -1,7 +1,7 @@
-import { EvidAccessor, EvidScalaAdapter } from "evid";
+import { EvidenceAccessor, EvidenceScalaAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Builds Scala identities across packages, companion namespaces, and literal
@@ -18,8 +18,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    units.
  */
 export async function test_scala_packages(): Promise<void> {
-  const inventory = await new EvidScalaAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const inventory = await new EvidenceScalaAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/Packages.scala",
       dedent`
     package outer
@@ -46,7 +46,7 @@ export async function test_scala_packages(): Promise<void> {
   TestValidator.equals(
     "exact package identities",
     inventory.units
-      .map((unit) => `${unit.symbol}:${EvidAccessor.format(unit.identity)}`)
+      .map((unit) => `${unit.symbol}:${EvidenceAccessor.format(unit.identity)}`)
       .sort((a, b) => a.localeCompare(b, "en")),
     [
       "type:outer.nested.Contract",

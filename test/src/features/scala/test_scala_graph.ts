@@ -1,9 +1,13 @@
-import { EvidGraph, EvidScalaAdapter, EvidTypeScriptAdapter } from "evid";
+import {
+  EvidenceGraph,
+  EvidenceScalaAdapter,
+  EvidenceTypeScriptAdapter,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Requires every selected Scala unit to have an evidence acknowledgement.
@@ -20,8 +24,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    data without supplying missing coverage.
  */
 export async function test_scala_graph(): Promise<void> {
-  const reference = await new EvidScalaAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const reference = await new EvidenceScalaAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/Contract.scala",
       dedent`
     class Contract
@@ -30,8 +34,8 @@ export async function test_scala_graph(): Promise<void> {
   `,
     ),
   );
-  const claims = await new EvidTypeScriptAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const claims = await new EvidenceTypeScriptAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/Claims.ts",
       dedent`
     /** @evidence ./Contract.scala#Contract Verifies the type. */
@@ -67,7 +71,7 @@ export async function test_scala_graph(): Promise<void> {
             ),
           )
         : [];
-      const graph = EvidGraph.evaluate({
+      const graph = EvidenceGraph.evaluate({
         claims: [
           {
             severity: "error",
@@ -78,7 +82,7 @@ export async function test_scala_graph(): Promise<void> {
                 severity: "error",
                 inventory: reference,
                 unitIds,
-                resolutions: await EvidTestGraph.resolveDeclarations(
+                resolutions: await EvidenceTestGraph.resolveDeclarations(
                   claim,
                   reference,
                   unitIds,
@@ -95,13 +99,13 @@ export async function test_scala_graph(): Promise<void> {
       );
       TestValidator.equals(
         `${symbol} exact missing population`,
-        EvidTestGraph.obligation(graph, 0, 0).missingUnitIds,
+        EvidenceTestGraph.obligation(graph, 0, 0).missingUnitIds,
         acknowledged ? [] : unitIds,
       );
     }
   }
-  const review = await new EvidScalaAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const review = await new EvidenceScalaAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/Review.scala",
       dedent`
     /** @evidenceReview ./Contract.scala#run Reviewed without an acknowledgement. */
@@ -118,7 +122,7 @@ export async function test_scala_graph(): Promise<void> {
   const functions = reference.units
     .filter((unit) => unit.symbol === "function")
     .map((unit) => unit.id);
-  const graph = EvidGraph.evaluate({
+  const graph = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -130,7 +134,7 @@ export async function test_scala_graph(): Promise<void> {
             inventory: reference,
             unitIds: functions,
             resolutions: [],
-            reviewResolutions: await EvidTestGraph.resolveReviews(
+            reviewResolutions: await EvidenceTestGraph.resolveReviews(
               review,
               reference,
               functions,
@@ -142,7 +146,7 @@ export async function test_scala_graph(): Promise<void> {
   });
   TestValidator.equals(
     "review never supplies missing coverage",
-    EvidTestGraph.obligation(graph, 0, 0).missingUnitIds,
+    EvidenceTestGraph.obligation(graph, 0, 0).missingUnitIds,
     functions,
   );
 }

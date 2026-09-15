@@ -1,8 +1,8 @@
-import { EvidCAdapter, EvidLanguageRegistry } from "evid";
+import { EvidenceCAdapter, EvidenceLanguageRegistry } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Classifies the public C surface across tags, aliases, callables, objects, and
@@ -18,7 +18,7 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  */
 export async function test_c_units(): Promise<void> {
   // Certified metadata describes the exact grammar and explicit-source boundary.
-  const language = EvidLanguageRegistry.list().find(
+  const language = EvidenceLanguageRegistry.list().find(
     (entry) => entry.type === "c",
   );
   if (language === undefined) throw new Error("Missing C language metadata.");
@@ -27,7 +27,7 @@ export async function test_c_units(): Promise<void> {
   TestValidator.equals(
     "certified C adapter",
     language.adapter.entry,
-    "EvidCAdapter",
+    "EvidenceCAdapter",
   );
   TestValidator.equals(
     "published C grammar version",
@@ -35,8 +35,8 @@ export async function test_c_units(): Promise<void> {
     true,
   );
 
-  const inventory = await new EvidCAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const inventory = await new EvidenceCAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "include/shop.h",
       dedent`
         typedef struct Sale {

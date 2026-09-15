@@ -1,8 +1,8 @@
-import { EvidGraph } from "evid";
+import { EvidenceGraph } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestInventory } from "../../internal/EvidTestInventory";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestInventory } from "../../internal/EvidenceTestInventory";
 
 /**
  * Applies positive-evidence cardinality to semantic units and hosts.
@@ -11,7 +11,7 @@ import { EvidTestInventory } from "../../internal/EvidTestInventory";
  * cardinality. Aggregate scopes expand to selected descendants, while
  * exclusions can satisfy ordinary coverage without becoming positive evidence.
  *
- * 1. Check three claim subjects under singleEvidPerSymbol:
+ * 1. Check three claim subjects under singleEvidencePerSymbol:
  *
  *    - An uncited subject reports zero positive units.
  *    - Two comment fragments citing the same unit count once for their shared owner.
@@ -19,20 +19,20 @@ import { EvidTestInventory } from "../../internal/EvidTestInventory";
  * 2. Supply only an exclusion and require ordinary coverage to pass, positive
  *    cardinality to remain zero, and no unique-positive-host finding.
  * 3. Have two semantic hosts cite one reference unit, with a repeated fragment on
- *    one host; compare ordinary and uniqueEvid reference entries.
+ *    one host; compare ordinary and uniqueEvidence reference entries.
  * 4. Require exactly one uniqueness finding on the second reference, counting two
  *    semantic hosts rather than three physical citation positions.
  */
 export async function test_graph_cardinality(): Promise<void> {
-  const reference = EvidTestInventory.create();
-  const parent = EvidTestInventory.unit(
+  const reference = EvidenceTestInventory.create();
+  const parent = EvidenceTestInventory.unit(
     reference,
     "parent",
     ["Parent"],
     "type",
     "export class Box { value = 1; }",
   );
-  const first = EvidTestInventory.unit(
+  const first = EvidenceTestInventory.unit(
     reference,
     "first",
     ["Parent", "first"],
@@ -40,7 +40,7 @@ export async function test_graph_cardinality(): Promise<void> {
     "value = 1",
     parent.id,
   );
-  const second = EvidTestInventory.unit(
+  const second = EvidenceTestInventory.unit(
     reference,
     "second",
     ["Parent", "second"],
@@ -49,78 +49,78 @@ export async function test_graph_cardinality(): Promise<void> {
     parent.id,
   );
 
-  const claim = EvidTestInventory.create();
-  const empty = EvidTestInventory.unit(
+  const claim = EvidenceTestInventory.create();
+  const empty = EvidenceTestInventory.unit(
     claim,
     "empty",
     ["Empty"],
     "property",
     "export const unrelated = 3;",
   );
-  const duplicate = EvidTestInventory.unit(
+  const duplicate = EvidenceTestInventory.unit(
     claim,
     "duplicate",
     ["Duplicate"],
     "type",
     "export const first = 1, second = 2;",
   );
-  const broad = EvidTestInventory.unit(
+  const broad = EvidenceTestInventory.unit(
     claim,
     "broad",
     ["Broad"],
     "type",
     "export class Box { value = 1; }",
   );
-  EvidTestInventory.host(
+  EvidenceTestInventory.host(
     claim,
     "empty-host",
     empty.sites[0]?.id ?? "",
     [empty.id],
     "export const unrelated = 3;",
   );
-  const duplicateHost = EvidTestInventory.host(
+  const duplicateHost = EvidenceTestInventory.host(
     claim,
     "duplicate-host",
     duplicate.sites[0]?.id ?? "",
     [duplicate.id],
     "/** Shared documentation. */",
   );
-  const duplicateFragment = EvidTestInventory.host(
+  const duplicateFragment = EvidenceTestInventory.host(
     claim,
     "duplicate-fragment",
     duplicate.sites[0]?.id ?? "",
     [duplicate.id],
     "/** Class documentation. */",
   );
-  const broadHost = EvidTestInventory.host(
+  const broadHost = EvidenceTestInventory.host(
     claim,
     "broad-host",
     broad.sites[0]?.id ?? "",
     [broad.id],
     "/** Class documentation. */",
   );
-  const firstCitation = EvidTestGraph.declaration(
+  const firstCitation = EvidenceTestGraph.declaration(
     claim,
     "first-citation",
     duplicateHost,
     "evidence",
     "first",
   );
-  const repeatedCitation = EvidTestGraph.declaration(
+  const repeatedCitation = EvidenceTestGraph.declaration(
     claim,
     "repeated-citation",
     duplicateFragment,
     "evidence",
     "first",
   );
-  const broadCitation = EvidTestGraph.declaration(
+  const broadCitation = EvidenceTestGraph.declaration(
     claim,
     "broad-citation",
     broadHost,
     "evidence",
     "parent",
   );
-  const single = EvidGraph.evaluate({
+  const single = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -132,11 +132,11 @@ export async function test_graph_cardinality(): Promise<void> {
             inventory: reference,
             unitIds: [first.id, second.id],
             resolutions: [
-              EvidTestGraph.resolved(firstCitation, first),
-              EvidTestGraph.resolved(repeatedCitation, first),
-              EvidTestGraph.resolved(broadCitation, parent),
+              EvidenceTestGraph.resolved(firstCitation, first),
+              EvidenceTestGraph.resolved(repeatedCitation, first),
+              EvidenceTestGraph.resolved(broadCitation, parent),
             ],
-            singleEvidPerSymbol: true,
+            singleEvidencePerSymbol: true,
           },
         ],
       },
@@ -171,29 +171,29 @@ export async function test_graph_cardinality(): Promise<void> {
   );
 
   // Exclusions can satisfy ordinary coverage but never contribute a positive cardinality.
-  const exclusionClaim = EvidTestInventory.create();
-  const exclusionOwner = EvidTestInventory.unit(
+  const exclusionClaim = EvidenceTestInventory.create();
+  const exclusionOwner = EvidenceTestInventory.unit(
     exclusionClaim,
     "exclusion-owner",
     ["ExclusionOwner"],
     "function",
     "export const unrelated = 3;",
   );
-  const exclusionHost = EvidTestInventory.host(
+  const exclusionHost = EvidenceTestInventory.host(
     exclusionClaim,
     "exclusion-host",
     exclusionOwner.sites[0]?.id ?? "",
     [exclusionOwner.id],
     "export const unrelated = 3;",
   );
-  const exclusion = EvidTestGraph.declaration(
+  const exclusion = EvidenceTestGraph.declaration(
     exclusionClaim,
     "exclusion",
     exclusionHost,
     "evidenceExclude",
     "first",
   );
-  const exclusionOnly = EvidGraph.evaluate({
+  const exclusionOnly = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -204,9 +204,9 @@ export async function test_graph_cardinality(): Promise<void> {
             severity: "error",
             inventory: reference,
             unitIds: [first.id],
-            resolutions: [EvidTestGraph.resolved(exclusion, first)],
-            uniqueEvid: true,
-            singleEvidPerSymbol: true,
+            resolutions: [EvidenceTestGraph.resolved(exclusion, first)],
+            uniqueEvidence: true,
+            singleEvidencePerSymbol: true,
           },
         ],
       },
@@ -215,7 +215,7 @@ export async function test_graph_cardinality(): Promise<void> {
 
   TestValidator.equals(
     "exclusion supplies ordinary coverage",
-    EvidTestGraph.obligation(exclusionOnly, 0, 0).missingUnitIds,
+    EvidenceTestGraph.obligation(exclusionOnly, 0, 0).missingUnitIds,
     [],
   );
   TestValidator.predicate(
@@ -234,58 +234,58 @@ export async function test_graph_cardinality(): Promise<void> {
     [],
   );
 
-  // Two different semantic hosts violate only the reference that enables uniqueEvid.
-  const uniqueClaim = EvidTestInventory.create();
-  const owner = EvidTestInventory.unit(
+  // Two different semantic hosts violate only the reference that enables uniqueEvidence.
+  const uniqueClaim = EvidenceTestInventory.create();
+  const owner = EvidenceTestInventory.unit(
     uniqueClaim,
     "owner",
     ["Owner"],
     "type",
     "export const first = 1, second = 2;",
   );
-  const otherOwner = EvidTestInventory.unit(
+  const otherOwner = EvidenceTestInventory.unit(
     uniqueClaim,
     "other-owner",
     ["OtherOwner"],
     "property",
     "export const unrelated = 3;",
   );
-  const ownerHost = EvidTestInventory.host(
+  const ownerHost = EvidenceTestInventory.host(
     uniqueClaim,
     "owner-host",
     owner.sites[0]?.id ?? "",
     [owner.id],
     "/** Shared documentation. */",
   );
-  const ownerFragment = EvidTestInventory.host(
+  const ownerFragment = EvidenceTestInventory.host(
     uniqueClaim,
     "owner-fragment",
     owner.sites[0]?.id ?? "",
     [owner.id],
     "/** Class documentation. */",
   );
-  const otherOwnerHost = EvidTestInventory.host(
+  const otherOwnerHost = EvidenceTestInventory.host(
     uniqueClaim,
     "other-owner-host",
     otherOwner.sites[0]?.id ?? "",
     [otherOwner.id],
     "export const unrelated = 3;",
   );
-  const ownerCitation = EvidTestGraph.declaration(
+  const ownerCitation = EvidenceTestGraph.declaration(
     uniqueClaim,
     "owner-citation",
     ownerHost,
     "evidence",
     "first",
   );
-  const ownerRepeated = EvidTestGraph.declaration(
+  const ownerRepeated = EvidenceTestGraph.declaration(
     uniqueClaim,
     "owner-repeated",
     ownerFragment,
     "evidence",
     "first",
   );
-  const otherCitation = EvidTestGraph.declaration(
+  const otherCitation = EvidenceTestGraph.declaration(
     uniqueClaim,
     "other-citation",
     otherOwnerHost,
@@ -293,11 +293,11 @@ export async function test_graph_cardinality(): Promise<void> {
     "first",
   );
   const resolutions = [
-    EvidTestGraph.resolved(ownerCitation, first),
-    EvidTestGraph.resolved(ownerRepeated, first),
-    EvidTestGraph.resolved(otherCitation, first),
+    EvidenceTestGraph.resolved(ownerCitation, first),
+    EvidenceTestGraph.resolved(ownerRepeated, first),
+    EvidenceTestGraph.resolved(otherCitation, first),
   ];
-  const unique = EvidGraph.evaluate({
+  const unique = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -315,7 +315,7 @@ export async function test_graph_cardinality(): Promise<void> {
             inventory: reference,
             unitIds: [first.id],
             resolutions,
-            uniqueEvid: true,
+            uniqueEvidence: true,
           },
         ],
       },

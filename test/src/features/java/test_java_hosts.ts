@@ -1,8 +1,8 @@
-import { EvidInventory, EvidJavaAdapter } from "evid";
+import { EvidenceInventory, EvidenceJavaAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Attaches Java evidence to Javadoc and rejects inert carriers.
@@ -14,8 +14,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Require inert Java carriers to report diagnostics.
  */
 export async function test_java_hosts(): Promise<void> {
-  const inventory = await new EvidJavaAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const inventory = await new EvidenceJavaAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/Contracts.java",
       dedent`
         /**
@@ -110,8 +110,8 @@ export async function test_java_hosts(): Promise<void> {
     4,
   );
 
-  const withdrawn = await new EvidJavaAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const withdrawn = await new EvidenceJavaAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/Hidden.java",
       dedent`
         /** @internal This type and every public descendant are internal. */
@@ -131,7 +131,7 @@ export async function test_java_hosts(): Promise<void> {
       ` + "\n",
     ),
   );
-  const population = new EvidInventory([withdrawn]).select(
+  const population = new EvidenceInventory([withdrawn]).select(
     withdrawn.units.map((unit) => unit.id),
   );
   TestValidator.equals(

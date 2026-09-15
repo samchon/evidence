@@ -1,9 +1,12 @@
-import { EvidParser } from "evid";
-import type { EvidParseSession, IEvidParserInput } from "evid";
+import { EvidenceParser } from "@wrtnlabs/evidence";
+import type {
+  EvidenceParseSession,
+  IEvidenceParserInput,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestParserError } from "../../internal/EvidTestParserError";
-import { EvidTestSignal } from "../../internal/EvidTestSignal";
+import { EvidenceTestParserError } from "../../internal/EvidenceTestParserError";
+import { EvidenceTestSignal } from "../../internal/EvidenceTestSignal";
 
 /**
  * Bounds parser sessions and drains accepted work after callback failure and
@@ -27,12 +30,12 @@ import { EvidTestSignal } from "../../internal/EvidTestSignal";
  * 5. Close again and require the runtime to remain closed without failure.
  */
 export async function test_parser_lifetime(): Promise<void> {
-  const parser = new EvidParser({ concurrency: 1 });
-  const entered = new EvidTestSignal();
-  const release = new EvidTestSignal();
-  const borrowed: EvidParseSession[] = [];
+  const parser = new EvidenceParser({ concurrency: 1 });
+  const entered = new EvidenceTestSignal();
+  const release = new EvidenceTestSignal();
+  const borrowed: EvidenceParseSession[] = [];
   const expected = new Error("Adapter callback failed.");
-  const input: IEvidParserInput = {
+  const input: IEvidenceParserInput = {
     type: "typescript",
     file: "contract.ts",
     content: "export const answer = 42;",
@@ -60,7 +63,7 @@ export async function test_parser_lifetime(): Promise<void> {
     TestValidator.equals("one queued request", parser.state().waiting, 1);
 
     const closing = parser.close();
-    await EvidTestParserError.expect("session-closed", () =>
+    await EvidenceTestParserError.expect("session-closed", () =>
       parser.parse(input, (session) => session.root.type),
     );
     release.open();
@@ -79,7 +82,7 @@ export async function test_parser_lifetime(): Promise<void> {
   TestValidator.equals("all capacity released", parser.state().active, 0);
   TestValidator.equals("no pending work", parser.state().waiting, 0);
   for (const session of borrowed)
-    await EvidTestParserError.expect("session-closed", () =>
+    await EvidenceTestParserError.expect("session-closed", () =>
       session.captures("(identifier) @name"),
     );
 

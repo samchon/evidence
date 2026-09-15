@@ -1,7 +1,7 @@
-import type { IEvidConfig, IEvidReference } from "evid";
+import type { IEvidenceConfig, IEvidenceReference } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { validateEvidConfig } from "evid";
+import { validateEvidenceConfig } from "@wrtnlabs/evidence";
 
 /**
  * Rejects checklist policies that contradict per-host Markdown answers.
@@ -11,8 +11,9 @@ import { validateEvidConfig } from "evid";
  * meaning with global host cardinality or shared exclusion carriers.
  *
  * 1. Accept a reviewed Markdown checklist that forbids exclusions.
- * 2. Enable both cardinality flags and require separate diagnostics for uniqueEvid
- *    and singleEvidPerSymbol instead of choosing one policy.
+ * 2. Enable both cardinality flags and require separate diagnostics for
+ *    uniqueEvidence and singleEvidencePerSymbol instead of choosing one
+ *    policy.
  * 3. Add a checklist property to a TypeScript reference at runtime, even with
  *    value false, and require the artifact-placement diagnostic.
  * 4. Add shared exclusion-carrier globs to a checklist and require rejection.
@@ -24,30 +25,32 @@ export async function test_config_policies(): Promise<void> {
     type: "markdown",
     files: ["docs/**"],
     checklist: true,
-    noEvidExclude: true,
+    noEvidenceExclude: true,
     requireReview: true,
   });
 
-  validateEvidConfig(checklist);
+  validateEvidenceConfig(checklist);
 
   // Both cardinality policies are reported rather than silently choosing one.
   const cardinality = createConfig({
     type: "markdown",
     files: ["docs/**"],
     checklist: true,
-    uniqueEvid: true,
-    singleEvidPerSymbol: true,
+    uniqueEvidence: true,
+    singleEvidencePerSymbol: true,
   });
   const cardinalityMessage = failure(cardinality);
 
   TestValidator.predicate(
     "checklist rejects unique evidence",
-    cardinalityMessage.includes("checklist and uniqueEvid cannot both hold"),
+    cardinalityMessage.includes(
+      "checklist and uniqueEvidence cannot both hold",
+    ),
   );
   TestValidator.predicate(
     "checklist rejects single evidence",
     cardinalityMessage.includes(
-      "checklist and singleEvidPerSymbol cannot both hold",
+      "checklist and singleEvidencePerSymbol cannot both hold",
     ),
   );
 
@@ -83,9 +86,9 @@ export async function test_config_policies(): Promise<void> {
   const strict = firstReference(carriers);
   if (strict.type !== "markdown")
     throw new Error("Missing Markdown checklist fixture.");
-  strict.noEvidExclude = true;
+  strict.noEvidenceExclude = true;
 
-  validateEvidConfig(carriers);
+  validateEvidenceConfig(carriers);
 }
 
 /**
@@ -95,7 +98,7 @@ export async function test_config_policies(): Promise<void> {
  * accepted or rejected, including mutations of its exclusion-carrier
  * selection.
  */
-function createConfig(reference: IEvidReference): IEvidConfig {
+function createConfig(reference: IEvidenceReference): IEvidenceConfig {
   return {
     claims: [
       {
@@ -113,7 +116,7 @@ function createConfig(reference: IEvidReference): IEvidConfig {
  * A missing claim or reference is a fixture failure. It must not be mistaken
  * for the policy rejection the caller intends to exercise.
  */
-function firstReference(config: IEvidConfig): IEvidReference {
+function firstReference(config: IEvidenceConfig): IEvidenceReference {
   const claim = config.claims[0];
   if (claim === undefined) throw new Error("Missing policy claim fixture.");
   const reference = Array.isArray(claim.reference)
@@ -131,12 +134,12 @@ function firstReference(config: IEvidConfig): IEvidReference {
  * Callers can therefore assert the actual rejected policy rather than mere
  * failure.
  */
-function failure(config: IEvidConfig): string {
+function failure(config: IEvidenceConfig): string {
   try {
-    validateEvidConfig(config);
+    validateEvidenceConfig(config);
   } catch (cause) {
     if (cause instanceof Error) return cause.message;
     throw cause;
   }
-  throw new Error("Expected Evid configuration validation to fail.");
+  throw new Error("Expected Evidence configuration validation to fail.");
 }

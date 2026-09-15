@@ -1,8 +1,8 @@
-import { EvidDbmlAdapter, EvidInventory } from "evid";
+import { EvidenceDbmlAdapter, EvidenceInventory } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Attaches DBML notes and comments only when their schema ownership is direct.
@@ -34,8 +34,8 @@ export async function test_dbml_hosts(): Promise<void> {
       active [note: '@evidence ./spec.md#enum Unsupported enum carrier.']
     }
   `;
-  const inventory = await new EvidDbmlAdapter().analyze(
-    EvidTestSourceSnapshot.create("schema.dbml", source),
+  const inventory = await new EvidenceDbmlAdapter().analyze(
+    EvidenceTestSourceSnapshot.create("schema.dbml", source),
   );
   TestValidator.equals(
     "only eligible documentation creates evidence",
@@ -68,21 +68,21 @@ export async function test_dbml_hosts(): Promise<void> {
     ),
   );
 
-  const first = EvidTestSourceSnapshot.create(
+  const first = EvidenceTestSourceSnapshot.create(
     "schema.dbml",
     "Table users { id int }",
     ["schema.dbml"],
   );
-  const aliased = EvidTestSourceSnapshot.create(
+  const aliased = EvidenceTestSourceSnapshot.create(
     "schema.dbml",
     "Table users { id int }",
     ["linked/schema.dbml"],
   );
-  const merged = await new EvidDbmlAdapter().analyze(
-    EvidTestSourceSnapshot.combine([first, aliased]),
+  const merged = await new EvidenceDbmlAdapter().analyze(
+    EvidenceTestSourceSnapshot.combine([first, aliased]),
   );
   TestValidator.equals("one physical table inventory", merged.units.length, 2);
-  const resolver = new EvidInventory([merged]);
+  const resolver = new EvidenceInventory([merged]);
   const primary = resolver.resolve(
     {
       file: "/project/schema.dbml",

@@ -1,8 +1,11 @@
-import { EvidCSharpAdapter, EvidLanguageRegistry } from "evid";
+import {
+  EvidenceCSharpAdapter,
+  EvidenceLanguageRegistry,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Classifies C# types, members, visibility defaults, and special members.
@@ -19,7 +22,7 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  */
 export async function test_csharp_units(): Promise<void> {
   // Certified metadata names the exact pinned grammar and adapter boundary.
-  const language = EvidLanguageRegistry.list().find(
+  const language = EvidenceLanguageRegistry.list().find(
     (entry) => entry.type === "csharp",
   );
   if (language === undefined) throw new Error("Missing C# language metadata.");
@@ -28,7 +31,7 @@ export async function test_csharp_units(): Promise<void> {
   TestValidator.equals(
     "certified C# adapter",
     language.adapter.entry,
-    "EvidCSharpAdapter",
+    "EvidenceCSharpAdapter",
   );
   TestValidator.equals(
     "published C# grammar version",
@@ -36,9 +39,9 @@ export async function test_csharp_units(): Promise<void> {
     true,
   );
 
-  const inventory = await new EvidCSharpAdapter().analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+  const inventory = await new EvidenceCSharpAdapter().analyze(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/Sale.cs",
         dedent`
           namespace Shop;
@@ -78,7 +81,7 @@ export async function test_csharp_units(): Promise<void> {
           }
         `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/Sale.Partial.cs",
         dedent`
           namespace Shop;
@@ -89,7 +92,7 @@ export async function test_csharp_units(): Promise<void> {
           }
         `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/Contracts.cs",
         dedent`
           namespace Shop.Contracts

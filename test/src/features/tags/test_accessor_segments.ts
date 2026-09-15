@@ -1,4 +1,4 @@
-import { EvidAccessor } from "evid";
+import { EvidenceAccessor } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
 /**
@@ -27,17 +27,17 @@ export async function test_accessor_segments(): Promise<void> {
   for (const segments of cases)
     TestValidator.equals(
       "accessor round trip",
-      EvidAccessor.parse(EvidAccessor.format(segments)),
+      EvidenceAccessor.parse(EvidenceAccessor.format(segments)),
       segments,
     );
   TestValidator.equals(
     "numeric bracket stays a literal segment",
-    EvidAccessor.parse("Tuple[0]"),
+    EvidenceAccessor.parse("Tuple[0]"),
     ["Tuple", "0"],
   );
   TestValidator.equals(
     "literal dot stays quoted",
-    EvidAccessor.format(["A", "B.C"]),
+    EvidenceAccessor.format(["A", "B.C"]),
     'A["B.C"]',
   );
 
@@ -57,6 +57,6 @@ export async function test_accessor_segments(): Promise<void> {
     "\u0301startsWithMark",
   ])
     await TestValidator.error("malformed accessor", async () =>
-      EvidAccessor.parse(text),
+      EvidenceAccessor.parse(text),
     );
 }

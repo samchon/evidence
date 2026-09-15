@@ -1,11 +1,11 @@
-import { EvidSwaggerAdapter } from "evid";
-import type { IEvidInventory } from "evid";
+import { EvidenceSwaggerAdapter } from "@wrtnlabs/evidence";
+import type { IEvidenceInventory } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
 
 /**
  * Normalizes Swagger 2.0 and OpenAPI 3.x documents into operations.
@@ -19,7 +19,7 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
  */
 export async function test_swagger_units(): Promise<void> {
   const location = join(__dirname, "units-" + randomUUID());
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     location,
     {
       "swagger.json": dedent`
@@ -103,7 +103,7 @@ export async function test_swagger_units(): Promise<void> {
     },
     async (directory) => {
       const config = join(directory, "evidence.config.ts");
-      const adapter = new EvidSwaggerAdapter();
+      const adapter = new EvidenceSwaggerAdapter();
       const swagger = await adapter.load(config, "swagger.json");
       const openapi = await adapter.load(config, "openapi.yaml");
       const openapi30 = await adapter.load(config, "openapi30.json");
@@ -143,6 +143,6 @@ export async function test_swagger_units(): Promise<void> {
   );
 }
 
-function targets(inventory: IEvidInventory): string[] {
+function targets(inventory: IEvidenceInventory): string[] {
   return inventory.units.map((unit) => unit.name);
 }

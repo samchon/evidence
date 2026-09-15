@@ -1,6 +1,6 @@
-import { EvidZigAdapter } from "evid";
+import { EvidenceZigAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Rejects Zig public populations that require compiler evaluation.
@@ -12,7 +12,7 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 2. Verify incomplete diagnostics and retained boundary behavior.
  */
 export async function test_zig_boundaries(): Promise<void> {
-  const adapter = new EvidZigAdapter();
+  const adapter = new EvidenceZigAdapter();
   const cases = new Map<string, string>([
     [String.raw`pub const @"\x61" = 1;`, "zig-identifier-escape"],
     [
@@ -72,7 +72,7 @@ export async function test_zig_boundaries(): Promise<void> {
   ]);
   for (const [content, code] of cases) {
     const inventory = await adapter.analyze(
-      EvidTestSourceSnapshot.create("src/Boundary.zig", content),
+      EvidenceTestSourceSnapshot.create("src/Boundary.zig", content),
     );
     TestValidator.equals(`incomplete ${content}`, inventory.complete, false);
     TestValidator.predicate(
@@ -92,7 +92,7 @@ export async function test_zig_boundaries(): Promise<void> {
     'test "local" { const ignored = @import("test.zig"); } pub var count: i32 = calculate();',
   ]) {
     const inventory = await adapter.analyze(
-      EvidTestSourceSnapshot.create("src/Accepted.zig", content),
+      EvidenceTestSourceSnapshot.create("src/Accepted.zig", content),
     );
     TestValidator.equals(
       `accepted boundary ${content}`,
@@ -101,7 +101,7 @@ export async function test_zig_boundaries(): Promise<void> {
     );
   }
   const extension = await adapter.analyze(
-    EvidTestSourceSnapshot.create("src/Wrong.ZIG", "pub const value = 1;"),
+    EvidenceTestSourceSnapshot.create("src/Wrong.ZIG", "pub const value = 1;"),
   );
   TestValidator.equals(
     "case-sensitive extension failure",
@@ -115,8 +115,8 @@ export async function test_zig_boundaries(): Promise<void> {
     ),
   );
   const failed = await adapter.analyze(
-    EvidTestSourceSnapshot.fail(
-      EvidTestSourceSnapshot.create("src/Unavailable.zig", ""),
+    EvidenceTestSourceSnapshot.fail(
+      EvidenceTestSourceSnapshot.create("src/Unavailable.zig", ""),
       {
         code: "path-unreadable",
         path: "/project/src/Unavailable.zig",

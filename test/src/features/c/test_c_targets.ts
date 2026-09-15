@@ -1,14 +1,14 @@
-import { EvidCAdapter } from "evid";
-import type { EvidTargetResolutionStatus } from "evid";
+import { EvidenceCAdapter } from "@wrtnlabs/evidence";
+import type { EvidenceTargetResolutionStatus } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
-interface IEvidCTargetStatus {
+interface IEvidenceCTargetStatus {
   target: string | undefined;
-  status: EvidTargetResolutionStatus;
+  status: EvidenceTargetResolutionStatus;
 }
 
 /**
@@ -24,9 +24,9 @@ interface IEvidCTargetStatus {
  *    reported status.
  */
 export async function test_c_targets(): Promise<void> {
-  const adapter = new EvidCAdapter();
+  const adapter = new EvidenceCAdapter();
   const reference = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "include/models.h",
       dedent`
         typedef struct Sale {
@@ -50,7 +50,7 @@ export async function test_c_targets(): Promise<void> {
     ),
   );
   const claim = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "test/verify.c",
       dedent`
         /**
@@ -76,7 +76,7 @@ export async function test_c_targets(): Promise<void> {
     [],
   );
   TestValidator.equals("complete C target claim", claim.diagnostics, []);
-  const resolutions = await EvidTestGraph.resolveDeclarations(
+  const resolutions = await EvidenceTestGraph.resolveDeclarations(
     claim,
     reference,
     reference.units.map((unit) => unit.id),
@@ -91,7 +91,7 @@ export async function test_c_targets(): Promise<void> {
         status: resolution.resolution.status,
       }))
       .sort(compareTarget),
-    (<IEvidCTargetStatus[]>[
+    (<IEvidenceCTargetStatus[]>[
       {
         target: '../include/models.h#["struct Collision"]',
         status: "resolved",
@@ -116,8 +116,8 @@ export async function test_c_targets(): Promise<void> {
 }
 
 function compareTarget(
-  left: IEvidCTargetStatus,
-  right: IEvidCTargetStatus,
+  left: IEvidenceCTargetStatus,
+  right: IEvidenceCTargetStatus,
 ): number {
   return compare(left.target ?? "", right.target ?? "");
 }

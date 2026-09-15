@@ -1,8 +1,8 @@
-import { EvidTypeScriptAdapter } from "evid";
+import { EvidenceTypeScriptAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Preserves literal TypeScript member segments and default declaration
@@ -15,8 +15,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 2. Verify exact identities and resolution behavior.
  */
 export async function test_typescript_literals(): Promise<void> {
-  const snapshot = EvidTestSourceSnapshot.combine([
-    EvidTestSourceSnapshot.create(
+  const snapshot = EvidenceTestSourceSnapshot.combine([
+    EvidenceTestSourceSnapshot.create(
       "src/literals.ts",
       dedent`
         export interface Literal {
@@ -34,16 +34,16 @@ export async function test_typescript_literals(): Promise<void> {
         }
       `,
     ),
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/default-class.ts",
       "export default class { member = 1; }",
     ),
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/default-function.ts",
       "export default function (): void {}",
     ),
   ]);
-  const inventory = await new EvidTypeScriptAdapter().analyze(snapshot);
+  const inventory = await new EvidenceTypeScriptAdapter().analyze(snapshot);
 
   TestValidator.equals(
     "literal member segments",

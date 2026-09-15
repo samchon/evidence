@@ -1,9 +1,9 @@
 import {
-  EvidConfigDependencyScanner,
-  EvidConfigLoader,
-  type IEvidConfig,
-  type IEvidSourceDependency,
-} from "evid";
+  EvidenceConfigDependencyScanner,
+  EvidenceConfigLoader,
+  type IEvidenceConfig,
+  type IEvidenceSourceDependency,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
@@ -11,7 +11,7 @@ import { symlink } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { join } from "node:path";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
 
 /**
  * Resolves static config dependencies with the mechanism used at runtime.
@@ -41,7 +41,7 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
  */
 export async function test_watch_config_conditions(): Promise<void> {
   const location: string = join(__dirname, `config conditions ${randomUUID()}`);
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     location,
     {
       "package.json": JSON.stringify({ type: "module" }),
@@ -106,10 +106,10 @@ export async function test_watch_config_conditions(): Promise<void> {
     },
     async (directory: string): Promise<void> => {
       const dependencies: string[] = (
-        await new EvidConfigDependencyScanner(
+        await new EvidenceConfigDependencyScanner(
           join(directory, "evidence.config.ts"),
         ).scan()
-      ).map((dependency: IEvidSourceDependency): string =>
+      ).map((dependency: IEvidenceSourceDependency): string =>
         dependency.path.replaceAll("\\", "/"),
       );
       const relative: (file: string) => string = (file: string): string =>
@@ -159,8 +159,8 @@ export async function test_watch_config_conditions(): Promise<void> {
         "import",
       );
       const packageModeDependencies: string[] = (
-        await new EvidConfigDependencyScanner(packageModeFile).scan()
-      ).map((dependency: IEvidSourceDependency): string =>
+        await new EvidenceConfigDependencyScanner(packageModeFile).scan()
+      ).map((dependency: IEvidenceSourceDependency): string =>
         dependency.path.replaceAll("\\", "/"),
       );
       TestValidator.predicate(
@@ -177,7 +177,7 @@ export async function test_watch_config_conditions(): Promise<void> {
       );
     },
   );
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     join(location, "physical config mode"),
     {
       "physical/package.json": JSON.stringify({ type: "module" }),
@@ -211,7 +211,8 @@ export async function test_watch_config_conditions(): Promise<void> {
       const logicalDirectory: string = join(directory, "logical/config-link");
       await symlink(physicalDirectory, logicalDirectory, "junction");
       const configFile: string = join(logicalDirectory, "evidence.config.ts");
-      const config: IEvidConfig = await EvidConfigLoader.load(configFile);
+      const config: IEvidenceConfig =
+        await EvidenceConfigLoader.load(configFile);
       TestValidator.equals(
         "physical config module mode",
         config.severity,
@@ -219,8 +220,8 @@ export async function test_watch_config_conditions(): Promise<void> {
       );
 
       const dependencies: string[] = (
-        await new EvidConfigDependencyScanner(configFile).scan()
-      ).map((dependency: IEvidSourceDependency): string =>
+        await new EvidenceConfigDependencyScanner(configFile).scan()
+      ).map((dependency: IEvidenceSourceDependency): string =>
         dependency.path.replaceAll("\\", "/"),
       );
       const relative: (file: string) => string = (file: string): string =>

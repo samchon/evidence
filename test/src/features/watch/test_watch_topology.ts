@@ -1,12 +1,16 @@
-import { EvidChecker, EvidWatchReporter, EvidWatcher } from "evid";
-import type { EvidWatchCycle } from "evid";
+import {
+  EvidenceChecker,
+  EvidenceWatchReporter,
+  EvidenceWatcher,
+} from "@wrtnlabs/evidence";
+import type { EvidenceWatchCycle } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 import typia from "typia";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
 
 /**
  * Publishes created and deleted glob matches as the same reports as fresh
@@ -27,7 +31,7 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
  */
 export async function test_watch_topology(): Promise<void> {
   const location = join(__dirname, `topology ${randomUUID()}`);
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     location,
     {
       "evidence.config.ts": config(),
@@ -36,7 +40,7 @@ export async function test_watch_topology(): Promise<void> {
     },
     async (directory) => {
       const configFile = join(directory, "evidence.config.ts");
-      const watcher = new EvidWatcher(configFile, {
+      const watcher = new EvidenceWatcher(configFile, {
         pollIntervalMilliseconds: 20,
         debounceMilliseconds: 20,
       });
@@ -49,14 +53,14 @@ export async function test_watch_topology(): Promise<void> {
         TestValidator.equals(
           `fresh report ${cycle.cycle}`,
           cycle.report,
-          await EvidChecker.check(configFile),
+          await EvidenceChecker.check(configFile),
         );
-        output.push(EvidWatchReporter.json(cycle));
+        output.push(EvidenceWatchReporter.json(cycle));
 
         // Creating a second requirement under the watched glob adds an obligation.
         if (cycle.cycle === 1) {
           TestValidator.predicate("initial graph succeeds", cycle.success);
-          await EvidTestFileSystem.save(directory, {
+          await EvidenceTestFileSystem.save(directory, {
             "docs/refund.md": requirement("Refund", "refund"),
           });
           return;
@@ -70,7 +74,7 @@ export async function test_watch_topology(): Promise<void> {
             cycle.report.counts.missingUnits,
             1,
           );
-          await EvidTestFileSystem.save(directory, {
+          await EvidenceTestFileSystem.save(directory, {
             "src/calculator.ts": implementation(true),
           });
           return;
@@ -79,7 +83,7 @@ export async function test_watch_topology(): Promise<void> {
         // Editing an exact source file restores complete coverage.
         if (cycle.cycle === 3) {
           TestValidator.predicate("edited citation succeeds", cycle.success);
-          await EvidTestFileSystem.erase(join(directory, "docs/refund.md"));
+          await EvidenceTestFileSystem.erase(join(directory, "docs/refund.md"));
           return;
         }
 
@@ -94,7 +98,9 @@ export async function test_watch_topology(): Promise<void> {
       TestValidator.equals("NDJSON cycle count", lines.length, 4);
       TestValidator.equals(
         "NDJSON cycle identifiers",
-        lines.map((line) => typia.json.assertParse<EvidWatchCycle>(line).cycle),
+        lines.map(
+          (line) => typia.json.assertParse<EvidenceWatchCycle>(line).cycle,
+        ),
         [1, 2, 3, 4],
       );
     },
@@ -103,7 +109,7 @@ export async function test_watch_topology(): Promise<void> {
 
 function config(): string {
   return dedent`
-    import type { IEvidConfig } from "evid";
+    import type { IEvidenceConfig } from "@wrtnlabs/evidence";
 
     export default {
       claims: [
@@ -118,7 +124,7 @@ function config(): string {
           },
         },
       ],
-    } satisfies IEvidConfig;
+    } satisfies IEvidenceConfig;
   `;
 }
 

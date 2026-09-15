@@ -1,15 +1,15 @@
-import { EvidMarkdownAdapter } from "evid";
-import type { IEvidInventory, IEvidUnit } from "evid";
+import { EvidenceMarkdownAdapter } from "@wrtnlabs/evidence";
+import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Partitions Markdown content among file and heading units at real section
  * boundaries.
  *
- * Evid needs each unit's owned ranges to exclude nested supported sections
+ * Evidence needs each unit's owned ranges to exclude nested supported sections
  * while retaining deep headings, fenced text, and prose that belongs to the
  * current section.
  *
@@ -43,8 +43,8 @@ export async function test_markdown_content(): Promise<void> {
     ### Nested after missing
     Nested body.
   `;
-  const inventory = await new EvidMarkdownAdapter().analyze(
-    EvidTestSourceSnapshot.create("guide.md", content),
+  const inventory = await new EvidenceMarkdownAdapter().analyze(
+    EvidenceTestSourceSnapshot.create("guide.md", content),
   );
   const file = requireUnit(inventory, "file", "guide.md");
   const parent = requireUnit(inventory, "h1", "Parent");
@@ -94,10 +94,10 @@ export async function test_markdown_content(): Promise<void> {
 }
 
 function requireUnit(
-  inventory: IEvidInventory,
-  symbol: IEvidUnit["symbol"],
+  inventory: IEvidenceInventory,
+  symbol: IEvidenceUnit["symbol"],
   name: string,
-): IEvidUnit {
+): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.symbol === symbol && candidate.name === name,
   );
@@ -106,7 +106,7 @@ function requireUnit(
   return unit;
 }
 
-function lines(content: string, unit: IEvidUnit): string[] {
+function lines(content: string, unit: IEvidenceUnit): string[] {
   const site = unit.sites[0];
   if (site === undefined)
     throw new Error(`Markdown unit ${unit.id} has no site.`);

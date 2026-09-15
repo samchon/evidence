@@ -1,8 +1,8 @@
-import { EvidInventory, EvidPythonAdapter } from "evid";
+import { EvidenceInventory, EvidencePythonAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Attaches leading comments to the first eligible Python class member.
@@ -51,8 +51,8 @@ export async function test_python_leading_comments(): Promise<void> {
     source.replaceAll("\n", "\r\n"),
     source.replaceAll("    ", "\t"),
   ]) {
-    const inventory = await new EvidPythonAdapter().analyze(
-      EvidTestSourceSnapshot.create("src/sale.py", content),
+    const inventory = await new EvidencePythonAdapter().analyze(
+      EvidenceTestSourceSnapshot.create("src/sale.py", content),
     );
     const units = new Map(
       inventory.units.map((unit) => [unit.id, unit.identity.join(".")]),
@@ -84,7 +84,7 @@ export async function test_python_leading_comments(): Promise<void> {
         (declaration) => declaration.target === "docs/spec.md#title",
       )?.hostId,
     );
-    const population = new EvidInventory([inventory]).select(
+    const population = new EvidenceInventory([inventory]).select(
       inventory.units.map((unit) => unit.id),
     );
     TestValidator.equals(

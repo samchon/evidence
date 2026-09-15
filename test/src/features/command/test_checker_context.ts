@@ -1,10 +1,10 @@
-import { EvidChecker, EvidConfigLoader } from "evid";
+import { EvidenceChecker, EvidenceConfigLoader } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
 
 /**
  * Gives every invocation of a reusable checker its own execution context.
@@ -25,7 +25,7 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
  *    - The earlier report remains successful and independently owned.
  */
 export async function test_checker_context(): Promise<void> {
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     join(__dirname, `checker context ${randomUUID()}`),
     {
       "evidence.config.ts": dedent`
@@ -44,8 +44,8 @@ export async function test_checker_context(): Promise<void> {
     },
     async (directory) => {
       const configFile = join(directory, "evidence.config.ts");
-      const checker = new EvidChecker(configFile);
-      const plan = await EvidConfigLoader.plan(configFile);
+      const checker = new EvidenceChecker(configFile);
+      const plan = await EvidenceConfigLoader.plan(configFile);
       const invalid = structuredClone(plan);
       const invalidClaim = invalid.claims[0];
       const reference =
@@ -74,7 +74,7 @@ export async function test_checker_context(): Promise<void> {
       );
 
       // The same facade reloads current sources instead of reusing prior coverage.
-      await EvidTestFileSystem.save(directory, {
+      await EvidenceTestFileSystem.save(directory, {
         "implementation.ts": "export function implementation(): void {}\n",
       });
       const failing = await checker.check();

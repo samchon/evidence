@@ -1,9 +1,9 @@
-import { EvidInventory, EvidMarkdownAdapter } from "evid";
-import type { IEvidInventory, IEvidUnit } from "evid";
+import { EvidenceInventory, EvidenceMarkdownAdapter } from "@wrtnlabs/evidence";
+import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Materializes the Markdown file and supported ATX heading identities.
@@ -38,9 +38,9 @@ export async function test_markdown_units(): Promise<void> {
     # First duplicate {#same}
     # Second duplicate {#same}
   `;
-  const adapter = new EvidMarkdownAdapter();
+  const adapter = new EvidenceMarkdownAdapter();
   const inventory = await adapter.analyze(
-    EvidTestSourceSnapshot.create("docs/guide.custom", content),
+    EvidenceTestSourceSnapshot.create("docs/guide.custom", content),
   );
   const file = requireUnit(inventory, "file", "docs/guide.custom");
   const first = requireUnit(inventory, "h1", "계약 명세");
@@ -83,7 +83,7 @@ export async function test_markdown_units(): Promise<void> {
       file.id,
     );
   }
-  const index = new EvidInventory([inventory]);
+  const index = new EvidenceInventory([inventory]);
   TestValidator.equals(
     "duplicate heading target",
     index.resolve(
@@ -96,10 +96,10 @@ export async function test_markdown_units(): Promise<void> {
 }
 
 function requireUnit(
-  inventory: IEvidInventory,
-  symbol: IEvidUnit["symbol"],
+  inventory: IEvidenceInventory,
+  symbol: IEvidenceUnit["symbol"],
   name: string,
-): IEvidUnit {
+): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.symbol === symbol && candidate.name === name,
   );

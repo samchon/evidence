@@ -1,15 +1,19 @@
 import {
-  EvidFingerprint,
-  EvidGraph,
-  EvidMarkdownAdapter,
-  EvidTypeScriptAdapter,
-} from "evid";
-import type { IEvidGraphReference, IEvidInventory, IEvidUnit } from "evid";
+  EvidenceFingerprint,
+  EvidenceGraph,
+  EvidenceMarkdownAdapter,
+  EvidenceTypeScriptAdapter,
+} from "@wrtnlabs/evidence";
+import type {
+  IEvidenceGraphReference,
+  IEvidenceInventory,
+  IEvidenceUnit,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Classifies required evidence reviews by the presence and freshness of
@@ -34,8 +38,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    with no derived missing, absent-fingerprint, or stale-review finding.
  */
 export async function test_graph_review_policy(): Promise<void> {
-  const requirements = await new EvidMarkdownAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const requirements = await new EvidenceMarkdownAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "docs/spec.md",
       dedent`
         ## Pricing {#pricing}
@@ -45,12 +49,12 @@ export async function test_graph_review_policy(): Promise<void> {
     ),
   );
   const pricing = requireUnit(requirements, "pricing");
-  const expected = EvidFingerprint.inspect(
+  const expected = EvidenceFingerprint.inspect(
     requirements,
     pricing.id,
   ).fingerprint;
-  const claims = await new EvidTypeScriptAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const claims = await new EvidenceTypeScriptAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/reviews.ts",
       dedent`
         /** @evidence docs/spec.md#pricing Implements the pricing rule. */
@@ -79,21 +83,23 @@ export async function test_graph_review_policy(): Promise<void> {
   const unitIds = ["missing", "unfingerprinted", "stale", "current"].map(
     (name) => requireUnit(claims, name).id,
   );
-  const reference: IEvidGraphReference = {
+  const reference: IEvidenceGraphReference = {
     severity: "error",
     inventory: requirements,
     unitIds: [pricing.id],
-    resolutions: await EvidTestGraph.resolveDeclarations(claims, requirements, [
-      pricing.id,
-    ]),
-    reviewResolutions: await EvidTestGraph.resolveReviews(
+    resolutions: await EvidenceTestGraph.resolveDeclarations(
+      claims,
+      requirements,
+      [pricing.id],
+    ),
+    reviewResolutions: await EvidenceTestGraph.resolveReviews(
       claims,
       requirements,
       [pricing.id],
     ),
     requireReview: true,
   };
-  const result = EvidGraph.evaluate({
+  const result = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -131,13 +137,13 @@ export async function test_graph_review_policy(): Promise<void> {
   );
   TestValidator.predicate(
     "inspection and graph edges agree",
-    EvidTestGraph.obligation(result, 0, 0).edges.every(
+    EvidenceTestGraph.obligation(result, 0, 0).edges.every(
       (edge) => edge.fingerprint === expected,
     ),
   );
 
   // The same explicit reviews impose no freshness requirement without the policy.
-  const optional = EvidGraph.evaluate({
+  const optional = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -175,7 +181,7 @@ export async function test_graph_review_policy(): Promise<void> {
       repair: "Restore the referenced source and analyze it again.",
     },
   ];
-  const interrupted = EvidGraph.evaluate({
+  const interrupted = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -199,12 +205,15 @@ export async function test_graph_review_policy(): Promise<void> {
   );
   TestValidator.equals(
     "incomplete review lookup keeps obligation incomplete",
-    EvidTestGraph.obligation(interrupted, 0, 0).complete,
+    EvidenceTestGraph.obligation(interrupted, 0, 0).complete,
     false,
   );
 }
 
-function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
+function requireUnit(
+  inventory: IEvidenceInventory,
+  identity: string,
+): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === identity || candidate.identity.at(-1) === identity,
@@ -214,7 +223,7 @@ function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
 }
 
 function count(
-  result: ReturnType<typeof EvidGraph.evaluate>,
+  result: ReturnType<typeof EvidenceGraph.evaluate>,
   code: string,
 ): number {
   return result.diagnostics.filter((diagnostic) => diagnostic.code === code)

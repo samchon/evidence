@@ -1,12 +1,12 @@
-import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
+import { EvidenceTestParserAssets } from "../../internal/EvidenceTestParserAssets";
 import { TestValidator } from "@nestia/e2e";
-import { EvidTreeSitterAssets } from "evid";
+import { EvidenceTreeSitterAssets } from "@wrtnlabs/evidence";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
-import { EvidTestParserError } from "../../internal/EvidTestParserError";
-import { EvidTestSignal } from "../../internal/EvidTestSignal";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
+import { EvidenceTestParserError } from "../../internal/EvidenceTestParserError";
+import { EvidenceTestSignal } from "../../internal/EvidenceTestSignal";
 
 /**
  * Isolates subscriber cancellation while bounding shared acquisition timeouts.
@@ -27,14 +27,14 @@ import { EvidTestSignal } from "../../internal/EvidTestSignal";
  *    after exactly two timeout aborts.
  */
 export async function test_parser_acquisition_cancellation(): Promise<void> {
-  const grammar = await new EvidTreeSitterAssets().grammar("python");
-  const pinned = Uint8Array.from(await EvidTestParserAssets.bytes(grammar));
-  await EvidTestFileSystem.experiment(
+  const grammar = await new EvidenceTreeSitterAssets().grammar("python");
+  const pinned = Uint8Array.from(await EvidenceTestParserAssets.bytes(grammar));
+  await EvidenceTestFileSystem.experiment(
     join(__dirname, `cancel-${randomUUID()}`),
     {},
     async (cacheDirectory) => {
-      const release = new EvidTestSignal();
-      const joined = new EvidTestSignal();
+      const release = new EvidenceTestSignal();
+      const joined = new EvidenceTestSignal();
       const cancellation = new AbortController();
       let requests = 0;
       let transferAborted = false;
@@ -54,17 +54,17 @@ export async function test_parser_acquisition_cancellation(): Promise<void> {
         transferAborted = init?.signal?.aborted ?? false;
         return new Response(pinned);
       }
-      const first = new EvidTreeSitterAssets({
+      const first = new EvidenceTreeSitterAssets({
         cacheDirectory,
         fetch: transfer,
         signal: cancellation.signal,
       });
-      const second = new EvidTreeSitterAssets({
+      const second = new EvidenceTreeSitterAssets({
         cacheDirectory,
         fetch: transfer,
         progress: () => joined.open(),
       });
-      const cancelled = EvidTestParserError.expect("asset-cancelled", () =>
+      const cancelled = EvidenceTestParserError.expect("asset-cancelled", () =>
         first.bytes(grammar),
       );
       const survivor = second.bytes(grammar);
@@ -91,7 +91,7 @@ export async function test_parser_acquisition_cancellation(): Promise<void> {
 
       // A timeout aborts the transport and retries only the configured finite number of times.
       let timeouts = 0;
-      const timed = new EvidTreeSitterAssets({
+      const timed = new EvidenceTreeSitterAssets({
         cacheDirectory: join(cacheDirectory, "timeout"),
         attempts: 2,
         timeoutMilliseconds: 10,
@@ -110,7 +110,7 @@ export async function test_parser_acquisition_cancellation(): Promise<void> {
             else signal.addEventListener("abort", abort, { once: true });
           }),
       });
-      await EvidTestParserError.expect("asset-download", () =>
+      await EvidenceTestParserError.expect("asset-download", () =>
         timed.bytes(grammar),
       );
       TestValidator.equals("bounded timeout attempts", timeouts, 2);

@@ -1,21 +1,21 @@
 import {
-  EvidAccessor,
-  EvidDbmlAdapter,
-  EvidGraph,
-  EvidTypeScriptAdapter,
-  EvidFingerprint,
-} from "evid";
+  EvidenceAccessor,
+  EvidenceDbmlAdapter,
+  EvidenceGraph,
+  EvidenceTypeScriptAdapter,
+  EvidenceFingerprint,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Evaluates each DBML model, column, and relation target from a TypeScript
  * claim.
  *
- * Evid and review have distinct graph roles, including when a review
+ * Evidence and review have distinct graph roles, including when a review
  * fingerprint is current or deliberately stale.
  *
  * 1. Select one DBML unit of each reference symbol and calculate its fingerprint.
@@ -25,8 +25,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    review-only cases retain the selected unit as missing.
  */
 export async function test_dbml_reference_graphs(): Promise<void> {
-  const reference = await new EvidDbmlAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const reference = await new EvidenceDbmlAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "schema.dbml",
       dedent`
     Table users { id int }
@@ -47,8 +47,11 @@ export async function test_dbml_reference_graphs(): Promise<void> {
   ];
   for (const unit of selected) {
     if (unit === undefined) throw new Error("Expected each DBML selector.");
-    const target = `./schema.dbml#${EvidAccessor.format(unit.identity)}`;
-    const fingerprint = EvidFingerprint.inspect(reference, unit.id).fingerprint;
+    const target = `./schema.dbml#${EvidenceAccessor.format(unit.identity)}`;
+    const fingerprint = EvidenceFingerprint.inspect(
+      reference,
+      unit.id,
+    ).fingerprint;
     for (const kind of [
       "evidence",
       "evidenceReview",
@@ -62,8 +65,8 @@ export async function test_dbml_reference_graphs(): Promise<void> {
         : kind === "absent"
           ? "No acknowledgement."
           : `@${kind} ${target} ${kind === "evidenceReview" ? `#${fingerprint} ` : ""}Checks the declared schema contract.`;
-      const claim = await new EvidTypeScriptAdapter().analyze(
-        EvidTestSourceSnapshot.create(
+      const claim = await new EvidenceTypeScriptAdapter().analyze(
+        EvidenceTestSourceSnapshot.create(
           "contract.ts",
           dedent`
         /** ${documentation} */
@@ -71,7 +74,7 @@ export async function test_dbml_reference_graphs(): Promise<void> {
       `,
         ),
       );
-      const result = EvidGraph.evaluate({
+      const result = EvidenceGraph.evaluate({
         claims: [
           {
             severity: "error",
@@ -83,12 +86,12 @@ export async function test_dbml_reference_graphs(): Promise<void> {
                 inventory: reference,
                 requireReview: reviewed,
                 unitIds: [unit.id],
-                resolutions: await EvidTestGraph.resolveDeclarations(
+                resolutions: await EvidenceTestGraph.resolveDeclarations(
                   claim,
                   reference,
                   [unit.id],
                 ),
-                reviewResolutions: await EvidTestGraph.resolveReviews(
+                reviewResolutions: await EvidenceTestGraph.resolveReviews(
                   claim,
                   reference,
                   [unit.id],
@@ -106,7 +109,7 @@ export async function test_dbml_reference_graphs(): Promise<void> {
       if (kind === "evidenceReview" || kind === "absent")
         TestValidator.equals(
           `${unit.symbol} missing evidence remains visible`,
-          EvidTestGraph.obligation(result, 0, 0).missingUnitIds,
+          EvidenceTestGraph.obligation(result, 0, 0).missingUnitIds,
           [unit.id],
         );
     }

@@ -1,9 +1,9 @@
-import { EvidCAdapter } from "evid";
-import type { IEvidInventory } from "evid";
+import { EvidenceCAdapter } from "@wrtnlabs/evidence";
+import type { IEvidenceInventory } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Reports C preprocessing, declaration conflicts, and malformed syntax as
@@ -18,11 +18,11 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Require each inventory to be incomplete and to retain actionable diagnostics.
  */
 export async function test_c_failures(): Promise<void> {
-  const adapter = new EvidCAdapter();
+  const adapter = new EvidenceCAdapter();
 
   // Conditional branches are not treated as simultaneous declarations.
   const conditional = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "include/conditional.h",
       dedent`
         #if DEBUG
@@ -43,7 +43,7 @@ export async function test_c_failures(): Promise<void> {
 
   // Declaration-position calls may be macros that generate any public form.
   const macro = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "include/macro.h",
       dedent`
         #define DECLARE_API(TYPE, NAME) TYPE NAME(void)
@@ -60,7 +60,7 @@ export async function test_c_failures(): Promise<void> {
 
   // ABI-changing pragmas cannot disappear from a healthy declared surface.
   const pragma = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "include/packed.h",
       dedent`
         #pragma pack(push, 1)
@@ -78,7 +78,7 @@ export async function test_c_failures(): Promise<void> {
 
   // Multiple definitions cannot form one function or tag family.
   const definitions = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/duplicates.c",
       dedent`
         int run(void) { return 1; }
@@ -98,7 +98,7 @@ export async function test_c_failures(): Promise<void> {
 
   // C tag kinds share one namespace and ordinary names cannot change entity kind.
   const names = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "include/names.h",
       dedent`
         struct Shared;
@@ -123,7 +123,7 @@ export async function test_c_failures(): Promise<void> {
 
   // Macro definitions alone do not imply generated declarations.
   const definitionOnly = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "include/definitions.h",
       dedent`
         #define VALUE 1
@@ -144,7 +144,7 @@ export async function test_c_failures(): Promise<void> {
 
   // Tree-sitter syntax errors never become a healthy partial inventory.
   const malformed = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/broken.c",
       "int broken( { return 0; }\n",
     ),
@@ -159,6 +159,6 @@ export async function test_c_failures(): Promise<void> {
   );
 }
 
-function hasCode(inventory: IEvidInventory, code: string): boolean {
+function hasCode(inventory: IEvidenceInventory, code: string): boolean {
   return inventory.diagnostics.some((diagnostic) => diagnostic.code === code);
 }

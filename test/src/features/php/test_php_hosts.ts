@@ -1,8 +1,8 @@
-import { EvidPhpAdapter } from "evid";
+import { EvidencePhpAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Attaches PHPDoc annotations to exact declaration hosts.
@@ -49,8 +49,8 @@ export async function test_php_hosts(): Promise<void> {
     /** @hidden Hidden type subtree. */
     class Hidden { public function child() {} }
   `.replaceAll("\n", "\r\n");
-  const inventory = await new EvidPhpAdapter().analyze(
-    EvidTestSourceSnapshot.create("src/hosts.php", content),
+  const inventory = await new EvidencePhpAdapter().analyze(
+    EvidenceTestSourceSnapshot.create("src/hosts.php", content),
   );
 
   TestValidator.equals(

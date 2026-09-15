@@ -1,8 +1,8 @@
-import { EvidMarkdownAdapter } from "evid";
+import { EvidenceMarkdownAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Attaches Markdown HTML comments to supported heading hosts.
@@ -26,14 +26,14 @@ export async function test_markdown_hosts(): Promise<void> {
     # Parent
     <!-- @evidenceReview docs/spec.md#file #abcdef0 Checked the document. -->
     ## Child
-    <!-- An eligible host without an Evid tag. -->
+    <!-- An eligible host without an Evidence tag. -->
     ##### Unsupported detail
     <!-- @evidence docs/spec.md#detail This host is too deep. -->
     #### Supported again
     <!-- @evidenceExclude docs/spec.md#optional This part does not apply. -->
   `.replaceAll("\n", "\r\n");
-  const inventory = await new EvidMarkdownAdapter().analyze(
-    EvidTestSourceSnapshot.create("guide.md", content),
+  const inventory = await new EvidenceMarkdownAdapter().analyze(
+    EvidenceTestSourceSnapshot.create("guide.md", content),
   );
 
   TestValidator.equals(

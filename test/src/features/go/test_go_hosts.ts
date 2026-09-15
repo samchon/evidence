@@ -1,8 +1,8 @@
-import { EvidGoAdapter, EvidInventory } from "evid";
+import { EvidenceGoAdapter, EvidenceInventory } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Attaches Go group, specification, field, and method documentation.
@@ -15,8 +15,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Reject annotations in inert carriers.
  */
 export async function test_go_hosts(): Promise<void> {
-  const inventory = await new EvidGoAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const inventory = await new EvidenceGoAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "shop/hosts.go",
       dedent`
         package shop
@@ -102,8 +102,8 @@ export async function test_go_hosts(): Promise<void> {
     5,
   );
 
-  const withdrawn = await new EvidGoAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const withdrawn = await new EvidenceGoAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "shop/internal.go",
       dedent`
         package shop
@@ -115,7 +115,7 @@ export async function test_go_hosts(): Promise<void> {
       ` + "\n",
     ),
   );
-  const population = new EvidInventory([withdrawn]).select(
+  const population = new EvidenceInventory([withdrawn]).select(
     withdrawn.units.map((unit) => unit.id),
   );
   TestValidator.equals(

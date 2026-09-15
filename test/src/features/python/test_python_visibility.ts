@@ -1,8 +1,8 @@
-import { EvidInventory, EvidPythonAdapter } from "evid";
+import { EvidenceInventory, EvidencePythonAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Applies Python visibility rules to declarations and reexports.
@@ -18,16 +18,16 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    declarations or completion.
  */
 export async function test_python_visibility(): Promise<void> {
-  const inventory = await new EvidPythonAdapter().analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+  const inventory = await new EvidencePythonAdapter().analyze(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "pkg/dep.py",
         dedent`
           class Source:
               pass
         `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "pkg/api.py",
         dedent`
           from .dep import Source as Alias
@@ -65,7 +65,7 @@ export async function test_python_visibility(): Promise<void> {
     false,
   );
 
-  const population = new EvidInventory([inventory]).select(
+  const population = new EvidenceInventory([inventory]).select(
     inventory.units.map((unit) => unit.id),
   );
   TestValidator.equals(

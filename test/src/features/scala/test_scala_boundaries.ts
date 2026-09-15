@@ -1,6 +1,9 @@
-import { EvidLanguageRegistry, EvidScalaAdapter } from "evid";
+import {
+  EvidenceLanguageRegistry,
+  EvidenceScalaAdapter,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Marks unresolved Scala surface constructs and parse failures incomplete.
@@ -34,8 +37,8 @@ export async function test_scala_boundaries(): Promise<void> {
     "class Broken { def run( { }",
     "object Source { class Nested { val value = 1 } }; object Forward { export Source.Nested }",
   ]) {
-    const inventory = await new EvidScalaAdapter().analyze(
-      EvidTestSourceSnapshot.create("src/Boundary.scala", source),
+    const inventory = await new EvidenceScalaAdapter().analyze(
+      EvidenceTestSourceSnapshot.create("src/Boundary.scala", source),
     );
     TestValidator.equals(`incomplete ${source}`, inventory.complete, false);
     TestValidator.predicate(
@@ -46,23 +49,23 @@ export async function test_scala_boundaries(): Promise<void> {
       ),
     );
   }
-  const unsupported = await new EvidScalaAdapter().analyze(
-    EvidTestSourceSnapshot.create("src/Script.sc", "val value = 1"),
+  const unsupported = await new EvidenceScalaAdapter().analyze(
+    EvidenceTestSourceSnapshot.create("src/Script.sc", "val value = 1"),
   );
   TestValidator.equals(
     "script source rejected",
     unsupported.diagnostics.map((diagnostic) => diagnostic.code),
     ["inventory-incomplete", "scala-unsupported-extension"],
   );
-  const failed = EvidTestSourceSnapshot.fail(
-    EvidTestSourceSnapshot.create("src/Missing.scala", "class Visible"),
+  const failed = EvidenceTestSourceSnapshot.fail(
+    EvidenceTestSourceSnapshot.create("src/Missing.scala", "class Visible"),
     {
       code: "path-unreadable",
       path: "/project/src/Missing.scala",
       message: "Cannot read source.",
     },
   );
-  const unavailable = await new EvidScalaAdapter().analyze(failed);
+  const unavailable = await new EvidenceScalaAdapter().analyze(failed);
   TestValidator.equals(
     "source failure stays incomplete",
     unavailable.complete,
@@ -77,11 +80,11 @@ export async function test_scala_boundaries(): Promise<void> {
   );
   TestValidator.equals(
     "configured source spelling",
-    EvidLanguageRegistry.select("scala", "src/Selected.scala").id,
+    EvidenceLanguageRegistry.select("scala", "src/Selected.scala").id,
     "scala",
   );
-  const privateGiven = await new EvidScalaAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const privateGiven = await new EvidenceScalaAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/Private.scala",
       "private object Hidden { given Ordering[Int] = ???; val Some(value) = Some(1) }",
     ),

@@ -1,8 +1,8 @@
-import { EvidGraph } from "evid";
+import { EvidenceGraph } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestInventory } from "../../internal/EvidTestInventory";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestInventory } from "../../internal/EvidenceTestInventory";
 
 /**
  * Refuses prepared resolution records that violate declaration or population
@@ -23,37 +23,37 @@ import { EvidTestInventory } from "../../internal/EvidTestInventory";
  *    missing.
  */
 export async function test_graph_resolution_integrity(): Promise<void> {
-  const reference = EvidTestInventory.create();
-  const target = EvidTestInventory.unit(
+  const reference = EvidenceTestInventory.create();
+  const target = EvidenceTestInventory.unit(
     reference,
     "target",
     ["Target"],
     "type",
     "export class Box { value = 1; }",
   );
-  const other = EvidTestInventory.unit(
+  const other = EvidenceTestInventory.unit(
     reference,
     "other",
     ["Other"],
     "property",
     "export const unrelated = 3;",
   );
-  const claim = EvidTestInventory.create();
-  const claimUnit = EvidTestInventory.unit(
+  const claim = EvidenceTestInventory.create();
+  const claimUnit = EvidenceTestInventory.unit(
     claim,
     "claim",
     ["Claim"],
     "type",
     "export const first = 1, second = 2;",
   );
-  const host = EvidTestInventory.host(
+  const host = EvidenceTestInventory.host(
     claim,
     "host",
     claimUnit.sites[0]?.id ?? "",
     [claimUnit.id],
     "/** Shared documentation. */",
   );
-  const declaration = EvidTestGraph.declaration(
+  const declaration = EvidenceTestGraph.declaration(
     claim,
     "declaration",
     host,
@@ -62,7 +62,7 @@ export async function test_graph_resolution_integrity(): Promise<void> {
   );
 
   // Two different answers for one declaration invalidate the materialized mapping.
-  const conflicting = EvidGraph.evaluate({
+  const conflicting = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -74,8 +74,8 @@ export async function test_graph_resolution_integrity(): Promise<void> {
             inventory: reference,
             unitIds: [target.id],
             resolutions: [
-              EvidTestGraph.resolved(declaration, target),
-              EvidTestGraph.resolved(declaration, other),
+              EvidenceTestGraph.resolved(declaration, target),
+              EvidenceTestGraph.resolved(declaration, other),
             ],
           },
         ],
@@ -90,14 +90,14 @@ export async function test_graph_resolution_integrity(): Promise<void> {
   );
   TestValidator.equals(
     "conflicting mapping grants no coverage",
-    EvidTestGraph.obligation(conflicting, 0, 0).missingUnitIds,
+    EvidenceTestGraph.obligation(conflicting, 0, 0).missingUnitIds,
     [target.id],
   );
 
   // A mapping for no declaration in the claim cannot become an evidence edge.
-  const orphan = EvidTestGraph.resolved(declaration, target);
+  const orphan = EvidenceTestGraph.resolved(declaration, target);
   orphan.declarationId = "orphan";
-  const orphaned = EvidGraph.evaluate({
+  const orphaned = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -122,12 +122,12 @@ export async function test_graph_resolution_integrity(): Promise<void> {
   );
   TestValidator.equals(
     "orphan mapping grants no coverage",
-    EvidTestGraph.obligation(orphaned, 0, 0).missingUnitIds,
+    EvidenceTestGraph.obligation(orphaned, 0, 0).missingUnitIds,
     [target.id],
   );
 
   // A semantic identity outside the selected reference scopes is refused even when resolved.
-  const outside = EvidGraph.evaluate({
+  const outside = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -138,7 +138,7 @@ export async function test_graph_resolution_integrity(): Promise<void> {
             severity: "error",
             inventory: reference,
             unitIds: [target.id],
-            resolutions: [EvidTestGraph.resolved(declaration, other)],
+            resolutions: [EvidenceTestGraph.resolved(declaration, other)],
           },
         ],
       },
@@ -152,7 +152,7 @@ export async function test_graph_resolution_integrity(): Promise<void> {
   );
   TestValidator.equals(
     "out-of-scope mapping grants no coverage",
-    EvidTestGraph.obligation(outside, 0, 0).missingUnitIds,
+    EvidenceTestGraph.obligation(outside, 0, 0).missingUnitIds,
     [target.id],
   );
 }
@@ -164,7 +164,7 @@ export async function test_graph_resolution_integrity(): Promise<void> {
  * asserting that the mapping did not contribute coverage.
  */
 function count(
-  result: ReturnType<typeof EvidGraph.evaluate>,
+  result: ReturnType<typeof EvidenceGraph.evaluate>,
   code: string,
 ): number {
   return result.diagnostics.filter((diagnostic) => diagnostic.code === code)

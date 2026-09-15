@@ -1,9 +1,9 @@
-import { EvidChecker, EvidWatcher } from "evid";
+import { EvidenceChecker, EvidenceWatcher } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
 
 /**
  * Rebuilds the BigQuery population as watched schema files change.
@@ -17,7 +17,7 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
  * 3. Repair the schema and require the expected population to return.
  */
 export async function test_bigquery_watch(): Promise<void> {
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     "bigquery-watch",
     {
       "evidence.config.ts": dedent`
@@ -31,7 +31,7 @@ export async function test_bigquery_watch(): Promise<void> {
     },
     async (directory) => {
       const config = join(directory, "evidence.config.ts");
-      const watcher = new EvidWatcher(config, {
+      const watcher = new EvidenceWatcher(config, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
       });
@@ -41,11 +41,11 @@ export async function test_bigquery_watch(): Promise<void> {
           TestValidator.equals(
             `fresh BigQuery cycle ${cycle.cycle}`,
             cycle.report,
-            await EvidChecker.check(config),
+            await EvidenceChecker.check(config),
           );
           if (cycle.cycle === 1) {
             TestValidator.equals("initial coverage", cycle.success, true);
-            await EvidTestFileSystem.save(directory, {
+            await EvidenceTestFileSystem.save(directory, {
               "schema/extra.sql": "CREATE TABLE ds.extra (id INT64);",
             });
           } else if (cycle.cycle === 2) {
@@ -54,7 +54,7 @@ export async function test_bigquery_watch(): Promise<void> {
               cycle.success,
               false,
             );
-            await EvidTestFileSystem.save(directory, {
+            await EvidenceTestFileSystem.save(directory, {
               "schema/extra.sql": "CREATE TABLE ds.extra (",
             });
           } else if (cycle.cycle === 3) {
@@ -63,7 +63,7 @@ export async function test_bigquery_watch(): Promise<void> {
               cycle.status,
               "incomplete",
             );
-            await EvidTestFileSystem.save(directory, {
+            await EvidenceTestFileSystem.save(directory, {
               "schema/extra.sql": "CREATE TEMP TABLE extra (id INT64);",
             });
           } else {

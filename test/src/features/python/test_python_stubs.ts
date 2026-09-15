@@ -1,9 +1,9 @@
-import { EvidPythonAdapter } from "evid";
-import type { IEvidInventory } from "evid";
+import { EvidencePythonAdapter } from "@wrtnlabs/evidence";
+import type { IEvidenceInventory } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Extracts public Python units from stubs and explicit private exports.
@@ -19,9 +19,9 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    unselected private declarations stay hidden.
  */
 export async function test_python_stubs(): Promise<void> {
-  const inventory = await new EvidPythonAdapter().analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+  const inventory = await new EvidencePythonAdapter().analyze(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "types/contracts.pyi",
         dedent`
           from typing import TypeAlias
@@ -41,7 +41,7 @@ export async function test_python_stubs(): Promise<void> {
               def run(self) -> None: ...
         `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "unicode/contract.py",
         dedent`
           __all__ = ["판매", "_강제"]
@@ -82,7 +82,7 @@ export async function test_python_stubs(): Promise<void> {
   TestValidator.equals("complete Python stubs", inventory.diagnostics, []);
 }
 
-function addresses(inventory: IEvidInventory, file: string): string[] {
+function addresses(inventory: IEvidenceInventory, file: string): string[] {
   return inventory.addresses
     .filter((address) => address.file === file)
     .map((address) => address.segments.join("."))

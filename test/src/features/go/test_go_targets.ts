@@ -1,9 +1,9 @@
-import { EvidGoAdapter } from "evid";
+import { EvidenceGoAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Resolves Go functions and receiver methods through declaration and owner
@@ -17,10 +17,10 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Require wrong owner or file paths to remain unresolved.
  */
 export async function test_go_targets(): Promise<void> {
-  const adapter = new EvidGoAdapter();
+  const adapter = new EvidenceGoAdapter();
   const reference = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/sale.go",
         dedent`
           package shop
@@ -30,7 +30,7 @@ export async function test_go_targets(): Promise<void> {
           }
         ` + "\n",
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/methods.go",
         dedent`
           package shop
@@ -47,7 +47,7 @@ export async function test_go_targets(): Promise<void> {
     ]),
   );
   const claim = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "test/sale_test.go",
       dedent`
         package shop_test
@@ -63,7 +63,7 @@ export async function test_go_targets(): Promise<void> {
   );
   TestValidator.equals("complete Go reference", reference.diagnostics, []);
   TestValidator.equals("complete Go claim", claim.diagnostics, []);
-  const resolutions = await EvidTestGraph.resolveDeclarations(
+  const resolutions = await EvidenceTestGraph.resolveDeclarations(
     claim,
     reference,
     reference.units.map((unit) => unit.id),

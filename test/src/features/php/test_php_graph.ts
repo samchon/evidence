@@ -1,9 +1,13 @@
-import { EvidGraph, EvidPhpAdapter, EvidTypeScriptAdapter } from "evid";
+import {
+  EvidenceGraph,
+  EvidencePhpAdapter,
+  EvidenceTypeScriptAdapter,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Evaluates PHP selectors as required cross-language references.
@@ -16,8 +20,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Verify review-only references remain missing.
  */
 export async function test_php_graph(): Promise<void> {
-  const reference = await new EvidPhpAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const reference = await new EvidencePhpAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/Contract.php",
       dedent`
     <?php
@@ -27,8 +31,8 @@ export async function test_php_graph(): Promise<void> {
   `,
     ),
   );
-  const claims = await new EvidTypeScriptAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const claims = await new EvidenceTypeScriptAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/Claims.ts",
       dedent`
     /** @evidence ./Contract.php#Contract Verifies the type. */
@@ -64,7 +68,7 @@ export async function test_php_graph(): Promise<void> {
             ),
           )
         : [];
-      const graph = EvidGraph.evaluate({
+      const graph = EvidenceGraph.evaluate({
         claims: [
           {
             severity: "error",
@@ -75,7 +79,7 @@ export async function test_php_graph(): Promise<void> {
                 severity: "error",
                 inventory: reference,
                 unitIds,
-                resolutions: await EvidTestGraph.resolveDeclarations(
+                resolutions: await EvidenceTestGraph.resolveDeclarations(
                   claim,
                   reference,
                   unitIds,
@@ -92,13 +96,13 @@ export async function test_php_graph(): Promise<void> {
       );
       TestValidator.equals(
         `${symbol} exact missing population`,
-        EvidTestGraph.obligation(graph, 0, 0).missingUnitIds,
+        EvidenceTestGraph.obligation(graph, 0, 0).missingUnitIds,
         acknowledged ? [] : unitIds,
       );
     }
   }
-  const review = await new EvidPhpAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const review = await new EvidencePhpAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/Review.php",
       dedent`
     <?php
@@ -116,7 +120,7 @@ export async function test_php_graph(): Promise<void> {
   const functions = reference.units
     .filter((unit) => unit.symbol === "function")
     .map((unit) => unit.id);
-  const graph = EvidGraph.evaluate({
+  const graph = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -128,7 +132,7 @@ export async function test_php_graph(): Promise<void> {
             inventory: reference,
             unitIds: functions,
             resolutions: [],
-            reviewResolutions: await EvidTestGraph.resolveReviews(
+            reviewResolutions: await EvidenceTestGraph.resolveReviews(
               review,
               reference,
               functions,
@@ -140,7 +144,7 @@ export async function test_php_graph(): Promise<void> {
   });
   TestValidator.equals(
     "review never supplies missing coverage",
-    EvidTestGraph.obligation(graph, 0, 0).missingUnitIds,
+    EvidenceTestGraph.obligation(graph, 0, 0).missingUnitIds,
     functions,
   );
 }

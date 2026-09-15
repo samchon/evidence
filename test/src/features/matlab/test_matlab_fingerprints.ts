@@ -1,8 +1,8 @@
-import { EvidFingerprint, EvidMatlabAdapter } from "evid";
+import { EvidenceFingerprint, EvidenceMatlabAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Scopes MATLAB member fingerprints to their own content and relevant metadata.
@@ -23,18 +23,18 @@ export async function test_matlab_fingerprints(): Promise<void> {
       end
     end
   `.concat("\n");
-  const adapter = new EvidMatlabAdapter();
+  const adapter = new EvidenceMatlabAdapter();
   const original = await adapter.analyze(
-    EvidTestSourceSnapshot.create("src/Contract.m", content),
+    EvidenceTestSourceSnapshot.create("src/Contract.m", content),
   );
   const sibling = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Contract.m",
       content.replace("first = 1", "first = 7"),
     ),
   );
   const metadata = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Contract.m",
       content.replace("SetAccess=private", "SetAccess=public"),
     ),
@@ -49,12 +49,12 @@ export async function test_matlab_fingerprints(): Promise<void> {
   );
   TestValidator.equals(
     "sibling does not change member fingerprint",
-    EvidFingerprint.inspect(original, second.id).fingerprint,
-    EvidFingerprint.inspect(sibling, second.id).fingerprint,
+    EvidenceFingerprint.inspect(original, second.id).fingerprint,
+    EvidenceFingerprint.inspect(sibling, second.id).fingerprint,
   );
   TestValidator.notEquals(
     "access metadata changes fingerprint",
-    EvidFingerprint.inspect(original, second.id).fingerprint,
-    EvidFingerprint.inspect(metadata, second.id).fingerprint,
+    EvidenceFingerprint.inspect(original, second.id).fingerprint,
+    EvidenceFingerprint.inspect(metadata, second.id).fingerprint,
   );
 }

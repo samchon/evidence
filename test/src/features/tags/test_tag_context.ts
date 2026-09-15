@@ -1,8 +1,8 @@
-import { EvidTagParser } from "evid";
+import { EvidenceTagParser } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestDocumentation } from "../../internal/EvidTestDocumentation";
+import { EvidenceTestDocumentation } from "../../internal/EvidenceTestDocumentation";
 
 /**
  * Resets annotation continuations, fences, and diagnostics for every parse.
@@ -15,7 +15,7 @@ import { EvidTestDocumentation } from "../../internal/EvidTestDocumentation";
  * 3. Verify fresh controller state and an unaffected second controller.
  */
 export async function test_tag_context(): Promise<void> {
-  const fixture = EvidTestDocumentation.create(dedent`
+  const fixture = EvidenceTestDocumentation.create(dedent`
     /**
      * @evidence ../real.ts#run Implements the behavior.
      * Continued reason.
@@ -23,7 +23,7 @@ export async function test_tag_context(): Promise<void> {
      * @evidence ../example.ts#fake This remains fenced.
      */
   `);
-  const parser = new EvidTagParser(
+  const parser = new EvidenceTagParser(
     fixture.content,
     fixture.host,
     fixture.documentation,
@@ -45,10 +45,10 @@ export async function test_tag_context(): Promise<void> {
   TestValidator.equals("fresh parse state", parser.parse(), baseline);
 
   // A different controller retains its own malformed-annotation finding.
-  const invalid = EvidTestDocumentation.create(
+  const invalid = EvidenceTestDocumentation.create(
     "/** @evidence ../missing.ts#run */",
   );
-  const rejected = new EvidTagParser(
+  const rejected = new EvidenceTagParser(
     invalid.content,
     invalid.host,
     invalid.documentation,

@@ -1,9 +1,9 @@
-import { EvidPythonAdapter } from "evid";
-import type { IEvidInventory } from "evid";
+import { EvidencePythonAdapter } from "@wrtnlabs/evidence";
+import type { IEvidenceInventory } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Marks unsupported and unresolved Python public surfaces incomplete.
@@ -22,11 +22,11 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 4. Analyze malformed source and verify parse failure is reported as incomplete.
  */
 export async function test_python_failures(): Promise<void> {
-  const adapter = new EvidPythonAdapter();
+  const adapter = new EvidencePythonAdapter();
 
   // Dynamic __all__ retains ordinary public declarations instead of erasing obligations.
   const dynamic = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/dynamic.py",
       dedent`
         public = 1
@@ -49,7 +49,7 @@ export async function test_python_failures(): Promise<void> {
 
   // An explicit missing name and a missing local import both fail export analysis.
   const unresolved = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/unresolved.py",
       dedent`
         from .missing import Imported
@@ -67,9 +67,9 @@ export async function test_python_failures(): Promise<void> {
   );
 
   const emptyNamespace = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create("pkg/empty.py", "_private = 1\n"),
-      EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create("pkg/empty.py", "_private = 1\n"),
+      EvidenceTestSourceSnapshot.create(
         "pkg/api.py",
         dedent`
           import pkg.empty as empty
@@ -86,7 +86,7 @@ export async function test_python_failures(): Promise<void> {
 
   // Conditional public bindings and instance fields are outside the static form matrix.
   const conditional = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/conditional.py",
       dedent`
         if enabled:
@@ -118,7 +118,7 @@ export async function test_python_failures(): Promise<void> {
   );
 
   const narrowed = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/narrowed.py",
       dedent`
         __all__ = []
@@ -138,7 +138,7 @@ export async function test_python_failures(): Promise<void> {
 
   // Explicit __all__ selection makes an underscored conditional binding public.
   const explicitPrivate = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/explicit-private.py",
       dedent`
         __all__ = ["_selected"]
@@ -161,7 +161,7 @@ export async function test_python_failures(): Promise<void> {
 
   // Selected destructuring bindings remain visible as unsupported surface changes.
   const unsupportedBindings = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/unsupported-bindings.py",
       dedent`
         __all__ = ["_left", "Record"]
@@ -189,15 +189,15 @@ export async function test_python_failures(): Promise<void> {
 
   // A declaration-free import cycle terminates and reports the unresolved surface.
   const cycle = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "cycle/a.py",
         dedent`
           from .b import value
           __all__ = ["value"]
         `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "cycle/b.py",
         dedent`
           from .a import value
@@ -215,7 +215,10 @@ export async function test_python_failures(): Promise<void> {
 
   // Tree-sitter syntax failures never become healthy empty inventories.
   const malformed = await adapter.analyze(
-    EvidTestSourceSnapshot.create("src/broken.py", "def broken(:\n    pass\n"),
+    EvidenceTestSourceSnapshot.create(
+      "src/broken.py",
+      "def broken(:\n    pass\n",
+    ),
   );
   TestValidator.equals("malformed Python source", malformed.complete, false);
   TestValidator.equals(
@@ -225,6 +228,6 @@ export async function test_python_failures(): Promise<void> {
   );
 }
 
-function hasCode(inventory: IEvidInventory, code: string): boolean {
+function hasCode(inventory: IEvidenceInventory, code: string): boolean {
   return inventory.diagnostics.some((diagnostic) => diagnostic.code === code);
 }

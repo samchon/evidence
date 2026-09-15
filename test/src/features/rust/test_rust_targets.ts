@@ -1,9 +1,9 @@
-import { EvidRustAdapter } from "evid";
+import { EvidenceRustAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Resolves Rust public modules, aliases, fields, and associated items.
@@ -18,12 +18,12 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    methods remain distinct units.
  */
 export async function test_rust_targets(): Promise<void> {
-  const adapter = new EvidRustAdapter();
+  const adapter = new EvidenceRustAdapter();
 
   // The reference exposes one owner through its module path, declaration file, and alias.
   const reference = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/lib.rs",
         dedent`
           pub mod sale;
@@ -34,7 +34,7 @@ export async function test_rust_targets(): Promise<void> {
           }
         `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/sale.rs",
         dedent`
           pub struct Sale {
@@ -54,7 +54,7 @@ export async function test_rust_targets(): Promise<void> {
     ]),
   );
   const claim = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "test/sale_test.rs",
       dedent`
         /// @evidence ../src/lib.rs#sale.Sale Verifies the module path.
@@ -76,7 +76,7 @@ export async function test_rust_targets(): Promise<void> {
     [],
   );
   TestValidator.equals("complete Rust target claim", claim.diagnostics, []);
-  const resolutions = await EvidTestGraph.resolveDeclarations(
+  const resolutions = await EvidenceTestGraph.resolveDeclarations(
     claim,
     reference,
     reference.units.map((unit) => unit.id),

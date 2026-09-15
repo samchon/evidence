@@ -1,12 +1,12 @@
-import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
+import { EvidenceTestParserAssets } from "../../internal/EvidenceTestParserAssets";
 import { TestValidator } from "@nestia/e2e";
-import { EvidTreeSitterAssets } from "evid";
+import { EvidenceTreeSitterAssets } from "@wrtnlabs/evidence";
 import { randomUUID } from "node:crypto";
 import { readdir } from "node:fs/promises";
 import { join } from "node:path";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
-import { EvidTestParserError } from "../../internal/EvidTestParserError";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
+import { EvidenceTestParserError } from "../../internal/EvidenceTestParserError";
 
 /**
  * Rejects unverified grammar downloads and permits recovery on the same
@@ -28,15 +28,15 @@ import { EvidTestParserError } from "../../internal/EvidTestParserError";
  *    with exactly one additional request.
  */
 export async function test_parser_acquisition_failures(): Promise<void> {
-  const grammar = await new EvidTreeSitterAssets().grammar("python");
-  const pinned = Uint8Array.from(await EvidTestParserAssets.bytes(grammar));
-  await EvidTestFileSystem.experiment(
+  const grammar = await new EvidenceTreeSitterAssets().grammar("python");
+  const pinned = Uint8Array.from(await EvidenceTestParserAssets.bytes(grammar));
+  await EvidenceTestFileSystem.experiment(
     join(__dirname, `acquisition-${randomUUID()}`),
     {},
     async (cacheDirectory) => {
       let requests = 0;
       let mode = "unavailable";
-      const assets = new EvidTreeSitterAssets({
+      const assets = new EvidenceTreeSitterAssets({
         cacheDirectory,
         attempts: 2,
         fetch: async () => {
@@ -55,19 +55,19 @@ export async function test_parser_acquisition_failures(): Promise<void> {
         },
       });
 
-      await EvidTestParserError.expect("asset-download", () =>
+      await EvidenceTestParserError.expect("asset-download", () =>
         assets.bytes(grammar),
       );
       TestValidator.equals("bounded transient attempts", requests, 2);
       mode = "missing";
-      await EvidTestParserError.expect("asset-download", () =>
+      await EvidenceTestParserError.expect("asset-download", () =>
         assets.bytes(grammar),
       );
       TestValidator.equals("permanent HTTP error is not retried", requests, 3);
 
       for (const invalid of ["truncated", "oversized", "modified"]) {
         mode = invalid;
-        await EvidTestParserError.expect("asset-corrupt", () =>
+        await EvidenceTestParserError.expect("asset-corrupt", () =>
           assets.bytes(grammar),
         );
         TestValidator.equals(

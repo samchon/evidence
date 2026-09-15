@@ -1,4 +1,4 @@
-import { EvidParser } from "evid";
+import { EvidenceParser } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -22,7 +22,7 @@ import { dedent } from "@typia/utils";
  *    - The exclusive end includes exactly the identifier's two code units.
  */
 export async function test_parser_coordinates(): Promise<void> {
-  const parser = new EvidParser();
+  const parser = new EvidenceParser();
   const text = dedent`
     // 앞줄 😀
     export const 인사 = "😀"; export const 합계 = 1;

@@ -1,10 +1,13 @@
-import { EvidChecker, EvidWatcher } from "evid";
-import type { EvidWatchCycle, IEvidSourceDependency } from "evid";
+import { EvidenceChecker, EvidenceWatcher } from "@wrtnlabs/evidence";
+import type {
+  EvidenceWatchCycle,
+  IEvidenceSourceDependency,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
 
 /**
  * Publishes fresh results as an ESM package entry changes, fails, and recovers.
@@ -31,7 +34,7 @@ export async function test_watch_package_conditions(): Promise<void> {
     __dirname,
     `watch package conditions ${randomUUID()}`,
   );
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     location,
     {
       "package.json": JSON.stringify({ type: "module" }),
@@ -61,15 +64,15 @@ export async function test_watch_package_conditions(): Promise<void> {
         directory,
         "node_modules/fixture-settings/unused.cjs",
       ).replaceAll("\\", "/");
-      const watcher: EvidWatcher = new EvidWatcher(configFile, {
+      const watcher: EvidenceWatcher = new EvidenceWatcher(configFile, {
         pollIntervalMilliseconds: 20,
         debounceMilliseconds: 20,
       });
 
-      await watcher.watch(async (cycle: EvidWatchCycle): Promise<void> => {
+      await watcher.watch(async (cycle: EvidenceWatchCycle): Promise<void> => {
         const dependencies: string[] = watcher
           .dependencies()
-          .map((dependency: IEvidSourceDependency): string =>
+          .map((dependency: IEvidenceSourceDependency): string =>
             dependency.path.replaceAll("\\", "/"),
           );
         if (cycle.cycle === 1) {
@@ -83,7 +86,7 @@ export async function test_watch_package_conditions(): Promise<void> {
             "initial import entry observed",
             dependencies.includes(entry) && !dependencies.includes(unused),
           );
-          await EvidTestFileSystem.save(directory, {
+          await EvidenceTestFileSystem.save(directory, {
             "node_modules/fixture-settings/entry.js": settings("src-uncovered"),
           });
           return;
@@ -94,13 +97,13 @@ export async function test_watch_package_conditions(): Promise<void> {
           TestValidator.equals(
             "edited entry matches fresh check",
             cycle.report,
-            await EvidChecker.check(configFile),
+            await EvidenceChecker.check(configFile),
           );
           TestValidator.predicate(
             "edited entry expires success",
             !cycle.success,
           );
-          await EvidTestFileSystem.save(directory, {
+          await EvidenceTestFileSystem.save(directory, {
             "node_modules/fixture-settings/package.json":
               exportManifest("./replacement.js"),
           });
@@ -112,7 +115,7 @@ export async function test_watch_package_conditions(): Promise<void> {
           TestValidator.equals(
             "repointed entry matches fresh check",
             cycle.report,
-            await EvidChecker.check(configFile),
+            await EvidenceChecker.check(configFile),
           );
           TestValidator.predicate(
             "repointed import entry succeeds",
@@ -122,7 +125,7 @@ export async function test_watch_package_conditions(): Promise<void> {
             "active dependency replaced",
             dependencies.includes(replacement) && !dependencies.includes(entry),
           );
-          await EvidTestFileSystem.erase(
+          await EvidenceTestFileSystem.erase(
             join(directory, "node_modules/fixture-settings/replacement.js"),
           );
           return;
@@ -132,7 +135,7 @@ export async function test_watch_package_conditions(): Promise<void> {
             "missing selected entry fails config",
             !("report" in cycle),
           );
-          await EvidTestFileSystem.save(directory, {
+          await EvidenceTestFileSystem.save(directory, {
             "node_modules/fixture-settings/replacement.js":
               settings("src-covered"),
           });
@@ -144,7 +147,7 @@ export async function test_watch_package_conditions(): Promise<void> {
         TestValidator.equals(
           "repaired entry matches fresh check",
           cycle.report,
-          await EvidChecker.check(configFile),
+          await EvidenceChecker.check(configFile),
         );
         TestValidator.predicate(
           "repaired import entry succeeds",

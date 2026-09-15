@@ -1,7 +1,7 @@
-import { EvidParser } from "evid";
+import { EvidenceParser } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestParserError } from "../../internal/EvidTestParserError";
+import { EvidenceTestParserError } from "../../internal/EvidenceTestParserError";
 
 /**
  * Rejects partial syntax and unsupported queries without losing parser
@@ -23,13 +23,13 @@ import { EvidTestParserError } from "../../internal/EvidTestParserError";
  *    healthy empty result from the preceding syntax and query failures.
  */
 export async function test_parser_failures(): Promise<void> {
-  const parser = new EvidParser({ concurrency: 1 });
+  const parser = new EvidenceParser({ concurrency: 1 });
   let callbacks = 0;
 
   try {
     // Both explicit ERROR nodes and a parser-inserted closing brace must fail extraction.
     for (const content of ["export const = ;", "export function compute() {"])
-      await EvidTestParserError.expect("parse-incomplete", () =>
+      await EvidenceTestParserError.expect("parse-incomplete", () =>
         parser.parse(
           { type: "typescript", file: "broken.ts", content },
           () => ++callbacks,
@@ -48,7 +48,7 @@ export async function test_parser_failures(): Promise<void> {
       "((identifier) @name (#external? @name))",
       "((identifier) @name (#is? public))",
     ])
-      await EvidTestParserError.expect("query-invalid", () =>
+      await EvidenceTestParserError.expect("query-invalid", () =>
         parser.parse(
           {
             type: "typescript",

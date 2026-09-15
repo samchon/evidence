@@ -1,14 +1,14 @@
 import {
-  EvidLanguageRegistry,
-  EvidParser,
-  EvidPhpAdapter,
-  EvidTreeSitterAssets,
-} from "evid";
+  EvidenceLanguageRegistry,
+  EvidenceParser,
+  EvidencePhpAdapter,
+  EvidenceTreeSitterAssets,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
-import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
+import { EvidenceTestParserAssets } from "../../internal/EvidenceTestParserAssets";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Acquires the selected PHP grammar and preserves warm analysis.
@@ -21,15 +21,15 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Repeat offline and require equivalent output.
  */
 export async function test_php_acquisition(): Promise<void> {
-  const selected = EvidLanguageRegistry.select("php", "contract.php");
-  const grammar = await new EvidTreeSitterAssets().grammar(selected.id);
-  const pinned = Uint8Array.from(await EvidTestParserAssets.bytes(grammar));
-  await EvidTestFileSystem.experiment(
+  const selected = EvidenceLanguageRegistry.select("php", "contract.php");
+  const grammar = await new EvidenceTreeSitterAssets().grammar(selected.id);
+  const pinned = Uint8Array.from(await EvidenceTestParserAssets.bytes(grammar));
+  await EvidenceTestFileSystem.experiment(
     "php-acquisition",
     {},
     async (directory) => {
       const requests: string[] = [];
-      const cold = new EvidTreeSitterAssets({
+      const cold = new EvidenceTreeSitterAssets({
         cacheDirectory: directory,
         fetch: async (url) => {
           requests.push(String(url));
@@ -37,7 +37,7 @@ export async function test_php_acquisition(): Promise<void> {
         },
       });
       const coldBytes = await cold.bytes(grammar);
-      const offline = new EvidTreeSitterAssets({
+      const offline = new EvidenceTreeSitterAssets({
         cacheDirectory: directory,
         attempts: 1,
         fetch: async () => {
@@ -58,19 +58,19 @@ export async function test_php_acquisition(): Promise<void> {
     },
   );
 
-  const source = EvidTestSourceSnapshot.create(
+  const source = EvidenceTestSourceSnapshot.create(
     "contract.php",
     "<?php class Contract { public int $value = 1; }",
   );
-  const cold = await new EvidPhpAdapter().analyze(source);
-  const warm = await new EvidPhpAdapter().analyze(source);
+  const cold = await new EvidencePhpAdapter().analyze(source);
+  const warm = await new EvidencePhpAdapter().analyze(source);
   TestValidator.equals("warm analysis preserves inventory", warm, cold);
   TestValidator.equals(
     "real PHP grammar yields complete analysis",
     warm.complete,
     true,
   );
-  const parser = new EvidParser();
+  const parser = new EvidenceParser();
   try {
     await parser.parse(
       { type: "php", file: "contract.php", content: "<?php function run() {}" },

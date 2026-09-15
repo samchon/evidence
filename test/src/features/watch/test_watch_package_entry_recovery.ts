@@ -1,15 +1,15 @@
 import {
-  EvidConfigDependencyScanner,
-  EvidConfigLoader,
-  EvidWatchDependencySnapshot,
-  type IEvidConfig,
-  type IEvidSourceDependency,
-} from "evid";
+  EvidenceConfigDependencyScanner,
+  EvidenceConfigLoader,
+  EvidenceWatchDependencySnapshot,
+  type IEvidenceConfig,
+  type IEvidenceSourceDependency,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
 
 /**
  * Rebuilds package dependencies after manifest changes in one parent process.
@@ -36,7 +36,7 @@ export async function test_watch_package_entry_recovery(): Promise<void> {
     __dirname,
     `package entry recovery ${randomUUID()}`,
   );
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     location,
     {
       "package.json": JSON.stringify({ type: "commonjs" }),
@@ -70,9 +70,10 @@ export async function test_watch_package_entry_recovery(): Promise<void> {
       const normalized: (file: string) => string = (file: string): string =>
         file.replaceAll("\\", "/");
 
-      const firstConfig: IEvidConfig = await EvidConfigLoader.load(configFile);
-      const firstDependencies: IEvidSourceDependency[] =
-        await new EvidConfigDependencyScanner(configFile).scan();
+      const firstConfig: IEvidenceConfig =
+        await EvidenceConfigLoader.load(configFile);
+      const firstDependencies: IEvidenceSourceDependency[] =
+        await new EvidenceConfigDependencyScanner(configFile).scan();
       TestValidator.equals(
         "initial package severity",
         firstConfig.severity,
@@ -83,13 +84,14 @@ export async function test_watch_package_entry_recovery(): Promise<void> {
         paths(firstDependencies).includes(normalized(firstFile)),
       );
 
-      await EvidTestFileSystem.save(directory, {
+      await EvidenceTestFileSystem.save(directory, {
         "node_modules/fixture-settings/package.json":
           packageManifest("second.cjs"),
       });
-      const secondConfig: IEvidConfig = await EvidConfigLoader.load(configFile);
-      const secondDependencies: IEvidSourceDependency[] =
-        await new EvidConfigDependencyScanner(configFile).scan();
+      const secondConfig: IEvidenceConfig =
+        await EvidenceConfigLoader.load(configFile);
+      const secondDependencies: IEvidenceSourceDependency[] =
+        await new EvidenceConfigDependencyScanner(configFile).scan();
       TestValidator.equals(
         "repointed package severity",
         secondConfig.severity,
@@ -104,41 +106,41 @@ export async function test_watch_package_entry_recovery(): Promise<void> {
         !paths(secondDependencies).includes(normalized(firstFile)),
       );
 
-      const stable: EvidWatchDependencySnapshot =
-        await EvidWatchDependencySnapshot.capture(secondDependencies);
-      const repeated: EvidWatchDependencySnapshot =
-        await EvidWatchDependencySnapshot.capture(secondDependencies);
+      const stable: EvidenceWatchDependencySnapshot =
+        await EvidenceWatchDependencySnapshot.capture(secondDependencies);
+      const repeated: EvidenceWatchDependencySnapshot =
+        await EvidenceWatchDependencySnapshot.capture(secondDependencies);
       TestValidator.predicate(
         "unchanged package snapshot",
         stable.equals(repeated),
       );
-      await EvidTestFileSystem.save(directory, {
+      await EvidenceTestFileSystem.save(directory, {
         "node_modules/fixture-settings/second.cjs": settings("off"),
       });
-      const edited: EvidWatchDependencySnapshot =
-        await EvidWatchDependencySnapshot.capture(secondDependencies);
+      const edited: EvidenceWatchDependencySnapshot =
+        await EvidenceWatchDependencySnapshot.capture(secondDependencies);
       TestValidator.predicate(
         "active entry content invalidates snapshot",
         !stable.equals(edited),
       );
 
-      await EvidTestFileSystem.save(directory, {
+      await EvidenceTestFileSystem.save(directory, {
         "node_modules/fixture-settings/package.json":
           packageManifest("first.cjs"),
       });
-      const returned: IEvidSourceDependency[] =
-        await new EvidConfigDependencyScanner(configFile).scan();
+      const returned: IEvidenceSourceDependency[] =
+        await new EvidenceConfigDependencyScanner(configFile).scan();
       TestValidator.predicate(
         "repeated package entry switch",
         paths(returned).includes(normalized(firstFile)),
       );
 
-      await EvidTestFileSystem.save(directory, {
+      await EvidenceTestFileSystem.save(directory, {
         "node_modules/fixture-settings/package.json":
           packageManifest("missing.cjs"),
       });
-      const missingScanner: EvidConfigDependencyScanner =
-        new EvidConfigDependencyScanner(configFile);
+      const missingScanner: EvidenceConfigDependencyScanner =
+        new EvidenceConfigDependencyScanner(configFile);
       let missingFailed: boolean = false;
       try {
         await missingScanner.scan();
@@ -146,36 +148,36 @@ export async function test_watch_package_entry_recovery(): Promise<void> {
         missingFailed = true;
       }
       TestValidator.predicate("missing selected entry fails", missingFailed);
-      const missingDependencies: IEvidSourceDependency[] =
+      const missingDependencies: IEvidenceSourceDependency[] =
         missingScanner.list();
       TestValidator.predicate(
         "missing selected entry retained",
         paths(missingDependencies).includes(normalized(missingFile)),
       );
-      const absent: EvidWatchDependencySnapshot =
-        await EvidWatchDependencySnapshot.capture(missingDependencies);
-      await EvidTestFileSystem.save(directory, {
+      const absent: EvidenceWatchDependencySnapshot =
+        await EvidenceWatchDependencySnapshot.capture(missingDependencies);
+      await EvidenceTestFileSystem.save(directory, {
         "node_modules/fixture-settings/missing.cjs": settings("warning"),
       });
-      const repaired: EvidWatchDependencySnapshot =
-        await EvidWatchDependencySnapshot.capture(missingDependencies);
+      const repaired: EvidenceWatchDependencySnapshot =
+        await EvidenceWatchDependencySnapshot.capture(missingDependencies);
       TestValidator.predicate(
         "selected entry repair invalidates snapshot",
         !absent.equals(repaired),
       );
-      const recovered: IEvidSourceDependency[] =
-        await new EvidConfigDependencyScanner(configFile).scan();
+      const recovered: IEvidenceSourceDependency[] =
+        await new EvidenceConfigDependencyScanner(configFile).scan();
       TestValidator.predicate(
         "repaired selected entry resolves",
         paths(recovered).includes(normalized(missingFile)),
       );
 
-      await EvidTestFileSystem.save(directory, {
+      await EvidenceTestFileSystem.save(directory, {
         "node_modules/fixture-settings/package.json": `{"name": 1}`,
       });
       let malformedEvaluationFailed: boolean = false;
       try {
-        await EvidConfigLoader.load(configFile);
+        await EvidenceConfigLoader.load(configFile);
       } catch {
         malformedEvaluationFailed = true;
       }
@@ -183,8 +185,8 @@ export async function test_watch_package_entry_recovery(): Promise<void> {
         "malformed package manifest prevents evaluation",
         malformedEvaluationFailed,
       );
-      const malformedScanner: EvidConfigDependencyScanner =
-        new EvidConfigDependencyScanner(configFile);
+      const malformedScanner: EvidenceConfigDependencyScanner =
+        new EvidenceConfigDependencyScanner(configFile);
       let malformedFailed: boolean = false;
       try {
         await malformedScanner.scan();
@@ -199,12 +201,12 @@ export async function test_watch_package_entry_recovery(): Promise<void> {
         "malformed manifest retained",
         paths(malformedScanner.list()).includes(normalized(manifestFile)),
       );
-      await EvidTestFileSystem.save(directory, {
+      await EvidenceTestFileSystem.save(directory, {
         "node_modules/fixture-settings/package.json":
           packageManifest("first.cjs"),
       });
-      const restored: IEvidSourceDependency[] =
-        await new EvidConfigDependencyScanner(configFile).scan();
+      const restored: IEvidenceSourceDependency[] =
+        await new EvidenceConfigDependencyScanner(configFile).scan();
       TestValidator.predicate(
         "restored manifest resolves",
         paths(restored).includes(normalized(firstFile)),
@@ -249,8 +251,8 @@ function declaration(): string {
  * Watch records retain native paths; slash normalization keeps expected values
  * stable on Windows and POSIX runners.
  */
-function paths(dependencies: IEvidSourceDependency[]): string[] {
-  return dependencies.map((dependency: IEvidSourceDependency): string =>
+function paths(dependencies: IEvidenceSourceDependency[]): string[] {
+  return dependencies.map((dependency: IEvidenceSourceDependency): string =>
     dependency.path.replaceAll("\\", "/"),
   );
 }

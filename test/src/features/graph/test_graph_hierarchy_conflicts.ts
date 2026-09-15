@@ -1,8 +1,8 @@
-import { EvidGraph } from "evid";
+import { EvidenceGraph } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestInventory } from "../../internal/EvidTestInventory";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestInventory } from "../../internal/EvidenceTestInventory";
 
 /**
  * Expands explicit target hierarchy and attributes acknowledgement conflicts
@@ -26,15 +26,15 @@ import { EvidTestInventory } from "../../internal/EvidTestInventory";
  *    - Retain coverage of both selected children despite the conflict diagnostics.
  */
 export async function test_graph_hierarchy_conflicts(): Promise<void> {
-  const reference = EvidTestInventory.create();
-  const parent = EvidTestInventory.unit(
+  const reference = EvidenceTestInventory.create();
+  const parent = EvidenceTestInventory.unit(
     reference,
     "parent",
     ["Parent"],
     "type",
     "export class Box { value = 1; }",
   );
-  const child = EvidTestInventory.unit(
+  const child = EvidenceTestInventory.unit(
     reference,
     "child",
     ["Parent", "child"],
@@ -42,7 +42,7 @@ export async function test_graph_hierarchy_conflicts(): Promise<void> {
     "value = 1",
     parent.id,
   );
-  const sibling = EvidTestInventory.unit(
+  const sibling = EvidenceTestInventory.unit(
     reference,
     "sibling",
     ["Parent", "sibling"],
@@ -50,7 +50,7 @@ export async function test_graph_hierarchy_conflicts(): Promise<void> {
     "extra: string",
     parent.id,
   );
-  const unrelated = EvidTestInventory.unit(
+  const unrelated = EvidenceTestInventory.unit(
     reference,
     "unrelated",
     ["Unrelated"],
@@ -58,29 +58,29 @@ export async function test_graph_hierarchy_conflicts(): Promise<void> {
     "export const unrelated = 3;",
   );
 
-  const aggregateClaim = EvidTestInventory.create();
-  const aggregateUnit = EvidTestInventory.unit(
+  const aggregateClaim = EvidenceTestInventory.create();
+  const aggregateUnit = EvidenceTestInventory.unit(
     aggregateClaim,
     "aggregate-claim",
     ["AggregateClaim"],
     "type",
     "export const first = 1, second = 2;",
   );
-  const aggregateHost = EvidTestInventory.host(
+  const aggregateHost = EvidenceTestInventory.host(
     aggregateClaim,
     "aggregate-host",
     aggregateUnit.sites[0]?.id ?? "",
     [aggregateUnit.id],
     "/** Shared documentation. */",
   );
-  const aggregate = EvidTestGraph.declaration(
+  const aggregate = EvidenceTestGraph.declaration(
     aggregateClaim,
     "aggregate",
     aggregateHost,
     "evidence",
     "parent",
   );
-  const cascade = EvidGraph.evaluate({
+  const cascade = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -91,7 +91,7 @@ export async function test_graph_hierarchy_conflicts(): Promise<void> {
             severity: "error",
             inventory: reference,
             unitIds: [child.id, sibling.id, unrelated.id],
-            resolutions: [EvidTestGraph.resolved(aggregate, parent)],
+            resolutions: [EvidenceTestGraph.resolved(aggregate, parent)],
           },
         ],
       },
@@ -100,88 +100,88 @@ export async function test_graph_hierarchy_conflicts(): Promise<void> {
 
   TestValidator.equals(
     "aggregate covers selected descendants",
-    EvidTestGraph.obligation(cascade, 0, 0).coveredUnitIds,
+    EvidenceTestGraph.obligation(cascade, 0, 0).coveredUnitIds,
     [child.id, sibling.id],
   );
   TestValidator.equals(
     "unrelated unit remains missing",
-    EvidTestGraph.obligation(cascade, 0, 0).missingUnitIds,
+    EvidenceTestGraph.obligation(cascade, 0, 0).missingUnitIds,
     [unrelated.id],
   );
 
   // Repeating one positive scope differs from overlapping exclusions and opposite intent.
-  const conflictClaim = EvidTestInventory.create();
-  const conflictUnit = EvidTestInventory.unit(
+  const conflictClaim = EvidenceTestInventory.create();
+  const conflictUnit = EvidenceTestInventory.unit(
     conflictClaim,
     "conflict-claim",
     ["ConflictClaim"],
     "type",
     "export const first = 1, second = 2;",
   );
-  const otherClaimUnit = EvidTestInventory.unit(
+  const otherClaimUnit = EvidenceTestInventory.unit(
     conflictClaim,
     "other-claim",
     ["OtherClaim"],
     "property",
     "export const unrelated = 3;",
   );
-  const conflictHost = EvidTestInventory.host(
+  const conflictHost = EvidenceTestInventory.host(
     conflictClaim,
     "conflict-host",
     conflictUnit.sites[0]?.id ?? "",
     [conflictUnit.id],
     "/** Shared documentation. */",
   );
-  const mergedHost = EvidTestInventory.host(
+  const mergedHost = EvidenceTestInventory.host(
     conflictClaim,
     "merged-host",
     conflictUnit.sites[0]?.id ?? "",
     [conflictUnit.id],
     "/** Class documentation. */",
   );
-  const otherHost = EvidTestInventory.host(
+  const otherHost = EvidenceTestInventory.host(
     conflictClaim,
     "other-host",
     otherClaimUnit.sites[0]?.id ?? "",
     [otherClaimUnit.id],
     "/** Class documentation. */",
   );
-  const first = EvidTestGraph.declaration(
+  const first = EvidenceTestGraph.declaration(
     conflictClaim,
     "first",
     conflictHost,
     "evidence",
     "child",
   );
-  const repeated = EvidTestGraph.declaration(
+  const repeated = EvidenceTestGraph.declaration(
     conflictClaim,
     "repeated",
     mergedHost,
     "evidence",
     "child",
   );
-  const otherEvid = EvidTestGraph.declaration(
+  const otherEvidence = EvidenceTestGraph.declaration(
     conflictClaim,
     "other-evidence",
     otherHost,
     "evidence",
     "child",
   );
-  const excluded = EvidTestGraph.declaration(
+  const excluded = EvidenceTestGraph.declaration(
     conflictClaim,
     "excluded",
     conflictHost,
     "evidenceExclude",
     "child",
   );
-  const overlapping = EvidTestGraph.declaration(
+  const overlapping = EvidenceTestGraph.declaration(
     conflictClaim,
     "overlapping",
     conflictHost,
     "evidenceExclude",
     "parent",
   );
-  const repeatedEvid = EvidGraph.evaluate({
+  const repeatedEvidence = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -193,9 +193,9 @@ export async function test_graph_hierarchy_conflicts(): Promise<void> {
             inventory: reference,
             unitIds: [child.id, sibling.id],
             resolutions: [
-              EvidTestGraph.resolved(first, child),
-              EvidTestGraph.resolved(repeated, child),
-              EvidTestGraph.resolved(otherEvid, child),
+              EvidenceTestGraph.resolved(first, child),
+              EvidenceTestGraph.resolved(repeated, child),
+              EvidenceTestGraph.resolved(otherEvidence, child),
             ],
           },
         ],
@@ -205,12 +205,12 @@ export async function test_graph_hierarchy_conflicts(): Promise<void> {
 
   TestValidator.equals(
     "duplicate positive scope",
-    count(repeatedEvid, "graph-duplicate-evidence"),
+    count(repeatedEvidence, "graph-duplicate-evidence"),
     1,
   );
 
   // Each later exclusion reports one finding even when its scope covers several descendants.
-  const conflicts = EvidGraph.evaluate({
+  const conflicts = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -222,9 +222,9 @@ export async function test_graph_hierarchy_conflicts(): Promise<void> {
             inventory: reference,
             unitIds: [child.id, sibling.id],
             resolutions: [
-              EvidTestGraph.resolved(first, child),
-              EvidTestGraph.resolved(excluded, child),
-              EvidTestGraph.resolved(overlapping, parent),
+              EvidenceTestGraph.resolved(first, child),
+              EvidenceTestGraph.resolved(excluded, child),
+              EvidenceTestGraph.resolved(overlapping, parent),
             ],
           },
         ],
@@ -244,7 +244,7 @@ export async function test_graph_hierarchy_conflicts(): Promise<void> {
   );
   TestValidator.equals(
     "conflicting scopes still cover",
-    EvidTestGraph.obligation(conflicts, 0, 0).missingUnitIds,
+    EvidenceTestGraph.obligation(conflicts, 0, 0).missingUnitIds,
     [],
   );
 }
@@ -256,7 +256,7 @@ export async function test_graph_hierarchy_conflicts(): Promise<void> {
  * expanding a single authored acknowledgement over multiple descendants.
  */
 function count(
-  result: ReturnType<typeof EvidGraph.evaluate>,
+  result: ReturnType<typeof EvidenceGraph.evaluate>,
   code: string,
 ): number {
   return result.diagnostics.filter((diagnostic) => diagnostic.code === code)

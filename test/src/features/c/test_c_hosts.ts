@@ -1,8 +1,8 @@
-import { EvidCAdapter, EvidInventory } from "evid";
+import { EvidenceCAdapter, EvidenceInventory } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Attaches C Doxygen evidence and rejects annotations in inert source carriers.
@@ -15,8 +15,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Require tag-bearing inert carriers to produce unsupported-host diagnostics.
  */
 export async function test_c_hosts(): Promise<void> {
-  const inventory = await new EvidCAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const inventory = await new EvidenceCAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/contracts.c",
       dedent`
         /**
@@ -103,8 +103,8 @@ export async function test_c_hosts(): Promise<void> {
     7,
   );
 
-  const withdrawn = await new EvidCAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const withdrawn = await new EvidenceCAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "include/hidden.h",
       dedent`
         /** @internal This forward declaration withdraws the merged type. */
@@ -116,7 +116,7 @@ export async function test_c_hosts(): Promise<void> {
       `,
     ),
   );
-  const population = new EvidInventory([withdrawn]).select(
+  const population = new EvidenceInventory([withdrawn]).select(
     withdrawn.units.map((unit) => unit.id),
   );
   TestValidator.equals(

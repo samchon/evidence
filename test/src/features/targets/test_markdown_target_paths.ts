@@ -1,19 +1,19 @@
 import {
-  EvidMarkdownAdapter,
-  EvidTargetResolver,
-  EvidTypeScriptAdapter,
-} from "evid";
+  EvidenceMarkdownAdapter,
+  EvidenceTargetResolver,
+  EvidenceTypeScriptAdapter,
+} from "@wrtnlabs/evidence";
 import type {
-  IEvidDeclaration,
-  IEvidHost,
-  IEvidInventory,
-  IEvidTargetResolution,
-  IEvidUnit,
-} from "evid";
+  IEvidenceDeclaration,
+  IEvidenceHost,
+  IEvidenceInventory,
+  IEvidenceTargetResolution,
+  IEvidenceUnit,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Resolves root-relative Markdown paths and literal anchors.
@@ -29,15 +29,15 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    derivative missing-file result.
  */
 export async function test_markdown_target_paths(): Promise<void> {
-  const reference = await new EvidMarkdownAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const reference = await new EvidenceMarkdownAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "docs/spec%value.md",
       "## Pricing {#price.v2}",
     ),
   );
   const pricing = requireUnit(reference, "price.v2");
-  const claim = await new EvidTypeScriptAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const claim = await new EvidenceTypeScriptAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/claim.ts",
       dedent`
         /** @evidence .\\docs\\spec%value.md#price.v2 Uses the portable Markdown target. */
@@ -51,7 +51,7 @@ export async function test_markdown_target_paths(): Promise<void> {
       `,
     ),
   );
-  const resolver = new EvidTargetResolver([reference]);
+  const resolver = new EvidenceTargetResolver([reference]);
   const declarations = claim.declarations;
 
   const portable = await resolve(
@@ -101,7 +101,7 @@ export async function test_markdown_target_paths(): Promise<void> {
     repair: "Restore its source before resolving targets.",
   });
   const interrupted = await resolve(
-    new EvidTargetResolver([incomplete]),
+    new EvidenceTargetResolver([incomplete]),
     claim,
     requireDeclaration(declarations, "docs/Spec%value.md#price.v2"),
     pricing,
@@ -115,20 +115,20 @@ export async function test_markdown_target_paths(): Promise<void> {
 }
 
 async function resolve(
-  resolver: EvidTargetResolver,
-  claim: IEvidInventory,
-  declaration: IEvidDeclaration,
-  unit: IEvidUnit,
-): Promise<IEvidTargetResolution> {
+  resolver: EvidenceTargetResolver,
+  claim: IEvidenceInventory,
+  declaration: IEvidenceDeclaration,
+  unit: IEvidenceUnit,
+): Promise<IEvidenceTargetResolution> {
   return resolver.resolve(declaration, requireHost(claim, declaration.hostId), [
     unit.id,
   ]);
 }
 
 function requireDeclaration(
-  declarations: IEvidDeclaration[],
+  declarations: IEvidenceDeclaration[],
   target: string,
-): IEvidDeclaration {
+): IEvidenceDeclaration {
   const declaration = declarations.find(
     (candidate) => candidate.target === target,
   );
@@ -137,14 +137,17 @@ function requireDeclaration(
   return declaration;
 }
 
-function requireHost(inventory: IEvidInventory, id: string): IEvidHost {
+function requireHost(inventory: IEvidenceInventory, id: string): IEvidenceHost {
   const host = inventory.hosts.find((candidate) => candidate.id === id);
   if (host === undefined)
     throw new Error(`Missing Markdown target host: ${id}`);
   return host;
 }
 
-function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
+function requireUnit(
+  inventory: IEvidenceInventory,
+  identity: string,
+): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.at(-1) === identity,
   );

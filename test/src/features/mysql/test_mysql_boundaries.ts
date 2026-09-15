@@ -1,7 +1,7 @@
-import { EvidMysqlAdapter } from "evid";
+import { EvidenceMysqlAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Rejects MySQL inputs that could hide part of the selected schema.
@@ -15,7 +15,7 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Verify failed snapshots and wrong extensions remain incomplete.
  */
 export async function test_mysql_boundaries(): Promise<void> {
-  const adapter = new EvidMysqlAdapter();
+  const adapter = new EvidenceMysqlAdapter();
   for (const source of [
     "CREATE TABLE broken (id INT;",
     "CREATE TABLE t (id INT); ALTER TABLE t ADD COLUMN added INT;",
@@ -54,7 +54,7 @@ export async function test_mysql_boundaries(): Promise<void> {
     "CREATE VIEW projected AS SELECT 1 AS id;",
   ]) {
     const inventory = await adapter.analyze(
-      EvidTestSourceSnapshot.create("schema.sql", source),
+      EvidenceTestSourceSnapshot.create("schema.sql", source),
     );
 
     TestValidator.equals(`incomplete: ${source}`, inventory.complete, false);
@@ -64,8 +64,8 @@ export async function test_mysql_boundaries(): Promise<void> {
     );
   }
   const failed = await adapter.analyze(
-    EvidTestSourceSnapshot.fail(
-      EvidTestSourceSnapshot.create("unreadable.sql", ""),
+    EvidenceTestSourceSnapshot.fail(
+      EvidenceTestSourceSnapshot.create("unreadable.sql", ""),
       {
         code: "path-unreadable",
         path: "/project/unreadable.sql",
@@ -75,7 +75,10 @@ export async function test_mysql_boundaries(): Promise<void> {
   );
   TestValidator.equals("source failure is retained", failed.complete, false);
   const extension = await adapter.analyze(
-    EvidTestSourceSnapshot.create("schema.pgsql", "CREATE TABLE t (id INT);"),
+    EvidenceTestSourceSnapshot.create(
+      "schema.pgsql",
+      "CREATE TABLE t (id INT);",
+    ),
   );
   TestValidator.equals(
     "configured dialect owns selection",

@@ -1,10 +1,14 @@
-import { EvidGraph, EvidMarkdownAdapter, EvidTypeScriptAdapter } from "evid";
-import type { IEvidInventory, IEvidUnit } from "evid";
+import {
+  EvidenceGraph,
+  EvidenceMarkdownAdapter,
+  EvidenceTypeScriptAdapter,
+} from "@wrtnlabs/evidence";
+import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Retains a review's pairing when checklist policy refuses its aggregate
@@ -20,8 +24,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Require one refused-aggregate diagnostic and no orphan-review diagnostic.
  */
 export async function test_graph_review_refused_acknowledgement(): Promise<void> {
-  const requirements = await new EvidMarkdownAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const requirements = await new EvidenceMarkdownAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "docs/rules.md",
       dedent`
         # Rules
@@ -33,8 +37,8 @@ export async function test_graph_review_refused_acknowledgement(): Promise<void>
     ),
   );
   const price = requireUnit(requirements, "price");
-  const claims = await new EvidTypeScriptAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const claims = await new EvidenceTypeScriptAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/pricing.ts",
       dedent`
         /**
@@ -46,7 +50,7 @@ export async function test_graph_review_refused_acknowledgement(): Promise<void>
     ),
   );
   const priceSale = requireUnit(claims, "priceSale");
-  const result = EvidGraph.evaluate({
+  const result = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -57,12 +61,12 @@ export async function test_graph_review_refused_acknowledgement(): Promise<void>
             severity: "error",
             inventory: requirements,
             unitIds: [price.id],
-            resolutions: await EvidTestGraph.resolveDeclarations(
+            resolutions: await EvidenceTestGraph.resolveDeclarations(
               claims,
               requirements,
               [price.id],
             ),
-            reviewResolutions: await EvidTestGraph.resolveReviews(
+            reviewResolutions: await EvidenceTestGraph.resolveReviews(
               claims,
               requirements,
               [price.id],
@@ -86,7 +90,10 @@ export async function test_graph_review_refused_acknowledgement(): Promise<void>
   );
 }
 
-function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
+function requireUnit(
+  inventory: IEvidenceInventory,
+  identity: string,
+): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.at(-1) === identity,
   );
@@ -95,7 +102,7 @@ function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
 }
 
 function count(
-  result: ReturnType<typeof EvidGraph.evaluate>,
+  result: ReturnType<typeof EvidenceGraph.evaluate>,
   code: string,
 ): number {
   return result.diagnostics.filter((diagnostic) => diagnostic.code === code)

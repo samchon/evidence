@@ -1,9 +1,9 @@
-import { EvidCommand } from "evid";
+import { EvidenceCommand } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
 
 /**
  * Separates configuration-free command output from structured operational
@@ -25,17 +25,17 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
  */
 export async function test_command_output(): Promise<void> {
   const location = join(__dirname, `output ${randomUUID()}`);
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     location,
     { "nested/.keep": "" },
     async (directory) => {
       // Help and version never need a configuration in the selected working directory.
-      const help = await EvidCommand.run(["--help"], directory);
-      const version = await EvidCommand.run(["--version"], directory);
+      const help = await EvidenceCommand.run(["--help"], directory);
+      const version = await EvidenceCommand.run(["--version"], directory);
       TestValidator.equals("help exit", help.exitCode, 0);
       TestValidator.predicate(
         "help usage",
-        help.stdout.includes("Usage: evid"),
+        help.stdout.includes("Usage: evidence"),
       );
       TestValidator.equals("version exit", version.exitCode, 0);
       TestValidator.predicate(
@@ -44,7 +44,7 @@ export async function test_command_output(): Promise<void> {
       );
 
       // A missing config becomes a clean versioned JSON failure on stdout.
-      const missing = await EvidCommand.run(
+      const missing = await EvidenceCommand.run(
         [
           "--cwd",
           "nested",
@@ -55,7 +55,7 @@ export async function test_command_output(): Promise<void> {
         ],
         directory,
       );
-      const explicit = await EvidCommand.run(
+      const explicit = await EvidenceCommand.run(
         [
           "check",
           "--cwd",
@@ -89,15 +89,15 @@ export async function test_command_output(): Promise<void> {
       );
 
       // Buffered embedding directs infinite watch use to the public streaming API.
-      const watch = await EvidCommand.run(["--watch"], directory);
+      const watch = await EvidenceCommand.run(["--watch"], directory);
       TestValidator.equals("buffered watch exit", watch.exitCode, 2);
       TestValidator.predicate(
         "buffered watch guidance",
-        watch.stderr.includes("Use EvidWatcher for embedding"),
+        watch.stderr.includes("Use EvidenceWatcher for embedding"),
       );
 
       // A destination that is itself a directory reports its failed write on stderr.
-      const unwritable = await EvidCommand.run(
+      const unwritable = await EvidenceCommand.run(
         ["--config", "missing.config.ts", "--output", ".", "--format", "json"],
         directory,
       );

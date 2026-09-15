@@ -1,13 +1,13 @@
 import {
-  EvidAccessor,
-  EvidFingerprint,
-  EvidInventory,
-  EvidSqliteAdapter,
-} from "evid";
+  EvidenceAccessor,
+  EvidenceFingerprint,
+  EvidenceInventory,
+  EvidenceSqliteAdapter,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Extracts SQLite schema units with exact quoted ownership and relations.
@@ -30,11 +30,11 @@ export async function test_sqlite_units(): Promise<void> {
     ) WITHOUT ROWID, STRICT;
     CREATE TEMP TABLE [Scratch] ('untyped', "quote""name" TEXT, \`back\`\`tick\` INTEGER);
   `;
-  const snapshot = EvidTestSourceSnapshot.create("schema.sql", source, [
+  const snapshot = EvidenceTestSourceSnapshot.create("schema.sql", source, [
     "schema.sql",
     "alias.sql",
   ]);
-  const inventory = await new EvidSqliteAdapter().analyze(snapshot);
+  const inventory = await new EvidenceSqliteAdapter().analyze(snapshot);
 
   TestValidator.equals(
     "SQLite extraction diagnostics",
@@ -49,7 +49,7 @@ export async function test_sqlite_units(): Promise<void> {
   TestValidator.equals(
     "exact semantic names and kinds",
     inventory.units
-      .map((unit) => `${unit.symbol}:${EvidAccessor.format(unit.identity)}`)
+      .map((unit) => `${unit.symbol}:${EvidenceAccessor.format(unit.identity)}`)
       .sort((left, right) => left.localeCompare(right, "en")),
     [
       'model:main["order.items"]',
@@ -84,7 +84,7 @@ export async function test_sqlite_units(): Promise<void> {
       );
     }
   }
-  const index = new EvidInventory([inventory]);
+  const index = new EvidenceInventory([inventory]);
   const selected = inventory.units.map((unit) => unit.id);
   TestValidator.equals(
     "literal dots resolve without invented owners",
@@ -110,8 +110,8 @@ export async function test_sqlite_units(): Promise<void> {
   );
 
   // Schema identity and content survive relocation while file-qualified addresses move.
-  const relocated = await new EvidSqliteAdapter().analyze(
-    EvidTestSourceSnapshot.create("moved.sql", source),
+  const relocated = await new EvidenceSqliteAdapter().analyze(
+    EvidenceTestSourceSnapshot.create("moved.sql", source),
   );
   TestValidator.equals(
     "file-independent schema identities",
@@ -121,18 +121,18 @@ export async function test_sqlite_units(): Promise<void> {
   for (const unit of inventory.units)
     TestValidator.equals(
       "relocation-stable fingerprint",
-      EvidFingerprint.inspect(inventory, unit.id).fingerprint,
-      EvidFingerprint.inspect(relocated, unit.id).fingerprint,
+      EvidenceFingerprint.inspect(inventory, unit.id).fingerprint,
+      EvidenceFingerprint.inspect(relocated, unit.id).fingerprint,
     );
 
   // SQLite's main schema is implicit and quoted identifiers remain ASCII-insensitive.
-  const duplicate = await new EvidSqliteAdapter().analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+  const duplicate = await new EvidenceSqliteAdapter().analyze(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "one.sql",
         'CREATE TABLE "Accounts" (id INTEGER);',
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "two.sql",
         "CREATE TABLE main.accounts (ID INTEGER);",
       ),
@@ -144,13 +144,13 @@ export async function test_sqlite_units(): Promise<void> {
     false,
   );
 
-  const schemas = await new EvidSqliteAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const schemas = await new EvidenceSqliteAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "two-schemas.sql",
       "CREATE TABLE Item (id INTEGER); CREATE TEMP TABLE Item (id INTEGER);",
     ),
   );
-  const schemaIndex = new EvidInventory([schemas]);
+  const schemaIndex = new EvidenceInventory([schemas]);
   const schemaIds = schemas.units.map((unit) => unit.id);
   for (const schema of ["main", "temp"])
     TestValidator.equals(

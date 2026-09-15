@@ -1,9 +1,12 @@
-import { EvidAccessor, EvidPostgresqlAdapter } from "evid";
+import {
+  EvidenceAccessor,
+  EvidencePostgresqlAdapter,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidDatabaseAdapterCertification } from "../../internal/certification/EvidDatabaseAdapterCertification";
-import type { IEvidDatabaseAdapterCertification } from "../../internal/certification/IEvidDatabaseAdapterCertification";
+import { EvidenceDatabaseAdapterCertification } from "../../internal/certification/EvidenceDatabaseAdapterCertification";
+import type { IEvidenceDatabaseAdapterCertification } from "../../internal/certification/IEvidenceDatabaseAdapterCertification";
 
 /**
  * Applies the shared database certification contract to PostgreSQL.
@@ -17,10 +20,10 @@ import type { IEvidDatabaseAdapterCertification } from "../../internal/certifica
  */
 export async function test_postgresql_certification(): Promise<void> {
   const relation = 'foreign key ["id"] references ["app","parent","id"]';
-  const relationAccessor = EvidAccessor.format(["app", "item", relation]);
-  const fixture: IEvidDatabaseAdapterCertification = {
+  const relationAccessor = EvidenceAccessor.format(["app", "item", relation]);
+  const fixture: IEvidenceDatabaseAdapterCertification = {
     type: "postgresql",
-    adapter: new EvidPostgresqlAdapter(),
+    adapter: new EvidencePostgresqlAdapter(),
     sources: [
       {
         file: "schema.sql",
@@ -113,12 +116,12 @@ export async function test_postgresql_certification(): Promise<void> {
     },
   };
 
-  const inventory = await EvidDatabaseAdapterCertification.analyze(fixture);
-  EvidDatabaseAdapterCertification.assertInventory(fixture, inventory);
-  await EvidDatabaseAdapterCertification.assertGraph(fixture);
-  await EvidDatabaseAdapterCertification.assertFailures(fixture);
-  await EvidDatabaseAdapterCertification.assertFingerprint(fixture);
-  await EvidDatabaseAdapterCertification.assertAmbiguity(fixture);
+  const inventory = await EvidenceDatabaseAdapterCertification.analyze(fixture);
+  EvidenceDatabaseAdapterCertification.assertInventory(fixture, inventory);
+  await EvidenceDatabaseAdapterCertification.assertGraph(fixture);
+  await EvidenceDatabaseAdapterCertification.assertFailures(fixture);
+  await EvidenceDatabaseAdapterCertification.assertFingerprint(fixture);
+  await EvidenceDatabaseAdapterCertification.assertAmbiguity(fixture);
   for (const mutation of ["unit", "kind", "host", "alias"]) {
     const mutated = structuredClone(inventory);
     if (mutation === "unit") mutated.units.pop();
@@ -135,7 +138,7 @@ export async function test_postgresql_certification(): Promise<void> {
     }
     let rejected = false;
     try {
-      EvidDatabaseAdapterCertification.assertInventory(fixture, mutated);
+      EvidenceDatabaseAdapterCertification.assertInventory(fixture, mutated);
     } catch {
       rejected = true;
     }

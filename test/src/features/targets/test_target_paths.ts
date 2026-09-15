@@ -1,4 +1,4 @@
-import { EvidFileTarget } from "evid";
+import { EvidenceFileTarget } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
 /**
@@ -14,7 +14,7 @@ import { TestValidator } from "@nestia/e2e";
  * 3. Reject malformed percent encoding and a drive-relative authored path.
  */
 export async function test_target_paths(): Promise<void> {
-  const posix = EvidFileTarget.parse(
+  const posix = EvidenceFileTarget.parse(
     '../src/a%20%23%20b.ts#Service["prototype.run"]["a/b"]',
     "/project/docs/review.md",
   );
@@ -25,12 +25,12 @@ export async function test_target_paths(): Promise<void> {
   });
   TestValidator.equals(
     "canonical target",
-    EvidFileTarget.format(posix),
+    EvidenceFileTarget.format(posix),
     '/project/src/a%20%23%20b.ts#Service["prototype.run"]["a/b"]',
   );
 
   // Windows paths use the citing drive even when the authored path uses backslashes.
-  const windows = EvidFileTarget.parse(
+  const windows = EvidenceFileTarget.parse(
     "..\\src\\calculator.ts#add",
     "D:/project/docs/review.md",
   );
@@ -41,12 +41,12 @@ export async function test_target_paths(): Promise<void> {
   });
   TestValidator.equals(
     "canonical Windows target",
-    EvidFileTarget.format(windows),
+    EvidenceFileTarget.format(windows),
     "D:/project/src/calculator.ts#add",
   );
 
   // Omitting the accessor addresses an artifact's file unit directly.
-  const file = EvidFileTarget.parse(
+  const file = EvidenceFileTarget.parse(
     "../docs/requirements.md",
     "/project/src/calculator.ts",
   );
@@ -57,15 +57,15 @@ export async function test_target_paths(): Promise<void> {
   });
   TestValidator.equals(
     "canonical file unit target",
-    EvidFileTarget.format(file),
+    EvidenceFileTarget.format(file),
     "/project/docs/requirements.md",
   );
 
   // Malformed percent escapes and drive-relative paths cannot depend on process state.
   await TestValidator.error("invalid percent escape", async () =>
-    EvidFileTarget.parse("../bad%2.ts#value", "/project/docs/review.md"),
+    EvidenceFileTarget.parse("../bad%2.ts#value", "/project/docs/review.md"),
   );
   await TestValidator.error("drive-relative target", async () =>
-    EvidFileTarget.parse("C:relative.ts#value", "D:/project/review.ts"),
+    EvidenceFileTarget.parse("C:relative.ts#value", "D:/project/review.ts"),
   );
 }

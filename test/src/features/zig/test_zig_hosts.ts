@@ -1,8 +1,12 @@
-import { EvidFingerprint, EvidInventory, EvidZigAdapter } from "evid";
+import {
+  EvidenceFingerprint,
+  EvidenceInventory,
+  EvidenceZigAdapter,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Attaches Zig documentation with exact coordinates and withdrawal semantics.
@@ -35,9 +39,9 @@ export async function test_zig_hosts(): Promise<void> {
     /// </pre>
     pub fn sample() i32 { return 1; }
   `.replaceAll("\n", "\r\n");
-  const adapter = new EvidZigAdapter();
+  const adapter = new EvidenceZigAdapter();
   const inventory = await adapter.analyze(
-    EvidTestSourceSnapshot.create("src/Contract.zig", source),
+    EvidenceTestSourceSnapshot.create("src/Contract.zig", source),
   );
 
   TestValidator.equals(
@@ -64,7 +68,7 @@ export async function test_zig_hosts(): Promise<void> {
     2,
   );
   const selected = inventory.units.map((unit) => unit.id);
-  const graph = new EvidInventory([inventory]);
+  const graph = new EvidenceInventory([inventory]);
   TestValidator.equals(
     "withdrawn descendant target",
     graph.resolve(
@@ -101,7 +105,7 @@ export async function test_zig_hosts(): Promise<void> {
   const contract = inventory.units.find((unit) => unit.name === "Contract");
   if (contract === undefined) throw new Error("Missing contract unit.");
   const rewritten = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Contract.zig",
       source.replace(
         "Implements the value.",
@@ -111,22 +115,22 @@ export async function test_zig_hosts(): Promise<void> {
   );
   TestValidator.equals(
     "descendant annotation does not stale ancestor review",
-    EvidFingerprint.inspect(inventory, contract.id).fingerprint,
-    EvidFingerprint.inspect(rewritten, contract.id).fingerprint,
+    EvidenceFingerprint.inspect(inventory, contract.id).fingerprint,
+    EvidenceFingerprint.inspect(rewritten, contract.id).fingerprint,
   );
   const changed = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Contract.zig",
       source.replace("= 1", "= 2"),
     ),
   );
   TestValidator.notEquals(
     "semantic subtree edit changes fingerprint",
-    EvidFingerprint.inspect(inventory, contract.id).fingerprint,
-    EvidFingerprint.inspect(changed, contract.id).fingerprint,
+    EvidenceFingerprint.inspect(inventory, contract.id).fingerprint,
+    EvidenceFingerprint.inspect(changed, contract.id).fingerprint,
   );
 
-  // Every Evid tag kind on an ordinary comment remains an unsupported carrier.
+  // Every Evidence tag kind on an ordinary comment remains an unsupported carrier.
   for (const tag of [
     "evidence",
     "evidenceExclude",
@@ -135,7 +139,7 @@ export async function test_zig_hosts(): Promise<void> {
     "link",
   ]) {
     const unsupported = await adapter.analyze(
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/Unsupported.zig",
         `// @${tag} docs/spec.md#contract Unsupported carrier.\npub fn run() i32 { return 1; }\n`,
       ),
@@ -162,7 +166,7 @@ export async function test_zig_hosts(): Promise<void> {
     "pub fn run() void {\n/// @evidence docs/spec.md#contract Function-body documentation is not public.\nconst local = 1;\n}",
   ]) {
     const unsupported = await adapter.analyze(
-      EvidTestSourceSnapshot.create("src/Unsupported.zig", content),
+      EvidenceTestSourceSnapshot.create("src/Unsupported.zig", content),
     );
     TestValidator.equals(
       "nonpublic documentation never acknowledges",

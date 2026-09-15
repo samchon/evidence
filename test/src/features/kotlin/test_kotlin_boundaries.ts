@@ -1,7 +1,7 @@
-import { EvidKotlinAdapter } from "evid";
+import { EvidenceKotlinAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Rejects unresolved Kotlin public surfaces while accepting explicit visibility
@@ -14,7 +14,7 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    explicit public and private cases select only the public surface.
  */
 export async function test_kotlin_boundaries(): Promise<void> {
-  const adapter = new EvidKotlinAdapter();
+  const adapter = new EvidenceKotlinAdapter();
   const cases = new Map<string, string>([
     [
       "class Derived : Base() { override fun run() = 1; }\n",
@@ -44,7 +44,7 @@ export async function test_kotlin_boundaries(): Promise<void> {
   ]);
   for (const [source, code] of cases) {
     const inventory = await adapter.analyze(
-      EvidTestSourceSnapshot.create("src/Boundary.kt", source),
+      EvidenceTestSourceSnapshot.create("src/Boundary.kt", source),
     );
     TestValidator.equals(`incomplete ${code}`, inventory.complete, false);
     TestValidator.predicate(
@@ -69,12 +69,15 @@ export async function test_kotlin_boundaries(): Promise<void> {
     "private fun <T> List<T>.items() = 1\n",
   ]) {
     const inventory = await adapter.analyze(
-      EvidTestSourceSnapshot.create("src/Accepted.kt", source),
+      EvidenceTestSourceSnapshot.create("src/Accepted.kt", source),
     );
     TestValidator.equals(`accepted ${source}`, inventory.diagnostics, []);
   }
   const script = await adapter.analyze(
-    EvidTestSourceSnapshot.create("src/Script.kts", "val publicValue = 1\n"),
+    EvidenceTestSourceSnapshot.create(
+      "src/Script.kts",
+      "val publicValue = 1\n",
+    ),
   );
   TestValidator.equals(
     "scripts do not become ordinary source",
@@ -88,8 +91,8 @@ export async function test_kotlin_boundaries(): Promise<void> {
     ),
   );
   const failed = await adapter.analyze(
-    EvidTestSourceSnapshot.fail(
-      EvidTestSourceSnapshot.create("src/Unavailable.kt", ""),
+    EvidenceTestSourceSnapshot.fail(
+      EvidenceTestSourceSnapshot.create("src/Unavailable.kt", ""),
       {
         code: "path-unreadable",
         path: "/project/src/Unavailable.kt",

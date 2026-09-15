@@ -1,7 +1,7 @@
-import { EvidInventory } from "evid";
+import { EvidenceInventory } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestInventory } from "../../internal/EvidTestInventory";
+import { EvidenceTestInventory } from "../../internal/EvidenceTestInventory";
 
 /**
  * Builds structural scope from explicit parents while preserving literal
@@ -22,15 +22,15 @@ import { EvidTestInventory } from "../../internal/EvidTestInventory";
  *    missing from lookup within this selected population.
  */
 export async function test_inventory_scopes(): Promise<void> {
-  const input = EvidTestInventory.create();
-  EvidTestInventory.unit(
+  const input = EvidenceTestInventory.create();
+  EvidenceTestInventory.unit(
     input,
     "box",
     ["Box"],
     "type",
     "export class Box { value = 1; }",
   );
-  EvidTestInventory.unit(
+  EvidenceTestInventory.unit(
     input,
     "member",
     ["Box", "value.part"],
@@ -38,14 +38,14 @@ export async function test_inventory_scopes(): Promise<void> {
     "value = 1",
     "box",
   );
-  EvidTestInventory.unit(
+  EvidenceTestInventory.unit(
     input,
     "lookalike",
     ["Box", "value"],
     "property",
     "extra: string",
   );
-  EvidTestInventory.unit(
+  EvidenceTestInventory.unit(
     input,
     "other",
     ["Other"],
@@ -53,7 +53,7 @@ export async function test_inventory_scopes(): Promise<void> {
     "export const unrelated = 3;",
   );
 
-  const index = new EvidInventory([input]);
+  const index = new EvidenceInventory([input]);
   const selected = index.select(["member"]);
 
   TestValidator.equals(

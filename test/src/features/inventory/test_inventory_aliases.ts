@@ -1,7 +1,7 @@
-import { EvidInventory } from "evid";
+import { EvidenceInventory } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestInventory } from "../../internal/EvidTestInventory";
+import { EvidenceTestInventory } from "../../internal/EvidenceTestInventory";
 
 /**
  * Counts aliases once while preserving exact public addresses and distinct
@@ -23,15 +23,15 @@ import { EvidTestInventory } from "../../internal/EvidTestInventory";
  *    previously constructed index must still select the original class.
  */
 export async function test_inventory_aliases(): Promise<void> {
-  const input = EvidTestInventory.create();
-  EvidTestInventory.unit(
+  const input = EvidenceTestInventory.create();
+  EvidenceTestInventory.unit(
     input,
     "box",
     ["Box"],
     "type",
     "export class Box { value = 1; }",
   );
-  EvidTestInventory.unit(
+  EvidenceTestInventory.unit(
     input,
     "other",
     ["Other"],
@@ -49,7 +49,7 @@ export async function test_inventory_aliases(): Promise<void> {
     segments: ["Again"],
   });
 
-  const index = new EvidInventory([input, structuredClone(input)]);
+  const index = new EvidenceInventory([input, structuredClone(input)]);
   const population = index.select(["box", "box"]);
 
   TestValidator.predicate("complete identity inventory", population.complete);
@@ -85,7 +85,7 @@ export async function test_inventory_aliases(): Promise<void> {
     file: "/project/barrel.ts",
     segments: ["Renamed"],
   });
-  const ambiguous = new EvidInventory([input]).resolve(
+  const ambiguous = new EvidenceInventory([input]).resolve(
     { file: "/project/barrel.ts", segments: ["Renamed"] },
     ["box", "other"],
   );

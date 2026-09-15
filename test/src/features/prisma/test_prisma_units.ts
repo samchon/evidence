@@ -1,9 +1,13 @@
-import { EvidFingerprint, EvidPrismaAdapter } from "evid";
-import type { IEvidInventory, IEvidSourceFile, IEvidUnit } from "evid";
+import { EvidenceFingerprint, EvidencePrismaAdapter } from "@wrtnlabs/evidence";
+import type {
+  IEvidenceInventory,
+  IEvidenceSourceFile,
+  IEvidenceUnit,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Extracts Prisma model, view, column, and relation identities.
@@ -66,8 +70,8 @@ export async function test_prisma_units(): Promise<void> {
   );
   TestValidator.equals(
     "model fingerprint survives a file move",
-    EvidFingerprint.inspect(moved, movedSale.id).fingerprint,
-    EvidFingerprint.inspect(baseline, originalSale.id).fingerprint,
+    EvidenceFingerprint.inspect(moved, movedSale.id).fingerprint,
+    EvidenceFingerprint.inspect(baseline, originalSale.id).fingerprint,
   );
 
   // Member semantics affect the model subtree without changing the model's own digest.
@@ -80,15 +84,15 @@ export async function test_prisma_units(): Promise<void> {
   );
   TestValidator.notEquals(
     "model fingerprint includes member content",
-    EvidFingerprint.inspect(changed, changedSale.id).fingerprint,
-    EvidFingerprint.inspect(baseline, originalSale.id).fingerprint,
+    EvidenceFingerprint.inspect(changed, changedSale.id).fingerprint,
+    EvidenceFingerprint.inspect(baseline, originalSale.id).fingerprint,
   );
 }
 
 async function analyze(
   moved: boolean,
   priceType: string,
-): Promise<IEvidInventory> {
+): Promise<IEvidenceInventory> {
   const header = dedent`
     generator client {
       provider        = "prisma-client-js"
@@ -124,27 +128,30 @@ async function analyze(
       sales Sale[]
     }
   `;
-  const core = EvidTestSourceSnapshot.create(
+  const core = EvidenceTestSourceSnapshot.create(
     "prisma/core.prisma",
     moved ? header : `${header}\n\n${sale}`,
     ["prisma/core.prisma", "schema/core.prisma"],
   );
-  const relations = EvidTestSourceSnapshot.create(
+  const relations = EvidenceTestSourceSnapshot.create(
     "prisma/relations.schema",
     moved ? `${sale}\n\n${seller}` : seller,
   );
-  return new EvidPrismaAdapter().analyze(
-    EvidTestSourceSnapshot.combine([core, relations]),
+  return new EvidencePrismaAdapter().analyze(
+    EvidenceTestSourceSnapshot.combine([core, relations]),
   );
 }
 
-function requireUnit(inventory: IEvidInventory, id: string): IEvidUnit {
+function requireUnit(inventory: IEvidenceInventory, id: string): IEvidenceUnit {
   const unit = inventory.units.find((candidate) => candidate.id === id);
   if (unit === undefined) throw new Error(`Missing Prisma unit: ${id}`);
   return unit;
 }
 
-function requireSource(inventory: IEvidInventory, id: string): IEvidSourceFile {
+function requireSource(
+  inventory: IEvidenceInventory,
+  id: string,
+): IEvidenceSourceFile {
   const source = inventory.sources.find((candidate) => candidate.id === id);
   if (source === undefined) throw new Error(`Missing Prisma source: ${id}`);
   return source;

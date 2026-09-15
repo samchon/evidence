@@ -1,8 +1,12 @@
-import { EvidDbmlAdapter, EvidInventory, EvidFingerprint } from "evid";
+import {
+  EvidenceDbmlAdapter,
+  EvidenceInventory,
+  EvidenceFingerprint,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Prevents malformed, conflicting, unsupported, or unresolved DBML from passing
@@ -16,7 +20,7 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Repair the affected source and require normal schema analysis to recover.
  */
 export async function test_dbml_failure_recovery(): Promise<void> {
-  const adapter = new EvidDbmlAdapter();
+  const adapter = new EvidenceDbmlAdapter();
   const failures = [
     "Table users { id int [ref] }",
     "Enum state { active active }",
@@ -36,7 +40,7 @@ export async function test_dbml_failure_recovery(): Promise<void> {
   ];
   for (const content of failures) {
     const inventory = await adapter.analyze(
-      EvidTestSourceSnapshot.create("schema.dbml", content),
+      EvidenceTestSourceSnapshot.create("schema.dbml", content),
     );
     TestValidator.equals(
       `incomplete source: ${content}`,
@@ -53,8 +57,11 @@ export async function test_dbml_failure_recovery(): Promise<void> {
     );
   }
   const inaccessible = await adapter.analyze(
-    EvidTestSourceSnapshot.fail(
-      EvidTestSourceSnapshot.create("schema.dbml", "Table users { id int }"),
+    EvidenceTestSourceSnapshot.fail(
+      EvidenceTestSourceSnapshot.create(
+        "schema.dbml",
+        "Table users { id int }",
+      ),
       {
         code: "path-unreadable",
         path: "/project/schema.dbml",
@@ -69,20 +76,20 @@ export async function test_dbml_failure_recovery(): Promise<void> {
   );
 
   // Missing cross-file endpoints become complete when the newly selected source arrives.
-  const dependent = EvidTestSourceSnapshot.create(
+  const dependent = EvidenceTestSourceSnapshot.create(
     "relations.dbml",
     dedent`
     Table posts { user_id int }
     Ref owner: posts.user_id > users.id
   `,
   );
-  const base = EvidTestSourceSnapshot.create(
+  const base = EvidenceTestSourceSnapshot.create(
     "users.dbml",
     "Table users { id int }",
   );
   const missing = await adapter.analyze(dependent);
   const recovered = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([dependent, base]),
+    EvidenceTestSourceSnapshot.combine([dependent, base]),
   );
   TestValidator.equals("missing dependency fails", missing.complete, false);
   TestValidator.equals(
@@ -100,9 +107,9 @@ export async function test_dbml_failure_recovery(): Promise<void> {
     ["/project/relations.dbml", "/project/users.dbml"],
   );
   const moved = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
+    EvidenceTestSourceSnapshot.combine([
       dependent,
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "moved.dbml",
         "Table public.users { id int }",
       ),
@@ -122,14 +129,14 @@ export async function test_dbml_failure_recovery(): Promise<void> {
       ),
   );
   const hidden = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "hidden.dbml",
       "Table users { id int Note: '@hidden' }",
     ),
   );
   TestValidator.equals(
     "withdrawn parent hides its column",
-    new EvidInventory([hidden]).select(
+    new EvidenceInventory([hidden]).select(
       hidden.units
         .filter((unit) => unit.symbol === "column")
         .map((unit) => unit.id),
@@ -144,8 +151,8 @@ export async function test_dbml_failure_recovery(): Promise<void> {
 
   // A changed endpoint participates in its owning model fingerprint.
   const altered = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "relations.dbml",
         (dependent.files[0]?.content ?? "").replace(" > ", " - "),
       ),
@@ -162,7 +169,7 @@ export async function test_dbml_failure_recovery(): Promise<void> {
     throw new Error("Expected posts model.");
   TestValidator.notEquals(
     "relation ownership/cardinality changes model fingerprint",
-    EvidFingerprint.inspect(recovered, before.id).fingerprint,
-    EvidFingerprint.inspect(altered, after.id).fingerprint,
+    EvidenceFingerprint.inspect(recovered, before.id).fingerprint,
+    EvidenceFingerprint.inspect(altered, after.id).fingerprint,
   );
 }

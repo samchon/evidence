@@ -1,8 +1,12 @@
-import { EvidFingerprint, EvidInventory, EvidSwiftAdapter } from "evid";
+import {
+  EvidenceFingerprint,
+  EvidenceInventory,
+  EvidenceSwiftAdapter,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Resolves Swift extension ownership independently of source order.
@@ -15,15 +19,15 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  */
 export async function test_swift_extension_ownership(): Promise<void> {
   const sources = [
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Last.swift",
       "public extension Root.Nested { func final() {} }",
     ),
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Middle.swift",
       "public extension Alias { struct Nested {} }",
     ),
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/First.swift",
       dedent`
       public struct Root {}
@@ -34,7 +38,7 @@ export async function test_swift_extension_ownership(): Promise<void> {
       }
     `,
     ),
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Defaults.swift",
       dedent`
       public extension Service {
@@ -44,9 +48,9 @@ export async function test_swift_extension_ownership(): Promise<void> {
     `,
     ),
   ];
-  const adapter = new EvidSwiftAdapter();
+  const adapter = new EvidenceSwiftAdapter();
   const inventory = await adapter.analyze(
-    EvidTestSourceSnapshot.combine(sources),
+    EvidenceTestSourceSnapshot.combine(sources),
   );
 
   TestValidator.equals(
@@ -82,7 +86,7 @@ export async function test_swift_extension_ownership(): Promise<void> {
     2,
   );
   const reversed = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([...sources].reverse()),
+    EvidenceTestSourceSnapshot.combine([...sources].reverse()),
   );
   TestValidator.equals(
     "source order cannot change semantic populations",
@@ -95,10 +99,10 @@ export async function test_swift_extension_ownership(): Promise<void> {
   );
   if (root === undefined) throw new Error("Missing root type.");
   const changed = await adapter.analyze(
-    EvidTestSourceSnapshot.combine(
+    EvidenceTestSourceSnapshot.combine(
       sources.map((source) =>
         source.files.some((file) => file.physicalPath.endsWith("Last.swift"))
-          ? EvidTestSourceSnapshot.create(
+          ? EvidenceTestSourceSnapshot.create(
               "src/Last.swift",
               "public extension Root.Nested { func final() { print(1) } }",
             )
@@ -108,10 +112,10 @@ export async function test_swift_extension_ownership(): Promise<void> {
   );
   TestValidator.notEquals(
     "extension edit invalidates original ancestor review",
-    EvidFingerprint.inspect(inventory, root.id).fingerprint,
-    EvidFingerprint.inspect(changed, root.id).fingerprint,
+    EvidenceFingerprint.inspect(inventory, root.id).fingerprint,
+    EvidenceFingerprint.inspect(changed, root.id).fingerprint,
   );
-  const graph = new EvidInventory([inventory]);
+  const graph = new EvidenceInventory([inventory]);
   TestValidator.equals(
     "extension declared nested type is resolvable",
     graph.resolve(
@@ -136,9 +140,12 @@ export async function test_swift_extension_ownership(): Promise<void> {
     ],
   ]) {
     const rejected = await adapter.analyze(
-      EvidTestSourceSnapshot.combine(
+      EvidenceTestSourceSnapshot.combine(
         sources.map((content, index) =>
-          EvidTestSourceSnapshot.create(`src/Boundary${index}.swift`, content),
+          EvidenceTestSourceSnapshot.create(
+            `src/Boundary${index}.swift`,
+            content,
+          ),
         ),
       ),
     );
@@ -157,12 +164,12 @@ export async function test_swift_extension_ownership(): Promise<void> {
 
   // Explicit public visibility overrides a private extension's member default.
   const overridden = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/Original.swift",
         "public struct Original {}\nprivate extension Original { public struct Nested {} }",
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/PublicNested.swift",
         "public extension Original.Nested { func visible() {} }",
       ),
@@ -180,7 +187,7 @@ export async function test_swift_extension_ownership(): Promise<void> {
 
   // A real type named static cannot silently merge its instance methods with static members.
   const collision = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Collision.swift",
       "public struct Owner { public struct `static` { public func call() {} }\npublic static func call() {} }",
     ),
