@@ -20,7 +20,9 @@ import type { IEvidenceConfigPlan } from "./structures/IEvidenceConfigPlan";
  * the same operations for callers that do not need to retain a facade.
  *
  * @example
- *   const checker: EvidenceChecker = new EvidenceChecker("evidence.config.ts");
+ *   const checker: EvidenceChecker = new EvidenceChecker(
+ *     "evidence.config.ts",
+ *   );
  *   const report: IEvidenceCheckReport = await checker.check();
  *   // A subsequent call reloads the configuration and selected source files.
  *   const updated: IEvidenceCheckReport = await checker.check();
@@ -101,7 +103,9 @@ export class EvidenceChecker {
    * invocation from caller mutation. It supplies resolved configuration policy;
    * selected source inventories are still loaded afresh for the evaluation.
    */
-  public async evaluate(input: IEvidenceConfigPlan): Promise<IEvidenceCheckAnalysis> {
+  public async evaluate(
+    input: IEvidenceConfigPlan,
+  ): Promise<IEvidenceCheckAnalysis> {
     // Capture policy before awaiting extraction so a caller cannot change the
     // plan halfway through building this invocation's independent populations.
     const plan = structuredClone(input);

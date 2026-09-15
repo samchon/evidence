@@ -14,10 +14,11 @@ import { EvidenceSourcePath } from "../../internal/EvidenceSourcePath";
 /**
  * Publishes local ECMAScript declarations that have a static public export.
  *
- * `EvidenceEcmaScriptAdapter` constructs this resolver after every selected source
- * has been scanned. It follows local exports and re-exports, records each
- * resulting public address in the inventory, and reports resolution failures so
- * an incomplete export graph cannot reduce the coverage population silently.
+ * `EvidenceEcmaScriptAdapter` constructs this resolver after every selected
+ * source has been scanned. It follows local exports and re-exports, records
+ * each resulting public address in the inventory, and reports resolution
+ * failures so an incomplete export graph cannot reduce the coverage population
+ * silently.
  */
 export class EvidenceEcmaScriptExportResolver {
   /**
@@ -51,7 +52,10 @@ export class EvidenceEcmaScriptExportResolver {
    * Publication may visit a re-export from several public paths, but each pair
    * has one resolution result within this immutable source snapshot.
    */
-  private readonly resolutions = new Map<string, IEvidenceEcmaScriptResolution>();
+  private readonly resolutions = new Map<
+    string,
+    IEvidenceEcmaScriptResolution
+  >();
 
   /**
    * Diagnostic identities already emitted by this resolver.
@@ -177,7 +181,10 @@ export class EvidenceEcmaScriptExportResolver {
    * resolution is memoized because its bindings do not depend on the caller
    * path.
    */
-  private resolve(sourceId: string, name: string): IEvidenceEcmaScriptResolution {
+  private resolve(
+    sourceId: string,
+    name: string,
+  ): IEvidenceEcmaScriptResolution {
     const key = JSON.stringify([sourceId, name]);
     const cached = this.resolutions.get(key);
     if (cached !== undefined) return cached;

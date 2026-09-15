@@ -50,7 +50,9 @@ export class EvidenceJavaAdapter implements IEvidenceAdapter<"java"> {
    * Javadoc materialization so declaration families own their actual comment
    * positions, and parser cleanup runs after either success or failure.
    */
-  public async analyze(snapshot: IEvidenceSourceSnapshot): Promise<IEvidenceInventory> {
+  public async analyze(
+    snapshot: IEvidenceSourceSnapshot,
+  ): Promise<IEvidenceInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidenceInventory = {
       schemaVersion: 1,
@@ -102,7 +104,8 @@ export class EvidenceJavaAdapter implements IEvidenceAdapter<"java"> {
         (session) => new EvidenceJavaFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError = cause instanceof EvidenceParserError ? cause : undefined;
+      const parserError =
+        cause instanceof EvidenceParserError ? cause : undefined;
       return {
         source,
         declarations: [],

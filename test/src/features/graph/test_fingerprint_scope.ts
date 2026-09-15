@@ -28,9 +28,9 @@ import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
  *
  * 1. Edit a nested Markdown section and require its parent's own content digest to
  *    stay stable while the parent scope fingerprint changes.
- * 2. Insert ordinary prose and accepted Evidence metadata before the reviewed heading;
- *    require its fingerprint and exact shifted range to remain stable, then
- *    exercise `requireReview` against the shifted document.
+ * 2. Insert ordinary prose and accepted Evidence metadata before the reviewed
+ *    heading; require its fingerprint and exact shifted range to remain stable,
+ *    then exercise `requireReview` against the shifted document.
  * 3. Edit prose after single- and multiline HTML comments; require the owning
  *    heading fingerprint to expire while annotation text remains excluded.
  * 4. Edit an unrelated sibling section and require the original scope to stay
@@ -89,7 +89,9 @@ export async function test_fingerprint_scope(): Promise<void> {
 
     <!-- @evidence other.md Explains the file aggregate. -->
   `}\n\n`;
-  const prefixed: IEvidenceInventory = await markdownInventory(prefix + markdown);
+  const prefixed: IEvidenceInventory = await markdownInventory(
+    prefix + markdown,
+  );
   const prefixedPricing: IEvidenceUnit = requireUnit(prefixed, "pricing");
   const prefixedSite: IEvidenceUnitSite | undefined = prefixedPricing.sites[0];
   if (prefixedSite === undefined)
@@ -223,9 +225,10 @@ export async function test_fingerprint_scope(): Promise<void> {
   const inlineHeadingComment: IEvidenceInventory = await markdownInventory(
     "# Rule <!-- @evidence other.md First explanation. -->\n",
   );
-  const changedInlineHeadingComment: IEvidenceInventory = await markdownInventory(
-    "# Rule <!-- @evidence other.md Second explanation. -->\n",
-  );
+  const changedInlineHeadingComment: IEvidenceInventory =
+    await markdownInventory(
+      "# Rule <!-- @evidence other.md Second explanation. -->\n",
+    );
   const inlineRule: IEvidenceUnit = requireUnit(inlineHeadingComment, "rule");
   const changedInlineRule: IEvidenceUnit = requireUnit(
     changedInlineHeadingComment,
@@ -238,9 +241,12 @@ export async function test_fingerprint_scope(): Promise<void> {
   );
   TestValidator.equals(
     "inline heading annotation preserves fingerprint",
-    EvidenceFingerprint.inspect(changedInlineHeadingComment, changedInlineRule.id)
+    EvidenceFingerprint.inspect(
+      changedInlineHeadingComment,
+      changedInlineRule.id,
+    ).fingerprint,
+    EvidenceFingerprint.inspect(inlineHeadingComment, inlineRule.id)
       .fingerprint,
-    EvidenceFingerprint.inspect(inlineHeadingComment, inlineRule.id).fingerprint,
   );
 
   const changedSibling = await markdownInventory(
@@ -346,7 +352,9 @@ async function markdownInventory(
  * Shared source identity keeps withdrawal and member-content changes isolated
  * from unrelated rebinding effects.
  */
-async function typescriptInventory(content: string): Promise<IEvidenceInventory> {
+async function typescriptInventory(
+  content: string,
+): Promise<IEvidenceInventory> {
   return new EvidenceTypeScriptAdapter().analyze(
     EvidenceTestSourceSnapshot.create("src/contracts.ts", content),
   );
@@ -396,7 +404,10 @@ async function reexportedFingerprint(module: string): Promise<string> {
  * Failure to extract the intended unit aborts setup rather than producing a
  * misleading fingerprint comparison against another candidate.
  */
-function requireUnit(inventory: IEvidenceInventory, identity: string): IEvidenceUnit {
+function requireUnit(
+  inventory: IEvidenceInventory,
+  identity: string,
+): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === identity || candidate.identity.at(-1) === identity,

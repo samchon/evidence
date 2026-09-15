@@ -137,7 +137,10 @@ export async function test_graph_markdown_chain(): Promise<void> {
   // Failed claim discovery remains active and cannot become an empty passing host set.
   const failedGuide = await new EvidenceMarkdownAdapter().analyze(
     EvidenceTestSourceSnapshot.fail(
-      EvidenceTestSourceSnapshot.create("docs/guide.md", "## Checkout {#checkout}"),
+      EvidenceTestSourceSnapshot.create(
+        "docs/guide.md",
+        "## Checkout {#checkout}",
+      ),
       {
         code: "path-unreadable",
         path: "/project/docs/missing.md",
@@ -187,7 +190,10 @@ export async function test_graph_markdown_chain(): Promise<void> {
   );
 }
 
-function requireUnit(inventory: IEvidenceInventory, identity: string): IEvidenceUnit {
+function requireUnit(
+  inventory: IEvidenceInventory,
+  identity: string,
+): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.at(-1) === identity,
   );

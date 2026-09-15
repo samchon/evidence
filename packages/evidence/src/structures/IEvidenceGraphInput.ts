@@ -4,9 +4,10 @@ import type { IEvidenceGraphClaim } from "./IEvidenceGraphClaim";
  * Materialized populations and resolutions ready for graph policy evaluation.
  *
  * The checker has already loaded sources, extracted inventories, and resolved
- * targets. `EvidenceGraph` consumes this record without source IO. Direct callers
- * must provide consistent identity and ownership records; a resolved status
- * alone cannot grant coverage to a unit absent from its reference inventory.
+ * targets. `EvidenceGraph` consumes this record without source IO. Direct
+ * callers must provide consistent identity and ownership records; a resolved
+ * status alone cannot grant coverage to a unit absent from its reference
+ * inventory.
  *
  * @example
  *   // There are no obligations to evaluate until a materialized claim is supplied.

@@ -6,7 +6,7 @@
     "commit": "2e2fa5640268c33c3d3f27f7e676f631a9c68fd9",
     "wasm": {
       "file": "dbml/tree-sitter-dbml.wasm",
-      "url": "https://github.com/wrtnlabs/evid/releases/download/grammar-dbml-c67985a56a3edf40b84cbc41d2c0224d074362a8ecb916a1a744c283c035fc15/tree-sitter-dbml.wasm",
+      "url": "https://github.com/wrtnlabs/evidence/releases/download/grammar-dbml-c67985a56a3edf40b84cbc41d2c0224d074362a8ecb916a1a744c283c035fc15/tree-sitter-dbml.wasm",
       "sha256": "c67985a56a3edf40b84cbc41d2c0224d074362a8ecb916a1a744c283c035fc15",
       "size": 30043
     },
@@ -60,7 +60,7 @@
     "commit": "eb53d2486b353f8a3d5f69833b2ae749b4862ba5",
     "wasm": {
       "file": "bigquery/tree-sitter-bigquery.wasm",
-      "url": "https://github.com/wrtnlabs/evid/releases/download/grammar-bigquery-e77cf21dfae23f6e9a108705e559374acfc110a81a6e26f06df166e627b14299/tree-sitter-bigquery.wasm",
+      "url": "https://github.com/wrtnlabs/evidence/releases/download/grammar-bigquery-e77cf21dfae23f6e9a108705e559374acfc110a81a6e26f06df166e627b14299/tree-sitter-bigquery.wasm",
       "sha256": "e77cf21dfae23f6e9a108705e559374acfc110a81a6e26f06df166e627b14299",
       "size": 7415004
     },
@@ -294,7 +294,7 @@
     "commit": "b57d734c84f510bbd524097902cab671e4dbfca9",
     "wasm": {
       "file": "dart/tree-sitter-dart.wasm",
-      "url": "https://github.com/wrtnlabs/evid/releases/download/grammar-dart-0795f78c9c65eae2dbc52ca675cc6d4c5fbf3e5bc5a5eda8d54bcccfef3684d7/tree-sitter-dart.wasm",
+      "url": "https://github.com/wrtnlabs/evidence/releases/download/grammar-dart-0795f78c9c65eae2dbc52ca675cc6d4c5fbf3e5bc5a5eda8d54bcccfef3684d7/tree-sitter-dart.wasm",
       "sha256": "0795f78c9c65eae2dbc52ca675cc6d4c5fbf3e5bc5a5eda8d54bcccfef3684d7",
       "size": 1270232
     },
@@ -312,7 +312,7 @@
     "commit": "f03d0347acd8bb05d4edd8c845ac1718729e1fad",
     "wasm": {
       "file": "matlab/tree-sitter-matlab.wasm",
-      "url": "https://github.com/wrtnlabs/evid/releases/download/grammar-matlab-65d969c986b13b6907b9253307ede8f5c2bd1d31692635a2eab058ec81bb4409/tree-sitter-matlab.wasm",
+      "url": "https://github.com/wrtnlabs/evidence/releases/download/grammar-matlab-65d969c986b13b6907b9253307ede8f5c2bd1d31692635a2eab058ec81bb4409/tree-sitter-matlab.wasm",
       "sha256": "65d969c986b13b6907b9253307ede8f5c2bd1d31692635a2eab058ec81bb4409",
       "size": 423002
     },
@@ -366,7 +366,7 @@
     "commit": "7b51ecda191d36b92f5a90a8d1bc3faef1c7b8b8",
     "wasm": {
       "file": "sql/tree-sitter-sql.wasm",
-      "url": "https://github.com/wrtnlabs/evid/releases/download/grammar-sql-733a3d695e3ae06e525b6b6cb9ee37436ef390f45dfacb3fb0169871da4434bd/tree-sitter-sql.wasm",
+      "url": "https://github.com/wrtnlabs/evidence/releases/download/grammar-sql-733a3d695e3ae06e525b6b6cb9ee37436ef390f45dfacb3fb0169871da4434bd/tree-sitter-sql.wasm",
       "sha256": "733a3d695e3ae06e525b6b6cb9ee37436ef390f45dfacb3fb0169871da4434bd",
       "size": 2472281
     },
@@ -402,7 +402,7 @@
     "commit": "b7057b7d4ca94bb45403435f12cc01cee821daa8",
     "wasm": {
       "file": "mysql/tree-sitter-mysql.wasm",
-      "url": "https://github.com/wrtnlabs/evid/releases/download/grammar-mysql-9257f0317112cff54be54e45302f2b00330d209df52e662e2572c4f154ecc68a/tree-sitter-mysql.wasm",
+      "url": "https://github.com/wrtnlabs/evidence/releases/download/grammar-mysql-9257f0317112cff54be54e45302f2b00330d209df52e662e2572c4f154ecc68a/tree-sitter-mysql.wasm",
       "sha256": "9257f0317112cff54be54e45302f2b00330d209df52e662e2572c4f154ecc68a",
       "size": 11063017
     },
@@ -420,7 +420,7 @@
     "commit": "993be0a91c0c90b0cc7799e6ff65922390e2cefe",
     "wasm": {
       "file": "sqlite/tree-sitter-sqlite.wasm",
-      "url": "https://github.com/wrtnlabs/evid/releases/download/grammar-sqlite-f3a1767fc368a15eb10b1db906ff1abcf510dc5e38920cfb937fd0960c64fa82/tree-sitter-sqlite.wasm",
+      "url": "https://github.com/wrtnlabs/evidence/releases/download/grammar-sqlite-f3a1767fc368a15eb10b1db906ff1abcf510dc5e38920cfb937fd0960c64fa82/tree-sitter-sqlite.wasm",
       "sha256": "f3a1767fc368a15eb10b1db906ff1abcf510dc5e38920cfb937fd0960c64fa82",
       "size": 983433
     },

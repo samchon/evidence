@@ -88,7 +88,9 @@ async function resolveConfigFile(file: string): Promise<string> {
  * permits ordinary UTF-8 files without treating their strings as executable
  * imports.
  */
-async function evaluateResolvedConfig(filename: string): Promise<IEvidenceConfig> {
+async function evaluateResolvedConfig(
+  filename: string,
+): Promise<IEvidenceConfig> {
   const value: unknown =
     EvidenceConfigFormat.get(filename) === "json"
       ? JSON.parse((await readFile(filename, "utf8")).replace(/^\uFEFF/u, ""))
@@ -136,7 +138,8 @@ function validateArtifactTypes(value: unknown): void {
  * configuration path.
  */
 function validateArtifactType(value: unknown, path: string): void {
-  if (typeof value !== "string" || EvidenceArtifactTypes.isSupported(value)) return;
+  if (typeof value !== "string" || EvidenceArtifactTypes.isSupported(value))
+    return;
   throw new Error(
     `Invalid Evidence configuration at ${path}: artifact type '${value}' has no certified Evidence adapter. Supported types: ${EvidenceArtifactTypes.supported().join(", ")}.`,
   );

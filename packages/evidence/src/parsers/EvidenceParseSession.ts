@@ -9,11 +9,11 @@ import type { IEvidenceSourceRange } from "../structures/IEvidenceSourceRange";
  * Borrows one syntax tree and owns its query cache during an extraction
  * callback.
  *
- * `EvidenceParser.parse` creates the session after verifying syntax completeness
- * and disposes it before releasing the tree. Adapters can traverse `root`,
- * query captures or matches, and convert nodes into serializable ranges. Nodes
- * and query results remain borrowed; only copied names, ranges, and
- * relationships may survive the callback.
+ * `EvidenceParser.parse` creates the session after verifying syntax
+ * completeness and disposes it before releasing the tree. Adapters can traverse
+ * `root`, query captures or matches, and convert nodes into serializable
+ * ranges. Nodes and query results remain borrowed; only copied names, ranges,
+ * and relationships may survive the callback.
  *
  * Every operation checks lifetime and node ownership. A query that cannot be
  * compiled, needs unsupported external predicates, or exceeds its match limit

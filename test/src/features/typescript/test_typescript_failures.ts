@@ -18,7 +18,10 @@ export async function test_typescript_failures(): Promise<void> {
   const adapter = new EvidenceTypeScriptAdapter();
 
   const malformed = await adapter.analyze(
-    EvidenceTestSourceSnapshot.create("src/broken.ts", "export interface Broken {"),
+    EvidenceTestSourceSnapshot.create(
+      "src/broken.ts",
+      "export interface Broken {",
+    ),
   );
   TestValidator.equals(
     "malformed source is incomplete",

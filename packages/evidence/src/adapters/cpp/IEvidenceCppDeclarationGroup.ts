@@ -3,10 +3,11 @@ import type { IEvidenceCppDeclaration } from "./IEvidenceCppDeclaration";
 /**
  * Collects C++ declaration occurrences that materialize one semantic unit.
  *
- * EvidenceCppAdapter builds these groups from scanner records using `id`, then uses
- * their declarations to determine public ownership, validate compatible
+ * EvidenceCppAdapter builds these groups from scanner records using `id`, then
+ * uses their declarations to determine public ownership, validate compatible
  * declaration and definition families, and construct the unit's sites. It
- * bridges physical IEvidenceCppDeclaration records and the final Evidence inventory.
+ * bridges physical IEvidenceCppDeclaration records and the final Evidence
+ * inventory.
  */
 export interface IEvidenceCppDeclarationGroup {
   /**

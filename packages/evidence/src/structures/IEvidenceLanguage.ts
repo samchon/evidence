@@ -3,7 +3,8 @@ import type { IEvidenceLanguageAdapter } from "./IEvidenceLanguageAdapter";
 import type { IEvidenceLanguageGrammar } from "./IEvidenceLanguageGrammar";
 
 /**
- * Programming-language catalog entry separating parsing from Evidence extraction.
+ * Programming-language catalog entry separating parsing from Evidence
+ * extraction.
  *
  * A grammar can recognize syntax before an adapter has established declaration
  * identity, visibility, and documentation ownership. Optional adapter metadata

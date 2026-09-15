@@ -31,7 +31,9 @@ import { EvidenceChecker } from "../EvidenceChecker";
  * of any analysis or publisher already in progress.
  *
  * @example
- *   const watcher: EvidenceWatcher = new EvidenceWatcher("evidence.config.ts");
+ *   const watcher: EvidenceWatcher = new EvidenceWatcher(
+ *     "evidence.config.ts",
+ *   );
  *   const watching: Promise<void> = watcher.watch(
  *     async (cycle: EvidenceWatchCycle): Promise<void> => {
  *       console.log(cycle.cycle, cycle.status);
@@ -183,7 +185,9 @@ export class EvidenceWatcher {
       while (!this.isClosed()) {
         await this.pause(this.pollIntervalMilliseconds);
         if (this.isClosed()) break;
-        const changed = await EvidenceWatchDependencySnapshot.capture(this.active);
+        const changed = await EvidenceWatchDependencySnapshot.capture(
+          this.active,
+        );
         if (changed.equals(baseline) && Date.now() < retryAt) continue;
 
         await this.settle(changed);
@@ -246,7 +250,9 @@ export class EvidenceWatcher {
   private async evaluateStable(): Promise<IEvidenceWatchAttempt> {
     for (;;) {
       if (this.isClosed()) {
-        const snapshot = await EvidenceWatchDependencySnapshot.capture(this.active);
+        const snapshot = await EvidenceWatchDependencySnapshot.capture(
+          this.active,
+        );
         return {
           cycle: failureCycle(
             this.cycles + 1,
@@ -279,7 +285,10 @@ export class EvidenceWatcher {
       // smaller partial discovery, or repairing a lost input might never wake us.
       const active =
         analysis === undefined
-          ? EvidenceWatchDependencySet.merge(this.active, afterConfig.dependencies)
+          ? EvidenceWatchDependencySet.merge(
+              this.active,
+              afterConfig.dependencies,
+            )
           : cause === undefined
             ? EvidenceWatchDependencySet.analysis(
                 analysis,
@@ -341,7 +350,9 @@ export class EvidenceWatcher {
     while (!this.isClosed() && this.debounceMilliseconds !== 0) {
       await this.pause(this.debounceMilliseconds);
       if (this.isClosed()) return previous;
-      const current = await EvidenceWatchDependencySnapshot.capture(this.active);
+      const current = await EvidenceWatchDependencySnapshot.capture(
+        this.active,
+      );
       if (current.equals(previous)) return current;
       previous = current;
     }
@@ -466,10 +477,15 @@ function parserFailure(cause: unknown): boolean {
  * Watching the configuration path and its directory permits recovery when the
  * file or a nearby imported input is initially missing or cannot be evaluated.
  */
-function configurationFallback(configFile: string): IEvidenceSourceDependency[] {
+function configurationFallback(
+  configFile: string,
+): IEvidenceSourceDependency[] {
   const normalized = EvidenceSourcePath.slash(configFile);
   return [
     { path: normalized, recursive: false },
-    { path: EvidenceSourcePath.slash(path.dirname(normalized)), recursive: true },
+    {
+      path: EvidenceSourcePath.slash(path.dirname(normalized)),
+      recursive: true,
+    },
   ];
 }

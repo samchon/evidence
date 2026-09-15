@@ -87,7 +87,10 @@ export async function test_prisma_graph(): Promise<void> {
   );
   const sale = requireUnit(prisma, "prisma:Sale");
   const seller = requireUnit(prisma, "prisma:Seller");
-  const saleFingerprint = EvidenceFingerprint.inspect(prisma, sale.id).fingerprint;
+  const saleFingerprint = EvidenceFingerprint.inspect(
+    prisma,
+    sale.id,
+  ).fingerprint;
   const sellerFingerprint = EvidenceFingerprint.inspect(
     prisma,
     seller.id,
@@ -224,7 +227,10 @@ export async function test_prisma_graph(): Promise<void> {
   );
 }
 
-function requireUnit(inventory: IEvidenceInventory, identity: string): IEvidenceUnit {
+function requireUnit(
+  inventory: IEvidenceInventory,
+  identity: string,
+): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.id === identity || candidate.identity.at(-1) === identity,

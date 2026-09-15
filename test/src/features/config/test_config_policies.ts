@@ -11,8 +11,9 @@ import { validateEvidenceConfig } from "@wrtnlabs/evidence";
  * meaning with global host cardinality or shared exclusion carriers.
  *
  * 1. Accept a reviewed Markdown checklist that forbids exclusions.
- * 2. Enable both cardinality flags and require separate diagnostics for uniqueEvidence
- *    and singleEvidencePerSymbol instead of choosing one policy.
+ * 2. Enable both cardinality flags and require separate diagnostics for
+ *    uniqueEvidence and singleEvidencePerSymbol instead of choosing one
+ *    policy.
  * 3. Add a checklist property to a TypeScript reference at runtime, even with
  *    value false, and require the artifact-placement diagnostic.
  * 4. Add shared exclusion-carrier globs to a checklist and require rejection.
@@ -42,7 +43,9 @@ export async function test_config_policies(): Promise<void> {
 
   TestValidator.predicate(
     "checklist rejects unique evidence",
-    cardinalityMessage.includes("checklist and uniqueEvidence cannot both hold"),
+    cardinalityMessage.includes(
+      "checklist and uniqueEvidence cannot both hold",
+    ),
   );
   TestValidator.predicate(
     "checklist rejects single evidence",

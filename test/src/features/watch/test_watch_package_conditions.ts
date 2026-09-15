@@ -1,5 +1,8 @@
 import { EvidenceChecker, EvidenceWatcher } from "@wrtnlabs/evidence";
-import type { EvidenceWatchCycle, IEvidenceSourceDependency } from "@wrtnlabs/evidence";
+import type {
+  EvidenceWatchCycle,
+  IEvidenceSourceDependency,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";

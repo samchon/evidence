@@ -31,8 +31,8 @@ export interface IEvidenceDartFileAnalysis {
   /**
    * Lists library topology directives retained for snapshot-wide resolution.
    *
-   * `EvidenceDartLibraries` consumes parts and exports to establish ownership and
-   * projected public addresses.
+   * `EvidenceDartLibraries` consumes parts and exports to establish ownership
+   * and projected public addresses.
    */
   directives: IEvidenceDartDirective[];
 

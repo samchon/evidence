@@ -109,7 +109,9 @@ export async function test_swagger_fingerprints(): Promise<void> {
   const implicitDefaults: IEvidenceInventory = await analyze(
     defaultDocument(false),
   );
-  const explicitDefaults: IEvidenceInventory = await analyze(defaultDocument(true));
+  const explicitDefaults: IEvidenceInventory = await analyze(
+    defaultDocument(true),
+  );
   TestValidator.equals(
     "empty root defaults preserve effective contract",
     fingerprint(explicitDefaults, "GET:/defaults"),
@@ -393,7 +395,10 @@ function fingerprint(inventory: IEvidenceInventory, target: string): string {
  * Fingerprint fixtures use unique METHOD/path names, so absence is an adapter
  * regression rather than an optional scenario outcome.
  */
-function requireUnit(inventory: IEvidenceInventory, target: string): IEvidenceUnit {
+function requireUnit(
+  inventory: IEvidenceInventory,
+  target: string,
+): IEvidenceUnit {
   const unit = inventory.units.find((candidate) => candidate.name === target);
   if (unit === undefined)
     throw new Error(`Missing Swagger operation: ${target}`);

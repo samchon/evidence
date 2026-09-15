@@ -1,5 +1,8 @@
 import { EvidenceWatchReporter } from "@wrtnlabs/evidence";
-import type { EvidenceWatchCycle, IEvidenceWatchFailureCycle } from "@wrtnlabs/evidence";
+import type {
+  EvidenceWatchCycle,
+  IEvidenceWatchFailureCycle,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import typia from "typia";
 

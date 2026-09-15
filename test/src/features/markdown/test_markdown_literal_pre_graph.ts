@@ -38,7 +38,7 @@ export async function test_markdown_literal_pre_graph(): Promise<void> {
   await EvidenceTestFileSystem.experiment(
     location,
     {
-      "evid.json": JSON.stringify({
+      "evidence.json": JSON.stringify({
         claims: [
           {
             type: "typescript",
@@ -56,18 +56,19 @@ export async function test_markdown_literal_pre_graph(): Promise<void> {
       "rules.md": literalRules(),
     },
     async (directory: string): Promise<void> => {
-      const config: string = join(directory, "evid.json");
+      const config: string = join(directory, "evidence.json");
       const literal: IEvidenceCheckReport = await EvidenceChecker.check(config);
       assertMissingSecond("literal rendered tags", literal);
 
       await EvidenceTestFileSystem.save(directory, {
         "rules.md": renderedRules(),
       });
-      const rendered: IEvidenceCheckReport = await EvidenceChecker.check(config);
+      const rendered: IEvidenceCheckReport =
+        await EvidenceChecker.check(config);
       assertMissingSecond("genuine rendered block", rendered);
 
       await EvidenceTestFileSystem.save(directory, {
-        "evid.json": JSON.stringify({
+        "evidence.json": JSON.stringify({
           claims: [
             {
               type: "markdown",
@@ -97,7 +98,10 @@ export async function test_markdown_literal_pre_graph(): Promise<void> {
  * proves that content made inert by rendered boundaries did not cover the
  * second.
  */
-function assertMissingSecond(label: string, report: IEvidenceCheckReport): void {
+function assertMissingSecond(
+  label: string,
+  report: IEvidenceCheckReport,
+): void {
   const claim: IEvidenceCheckClaim | undefined = report.claims[0];
   const obligation: IEvidenceCheckObligation | undefined =
     claim === undefined ? undefined : claim.obligations[0];

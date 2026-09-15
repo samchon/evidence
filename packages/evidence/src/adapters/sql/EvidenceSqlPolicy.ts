@@ -3,8 +3,8 @@ import type { Node as EvidenceNode } from "web-tree-sitter";
 /**
  * Defines the portable subset independently of the broad SQL parser grammar.
  *
- * `EvidenceSqlFileScanner` uses this policy to reject syntax whose meaning varies
- * by dialect.
+ * `EvidenceSqlFileScanner` uses this policy to reject syntax whose meaning
+ * varies by dialect.
  */
 export namespace EvidenceSqlPolicy {
   /**

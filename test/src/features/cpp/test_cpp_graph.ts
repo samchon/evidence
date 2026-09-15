@@ -190,7 +190,10 @@ async function objectInventory(second: string): Promise<IEvidenceInventory> {
   );
 }
 
-function requireUnit(inventory: IEvidenceInventory, name: string): IEvidenceUnit {
+function requireUnit(
+  inventory: IEvidenceInventory,
+  name: string,
+): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === name || candidate.identity.at(-1) === name,

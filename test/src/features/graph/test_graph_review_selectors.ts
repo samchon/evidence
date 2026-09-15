@@ -4,7 +4,11 @@ import {
   EvidenceMarkdownAdapter,
   EvidenceTypeScriptAdapter,
 } from "@wrtnlabs/evidence";
-import type { IEvidenceGraphReference, IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+import type {
+  IEvidenceGraphReference,
+  IEvidenceInventory,
+  IEvidenceUnit,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -110,7 +114,10 @@ export async function test_graph_review_selectors(): Promise<void> {
   );
 }
 
-function requireUnit(inventory: IEvidenceInventory, identity: string): IEvidenceUnit {
+function requireUnit(
+  inventory: IEvidenceInventory,
+  identity: string,
+): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === identity || candidate.identity.at(-1) === identity,

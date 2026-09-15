@@ -123,7 +123,10 @@ export class EvidenceFingerprintIndex {
           this.identity(y),
         );
         if (identity !== 0) return identity;
-        const symbol: number = EvidenceInventoryMerge.compare(x.symbol, y.symbol);
+        const symbol: number = EvidenceInventoryMerge.compare(
+          x.symbol,
+          y.symbol,
+        );
         return symbol !== 0
           ? symbol
           : EvidenceInventoryMerge.compare(
@@ -133,7 +136,7 @@ export class EvidenceFingerprintIndex {
       },
     );
     const hash = createHash("sha256");
-    hash.update(`evid:fingerprint:${VERSION}\0`);
+    hash.update(`evidence:fingerprint:${VERSION}\0`);
     for (const unit of scope) {
       hash.update(this.identity(unit));
       hash.update("\0");
@@ -184,7 +187,9 @@ export class EvidenceFingerprintIndex {
   private declaringPaths(unit: IEvidenceUnit): string[] {
     return EvidenceInventoryMerge.unique(
       unit.sites.map((site: IEvidenceUnitSite): string => {
-        const source: IEvidenceSourceFile | undefined = this.sources.get(site.file);
+        const source: IEvidenceSourceFile | undefined = this.sources.get(
+          site.file,
+        );
         if (source === undefined)
           throw new Error(
             `Cannot fingerprint missing source snapshot: ${site.file}`,
@@ -364,8 +369,13 @@ function replacePortableTokens(
       );
     unique.set(token, value);
   }
-  const ordered: EvidencePortableReplacement[] = Array.from(unique.entries()).sort(
-    (left: EvidencePortableReplacement, right: EvidencePortableReplacement): number => {
+  const ordered: EvidencePortableReplacement[] = Array.from(
+    unique.entries(),
+  ).sort(
+    (
+      left: EvidencePortableReplacement,
+      right: EvidencePortableReplacement,
+    ): number => {
       const lengthDifference: number = right[0].length - left[0].length;
       return lengthDifference !== 0
         ? lengthDifference
@@ -407,7 +417,10 @@ function replacePortableTokens(
  * Stable ordering makes a fingerprint independent of adapter collection order
  * for sites in the same file.
  */
-function compareRanges(x: IEvidenceSourceRange, y: IEvidenceSourceRange): number {
+function compareRanges(
+  x: IEvidenceSourceRange,
+  y: IEvidenceSourceRange,
+): number {
   const start = x.start.offset - y.start.offset;
   return start !== 0 ? start : x.end.offset - y.end.offset;
 }

@@ -3,10 +3,10 @@ import type { IEvidenceCSharpDeclaration } from "./IEvidenceCSharpDeclaration";
 /**
  * Collects physical declarations that resolve to one C# semantic unit.
  *
- * `EvidenceCSharpAdapter` builds these groups while materializing a source snapshot
- * and checks the contained declarations for compatible partial or overload
- * forms. The group bridges scanner-local declaration records and the single
- * published Evidence unit, retaining every contributing site and address
+ * `EvidenceCSharpAdapter` builds these groups while materializing a source
+ * snapshot and checks the contained declarations for compatible partial or
+ * overload forms. The group bridges scanner-local declaration records and the
+ * single published Evidence unit, retaining every contributing site and address
  * candidate.
  */
 export interface IEvidenceCSharpDeclarationGroup {

@@ -29,7 +29,8 @@ export interface IEvidenceSwiftDeclaration {
   /**
    * Common programming selector.
    *
-   * It supplies Evidence's language-independent category for population selection.
+   * It supplies Evidence's language-independent category for population
+   * selection.
    */
   symbol: EvidenceProgrammingSymbol;
 

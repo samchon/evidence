@@ -1,4 +1,7 @@
-import { EvidenceLanguageRegistry, EvidenceRubyAdapter } from "@wrtnlabs/evidence";
+import {
+  EvidenceLanguageRegistry,
+  EvidenceRubyAdapter,
+} from "@wrtnlabs/evidence";
 import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
@@ -151,7 +154,10 @@ export async function test_ruby_units(): Promise<void> {
   TestValidator.equals("Ruby accessor property site", status.sites.length, 1);
 }
 
-function requireUnit(inventory: IEvidenceInventory, identity: string): IEvidenceUnit {
+function requireUnit(
+  inventory: IEvidenceInventory,
+  identity: string,
+): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.join(".") === identity,
   );

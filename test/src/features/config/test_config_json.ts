@@ -42,14 +42,14 @@ export async function test_config_json(): Promise<void> {
   await EvidenceTestFileSystem.experiment(
     "json-config",
     {
-      "evid.json": JSON.stringify(config),
+      "evidence.json": JSON.stringify(config),
       "evidence.config.ts": `export default ${JSON.stringify(config)};`,
       "evidence.yaml": JSON.stringify(config),
       "evidence.yml": JSON.stringify(config),
       "broken.json": "{",
     },
     async (directory) => {
-      const json = join(directory, "evid.json");
+      const json = join(directory, "evidence.json");
       const fromJson = await EvidenceConfigLoader.plan(json);
       const fromTs = await EvidenceConfigLoader.plan(
         join(directory, "evidence.config.ts"),
@@ -61,7 +61,9 @@ export async function test_config_json(): Promise<void> {
       );
       TestValidator.equals("JSON config anchoring", fromJson.configFile, json);
 
-      const dependencies = await new EvidenceConfigDependencyScanner(json).scan();
+      const dependencies = await new EvidenceConfigDependencyScanner(
+        json,
+      ).scan();
       TestValidator.predicate(
         "JSON strings are not imports",
         dependencies.every((entry) => !entry.path.includes("missing-module")),

@@ -90,10 +90,11 @@ export async function test_javascript_module_modes(): Promise<void> {
   );
 
   const conflicting = await new EvidenceJavaScriptAdapter().analyze(
-    EvidenceTestSourceSnapshot.create("src/alias.mjs", "export const value = 1;", [
+    EvidenceTestSourceSnapshot.create(
       "src/alias.mjs",
-      "src/alias.cjs",
-    ]),
+      "export const value = 1;",
+      ["src/alias.mjs", "src/alias.cjs"],
+    ),
   );
   TestValidator.predicate(
     "conflicting alias modes",

@@ -1,8 +1,9 @@
 /**
  * Identifies a declaration root or module namespace reached through imports.
  *
- * EvidencePythonExportResolver carries this lightweight result across files before
- * it converts a reachable root into public addresses and a published unit.
+ * EvidencePythonExportResolver carries this lightweight result across files
+ * before it converts a reachable root into public addresses and a published
+ * unit.
  */
 export interface IEvidencePythonResolvedBinding {
   /**

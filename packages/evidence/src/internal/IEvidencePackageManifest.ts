@@ -1,5 +1,5 @@
 /**
- * Installed evid package manifest fields required by the version command.
+ * Installed evidence package manifest fields required by the version command.
  *
  * `EvidenceCommand` validates this narrow projection before reporting its own
  * package version, keeping malformed installed metadata an actionable command

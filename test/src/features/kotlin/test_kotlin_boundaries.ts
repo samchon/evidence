@@ -74,7 +74,10 @@ export async function test_kotlin_boundaries(): Promise<void> {
     TestValidator.equals(`accepted ${source}`, inventory.diagnostics, []);
   }
   const script = await adapter.analyze(
-    EvidenceTestSourceSnapshot.create("src/Script.kts", "val publicValue = 1\n"),
+    EvidenceTestSourceSnapshot.create(
+      "src/Script.kts",
+      "val publicValue = 1\n",
+    ),
   );
   TestValidator.equals(
     "scripts do not become ordinary source",

@@ -2,7 +2,10 @@ import type { IEvidenceGrammar } from "@wrtnlabs/evidence";
 import { randomUUID } from "node:crypto";
 import { resolve } from "node:path";
 
-import { EvidenceTreeSitterAssets, EvidenceTreeSitterAssetScope } from "@wrtnlabs/evidence";
+import {
+  EvidenceTreeSitterAssets,
+  EvidenceTreeSitterAssetScope,
+} from "@wrtnlabs/evidence";
 import { EvidenceTestFileSystem } from "./EvidenceTestFileSystem";
 
 /**

@@ -30,7 +30,10 @@ export class EvidenceDartFileScanner {
    *
    * Group identity lets adjacent DartDoc lines become one source carrier.
    */
-  private readonly documentation = new Map<number, IEvidenceDartDocumentation>();
+  private readonly documentation = new Map<
+    number,
+    IEvidenceDartDocumentation
+  >();
 
   /**
    * Stores unsupported source boundaries that prevent complete analysis.
@@ -107,7 +110,10 @@ export class EvidenceDartFileScanner {
    * Executable code cannot add a stable declaration to the static public
    * surface.
    */
-  private scope(body: EvidenceNode, owner: IEvidenceDartDeclaration | undefined): void {
+  private scope(
+    body: EvidenceNode,
+    owner: IEvidenceDartDeclaration | undefined,
+  ): void {
     for (const node of body.namedChildren) {
       switch (node.type) {
         case "comment":
@@ -424,7 +430,10 @@ export class EvidenceDartFileScanner {
    * Library resolution applies filters in source order to determine exported
    * names.
    */
-  private directive(node: EvidenceNode, kind: IEvidenceDartDirective["kind"]): void {
+  private directive(
+    node: EvidenceNode,
+    kind: IEvidenceDartDirective["kind"],
+  ): void {
     const named = node.namedChildren.find(
       (child) => child.type === "dotted_identifier_list",
     );

@@ -4,8 +4,8 @@ const TAG =
 /**
  * Separates operation prose from Evidence metadata appended to a description.
  *
- * Fingerprints retain author-facing prose but exclude Evidence directives, which
- * control review state without changing the described API operation.
+ * Fingerprints retain author-facing prose but exclude Evidence directives,
+ * which control review state without changing the described API operation.
  */
 export namespace EvidenceSwaggerDescription {
   /**

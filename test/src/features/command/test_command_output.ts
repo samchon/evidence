@@ -35,7 +35,7 @@ export async function test_command_output(): Promise<void> {
       TestValidator.equals("help exit", help.exitCode, 0);
       TestValidator.predicate(
         "help usage",
-        help.stdout.includes("Usage: evid"),
+        help.stdout.includes("Usage: evidence"),
       );
       TestValidator.equals("version exit", version.exitCode, 0);
       TestValidator.predicate(

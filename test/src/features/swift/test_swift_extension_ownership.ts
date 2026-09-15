@@ -1,4 +1,8 @@
-import { EvidenceFingerprint, EvidenceInventory, EvidenceSwiftAdapter } from "@wrtnlabs/evidence";
+import {
+  EvidenceFingerprint,
+  EvidenceInventory,
+  EvidenceSwiftAdapter,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -138,7 +142,10 @@ export async function test_swift_extension_ownership(): Promise<void> {
     const rejected = await adapter.analyze(
       EvidenceTestSourceSnapshot.combine(
         sources.map((content, index) =>
-          EvidenceTestSourceSnapshot.create(`src/Boundary${index}.swift`, content),
+          EvidenceTestSourceSnapshot.create(
+            `src/Boundary${index}.swift`,
+            content,
+          ),
         ),
       ),
     );

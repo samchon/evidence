@@ -44,7 +44,10 @@ export class EvidenceRubyFileScanner {
    * Attachments are accumulated while declarations are scanned and later become
    * evidence documentation mappings.
    */
-  private readonly documentation = new Map<string, IEvidenceRubyDocumentation>();
+  private readonly documentation = new Map<
+    string,
+    IEvidenceRubyDocumentation
+  >();
 
   /**
    * Collects failures that make static Ruby surface extraction incomplete.
@@ -66,7 +69,10 @@ export class EvidenceRubyFileScanner {
    * Later declarations of the same constant inherit the most recent supported
    * visibility directive in their selected source context.
    */
-  private readonly constantVisibility = new Map<string, EvidenceRubyVisibility>();
+  private readonly constantVisibility = new Map<
+    string,
+    EvidenceRubyVisibility
+  >();
 
   /**
    * Converts parser offsets to source ranges that survive parser cleanup.
@@ -135,7 +141,10 @@ export class EvidenceRubyFileScanner {
    *
    * Context carries ordered visibility and owner state into each statement.
    */
-  private scanBody(body: EvidenceNode, context: IEvidenceRubyScopeContext): void {
+  private scanBody(
+    body: EvidenceNode,
+    context: IEvidenceRubyScopeContext,
+  ): void {
     for (const statement of body.namedChildren)
       this.scanStatement(statement, context);
   }
@@ -289,7 +298,10 @@ export class EvidenceRubyFileScanner {
     const identity =
       value?.type === "self" && context.kind !== "top"
         ? context.identity
-        : this.resolveOptionalPath(EvidenceRubySyntax.constantPath(value), context);
+        : this.resolveOptionalPath(
+            EvidenceRubySyntax.constantPath(value),
+            context,
+          );
     if (identity === undefined || identity.length === 0) {
       if (this.containsSurfaceChange(statement))
         this.problem(
@@ -328,7 +340,9 @@ export class EvidenceRubyFileScanner {
     forcedModuleFunction: boolean = false,
   ): void {
     if (context.kind === "top") return;
-    const name = EvidenceRubySyntax.methodName(method.childForFieldName("name"));
+    const name = EvidenceRubySyntax.methodName(
+      method.childForFieldName("name"),
+    );
     if (name === undefined) {
       this.problem(
         "ruby-method-name",
@@ -395,7 +409,9 @@ export class EvidenceRubyFileScanner {
         );
       return;
     }
-    const name = EvidenceRubySyntax.methodName(method.childForFieldName("name"));
+    const name = EvidenceRubySyntax.methodName(
+      method.childForFieldName("name"),
+    );
     if (name === undefined) {
       this.problem(
         "ruby-method-name",
@@ -512,7 +528,9 @@ export class EvidenceRubyFileScanner {
       undefined,
       context.containerKind,
     );
-    if (EvidenceRubySyntax.generatedConstant(statement.childForFieldName("right")))
+    if (
+      EvidenceRubySyntax.generatedConstant(statement.childForFieldName("right"))
+    )
       this.problem(
         "ruby-generated-constant",
         `Ruby constant '${identity.join("::")}' receives a runtime-generated class or module.`,
@@ -526,7 +544,10 @@ export class EvidenceRubyFileScanner {
    *
    * Only known static directives are interpreted; the rest preserve boundaries.
    */
-  private scanCall(call: EvidenceNode, context: IEvidenceRubyScopeContext): void {
+  private scanCall(
+    call: EvidenceNode,
+    context: IEvidenceRubyScopeContext,
+  ): void {
     const name = EvidenceRubySyntax.callName(call);
     if (name === undefined) return;
     if (!EvidenceRubySyntax.hasReceiver(call)) {
@@ -839,7 +860,9 @@ export class EvidenceRubyFileScanner {
     context: IEvidenceRubyScopeContext,
   ): void {
     if (context.kind === "top") return;
-    const name = EvidenceRubySyntax.methodName(statement.childForFieldName("name"));
+    const name = EvidenceRubySyntax.methodName(
+      statement.childForFieldName("name"),
+    );
     const target = EvidenceRubySyntax.methodName(
       statement.childForFieldName("alias"),
     );
@@ -861,7 +884,10 @@ export class EvidenceRubyFileScanner {
    * It delegates to the common alias path after enforcing static argument
    * count.
    */
-  private scanAliasCall(call: EvidenceNode, context: IEvidenceRubyScopeContext): void {
+  private scanAliasCall(
+    call: EvidenceNode,
+    context: IEvidenceRubyScopeContext,
+  ): void {
     if (context.kind === "top") return;
     const names = EvidenceRubySyntax.literalNames(
       EvidenceRubySyntax.callArguments(call),

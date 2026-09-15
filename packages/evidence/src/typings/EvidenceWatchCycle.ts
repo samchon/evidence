@@ -8,4 +8,5 @@ import type { IEvidenceWatchFailureCycle } from "../structures/IEvidenceWatchFai
  * the operational failure separately so subscribers do not mistake a transient
  * scan/configuration error for a completed check with zero violations.
  */
-export type EvidenceWatchCycle = IEvidenceWatchCheckCycle | IEvidenceWatchFailureCycle;
+export type EvidenceWatchCycle =
+  IEvidenceWatchCheckCycle | IEvidenceWatchFailureCycle;

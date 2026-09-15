@@ -53,7 +53,9 @@ export class EvidenceCAdapter implements IEvidenceAdapter<"c"> {
    * sites retain correct owners. Parser resources close on both success and
    * failure.
    */
-  public async analyze(snapshot: IEvidenceSourceSnapshot): Promise<IEvidenceInventory> {
+  public async analyze(
+    snapshot: IEvidenceSourceSnapshot,
+  ): Promise<IEvidenceInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidenceInventory = {
       schemaVersion: 1,
@@ -105,7 +107,8 @@ export class EvidenceCAdapter implements IEvidenceAdapter<"c"> {
         (session) => new EvidenceCFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError = cause instanceof EvidenceParserError ? cause : undefined;
+      const parserError =
+        cause instanceof EvidenceParserError ? cause : undefined;
       return {
         source,
         declarations: [],
@@ -519,8 +522,11 @@ export class EvidenceCAdapter implements IEvidenceAdapter<"c"> {
     documentation: IEvidenceCDocumentation,
   ): boolean {
     return this.annotationPattern(
-      EvidenceCDocumentation.read(analysis.source, documentation, documentation.id)
-        .text,
+      EvidenceCDocumentation.read(
+        analysis.source,
+        documentation,
+        documentation.id,
+      ).text,
       true,
     );
   }
@@ -530,8 +536,11 @@ export class EvidenceCAdapter implements IEvidenceAdapter<"c"> {
     documentation: IEvidenceCDocumentation,
   ): boolean {
     return this.annotationPattern(
-      EvidenceCDocumentation.read(analysis.source, documentation, documentation.id)
-        .text,
+      EvidenceCDocumentation.read(
+        analysis.source,
+        documentation,
+        documentation.id,
+      ).text,
       false,
     );
   }

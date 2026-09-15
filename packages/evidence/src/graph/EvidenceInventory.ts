@@ -31,7 +31,9 @@ import type { IEvidenceWithdrawal } from "../structures/IEvidenceWithdrawal";
  * cannot affect this index or a later selection.
  *
  * @example
- *   const inventory: EvidenceInventory = new EvidenceInventory([adapterOutput]);
+ *   const inventory: EvidenceInventory = new EvidenceInventory([
+ *     adapterOutput,
+ *   ]);
  *   const population: IEvidencePopulation = inventory.select([methodId]);
  *   const target: IEvidenceResolution = inventory.resolve(
  *     { file: "api.ts", segments: ["Client"] },
@@ -169,7 +171,10 @@ export class EvidenceInventory {
    * because missing extraction may hide another candidate or invalidate the
    * population.
    */
-  public resolve(address: IEvidenceAddress, ids: string[]): IEvidenceResolution {
+  public resolve(
+    address: IEvidenceAddress,
+    ids: string[],
+  ): IEvidenceResolution {
     const population = this.select(ids);
     const visible = new Set(population.scopes.map((unit) => unit.id));
     const hidden = new Set(population.hidden.map((unit) => unit.id));
@@ -509,7 +514,9 @@ export class EvidenceInventory {
       (source) => source.id,
     );
     for (const source of this.data.sources)
-      source.addresses = EvidenceInventoryMerge.sourceAddresses(source.addresses);
+      source.addresses = EvidenceInventoryMerge.sourceAddresses(
+        source.addresses,
+      );
     this.data.annotationRanges = EvidenceInventoryMerge.unique(
       this.data.annotationRanges,
       (location) => typia.json.stringify(location),

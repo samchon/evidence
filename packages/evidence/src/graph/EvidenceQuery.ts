@@ -57,7 +57,10 @@ export class EvidenceQuery {
    * diagnostic or success state. Aliases remain grouped under each
    * population-qualified identity.
    */
-  public list(language?: EvidenceArtifactType, kind?: EvidenceSymbol): IEvidenceListReport {
+  public list(
+    language?: EvidenceArtifactType,
+    kind?: EvidenceSymbol,
+  ): IEvidenceListReport {
     return structuredClone(
       EvidenceQueryProgrammer.list(this.context, language, kind),
     );
@@ -111,9 +114,9 @@ export class EvidenceQuery {
    * Exports independent obligation boundaries, nodes, acknowledgements, and
    * reviews.
    *
-   * EvidenceNode identities include their boundary so repeated populations retain
-   * separate coverage. Reviews remain distinct relations and never become
-   * acknowledgement edges.
+   * EvidenceNode identities include their boundary so repeated populations
+   * retain separate coverage. Reviews remain distinct relations and never
+   * become acknowledgement edges.
    */
   public graph(): IEvidenceGraphReport {
     return structuredClone(EvidenceQueryProgrammer.graph(this.context));

@@ -24,8 +24,14 @@ export async function test_csharp_failures(): Promise<void> {
   // Duplicate public types must opt into one compatible partial identity.
   const duplicate = await adapter.analyze(
     EvidenceTestSourceSnapshot.combine([
-      EvidenceTestSourceSnapshot.create("src/First.cs", "public class Sale {}\n"),
-      EvidenceTestSourceSnapshot.create("src/Second.cs", "public class Sale {}\n"),
+      EvidenceTestSourceSnapshot.create(
+        "src/First.cs",
+        "public class Sale {}\n",
+      ),
+      EvidenceTestSourceSnapshot.create(
+        "src/Second.cs",
+        "public class Sale {}\n",
+      ),
     ]),
   );
   TestValidator.equals("duplicate C# type", duplicate.complete, false);

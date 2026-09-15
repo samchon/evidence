@@ -1,4 +1,8 @@
-import { EvidenceGraph, EvidenceSwiftAdapter, EvidenceTypeScriptAdapter } from "@wrtnlabs/evidence";
+import {
+  EvidenceGraph,
+  EvidenceSwiftAdapter,
+  EvidenceTypeScriptAdapter,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 

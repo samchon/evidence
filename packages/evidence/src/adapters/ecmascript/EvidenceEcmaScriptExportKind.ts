@@ -5,4 +5,5 @@
  * resolver can distinguish local bindings, named re-exports, namespaces, and
  * stars.
  */
-export type EvidenceEcmaScriptExportKind = "local" | "named" | "namespace" | "star";
+export type EvidenceEcmaScriptExportKind =
+  "local" | "named" | "namespace" | "star";

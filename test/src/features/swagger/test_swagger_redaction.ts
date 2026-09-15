@@ -1,4 +1,8 @@
-import { EvidenceCommand, EvidenceSwaggerAdapter, EvidenceWatcher } from "@wrtnlabs/evidence";
+import {
+  EvidenceCommand,
+  EvidenceSwaggerAdapter,
+  EvidenceWatcher,
+} from "@wrtnlabs/evidence";
 import type {
   EvidenceWatchCycle,
   IEvidenceCommandResult,
@@ -93,7 +97,7 @@ export async function test_swagger_redaction(): Promise<void> {
   await EvidenceTestFileSystem.experiment(
     location,
     {
-      "evid.json": JSON.stringify({
+      "evidence.json": JSON.stringify({
         claims: [
           {
             type: "markdown",
@@ -106,15 +110,15 @@ export async function test_swagger_redaction(): Promise<void> {
     },
     async (directory: string): Promise<void> => {
       const json: IEvidenceCommandResult = await EvidenceCommand.run(
-        ["check", "--config", "evid.json", "--format", "json"],
+        ["check", "--config", "evidence.json", "--format", "json"],
         directory,
       );
       const text: IEvidenceCommandResult = await EvidenceCommand.run(
-        ["check", "--config", "evid.json", "--format", "text"],
+        ["check", "--config", "evidence.json", "--format", "text"],
         directory,
       );
       const query: IEvidenceCommandResult = await EvidenceCommand.run(
-        ["list", "--config", "evid.json", "--format", "json"],
+        ["list", "--config", "evidence.json", "--format", "json"],
         directory,
       );
       const results: IEvidenceCommandResult[] = [json, text, query];
@@ -124,7 +128,7 @@ export async function test_swagger_redaction(): Promise<void> {
       }
 
       const watcher: EvidenceWatcher = new EvidenceWatcher(
-        join(directory, "evid.json"),
+        join(directory, "evidence.json"),
         { pollIntervalMilliseconds: 20, debounceMilliseconds: 20 },
       );
       await watcher.watch(async (cycle: EvidenceWatchCycle): Promise<void> => {

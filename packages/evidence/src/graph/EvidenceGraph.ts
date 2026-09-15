@@ -419,7 +419,9 @@ class EvidenceGraphEvaluator {
    * statement so reports can explain both the selected units it covers and the
    * host that accepted responsibility for them.
    */
-  private cover(context: IEvidenceGraphReferenceContext): IEvidenceGraphObligation {
+  private cover(
+    context: IEvidenceGraphReferenceContext,
+  ): IEvidenceGraphObligation {
     const {
       claim: {
         claim,
@@ -686,8 +688,8 @@ class EvidenceGraphEvaluator {
         if (covered === undefined) continue;
         for (const unitId of edge.unitIds) covered.add(unitId);
       }
-    const hostCoverage: IEvidenceGraphHostCoverage[] = claimPopulation.units.map(
-      (host) => {
+    const hostCoverage: IEvidenceGraphHostCoverage[] =
+      claimPopulation.units.map((host) => {
         const covered = coveredByHost.get(host.id) ?? new Set<string>();
         const explained = explainedByHost.get(host.id) ?? new Set<string>();
         const coveredUnitIds = selectedUnits
@@ -725,8 +727,7 @@ class EvidenceGraphEvaluator {
           missingUnitIds: missingUnits.map((unit) => unit.id),
           explainedUnitIds,
         };
-      },
-    );
+      });
     const coveredUnitIds = selectedUnits
       .filter((unit) =>
         hostCoverage.every((host) => host.coveredUnitIds.includes(unit.id)),
@@ -1487,7 +1488,10 @@ class EvidenceGraphEvaluator {
     referenceIndex: number,
   ): void {
     if (reference.checklist !== true) return;
-    if (reference.uniqueEvidence === true || reference.singleEvidencePerSymbol === true)
+    if (
+      reference.uniqueEvidence === true ||
+      reference.singleEvidencePerSymbol === true
+    )
       throw new Error(
         `${this.label(claimIndex, referenceIndex)} combines checklist with an incompatible cardinality policy.`,
       );

@@ -1,4 +1,7 @@
-import { EvidenceBigQueryAdapter, EvidenceFingerprint } from "@wrtnlabs/evidence";
+import {
+  EvidenceBigQueryAdapter,
+  EvidenceFingerprint,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 

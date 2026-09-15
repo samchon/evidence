@@ -37,7 +37,8 @@ export interface IEvidencePrismaField {
    * Semantic field digest excluding documentation metadata.
    *
    * Review fingerprints use this value to detect changes to the field itself
-   * without treating explanatory or Evidence annotation edits as semantic drift.
+   * without treating explanatory or Evidence annotation edits as semantic
+   * drift.
    */
   digest: string;
 }

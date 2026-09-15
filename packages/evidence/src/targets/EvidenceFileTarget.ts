@@ -25,9 +25,9 @@ export namespace EvidenceFileTarget {
    *
    * A missing hash selects the file unit; a hash must be followed by an
    * accessor. The file component permits percent encoding for reserved path
-   * characters, whereas accessor parsing remains delegated to `EvidenceAccessor`.
-   * The origin must be absolute so the same citation cannot resolve differently
-   * by process working directory.
+   * characters, whereas accessor parsing remains delegated to
+   * `EvidenceAccessor`. The origin must be absolute so the same citation cannot
+   * resolve differently by process working directory.
    */
   export function parse(target: string, origin: string): IEvidenceAddress {
     const hash = target.indexOf("#");

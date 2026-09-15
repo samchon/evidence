@@ -215,7 +215,10 @@ export async function test_python_failures(): Promise<void> {
 
   // Tree-sitter syntax failures never become healthy empty inventories.
   const malformed = await adapter.analyze(
-    EvidenceTestSourceSnapshot.create("src/broken.py", "def broken(:\n    pass\n"),
+    EvidenceTestSourceSnapshot.create(
+      "src/broken.py",
+      "def broken(:\n    pass\n",
+    ),
   );
   TestValidator.equals("malformed Python source", malformed.complete, false);
   TestValidator.equals(

@@ -215,9 +215,10 @@ function semanticOperation(
   servers: OpenApi.IServer[],
   security: Record<string, string[]>[],
 ): object {
-  const output: Record<string, unknown> = EvidenceCanonicalJson.without(operation, [
-    "description",
-  ]);
+  const output: Record<string, unknown> = EvidenceCanonicalJson.without(
+    operation,
+    ["description"],
+  );
   output["servers"] = servers;
   output["security"] = normalizedSecurity(security);
   // Scheme names are JSON keys. A null prototype keeps `__proto__` as data and

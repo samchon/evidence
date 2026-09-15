@@ -7,10 +7,10 @@ import type { IEvidenceCDeclarationAddress } from "./IEvidenceCDeclarationAddres
  * Captures one supported C declaration before file-local identity
  * reconciliation.
  *
- * `EvidenceCFileScanner` creates this record without retaining a Tree-sitter node.
- * The adapter later groups compatible records by `identity`, expands their
- * public addresses, and uses `site` to retain the physical source location that
- * may host a Doxygen annotation.
+ * `EvidenceCFileScanner` creates this record without retaining a Tree-sitter
+ * node. The adapter later groups compatible records by `identity`, expands
+ * their public addresses, and uses `site` to retain the physical source
+ * location that may host a Doxygen annotation.
  */
 export interface IEvidenceCDeclaration {
   /**

@@ -7,11 +7,11 @@ import type { EvidenceCppVisibility } from "./EvidenceCppVisibility";
  * Captures one supported C++ declaration before semantic units are
  * materialized.
  *
- * EvidenceCppFileScanner records source occurrences in this form; EvidenceCppAdapter
- * groups compatible occurrences by identity, validates their declaration
- * family, and publishes the resulting unit's addresses and sites. The record
- * therefore keeps physical source facts separate from the semantic identity
- * shared by declarations, definitions, and overloads.
+ * EvidenceCppFileScanner records source occurrences in this form;
+ * EvidenceCppAdapter groups compatible occurrences by identity, validates their
+ * declaration family, and publishes the resulting unit's addresses and sites.
+ * The record therefore keeps physical source facts separate from the semantic
+ * identity shared by declarations, definitions, and overloads.
  */
 export interface IEvidenceCppDeclaration {
   /**

@@ -37,5 +37,7 @@ export interface IEvidenceLanguagesReport {
    * Each entry distinguishes filename-based grammar selection from semantic
    * extraction capabilities.
    */
-  languages: (IEvidenceSupportedLanguage | IEvidenceSupportedDatabaseLanguage)[];
+  languages: (
+    IEvidenceSupportedLanguage | IEvidenceSupportedDatabaseLanguage
+  )[];
 }

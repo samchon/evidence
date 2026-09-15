@@ -5,8 +5,9 @@ import type { IEvidenceCommentSyntax } from "../../structures/IEvidenceCommentSy
 /**
  * Provides grammar-specific Python syntax helpers without export decisions.
  *
- * EvidencePythonFileScanner uses these helpers to recognize supported declaration
- * and documentation shapes while keeping public-surface policy in the scanner.
+ * EvidencePythonFileScanner uses these helpers to recognize supported
+ * declaration and documentation shapes while keeping public-surface policy in
+ * the scanner.
  */
 export namespace EvidencePythonSyntax {
   /**
@@ -115,7 +116,9 @@ export namespace EvidencePythonSyntax {
    * Interpolated strings are omitted because runtime interpolation prevents the
    * scanner from treating their text as stable Evidence documentation.
    */
-  export function stringSyntax(node: EvidenceNode): IEvidenceCommentSyntax | undefined {
+  export function stringSyntax(
+    node: EvidenceNode,
+  ): IEvidenceCommentSyntax | undefined {
     if (
       node.type !== "string" ||
       node.descendantsOfType("interpolation").length !== 0
@@ -139,8 +142,8 @@ export namespace EvidencePythonSyntax {
   /**
    * Returns the line-comment syntax used for Python comment documentation.
    *
-   * The fixed mapping lets adjacent standalone `#` comment runs support Evidence
-   * tags with the same withdrawal behavior as supported docstrings.
+   * The fixed mapping lets adjacent standalone `#` comment runs support
+   * Evidence tags with the same withdrawal behavior as supported docstrings.
    */
   export function commentSyntax(): IEvidenceCommentSyntax {
     return {
@@ -159,7 +162,9 @@ export namespace EvidencePythonSyntax {
    * Static `+` composition and parentheses are accepted for `__all__`; any
    * dynamic value returns undefined so the scanner preserves incompleteness.
    */
-  export function literalSequence(node: EvidenceNode | null): string[] | undefined {
+  export function literalSequence(
+    node: EvidenceNode | null,
+  ): string[] | undefined {
     if (node === null) return undefined;
     if (node.type === "parenthesized_expression")
       return literalSequence(node.namedChildren[0] ?? null);
@@ -209,7 +214,9 @@ export namespace EvidencePythonSyntax {
    * Leading comments are skipped, but the first executable statement must be a
    * supported string expression for attachment to the enclosing declaration.
    */
-  export function docstring(body: EvidenceNode | null): EvidenceNode | undefined {
+  export function docstring(
+    body: EvidenceNode | null,
+  ): EvidenceNode | undefined {
     if (body === null) return undefined;
     const statement = body.namedChildren.find(
       (child) => child.type !== "comment",
@@ -227,7 +234,9 @@ export namespace EvidencePythonSyntax {
    * Bytes and f-string components are excluded because their runtime semantics
    * cannot supply stable documentation text for Evidence annotations.
    */
-  export function docstringParts(node: EvidenceNode): EvidenceNode[] | undefined {
+  export function docstringParts(
+    node: EvidenceNode,
+  ): EvidenceNode[] | undefined {
     const strings =
       node.type === "string"
         ? [node]

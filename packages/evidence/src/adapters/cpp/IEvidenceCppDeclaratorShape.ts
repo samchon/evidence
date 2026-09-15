@@ -6,17 +6,17 @@ import type { EvidenceCppDeclaratorKind } from "./EvidenceCppDeclaratorKind";
  * Describes the readable name and outer entity kind of one C++ declarator.
  *
  * EvidenceCppSyntax derives this transient tree-sitter-backed shape while
- * unwrapping a declarator. EvidenceCppFileScanner consumes it to classify callable
- * and object declarations, construct their identities, and reject
+ * unwrapping a declarator. EvidenceCppFileScanner consumes it to classify
+ * callable and object declarations, construct their identities, and reject
  * specializations that cannot use the adapter's common addressing model.
  */
 export interface IEvidenceCppDeclaratorShape {
   /**
    * Qualified declarator segments as the grammar exposes them.
    *
-   * EvidenceCppFileScanner combines this path with the enclosing scope when needed,
-   * then uses the final segment for the declaration name and the preceding
-   * segments to identify its semantic parent.
+   * EvidenceCppFileScanner combines this path with the enclosing scope when
+   * needed, then uses the final segment for the declaration name and the
+   * preceding segments to identify its semantic parent.
    */
   path: string[];
 
@@ -31,9 +31,9 @@ export interface IEvidenceCppDeclaratorShape {
   /**
    * Original declarator node retained for source-site extraction.
    *
-   * EvidenceCppFileScanner passes this node to declaration creation so the physical
-   * site follows the declarator even when an enclosing syntax node supplied the
-   * readable path.
+   * EvidenceCppFileScanner passes this node to declaration creation so the
+   * physical site follows the declarator even when an enclosing syntax node
+   * supplied the readable path.
    */
   node: EvidenceNode;
 

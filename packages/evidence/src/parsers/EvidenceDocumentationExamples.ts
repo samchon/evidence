@@ -233,7 +233,8 @@ function hideHtmlComments(
  */
 function mapMarkdownCode(input: string): boolean[] {
   const output: boolean[] = new Array<boolean>(input.length).fill(false);
-  const documentBaseline: number = EvidenceDocumentationExamples.baseline(input);
+  const documentBaseline: number =
+    EvidenceDocumentationExamples.baseline(input);
   let fenceMarker: string | undefined;
   let fenceLength: number = 0;
   let offset: number = 0;
@@ -353,9 +354,9 @@ function mark(output: boolean[], start: number, end: number): void {
 /**
  * Replaces a half-open example range while retaining newline bytes and length.
  *
- * EvidenceDocumentation has already mapped this text to physical source offsets, so
- * deleting content or normalizing line endings would corrupt every subsequent
- * diagnostic range.
+ * EvidenceDocumentation has already mapped this text to physical source
+ * offsets, so deleting content or normalizing line endings would corrupt every
+ * subsequent diagnostic range.
  */
 function hide(characters: string[], start: number, end: number): void {
   for (let index: number = start; index < end; ++index)

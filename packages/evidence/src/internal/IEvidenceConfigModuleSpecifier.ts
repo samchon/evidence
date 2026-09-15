@@ -4,9 +4,9 @@ import type { EvidenceConfigModuleMode } from "./EvidenceConfigModuleMode";
  * Statically discoverable configuration dependency before filesystem
  * resolution.
  *
- * EvidenceConfigDependencyScanner retains the loading mechanism beside the authored
- * specifier because conditional package exports can map the same text to
- * different physical files.
+ * EvidenceConfigDependencyScanner retains the loading mechanism beside the
+ * authored specifier because conditional package exports can map the same text
+ * to different physical files.
  */
 export interface IEvidenceConfigModuleSpecifier {
   /**

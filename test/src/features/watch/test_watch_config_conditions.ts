@@ -211,7 +211,8 @@ export async function test_watch_config_conditions(): Promise<void> {
       const logicalDirectory: string = join(directory, "logical/config-link");
       await symlink(physicalDirectory, logicalDirectory, "junction");
       const configFile: string = join(logicalDirectory, "evidence.config.ts");
-      const config: IEvidenceConfig = await EvidenceConfigLoader.load(configFile);
+      const config: IEvidenceConfig =
+        await EvidenceConfigLoader.load(configFile);
       TestValidator.equals(
         "physical config module mode",
         config.severity,

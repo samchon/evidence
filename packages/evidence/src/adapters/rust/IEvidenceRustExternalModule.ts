@@ -1,9 +1,9 @@
 /**
  * Records a file-backed Rust module awaiting selected-source resolution.
  *
- * EvidenceRustModuleResolver maps the declaration to an included file or reports an
- * incomplete crate graph instead of guessing filesystem or build-script
- * behavior.
+ * EvidenceRustModuleResolver maps the declaration to an included file or
+ * reports an incomplete crate graph instead of guessing filesystem or
+ * build-script behavior.
  */
 export interface IEvidenceRustExternalModule {
   /**

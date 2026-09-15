@@ -30,7 +30,10 @@ export class EvidenceSwiftFileScanner {
    *
    * Declaration scanning uses that offset to attach immediately preceding DocC.
    */
-  private readonly documentation = new Map<number, IEvidenceSwiftDocumentation>();
+  private readonly documentation = new Map<
+    number,
+    IEvidenceSwiftDocumentation
+  >();
 
   /**
    * Unsupported syntax that prevents a complete denominator.

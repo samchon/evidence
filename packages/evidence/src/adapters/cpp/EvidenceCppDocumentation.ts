@@ -8,7 +8,8 @@ import type { IEvidenceCppDocumentation } from "./IEvidenceCppDocumentation";
  * Reads C++ Doxygen documentation while masking embedded source examples.
  *
  * The C++ adapter delegates range mapping to the shared reader, then removes
- * example content so code-like Evidence tags cannot create documentation claims.
+ * example content so code-like Evidence tags cannot create documentation
+ * claims.
  */
 export namespace EvidenceCppDocumentation {
   /**

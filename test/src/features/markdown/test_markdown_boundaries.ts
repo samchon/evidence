@@ -1,5 +1,9 @@
 import { EvidenceMarkdownAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceDeclaration, IEvidenceHost, IEvidenceUnit } from "@wrtnlabs/evidence";
+import type {
+  IEvidenceDeclaration,
+  IEvidenceHost,
+  IEvidenceUnit,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -9,8 +13,8 @@ import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSna
  * Excludes Markdown syntax examples from heading and annotation discovery.
  *
  * Fence, inline-code, rendered-code, MDX-template, indentation, and comment
- * regions may contain realistic Evidence syntax without declaring a public unit or
- * host.
+ * regions may contain realistic Evidence syntax without declaring a public unit
+ * or host.
  *
  * 1. Analyze one visible heading plus heading and annotation syntax in each
  *    excluded region.
@@ -184,7 +188,9 @@ export async function test_markdown_boundaries(): Promise<void> {
 
   TestValidator.equals(
     "only real headings materialize",
-    inventory.units.map((unit: IEvidenceUnit): string => unit.name).sort(compare),
+    inventory.units
+      .map((unit: IEvidenceUnit): string => unit.name)
+      .sort(compare),
     [
       "After backticked rendered close",
       "After close then open",
@@ -223,10 +229,11 @@ export async function test_markdown_boundaries(): Promise<void> {
   const tagged: IEvidenceUnit | undefined = inventory.units.find(
     (unit: IEvidenceUnit): boolean => unit.identity.at(-1) === "tagged-comment",
   );
-  const declaration: IEvidenceDeclaration | undefined = inventory.declarations.find(
-    (entry: IEvidenceDeclaration): boolean =>
-      entry.target === "docs/spec.md#heading",
-  );
+  const declaration: IEvidenceDeclaration | undefined =
+    inventory.declarations.find(
+      (entry: IEvidenceDeclaration): boolean =>
+        entry.target === "docs/spec.md#heading",
+    );
   const host: IEvidenceHost | undefined = inventory.hosts.find(
     (entry: IEvidenceHost): boolean => entry.id === declaration?.hostId,
   );

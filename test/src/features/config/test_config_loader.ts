@@ -1,4 +1,7 @@
-import { evaluateTypeScriptConfig, EvidenceConfigLoader } from "@wrtnlabs/evidence";
+import {
+  evaluateTypeScriptConfig,
+  EvidenceConfigLoader,
+} from "@wrtnlabs/evidence";
 import type { IEvidenceConfig } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
@@ -70,7 +73,9 @@ export async function test_config_loader(): Promise<void> {
         const filename = `evidence.config.${extension}`;
         await EvidenceTestFileSystem.save(directory, { [filename]: source });
 
-        const output = await EvidenceConfigLoader.load(join(directory, filename));
+        const output = await EvidenceConfigLoader.load(
+          join(directory, filename),
+        );
 
         TestValidator.equals(
           `${extension} imported globs`,

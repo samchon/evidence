@@ -121,7 +121,9 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
             severity: "error",
             inventory: reference,
             unitIds: [target.id],
-            resolutions: [EvidenceTestGraph.resolved(acceptedExclusion, target)],
+            resolutions: [
+              EvidenceTestGraph.resolved(acceptedExclusion, target),
+            ],
           },
         ],
       },

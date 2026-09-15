@@ -4,7 +4,11 @@ import {
   EvidenceMarkdownAdapter,
   EvidenceTypeScriptAdapter,
 } from "@wrtnlabs/evidence";
-import type { IEvidenceGraphReference, IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+import type {
+  IEvidenceGraphReference,
+  IEvidenceInventory,
+  IEvidenceUnit,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -83,9 +87,11 @@ export async function test_graph_review_policy(): Promise<void> {
     severity: "error",
     inventory: requirements,
     unitIds: [pricing.id],
-    resolutions: await EvidenceTestGraph.resolveDeclarations(claims, requirements, [
-      pricing.id,
-    ]),
+    resolutions: await EvidenceTestGraph.resolveDeclarations(
+      claims,
+      requirements,
+      [pricing.id],
+    ),
     reviewResolutions: await EvidenceTestGraph.resolveReviews(
       claims,
       requirements,
@@ -204,7 +210,10 @@ export async function test_graph_review_policy(): Promise<void> {
   );
 }
 
-function requireUnit(inventory: IEvidenceInventory, identity: string): IEvidenceUnit {
+function requireUnit(
+  inventory: IEvidenceInventory,
+  identity: string,
+): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === identity || candidate.identity.at(-1) === identity,

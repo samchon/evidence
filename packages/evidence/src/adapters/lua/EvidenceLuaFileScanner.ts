@@ -204,7 +204,10 @@ export class EvidenceLuaFileScanner {
    * function aliases retain identity so publication can preserve shared
    * ownership.
    */
-  private value(node: EvidenceNode, site: EvidenceNode): IEvidenceLuaValue | undefined {
+  private value(
+    node: EvidenceNode,
+    site: EvidenceNode,
+  ): IEvidenceLuaValue | undefined {
     if (node.type === "parenthesized_expression") {
       const child = node.namedChildren.find((item) => item.type !== "comment");
       return child === undefined ? undefined : this.value(child, site);
@@ -552,7 +555,10 @@ export class EvidenceLuaFileScanner {
    * table, using `self`, or reaching an unknown field requires runtime alias
    * analysis.
    */
-  private tableReferences(container: EvidenceNode, site: EvidenceNode): boolean {
+  private tableReferences(
+    container: EvidenceNode,
+    site: EvidenceNode,
+  ): boolean {
     for (const node of container.descendantsOfType([
       "identifier",
       "dot_index_expression",
@@ -711,7 +717,10 @@ export class EvidenceLuaFileScanner {
    * attachment so a detached comment cannot annotate a later public
    * declaration.
    */
-  private attach(node: EvidenceNode, declaration: IEvidenceLuaDeclaration): void {
+  private attach(
+    node: EvidenceNode,
+    declaration: IEvidenceLuaDeclaration,
+  ): void {
     const previous = node.previousNamedSibling;
     if (
       previous?.type !== "comment" ||

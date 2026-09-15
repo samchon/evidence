@@ -84,7 +84,10 @@ export async function test_source_paths(): Promise<void> {
       );
       TestValidator.predicate(
         "Windows parent escape",
-        !EvidenceSourcePath.contains("C:/project", "C:/project/../outside/a.ts"),
+        !EvidenceSourcePath.contains(
+          "C:/project",
+          "C:/project/../outside/a.ts",
+        ),
       );
       TestValidator.predicate(
         "POSIX parent escape",

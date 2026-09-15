@@ -267,7 +267,11 @@ export namespace EvidenceInventoryMerge {
    * Marking the output incomplete prevents graph evaluation from treating a
    * reduced or arbitrarily selected merged population as successful.
    */
-  function conflict(output: IEvidenceInventory, kind: string, id: string): void {
+  function conflict(
+    output: IEvidenceInventory,
+    kind: string,
+    id: string,
+  ): void {
     output.complete = false;
     output.diagnostics.push({
       code: "inventory-conflict",

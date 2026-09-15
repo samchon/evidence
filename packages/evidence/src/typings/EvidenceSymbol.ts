@@ -11,4 +11,7 @@ import type { EvidenceProgrammingSymbol } from "./EvidenceProgrammingSymbol";
  * must retain the accompanying artifact type when interpreting this value.
  */
 export type EvidenceSymbol =
-  EvidenceProgrammingSymbol | EvidenceDatabaseSymbol | EvidenceMarkdownSymbol | "operation";
+  | EvidenceProgrammingSymbol
+  | EvidenceDatabaseSymbol
+  | EvidenceMarkdownSymbol
+  | "operation";

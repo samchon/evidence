@@ -106,8 +106,8 @@ export interface IEvidenceReferenceBase<
   /**
    * Require a matching review with the current target content fingerprint.
    *
-   * - Evidence needs evidenceReview; exclusions need evidenceExcludeReview. Reviews
-   *   do not provide coverage.
+   * - Evidence needs evidenceReview; exclusions need evidenceExcludeReview.
+   *   Reviews do not provide coverage.
    * - Reviews carry a #-prefixed fingerprint. Missing or stale reviews fail the
    *   obligation; diagnostics provide the expected fingerprint.
    * - Fingerprints belong to the cited unit and its structural subtree,

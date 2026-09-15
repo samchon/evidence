@@ -35,7 +35,12 @@ export namespace EvidenceTestDocumentation {
     return {
       content,
       host,
-      documentation: EvidenceDocumentation.read(content, host.id, range, syntax),
+      documentation: EvidenceDocumentation.read(
+        content,
+        host.id,
+        range,
+        syntax,
+      ),
     };
   }
 }

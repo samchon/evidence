@@ -48,7 +48,10 @@ export async function test_dbml_reference_graphs(): Promise<void> {
   for (const unit of selected) {
     if (unit === undefined) throw new Error("Expected each DBML selector.");
     const target = `./schema.dbml#${EvidenceAccessor.format(unit.identity)}`;
-    const fingerprint = EvidenceFingerprint.inspect(reference, unit.id).fingerprint;
+    const fingerprint = EvidenceFingerprint.inspect(
+      reference,
+      unit.id,
+    ).fingerprint;
     for (const kind of [
       "evidence",
       "evidenceReview",

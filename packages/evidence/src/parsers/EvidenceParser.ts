@@ -91,7 +91,9 @@ export class EvidenceParser {
    * `parse`.
    */
   public constructor(options: IEvidenceParserOptions = {}) {
-    this.slots = new EvidenceParserSlots(typia.assert(options).concurrency ?? 4);
+    this.slots = new EvidenceParserSlots(
+      typia.assert(options).concurrency ?? 4,
+    );
   }
 
   /**

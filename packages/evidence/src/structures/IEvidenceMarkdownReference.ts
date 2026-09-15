@@ -37,7 +37,8 @@ export interface IEvidenceMarkdownReference extends IEvidenceReferenceBase<
    * - Hosts without tags still owe every item.
    * - Positive evidence answers only the named item, with no descendant coverage.
    *   Aggregate targets naming no selected item are rejected.
-   * - Exclusions retain descendant coverage unless noEvidenceExclude refuses them.
+   * - Exclusions retain descendant coverage unless noEvidenceExclude refuses
+   *   them.
    * - Duplicates and conflicts are evaluated per host. Different hosts may give
    *   different answers to the same item.
    * - Tags without a selected host answer nothing here. Report them only if no

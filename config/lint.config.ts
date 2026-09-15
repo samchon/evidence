@@ -4,7 +4,7 @@ import type { ITtscLintConfig } from "@ttsc/lint";
 /**
  * Shared compile errors inherited by each project's lint.config.ts.
  *
- * Adapted from samchon/ttsc's Evid benchmark shared configuration, with
+ * Adapted from samchon/ttsc's Evidence benchmark shared configuration, with
  * additional restrictions on any, assertions, unsafe values, and conditions.
  * Prettier owns formatting; every enabled lint rule fails the compiler.
  */
@@ -144,7 +144,7 @@ export default {
     "typescript/unbound-method": "error",
     "typescript/use-unknown-in-catch-callback-variable": "error",
 
-    // EvidNode API and runtime traps.
+    // EvidenceNode API and runtime traps.
     "unicorn/error-message": "error",
     "unicorn/new-for-builtins": "error",
     "unicorn/no-await-in-promise-methods": "error",

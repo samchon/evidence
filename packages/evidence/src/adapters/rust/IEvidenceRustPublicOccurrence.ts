@@ -34,7 +34,8 @@ export interface IEvidenceRustPublicOccurrence {
   /**
    * Crate-relative public accessor segments for this occurrence.
    *
-   * Each alias contributes a separate path without duplicating the Evidence unit.
+   * Each alias contributes a separate path without duplicating the Evidence
+   * unit.
    */
   publicPath: string[];
 }

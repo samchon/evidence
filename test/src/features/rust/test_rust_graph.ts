@@ -206,7 +206,9 @@ async function fieldInventory(second: string): Promise<IEvidenceInventory> {
   );
 }
 
-async function implementationInventory(bound: string): Promise<IEvidenceInventory> {
+async function implementationInventory(
+  bound: string,
+): Promise<IEvidenceInventory> {
   return new EvidenceRustAdapter().analyze(
     EvidenceTestSourceSnapshot.create(
       "src/implementation.rs",
@@ -224,7 +226,10 @@ async function implementationInventory(bound: string): Promise<IEvidenceInventor
   );
 }
 
-function requireUnit(inventory: IEvidenceInventory, name: string): IEvidenceUnit {
+function requireUnit(
+  inventory: IEvidenceInventory,
+  name: string,
+): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === name || candidate.identity.at(-1) === name,

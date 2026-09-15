@@ -5,8 +5,8 @@ import type { EvidenceCppAliasKind } from "./EvidenceCppAliasKind";
  * Records one statically readable C++ namespace alias or using declaration.
  *
  * EvidenceCppFileScanner emits this physical record alongside declarations, and
- * EvidenceCppAdapter resolves public aliases after it materializes semantic units.
- * Its scoped target and site let that later pass publish alias-derived
+ * EvidenceCppAdapter resolves public aliases after it materializes semantic
+ * units. Its scoped target and site let that later pass publish alias-derived
  * addresses without confusing the alias with the selected target unit.
  */
 export interface IEvidenceCppAlias {

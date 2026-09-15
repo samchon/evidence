@@ -5,4 +5,5 @@
  * local root or must follow a named, namespace, or star import within the
  * snapshot.
  */
-export type EvidencePythonBindingKind = "local" | "named" | "namespace" | "star";
+export type EvidencePythonBindingKind =
+  "local" | "named" | "namespace" | "star";

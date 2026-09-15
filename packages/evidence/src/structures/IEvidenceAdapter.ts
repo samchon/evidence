@@ -18,7 +18,8 @@ import type { IEvidenceSourceSnapshot } from "./IEvidenceSourceSnapshot";
  * escape in output.
  *
  * @example
- *   const adapter: IEvidenceAdapter<"typescript"> = new EvidenceTypeScriptAdapter();
+ *   const adapter: IEvidenceAdapter<"typescript"> =
+ *     new EvidenceTypeScriptAdapter();
  *   const inventory: IEvidenceInventory = await adapter.analyze(snapshot);
  *   // An incomplete inventory must not be accepted as a smaller full population.
  */

@@ -35,13 +35,13 @@ export async function test_watch_json_config(): Promise<void> {
   await EvidenceTestFileSystem.experiment(
     "json-watch",
     {
-      "evid.json": content,
+      "evidence.json": content,
       "source.md":
         "# Source\n<!-- @evidence target.md#target Implements the target. -->\n",
       "target.md": "# Target\n",
     },
     async (directory) => {
-      const file = join(directory, "evid.json");
+      const file = join(directory, "evidence.json");
       const watcher = new EvidenceWatcher(file, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
@@ -54,7 +54,9 @@ export async function test_watch_json_config(): Promise<void> {
               cycle.status,
               "complete",
             );
-            await EvidenceTestFileSystem.save(directory, { "evid.json": "{" });
+            await EvidenceTestFileSystem.save(directory, {
+              "evidence.json": "{",
+            });
           } else if (cycle.cycle === 2) {
             TestValidator.equals(
               "malformed JSON fails",
@@ -64,7 +66,9 @@ export async function test_watch_json_config(): Promise<void> {
             await unlink(file);
           } else if (cycle.cycle === 3) {
             TestValidator.equals("deleted JSON fails", cycle.status, "failed");
-            await EvidenceTestFileSystem.save(directory, { "evid.json": content });
+            await EvidenceTestFileSystem.save(directory, {
+              "evidence.json": content,
+            });
           } else {
             TestValidator.equals(
               "recreated JSON recovers",

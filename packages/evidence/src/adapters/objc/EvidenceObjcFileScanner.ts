@@ -40,7 +40,10 @@ export class EvidenceObjcFileScanner {
    * Offset lookup supports adjacency checks without changing source
    * coordinates.
    */
-  private readonly documentation = new Map<number, IEvidenceObjcDocumentation>();
+  private readonly documentation = new Map<
+    number,
+    IEvidenceObjcDocumentation
+  >();
 
   /**
    * Failures that prevent a complete public denominator.
@@ -81,7 +84,9 @@ export class EvidenceObjcFileScanner {
     );
     const guard = population.length === 1 ? population[0] : undefined;
     const guarded =
-      guard === undefined ? undefined : EvidenceCSyntax.guardedDeclarations(guard);
+      guard === undefined
+        ? undefined
+        : EvidenceCSyntax.guardedDeclarations(guard);
     for (const item of items)
       if (guarded !== undefined && item.startIndex === guard?.startIndex)
         for (const child of guarded) this.topLevel(child);

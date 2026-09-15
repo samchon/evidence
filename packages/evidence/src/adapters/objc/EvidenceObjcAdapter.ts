@@ -44,7 +44,9 @@ export class EvidenceObjcAdapter implements IEvidenceAdapter<"objc"> {
    * parser failures retain incomplete state. The runtime closes after accepted
    * scans settle.
    */
-  public async analyze(snapshot: IEvidenceSourceSnapshot): Promise<IEvidenceInventory> {
+  public async analyze(
+    snapshot: IEvidenceSourceSnapshot,
+  ): Promise<IEvidenceInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidenceInventory = {
       schemaVersion: 1,
@@ -103,7 +105,8 @@ export class EvidenceObjcAdapter implements IEvidenceAdapter<"objc"> {
         (session) => new EvidenceObjcFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError = cause instanceof EvidenceParserError ? cause : undefined;
+      const parserError =
+        cause instanceof EvidenceParserError ? cause : undefined;
       return {
         source,
         declarations: [],

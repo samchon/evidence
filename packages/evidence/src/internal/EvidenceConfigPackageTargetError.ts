@@ -2,8 +2,8 @@
  * Marks one invalid package-map target that an array alternative may skip.
  *
  * Node permits array fallbacks after target-validation failures but still
- * rejects malformed condition objects. EvidenceConfigDependencyScanner uses this
- * error boundary to preserve that distinction without matching diagnostic
+ * rejects malformed condition objects. EvidenceConfigDependencyScanner uses
+ * this error boundary to preserve that distinction without matching diagnostic
  * text.
  */
 export class EvidenceConfigPackageTargetError extends Error {

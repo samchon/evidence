@@ -64,7 +64,9 @@ export namespace EvidenceGoSyntax {
     };
   }
 
-  export function literal(node: EvidenceNode): IEvidenceCommentSyntax | undefined {
+  export function literal(
+    node: EvidenceNode,
+  ): IEvidenceCommentSyntax | undefined {
     if (node.type === "interpreted_string_literal")
       return {
         opening: '"',

@@ -1,4 +1,8 @@
-import { EvidenceFingerprint, EvidenceInventory, EvidenceScalaAdapter } from "@wrtnlabs/evidence";
+import {
+  EvidenceFingerprint,
+  EvidenceInventory,
+  EvidenceScalaAdapter,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
@@ -79,7 +83,8 @@ export async function test_scala_exports(): Promise<void> {
   TestValidator.notEquals(
     "target edit invalidates exported fingerprint",
     EvidenceFingerprint.inspect(inventory, run.id).fingerprint,
-    EvidenceFingerprint.inspect(await adapter.analyze(changed), run.id).fingerprint,
+    EvidenceFingerprint.inspect(await adapter.analyze(changed), run.id)
+      .fingerprint,
   );
   const withdrawn = structuredClone(sources);
   const originalSource = withdrawn.files[1];

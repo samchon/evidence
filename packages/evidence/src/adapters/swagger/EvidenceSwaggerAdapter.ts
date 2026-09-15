@@ -30,8 +30,8 @@ import type { IEvidenceUnitSite } from "../../structures/IEvidenceUnitSite";
  * Local snapshots and explicitly configured remote documents pass through the
  * same normalization and materialization path. Each method/path operation
  * retains its own identity even without a description, while supported
- * description spans map annotations back to source coordinates. EvidenceDocument
- * failures remain incomplete.
+ * description spans map annotations back to source coordinates.
+ * EvidenceDocument failures remain incomplete.
  */
 export class EvidenceSwaggerAdapter implements IEvidenceAdapter<"swagger"> {
   /**
@@ -52,7 +52,9 @@ export class EvidenceSwaggerAdapter implements IEvidenceAdapter<"swagger"> {
    * rather than treating failed normalization as a document with no
    * operations.
    */
-  public async analyze(snapshot: IEvidenceSourceSnapshot): Promise<IEvidenceInventory> {
+  public async analyze(
+    snapshot: IEvidenceSourceSnapshot,
+  ): Promise<IEvidenceInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory = this.inventory(input);
     if (input.files.length === 0)
@@ -314,8 +316,8 @@ export class EvidenceSwaggerAdapter implements IEvidenceAdapter<"swagger"> {
   /**
    * Converts an unknown local analysis failure into diagnostic text.
    *
-   * Remote load failures use EvidenceSwaggerRemoteReader's credential-safe boundary
-   * before they reach this adapter.
+   * Remote load failures use EvidenceSwaggerRemoteReader's credential-safe
+   * boundary before they reach this adapter.
    */
   private message(cause: unknown): string {
     return cause instanceof Error ? cause.message : String(cause);

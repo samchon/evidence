@@ -99,7 +99,8 @@ export async function test_rust_modules(): Promise<void> {
     inventory.addresses
       .filter((address) => address.unitId === sale.id)
       .map(
-        (address) => `${address.file}#${EvidenceAccessor.format(address.segments)}`,
+        (address) =>
+          `${address.file}#${EvidenceAccessor.format(address.segments)}`,
       )
       .sort(compare),
     [
@@ -119,7 +120,8 @@ export async function test_rust_modules(): Promise<void> {
     inventory.addresses
       .filter((address) => address.unitId === secret.id)
       .map(
-        (address) => `${address.file}#${EvidenceAccessor.format(address.segments)}`,
+        (address) =>
+          `${address.file}#${EvidenceAccessor.format(address.segments)}`,
       )
       .sort(compare),
     ["/project/src/hidden.rs#Secret", "/project/src/lib.rs#PublicSecret"],
@@ -135,7 +137,8 @@ export async function test_rust_modules(): Promise<void> {
     inventory.addresses
       .filter((address) => address.unitId === detail.id)
       .map(
-        (address) => `${address.file}#${EvidenceAccessor.format(address.segments)}`,
+        (address) =>
+          `${address.file}#${EvidenceAccessor.format(address.segments)}`,
       )
       .sort(compare),
     [

@@ -51,7 +51,9 @@ export class EvidenceGoAdapter implements IEvidenceAdapter<"go"> {
    * invocation closes its parser on every path before returning a serializable
    * inventory.
    */
-  public async analyze(snapshot: IEvidenceSourceSnapshot): Promise<IEvidenceInventory> {
+  public async analyze(
+    snapshot: IEvidenceSourceSnapshot,
+  ): Promise<IEvidenceInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidenceInventory = {
       schemaVersion: 1,
@@ -106,7 +108,8 @@ export class EvidenceGoAdapter implements IEvidenceAdapter<"go"> {
         (session) => new EvidenceGoFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError = cause instanceof EvidenceParserError ? cause : undefined;
+      const parserError =
+        cause instanceof EvidenceParserError ? cause : undefined;
       return {
         source,
         directory: source.physicalPath.replace(/[\\/][^\\/]*$/u, ""),

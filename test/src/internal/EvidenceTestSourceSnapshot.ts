@@ -1,4 +1,7 @@
-import type { IEvidenceSourceDiagnostic, IEvidenceSourceSnapshot } from "@wrtnlabs/evidence";
+import type {
+  IEvidenceSourceDiagnostic,
+  IEvidenceSourceSnapshot,
+} from "@wrtnlabs/evidence";
 import { createHash } from "node:crypto";
 
 /**

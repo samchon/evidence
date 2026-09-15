@@ -1,4 +1,7 @@
-import { EvidenceCppAdapter, EvidenceLanguageRegistry } from "@wrtnlabs/evidence";
+import {
+  EvidenceCppAdapter,
+  EvidenceLanguageRegistry,
+} from "@wrtnlabs/evidence";
 import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
@@ -178,7 +181,10 @@ export async function test_cpp_units(): Promise<void> {
   TestValidator.equals("C++ enumerator parent", ready.parentId, state.id);
 }
 
-function requireUnit(inventory: IEvidenceInventory, identity: string): IEvidenceUnit {
+function requireUnit(
+  inventory: IEvidenceInventory,
+  identity: string,
+): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.join(".") === identity,
   );

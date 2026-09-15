@@ -19,7 +19,10 @@ import {
   EvidenceTypeScriptAdapter,
   EvidenceZigAdapter,
 } from "@wrtnlabs/evidence";
-import type { EvidenceProgrammingSymbol, IEvidenceWithdrawal } from "@wrtnlabs/evidence";
+import type {
+  EvidenceProgrammingSymbol,
+  IEvidenceWithdrawal,
+} from "@wrtnlabs/evidence";
 import { dedent } from "@typia/utils";
 
 import { EvidenceLuaCertificationFixture } from "./EvidenceLuaCertificationFixture";

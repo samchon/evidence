@@ -16,8 +16,8 @@ export interface IEvidenceCSharpFileAnalysis {
   /**
    * Identifies the source snapshot from which this extraction was produced.
    *
-   * EvidenceCSharpAdapter uses its physical path for diagnostics and hosts and its
-   * configured addresses when publishing declaration accessors.
+   * EvidenceCSharpAdapter uses its physical path for diagnostics and hosts and
+   * its configured addresses when publishing declaration accessors.
    */
   source: IEvidenceSourceFile;
 

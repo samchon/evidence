@@ -4,7 +4,10 @@ import { randomUUID } from "node:crypto";
 import { readdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { EvidenceTreeSitterAssetCache, EvidenceTreeSitterAssets } from "@wrtnlabs/evidence";
+import {
+  EvidenceTreeSitterAssetCache,
+  EvidenceTreeSitterAssets,
+} from "@wrtnlabs/evidence";
 import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
 import { EvidenceTestParserError } from "../../internal/EvidenceTestParserError";
 
@@ -28,7 +31,7 @@ import { EvidenceTestParserError } from "../../internal/EvidenceTestParserError"
  * 4. Restore network access and require one repair download, successful offline
  *    reuse afterward, and no transient files beside the verified cache entry.
  * 5. Omit cache overrides from a project working directory and require the grammar
- *    below that project's `node_modules/.cache/evid` directory.
+ *    below that project's `node_modules/.cache/evidence` directory.
  */
 export async function test_parser_assets(): Promise<void> {
   const original = new EvidenceTreeSitterAssets();
@@ -118,7 +121,13 @@ export async function test_parser_assets(): Promise<void> {
     TestValidator.equals(
       "project-local default cache",
       await readdir(
-        join(projectDirectory, "node_modules", ".cache", "evid", "grammars-v1"),
+        join(
+          projectDirectory,
+          "node_modules",
+          ".cache",
+          "evidence",
+          "grammars-v1",
+        ),
       ),
       [`${String(grammar.wasm.sha256)}.wasm`],
     );

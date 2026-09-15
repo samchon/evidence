@@ -19,9 +19,9 @@ export interface IEvidencePrismaCacheEntry {
   /**
    * Stable parser failure for the cached input when parsing failed.
    *
-   * `EvidencePrismaModelLoader` rethrows this remembered diagnostic for the same
-   * cache key so repeated scans do not hide or reformat a deterministic parse
-   * error.
+   * `EvidencePrismaModelLoader` rethrows this remembered diagnostic for the
+   * same cache key so repeated scans do not hide or reformat a deterministic
+   * parse error.
    */
   problem?: string;
 }

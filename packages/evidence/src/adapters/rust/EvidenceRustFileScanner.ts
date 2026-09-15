@@ -47,12 +47,15 @@ const INERT_ATTRIBUTES = new Set([
  * file.
  *
  * The scanner deliberately retains node-free records because
- * EvidenceRustModuleResolver must continue crate, import, and impl resolution after
- * the parse session closes.
+ * EvidenceRustModuleResolver must continue crate, import, and impl resolution
+ * after the parse session closes.
  */
 export class EvidenceRustFileScanner {
   private readonly declarations: IEvidenceRustDeclaration[] = [];
-  private readonly documentation = new Map<string, IEvidenceRustDocumentation>();
+  private readonly documentation = new Map<
+    string,
+    IEvidenceRustDocumentation
+  >();
   private readonly carrierDocumentation = new Map<
     string,
     IEvidenceRustDocumentation
@@ -753,7 +756,8 @@ export class EvidenceRustFileScanner {
       if (EvidenceRustSyntax.attributeName(attribute) !== "doc") continue;
       if (!/^#!?\[\s*doc\s*=/u.test(attribute.text)) continue;
       const value = EvidenceRustSyntax.attributeValue(attribute);
-      const syntax = value === null ? undefined : EvidenceRustSyntax.string(value);
+      const syntax =
+        value === null ? undefined : EvidenceRustSyntax.string(value);
       if (value === null || syntax === undefined) {
         this.problem(
           "rust-doc-attribute",
@@ -788,7 +792,10 @@ export class EvidenceRustFileScanner {
     }
   }
 
-  private inspectAttributes(item: EvidenceNode, supplied?: EvidenceNode[]): void {
+  private inspectAttributes(
+    item: EvidenceNode,
+    supplied?: EvidenceNode[],
+  ): void {
     for (const attribute of supplied ?? EvidenceRustSyntax.attributes(item)) {
       if (attribute.type !== "attribute_item") continue;
       const name = EvidenceRustSyntax.attributeName(attribute);

@@ -208,8 +208,8 @@ export namespace EvidenceMarkdownSyntax {
   /**
    * Maps one supported ATX depth to its public Markdown selector.
    *
-   * Only headings that Evidence materializes as units have selectors; other depths
-   * fail here instead of silently receiving a public symbol.
+   * Only headings that Evidence materializes as units have selectors; other
+   * depths fail here instead of silently receiving a public symbol.
    */
   export function symbol(level: number): EvidenceMarkdownSymbol {
     switch (level) {

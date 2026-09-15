@@ -1,8 +1,8 @@
 /**
  * Connects a Go documentation carrier to one physical declaration site.
  *
- * EvidenceGoFileScanner establishes this adjacency, and EvidenceGoAdapter later maps
- * the local declaration to its package-wide unit without transferring the
+ * EvidenceGoFileScanner establishes this adjacency, and EvidenceGoAdapter later
+ * maps the local declaration to its package-wide unit without transferring the
  * comment.
  */
 export interface IEvidenceGoDocumentationAttachment {

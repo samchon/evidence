@@ -48,8 +48,11 @@ export class EvidencePostgresqlAdapter implements IEvidenceAdapter<"postgresql">
    * fingerprint layer avoids making review metadata invalidate the declaration
    * it reviews.
    */
-  public async analyze(snapshot: IEvidenceSourceSnapshot): Promise<IEvidenceInventory> {
-    const inventory: IEvidenceInventory = await this.materializer.analyze(snapshot);
+  public async analyze(
+    snapshot: IEvidenceSourceSnapshot,
+  ): Promise<IEvidenceInventory> {
+    const inventory: IEvidenceInventory =
+      await this.materializer.analyze(snapshot);
     EvidencePostgresqlFingerprint.apply(inventory);
     return inventory;
   }

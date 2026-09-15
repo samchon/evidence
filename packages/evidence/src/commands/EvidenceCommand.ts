@@ -94,7 +94,7 @@ export namespace EvidenceCommand {
       if (token === "-w" || token === "--watch") {
         if (operation !== "check")
           throw new EvidenceCommandError(
-            `${token} is available only to evid check.`,
+            `${token} is available only to evidence check.`,
           );
         if (watch)
           throw new EvidenceCommandError("The watch flag was provided twice.");
@@ -104,7 +104,7 @@ export namespace EvidenceCommand {
       if (!token.startsWith("-")) {
         if (operation !== "inspect")
           throw new EvidenceCommandError(
-            `Unexpected argument '${token}' for evid ${operation}.`,
+            `Unexpected argument '${token}' for evidence ${operation}.`,
           );
         if (target !== undefined)
           throw new EvidenceCommandError(
@@ -121,7 +121,7 @@ export namespace EvidenceCommand {
         throw new EvidenceCommandError(`Unknown Evidence argument '${token}'.`);
       if (!optionAllowed(operation, key))
         throw new EvidenceCommandError(
-          `${token} is not available to evid ${operation}.`,
+          `${token} is not available to evidence ${operation}.`,
         );
       if (values.has(key))
         throw new EvidenceCommandError(`Option '${token}' was provided twice.`);
@@ -178,7 +178,7 @@ export namespace EvidenceCommand {
         !EvidenceArtifactTypes.isSupported(language)
       )
         throw new EvidenceCommandError(
-          `Unknown evid artifact type '${language}'. Use a type backed by a shipped adapter.`,
+          `Unknown evidence artifact type '${language}'. Use a type backed by a shipped adapter.`,
         );
       const kind = values.get("kind");
       if (kind !== undefined && !typia.is<EvidenceSymbol>(kind))
@@ -229,7 +229,7 @@ export namespace EvidenceCommand {
     try {
       parsed = parse(args);
     } catch (cause) {
-      return failureResult(cause, "Run 'evid --help' for valid syntax.");
+      return failureResult(cause, "Run 'evidence --help' for valid syntax.");
     }
 
     if (parsed.operation === "help")
@@ -240,7 +240,7 @@ export namespace EvidenceCommand {
       } catch (cause) {
         return failureResult(
           cause,
-          "Restore the installed evid package manifest.",
+          "Restore the installed evidence package manifest.",
         );
       }
     }
@@ -249,7 +249,7 @@ export namespace EvidenceCommand {
     if (parsed.operation === "check" && parsed.watch === true)
       return failureResult(
         new Error("Buffered EvidenceCommand.run cannot execute watch mode."),
-        "Use EvidenceWatcher for embedding or the evid executable for streamed watch output.",
+        "Use EvidenceWatcher for embedding or the evidence executable for streamed watch output.",
       );
     return runAnalysis(parsed, baseCwd);
   }
@@ -592,7 +592,7 @@ function command(
     case "list":
       return token;
     default:
-      throw new EvidenceCommandError(`Unknown evid command '${token}'.`);
+      throw new EvidenceCommandError(`Unknown evidence command '${token}'.`);
   }
 }
 
@@ -712,7 +712,7 @@ function failureResult(cause: unknown, repair: string): IEvidenceCommandResult {
   return {
     exitCode: 2,
     stdout: "",
-    stderr: `evid command failed: ${errorMessage(cause)}\nRepair: ${repair}\n`,
+    stderr: `evidence command failed: ${errorMessage(cause)}\nRepair: ${repair}\n`,
   };
 }
 
@@ -747,14 +747,14 @@ function errorMessage(cause: unknown): string {
  * failure.
  */
 const HELP = dedent`
-  Usage: evid [check] [options]
-         evid list [options]
-         evid inspect <target> [options]
-         evid graph [options]
-         evid languages [options]
-         evid init [options]
-         evid --help
-         evid --version
+  Usage: evidence [check] [options]
+         evidence list [options]
+         evidence inspect <target> [options]
+         evidence graph [options]
+         evidence languages [options]
+         evidence init [options]
+         evidence --help
+         evidence --version
 
   Commands:
     check                 Evaluate every enabled claim and reference (default).
@@ -809,7 +809,7 @@ const INITIAL_DATA: IEvidenceConfig = {
  * TypeScript source template preserving the same data as {@link INITIAL_DATA}.
  *
  * `satisfies IEvidenceConfig` gives authors editor validation while leaving the
- * starter object readable and directly editable after `evid init`.
+ * starter object readable and directly editable after `evidence init`.
  */
 const INITIAL_CONFIG = dedent`
   import type { IEvidenceConfig } from "@wrtnlabs/evidence";

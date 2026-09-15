@@ -52,7 +52,10 @@ export async function test_dart_libraries(): Promise<void> {
         "src/external.dart",
         "class Exported { int value = 2; } final excluded = 1;",
       ),
-      EvidenceTestSourceSnapshot.create("other/independent.dart", "class Model {}"),
+      EvidenceTestSourceSnapshot.create(
+        "other/independent.dart",
+        "class Model {}",
+      ),
     ]),
   );
 

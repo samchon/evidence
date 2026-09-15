@@ -157,7 +157,10 @@ export async function test_graph_review_pairing(): Promise<void> {
  * The helper accepts either fixture spelling and throws if extraction loses the
  * declaration, preventing a missing fixture from weakening the graph setup.
  */
-function requireUnit(inventory: IEvidenceInventory, identity: string): IEvidenceUnit {
+function requireUnit(
+  inventory: IEvidenceInventory,
+  identity: string,
+): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === identity || candidate.identity.at(-1) === identity,

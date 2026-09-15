@@ -8,9 +8,9 @@ import type { IEvidenceGoMaterializedDeclaration } from "./IEvidenceGoMaterializ
 /**
  * Reconciles selected Go files into package-wide Evidence units and addresses.
  *
- * EvidenceGoAdapter supplies one analysis per source file because receiver methods
- * may depend on types in another file; this resolver restores Go's package
- * boundary before the shared inventory is published.
+ * EvidenceGoAdapter supplies one analysis per source file because receiver
+ * methods may depend on types in another file; this resolver restores Go's
+ * package boundary before the shared inventory is published.
  */
 export class EvidenceGoPackageResolver {
   /**
@@ -72,8 +72,8 @@ export class EvidenceGoPackageResolver {
   /**
    * Resolves all selected declarations and publishes their package-wide units.
    *
-   * The returned map lets EvidenceGoAdapter associate scanner-local documentation
-   * with the unit ID that survived receiver and package-boundary
+   * The returned map lets EvidenceGoAdapter associate scanner-local
+   * documentation with the unit ID that survived receiver and package-boundary
    * reconciliation.
    *
    * @returns Scanner-local declaration IDs mapped to their published unit IDs.

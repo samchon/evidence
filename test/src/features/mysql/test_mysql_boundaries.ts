@@ -75,7 +75,10 @@ export async function test_mysql_boundaries(): Promise<void> {
   );
   TestValidator.equals("source failure is retained", failed.complete, false);
   const extension = await adapter.analyze(
-    EvidenceTestSourceSnapshot.create("schema.pgsql", "CREATE TABLE t (id INT);"),
+    EvidenceTestSourceSnapshot.create(
+      "schema.pgsql",
+      "CREATE TABLE t (id INT);",
+    ),
   );
   TestValidator.equals(
     "configured dialect owns selection",

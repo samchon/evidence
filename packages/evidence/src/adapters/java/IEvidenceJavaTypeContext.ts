@@ -4,9 +4,9 @@ import type { EvidenceJavaTypeKind } from "./EvidenceJavaTypeKind";
  * Carries an enclosing Java type's state while its nested declarations are
  * scanned.
  *
- * EvidenceJavaFileScanner passes this context through type bodies so descendants
- * retain their structural identity, public address prefix, and inherited
- * visibility.
+ * EvidenceJavaFileScanner passes this context through type bodies so
+ * descendants retain their structural identity, public address prefix, and
+ * inherited visibility.
  */
 export interface IEvidenceJavaTypeContext {
   /**

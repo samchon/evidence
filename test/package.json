@@ -2,7 +2,7 @@
   "name": "@wrtnlabs/evidence-test",
   "version": "0.0.0",
   "private": true,
-  "description": "Evid logic unit tests.",
+  "description": "Evidence logic unit tests.",
   "main": "src/index.ts",
   "scripts": {
     "build": "ttsc",

@@ -23,7 +23,8 @@ export interface IEvidenceDbmlFileAnalysis {
   /**
    * Lists table and column declarations established directly by DBML syntax.
    *
-   * These declarations become candidates for later Evidence unit materialization.
+   * These declarations become candidates for later Evidence unit
+   * materialization.
    */
   declarations: IEvidenceDbmlDeclaration[];
 

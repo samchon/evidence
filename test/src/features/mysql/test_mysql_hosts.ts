@@ -1,4 +1,8 @@
-import { EvidenceFingerprint, EvidenceInventory, EvidenceMysqlAdapter } from "@wrtnlabs/evidence";
+import {
+  EvidenceFingerprint,
+  EvidenceInventory,
+  EvidenceMysqlAdapter,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -115,7 +119,10 @@ export async function test_mysql_hosts(): Promise<void> {
   );
   const ambiguous = await adapter.analyze(
     EvidenceTestSourceSnapshot.combine([
-      EvidenceTestSourceSnapshot.create("one.sql", "CREATE TABLE Same (id INT);"),
+      EvidenceTestSourceSnapshot.create(
+        "one.sql",
+        "CREATE TABLE Same (id INT);",
+      ),
       EvidenceTestSourceSnapshot.create(
         "two.sql",
         "CREATE TABLE Same (other INT);",

@@ -1,9 +1,9 @@
 /**
  * Connects a DartDoc carrier to one extracted declaration site.
  *
- * EvidenceDartFileScanner records source-adjacent attachments here, allowing the
- * documentation pass to evaluate one carrier against each declaration site it
- * governs without making the comment itself own a semantic unit.
+ * EvidenceDartFileScanner records source-adjacent attachments here, allowing
+ * the documentation pass to evaluate one carrier against each declaration site
+ * it governs without making the comment itself own a semantic unit.
  */
 export interface IEvidenceDartDocumentationAttachment {
   /**

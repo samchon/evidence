@@ -1,4 +1,7 @@
-import { EvidenceLanguageRegistry, EvidenceObjcAdapter } from "@wrtnlabs/evidence";
+import {
+  EvidenceLanguageRegistry,
+  EvidenceObjcAdapter,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 

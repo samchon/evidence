@@ -47,7 +47,9 @@ export class EvidenceSwiftAdapter implements IEvidenceAdapter<"swift"> {
    * findings; the invocation releases its parser regardless of the
    * materialization outcome.
    */
-  public async analyze(snapshot: IEvidenceSourceSnapshot): Promise<IEvidenceInventory> {
+  public async analyze(
+    snapshot: IEvidenceSourceSnapshot,
+  ): Promise<IEvidenceInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidenceInventory = {
       schemaVersion: 1,
@@ -116,7 +118,8 @@ export class EvidenceSwiftAdapter implements IEvidenceAdapter<"swift"> {
         (session) => new EvidenceSwiftFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError = cause instanceof EvidenceParserError ? cause : undefined;
+      const parserError =
+        cause instanceof EvidenceParserError ? cause : undefined;
       return {
         source,
         declarations: [],

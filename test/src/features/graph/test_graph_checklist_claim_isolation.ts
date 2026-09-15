@@ -48,7 +48,7 @@ export async function test_graph_checklist_claim_isolation(): Promise<void> {
       "rules.md": `# Rule {#rule}\n\nDo the work.\n`,
     },
     async (directory: string): Promise<void> => {
-      const config: string = join(directory, "evid.json");
+      const config: string = join(directory, "evidence.json");
       const disabled: IEvidenceProgrammingClaim = claim("type", "off");
       const broad: IEvidenceProgrammingClaim = claim(
         ["type", "function"],
@@ -127,7 +127,7 @@ async function check(
   exitCode: EvidenceCommandExitCode,
 ): Promise<void> {
   await EvidenceTestFileSystem.save(directory, {
-    "evid.json": JSON.stringify({ claims }),
+    "evidence.json": JSON.stringify({ claims }),
   });
   const report: IEvidenceCheckReport = await EvidenceChecker.check(config);
   const unhosted: IEvidenceDiagnostic[] = report.diagnostics.filter(

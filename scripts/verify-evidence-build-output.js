@@ -42,7 +42,7 @@ async function findMissingFiles(locations) {
 }
 
 async function main() {
-  const packageRoot = path.resolve(__dirname, "../packages/evid");
+  const packageRoot = path.resolve(__dirname, "../packages/evidence");
   const sourceRoot = path.join(packageRoot, "src");
   const outputRoot = path.join(packageRoot, "lib");
   const manifest = JSON.parse(
@@ -70,13 +70,15 @@ async function main() {
   if (missing.length !== 0)
     throw new Error(
       [
-        "The Evid build did not produce every required file:",
+        "The Evidence build did not produce every required file:",
         ...missing.map(function formatMissingFile(location) {
           return `  - ${path.relative(packageRoot, location)}`;
         }),
       ].join("\n"),
     );
-  console.log(`Verified compiled output for ${sources.length} Evid sources.`);
+  console.log(
+    `Verified compiled output for ${sources.length} Evidence sources.`,
+  );
 }
 
 void main().catch(function reportFailure(error) {

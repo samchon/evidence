@@ -1,9 +1,9 @@
 /**
  * Connects a Javadoc carrier to one physical Java declaration site.
  *
- * EvidenceJavaFileScanner records this source adjacency, and EvidenceJavaAdapter maps
- * the local declaration to a reconciled unit without sharing the comment across
- * overloads.
+ * EvidenceJavaFileScanner records this source adjacency, and
+ * EvidenceJavaAdapter maps the local declaration to a reconciled unit without
+ * sharing the comment across overloads.
  */
 export interface IEvidenceJavaDocumentationAttachment {
   /**

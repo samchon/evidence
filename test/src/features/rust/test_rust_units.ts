@@ -1,4 +1,7 @@
-import { EvidenceLanguageRegistry, EvidenceRustAdapter } from "@wrtnlabs/evidence";
+import {
+  EvidenceLanguageRegistry,
+  EvidenceRustAdapter,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 

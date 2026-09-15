@@ -33,7 +33,9 @@ import type { EvidenceTargetResolutionStatus } from "../typings/EvidenceTargetRe
  * multi-origin documentation silently select an arbitrary declaration.
  *
  * @example
- *   const resolver: EvidenceTargetResolver = new EvidenceTargetResolver([inventory]);
+ *   const resolver: EvidenceTargetResolver = new EvidenceTargetResolver([
+ *     inventory,
+ *   ]);
  *   const result: IEvidenceTargetResolution = await resolver.resolve(
  *     statement,
  *     host,
@@ -105,7 +107,10 @@ export class EvidenceTargetResolver {
    * establish one. Construction records membership and aliases but performs no
    * filesystem access; `resolve` defers that work until a citation needs it.
    */
-  public constructor(inventories: IEvidenceInventory[], type?: EvidenceArtifactType) {
+  public constructor(
+    inventories: IEvidenceInventory[],
+    type?: EvidenceArtifactType,
+  ) {
     this.index = new EvidenceInventory(inventories);
     this.inventory = this.index.snapshot();
     this.type = type;
@@ -113,7 +118,9 @@ export class EvidenceTargetResolver {
       this.physicalFiles.add(EvidenceFileTarget.normalize(source.physicalPath));
       for (const address of source.addresses)
         if (address.selected !== false)
-          this.selectedFiles.add(EvidenceFileTarget.normalize(address.absolute));
+          this.selectedFiles.add(
+            EvidenceFileTarget.normalize(address.absolute),
+          );
     }
     // Preserve every public spelling for an address because the index resolves
     // public addresses, while membership checks operate on normalized paths.
@@ -136,7 +143,9 @@ export class EvidenceTargetResolver {
         ),
     );
     for (const source of this.inventory.sources) {
-      if (!markdownSources.has(EvidenceFileTarget.normalize(source.physicalPath)))
+      if (
+        !markdownSources.has(EvidenceFileTarget.normalize(source.physicalPath))
+      )
         continue;
       for (const address of source.addresses) {
         if (address.selected === false) continue;
@@ -240,8 +249,9 @@ export class EvidenceTargetResolver {
         ),
       );
     }
-    const uniqueAddresses = EvidenceInventoryMerge.unique(addresses, (address) =>
-      JSON.stringify([address.file, address.segments]),
+    const uniqueAddresses = EvidenceInventoryMerge.unique(
+      addresses,
+      (address) => JSON.stringify([address.file, address.segments]),
     );
     // Completeness precedes any negative conclusion: a failed scan may have
     // omitted the declaration that would otherwise satisfy this target.
@@ -514,8 +524,8 @@ export class EvidenceTargetResolver {
   }
 
   /**
-   * Extracts a EvidenceNode-style error code without assuming an arbitrary thrown
-   * value.
+   * Extracts a EvidenceNode-style error code without assuming an arbitrary
+   * thrown value.
    *
    * Filesystem APIs may reject with non-Error values, which must remain an
    * incomplete inspection rather than cause the resolver's classifier to
@@ -543,7 +553,9 @@ export class EvidenceTargetResolver {
    * Withdrawals lack one shared unit ID in this result shape, so structural
    * serialization preserves the merger's full withdrawal identity.
    */
-  private uniqueWithdrawals(withdrawals: IEvidenceWithdrawal[]): IEvidenceWithdrawal[] {
+  private uniqueWithdrawals(
+    withdrawals: IEvidenceWithdrawal[],
+  ): IEvidenceWithdrawal[] {
     return EvidenceInventoryMerge.unique(withdrawals, (withdrawal) =>
       JSON.stringify(withdrawal),
     );

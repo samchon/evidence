@@ -454,13 +454,16 @@ export namespace EvidenceAdapterCertification {
   ): IEvidenceSourceSnapshot {
     return EvidenceTestSourceSnapshot.combine(
       sources.map(
-        (source: IEvidenceAdapterCertificationSource): IEvidenceSourceSnapshot => {
-          const snapshot: IEvidenceSourceSnapshot = EvidenceTestSourceSnapshot.create(
-            source.file,
-            source.content,
-            [source.file],
-            root,
-          );
+        (
+          source: IEvidenceAdapterCertificationSource,
+        ): IEvidenceSourceSnapshot => {
+          const snapshot: IEvidenceSourceSnapshot =
+            EvidenceTestSourceSnapshot.create(
+              source.file,
+              source.content,
+              [source.file],
+              root,
+            );
           const file: IEvidenceSourceFile | undefined = snapshot.files[0];
           if (file === undefined)
             throw new Error("Certification source snapshot is empty.");
@@ -520,7 +523,10 @@ export namespace EvidenceAdapterCertification {
     return { ...host, units: [...host.units].sort(compare) };
   }
 
-  function requireUnit(inventory: IEvidenceInventory, key: string): IEvidenceUnit {
+  function requireUnit(
+    inventory: IEvidenceInventory,
+    key: string,
+  ): IEvidenceUnit {
     const unit = inventory.units.find(
       (candidate) => unitKey(candidate) === key,
     );

@@ -55,7 +55,7 @@ export async function evaluateTypeScriptConfig(
       throw new Error("Compiler launcher or platform binary is not a file.");
   } catch (cause) {
     throw new Error(
-      `Cannot resolve the compiler for ${configFile}. Install it with: pnpm i -D typescript ttsc evid`,
+      `Cannot resolve the compiler for ${configFile}. Install it with: pnpm i -D typescript ttsc evidence`,
       { cause },
     );
   }
@@ -263,8 +263,8 @@ async function configModule(
  * Finds the nearest reusable dependency tree so the temporary project resolves
  * the consumer's packages.
  *
- * The evaluator links this tree instead of resolving dependencies from Evidence's
- * own installation location.
+ * The evaluator links this tree instead of resolving dependencies from
+ * Evidence's own installation location.
  */
 async function findNodeModules(start: string): Promise<string | undefined> {
   let directory = start;

@@ -34,7 +34,10 @@ export async function test_dart_directive_syntax(): Promise<void> {
       int first = 1, /* declaration trivia */ second = 2;
     `,
       ),
-      EvidenceTestSourceSnapshot.create("src/external.dart", "class Exported {}"),
+      EvidenceTestSourceSnapshot.create(
+        "src/external.dart",
+        "class Exported {}",
+      ),
     ]),
   );
 

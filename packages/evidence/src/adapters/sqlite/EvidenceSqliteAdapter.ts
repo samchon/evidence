@@ -43,7 +43,9 @@ export class EvidenceSqliteAdapter implements IEvidenceAdapter<"sqlite"> {
    * Parser allocation and source analysis wait until this method receives the
    * snapshot.
    */
-  public analyze(snapshot: IEvidenceSourceSnapshot): Promise<IEvidenceInventory> {
+  public analyze(
+    snapshot: IEvidenceSourceSnapshot,
+  ): Promise<IEvidenceInventory> {
     return this.materializer.analyze(snapshot);
   }
 }

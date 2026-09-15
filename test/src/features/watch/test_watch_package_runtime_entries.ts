@@ -136,7 +136,8 @@ export async function test_watch_package_runtime_entries(): Promise<void> {
     },
     async (directory: string): Promise<void> => {
       const configFile: string = join(directory, "evidence.config.ts");
-      const config: IEvidenceConfig = await EvidenceConfigLoader.load(configFile);
+      const config: IEvidenceConfig =
+        await EvidenceConfigLoader.load(configFile);
       TestValidator.equals(
         "legacy runtime severity",
         config.severity,

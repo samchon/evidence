@@ -46,7 +46,9 @@ export class EvidenceDbmlAdapter implements IEvidenceAdapter<"dbml"> {
    * Successfully scanned files contribute dependencies, aliases, relation
    * ownership, and documentation before the parser runtime closes in cleanup.
    */
-  public async analyze(snapshot: IEvidenceSourceSnapshot): Promise<IEvidenceInventory> {
+  public async analyze(
+    snapshot: IEvidenceSourceSnapshot,
+  ): Promise<IEvidenceInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidenceInventory = {
       schemaVersion: 1,

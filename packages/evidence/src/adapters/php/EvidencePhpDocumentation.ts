@@ -81,8 +81,8 @@ export namespace EvidencePhpDocumentation {
    * Replaces example characters with spaces while retaining original line
    * boundaries.
    *
-   * Preserved length and newlines keep offsets from `EvidenceDocumentation` valid
-   * for diagnostics and source-range attachment after masking.
+   * Preserved length and newlines keep offsets from `EvidenceDocumentation`
+   * valid for diagnostics and source-range attachment after masking.
    */
   function hide(characters: string[], start: number, end: number): void {
     for (let index = start; index < end; ++index)

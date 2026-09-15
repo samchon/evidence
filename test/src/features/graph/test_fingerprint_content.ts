@@ -1,4 +1,7 @@
-import { EvidenceFingerprint, EvidenceTypeScriptAdapter } from "@wrtnlabs/evidence";
+import {
+  EvidenceFingerprint,
+  EvidenceTypeScriptAdapter,
+} from "@wrtnlabs/evidence";
 import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
@@ -163,7 +166,10 @@ async function analyze(content: string): Promise<IEvidenceInventory> {
  * Missing extraction fails explicitly instead of comparing an unrelated
  * fallback unit.
  */
-function requireUnit(inventory: IEvidenceInventory, name: string): IEvidenceUnit {
+function requireUnit(
+  inventory: IEvidenceInventory,
+  name: string,
+): IEvidenceUnit {
   const unit = inventory.units.find((candidate) => candidate.name === name);
   if (unit === undefined) throw new Error(`Missing fingerprint unit: ${name}`);
   return unit;

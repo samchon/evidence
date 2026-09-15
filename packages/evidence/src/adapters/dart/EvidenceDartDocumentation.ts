@@ -8,8 +8,8 @@ import type { IEvidenceDartDocumentation } from "./IEvidenceDartDocumentation";
  * Reads Dart documentation while preserving source mappings and masking code
  * examples.
  *
- * EvidenceDartAdapter uses the mapped text before Evidence tags are parsed for each
- * host.
+ * EvidenceDartAdapter uses the mapped text before Evidence tags are parsed for
+ * each host.
  */
 export namespace EvidenceDartDocumentation {
   /**

@@ -13,10 +13,10 @@ import type { IEvidenceSourceSnapshot } from "../structures/IEvidenceSourceSnaps
  * diagnostic.
  *
  * @example
- *   const snapshot: IEvidenceSourceSnapshot = await EvidenceSourceLoader.glob(
- *     "evidence.config.ts",
- *     { files: ["src/*.ts"] },
- *   );
+ *   const snapshot: IEvidenceSourceSnapshot =
+ *     await EvidenceSourceLoader.glob("evidence.config.ts", {
+ *       files: ["src/*.ts"],
+ *     });
  */
 export namespace EvidenceSourceLoader {
   /**

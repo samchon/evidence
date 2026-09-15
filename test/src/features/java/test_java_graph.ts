@@ -166,7 +166,8 @@ export async function test_java_graph(): Promise<void> {
     "Java overload implementation moves family fingerprint",
     EvidenceFingerprint.inspect(overloadOriginal, overloadOriginalUnit.id)
       .fingerprint,
-    EvidenceFingerprint.inspect(overloadEdited, overloadEditedUnit.id).fingerprint,
+    EvidenceFingerprint.inspect(overloadEdited, overloadEditedUnit.id)
+      .fingerprint,
   );
 
   // A sibling variable has its own source content range within a shared declaration.
@@ -200,7 +201,9 @@ async function fingerprintInventory(
   );
 }
 
-async function overloadInventory(statement: string): Promise<IEvidenceInventory> {
+async function overloadInventory(
+  statement: string,
+): Promise<IEvidenceInventory> {
   return new EvidenceJavaAdapter().analyze(
     EvidenceTestSourceSnapshot.create(
       "src/Calculator.java",
@@ -227,7 +230,10 @@ async function fieldInventory(second: string): Promise<IEvidenceInventory> {
   );
 }
 
-function requireUnit(inventory: IEvidenceInventory, name: string): IEvidenceUnit {
+function requireUnit(
+  inventory: IEvidenceInventory,
+  name: string,
+): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === name || candidate.identity.at(-1) === name,

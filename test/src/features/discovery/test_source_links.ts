@@ -94,7 +94,8 @@ export async function test_source_links(): Promise<void> {
           "link topology dependency",
           snapshot.dependencies.some(
             (entry) =>
-              entry.path === EvidenceSourcePath.slash(join(directory, dependency)),
+              entry.path ===
+              EvidenceSourcePath.slash(join(directory, dependency)),
           ),
         );
 

@@ -6,8 +6,9 @@ import type { EvidenceJavaDeclarationForm } from "./EvidenceJavaDeclarationForm"
  * Records one Java declaration before its public unit and overload family are
  * materialized.
  *
- * EvidenceJavaFileScanner creates these physical records, and EvidenceJavaAdapter
- * reconciles compatible records into the language-independent Evidence inventory.
+ * EvidenceJavaFileScanner creates these physical records, and
+ * EvidenceJavaAdapter reconciles compatible records into the
+ * language-independent Evidence inventory.
  */
 export interface IEvidenceJavaDeclaration {
   /**

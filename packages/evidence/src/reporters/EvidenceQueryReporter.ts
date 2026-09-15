@@ -66,7 +66,7 @@ function list(report: IEvidenceListReport): string {
     report.kind === undefined ? undefined : `kind=${report.kind}`,
   ].filter((value) => value !== undefined);
   const lines: string[] = [
-    `evid list ${report.status}.`,
+    `evidence list ${report.status}.`,
     `Config: ${report.configFile}`,
     `Targets: ${report.total}${filters.length === 0 ? "" : ` (${filters.join(", ")})`}.`,
   ];
@@ -105,7 +105,7 @@ function listItem(item: IEvidenceListItem): string[] {
  */
 function inspect(report: IEvidenceInspectReport): string {
   const lines: string[] = [
-    `evid inspect ${report.status}.`,
+    `evidence inspect ${report.status}.`,
     `Config: ${report.configFile}`,
     `Target: ${JSON.stringify(report.target)}`,
     `Populations: ${report.inspections.length}.`,

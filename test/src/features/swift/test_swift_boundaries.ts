@@ -96,7 +96,10 @@ export async function test_swift_boundaries(): Promise<void> {
   );
   const internalOwner = await adapter.analyze(
     EvidenceTestSourceSnapshot.combine([
-      EvidenceTestSourceSnapshot.create("src/Owner.swift", "struct Internal {}"),
+      EvidenceTestSourceSnapshot.create(
+        "src/Owner.swift",
+        "struct Internal {}",
+      ),
       EvidenceTestSourceSnapshot.create(
         "src/Extension.swift",
         "public extension Internal { func exposed() {} }",

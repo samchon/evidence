@@ -69,7 +69,9 @@ export async function test_postgresql_graph(): Promise<void> {
               false,
             );
           }
-          await EvidenceTestFileSystem.save(directory, { [filename]: original });
+          await EvidenceTestFileSystem.save(directory, {
+            [filename]: original,
+          });
         }
     },
   );

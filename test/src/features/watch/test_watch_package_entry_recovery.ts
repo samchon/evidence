@@ -70,7 +70,8 @@ export async function test_watch_package_entry_recovery(): Promise<void> {
       const normalized: (file: string) => string = (file: string): string =>
         file.replaceAll("\\", "/");
 
-      const firstConfig: IEvidenceConfig = await EvidenceConfigLoader.load(configFile);
+      const firstConfig: IEvidenceConfig =
+        await EvidenceConfigLoader.load(configFile);
       const firstDependencies: IEvidenceSourceDependency[] =
         await new EvidenceConfigDependencyScanner(configFile).scan();
       TestValidator.equals(
@@ -87,7 +88,8 @@ export async function test_watch_package_entry_recovery(): Promise<void> {
         "node_modules/fixture-settings/package.json":
           packageManifest("second.cjs"),
       });
-      const secondConfig: IEvidenceConfig = await EvidenceConfigLoader.load(configFile);
+      const secondConfig: IEvidenceConfig =
+        await EvidenceConfigLoader.load(configFile);
       const secondDependencies: IEvidenceSourceDependency[] =
         await new EvidenceConfigDependencyScanner(configFile).scan();
       TestValidator.equals(
