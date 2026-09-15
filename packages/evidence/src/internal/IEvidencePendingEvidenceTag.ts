@@ -13,7 +13,7 @@ export interface IEvidencePendingEvidenceTag {
    * handling without re-reading the normalized documentation text.
    */
   kind:
-    | "Evidence"
+    | "evidence"
     | "link"
     | "EvidenceExclude"
     | "EvidenceReview"

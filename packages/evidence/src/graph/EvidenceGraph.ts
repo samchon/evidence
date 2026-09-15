@@ -506,7 +506,7 @@ class EvidenceGraphEvaluator {
       if (unitIds.length === 0) continue;
       const hostUnitIds = selectedHosts.get(declaration.hostId) ?? [];
       if (
-        declaration.kind === "Evidence" &&
+        declaration.kind === "evidence" &&
         hostUnitIds.length === 0 &&
         checklist
       ) {
@@ -519,7 +519,7 @@ class EvidenceGraphEvaluator {
         continue;
       }
       if (
-        (declaration.kind === "Evidence" && hostUnitIds.length === 0) ||
+        (declaration.kind === "evidence" && hostUnitIds.length === 0) ||
         (declaration.kind === "EvidenceExclude" &&
           !exclusionHosts.has(declaration.hostId))
       ) {
@@ -528,7 +528,7 @@ class EvidenceGraphEvaluator {
             "graph-out-of-scope-host",
             reference.severity,
             `@${declaration.kind} for '${declaration.target}' is outside its eligible claim hosts.`,
-            declaration.kind === "Evidence"
+            declaration.kind === "evidence"
               ? "Move the acknowledgement to a host selected by the claim's symbol kinds."
               : "Move the exclusion to an eligible public carrier in the claim files.",
             claimIndex,
@@ -566,7 +566,7 @@ class EvidenceGraphEvaluator {
       }
       if (
         checklist &&
-        declaration.kind === "Evidence" &&
+        declaration.kind === "evidence" &&
         !selectedUnitIds.has(target.id)
       ) {
         this.answeredDeclarations.add(
@@ -593,7 +593,7 @@ class EvidenceGraphEvaluator {
         }
         continue;
       }
-      if (checklist && declaration.kind === "Evidence") unitIds = [target.id];
+      if (checklist && declaration.kind === "evidence") unitIds = [target.id];
       this.conflicts(
         declaration,
         target.id,
@@ -771,7 +771,7 @@ class EvidenceGraphEvaluator {
       inventory: referenceInventory,
     } = context;
     const selectedUnits = context.population.units;
-    const Evidence = edges.filter((edge) => edge.kind === "Evidence");
+    const Evidence = edges.filter((edge) => edge.kind === "evidence");
     if (reference.singleEvidencePerSymbol === true)
       for (const host of claimPopulation.units) {
         const cited = new Set(
@@ -838,10 +838,10 @@ class EvidenceGraphEvaluator {
     referenceIndex: number,
     checklist: boolean,
   ): void {
-    if (declaration.kind === "Evidence") {
+    if (declaration.kind === "evidence") {
       const duplicate = edges.find(
         (edge) =>
-          edge.kind === "Evidence" &&
+          edge.kind === "evidence" &&
           this.overlaps(edge.hostUnitIds, hostUnitIds) &&
           edge.targetUnitId === targetUnitId,
       );
@@ -1144,7 +1144,7 @@ class EvidenceGraphEvaluator {
    * needs @EvidenceExcludeReview.
    */
   private reviewMarker(kind: EvidenceAcknowledgementKind): string {
-    return kind === "Evidence" ? "@EvidenceReview" : "@EvidenceExcludeReview";
+    return kind === "evidence" ? "@EvidenceReview" : "@EvidenceExcludeReview";
   }
 
   /**

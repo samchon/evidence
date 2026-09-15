@@ -62,7 +62,7 @@ export namespace EvidenceGraphReporter {
     for (const edge of report.edges)
       for (const source of edge.sourceNodeIds)
         lines.push(
-          `  ${requireNodeName(names, source)} ${edge.kind === "Evidence" ? "-->" : "-.->"}|${mermaidText(edgeLabel(edge))}| ${requireNodeName(names, edge.targetNodeId)}`,
+          `  ${requireNodeName(names, source)} ${edge.kind === "evidence" ? "-->" : "-.->"}|${mermaidText(edgeLabel(edge))}| ${requireNodeName(names, edge.targetNodeId)}`,
         );
     for (const review of report.reviews)
       for (const source of review.sourceNodeIds)
@@ -191,7 +191,7 @@ function edgeLabel(edge: IEvidenceGraphExportEdge): string {
  */
 function reviewLabel(review: IEvidenceGraphExportReview): string {
   const marker =
-    review.reviews === "Evidence"
+    review.reviews === "evidence"
       ? "@EvidenceReview"
       : "@EvidenceExcludeReview";
   return `${marker}${review.review.fingerprint === undefined ? "" : ` #${review.review.fingerprint}`}`;

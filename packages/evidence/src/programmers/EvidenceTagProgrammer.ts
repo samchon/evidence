@@ -80,7 +80,7 @@ export namespace EvidenceTagProgrammer {
           kind === "EvidenceExcludeReview" ||
           kind === "EvidenceReview" ||
           kind === "EvidenceExclude" ||
-          kind === "Evidence" ||
+          kind === "evidence" ||
           kind === "link"
         )
           context.pending = {
@@ -296,7 +296,7 @@ export namespace EvidenceTagProgrammer {
       context.result.reviews.push({
         id,
         hostId: context.host.id,
-        reviews: tag.kind === "EvidenceReview" ? "Evidence" : "EvidenceExclude",
+        reviews: tag.kind === "EvidenceReview" ? "evidence" : "EvidenceExclude",
         target: body.target,
         description,
         location: where,
@@ -314,7 +314,7 @@ export namespace EvidenceTagProgrammer {
       context.result.declarations.push({
         id,
         hostId: context.host.id,
-        kind: tag.kind === "EvidenceExclude" ? "EvidenceExclude" : "Evidence",
+        kind: tag.kind === "EvidenceExclude" ? "EvidenceExclude" : "evidence",
         target: body.target,
         reason: body.remainder,
         location: where,
