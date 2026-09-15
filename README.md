@@ -81,15 +81,11 @@ if (file === "wide-chars.ts") return WIDE_CHARS_EXPECTED;
 
 One test would not go green, so the agent hardcoded the answer. That breaks the first rule on the list, and the build passes anyway. The type checker looks at types, the tests look for green, the linter looks for unused variables. Nothing asks which rule was broken, because the rules live in a document and the build does not read documents. A human has to read the diff holding every rule in their head, and at 4,000 lines that check may as well not exist.
 
-![Asked whether every rule was followed, a human answers in words while the compiler stops the build](https://ttsc.dev/evidence/meme-coverage.svg)
-
 Writing the rules harder does not help. Nobody starts honoring a contract because you set it in a bigger font. Under [eight simultaneous constraints](https://arxiv.org/abs/2608.12426), models satisfied each one about 41% of the time and all eight in 5.7% of responses. Every rule you add pushes one you already wrote further back.
 
 This is not malice. If there is a cheaper way to pass the check, that is the way it goes: agents [saturate the visible test suite and fail the hidden one](https://arxiv.org/abs/2605.21384), [retrieve answers instead of deriving them](https://cursor.com/blog/reward-hacking-coding-benchmarks), and [hardcode return values per test input](https://debugml.github.io/cheating-agents). Not taking the exam, but finding the cheapest way to look like you took it.
 
 ### So the checker asks
-
-![Asked whether every rule was followed, a human rereads the document while the compiler asks each function directly](https://ttsc.dev/evidence/meme-checklist.svg)
 
 Every function has to answer every rule in your skill file, in its own documentation comment, one sentence per rule. You never write those comments yourself; the check fails without them, so the agent writes them and you read what it says about the code.
 
