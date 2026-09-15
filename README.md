@@ -490,24 +490,9 @@ Exit 0 is a complete analysis without errors, 1 is a complete analysis with viol
 
 ## 8. References
 
-Choose the implementation by the languages in the graph.
+For projects that use only TypeScript, Prisma, Swagger, and Markdown, use [`@ttsc/evidence`](https://github.com/samchon/ttsc/tree/master/packages/evidence). Its dedicated compiler integration is slightly more efficient for that scope than the Tree-sitter implementation.
 
-| Scope | Prefer | Why |
-| --- | --- | --- |
-| TypeScript, Prisma, Swagger, and Markdown only | [`@ttsc/evidence`](https://github.com/samchon/ttsc/tree/master/packages/evidence) | It runs inside the TypeScript compiler for the highest performance and semantic accuracy within these four formats. |
-| Any other supported language, or one graph spanning several languages | `@wrtnlabs/evidence` | It applies one Evidence Graph across the Tree-sitter adapters listed above without requiring each language's compiler. |
-
-For a graph confined to the four formats above, use `@ttsc/evidence`. Its TypeScript citations can target a real symbol directly:
-
-```ts
-/**
- * @evidence {@link hooks.useCouponStacking} Renders the limit this hook resolves.
- */
-```
-
-The TypeScript compiler resolves `hooks.useCouponStacking`, so the IDE can complete the target and navigate to its declaration instead of treating it as an opaque string.
-
-Use `@wrtnlabs/evidence` when the graph must cross language boundaries. Its Tree-sitter architecture can extend to almost any language with a grammar, but that portability cannot match a dedicated compiler integration in performance or semantic accuracy. TypeScript targets are therefore explicit, file-qualified addresses such as `../hooks/useCouponStacking.ts#useCouponStacking`; `{@link Symbol}` targets are not accepted.
+For any other language, use `@wrtnlabs/evidence`, which uses Tree-sitter to support a much broader range of languages.
 
 - [Evidence Graph: Make Every SKILL Instruction 100% Enforced](https://ttsc.dev/blog/evidence-graph-make-every-skill-instruction-100-percent-enforced/) introduces the graph model and the workflow adapted by this project.
 - [The `@ttsc/evidence` README](https://github.com/samchon/ttsc/blob/master/packages/evidence/README.md) documents the compiler-integrated implementation, its four artifact types, and its native TypeScript symbol targets.
