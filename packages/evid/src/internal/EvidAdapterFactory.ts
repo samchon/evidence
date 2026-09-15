@@ -42,6 +42,9 @@ export namespace EvidAdapterFactory {
    * Each call returns a fresh instance so parser and scan state cannot cross an
    * inventory boundary.
    */
+  export function create<Type extends EvidArtifactType>(
+    type: Type,
+  ): IEvidAdapter<Type>;
   export function create(type: EvidArtifactType): IEvidAdapter {
     if (type === "objc") return new EvidObjcAdapter();
     if (type === "dart") return new EvidDartAdapter();
