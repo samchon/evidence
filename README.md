@@ -44,8 +44,9 @@ Repair: Cite the claim artifact that implements this unit with @evidence, or exc
 The error list is the task list.
 
 - [Why a graph](#why-a-graph)
-- [Quick start](#quick-start)
-- [Spec-driven development](#spec-driven-development)
+- [Step 1: Enforce your principles](#step-1-enforce-your-principles)
+- [Step 2: Ground code in requirements](#step-2-ground-code-in-requirements)
+- [Step 3: Span the stack](#step-3-span-the-stack)
 - [Graph rules](#graph-rules)
 - [Configuration](#configuration)
 - [Tags and targets](#tags-and-targets)
@@ -116,7 +117,45 @@ Claim 1 ('every function answers every engineering principle') reference 1: Host
 Repair: Cite every missing checklist item from this host, or exclude the scope that does not apply.
 ```
 
-This is the whole configuration behind it:
+The configuration behind it is one claim; [Step 1](#step-1-enforce-your-principles) sets it up in a minute.
+
+### There are sentences it cannot write
+
+Suppose the agent special-cased a fixture name. That function must now answer `#no-hard-coding`, and the honest answer reads:
+
+```ts
+/**
+ * @evidence .agents/skills/principles/SKILL.md#no-hard-coding Branches on the fixture name "sample.ts" so the snapshot test passes.
+ */
+```
+
+Two options: write that sentence as it stands, or fix the code so it never has to be written. In practice it fixes the code.
+
+The checker cannot tell whether a sentence is true. That is the reviewer's job, and it is now a list of claims attached to the declarations they describe instead of a 4,000-line diff. `requireReview` turns that reading into a record that expires when the cited text changes.
+
+### It outlives the prompt
+
+A prompt instruction gets buried as the conversation grows and is gone in the next session. It is not in CI, and it is not in a pull request from someone who never read your `AGENTS.md`. The checklist lives in the repository, and the same command runs in CI.
+
+## Step 1: Enforce your principles
+
+The rule file is already there. It is already Markdown, it already has headings, and it is already the document you wish the agent would follow. Start here.
+
+### Install
+
+```bash
+npm install -D typescript ttsc @wrtnlabs/evidence
+```
+
+`typescript` and `ttsc` are peer dependencies; `ttsc` supplies `ttsx`, which evaluates `evidence.config.ts`. Grammars download into a per-user cache on first use. Install no grammar package and no compiler for the analyzed languages.
+
+### Point the checker at the rule file
+
+```bash
+npx evidence init
+```
+
+`init` writes a typed starter `evidence.config.ts` and never overwrites one. Replace it with one claim:
 
 ```ts
 import type { IEvidenceConfig } from "@wrtnlabs/evidence";
@@ -139,43 +178,88 @@ export default {
 } satisfies IEvidenceConfig;
 ```
 
-Add one rule to the document and every function owes one more answer.
+A **claim** selects the declarations that must cite: every function under `src`. Its **reference** selects what must be cited: every H2 in the skill file. `checklist` makes every function answer every heading, so the denominator is functions times principles.
 
-### There are sentences it cannot write
+### Run
 
-Suppose the agent special-cased a fixture name. That function must now answer `#no-hard-coding`, and the honest answer reads:
+```bash
+$ npx evidence
+Evidence check complete.
+Config: /workspace/app/evidence.config.ts
+Claims: 1/1 active.
+Obligations: 1/1 active, 0 incomplete.
+Coverage: 0/3 units covered, 3 missing.
+Diagnostics: 1 errors, 0 warnings.
+
+ERROR [graph-checklist-missing] claim[0] 'every function answers every engineering principle' (typescript) -> reference[0] (markdown)
+Location: /workspace/app/src/resolve.ts:3:1
+Subject: configured population
+Claim 1 ('every function answers every engineering principle') reference 1: Host '/workspace/app/src/resolve.ts#resolveHandler' has not acknowledged 3 of 3 checklist item(s): '/workspace/app/.agents/skills/principles/SKILL.md#["fix-root-causes"]', '/workspace/app/.agents/skills/principles/SKILL.md#["no-hard-coding"]', '/workspace/app/.agents/skills/principles/SKILL.md#yagni'.
+Repair: Cite every missing checklist item from this host, or exclude the scope that does not apply.
+```
+
+On an existing repository this is hundreds of errors, one per function per rule. That number is the real distance between your rule file and your code, and it was invisible until now. Paying it down is not your job.
+
+### Hand it to the agent
+
+Add this to `AGENTS.md` or `CLAUDE.md`:
+
+```markdown
+## Evidence
+
+Run `npx evidence` before finishing any task. Every error names an obligation and its repair.
+Do the work first: implement, test, or document what the obligation asks for.
+Then write the `@evidence` line on the declaration that supplies it, stating why in one sentence.
+Never write a tag to silence an error. Never weaken `evidence.config.ts` to pass.
+Use `npx evidence list` to find an address and `npx evidence inspect '<target>'` to see why one does not resolve.
+```
+
+The agent works through the list, fixing code first wherever an honest answer cannot be written, and leaves this behind:
 
 ```ts
 /**
- * @evidence .agents/skills/principles/SKILL.md#no-hard-coding Branches on the fixture name "sample.ts" so the snapshot test passes.
+ * @evidence .agents/skills/principles/SKILL.md#no-hard-coding Looks the handler up in the registry it was handed and branches on no known name.
+ * @evidence .agents/skills/principles/SKILL.md#fix-root-causes Rejects an unknown name at the lookup instead of retrying a failed call later.
+ * @evidence .agents/skills/principles/SKILL.md#yagni One lookup and one throw, with no cache or index built ahead of time.
  */
+export function resolveHandler(name: string, registry: Map<string, Handler>): Handler;
 ```
-
-Two options: write that sentence as it stands, or fix the code so it never has to be written. In practice it fixes the code.
-
-The checker cannot tell whether a sentence is true. That is the reviewer's job, and it is now a list of claims attached to the declarations they describe instead of a 4,000-line diff. `requireReview` turns that reading into a record that expires when the cited text changes.
-
-### It outlives the prompt
-
-A prompt instruction gets buried as the conversation grows and is gone in the next session. It is not in CI, and it is not in a pull request from someone who never read your `AGENTS.md`. The checklist lives in the repository, and the same command runs in CI.
-
-## Quick start
-
-### Install
 
 ```bash
-npm install -D typescript ttsc @wrtnlabs/evidence
+$ npx evidence
+Evidence check complete.
+Config: /workspace/app/evidence.config.ts
+Claims: 1/1 active.
+Obligations: 1/1 active, 0 incomplete.
+Coverage: 3/3 units covered, 0 missing.
+Diagnostics: 0 errors, 0 warnings.
 ```
 
-`typescript` and `ttsc` are peer dependencies; `ttsc` supplies `ttsx`, which evaluates `evidence.config.ts`. Grammars download into a per-user cache on first use. Install no grammar package and no compiler for the analyzed languages.
+You read three sentences per function instead of the diff. Add one rule to the document and every function owes one more answer. Add `requireReview: true` to the reference and each answer also needs an `@evidenceReview` that expires when the rule's text changes; see [Reviews](#reviews).
 
-### Configure
+### Add CI
 
-```bash
-npx evidence init
+```yaml
+- run: npm ci
+- run: npx evidence
 ```
 
-`init` writes a typed starter `evidence.config.ts` and never overwrites one. Replace it with this two-edge graph:
+Exit 1 means complete analysis found violations. Exit 2 means analysis was incomplete and must be repaired before the graph can be trusted. Do not mask either.
+
+## Step 2: Ground code in requirements
+
+The checker reads no meaning, only who cited what, so anything with an address can be cited. A requirements document is the next layer.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://ttsc.dev/evidence/documents-dark.svg">
+  <img alt="Idea notes grounding Requirements and Specifications, which ground Implementation and Test" src="https://ttsc.dev/evidence/documents-light.svg">
+</picture>
+
+Each arrow is one claim in `evidence.config.ts`, pointing at the evidence it cites. Requirements cite idea notes, so a dropped idea is caught before code exists. Tests cite requirements, specifications, and implementation, so an untested feature never passes. Hand over the requirements and the agent writes the rest. Hand over raw idea notes and it writes the requirements too. Whichever layer a human reviews last is the source of truth.
+
+### Requirements, implementation, tests
+
+Two claims draw the bottom of that picture:
 
 ```ts
 import type { IEvidenceConfig } from "@wrtnlabs/evidence";
@@ -209,11 +293,7 @@ export default {
 } satisfies IEvidenceConfig;
 ```
 
-A **claim** selects the declarations that must cite. Its **reference** selects what must be cited. Here every H2 in the requirements must be cited by a function under `src`, and every function under `src` must be cited by a function under `test` without exclusions.
-
-### Create the obligations
-
-`docs/requirements.md`:
+Every H2 in the requirements must be cited by a function under `src`, and every function under `src` must be cited by a function under `test` without exclusions. Three files:
 
 ```md
 # Pricing requirements
@@ -223,15 +303,11 @@ A **claim** selects the declarations that must cite. Its **reference** selects w
 Add prices without intermediate rounding.
 ```
 
-`src/calculator.ts`:
-
 ```ts
 export function add(left: number, right: number): number {
   return left + right;
 }
 ```
-
-`test/calculator.test.ts`:
 
 ```ts
 import { add } from "../src/calculator";
@@ -263,11 +339,7 @@ Claim 2 ('tests') reference 1: Missing acknowledgement for '/workspace/app/src/c
 Repair: Cite the claim artifact that implements this unit with positive @evidence.
 ```
 
-The command exits 1 after complete analysis. Both findings are work items.
-
-### Add the evidence edges
-
-Markdown targets resolve from the Markdown reference root, which defaults to the config directory. Programming targets resolve from the citing file.
+Both findings are work items. Markdown targets resolve from the Markdown reference root, which defaults to the config directory; programming targets resolve from the citing file:
 
 ```ts
 /** @evidence docs/requirements.md#exact-addition Implements exact addition without intermediate rounding. */
@@ -295,76 +367,11 @@ Coverage: 2/2 units covered, 0 missing.
 Diagnostics: 0 errors, 0 warnings.
 ```
 
-Evidence checked two structural edges. It did not run `test_add` and did not prove either sentence true.
+Evidence checked two structural edges. It did not run `test_add` and did not prove either sentence true. When a symbol spelling is uncertain, `npx evidence list` prints every selected unit with its canonical target, and `npx evidence inspect '<target>'` resolves one target with the checker's own resolver.
 
-### Find an address
+### Documents above documents
 
-```bash
-npx evidence list --language typescript --kind function
-npx evidence inspect 'src/calculator.ts#add'
-```
-
-`list` prints every selected unit with its canonical target and aliases. `inspect` resolves one target with the checker's own resolver and shows its fingerprint, incoming citations, and reviews.
-
-### Add CI
-
-```yaml
-- run: npm ci
-- run: npx evidence
-```
-
-Exit 1 means complete analysis found violations. Exit 2 means analysis was incomplete and must be repaired before the graph can be trusted. Do not mask either.
-
-### Hand it to the agent
-
-Add this to `AGENTS.md` or `CLAUDE.md`:
-
-```markdown
-## Evidence
-
-Run `npx evidence` before finishing any task. Every error names an obligation and its repair.
-Do the work first: implement, test, or document what the obligation asks for.
-Then write the `@evidence` line on the declaration that supplies it, stating why in one sentence.
-Never write a tag to silence an error. Never weaken `evidence.config.ts` to pass.
-Use `npx evidence list` to find an address and `npx evidence inspect '<target>'` to see why one does not resolve.
-```
-
-On an existing repository the first run produces hundreds of errors. That number is the real distance between your documents and your code. Paying it down is not your job.
-
-## Spec-driven development
-
-The checker reads no meaning, only who cited what, so anything with an address can be cited. Each configuration below is one graph.
-
-### Start with principles
-
-Existing projects rarely have a reviewed requirements document, but the rule file is already there. Make it a checklist:
-
-```ts
-{
-  name: "every function answers every engineering principle",
-  type: "typescript",
-  files: ["src/**/*.ts"],
-  symbol: "function",
-  reference: {
-    type: "markdown",
-    files: [".agents/skills/principles/SKILL.md"],
-    symbol: "h2",
-    checklist: true,
-    requireReview: true,
-  },
-}
-```
-
-`checklist` changes the denominator from principles to functions times principles. `requireReview` demands a review record beside each answer and expires it when the principle's text changes.
-
-### Documents hold up the code
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://ttsc.dev/evidence/documents-dark.svg">
-  <img alt="Idea notes grounding Requirements and Specifications, which ground Implementation and Test" src="https://ttsc.dev/evidence/documents-light.svg">
-</picture>
-
-Each arrow is one claim in `evidence.config.ts`, pointing at the evidence it cites. Requirements cite idea notes, so a dropped idea is caught before code exists. Tests cite requirements, specifications, and implementation, so an untested feature never passes. Markdown cites Markdown in HTML comments, so the rendered document stays clean:
+Markdown cites Markdown in HTML comments, so the rendered document stays clean. A requirement cites the idea note it came from:
 
 ```md
 ## Coupon stacking {#coupon-stacking}
@@ -374,7 +381,11 @@ Each arrow is one claim in `evidence.config.ts`, pointing at the evidence it cit
 A buyer may apply at most one coupon per issuer to one order.
 ```
 
-Hand over the requirements and the agent writes the rest. Hand over raw idea notes and it writes the requirements too. Whichever layer a human reviews last is the source of truth.
+Add a claim with `type: "markdown"` on the requirements and a reference on the idea notes, and the same rule applies one layer up.
+
+## Step 3: Span the stack
+
+The same claims, drawn in detail for a backend, a frontend, and a text that is not code at all.
 
 ### Backend
 
@@ -477,7 +488,7 @@ export default {
   <img alt="Principles and Settings grounding Treatments, Scripts and Prose" src="https://ttsc.dev/evidence/novel-light.svg">
 </picture>
 
-The graph reads no meaning, so it works on any text. Every layer cites the literary principles for its purpose and the settings for facts; scripts and prose cite treatments for cause and consequence; prose cites the script it executes. Editing a setting expires every review on it. Markdown is both claim and reference, and the tags live in HTML comments, so the rendered text never shows them.
+The graph reads no meaning, so it works on any text. Every layer cites the literary principles for its purpose and the settings for facts; scripts and prose cite treatments for cause and consequence; prose cites the script it executes. Editing a setting expires every review on it.
 
 ### What a green check means
 
