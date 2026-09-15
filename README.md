@@ -31,8 +31,8 @@ $ npx evidence
 Evidence check complete.
 Coverage: 4/5 units covered, 1 missing.
 
-ERROR [graph-missing-acknowledgement] claim[0] 'components' (typescript) -> reference[2] (typescript)
-Claim 1 ('components') reference 3: Missing acknowledgement for '/workspace/app/src/hooks/useCouponStacking.ts#useCouponStacking'.
+Missing acknowledgement:
+  src/hooks/useCouponStacking.ts#useCouponStacking
 ```
 
 The error list is the task list.
@@ -47,7 +47,7 @@ npx evidence init
 npx evidence
 ```
 
-`typescript` and [`ttsc`](https://github.com/samchon/ttsc) are peer dependencies. `ttsc` supplies `ttsx`, which evaluates `evidence.config.ts` without a project `tsconfig.json`. Grammars download on first use. The sections below fill the config in.
+`typescript` and [`ttsc`](https://github.com/samchon/ttsc) are peer dependencies. `ttsc` supplies `ttsx`, which evaluates `evidence.config.ts` without a project `tsconfig.json`. Grammars download on first use. The first example below replaces the starter configuration.
 
 ### 1.2. Why a graph
 
@@ -132,7 +132,7 @@ Each arrow is one claim. Requirements cite idea notes, so a dropped idea is caug
 
 Whichever layer a human reviews last is the source of truth. The agent writes everything below it.
 
-Two claims draw the bottom of the picture:
+In a separate requirements-driven project, two claims draw the bottom of the picture:
 
 ```ts
 import type { IEvidenceConfig } from "@wrtnlabs/evidence";
@@ -306,11 +306,11 @@ Reviews never provide coverage. `@evidenceReview` pairs with `@evidence`; `@evid
 | A source is unreadable, partially parsed, or unresolved | The population is incomplete, derivative findings are suppressed; exit 2. |
 | A claim is disabled or has effective severity `off` | Removed before loading. |
 
-Incomplete analysis never passes as an empty population, and a resolved citation is never proof that its reason is true.
+Incomplete analysis never passes as an empty population.
 
 ## 4. Configuration
 
-`evidence.config.ts` exports one `IEvidenceConfig`: `claims` and an optional root `severity`. It is evaluated through the consumer's `ttsx` and validated with `typia` before any source is read.
+`evidence.config.ts` exports one `IEvidenceConfig`: `claims` and an optional root `severity`. Severity defaults to `error`; claims inherit the root, and references inherit their claim. The config is evaluated through the consumer's `ttsx` and validated with `typia` before any source is read.
 
 ### 4.1. Claim
 
