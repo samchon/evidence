@@ -1,35 +1,38 @@
-import { EvidenceQuery } from "@wrtnlabs/evidence";
+import { EvidQuery } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
-import { TestQueryAnalysis } from "../../internal/TestQueryAnalysis";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidTestQueryAnalysis } from "../../internal/EvidTestQueryAnalysis";
 
 /**
- * Keeps reusable query contexts independent of caller mutations and concurrent resolution state.
+ * Keeps reusable query contexts independent of caller mutations and concurrent
+ * resolution state.
  *
  * Repeated reference entries retain separate configured boundaries even when a
  * caller mutates the analysis and output objects used to create the query. The
- * facade must preserve its own indexes while one inspection resolves and another
- * reports a missing target.
+ * facade must preserve its own indexes while one inspection resolves and
+ * another reports a missing target.
  *
- * 1. Create a query from the shared fixture and capture baseline list and graph reports.
- * 2. Erase caller-owned claims, report entries, listed items, diagnostics, and graph
- *    nodes; require subsequent list and graph calls to equal their baselines.
+ * 1. Create a query from the shared fixture and capture baseline list and graph
+ *    reports.
+ * 2. Erase caller-owned claims, report entries, listed items, diagnostics, and
+ *    graph nodes; require subsequent list and graph calls to equal their
+ *    baselines.
  * 3. Inspect a known target and an absent target concurrently. Require the known
- *    result to resolve through reference indexes 4 and 5 while the absent result
- *    remains unresolved.
+ *    result to resolve through reference indexes 4 and 5 while the absent
+ *    result remains unresolved.
  * 4. Mutate the returned inspection and require a later inspection to reproduce
  *    the unmodified baseline.
  */
 export async function test_query_context(): Promise<void> {
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     join(__dirname, `query context ${randomUUID()}`),
-    TestQueryAnalysis.records(),
+    EvidTestQueryAnalysis.records(),
     async (directory) => {
-      const analysis = await TestQueryAnalysis.analyze(directory, 2);
-      const query = new EvidenceQuery(analysis, directory);
+      const analysis = await EvidTestQueryAnalysis.analyze(directory, 2);
+      const query = new EvidQuery(analysis, directory);
       const listing = query.list();
       const baseline = structuredClone(listing);
       const target = listing.items.find(

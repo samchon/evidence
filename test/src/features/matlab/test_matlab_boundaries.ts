@@ -1,21 +1,21 @@
-import {
-  EvidenceLanguageRegistry,
-  EvidenceMatlabAdapter,
-} from "@wrtnlabs/evidence";
+import { EvidLanguageRegistry, EvidMatlabAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Rejects MATLAB inputs whose public surface cannot be determined safely.
+/**
+ * Rejects MATLAB inputs whose public surface cannot be determined safely.
  *
- * Dynamic runtime behavior, malformed declarations, unavailable sources, and unsupported file forms must remain incomplete so they cannot shrink coverage.
+ * Dynamic runtime behavior, malformed declarations, unavailable sources, and
+ * unsupported file forms must remain incomplete so they cannot shrink
+ * coverage.
  *
  * 1. Analyze dynamic, malformed, duplicate, and unsupported MATLAB sources.
  * 2. Require each inventory to be incomplete with an actionable diagnostic.
  * 3. Verify failed snapshots preserve incompleteness through adapter analysis.
  */
 export async function test_matlab_boundaries(): Promise<void> {
-  const adapter = new EvidenceMatlabAdapter();
+  const adapter = new EvidMatlabAdapter();
   for (const content of [
     "classdef Dynamic < dynamicprops\nend\n",
     "function Dynamic()\naddpath('other');\nend\n",
@@ -33,7 +33,7 @@ export async function test_matlab_boundaries(): Promise<void> {
     "@interface Dynamic\n@end\n",
   ]) {
     const inventory = await adapter.analyze(
-      TestSourceSnapshot.create("src/Dynamic.m", content),
+      EvidTestSourceSnapshot.create("src/Dynamic.m", content),
     );
     TestValidator.equals(`incomplete ${content}`, inventory.complete, false);
     TestValidator.predicate(
@@ -48,7 +48,10 @@ export async function test_matlab_boundaries(): Promise<void> {
     "class closing semicolon is a supported delimiter",
     (
       await adapter.analyze(
-        TestSourceSnapshot.create("src/Dynamic.m", "classdef Dynamic\nend;"),
+        EvidTestSourceSnapshot.create(
+          "src/Dynamic.m",
+          "classdef Dynamic\nend;",
+        ),
       )
     ).complete,
     true,
@@ -57,7 +60,7 @@ export async function test_matlab_boundaries(): Promise<void> {
     "class introspection does not create a legacy declaration",
     (
       await adapter.analyze(
-        TestSourceSnapshot.create(
+        EvidTestSourceSnapshot.create(
           "src/Dynamic.m",
           "function value=Dynamic(input)\nvalue=class(input);\nend\n",
         ),
@@ -70,7 +73,7 @@ export async function test_matlab_boundaries(): Promise<void> {
       `reject nontext source ${extension}`,
       (
         await adapter.analyze(
-          TestSourceSnapshot.create(
+          EvidTestSourceSnapshot.create(
             `src/Dynamic${extension}`,
             "function Dynamic()\nend\n",
           ),
@@ -80,10 +83,10 @@ export async function test_matlab_boundaries(): Promise<void> {
     );
   TestValidator.equals(
     "configured .m uses MATLAB",
-    EvidenceLanguageRegistry.select("matlab", "Shared.m").id,
+    EvidLanguageRegistry.select("matlab", "Shared.m").id,
     "matlab",
   );
-  const unavailable = TestSourceSnapshot.create("src/missing.m", "");
+  const unavailable = EvidTestSourceSnapshot.create("src/missing.m", "");
   unavailable.complete = false;
   unavailable.diagnostics.push({
     code: "path-unreadable",

@@ -1,11 +1,12 @@
-import { EvidenceJavaAdapter } from "@wrtnlabs/evidence";
+import { EvidJavaAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Resolves Java owners, nested declarations, properties, and overload families.
+/**
+ * Resolves Java owners, nested declarations, properties, and overload families.
  *
  * Exact target paths preserve class ownership and overload grouping.
  *
@@ -14,12 +15,12 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Require missing or ambiguous paths to retain their statuses.
  */
 export async function test_java_targets(): Promise<void> {
-  const adapter = new EvidenceJavaAdapter();
+  const adapter = new EvidJavaAdapter();
 
   // Package identity stays semantic; file targets begin at the top-level type.
   const reference = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/main/com/example/Sale.java",
         dedent`
           package com.example;
@@ -36,22 +37,22 @@ export async function test_java_targets(): Promise<void> {
           }
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/main/com/example/Point.java",
         "package com.example; public record Point(int x) {}\n",
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/main/com/example/State.java",
         "package com.example; public enum State { READY }\n",
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/main/com/example/Label.java",
         "package com.example; public @interface Label { String value(); }\n",
       ),
     ]),
   );
   const claim = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/test/Verify.java",
       dedent`
         public class Verify {
@@ -77,7 +78,7 @@ export async function test_java_targets(): Promise<void> {
     [],
   );
   TestValidator.equals("complete Java target claim", claim.diagnostics, []);
-  const resolutions = await TestGraph.resolveDeclarations(
+  const resolutions = await EvidTestGraph.resolveDeclarations(
     claim,
     reference,
     reference.units.map((unit) => unit.id),
@@ -125,7 +126,7 @@ export async function test_java_targets(): Promise<void> {
 
   // Java permits a field and method with one name; the configured symbol population disambiguates them.
   const collisionReference = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/main/Collision.java",
       dedent`
         public class Collision {
@@ -136,7 +137,7 @@ export async function test_java_targets(): Promise<void> {
     ),
   );
   const collisionClaim = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/test/CollisionTest.java",
       dedent`
         public class CollisionTest {
@@ -150,7 +151,7 @@ export async function test_java_targets(): Promise<void> {
     const selected = collisionReference.units.filter(
       (unit) => unit.symbol === symbol,
     );
-    const selectedResolutions = await TestGraph.resolveDeclarations(
+    const selectedResolutions = await EvidTestGraph.resolveDeclarations(
       collisionClaim,
       collisionReference,
       selected.map((unit) => unit.id),
@@ -161,7 +162,7 @@ export async function test_java_targets(): Promise<void> {
       ["resolved"],
     );
   }
-  const ambiguous = await TestGraph.resolveDeclarations(
+  const ambiguous = await EvidTestGraph.resolveDeclarations(
     collisionClaim,
     collisionReference,
     collisionReference.units.map((unit) => unit.id),

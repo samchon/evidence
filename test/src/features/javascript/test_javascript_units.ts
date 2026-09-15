@@ -1,20 +1,22 @@
-import { EvidenceJavaScriptAdapter } from "@wrtnlabs/evidence";
+import { EvidJavaScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Classifies JavaScript declarations, public members, and literal names.
+/**
+ * Classifies JavaScript declarations, public members, and literal names.
  *
- * The public denominator preserves member ownership and literal accessor segments.
+ * The public denominator preserves member ownership and literal accessor
+ * segments.
  *
  * 1. Analyze exported declarations and members.
  * 2. Compare identities and symbols.
  * 3. Verify literal names stay one segment.
  */
 export async function test_javascript_units(): Promise<void> {
-  const inventory = await new EvidenceJavaScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+  const inventory = await new EvidJavaScriptAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/contracts.mjs",
       dedent`
         export class Service {
@@ -82,13 +84,13 @@ export async function test_javascript_units(): Promise<void> {
     [],
   );
 
-  const defaults = await new EvidenceJavaScriptAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+  const defaults = await new EvidJavaScriptAdapter().analyze(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/default-arrow.mjs",
         "export default async () => 1;",
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/default-value.mjs",
         "export default { enabled: true };",
       ),

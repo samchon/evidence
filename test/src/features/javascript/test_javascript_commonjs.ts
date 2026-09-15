@@ -1,20 +1,22 @@
-import { EvidenceJavaScriptAdapter } from "@wrtnlabs/evidence";
+import { EvidJavaScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Publishes the bounded CommonJS surface with replacement and alias semantics.
+/**
+ * Publishes the bounded CommonJS surface with replacement and alias semantics.
  *
- * Assignment order determines exported identity and aliases cannot expose an unproved dynamic surface.
+ * Assignment order determines exported identity and aliases cannot expose an
+ * unproved dynamic surface.
  *
  * 1. Analyze CommonJS replacement and alias assignments.
  * 2. Compare exported units.
  * 3. Require unsupported dynamic exports to remain incomplete.
  */
 export async function test_javascript_commonjs(): Promise<void> {
-  const inventory = await new EvidenceJavaScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+  const inventory = await new EvidJavaScriptAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/contracts.cjs",
       dedent`
         /** @evidence docs/spec.md#run Implements the CommonJS function. */
@@ -62,8 +64,8 @@ export async function test_javascript_commonjs(): Promise<void> {
   );
 
   // Replacing the module with one local declaration exposes that declaration as default.
-  const replaced = await new EvidenceJavaScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+  const replaced = await new EvidJavaScriptAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/default.cjs",
       dedent`
         class Contract { value = 1; }
@@ -84,8 +86,8 @@ export async function test_javascript_commonjs(): Promise<void> {
     [],
   );
 
-  const noOp = await new EvidenceJavaScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+  const noOp = await new EvidJavaScriptAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/no-op.cjs",
       dedent`
         function run() {}

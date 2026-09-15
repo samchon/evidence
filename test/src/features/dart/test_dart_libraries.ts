@@ -1,21 +1,28 @@
-import { EvidenceDartAdapter, EvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidDartAdapter, EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Resolves Dart parts and transitive export aliases while preserving defining-library identity.
+/**
+ * Resolves Dart parts and transitive export aliases while preserving
+ * defining-library identity.
  *
- * A library's parts share visible members and reexports share semantic units, but aliases do not erase defining source ownership or hidden-export boundaries.
+ * A library's parts share visible members and reexports share semantic units,
+ * but aliases do not erase defining source ownership or hidden-export
+ * boundaries.
  *
- * 1. Analyze a library with reciprocal parts, generated part, transitive export, show/hide clauses, and an independent file.
- * 2. Resolve library-visible local, part, generated, and reexported members from every part file.
- * 3. Require the hidden alias to be missing only through the API, retain its defining-source resolution, and record parts as exact dependencies.
+ * 1. Analyze a library with reciprocal parts, generated part, transitive export,
+ *    show/hide clauses, and an independent file.
+ * 2. Resolve library-visible local, part, generated, and reexported members from
+ *    every part file.
+ * 3. Require the hidden alias to be missing only through the API, retain its
+ *    defining-source resolution, and record parts as exact dependencies.
  */
 export async function test_dart_libraries(): Promise<void> {
-  const inventory = await new EvidenceDartAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+  const inventory = await new EvidDartAdapter().analyze(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/api.dart",
         dedent`
       library app.api;
@@ -25,7 +32,7 @@ export async function test_dart_libraries(): Promise<void> {
       int local() => 1;
     `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/models.dart",
         dedent`
       part of 'api.dart';
@@ -33,16 +40,19 @@ export async function test_dart_libraries(): Promise<void> {
       class _Private { int child = 1; }
     `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/generated.g.dart",
         "part of app.api; final generated = 1;",
       ),
-      TestSourceSnapshot.create("src/bridge.dart", "export 'external.dart';"),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
+        "src/bridge.dart",
+        "export 'external.dart';",
+      ),
+      EvidTestSourceSnapshot.create(
         "src/external.dart",
         "class Exported { int value = 2; } final excluded = 1;",
       ),
-      TestSourceSnapshot.create("other/independent.dart", "class Model {}"),
+      EvidTestSourceSnapshot.create("other/independent.dart", "class Model {}"),
     ]),
   );
 
@@ -52,7 +62,7 @@ export async function test_dart_libraries(): Promise<void> {
     inventory.units.filter((unit) => unit.name === "Model").length,
     2,
   );
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   const ids = inventory.units.map((unit) => unit.id);
   for (const file of ["api.dart", "models.dart", "generated.g.dart"])
     for (const segments of [

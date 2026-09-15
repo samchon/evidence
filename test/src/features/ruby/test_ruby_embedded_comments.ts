@@ -1,19 +1,18 @@
-import {
-  EvidenceFingerprint,
-  EvidenceInventory,
-  EvidenceRubyAdapter,
-} from "@wrtnlabs/evidence";
+import { EvidFingerprint, EvidInventory, EvidRubyAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches embedded Ruby RDoc across nested declaration indentation.
+/**
+ * Attaches embedded Ruby RDoc across nested declaration indentation.
  *
- * Column-zero comments respect blank-line and lexical scope boundaries before they can document a member.
+ * Column-zero comments respect blank-line and lexical scope boundaries before
+ * they can document a member.
  *
  * 1. Analyze nested embedded RDoc under LF, CRLF, and tab-indented source.
  * 2. Require tags and reviews to attach to their nested owners, withdrawals to
- *    hide descendants, and metadata-only edits to preserve the ancestor fingerprint.
+ *    hide descendants, and metadata-only edits to preserve the ancestor
+ *    fingerprint.
  * 3. Require blank lines, lexical boundaries, and mismatched indentation to leave
  *    tagged carriers unsupported instead of acknowledging a declaration.
  */
@@ -39,14 +38,14 @@ export async function test_ruby_embedded_comments(): Promise<void> {
       end
     end
   `;
-  const adapter = new EvidenceRubyAdapter();
+  const adapter = new EvidRubyAdapter();
   for (const content of [
     source,
     source.replaceAll("\n", "\r\n"),
     source.replaceAll("  ", "\t"),
   ]) {
     const inventory = await adapter.analyze(
-      TestSourceSnapshot.create("lib/sale.rb", content),
+      EvidTestSourceSnapshot.create("lib/sale.rb", content),
     );
     const units = new Map(
       inventory.units.map((unit) => [unit.id, unit.identity.join(".")]),
@@ -85,7 +84,7 @@ export async function test_ruby_embedded_comments(): Promise<void> {
     );
     TestValidator.equals(
       "embedded withdrawal keeps its owner",
-      new EvidenceInventory([inventory])
+      new EvidInventory([inventory])
         .select(inventory.units.map((unit) => unit.id))
         .hidden.map((unit) => unit.identity.join("."))
         .sort((a, b) => a.localeCompare(b)),
@@ -98,7 +97,7 @@ export async function test_ruby_embedded_comments(): Promise<void> {
         content.indexOf(`@evidence ${item.target}`),
       );
     const edited = await adapter.analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "lib/sale.rb",
         content.replace(
           "Documents the title.",
@@ -107,7 +106,7 @@ export async function test_ruby_embedded_comments(): Promise<void> {
       ),
     );
     const changed = await adapter.analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "lib/sale.rb",
         content.replace("attr_reader :title", "attr_accessor :title"),
       ),
@@ -116,13 +115,13 @@ export async function test_ruby_embedded_comments(): Promise<void> {
     if (sale === undefined) throw new Error("Missing Sale.");
     TestValidator.equals(
       "nested metadata does not stale ancestor reviews",
-      EvidenceFingerprint.inspect(inventory, sale.id).fingerprint,
-      EvidenceFingerprint.inspect(edited, sale.id).fingerprint,
+      EvidFingerprint.inspect(inventory, sale.id).fingerprint,
+      EvidFingerprint.inspect(edited, sale.id).fingerprint,
     );
     TestValidator.notEquals(
       "nested declaration edits stale ancestor reviews",
-      EvidenceFingerprint.inspect(inventory, sale.id).fingerprint,
-      EvidenceFingerprint.inspect(changed, sale.id).fingerprint,
+      EvidFingerprint.inspect(inventory, sale.id).fingerprint,
+      EvidFingerprint.inspect(changed, sale.id).fingerprint,
     );
   }
 
@@ -133,7 +132,7 @@ export async function test_ruby_embedded_comments(): Promise<void> {
     "class Sale\n# @evidence docs/spec.md#indent A line comment must match indentation.\n  class Child; end\nend\n",
   ]) {
     const inventory = await adapter.analyze(
-      TestSourceSnapshot.create("lib/sale.rb", content),
+      EvidTestSourceSnapshot.create("lib/sale.rb", content),
     );
     TestValidator.equals(
       "unsupported comment does not acknowledge",

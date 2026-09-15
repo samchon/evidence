@@ -1,17 +1,21 @@
-import { EvidenceInventory, EvidencePythonAdapter } from "@wrtnlabs/evidence";
+import { EvidInventory, EvidPythonAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Attaches leading comments to the first eligible Python class member.
  *
- * The nested-class fixture places evidence before members, decorators, and constructor fields while also withdrawing a member, so lexical ownership must survive parser block boundaries.
+ * The nested-class fixture places evidence before members, decorators, and
+ * constructor fields while also withdrawing a member, so lexical ownership must
+ * survive parser block boundaries.
  *
  * 1. Analyze the nested class fixture with leading evidence comments.
- * 2. Verify evidence targets attach to the intended nested type, method, and constructor field rather than the enclosing class.
- * 3. Repeat the assertions for LF, CRLF, and tab-indented source, verifying withdrawal, completion, reviews, and original tag offsets.
+ * 2. Verify evidence targets attach to the intended nested type, method, and
+ *    constructor field rather than the enclosing class.
+ * 3. Repeat the assertions for LF, CRLF, and tab-indented source, verifying
+ *    withdrawal, completion, reviews, and original tag offsets.
  */
 export async function test_python_leading_comments(): Promise<void> {
   const source = dedent`
@@ -47,8 +51,8 @@ export async function test_python_leading_comments(): Promise<void> {
     source.replaceAll("\n", "\r\n"),
     source.replaceAll("    ", "\t"),
   ]) {
-    const inventory = await new EvidencePythonAdapter().analyze(
-      TestSourceSnapshot.create("src/sale.py", content),
+    const inventory = await new EvidPythonAdapter().analyze(
+      EvidTestSourceSnapshot.create("src/sale.py", content),
     );
     const units = new Map(
       inventory.units.map((unit) => [unit.id, unit.identity.join(".")]),
@@ -80,7 +84,7 @@ export async function test_python_leading_comments(): Promise<void> {
         (declaration) => declaration.target === "docs/spec.md#title",
       )?.hostId,
     );
-    const population = new EvidenceInventory([inventory]).select(
+    const population = new EvidInventory([inventory]).select(
       inventory.units.map((unit) => unit.id),
     );
     TestValidator.equals(

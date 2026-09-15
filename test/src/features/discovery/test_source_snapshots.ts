@@ -1,17 +1,18 @@
-import { EvidenceSourceLoader } from "@wrtnlabs/evidence";
+import { EvidSourceLoader, EvidSourcePath } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { SourcePath } from "../../../../packages/evidence/src/internal/SourcePath";
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
- * Anchors roots to the config, preserves raw source, and returns deterministic snapshots.
+ * Anchors roots to the config, preserves raw source, and returns deterministic
+ * snapshots.
  *
  * Discovery must preserve source bytes and stable address order while resolving
- * relative roots from the configuration file rather than the caller's directory.
+ * relative roots from the configuration file rather than the caller's
+ * directory.
  *
  * 1. Load the same selected Markdown population through relative and absolute
  *    roots; require equal inventories, ordered addresses, the authored root
@@ -32,7 +33,7 @@ export async function test_source_snapshots(): Promise<void> {
     Preserve this source.
   `.replaceAll("\n", "\r\n");
 
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     {
       "project/evidence.config.ts": "export default {};",
@@ -47,11 +48,11 @@ export async function test_source_snapshots(): Promise<void> {
       const config = join(directory, "project/evidence.config.ts");
       const files = ["**/*.md", "!private/**", "private/public.md"];
 
-      const relative = await EvidenceSourceLoader.glob(config, {
+      const relative = await EvidSourceLoader.glob(config, {
         root: "../shared",
         files,
       });
-      const absolute = await EvidenceSourceLoader.glob(config, {
+      const absolute = await EvidSourceLoader.glob(config, {
         root: join(directory, "shared"),
         files,
       });
@@ -83,7 +84,8 @@ export async function test_source_snapshots(): Promise<void> {
         "root tracks new matches",
         relative.dependencies.some(
           (dependency) =>
-            dependency.path === SourcePath.slash(join(directory, "shared")) &&
+            dependency.path ===
+              EvidSourcePath.slash(join(directory, "shared")) &&
             dependency.recursive,
         ),
       );
@@ -92,9 +94,9 @@ export async function test_source_snapshots(): Promise<void> {
       const previous = relative.files.find((file) =>
         file.addresses.some((address) => address.relative === "a.md"),
       );
-      await TestFileSystem.save(directory, { "shared/a.md": "# Changed" });
+      await EvidTestFileSystem.save(directory, { "shared/a.md": "# Changed" });
 
-      const changed = await EvidenceSourceLoader.file(config, "../shared/a.md");
+      const changed = await EvidSourceLoader.file(config, "../shared/a.md");
 
       TestValidator.predicate("exact local file", changed.complete);
       TestValidator.notEquals(
@@ -111,7 +113,7 @@ export async function test_source_snapshots(): Promise<void> {
       );
 
       // Discovery retains unknown extensions for explicit adapter acceptance or rejection.
-      const unclassified = await EvidenceSourceLoader.glob(config, {
+      const unclassified = await EvidSourceLoader.glob(config, {
         root: "../shared",
         files: ["*.unknown"],
       });

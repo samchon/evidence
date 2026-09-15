@@ -1,29 +1,34 @@
-import type { IEvidenceConfig } from "@wrtnlabs/evidence";
+import type { IEvidConfig } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { createEvidenceConfigPlan } from "../../../../packages/evidence/src/internal/createEvidenceConfigPlan";
+import { createEvidConfigPlan } from "evid";
 
 /**
- * Resolves artifact defaults and severity inheritance without losing authored configuration.
+ * Resolves artifact defaults and severity inheritance without losing authored
+ * configuration.
  *
  * A mixed configuration combines programming, database, and Swagger claims with
- * disabled claims, off references, and explicit severity overrides. Planning must
- * produce executable selections while preserving diagnostic indices and the
- * caller's original optional settings.
+ * disabled claims, off references, and explicit severity overrides. Planning
+ * must produce executable selections while preserving diagnostic indices and
+ * the caller's original optional settings.
  *
  * 1. Build the plan and require its default anchor to end in evidence.config.ts.
  * 2. Filter disabled, off, and obligation-free claims while retaining authored
  *    claim indices 0, 1, 2 and reference indices 0, 1.
  * 3. Check role-specific selectors:
- *    - Programming claims select all public kinds; their default references select types.
- *    - Database claims select models, columns, and relations; references default to models.
- *    - Markdown references retain file and heading kinds; Swagger claims select operations.
+ *
+ *    - Programming claims select all public kinds; their default references select
+ *         types.
+ *    - Database claims select models, columns, and relations; references default to
+ *         models.
+ *    - Markdown references retain file and heading kinds; Swagger claims select
+ *         operations.
  * 4. Verify root-to-claim-to-reference severity inheritance and the explicit error
  *    override without filling omitted selectors back into the caller's config.
  * 5. With root severity off, retain only the claim that explicitly overrides it.
  */
 export function test_config_resolution(): void {
-  const config: IEvidenceConfig = {
+  const config: IEvidConfig = {
     severity: "warning",
     claims: [
       {
@@ -74,7 +79,7 @@ export function test_config_resolution(): void {
     ],
   };
 
-  const plan = createEvidenceConfigPlan(config);
+  const plan = createEvidConfigPlan(config);
   const programming = plan.claims[0];
   const database = plan.claims[1];
   const swagger = plan.claims[2];
@@ -168,7 +173,7 @@ export function test_config_resolution(): void {
   );
 
   // A claim can override the root default, while an inherited root off removes the claim.
-  const rootOff = createEvidenceConfigPlan({
+  const rootOff = createEvidConfigPlan({
     severity: "off",
     claims: [
       {

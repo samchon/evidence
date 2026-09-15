@@ -1,22 +1,24 @@
-import { EvidenceTagParser } from "@wrtnlabs/evidence";
+import { EvidTagParser } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestDocumentation } from "../../internal/TestDocumentation";
+import { EvidTestDocumentation } from "../../internal/EvidTestDocumentation";
 
-/** Parses supported comment styles with exact CRLF source locations.
+/**
+ * Parses supported comment styles with exact CRLF source locations.
  *
- * HTML prose and Prisma-style carriers have distinct tag boundaries that must preserve original coordinates.
+ * HTML prose and Prisma-style carriers have distinct tag boundaries that must
+ * preserve original coordinates.
  *
  * 1. Parse HTML comments where foreign tags remain evidence prose and cannot
  *    create withdrawals, while an evidence review ends the acknowledgement.
- * 2. Parse CRLF Prisma-style line comments where a foreign tag ends the reason
- *    and an `@internal` line withdraws the declaration.
+ * 2. Parse CRLF Prisma-style line comments where a foreign tag ends the reason and
+ *    an `@internal` line withdraws the declaration.
  * 3. Verify the extracted annotation span excludes the CR and comment prefix and
  *    retains its original line and column.
  */
 export async function test_tag_comment_styles(): Promise<void> {
-  const html = TestDocumentation.create(
+  const html = EvidTestDocumentation.create(
     dedent`
     <!--
       @evidence docs/spec.md#rule Implements the rule.
@@ -32,7 +34,7 @@ export async function test_tag_comment_styles(): Promise<void> {
       allowWithdrawal: false,
     },
   );
-  const htmlResult = EvidenceTagParser.parse(
+  const htmlResult = EvidTagParser.parse(
     html.content,
     html.host,
     html.documentation,
@@ -55,7 +57,7 @@ export async function test_tag_comment_styles(): Promise<void> {
     1,
   );
 
-  const prisma = TestDocumentation.create(
+  const prisma = EvidTestDocumentation.create(
     dedent`
     /// @evidence prisma:Sale.price Implements the column.
     /// @namespace Shop
@@ -69,7 +71,7 @@ export async function test_tag_comment_styles(): Promise<void> {
       allowWithdrawal: true,
     },
   );
-  const prismaResult = EvidenceTagParser.parse(
+  const prismaResult = EvidTagParser.parse(
     prisma.content,
     prisma.host,
     prisma.documentation,

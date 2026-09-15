@@ -1,20 +1,22 @@
-import { EvidenceGoAdapter, EvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidGoAdapter, EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches Go group, specification, field, and method documentation.
+/**
+ * Attaches Go group, specification, field, and method documentation.
  *
- * Declaration documentation can host evidence while non-document carriers remain diagnostics.
+ * Declaration documentation can host evidence while non-document carriers
+ * remain diagnostics.
  *
  * 1. Analyze supported Go doc positions.
  * 2. Compare attached hosts.
  * 3. Reject annotations in inert carriers.
  */
 export async function test_go_hosts(): Promise<void> {
-  const inventory = await new EvidenceGoAdapter().analyze(
-    TestSourceSnapshot.create(
+  const inventory = await new EvidGoAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "shop/hosts.go",
       dedent`
         package shop
@@ -100,8 +102,8 @@ export async function test_go_hosts(): Promise<void> {
     5,
   );
 
-  const withdrawn = await new EvidenceGoAdapter().analyze(
-    TestSourceSnapshot.create(
+  const withdrawn = await new EvidGoAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "shop/internal.go",
       dedent`
         package shop
@@ -113,7 +115,7 @@ export async function test_go_hosts(): Promise<void> {
       ` + "\n",
     ),
   );
-  const population = new EvidenceInventory([withdrawn]).select(
+  const population = new EvidInventory([withdrawn]).select(
     withdrawn.units.map((unit) => unit.id),
   );
   TestValidator.equals(

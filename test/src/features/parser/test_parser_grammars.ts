@@ -1,25 +1,28 @@
-import { EvidenceParser } from "@wrtnlabs/evidence";
+import { EvidParser } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import type { IParserFixture } from "../../internal/IParserFixture";
+import type { IEvidParserFixture } from "../../internal/IEvidParserFixture";
 
 /**
- * Parses and queries representative declarations across registered language grammars.
+ * Parses and queries representative declarations across registered language
+ * grammars.
  *
  * Metadata alone cannot establish that a pinned WASM grammar can initialize,
  * accept source, and execute a query with the runtime. The fixtures include TSX
- * and languages with external scanners, and copy captured text before sessions end.
+ * and languages with external scanners, and copy captured text before sessions
+ * end.
  *
  * 1. Construct a parser and require no eagerly initialized languages.
  * 2. For each fixture, parse its declared language and filename, run its
- *    declaration-name query, and require exactly the independently specified name.
+ *    declaration-name query, and require exactly the independently specified
+ *    name.
  * 3. After every callback, require zero active sessions so successful extraction
  *    cannot accumulate native parser ownership across the fixture sequence.
  * 4. Close the parser in cleanup, including when an earlier assertion fails.
  */
 export async function test_parser_grammars(): Promise<void> {
-  const fixtures: IParserFixture[] = [
+  const fixtures: IEvidParserFixture[] = [
     {
       type: "objc",
       grammar: "objc",
@@ -192,7 +195,7 @@ export async function test_parser_grammars(): Promise<void> {
       query: "(class name: (constant) @name)",
     },
   ];
-  const parser = new EvidenceParser();
+  const parser = new EvidParser();
 
   try {
     TestValidator.equals(

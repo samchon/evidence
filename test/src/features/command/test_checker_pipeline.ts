@@ -1,14 +1,15 @@
-import { EvidenceChecker, EvidenceReporter } from "@wrtnlabs/evidence";
-import type { IEvidenceConfigPlan } from "@wrtnlabs/evidence";
+import { EvidChecker, EvidReporter } from "evid";
+import type { IEvidConfigPlan } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
- * Runs a complete two-reference check through discovery, adapters, graph evaluation, and rendering.
+ * Runs a complete two-reference check through discovery, adapters, graph
+ * evaluation, and rendering.
  *
  * One TypeScript function acknowledges both a Markdown requirement and a public
  * TypeScript contract. The report must retain their independently configured
@@ -16,6 +17,7 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  * stable representation that command callers can consume.
  *
  * 1. Evaluate the fully annotated fixture and require:
+ *
  *    - A successful zero exit with two covered units and no diagnostics.
  *    - The authored claim index 2 and reference indexes 3 and 5 in the report.
  * 2. Render that report as text and JSON; require coverage text, schema version,
@@ -30,7 +32,7 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  */
 export async function test_checker_pipeline(): Promise<void> {
   const location = join(__dirname, `checker ${randomUUID()}`);
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     {
       "evidence.config.ts": "export default {};\n",
@@ -58,7 +60,7 @@ export async function test_checker_pipeline(): Promise<void> {
       const plan = createPlan(directory, "error");
 
       // One declaration host independently satisfies Markdown and TypeScript obligations.
-      const passing = await EvidenceChecker.evaluate(plan);
+      const passing = await EvidChecker.evaluate(plan);
       const passingClaim = passing.report.claims[0];
       if (passingClaim === undefined)
         throw new Error("Missing checker result claim.");
@@ -85,8 +87,8 @@ export async function test_checker_pipeline(): Promise<void> {
       );
 
       // Text and JSON render the same counts and the versioned JSON is deterministic.
-      const text = EvidenceReporter.text(passing.report);
-      const json = EvidenceReporter.json(passing.report);
+      const text = EvidReporter.text(passing.report);
+      const json = EvidReporter.json(passing.report);
       TestValidator.predicate("text coverage", text.includes("Coverage: 2/2"));
       TestValidator.predicate(
         "json schema",
@@ -94,19 +96,19 @@ export async function test_checker_pipeline(): Promise<void> {
       );
       TestValidator.equals(
         "deterministic JSON",
-        EvidenceReporter.json(passing.report),
+        EvidReporter.json(passing.report),
         json,
       );
 
       // Removing both acknowledgements leaves complete analysis with violations.
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "src/implementation.ts": dedent`
           export function calculate(): number {
             return 1;
           }
         `,
       });
-      const failing = await EvidenceChecker.evaluate(plan);
+      const failing = await EvidChecker.evaluate(plan);
       TestValidator.equals("violation exit", failing.report.exitCode, 1);
       TestValidator.equals(
         "missing units",
@@ -122,7 +124,7 @@ export async function test_checker_pipeline(): Promise<void> {
         ),
       );
 
-      const failingText = EvidenceReporter.text(failing.report);
+      const failingText = EvidReporter.text(failing.report);
       TestValidator.predicate(
         "text claim and reference context",
         failingText.includes(
@@ -140,7 +142,7 @@ export async function test_checker_pipeline(): Promise<void> {
       TestValidator.predicate("text repair", failingText.includes("Repair:"));
 
       // Warning findings retain a successful process status after complete analysis.
-      const warning = await EvidenceChecker.evaluate(
+      const warning = await EvidChecker.evaluate(
         createPlan(directory, "warning"),
       );
       TestValidator.equals("warning exit", warning.report.exitCode, 0);
@@ -158,7 +160,7 @@ export async function test_checker_pipeline(): Promise<void> {
         throw new Error("Missing checker fixture reference.");
       firstReference.population.root = "missing-root";
 
-      const partial = await EvidenceChecker.evaluate(incomplete);
+      const partial = await EvidChecker.evaluate(incomplete);
       TestValidator.equals("incomplete exit", partial.report.exitCode, 2);
       TestValidator.equals(
         "incomplete status",
@@ -176,7 +178,7 @@ export async function test_checker_pipeline(): Promise<void> {
 function createPlan(
   directory: string,
   severity: "error" | "warning",
-): IEvidenceConfigPlan {
+): IEvidConfigPlan {
   return {
     configFile: join(directory, "evidence.config.ts"),
     claims: [

@@ -1,27 +1,29 @@
 import {
-  EvidenceAccessor,
-  EvidenceGraph,
-  EvidenceMarkdownAdapter,
-  EvidenceSqliteAdapter,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
+  EvidAccessor,
+  EvidGraph,
+  EvidMarkdownAdapter,
+  EvidSqliteAdapter,
+  EvidTypeScriptAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Evaluates SQLite selectors as claim and reference populations.
+/**
+ * Evaluates SQLite selectors as claim and reference populations.
  *
- * Graph role affects obligation ownership, while reviews are retained separately and cannot supply evidence coverage.
+ * Graph role affects obligation ownership, while reviews are retained
+ * separately and cannot supply evidence coverage.
  *
  * 1. Extract schema and claims for every SQLite selector.
  * 2. Evaluate covered and missing populations in both roles.
  * 3. Verify review-only resolutions leave coverage missing.
  */
 export async function test_sqlite_graph(): Promise<void> {
-  const schema = await new EvidenceSqliteAdapter().analyze(
-    TestSourceSnapshot.create(
+  const schema = await new EvidSqliteAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "schema.sql",
       dedent`
     -- @evidence docs.md#model Implements the model.
@@ -34,8 +36,8 @@ export async function test_sqlite_graph(): Promise<void> {
   `,
     ),
   );
-  const markdown = await new EvidenceMarkdownAdapter().analyze(
-    TestSourceSnapshot.create(
+  const markdown = await new EvidMarkdownAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "docs.md",
       "## model\n\n## column\n\n## relation\n",
     ),
@@ -49,10 +51,10 @@ export async function test_sqlite_graph(): Promise<void> {
       (address) => address.unitId === units[0]?.id,
     );
     if (target === undefined) throw new Error(`Missing ${symbol} address.`);
-    const claim = await new EvidenceTypeScriptAdapter().analyze(
-      TestSourceSnapshot.create(
+    const claim = await new EvidTypeScriptAdapter().analyze(
+      EvidTestSourceSnapshot.create(
         "claim.ts",
-        `/** @evidence ./schema.sql#${EvidenceAccessor.format(target.segments)} Verifies this database declaration. */\nexport function verify() {}\n`,
+        `/** @evidence ./schema.sql#${EvidAccessor.format(target.segments)} Verifies this database declaration. */\nexport function verify() {}\n`,
       ),
     );
 
@@ -60,7 +62,7 @@ export async function test_sqlite_graph(): Promise<void> {
       // SQLite is a reference; every undocumented selected declaration remains obligatory.
       const source = structuredClone(claim);
       if (!positive) source.declarations = [];
-      const graph = EvidenceGraph.evaluate({
+      const graph = EvidGraph.evaluate({
         claims: [
           {
             severity: "error",
@@ -71,7 +73,7 @@ export async function test_sqlite_graph(): Promise<void> {
                 severity: "error",
                 inventory: schema,
                 unitIds,
-                resolutions: await TestGraph.resolveDeclarations(
+                resolutions: await EvidTestGraph.resolveDeclarations(
                   source,
                   schema,
                   unitIds,
@@ -88,7 +90,7 @@ export async function test_sqlite_graph(): Promise<void> {
       );
       TestValidator.equals(
         `${symbol} exact reference denominator`,
-        TestGraph.obligation(graph, 0, 0).missingUnitIds,
+        EvidTestGraph.obligation(graph, 0, 0).missingUnitIds,
         positive ? [] : unitIds,
       );
 
@@ -102,7 +104,7 @@ export async function test_sqlite_graph(): Promise<void> {
       const referenceIds = markdown.units
         .filter((unit) => unit.identity.at(-1) === symbol)
         .map((unit) => unit.id);
-      const reverse = EvidenceGraph.evaluate({
+      const reverse = EvidGraph.evaluate({
         claims: [
           {
             severity: "error",
@@ -113,7 +115,7 @@ export async function test_sqlite_graph(): Promise<void> {
                 severity: "error",
                 inventory: markdown,
                 unitIds: referenceIds,
-                resolutions: await TestGraph.resolveDeclarations(
+                resolutions: await EvidTestGraph.resolveDeclarations(
                   database,
                   markdown,
                   referenceIds,
@@ -130,14 +132,14 @@ export async function test_sqlite_graph(): Promise<void> {
       );
       TestValidator.equals(
         `${symbol} exact claim denominator`,
-        TestGraph.obligation(reverse, 0, 0).missingUnitIds,
+        EvidTestGraph.obligation(reverse, 0, 0).missingUnitIds,
         positive ? [] : referenceIds,
       );
     }
   }
 
-  const review = await new EvidenceSqliteAdapter().analyze(
-    TestSourceSnapshot.create(
+  const review = await new EvidSqliteAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "review.sql",
       "-- @evidenceReview ./schema.sql#Account Reviewed without evidence.\nCREATE TABLE Reviewed (id INTEGER);",
     ),
@@ -155,7 +157,7 @@ export async function test_sqlite_graph(): Promise<void> {
   const selected = schema.units
     .filter((unit) => unit.symbol === "model")
     .map((unit) => unit.id);
-  const graph = EvidenceGraph.evaluate({
+  const graph = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -167,7 +169,7 @@ export async function test_sqlite_graph(): Promise<void> {
             inventory: schema,
             unitIds: selected,
             resolutions: [],
-            reviewResolutions: await TestGraph.resolveReviews(
+            reviewResolutions: await EvidTestGraph.resolveReviews(
               review,
               schema,
               selected,
@@ -179,7 +181,7 @@ export async function test_sqlite_graph(): Promise<void> {
   });
   TestValidator.equals(
     "review leaves ordinary coverage missing",
-    TestGraph.obligation(graph, 0, 0).missingUnitIds,
+    EvidTestGraph.obligation(graph, 0, 0).missingUnitIds,
     selected,
   );
 }

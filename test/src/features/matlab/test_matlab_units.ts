@@ -1,21 +1,25 @@
-import { EvidenceInventory, EvidenceMatlabAdapter } from "@wrtnlabs/evidence";
+import { EvidInventory, EvidMatlabAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Extracts MATLAB's public class and top-level function denominator.
+/**
+ * Extracts MATLAB's public class and top-level function denominator.
  *
- * Visibility, accessor forms, aliases, and class metadata determine public units, while private, nested, and local declarations must not be promoted.
+ * Visibility, accessor forms, aliases, and class metadata determine public
+ * units, while private, nested, and local declarations must not be promoted.
  *
- * 1. Analyze class properties, methods, events, enumerations, accessors, and separate function files.
- * 2. Verify exact public identities, shared accessor sites, ownership, and host coverage.
+ * 1. Analyze class properties, methods, events, enumerations, accessors, and
+ *    separate function files.
+ * 2. Verify exact public identities, shared accessor sites, ownership, and host
+ *    coverage.
  * 3. Resolve an aliased public property through the inventory.
  */
 export async function test_matlab_units(): Promise<void> {
-  const inventory = await new EvidenceMatlabAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+  const inventory = await new EvidMatlabAdapter().analyze(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/Contract.m",
         dedent`
       classdef (Hidden) Contract < handle
@@ -82,7 +86,7 @@ export async function test_matlab_units(): Promise<void> {
     `.concat("\n"),
         ["src/Contract.m", "alias/Contract.m"],
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/main.m",
         dedent`
       function value = main()
@@ -94,7 +98,7 @@ export async function test_matlab_units(): Promise<void> {
       end
     `.concat("\n"),
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/private/secret.m",
         "function secret()\nend\n",
       ),
@@ -151,7 +155,7 @@ export async function test_matlab_units(): Promise<void> {
     inventory.hosts.length,
     inventory.units.reduce((count, unit) => count + unit.sites.length, 0),
   );
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   TestValidator.equals(
     "logical alias",
     graph.resolve(

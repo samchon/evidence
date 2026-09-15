@@ -1,23 +1,26 @@
-import { EvidenceTagParser } from "@wrtnlabs/evidence";
+import { EvidTagParser } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestDocumentation } from "../../internal/TestDocumentation";
+import { EvidTestDocumentation } from "../../internal/EvidTestDocumentation";
 
-/** Reports common annotation failures without applying reference-specific syntax rules.
+/**
+ * Reports common annotation failures without applying reference-specific syntax
+ * rules.
  *
- * Tag parsing validates its own required form and preserves invalid inputs as findings.
+ * Tag parsing validates its own required form and preserves invalid inputs as
+ * findings.
  *
  * 1. Parse targetless evidence, reasonless evidence, inline links, and malformed
  *    review fingerprints or descriptions.
  * 2. Verify their diagnostic codes while preserving artifact-specific target text
  *    for later resolver validation.
  * 3. Require malformed reviews to create no review records.
- * 4. Parse unattached and unsupported hosts, then require a host diagnostic and
- *    no guessed declaration attachment.
+ * 4. Parse unattached and unsupported hosts, then require a host diagnostic and no
+ *    guessed declaration attachment.
  */
 export async function test_tag_diagnostics(): Promise<void> {
-  const fixture = TestDocumentation.create(dedent`
+  const fixture = EvidTestDocumentation.create(dedent`
     /**
      * @evidence
      * @evidence ../source.ts#value
@@ -32,7 +35,7 @@ export async function test_tag_diagnostics(): Promise<void> {
      * @evidenceReview docs/spec.md#rule #a3f9c1d
      */
   `);
-  const result = EvidenceTagParser.parse(
+  const result = EvidTagParser.parse(
     fixture.content,
     fixture.host,
     fixture.documentation,
@@ -64,12 +67,12 @@ export async function test_tag_diagnostics(): Promise<void> {
   TestValidator.equals("invalid reviews add no reviews", result.reviews, []);
 
   for (const attachment of ["unattached", "unsupported"] as const) {
-    const unowned = TestDocumentation.create(
+    const unowned = EvidTestDocumentation.create(
       "/** @evidence ../source.ts#value Supplies evidence. */",
       undefined,
       attachment,
     );
-    const parsed = EvidenceTagParser.parse(
+    const parsed = EvidTagParser.parse(
       unowned.content,
       unowned.host,
       unowned.documentation,

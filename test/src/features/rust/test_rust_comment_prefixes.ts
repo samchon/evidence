@@ -1,20 +1,19 @@
-import {
-  EvidenceFingerprint,
-  EvidenceInventory,
-  EvidenceRustAdapter,
-} from "@wrtnlabs/evidence";
+import { EvidFingerprint, EvidInventory, EvidRustAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Keeps Rust outer attributes attached across whitespace comments.
+/**
+ * Keeps Rust outer attributes attached across whitespace comments.
  *
- * Intervening comments cannot become evidence merely because they precede an attribute.
+ * Intervening comments cannot become evidence merely because they precede an
+ * attribute.
  *
  * 1. Analyze outer documentation, attributes, and ordinary comments separated by
  *    whitespace before one public item.
- * 2. Require only the documentation carrier to attach, ordinary tagged comments
- *    to remain unsupported, and content edits to affect the intended fingerprints.
+ * 2. Require only the documentation carrier to attach, ordinary tagged comments to
+ *    remain unsupported, and content edits to affect the intended
+ *    fingerprints.
  */
 export async function test_rust_comment_prefixes(): Promise<void> {
   const source = dedent`
@@ -39,10 +38,10 @@ export async function test_rust_comment_prefixes(): Promise<void> {
       pub struct Child;
     }
   `;
-  const adapter = new EvidenceRustAdapter();
+  const adapter = new EvidRustAdapter();
   for (const content of [source, source.replaceAll("\n", "\r\n")]) {
     const inventory = await adapter.analyze(
-      TestSourceSnapshot.create("src/lib.rs", content),
+      EvidTestSourceSnapshot.create("src/lib.rs", content),
     );
     const units = new Map(
       inventory.units.map((unit) => [unit.id, unit.identity.join(".")]),
@@ -75,7 +74,7 @@ export async function test_rust_comment_prefixes(): Promise<void> {
     );
     TestValidator.equals(
       "withdrawal crosses ordinary comments",
-      new EvidenceInventory([inventory])
+      new EvidInventory([inventory])
         .select(inventory.units.map((unit) => unit.id))
         .hidden.map((unit) => unit.identity.join("."))
         .sort((a, b) => a.localeCompare(b)),
@@ -89,7 +88,7 @@ export async function test_rust_comment_prefixes(): Promise<void> {
       );
 
     const edited = await adapter.analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/lib.rs",
         content.replace(
           "Implements the field.",
@@ -98,7 +97,7 @@ export async function test_rust_comment_prefixes(): Promise<void> {
       ),
     );
     const changed = await adapter.analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/lib.rs",
         content.replace("#[deprecated]", "#[must_use]"),
       ),
@@ -107,13 +106,13 @@ export async function test_rust_comment_prefixes(): Promise<void> {
     if (sale === undefined) throw new Error("Missing Sale.");
     TestValidator.equals(
       "annotation changes preserve ancestor reviews",
-      EvidenceFingerprint.inspect(inventory, sale.id).fingerprint,
-      EvidenceFingerprint.inspect(edited, sale.id).fingerprint,
+      EvidFingerprint.inspect(inventory, sale.id).fingerprint,
+      EvidFingerprint.inspect(edited, sale.id).fingerprint,
     );
     TestValidator.notEquals(
       "attributes remain semantic content",
-      EvidenceFingerprint.inspect(inventory, sale.id).fingerprint,
-      EvidenceFingerprint.inspect(changed, sale.id).fingerprint,
+      EvidFingerprint.inspect(inventory, sale.id).fingerprint,
+      EvidFingerprint.inspect(changed, sale.id).fingerprint,
     );
   }
 
@@ -124,7 +123,7 @@ export async function test_rust_comment_prefixes(): Promise<void> {
     "custom_macro",
   ]) {
     const inventory = await adapter.analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/lib.rs",
         `#[${attribute}]\n// whitespace\npub struct Conditional;\n`,
       ),

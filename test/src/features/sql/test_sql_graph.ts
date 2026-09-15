@@ -1,12 +1,14 @@
-import { EvidenceAccessor, EvidenceChecker } from "@wrtnlabs/evidence";
+import { EvidAccessor, EvidChecker } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
-/** Exercises SQL configuration selectors in both database graph roles.
+/**
+ * Exercises SQL configuration selectors in both database graph roles.
  *
- * The evaluated configuration must preserve covered and missing-evidence behavior for each selected SQL population.
+ * The evaluated configuration must preserve covered and missing-evidence
+ * behavior for each selected SQL population.
  *
  * 1. Run real claim and reference configurations for each selector.
  * 2. Evaluate matching acknowledgement and missing-evidence cases.
@@ -22,7 +24,7 @@ export async function test_sql_graph(): Promise<void> {
       FOREIGN KEY (id) REFERENCES parent(id)
     );
   `;
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "sql-graph",
     { "schema.sql": schema, "requirement.ts": "export const requirement = 1;" },
     async (directory) => {
@@ -32,13 +34,13 @@ export async function test_sql_graph(): Promise<void> {
             ? "ACCOUNT"
             : symbol === "column"
               ? "ACCOUNT.ID"
-              : EvidenceAccessor.format([
+              : EvidAccessor.format([
                   "ACCOUNT",
                   'foreign-key:["ID"]->["PARENT"](["ID"])',
                 ]);
         for (const role of ["claim", "reference"] as const) {
           for (const acknowledged of [true, false]) {
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "schema.sql":
                 role === "claim" && acknowledged
                   ? schema.replace(/^.*@evidence.*$/gmu, (line) =>
@@ -58,7 +60,7 @@ export async function test_sql_graph(): Promise<void> {
                   ? `export default { claims: [{ type: "sql", files: ["schema.sql"], symbol: "${symbol}", reference: { type: "typescript", files: ["requirement.ts"], symbol: "property" } }] };`
                   : `export default { claims: [{ type: "typescript", files: ["requirement.ts"], symbol: "property", reference: { type: "sql", files: ["schema.sql"], symbol: "${symbol}" } }] };`,
             });
-            const result = await EvidenceChecker.check(
+            const result = await EvidChecker.check(
               join(directory, "evidence.config.ts"),
             );
             TestValidator.equals(

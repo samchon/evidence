@@ -1,20 +1,23 @@
-import { EvidenceChecker, EvidenceWatcher } from "@wrtnlabs/evidence";
+import { EvidChecker, EvidWatcher } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
-/** Rebuilds the BigQuery population as watched schema files change.
+/**
+ * Rebuilds the BigQuery population as watched schema files change.
  *
- * Watch must publish new declarations, report malformed source without silently shrinking coverage, and recover when the schema is repaired.
+ * Watch must publish new declarations, report malformed source without silently
+ * shrinking coverage, and recover when the schema is repaired.
  *
- * 1. Start a watched project and add a schema file that contributes a selected table.
+ * 1. Start a watched project and add a schema file that contributes a selected
+ *    table.
  * 2. Replace its source with malformed SQL and require an incomplete report.
  * 3. Repair the schema and require the expected population to return.
  */
 export async function test_bigquery_watch(): Promise<void> {
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "bigquery-watch",
     {
       "evidence.config.ts": dedent`
@@ -28,7 +31,7 @@ export async function test_bigquery_watch(): Promise<void> {
     },
     async (directory) => {
       const config = join(directory, "evidence.config.ts");
-      const watcher = new EvidenceWatcher(config, {
+      const watcher = new EvidWatcher(config, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
       });
@@ -38,11 +41,11 @@ export async function test_bigquery_watch(): Promise<void> {
           TestValidator.equals(
             `fresh BigQuery cycle ${cycle.cycle}`,
             cycle.report,
-            await EvidenceChecker.check(config),
+            await EvidChecker.check(config),
           );
           if (cycle.cycle === 1) {
             TestValidator.equals("initial coverage", cycle.success, true);
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "schema/extra.sql": "CREATE TABLE ds.extra (id INT64);",
             });
           } else if (cycle.cycle === 2) {
@@ -51,7 +54,7 @@ export async function test_bigquery_watch(): Promise<void> {
               cycle.success,
               false,
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "schema/extra.sql": "CREATE TABLE ds.extra (",
             });
           } else if (cycle.cycle === 3) {
@@ -60,7 +63,7 @@ export async function test_bigquery_watch(): Promise<void> {
               cycle.status,
               "incomplete",
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "schema/extra.sql": "CREATE TEMP TABLE extra (id INT64);",
             });
           } else {

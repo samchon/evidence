@@ -1,20 +1,24 @@
-import { EvidenceInventory, EvidenceMatlabAdapter } from "@wrtnlabs/evidence";
+import { EvidInventory, EvidMatlabAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Assigns external MATLAB methods to their selected package class.
+/**
+ * Assigns external MATLAB methods to their selected package class.
  *
- * Class prototypes and implementation files describe one owner; missing or wrongly aliased class context must not create a passing inventory.
+ * Class prototypes and implementation files describe one owner; missing or
+ * wrongly aliased class context must not create a passing inventory.
  *
- * 1. Combine a package class with external public, private, and additional method files.
- * 2. Verify merged identities, prototype evidence, supported addresses, and ownership dependencies.
+ * 1. Combine a package class with external public, private, and additional method
+ *    files.
+ * 2. Verify merged identities, prototype evidence, supported addresses, and
+ *    ownership dependencies.
  * 3. Reverse snapshot order and require the same result.
  * 4. Require missing class or implementation inputs to remain incomplete.
  */
 export async function test_matlab_ownership(): Promise<void> {
-  const cls = TestSourceSnapshot.create(
+  const cls = EvidTestSourceSnapshot.create(
     "src/+pkg/@Widget/Widget.m",
     dedent`
     classdef Widget
@@ -28,20 +32,20 @@ export async function test_matlab_ownership(): Promise<void> {
     end
   `.concat("\n"),
   );
-  const run = TestSourceSnapshot.create(
+  const run = EvidTestSourceSnapshot.create(
     "src/+pkg/@Widget/run.m",
     "function run(obj)\n% Method help.\nend\n",
   );
-  const secret = TestSourceSnapshot.create(
+  const secret = EvidTestSourceSnapshot.create(
     "src/+pkg/@Widget/secret.m",
     "function secret(obj)\nend\n",
   );
-  const additional = TestSourceSnapshot.create(
+  const additional = EvidTestSourceSnapshot.create(
     "src/+pkg/@Widget/extra.m",
     "function extra(obj)\nend\n",
   );
-  const inventory = await new EvidenceMatlabAdapter().analyze(
-    TestSourceSnapshot.combine([cls, run, secret, additional]),
+  const inventory = await new EvidMatlabAdapter().analyze(
+    EvidTestSourceSnapshot.combine([cls, run, secret, additional]),
   );
 
   TestValidator.equals(
@@ -67,7 +71,7 @@ export async function test_matlab_ownership(): Promise<void> {
     method?.sites?.length,
     2,
   );
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   for (const file of ["Widget.m", "run.m"])
     TestValidator.equals(
       `external address ${file}`,
@@ -115,15 +119,15 @@ export async function test_matlab_ownership(): Promise<void> {
         dependency.recursive && dependency.path.endsWith("/@Widget"),
     ),
   );
-  const reversed = await new EvidenceMatlabAdapter().analyze(
-    TestSourceSnapshot.combine([additional, secret, run, cls]),
+  const reversed = await new EvidMatlabAdapter().analyze(
+    EvidTestSourceSnapshot.combine([additional, secret, run, cls]),
   );
   TestValidator.equals(
     "snapshot order does not alter ownership",
     reversed,
     inventory,
   );
-  const missing = await new EvidenceMatlabAdapter().analyze(run);
+  const missing = await new EvidMatlabAdapter().analyze(run);
   TestValidator.equals("missing class cannot pass", missing.complete, false);
   TestValidator.predicate(
     "actionable legacy boundary",
@@ -131,7 +135,7 @@ export async function test_matlab_ownership(): Promise<void> {
       (diagnostic) => diagnostic.code === "matlab-class-folder",
     ),
   );
-  const missingImplementation = await new EvidenceMatlabAdapter().analyze(cls);
+  const missingImplementation = await new EvidMatlabAdapter().analyze(cls);
   TestValidator.equals(
     "missing implementations cannot pass",
     missingImplementation.complete,

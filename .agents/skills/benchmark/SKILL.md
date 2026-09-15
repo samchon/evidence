@@ -1,6 +1,6 @@
 ---
 name: benchmark
-description: Defines Evidence benchmark workload integrity, parser/package footprint measurement, and reproducible result reporting. Use when running, changing, or publishing a benchmark; ordinary correctness tests do not require it.
+description: Defines Evidence Graph benchmark workload integrity, parser/package footprint measurement, and reproducible result reporting. Use when running, changing, or publishing a benchmark; ordinary correctness tests do not require it.
 ---
 
 # Benchmark

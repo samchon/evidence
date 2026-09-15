@@ -1,20 +1,25 @@
-import { EvidenceCSharpAdapter, EvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidCSharpAdapter, EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches C# XML documentation and rejects inert source carriers.
+/**
+ * Attaches C# XML documentation and rejects inert source carriers.
  *
- * The fixture separates eligible declaration docs from code examples, directives, strings, body comments, and inaccessible members.
+ * The fixture separates eligible declaration docs from code examples,
+ * directives, strings, body comments, and inaccessible members.
  *
- * 1. Extract evidence from XML documentation on public types, grouped fields, and methods.
+ * 1. Extract evidence from XML documentation on public types, grouped fields, and
+ *    methods.
  * 2. Verify grouped fields share a host and XML code/example regions remain inert.
- * 3. Require non-XML comments and inaccessible or directive-separated carriers to report unsupported annotations, while a withdrawn partial hierarchy stays hidden.
+ * 3. Require non-XML comments and inaccessible or directive-separated carriers to
+ *    report unsupported annotations, while a withdrawn partial hierarchy stays
+ *    hidden.
  */
 export async function test_csharp_hosts(): Promise<void> {
-  const inventory = await new EvidenceCSharpAdapter().analyze(
-    TestSourceSnapshot.create(
+  const inventory = await new EvidCSharpAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/Contracts.cs",
       dedent`
         /// <summary>
@@ -109,9 +114,9 @@ export async function test_csharp_hosts(): Promise<void> {
     10,
   );
 
-  const withdrawn = await new EvidenceCSharpAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+  const withdrawn = await new EvidCSharpAdapter().analyze(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/Hidden.cs",
         dedent`
           public partial class Hidden
@@ -120,7 +125,7 @@ export async function test_csharp_hosts(): Promise<void> {
           }
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/Hidden.Partial.cs",
         dedent`
           /// @internal Every selected part belongs to one withdrawn type.
@@ -132,7 +137,7 @@ export async function test_csharp_hosts(): Promise<void> {
       ),
     ]),
   );
-  const population = new EvidenceInventory([withdrawn]).select(
+  const population = new EvidInventory([withdrawn]).select(
     withdrawn.units.map((unit) => unit.id),
   );
   TestValidator.equals(

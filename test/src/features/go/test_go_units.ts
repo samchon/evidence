@@ -1,14 +1,13 @@
-import {
-  EvidenceGoAdapter,
-  EvidenceLanguageRegistry,
-} from "@wrtnlabs/evidence";
-import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+import { EvidGoAdapter, EvidLanguageRegistry } from "evid";
+import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Classifies exported Go declarations, embedded fields, interfaces, and receivers.
+/**
+ * Classifies exported Go declarations, embedded fields, interfaces, and
+ * receivers.
  *
  * The denominator includes each externally visible form with its lexical owner.
  *
@@ -17,19 +16,19 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Verify embedded and receiver members retain owners.
  */
 export async function test_go_units(): Promise<void> {
-  const language = EvidenceLanguageRegistry.list().find(
+  const language = EvidLanguageRegistry.list().find(
     (entry) => entry.type === "go",
   );
   if (language === undefined) throw new Error("Missing Go language metadata.");
   TestValidator.equals(
     "certified Go adapter",
     language.adapter?.entry,
-    "EvidenceGoAdapter",
+    "EvidGoAdapter",
   );
 
-  const inventory = await new EvidenceGoAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+  const inventory = await new EvidGoAdapter().analyze(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "shop/sale.go",
         dedent`
           package shop
@@ -86,7 +85,7 @@ export async function test_go_units(): Promise<void> {
           )
         ` + "\n",
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "shop/methods.go",
         dedent`
           package shop
@@ -159,10 +158,7 @@ export async function test_go_units(): Promise<void> {
   );
 }
 
-function requireUnit(
-  inventory: IEvidenceInventory,
-  name: string,
-): IEvidenceUnit {
+function requireUnit(inventory: IEvidInventory, name: string): IEvidUnit {
   const unit = inventory.units.find((candidate) => candidate.name === name);
   if (unit === undefined) throw new Error(`Missing Go unit: ${name}`);
   return unit;

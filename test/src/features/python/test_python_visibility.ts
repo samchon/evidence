@@ -1,29 +1,33 @@
-import { EvidenceInventory, EvidencePythonAdapter } from "@wrtnlabs/evidence";
+import { EvidInventory, EvidPythonAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Applies Python visibility rules to declarations and reexports.
  *
- * The package fixture combines conventionally public names, underscored names, local aliases, nested helpers, and withdrawals to test which addresses enter the selected surface.
+ * The package fixture combines conventionally public names, underscored names,
+ * local aliases, nested helpers, and withdrawals to test which addresses enter
+ * the selected surface.
  *
- * 1. Analyze the package and verify public declarations and allowed local reexports are present.
+ * 1. Analyze the package and verify public declarations and allowed local
+ *    reexports are present.
  * 2. Verify nested helpers and conventionally private names remain absent.
- * 3. Verify withdrawal hides its target without suppressing unrelated public declarations or completion.
+ * 3. Verify withdrawal hides its target without suppressing unrelated public
+ *    declarations or completion.
  */
 export async function test_python_visibility(): Promise<void> {
-  const inventory = await new EvidencePythonAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+  const inventory = await new EvidPythonAdapter().analyze(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "pkg/dep.py",
         dedent`
           class Source:
               pass
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "pkg/api.py",
         dedent`
           from .dep import Source as Alias
@@ -61,7 +65,7 @@ export async function test_python_visibility(): Promise<void> {
     false,
   );
 
-  const population = new EvidenceInventory([inventory]).select(
+  const population = new EvidInventory([inventory]).select(
     inventory.units.map((unit) => unit.id),
   );
   TestValidator.equals(

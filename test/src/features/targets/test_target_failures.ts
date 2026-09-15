@@ -1,19 +1,14 @@
-import {
-  EvidenceTargetResolver,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
-import type {
-  IEvidenceHost,
-  IEvidenceTargetStatement,
-} from "@wrtnlabs/evidence";
+import { EvidTargetResolver, EvidTypeScriptAdapter } from "evid";
+import type { IEvidHost, IEvidTargetStatement } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Distinguishes every unresolved target state.
+/**
+ * Distinguishes every unresolved target state.
  *
  * Missing, unselected, malformed, unsupported, withdrawn, ambiguous, and
  * incomplete addresses require different diagnostics and recovery behavior.
@@ -30,21 +25,21 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_target_failures(): Promise<void> {
   const location = join(__dirname, "failures-" + randomUUID());
 
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     { "src/outside.ts": "export const value = 1;" },
     async (directory) => {
       const root = directory.replaceAll("\\", "/");
       const host = createHost(root + "/docs/review.md");
-      const selected = await new EvidenceTypeScriptAdapter().analyze(
-        TestSourceSnapshot.create(
+      const selected = await new EvidTypeScriptAdapter().analyze(
+        EvidTestSourceSnapshot.create(
           "src/selected.ts",
           "export const value = 1;",
           undefined,
           root,
         ),
       );
-      const resolver = new EvidenceTargetResolver([selected]);
+      const resolver = new EvidTargetResolver([selected]);
       const ids = selected.units.map((unit) => unit.id);
 
       // Filesystem existence distinguishes a wrong selection from a missing path.
@@ -114,13 +109,13 @@ export async function test_target_failures(): Promise<void> {
   );
 
   // Withdrawn declarations retain their identity and withdrawal cause.
-  const hiddenInventory = await new EvidenceTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+  const hiddenInventory = await new EvidTypeScriptAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/hidden.ts",
       "/** @internal */\nexport function hidden(): void {}",
     ),
   );
-  const hiddenResolver = new EvidenceTargetResolver([hiddenInventory]);
+  const hiddenResolver = new EvidTargetResolver([hiddenInventory]);
   const hidden = await hiddenResolver.resolve(
     createStatement("../src/hidden.ts#hidden", "/project"),
     createHost("/project/docs/review.md"),
@@ -135,19 +130,17 @@ export async function test_target_failures(): Promise<void> {
   );
 
   // Competing star exports remain ambiguous instead of choosing scan order.
-  const ambiguousInventory = await new EvidenceTypeScriptAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create("src/a.ts", "export const value = 1;"),
-      TestSourceSnapshot.create("src/b.ts", "export const value = 2;"),
-      TestSourceSnapshot.create(
+  const ambiguousInventory = await new EvidTypeScriptAdapter().analyze(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create("src/a.ts", "export const value = 1;"),
+      EvidTestSourceSnapshot.create("src/b.ts", "export const value = 2;"),
+      EvidTestSourceSnapshot.create(
         "src/index.ts",
         'export * from "./a"; export * from "./b";',
       ),
     ]),
   );
-  const ambiguous = await new EvidenceTargetResolver([
-    ambiguousInventory,
-  ]).resolve(
+  const ambiguous = await new EvidTargetResolver([ambiguousInventory]).resolve(
     createStatement("../src/index.ts#value", "/project"),
     createHost("/project/docs/review.md"),
     ambiguousInventory.units.map((unit) => unit.id),
@@ -156,23 +149,23 @@ export async function test_target_failures(): Promise<void> {
   TestValidator.equals("ambiguous address", ambiguous.status, "ambiguous");
 
   // Any export-analysis failure prevents an otherwise valid address from covering.
-  const incompleteInventory = await new EvidenceTypeScriptAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create("src/value.ts", "export const value = 1;"),
-      TestSourceSnapshot.create(
+  const incompleteInventory = await new EvidTypeScriptAdapter().analyze(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create("src/value.ts", "export const value = 1;"),
+      EvidTestSourceSnapshot.create(
         "src/index.ts",
         'export { value, missing } from "./value";',
       ),
     ]),
   );
-  const incomplete = await new EvidenceTargetResolver([
+  const incomplete = await new EvidTargetResolver([
     incompleteInventory,
   ]).resolve(
     createStatement("../src/index.ts#value", "/project"),
     createHost("/project/docs/review.md"),
     incompleteInventory.units.map((unit) => unit.id),
   );
-  const incompleteMissing = await new EvidenceTargetResolver([
+  const incompleteMissing = await new EvidTargetResolver([
     incompleteInventory,
   ]).resolve(
     createStatement("../src/absent.ts#value", "/project"),
@@ -198,7 +191,7 @@ export async function test_target_failures(): Promise<void> {
   );
 }
 
-function createHost(file: string): IEvidenceHost {
+function createHost(file: string): IEvidHost {
   return {
     id: "claim-host",
     file,
@@ -213,10 +206,7 @@ function createHost(file: string): IEvidenceHost {
   };
 }
 
-function createStatement(
-  target: string,
-  root: string,
-): IEvidenceTargetStatement {
+function createStatement(target: string, root: string): IEvidTargetStatement {
   return {
     hostId: "claim-host",
     target,

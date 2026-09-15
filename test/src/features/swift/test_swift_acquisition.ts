@@ -1,13 +1,16 @@
-import { EvidenceSwiftAdapter } from "@wrtnlabs/evidence";
+import {
+  EvidSwiftAdapter,
+  EvidTreeSitterAssetScope,
+  EvidTreeSitterAssets,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TreeSitterAssets } from "../../../../packages/evidence/src/internal/TreeSitterAssets";
-import { TreeSitterAssetScope } from "../../../../packages/evidence/src/internal/TreeSitterAssetScope";
-import { TestFileSystem } from "../../internal/TestFileSystem";
-import { TestParserAssets } from "../../internal/TestParserAssets";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Acquires the pinned Swift parser and reuses it offline.
+/**
+ * Acquires the pinned Swift parser and reuses it offline.
  *
  * Cold and warm analysis must produce the same complete inventory.
  *
@@ -15,19 +18,19 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 2. Verify the selected asset and warm offline equivalence.
  */
 export async function test_swift_acquisition(): Promise<void> {
-  const grammar = await new TreeSitterAssets().grammar("swift");
-  const bytes = Uint8Array.from(await TestParserAssets.bytes(grammar));
-  const source = TestSourceSnapshot.create(
+  const grammar = await new EvidTreeSitterAssets().grammar("swift");
+  const bytes = Uint8Array.from(await EvidTestParserAssets.bytes(grammar));
+  const source = EvidTestSourceSnapshot.create(
     "src/Contract.swift",
     "public struct Contract { public var value = 1 }",
   );
 
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "swift-acquisition",
     {},
     async (directory) => {
       const requests: string[] = [];
-      const cold = await TreeSitterAssetScope.run(
+      const cold = await EvidTreeSitterAssetScope.run(
         {
           cacheDirectory: directory,
           fetch: async (input) => {
@@ -35,9 +38,9 @@ export async function test_swift_acquisition(): Promise<void> {
             return new Response(bytes);
           },
         },
-        () => new EvidenceSwiftAdapter().analyze(source),
+        () => new EvidSwiftAdapter().analyze(source),
       );
-      const warm = await TreeSitterAssetScope.run(
+      const warm = await EvidTreeSitterAssetScope.run(
         {
           cacheDirectory: directory,
           attempts: 1,
@@ -45,7 +48,7 @@ export async function test_swift_acquisition(): Promise<void> {
             throw new Error("offline");
           },
         },
-        () => new EvidenceSwiftAdapter().analyze(source),
+        () => new EvidSwiftAdapter().analyze(source),
       );
 
       TestValidator.equals(

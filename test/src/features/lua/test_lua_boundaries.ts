@@ -1,16 +1,20 @@
-import { EvidenceLuaAdapter } from "@wrtnlabs/evidence";
+import { EvidLuaAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Rejects smaller Lua inventories for dynamic exports and recovers on static source.
+/**
+ * Rejects smaller Lua inventories for dynamic exports and recovers on static
+ * source.
  *
- * Dynamic module publication cannot pass coverage by omitting unknown exported units.
+ * Dynamic module publication cannot pass coverage by omitting unknown exported
+ * units.
  *
- * 1. Analyze dynamic exports. 2. Require incompleteness. 3. Analyze a fresh static snapshot and require recovery.
+ * 1. Analyze dynamic exports. 2. Require incompleteness. 3. Analyze a fresh static
+ *    snapshot and require recovery.
  */
 export async function test_lua_boundaries(): Promise<void> {
-  const adapter = new EvidenceLuaAdapter();
+  const adapter = new EvidLuaAdapter();
   const cases = [
     'local M = require("dependency")\nreturn M',
     "local M = {}\nsetmetatable(M, {})\nreturn M",
@@ -41,7 +45,7 @@ export async function test_lua_boundaries(): Promise<void> {
   ];
   for (const content of cases) {
     const inventory = await adapter.analyze(
-      TestSourceSnapshot.create("module.lua", content),
+      EvidTestSourceSnapshot.create("module.lua", content),
     );
 
     TestValidator.equals(
@@ -60,7 +64,7 @@ export async function test_lua_boundaries(): Promise<void> {
     );
   }
   const repaired = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "module.lua",
       "function run(x) local t = {}\nt.x = 1\nx = 2\nreturn x end",
     ),
@@ -72,7 +76,7 @@ export async function test_lua_boundaries(): Promise<void> {
   );
   TestValidator.equals("fresh static recovery", repaired.complete, true);
   const reading = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "module.lua",
       "local M = { value = -1 }\nfunction M.run() local value = M.value\nprint(M.value)\nreturn value end\nreturn M",
     ),
@@ -83,7 +87,7 @@ export async function test_lua_boundaries(): Promise<void> {
     [],
   );
   const multiline = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "module.lua",
       "local\nfunction hidden() end\nlocal\nvalue = 1\nfunction visible() end",
     ),
@@ -95,7 +99,7 @@ export async function test_lua_boundaries(): Promise<void> {
   );
   for (const file of ["module.LUA", "module.txt"]) {
     const unsupported = await adapter.analyze(
-      TestSourceSnapshot.create(file, "function run() end"),
+      EvidTestSourceSnapshot.create(file, "function run() end"),
     );
     TestValidator.equals(
       "only advertised source spelling is accepted",
@@ -103,7 +107,10 @@ export async function test_lua_boundaries(): Promise<void> {
       false,
     );
   }
-  const failed = TestSourceSnapshot.create("module.lua", "function run() end");
+  const failed = EvidTestSourceSnapshot.create(
+    "module.lua",
+    "function run() end",
+  );
   failed.complete = false;
   failed.diagnostics.push({
     code: "path-unreadable",

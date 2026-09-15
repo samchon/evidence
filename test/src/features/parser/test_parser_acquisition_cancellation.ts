@@ -1,47 +1,49 @@
-import { TestParserAssets } from "../../internal/TestParserAssets";
+import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
 import { TestValidator } from "@nestia/e2e";
-import { TreeSitterAssets } from "../../../../packages/evidence/src/internal/TreeSitterAssets";
+import { EvidTreeSitterAssets } from "evid";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
-import { TestParserError } from "../../internal/TestParserError";
-import { TestSignal } from "../../internal/TestSignal";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidTestParserError } from "../../internal/EvidTestParserError";
+import { EvidTestSignal } from "../../internal/EvidTestSignal";
 
 /**
  * Isolates subscriber cancellation while bounding shared acquisition timeouts.
  *
  * Two asset providers can subscribe to one cold transfer. Aborting one caller
- * must not invalidate another caller's bytes, while an unresponsive transport must
- * still terminate after the configured finite retry budget.
+ * must not invalidate another caller's bytes, while an unresponsive transport
+ * must still terminate after the configured finite retry budget.
  *
  * 1. Join two providers to a transfer held behind a signal, with cancellation
  *    attached only to the first subscriber.
  * 2. Abort the first subscriber and require its asset-cancelled failure, then
  *    release the transfer and check the survivor:
+ *
  *    - It receives the complete pinned byte length.
  *    - Exactly one transfer occurred and its transport signal was not aborted.
  * 3. Use a separate empty cache and a transport that waits for abort; configure
- *    two attempts with a short deadline and require asset-download failure after
- *    exactly two timeout aborts.
+ *    two attempts with a short deadline and require asset-download failure
+ *    after exactly two timeout aborts.
  */
 export async function test_parser_acquisition_cancellation(): Promise<void> {
-  const grammar = await new TreeSitterAssets().grammar("python");
-  const pinned = Uint8Array.from(await TestParserAssets.bytes(grammar));
-  await TestFileSystem.experiment(
+  const grammar = await new EvidTreeSitterAssets().grammar("python");
+  const pinned = Uint8Array.from(await EvidTestParserAssets.bytes(grammar));
+  await EvidTestFileSystem.experiment(
     join(__dirname, `cancel-${randomUUID()}`),
     {},
     async (cacheDirectory) => {
-      const release = new TestSignal();
-      const joined = new TestSignal();
+      const release = new EvidTestSignal();
+      const joined = new EvidTestSignal();
       const cancellation = new AbortController();
       let requests = 0;
       let transferAborted = false;
       /**
        * Holds a shared download until both subscriber paths can be exercised.
        *
-       * The captured transport signal distinguishes subscriber cancellation from
-       * aborting the underlying request that the surviving caller still needs.
+       * The captured transport signal distinguishes subscriber cancellation
+       * from aborting the underlying request that the surviving caller still
+       * needs.
        */
       async function transfer(
         _input: string | URL | Request,
@@ -52,17 +54,17 @@ export async function test_parser_acquisition_cancellation(): Promise<void> {
         transferAborted = init?.signal?.aborted ?? false;
         return new Response(pinned);
       }
-      const first = new TreeSitterAssets({
+      const first = new EvidTreeSitterAssets({
         cacheDirectory,
         fetch: transfer,
         signal: cancellation.signal,
       });
-      const second = new TreeSitterAssets({
+      const second = new EvidTreeSitterAssets({
         cacheDirectory,
         fetch: transfer,
         progress: () => joined.open(),
       });
-      const cancelled = TestParserError.expect("asset-cancelled", () =>
+      const cancelled = EvidTestParserError.expect("asset-cancelled", () =>
         first.bytes(grammar),
       );
       const survivor = second.bytes(grammar);
@@ -89,7 +91,7 @@ export async function test_parser_acquisition_cancellation(): Promise<void> {
 
       // A timeout aborts the transport and retries only the configured finite number of times.
       let timeouts = 0;
-      const timed = new TreeSitterAssets({
+      const timed = new EvidTreeSitterAssets({
         cacheDirectory: join(cacheDirectory, "timeout"),
         attempts: 2,
         timeoutMilliseconds: 10,
@@ -108,7 +110,7 @@ export async function test_parser_acquisition_cancellation(): Promise<void> {
             else signal.addEventListener("abort", abort, { once: true });
           }),
       });
-      await TestParserError.expect("asset-download", () =>
+      await EvidTestParserError.expect("asset-download", () =>
         timed.bytes(grammar),
       );
       TestValidator.equals("bounded timeout attempts", timeouts, 2);

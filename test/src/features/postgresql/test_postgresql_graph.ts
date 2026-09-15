@@ -1,21 +1,23 @@
-import { EvidenceChecker } from "@wrtnlabs/evidence";
-import type { EvidenceDatabaseSymbol } from "@wrtnlabs/evidence";
+import { EvidChecker } from "evid";
+import type { EvidDatabaseSymbol } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
-/** Evaluates PostgreSQL selectors as claim and reference populations.
+/**
+ * Evaluates PostgreSQL selectors as claim and reference populations.
  *
- * Selector role determines coverage ownership, and review-only annotations cannot satisfy a missing obligation.
+ * Selector role determines coverage ownership, and review-only annotations
+ * cannot satisfy a missing obligation.
  *
  * 1. Build configurations for each PostgreSQL selector in both roles.
  * 2. Check covered and missing-evidence graph outcomes.
  * 3. Verify review-only evidence remains uncovered.
  */
 export async function test_postgresql_graph(): Promise<void> {
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "postgresql-graph",
     {
       "claim.sql": dedent`
@@ -45,40 +47,41 @@ export async function test_postgresql_graph(): Promise<void> {
             direction === "claim"
               ? claimSource(symbol)
               : "/** @evidence ./reference.sql#app.other Covers the table subtree. */\nexport function claim() {}\n";
-          await TestFileSystem.save(directory, {
+          await EvidTestFileSystem.save(directory, {
             "evidence.config.ts": configuration,
             [filename]: original,
           });
           const path = join(directory, "evidence.config.ts");
-          const complete = await EvidenceChecker.check(path);
+          const complete = await EvidChecker.check(path);
           TestValidator.equals(
             `${symbol} ${direction} succeeds`,
             complete.success,
             true,
           );
           for (const marker of ["Ordinary prose", "@evidenceReview"]) {
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               [filename]: original.replaceAll("@evidence", marker),
             });
-            const missing = await EvidenceChecker.check(path);
+            const missing = await EvidChecker.check(path);
             TestValidator.equals(
               `${symbol} ${direction} ${marker} does not cover`,
               missing.success,
               false,
             );
           }
-          await TestFileSystem.save(directory, { [filename]: original });
+          await EvidTestFileSystem.save(directory, { [filename]: original });
         }
     },
   );
 }
 
-/** Builds PostgreSQL source with one acknowledgement on the selected host kind.
+/**
+ * Builds PostgreSQL source with one acknowledgement on the selected host kind.
  *
  * Unselected model, column, and relation positions receive ordinary prose so
  * each selector scenario isolates its own eligible documentation carrier.
  */
-function claimSource(symbol: EvidenceDatabaseSymbol): string {
+function claimSource(symbol: EvidDatabaseSymbol): string {
   return dedent`
     -- ${symbol === "model" ? "@evidence ./reference.ts#contract Covers the model." : "Table declaration."}
     CREATE TABLE app.Item (

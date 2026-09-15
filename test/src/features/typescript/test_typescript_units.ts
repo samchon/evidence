@@ -1,13 +1,15 @@
-import { EvidenceTypeScriptAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceUnit } from "@wrtnlabs/evidence";
+import { EvidTypeScriptAdapter } from "evid";
+import type { IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Classifies TypeScript's supported public declaration matrix.
+/**
+ * Classifies TypeScript's supported public declaration matrix.
  *
- * Declaration kind and member path determine the addressable population exported by an artifact.
+ * Declaration kind and member path determine the addressable population
+ * exported by an artifact.
  *
  * 1. Analyze supported declarations and members.
  * 2. Verify exact symbols, identities, and public paths.
@@ -65,8 +67,8 @@ export async function test_typescript_units(): Promise<void> {
 
     export enum Ignored { A }
   `;
-  const inventory = await new EvidenceTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create("src/contracts.ts", content),
+  const inventory = await new EvidTypeScriptAdapter().analyze(
+    EvidTestSourceSnapshot.create("src/contracts.ts", content),
   );
 
   const actual = inventory.units
@@ -130,10 +132,10 @@ export async function test_typescript_units(): Promise<void> {
 }
 
 function requireUnit(
-  units: IEvidenceUnit[],
-  symbol: IEvidenceUnit["symbol"],
+  units: IEvidUnit[],
+  symbol: IEvidUnit["symbol"],
   identity: string,
-): IEvidenceUnit {
+): IEvidUnit {
   const unit = units.find(
     (entry) => entry.symbol === symbol && entry.identity.join(".") === identity,
   );

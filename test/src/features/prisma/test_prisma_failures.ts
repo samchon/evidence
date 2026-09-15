@@ -1,20 +1,22 @@
-import { EvidenceGraph, EvidencePrismaAdapter } from "@wrtnlabs/evidence";
+import { EvidGraph, EvidPrismaAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Keeps rejected and unreadable Prisma schemas incomplete until repair.
+/**
+ * Keeps rejected and unreadable Prisma schemas incomplete until repair.
  *
- * A failing schema remains an active graph participant so coverage cannot pass from a reduced population.
+ * A failing schema remains an active graph participant so coverage cannot pass
+ * from a reduced population.
  *
  * 1. Analyze rejected and unreadable schemas and inspect their diagnostics.
  * 2. Evaluate their active claim in the graph and require failure.
  * 3. Repair the schema and require complete recovery.
  */
 export async function test_prisma_failures(): Promise<void> {
-  const adapter = new EvidencePrismaAdapter();
+  const adapter = new EvidPrismaAdapter();
   const broken = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "prisma/schema.prisma",
       "model Sale {\n  id String @id\n",
     ),
@@ -34,7 +36,7 @@ export async function test_prisma_failures(): Promise<void> {
   );
 
   // An incomplete claim remains active and cannot pass as an empty host population.
-  const graph = EvidenceGraph.evaluate({
+  const graph = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -57,7 +59,7 @@ export async function test_prisma_failures(): Promise<void> {
 
   // Repairing the same schema produces a complete parser inventory on the next run.
   const repaired = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "prisma/schema.prisma",
       "model Sale {\n  id String @id\n}\n",
     ),
@@ -70,8 +72,8 @@ export async function test_prisma_failures(): Promise<void> {
   );
 
   const unreadable = await adapter.analyze(
-    TestSourceSnapshot.fail(
-      TestSourceSnapshot.create("prisma/available.prisma", ""),
+    EvidTestSourceSnapshot.fail(
+      EvidTestSourceSnapshot.create("prisma/available.prisma", ""),
       {
         code: "path-unreadable",
         path: "/project/prisma/missing.prisma",

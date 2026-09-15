@@ -1,14 +1,10 @@
-import {
-  EvidenceFingerprint,
-  EvidenceGraph,
-  EvidenceMarkdownAdapter,
-} from "@wrtnlabs/evidence";
-import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+import { EvidFingerprint, EvidGraph, EvidMarkdownAdapter } from "evid";
+import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Accepts a Markdown section's current review of its own evidence target.
@@ -18,8 +14,8 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * author can add the required self-review without immediately making it stale.
  *
  * 1. Analyze a bare Markdown rule and record its target fingerprint.
- * 2. Add a self acknowledgement and review carrying that fingerprint, then
- *    require the rule's recomputed fingerprint to remain unchanged.
+ * 2. Add a self acknowledgement and review carrying that fingerprint, then require
+ *    the rule's recomputed fingerprint to remain unchanged.
  * 3. Evaluate the section as both claim and required-review reference target.
  * 4. Require no diagnostics and a successful current self-review.
  */
@@ -32,7 +28,7 @@ export async function test_graph_review_self_reference(): Promise<void> {
     `,
   );
   const bareRule = requireUnit(bare, "review-discipline");
-  const expected = EvidenceFingerprint.inspect(bare, bareRule.id).fingerprint;
+  const expected = EvidFingerprint.inspect(bare, bareRule.id).fingerprint;
   const reviewed = await analyze(
     dedent`
       ## Review discipline {#review-discipline}
@@ -49,11 +45,11 @@ export async function test_graph_review_self_reference(): Promise<void> {
 
   TestValidator.equals(
     "writing review leaves target fingerprint stable",
-    EvidenceFingerprint.inspect(reviewed, reviewedRule.id).fingerprint,
+    EvidFingerprint.inspect(reviewed, reviewedRule.id).fingerprint,
     expected,
   );
 
-  const result = EvidenceGraph.evaluate({
+  const result = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -64,12 +60,12 @@ export async function test_graph_review_self_reference(): Promise<void> {
             severity: "error",
             inventory: reviewed,
             unitIds: [reviewedRule.id],
-            resolutions: await TestGraph.resolveDeclarations(
+            resolutions: await EvidTestGraph.resolveDeclarations(
               reviewed,
               reviewed,
               [reviewedRule.id],
             ),
-            reviewResolutions: await TestGraph.resolveReviews(
+            reviewResolutions: await EvidTestGraph.resolveReviews(
               reviewed,
               reviewed,
               [reviewedRule.id],
@@ -86,14 +82,15 @@ export async function test_graph_review_self_reference(): Promise<void> {
 }
 
 /**
- * Extracts a Markdown rule from the fixed source identity used by the self-review fixture.
+ * Extracts a Markdown rule from the fixed source identity used by the
+ * self-review fixture.
  *
  * Keeping the file path and document-relative base stable isolates the inserted
  * acknowledgement and review spans from target-resolution or identity changes.
  */
-async function analyze(content: string): Promise<IEvidenceInventory> {
-  return new EvidenceMarkdownAdapter().analyze(
-    TestSourceSnapshot.create(
+async function analyze(content: string): Promise<IEvidInventory> {
+  return new EvidMarkdownAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "rules.md",
       content,
       ["rules.md"],
@@ -102,10 +99,7 @@ async function analyze(content: string): Promise<IEvidenceInventory> {
   );
 }
 
-function requireUnit(
-  inventory: IEvidenceInventory,
-  identity: string,
-): IEvidenceUnit {
+function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.at(-1) === identity,
   );

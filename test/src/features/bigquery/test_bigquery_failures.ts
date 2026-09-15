@@ -1,19 +1,25 @@
-import { EvidenceBigQueryAdapter } from "@wrtnlabs/evidence";
+import { EvidBigQueryAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Keeps unsupported and malformed GoogleSQL from producing a smaller passing population.
+/**
+ * Keeps unsupported and malformed GoogleSQL from producing a smaller passing
+ * population.
  *
- * BigQuery analysis must preserve failure information whenever static extraction cannot establish an authoritative schema surface.
+ * BigQuery analysis must preserve failure information whenever static
+ * extraction cannot establish an authoritative schema surface.
  *
- * 1. Analyze unsupported table forms, conflicting declarations, invalid keys and types, dynamic options, and malformed syntax.
- * 2. Require every case to be incomplete with an error diagnostic that provides a repair.
- * 3. Retain an unreadable-source failure and exclude a temporary table while retaining the persistent table and column.
+ * 1. Analyze unsupported table forms, conflicting declarations, invalid keys and
+ *    types, dynamic options, and malformed syntax.
+ * 2. Require every case to be incomplete with an error diagnostic that provides a
+ *    repair.
+ * 3. Retain an unreadable-source failure and exclude a temporary table while
+ *    retaining the persistent table and column.
  */
 export async function test_bigquery_failures(): Promise<void> {
-  const adapter = new EvidenceBigQueryAdapter();
+  const adapter = new EvidBigQueryAdapter();
   for (const content of [
     "CREATE TABLE ds.result AS SELECT 1 AS id;",
     "CREATE VIEW ds.result AS SELECT 1 AS id;",
@@ -37,7 +43,7 @@ export async function test_bigquery_failures(): Promise<void> {
     "CREATE TABLE ds.orders (id INT64); CREATE TABLE ds.orders (id STRING);",
   ]) {
     const inventory = await adapter.analyze(
-      TestSourceSnapshot.create("schema.sql", content),
+      EvidTestSourceSnapshot.create("schema.sql", content),
     );
     TestValidator.equals(
       `incomplete source: ${content}`,
@@ -53,8 +59,8 @@ export async function test_bigquery_failures(): Promise<void> {
     );
   }
   const failed = await adapter.analyze(
-    TestSourceSnapshot.fail(
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.fail(
+      EvidTestSourceSnapshot.create(
         "schema.sql",
         "CREATE TABLE ds.orders (id INT64);",
       ),
@@ -78,7 +84,7 @@ export async function test_bigquery_failures(): Promise<void> {
   );
 
   const temporary = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "schema.sql",
       dedent`
     CREATE TEMP TABLE scratch (id INT64);

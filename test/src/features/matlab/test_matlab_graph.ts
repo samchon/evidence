@@ -1,17 +1,16 @@
-import {
-  EvidenceGraph,
-  EvidenceMatlabAdapter,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
+import { EvidGraph, EvidMatlabAdapter, EvidTypeScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Evaluates each selected MATLAB declaration as a required cross-language reference.
+/**
+ * Evaluates each selected MATLAB declaration as a required cross-language
+ * reference.
  *
- * Evidence and reviews have different graph effects: missing evidence fails coverage, while a review is retained but cannot satisfy it.
+ * Evid and reviews have different graph effects: missing evidence fails
+ * coverage, while a review is retained but cannot satisfy it.
  *
  * 1. Extract MATLAB type, function, and property units with TypeScript claims.
  * 2. Evaluate each selector with and without its matching acknowledgement.
@@ -19,8 +18,8 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 4. Verify a review-only claim leaves its referenced function uncovered.
  */
 export async function test_matlab_graph(): Promise<void> {
-  const reference = await new EvidenceMatlabAdapter().analyze(
-    TestSourceSnapshot.create(
+  const reference = await new EvidMatlabAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/Contract.m",
       dedent`
     classdef Contract
@@ -35,8 +34,8 @@ export async function test_matlab_graph(): Promise<void> {
   `.concat("\n"),
     ),
   );
-  const claims = await new EvidenceTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+  const claims = await new EvidTypeScriptAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/Claims.ts",
       dedent`
     /** @evidence ./Contract.m#Contract Verifies the type. */
@@ -72,7 +71,7 @@ export async function test_matlab_graph(): Promise<void> {
             ),
           )
         : [];
-      const graph = EvidenceGraph.evaluate({
+      const graph = EvidGraph.evaluate({
         claims: [
           {
             severity: "error",
@@ -83,7 +82,7 @@ export async function test_matlab_graph(): Promise<void> {
                 severity: "error",
                 inventory: reference,
                 unitIds,
-                resolutions: await TestGraph.resolveDeclarations(
+                resolutions: await EvidTestGraph.resolveDeclarations(
                   claim,
                   reference,
                   unitIds,
@@ -100,13 +99,13 @@ export async function test_matlab_graph(): Promise<void> {
       );
       TestValidator.equals(
         `${symbol} exact missing population`,
-        TestGraph.obligation(graph, 0, 0).missingUnitIds,
+        EvidTestGraph.obligation(graph, 0, 0).missingUnitIds,
         acknowledged ? [] : unitIds,
       );
     }
   }
-  const review = await new EvidenceMatlabAdapter().analyze(
-    TestSourceSnapshot.create(
+  const review = await new EvidMatlabAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/review.m",
       dedent`
     function review()
@@ -124,7 +123,7 @@ export async function test_matlab_graph(): Promise<void> {
   const functions = reference.units
     .filter((unit) => unit.symbol === "function")
     .map((unit) => unit.id);
-  const graph = EvidenceGraph.evaluate({
+  const graph = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -136,7 +135,7 @@ export async function test_matlab_graph(): Promise<void> {
             inventory: reference,
             unitIds: functions,
             resolutions: [],
-            reviewResolutions: await TestGraph.resolveReviews(
+            reviewResolutions: await EvidTestGraph.resolveReviews(
               review,
               reference,
               functions,
@@ -148,7 +147,7 @@ export async function test_matlab_graph(): Promise<void> {
   });
   TestValidator.equals(
     "review never supplies missing coverage",
-    TestGraph.obligation(graph, 0, 0).missingUnitIds,
+    EvidTestGraph.obligation(graph, 0, 0).missingUnitIds,
     functions,
   );
 }

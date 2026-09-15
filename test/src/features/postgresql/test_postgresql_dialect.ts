@@ -1,26 +1,26 @@
-import {
-  EvidencePostgresqlAdapter,
-  EvidenceSqlAdapter,
-} from "@wrtnlabs/evidence";
+import { EvidPostgresqlAdapter, EvidSqlAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Uses configured PostgreSQL naming for a source that portable SQL also accepts.
+/**
+ * Uses configured PostgreSQL naming for a source that portable SQL also
+ * accepts.
  *
- * Dialect selection changes the public spelling and must remain visible in units and targets.
+ * Dialect selection changes the public spelling and must remain visible in
+ * units and targets.
  *
  * 1. Analyze the same schema with PostgreSQL and portable SQL adapters.
  * 2. Verify both inventories are complete.
  * 3. Require PostgreSQL-specific identities and resolution results.
  */
 export async function test_postgresql_dialect(): Promise<void> {
-  const snapshot = TestSourceSnapshot.create(
+  const snapshot = EvidTestSourceSnapshot.create(
     "schema.sql",
     "CREATE TABLE App.Item (ID INTEGER);",
   );
-  const postgres = await new EvidencePostgresqlAdapter().analyze(snapshot);
-  const portable = await new EvidenceSqlAdapter().analyze(snapshot);
+  const postgres = await new EvidPostgresqlAdapter().analyze(snapshot);
+  const portable = await new EvidSqlAdapter().analyze(snapshot);
 
   TestValidator.equals("PostgreSQL complete", postgres.diagnostics, []);
   TestValidator.equals("portable SQL complete", portable.diagnostics, []);

@@ -1,8 +1,9 @@
 import {
-  EvidenceConfigLoader,
-  type IEvidenceConfig,
-  type IEvidenceSourceDependency,
-} from "@wrtnlabs/evidence";
+  EvidConfigDependencyScanner,
+  EvidConfigLoader,
+  type IEvidConfig,
+  type IEvidSourceDependency,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
@@ -10,8 +11,7 @@ import { symlink } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { join } from "node:path";
 
-import { ConfigDependencyScanner } from "../../../../packages/evidence/src/internal/ConfigDependencyScanner";
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
  * Resolves static config dependencies with the mechanism used at runtime.
@@ -22,23 +22,26 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  * another one.
  *
  * 1. Scan an ESM TypeScript config that combines:
+ *
  *    - A static package import whose selected entry reexports another package.
  *    - MTS and CTS helpers with their own static package imports.
  *    - Literal dynamic `import()` and `require()` package requests.
  * 2. Require every import request, including the transitive reexport, to select
- *    its package's import entry and the CTS/require requests to select require.
+ *    its package's import entry and the CTS/require requests to select
+ *    require.
  * 3. Require every unused opposite-condition entry to remain outside the watch
  *    set, proving that success does not come from observing whole packages.
  * 4. Require a package exposing only an import condition to resolve normally.
  * 5. Require a package selected by CommonJS whose `.js` entry belongs to an ESM
- *    package scope; verify Node and scanning use import for its nested request.
- * 6. Reach a physical ESM config through a CommonJS-scoped directory link;
- *    require evaluation and scanning to derive static import conditions from
- *    the physical package while retaining both sides of the link for watch.
+ *    package scope; verify Node and scanning use import for its nested
+ *    request.
+ * 6. Reach a physical ESM config through a CommonJS-scoped directory link; require
+ *    evaluation and scanning to derive static import conditions from the
+ *    physical package while retaining both sides of the link for watch.
  */
 export async function test_watch_config_conditions(): Promise<void> {
   const location: string = join(__dirname, `config conditions ${randomUUID()}`);
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     {
       "package.json": JSON.stringify({ type: "module" }),
@@ -103,10 +106,10 @@ export async function test_watch_config_conditions(): Promise<void> {
     },
     async (directory: string): Promise<void> => {
       const dependencies: string[] = (
-        await new ConfigDependencyScanner(
+        await new EvidConfigDependencyScanner(
           join(directory, "evidence.config.ts"),
         ).scan()
-      ).map((dependency: IEvidenceSourceDependency): string =>
+      ).map((dependency: IEvidSourceDependency): string =>
         dependency.path.replaceAll("\\", "/"),
       );
       const relative: (file: string) => string = (file: string): string =>
@@ -156,8 +159,8 @@ export async function test_watch_config_conditions(): Promise<void> {
         "import",
       );
       const packageModeDependencies: string[] = (
-        await new ConfigDependencyScanner(packageModeFile).scan()
-      ).map((dependency: IEvidenceSourceDependency): string =>
+        await new EvidConfigDependencyScanner(packageModeFile).scan()
+      ).map((dependency: IEvidSourceDependency): string =>
         dependency.path.replaceAll("\\", "/"),
       );
       TestValidator.predicate(
@@ -174,7 +177,7 @@ export async function test_watch_config_conditions(): Promise<void> {
       );
     },
   );
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     join(location, "physical config mode"),
     {
       "physical/package.json": JSON.stringify({ type: "module" }),
@@ -208,8 +211,7 @@ export async function test_watch_config_conditions(): Promise<void> {
       const logicalDirectory: string = join(directory, "logical/config-link");
       await symlink(physicalDirectory, logicalDirectory, "junction");
       const configFile: string = join(logicalDirectory, "evidence.config.ts");
-      const config: IEvidenceConfig =
-        await EvidenceConfigLoader.load(configFile);
+      const config: IEvidConfig = await EvidConfigLoader.load(configFile);
       TestValidator.equals(
         "physical config module mode",
         config.severity,
@@ -217,8 +219,8 @@ export async function test_watch_config_conditions(): Promise<void> {
       );
 
       const dependencies: string[] = (
-        await new ConfigDependencyScanner(configFile).scan()
-      ).map((dependency: IEvidenceSourceDependency): string =>
+        await new EvidConfigDependencyScanner(configFile).scan()
+      ).map((dependency: IEvidSourceDependency): string =>
         dependency.path.replaceAll("\\", "/"),
       );
       const relative: (file: string) => string = (file: string): string =>
@@ -252,8 +254,8 @@ export async function test_watch_config_conditions(): Promise<void> {
 /**
  * Builds a package manifest with distinct import and require entries.
  *
- * Scenario mutations vary only the selected target so dependency comparisons can
- * attribute each observed file to the config module's loading mechanism.
+ * Scenario mutations vary only the selected target so dependency comparisons
+ * can attribute each observed file to the config module's loading mechanism.
  */
 function manifest(importTarget: string, requireTarget: string): string {
   return JSON.stringify({

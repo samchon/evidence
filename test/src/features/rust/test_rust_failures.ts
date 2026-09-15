@@ -1,13 +1,15 @@
-import { EvidenceRustAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidRustAdapter } from "evid";
+import type { IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Preserves Rust module and syntax uncertainty as incomplete analysis.
+/**
+ * Preserves Rust module and syntax uncertainty as incomplete analysis.
  *
- * Modules, reexports, impls, conditions, macros, and parse failure cannot shrink coverage.
+ * Modules, reexports, impls, conditions, macros, and parse failure cannot
+ * shrink coverage.
  *
  * 1. Analyze missing and ambiguous modules, unresolved reexports and impl owners,
  *    conditional or expanding attributes, macros, and parse failures.
@@ -15,11 +17,11 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *    diagnostic instead of publishing a reduced population.
  */
 export async function test_rust_failures(): Promise<void> {
-  const adapter = new EvidenceRustAdapter();
+  const adapter = new EvidRustAdapter();
 
   // File modules must have exactly one selected conventional source.
   const missing = await adapter.analyze(
-    TestSourceSnapshot.create("src/lib.rs", "pub mod missing;\n"),
+    EvidTestSourceSnapshot.create("src/lib.rs", "pub mod missing;\n"),
   );
   TestValidator.equals("missing Rust module", missing.complete, false);
   TestValidator.equals(
@@ -29,10 +31,10 @@ export async function test_rust_failures(): Promise<void> {
   );
 
   const ambiguousModule = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create("src/lib.rs", "pub mod sale;\n"),
-      TestSourceSnapshot.create("src/sale.rs", "pub struct Flat;\n"),
-      TestSourceSnapshot.create("src/sale/mod.rs", "pub struct Nested;\n"),
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create("src/lib.rs", "pub mod sale;\n"),
+      EvidTestSourceSnapshot.create("src/sale.rs", "pub struct Flat;\n"),
+      EvidTestSourceSnapshot.create("src/sale/mod.rs", "pub struct Nested;\n"),
     ]),
   );
   TestValidator.equals(
@@ -48,15 +50,15 @@ export async function test_rust_failures(): Promise<void> {
 
   // Path overrides are explicit unsupported module ownership, even if selected.
   const overridden = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/lib.rs",
         dedent`
           #[path = "generated.rs"]
           pub mod api;
         `,
       ),
-      TestSourceSnapshot.create("src/generated.rs", "pub struct Api;\n"),
+      EvidTestSourceSnapshot.create("src/generated.rs", "pub struct Api;\n"),
     ]),
   );
   TestValidator.equals("Rust path override", overridden.complete, false);
@@ -68,7 +70,7 @@ export async function test_rust_failures(): Promise<void> {
 
   // Conditional declarations and members cannot be treated as one certain API.
   const conditional = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/lib.rs",
       dedent`
         #[cfg(feature = "conditional")]
@@ -91,7 +93,7 @@ export async function test_rust_failures(): Promise<void> {
   );
 
   const conditionalTuple = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/lib.rs",
       dedent`
         pub struct Pair(
@@ -113,7 +115,7 @@ export async function test_rust_failures(): Promise<void> {
   );
 
   const dynamicDocumentation = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/lib.rs",
       dedent`
         #[doc = include_str!("service.md")]
@@ -134,7 +136,7 @@ export async function test_rust_failures(): Promise<void> {
 
   // Item macros can add declarations; a macro invocation inside a body cannot.
   const macros = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/lib.rs",
       dedent`
         make_items!();
@@ -169,7 +171,7 @@ export async function test_rust_failures(): Promise<void> {
 
   // Blanket and external owners have no single selected nominal identity.
   const blanket = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/lib.rs",
       dedent`
         pub trait Service {
@@ -190,7 +192,7 @@ export async function test_rust_failures(): Promise<void> {
   );
 
   const externalOwner = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/lib.rs",
       dedent`
         impl remote::Sale {
@@ -211,7 +213,7 @@ export async function test_rust_failures(): Promise<void> {
   );
 
   const duplicateMember = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/lib.rs",
       dedent`
         pub struct Sale;
@@ -239,7 +241,7 @@ export async function test_rust_failures(): Promise<void> {
 
   // Competing wildcard exports and recursive module aliases stay incomplete.
   const ambiguousExport = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/lib.rs",
       dedent`
         mod first {
@@ -266,7 +268,7 @@ export async function test_rust_failures(): Promise<void> {
   );
 
   const recursiveExport = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/lib.rs",
       dedent`
         pub mod recursive {
@@ -288,7 +290,7 @@ export async function test_rust_failures(): Promise<void> {
 
   // Tree-sitter syntax errors never become a healthy empty inventory.
   const malformed = await adapter.analyze(
-    TestSourceSnapshot.create("src/lib.rs", "pub fn broken( {\n"),
+    EvidTestSourceSnapshot.create("src/lib.rs", "pub fn broken( {\n"),
   );
   TestValidator.equals("malformed Rust source", malformed.complete, false);
   TestValidator.equals(
@@ -300,6 +302,6 @@ export async function test_rust_failures(): Promise<void> {
   );
 }
 
-function hasCode(inventory: IEvidenceInventory, code: string): boolean {
+function hasCode(inventory: IEvidInventory, code: string): boolean {
   return inventory.diagnostics.some((diagnostic) => diagnostic.code === code);
 }

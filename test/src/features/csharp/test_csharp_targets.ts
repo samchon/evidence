@@ -1,28 +1,33 @@
-import { EvidenceCSharpAdapter } from "@wrtnlabs/evidence";
-import type { EvidenceTargetResolutionStatus } from "@wrtnlabs/evidence";
+import { EvidCSharpAdapter } from "evid";
+import type { EvidTargetResolutionStatus } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-interface ICSharpTargetStatus {
+interface IEvidCSharpTargetStatus {
   target: string | undefined;
-  status: EvidenceTargetResolutionStatus;
+  status: EvidTargetResolutionStatus;
 }
 
-/** Resolves C# namespaces, generic arity, indexers, and operator families.
+/**
+ * Resolves C# namespaces, generic arity, indexers, and operator families.
  *
- * Exact and ambiguous paths are paired so a convenient alias cannot select a different semantic owner.
+ * Exact and ambiguous paths are paired so a convenient alias cannot select a
+ * different semantic owner.
  *
- * 1. Analyze types with overloads, indexers, checked operators, conversions, and generic arities.
+ * 1. Analyze types with overloads, indexers, checked operators, conversions, and
+ *    generic arities.
  * 2. Resolve exact type and member paths, including quoted special-member names.
- * 3. Require a generic-subtree crossing to be missing and an underspecified generic pair to be ambiguous, while overload and indexer families retain two sites.
+ * 3. Require a generic-subtree crossing to be missing and an underspecified
+ *    generic pair to be ambiguous, while overload and indexer families retain
+ *    two sites.
  */
 export async function test_csharp_targets(): Promise<void> {
-  const adapter = new EvidenceCSharpAdapter();
+  const adapter = new EvidCSharpAdapter();
   const reference = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Models.cs",
       dedent`
         namespace Shop;
@@ -54,7 +59,7 @@ export async function test_csharp_targets(): Promise<void> {
     ),
   );
   const claim = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Verify.cs",
       dedent`
         /// <summary>
@@ -83,7 +88,7 @@ export async function test_csharp_targets(): Promise<void> {
     [],
   );
   TestValidator.equals("complete C# target claim", claim.diagnostics, []);
-  const resolutions = await TestGraph.resolveDeclarations(
+  const resolutions = await EvidTestGraph.resolveDeclarations(
     claim,
     reference,
     reference.units.map((unit) => unit.id),
@@ -98,7 +103,7 @@ export async function test_csharp_targets(): Promise<void> {
         status: resolution.resolution.status,
       }))
       .sort(compareTarget),
-    (<ICSharpTargetStatus[]>[
+    (<IEvidCSharpTargetStatus[]>[
       { target: "Models.cs#Shop.Sale", status: "resolved" },
       { target: "Models.cs#Shop.Sale.Total", status: "resolved" },
       { target: "Models.cs#Shop.Sale.Calculate", status: "resolved" },
@@ -144,8 +149,8 @@ export async function test_csharp_targets(): Promise<void> {
 }
 
 function compareTarget(
-  left: ICSharpTargetStatus,
-  right: ICSharpTargetStatus,
+  left: IEvidCSharpTargetStatus,
+  right: IEvidCSharpTargetStatus,
 ): number {
   return compare(left.target ?? "", right.target ?? "");
 }

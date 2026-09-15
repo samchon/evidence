@@ -1,10 +1,11 @@
-import { EvidenceRubyAdapter } from "@wrtnlabs/evidence";
+import { EvidRubyAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Keeps detectable Ruby metaprogramming and unknown ownership incomplete.
+/**
+ * Keeps detectable Ruby metaprogramming and unknown ownership incomplete.
  *
  * Dynamic surfaces must not produce a smaller public inventory.
  *
@@ -15,8 +16,8 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *    remain in the Ruby inventory.
  */
 export async function test_ruby_failures(): Promise<void> {
-  const dynamic = await new EvidenceRubyAdapter().analyze(
-    TestSourceSnapshot.create(
+  const dynamic = await new EvidRubyAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "lib/dynamic.rb",
       dedent`
         module Dynamic
@@ -72,8 +73,8 @@ export async function test_ruby_failures(): Promise<void> {
   ])
     TestValidator.predicate(`Ruby failure ${code}`, codes.has(code));
 
-  const malformed = await new EvidenceRubyAdapter().analyze(
-    TestSourceSnapshot.create("lib/broken.rb", "module Broken\n"),
+  const malformed = await new EvidRubyAdapter().analyze(
+    EvidTestSourceSnapshot.create("lib/broken.rb", "module Broken\n"),
   );
   TestValidator.equals("malformed Ruby inventory", malformed.complete, false);
   TestValidator.predicate(
@@ -83,9 +84,9 @@ export async function test_ruby_failures(): Promise<void> {
     ),
   );
 
-  const sourceFailure = await new EvidenceRubyAdapter().analyze(
-    TestSourceSnapshot.fail(
-      TestSourceSnapshot.create("lib/source.rb", "VALUE = 1\n"),
+  const sourceFailure = await new EvidRubyAdapter().analyze(
+    EvidTestSourceSnapshot.fail(
+      EvidTestSourceSnapshot.create("lib/source.rb", "VALUE = 1\n"),
       {
         code: "path-unreadable",
         path: "/project/lib/missing.rb",

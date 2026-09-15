@@ -1,18 +1,18 @@
-import type { IEvidenceConfig, IEvidenceReference } from "@wrtnlabs/evidence";
+import type { IEvidConfig, IEvidReference } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { validateEvidenceConfig } from "../../../../packages/evidence/src/internal/validateEvidenceConfig";
+import { validateEvidConfig } from "evid";
 
 /**
  * Rejects checklist policies that contradict per-host Markdown answers.
  *
- * Checklist coverage requires every selected host to answer every selected item.
- * Configuration must reject policies that would silently replace this meaning
- * with global host cardinality or shared exclusion carriers.
+ * Checklist coverage requires every selected host to answer every selected
+ * item. Configuration must reject policies that would silently replace this
+ * meaning with global host cardinality or shared exclusion carriers.
  *
  * 1. Accept a reviewed Markdown checklist that forbids exclusions.
- * 2. Enable both cardinality flags and require separate diagnostics for
- *    uniqueEvidence and singleEvidencePerSymbol instead of choosing one policy.
+ * 2. Enable both cardinality flags and require separate diagnostics for uniqueEvid
+ *    and singleEvidPerSymbol instead of choosing one policy.
  * 3. Add a checklist property to a TypeScript reference at runtime, even with
  *    value false, and require the artifact-placement diagnostic.
  * 4. Add shared exclusion-carrier globs to a checklist and require rejection.
@@ -24,32 +24,30 @@ export async function test_config_policies(): Promise<void> {
     type: "markdown",
     files: ["docs/**"],
     checklist: true,
-    noEvidenceExclude: true,
+    noEvidExclude: true,
     requireReview: true,
   });
 
-  validateEvidenceConfig(checklist);
+  validateEvidConfig(checklist);
 
   // Both cardinality policies are reported rather than silently choosing one.
   const cardinality = createConfig({
     type: "markdown",
     files: ["docs/**"],
     checklist: true,
-    uniqueEvidence: true,
-    singleEvidencePerSymbol: true,
+    uniqueEvid: true,
+    singleEvidPerSymbol: true,
   });
   const cardinalityMessage = failure(cardinality);
 
   TestValidator.predicate(
     "checklist rejects unique evidence",
-    cardinalityMessage.includes(
-      "checklist and uniqueEvidence cannot both hold",
-    ),
+    cardinalityMessage.includes("checklist and uniqueEvid cannot both hold"),
   );
   TestValidator.predicate(
     "checklist rejects single evidence",
     cardinalityMessage.includes(
-      "checklist and singleEvidencePerSymbol cannot both hold",
+      "checklist and singleEvidPerSymbol cannot both hold",
     ),
   );
 
@@ -85,18 +83,19 @@ export async function test_config_policies(): Promise<void> {
   const strict = firstReference(carriers);
   if (strict.type !== "markdown")
     throw new Error("Missing Markdown checklist fixture.");
-  strict.noEvidenceExclude = true;
+  strict.noEvidExclude = true;
 
-  validateEvidenceConfig(carriers);
+  validateEvidConfig(carriers);
 }
 
 /**
  * Places a candidate reference under one active TypeScript claim.
  *
  * Keeping the surrounding claim fixed isolates the checklist policy being
- * accepted or rejected, including mutations of its exclusion-carrier selection.
+ * accepted or rejected, including mutations of its exclusion-carrier
+ * selection.
  */
-function createConfig(reference: IEvidenceReference): IEvidenceConfig {
+function createConfig(reference: IEvidReference): IEvidConfig {
   return {
     claims: [
       {
@@ -111,10 +110,10 @@ function createConfig(reference: IEvidenceReference): IEvidenceConfig {
 /**
  * Retrieves the fixture's reference in either supported declaration form.
  *
- * A missing claim or reference is a fixture failure. It must not be mistaken for
- * the policy rejection the caller intends to exercise.
+ * A missing claim or reference is a fixture failure. It must not be mistaken
+ * for the policy rejection the caller intends to exercise.
  */
-function firstReference(config: IEvidenceConfig): IEvidenceReference {
+function firstReference(config: IEvidConfig): IEvidReference {
   const claim = config.claims[0];
   if (claim === undefined) throw new Error("Missing policy claim fixture.");
   const reference = Array.isArray(claim.reference)
@@ -129,14 +128,15 @@ function firstReference(config: IEvidenceConfig): IEvidenceReference {
  * Returns the message from an expected policy-validation error.
  *
  * Successful validation throws a test failure, and non-Error causes propagate.
- * Callers can therefore assert the actual rejected policy rather than mere failure.
+ * Callers can therefore assert the actual rejected policy rather than mere
+ * failure.
  */
-function failure(config: IEvidenceConfig): string {
+function failure(config: IEvidConfig): string {
   try {
-    validateEvidenceConfig(config);
+    validateEvidConfig(config);
   } catch (cause) {
     if (cause instanceof Error) return cause.message;
     throw cause;
   }
-  throw new Error("Expected Evidence configuration validation to fail.");
+  throw new Error("Expected Evid configuration validation to fail.");
 }

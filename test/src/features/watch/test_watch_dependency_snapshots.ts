@@ -1,30 +1,30 @@
-import type { IEvidenceSourceDependency } from "@wrtnlabs/evidence";
+import { EvidWatchDependencySnapshot, type IEvidSourceDependency } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { rm, symlink } from "node:fs/promises";
 import { join } from "node:path";
 
-import { WatchDependencySnapshot } from "../../../../packages/evidence/src/internal/WatchDependencySnapshot";
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
  * Detects content, directory-topology, deletion, and junction-target changes.
  *
- * Watch dependencies need versioning for exact files, recursive directories, and
- * followed junctions so each state change can trigger a fresh analysis.
+ * Watch dependencies need versioning for exact files, recursive directories,
+ * and followed junctions so each state change can trigger a fresh analysis.
  *
  * 1. Capture a recursive root and an exact source, edit the source bytes, and
  *    require the snapshot to change without a path change.
- * 2. Create a new file under the recursive root and require directory topology
- *    to produce a different snapshot.
+ * 2. Create a new file under the recursive root and require directory topology to
+ *    produce a different snapshot.
  * 3. Delete the exact source and require the missing dependency's version to
  *    differ, allowing a later repair to be observed.
  * 4. When Windows junction creation is available, retarget a recursive junction
- *    from one populated directory to another and require the snapshot to change.
+ *    from one populated directory to another and require the snapshot to
+ *    change.
  */
 export async function test_watch_dependency_snapshots(): Promise<void> {
   const location = join(__dirname, `snapshots ${randomUUID()}`);
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     {
       "root/source.ts": "export const value = 1;\n",
@@ -34,32 +34,32 @@ export async function test_watch_dependency_snapshots(): Promise<void> {
     async (directory) => {
       const root = join(directory, "root");
       const source = join(root, "source.ts");
-      const dependencies: IEvidenceSourceDependency[] = [
+      const dependencies: IEvidSourceDependency[] = [
         { path: root, recursive: true },
         { path: source, recursive: false },
       ];
-      const initial = await WatchDependencySnapshot.capture(dependencies);
+      const initial = await EvidWatchDependencySnapshot.capture(dependencies);
 
       // File bytes change even when the source remains at the same exact path.
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "root/source.ts": "export const value = 2;\n",
       });
-      const edited = await WatchDependencySnapshot.capture(dependencies);
+      const edited = await EvidWatchDependencySnapshot.capture(dependencies);
       TestValidator.predicate("content edit detected", !initial.equals(edited));
 
       // A recursive dependency records immediate names so new glob candidates appear.
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "root/created.ts": "export const created = true;\n",
       });
-      const created = await WatchDependencySnapshot.capture(dependencies);
+      const created = await EvidWatchDependencySnapshot.capture(dependencies);
       TestValidator.predicate(
         "directory creation detected",
         !edited.equals(created),
       );
 
       // Missing exact paths retain a version that changes when they are repaired.
-      await TestFileSystem.erase(source);
-      const deleted = await WatchDependencySnapshot.capture(dependencies);
+      await EvidTestFileSystem.erase(source);
+      const deleted = await EvidWatchDependencySnapshot.capture(dependencies);
       TestValidator.predicate(
         "file deletion detected",
         !created.equals(deleted),
@@ -72,13 +72,11 @@ export async function test_watch_dependency_snapshots(): Promise<void> {
       } catch {
         return;
       }
-      const linked: IEvidenceSourceDependency[] = [
-        { path: link, recursive: true },
-      ];
-      const firstTarget = await WatchDependencySnapshot.capture(linked);
+      const linked: IEvidSourceDependency[] = [{ path: link, recursive: true }];
+      const firstTarget = await EvidWatchDependencySnapshot.capture(linked);
       await rm(link, { recursive: true, force: true });
       await symlink(join(directory, "target-b"), link, "junction");
-      const secondTarget = await WatchDependencySnapshot.capture(linked);
+      const secondTarget = await EvidWatchDependencySnapshot.capture(linked);
 
       TestValidator.predicate(
         "junction retarget detected",

@@ -69,7 +69,7 @@ async function main() {
   const digest = sha256(first.bytes);
   const tag = `grammar-${id}-${digest}`;
   const wasmName = `tree-sitter-${id}.wasm`;
-  const repository = process.env.GITHUB_REPOSITORY || "wrtnlabs/evidence";
+  const repository = process.env.GITHUB_REPOSITORY || "wrtnlabs/evid";
   const record = {
     id,
     repository: recipe.repository,
@@ -114,7 +114,7 @@ async function main() {
             path.join(
               path.dirname(
                 createRequire(
-                  path.join(root, "packages/evidence/package.json"),
+                  path.join(root, "packages/evid/package.json"),
                 ).resolve("web-tree-sitter"),
               ),
               "package.json",
@@ -137,7 +137,10 @@ async function main() {
   process.stdout.write(`Built, reproduced and parsed ${id}: ${output}\n`);
 }
 
-/** Generates and compiles a detached source pin, recording generated and scanner inputs. */
+/**
+ * Generates and compiles a detached source pin, recording generated and scanner
+ * inputs.
+ */
 async function build(recipe, base, name, cli, env) {
   const checkout = path.join(base, name);
   await mkdir(checkout);
@@ -224,15 +227,18 @@ async function build(recipe, base, name, cli, env) {
   };
 }
 
-/** Parses a real declaration and queries its name with the installed engine/grammar pair. */
+/**
+ * Parses a real declaration and queries its name with the installed
+ * engine/grammar pair.
+ */
 async function verify(recipe, bytes) {
-  const requireEvidence = createRequire(
-    path.join(root, "packages/evidence/package.json"),
+  const requireEvid = createRequire(
+    path.join(root, "packages/evid/package.json"),
   );
-  const { Parser, Language, Query } = requireEvidence("web-tree-sitter");
+  const { Parser, Language, Query } = requireEvid("web-tree-sitter");
   await Parser.init({
     wasmBinary: await readFile(
-      requireEvidence.resolve("web-tree-sitter/web-tree-sitter.wasm"),
+      requireEvid.resolve("web-tree-sitter/web-tree-sitter.wasm"),
     ),
   });
   const language = await Language.load(bytes);

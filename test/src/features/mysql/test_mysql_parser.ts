@@ -1,41 +1,42 @@
-import { EvidenceMysqlAdapter, EvidenceParser } from "@wrtnlabs/evidence";
+import { EvidMysqlAdapter, EvidParser, EvidTreeSitterAssetScope } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TreeSitterAssetScope } from "../../../../packages/evidence/src/internal/TreeSitterAssetScope";
-import { TestFileSystem } from "../../internal/TestFileSystem";
-import { TestParserAssets } from "../../internal/TestParserAssets";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Acquires the selected MySQL grammar and reuses it offline.
+/**
+ * Acquires the selected MySQL grammar and reuses it offline.
  *
- * Parser acquisition must request only the configured grammar, then reproduce the same complete inventory from its warmed local cache.
+ * Parser acquisition must request only the configured grammar, then reproduce
+ * the same complete inventory from its warmed local cache.
  *
  * 1. Analyze a MySQL source with a cold parser cache while recording downloads.
  * 2. Require only MySQL parser assets and a complete cold result.
  * 3. Analyze again offline and require an equivalent warm inventory.
  */
 export async function test_mysql_parser(): Promise<void> {
-  const parser = new EvidenceParser();
+  const parser = new EvidParser();
   const grammar = (await parser.grammars()).find(
     (entry) => entry.id === "mysql",
   );
   await parser.close();
   if (grammar === undefined) throw new Error("Missing pinned MySQL grammar.");
   const downloadUrl = grammar.wasm.url;
-  const bytes = await TestParserAssets.bytes(grammar);
+  const bytes = await EvidTestParserAssets.bytes(grammar);
   const downloads: string[] = [];
-  const snapshot = TestSourceSnapshot.create(
+  const snapshot = EvidTestSourceSnapshot.create(
     "schema.sql",
     "CREATE TABLE Contract (`value.part` INT);",
   );
 
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "mysql-parser-cache",
     {},
     async (directory) => {
-      const cold = await TreeSitterAssetScope.run(
+      const cold = await EvidTreeSitterAssetScope.run(
         { cacheDirectory: directory, fetch: download },
-        async () => new EvidenceMysqlAdapter().analyze(snapshot),
+        async () => new EvidMysqlAdapter().analyze(snapshot),
       );
       TestValidator.equals(
         "cold MySQL inventory is complete",
@@ -45,9 +46,9 @@ export async function test_mysql_parser(): Promise<void> {
       TestValidator.equals("only MySQL bytes are acquired", downloads, [
         grammar.wasm.url,
       ]);
-      const warm = await TreeSitterAssetScope.run(
+      const warm = await EvidTreeSitterAssetScope.run(
         { cacheDirectory: directory, fetch: offline },
-        async () => new EvidenceMysqlAdapter().analyze(snapshot),
+        async () => new EvidMysqlAdapter().analyze(snapshot),
       );
       TestValidator.equals("warm offline analysis is equivalent", warm, cold);
     },

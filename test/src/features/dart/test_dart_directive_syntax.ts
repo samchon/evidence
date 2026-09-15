@@ -1,21 +1,25 @@
-import { EvidenceDartAdapter, EvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidDartAdapter, EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Parses Dart directives by their URI fields despite annotations and trivia.
+/**
+ * Parses Dart directives by their URI fields despite annotations and trivia.
  *
- * Annotation string arguments are not dependencies, while actual export and part URIs define the library topology used for resolution.
+ * Annotation string arguments are not dependencies, while actual export and
+ * part URIs define the library topology used for resolution.
  *
- * 1. Analyze a library and part with annotated directives, spaced library name, and a commented declarator list.
- * 2. Require both declared variables and the exported type to resolve through the actual API URI.
+ * 1. Analyze a library and part with annotated directives, spaced library name,
+ *    and a commented declarator list.
+ * 2. Require both declared variables and the exported type to resolve through the
+ *    actual API URI.
  * 3. Verify annotation strings do not create dependencies.
  */
 export async function test_dart_directive_syntax(): Promise<void> {
-  const inventory = await new EvidenceDartAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+  const inventory = await new EvidDartAdapter().analyze(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/api.dart",
         dedent`
       library app . api;
@@ -23,14 +27,14 @@ export async function test_dart_directive_syntax(): Promise<void> {
       @Deprecated('not-a-part.dart') part 'part.dart';
     `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/part.dart",
         dedent`
       part of app.api;
       int first = 1, /* declaration trivia */ second = 2;
     `,
       ),
-      TestSourceSnapshot.create("src/external.dart", "class Exported {}"),
+      EvidTestSourceSnapshot.create("src/external.dart", "class Exported {}"),
     ]),
   );
 
@@ -46,7 +50,7 @@ export async function test_dart_directive_syntax(): Promise<void> {
       .map((unit) => unit.name),
     ["first", "second"],
   );
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   for (const name of ["first", "second", "Exported"])
     TestValidator.equals(
       `${name} resolves through actual URI`,

@@ -1,28 +1,31 @@
-import { EvidenceCppAdapter } from "@wrtnlabs/evidence";
-import type { EvidenceTargetResolutionStatus } from "@wrtnlabs/evidence";
+import { EvidCppAdapter } from "evid";
+import type { EvidTargetResolutionStatus } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-interface ICppTargetStatus {
+interface IEvidCppTargetStatus {
   target: string | undefined;
-  status: EvidenceTargetResolutionStatus;
+  status: EvidTargetResolutionStatus;
 }
 
-/** Resolves C++ namespaces, templates, callable families, and bounded aliases.
+/**
+ * Resolves C++ namespaces, templates, callable families, and bounded aliases.
  *
- * Target resolution must retain template and owner boundaries so a short alias cannot select a different declaration subtree.
+ * Target resolution must retain template and owner boundaries so a short alias
+ * cannot select a different declaration subtree.
  *
  * 1. Analyze nested namespaces, templates, and callable declarations.
  * 2. Resolve exact evidence paths for valid public units.
- * 3. Require invalid, missing, or ambiguous aliases to preserve their resolution status.
+ * 3. Require invalid, missing, or ambiguous aliases to preserve their resolution
+ *    status.
  */
 export async function test_cpp_targets(): Promise<void> {
-  const adapter = new EvidenceCppAdapter();
+  const adapter = new EvidCppAdapter();
   const reference = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "include/models.hpp",
       dedent`
         namespace shop {
@@ -50,7 +53,7 @@ export async function test_cpp_targets(): Promise<void> {
     ),
   );
   const claim = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "test/verify.cpp",
       dedent`
         /**
@@ -77,7 +80,7 @@ export async function test_cpp_targets(): Promise<void> {
     [],
   );
   TestValidator.equals("complete C++ target claim", claim.diagnostics, []);
-  const resolutions = await TestGraph.resolveDeclarations(
+  const resolutions = await EvidTestGraph.resolveDeclarations(
     claim,
     reference,
     reference.units.map((unit) => unit.id),
@@ -93,7 +96,7 @@ export async function test_cpp_targets(): Promise<void> {
         status: resolution.resolution.status,
       }))
       .sort(compareTarget),
-    (<ICppTargetStatus[]>[
+    (<IEvidCppTargetStatus[]>[
       {
         target: "../include/models.hpp#public_api.Sale.total",
         status: "resolved",
@@ -134,8 +137,8 @@ export async function test_cpp_targets(): Promise<void> {
 }
 
 function compareTarget(
-  left: ICppTargetStatus,
-  right: ICppTargetStatus,
+  left: IEvidCppTargetStatus,
+  right: IEvidCppTargetStatus,
 ): number {
   return compare(left.target ?? "", right.target ?? "");
 }

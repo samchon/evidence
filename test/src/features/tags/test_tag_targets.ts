@@ -1,13 +1,16 @@
-import { EvidenceTagParser } from "@wrtnlabs/evidence";
+import { EvidTagParser } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestDocumentation } from "../../internal/TestDocumentation";
+import { EvidTestDocumentation } from "../../internal/EvidTestDocumentation";
 
-/** Tokenizes source, Markdown, schema, and operation targets without changing their spelling.
+/**
+ * Tokenizes source, Markdown, schema, and operation targets without changing
+ * their spelling.
  *
- * The common tag parser must preserve each target for its artifact-specific resolver,
- * including a quoted accessor segment whose following prose is the reason.
+ * The common tag parser must preserve each target for its artifact-specific
+ * resolver, including a quoted accessor segment whose following prose is the
+ * reason.
  *
  * 1. Parse TypeScript declaration and member paths, a C++ quoted-member path,
  *    Markdown, Prisma, and HTTP targets.
@@ -16,7 +19,7 @@ import { TestDocumentation } from "../../internal/TestDocumentation";
  *    with no diagnostics.
  */
 export async function test_tag_targets(): Promise<void> {
-  const fixture = TestDocumentation.create(dedent`
+  const fixture = EvidTestDocumentation.create(dedent`
     /**
      * @evidence ../calculator.ts#add Checks arithmetic.
      * @evidence ../SomeClass.ts#SomeClass.member Checks the member.
@@ -28,7 +31,7 @@ export async function test_tag_targets(): Promise<void> {
      * @evidence POST:/sales Follows the operation.
      */
   `);
-  const result = EvidenceTagParser.parse(
+  const result = EvidTagParser.parse(
     fixture.content,
     fixture.host,
     fixture.documentation,

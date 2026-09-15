@@ -1,27 +1,29 @@
 import {
-  EvidenceFingerprint,
-  EvidenceGraph,
-  EvidenceJavaScriptAdapter,
-  EvidenceMarkdownAdapter,
-} from "@wrtnlabs/evidence";
-import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidGraph,
+  EvidJavaScriptAdapter,
+  EvidMarkdownAdapter,
+} from "evid";
+import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Evaluates JavaScript type, function, and property coverage and fingerprints.
+/**
+ * Evaluates JavaScript type, function, and property coverage and fingerprints.
  *
- * Exact host selection governs graph obligations while evidence prose remains outside implementation scope.
+ * Exact host selection governs graph obligations while evidence prose remains
+ * outside implementation scope.
  *
  * 1. Evaluate each symbol kind with and without acknowledgement.
  * 2. Compare missing IDs.
  * 3. Verify source-scope fingerprints.
  */
 export async function test_javascript_graph(): Promise<void> {
-  const requirements = await new EvidenceMarkdownAdapter().analyze(
-    TestSourceSnapshot.create(
+  const requirements = await new EvidMarkdownAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "docs/requirements.md",
       dedent`
         ## Service {#service}
@@ -38,8 +40,8 @@ export async function test_javascript_graph(): Promise<void> {
       `,
     ),
   );
-  const implementation = await new EvidenceJavaScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+  const implementation = await new EvidJavaScriptAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/contracts.mjs",
       dedent`
         /** @evidence docs/requirements.md#service Implements the public type. */
@@ -63,13 +65,13 @@ export async function test_javascript_graph(): Promise<void> {
     requireUnit(implementation, "run"),
     requireUnit(implementation, "value"),
   ];
-  const resolutions = await TestGraph.resolveDeclarations(
+  const resolutions = await EvidTestGraph.resolveDeclarations(
     implementation,
     requirements,
     requirementUnits.map((unit) => unit.id),
   );
 
-  const complete = EvidenceGraph.evaluate({
+  const complete = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -95,7 +97,7 @@ export async function test_javascript_graph(): Promise<void> {
     missing.declarations = missing.declarations.filter(
       (declaration) => !declaration.target.endsWith(`#${anchor}`),
     );
-    const partial = EvidenceGraph.evaluate({
+    const partial = EvidGraph.evaluate({
       claims: [
         {
           severity: "error",
@@ -106,7 +108,7 @@ export async function test_javascript_graph(): Promise<void> {
               severity: "error",
               inventory: requirements,
               unitIds: requirementUnits.map((unit) => unit.id),
-              resolutions: await TestGraph.resolveDeclarations(
+              resolutions: await EvidTestGraph.resolveDeclarations(
                 missing,
                 requirements,
                 requirementUnits.map((unit) => unit.id),
@@ -118,7 +120,7 @@ export async function test_javascript_graph(): Promise<void> {
     });
     TestValidator.equals(
       `missing ${anchor} acknowledgement`,
-      TestGraph.obligation(partial, 0, 0).missingUnitIds,
+      EvidTestGraph.obligation(partial, 0, 0).missingUnitIds,
       [required.id],
     );
   }
@@ -141,22 +143,22 @@ export async function test_javascript_graph(): Promise<void> {
 
   TestValidator.equals(
     "evidence metadata preserves fingerprint",
-    EvidenceFingerprint.inspect(original, originalUnit.id).fingerprint,
-    EvidenceFingerprint.inspect(editedReason, reasonUnit.id).fingerprint,
+    EvidFingerprint.inspect(original, originalUnit.id).fingerprint,
+    EvidFingerprint.inspect(editedReason, reasonUnit.id).fingerprint,
   );
   TestValidator.notEquals(
     "implementation change moves fingerprint",
-    EvidenceFingerprint.inspect(original, originalUnit.id).fingerprint,
-    EvidenceFingerprint.inspect(editedBody, bodyUnit.id).fingerprint,
+    EvidFingerprint.inspect(original, originalUnit.id).fingerprint,
+    EvidFingerprint.inspect(editedBody, bodyUnit.id).fingerprint,
   );
 }
 
 async function fingerprintInventory(
   reason: string,
   statement: string,
-): Promise<IEvidenceInventory> {
-  return new EvidenceJavaScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+): Promise<IEvidInventory> {
+  return new EvidJavaScriptAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/fingerprint.mjs",
       dedent`
         /** @evidence docs/requirements.md#run ${reason} */
@@ -166,10 +168,7 @@ async function fingerprintInventory(
   );
 }
 
-function requireUnit(
-  inventory: IEvidenceInventory,
-  name: string,
-): IEvidenceUnit {
+function requireUnit(inventory: IEvidInventory, name: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === name || candidate.identity.at(-1) === name,

@@ -1,18 +1,21 @@
-import { EvidencePostgresqlAdapter } from "@wrtnlabs/evidence";
+import { EvidPostgresqlAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Rejects PostgreSQL schemas whose selected population depends on unresolved context.
+/**
+ * Rejects PostgreSQL schemas whose selected population depends on unresolved
+ * context.
  *
- * Search paths, migration state, unsupported syntax, and failed source snapshots must remain incomplete.
+ * Search paths, migration state, unsupported syntax, and failed source
+ * snapshots must remain incomplete.
  *
  * 1. Analyze each context-dependent or malformed schema.
  * 2. Require incomplete status and actionable diagnostics.
  * 3. Verify wrong extensions and failed sources cannot pass.
  */
 export async function test_postgresql_boundaries(): Promise<void> {
-  const adapter = new EvidencePostgresqlAdapter();
+  const adapter = new EvidPostgresqlAdapter();
   for (const source of [
     "CREATE TABLE Item (id integer);",
     "CREATE SCHEMA `app`;",
@@ -40,7 +43,7 @@ export async function test_postgresql_boundaries(): Promise<void> {
     "CREATE TABLE app.Item (id integer",
   ]) {
     const inventory = await adapter.analyze(
-      TestSourceSnapshot.create("schema.sql", source),
+      EvidTestSourceSnapshot.create("schema.sql", source),
     );
     TestValidator.equals(`incomplete: ${source}`, inventory.complete, false);
     TestValidator.predicate(
@@ -52,7 +55,7 @@ export async function test_postgresql_boundaries(): Promise<void> {
     );
   }
   const wrongExtension = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "schema.ts",
       "CREATE TABLE app.Item (id integer);",
     ),
@@ -68,11 +71,14 @@ export async function test_postgresql_boundaries(): Promise<void> {
   ])
     TestValidator.equals(
       "quoted keyword and maximum-length identifier remain declarations",
-      (await adapter.analyze(TestSourceSnapshot.create("valid.sql", source)))
-        .diagnostics,
+      (
+        await adapter.analyze(
+          EvidTestSourceSnapshot.create("valid.sql", source),
+        )
+      ).diagnostics,
       [],
     );
-  const failed = TestSourceSnapshot.create(
+  const failed = EvidTestSourceSnapshot.create(
     "schema.sql",
     "CREATE TABLE app.Item (id integer);",
   );

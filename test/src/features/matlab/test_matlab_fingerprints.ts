@@ -1,12 +1,14 @@
-import { EvidenceFingerprint, EvidenceMatlabAdapter } from "@wrtnlabs/evidence";
+import { EvidFingerprint, EvidMatlabAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Scopes MATLAB member fingerprints to their own content and relevant metadata.
+/**
+ * Scopes MATLAB member fingerprints to their own content and relevant metadata.
  *
- * A review must survive edits to unrelated members while changes to a member or its shared access policy invalidate the affected fingerprint.
+ * A review must survive edits to unrelated members while changes to a member or
+ * its shared access policy invalidate the affected fingerprint.
  *
  * 1. Analyze a class with independently documented members and access metadata.
  * 2. Compare fingerprints after unrelated and annotation-only edits.
@@ -21,18 +23,18 @@ export async function test_matlab_fingerprints(): Promise<void> {
       end
     end
   `.concat("\n");
-  const adapter = new EvidenceMatlabAdapter();
+  const adapter = new EvidMatlabAdapter();
   const original = await adapter.analyze(
-    TestSourceSnapshot.create("src/Contract.m", content),
+    EvidTestSourceSnapshot.create("src/Contract.m", content),
   );
   const sibling = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Contract.m",
       content.replace("first = 1", "first = 7"),
     ),
   );
   const metadata = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Contract.m",
       content.replace("SetAccess=private", "SetAccess=public"),
     ),
@@ -47,12 +49,12 @@ export async function test_matlab_fingerprints(): Promise<void> {
   );
   TestValidator.equals(
     "sibling does not change member fingerprint",
-    EvidenceFingerprint.inspect(original, second.id).fingerprint,
-    EvidenceFingerprint.inspect(sibling, second.id).fingerprint,
+    EvidFingerprint.inspect(original, second.id).fingerprint,
+    EvidFingerprint.inspect(sibling, second.id).fingerprint,
   );
   TestValidator.notEquals(
     "access metadata changes fingerprint",
-    EvidenceFingerprint.inspect(original, second.id).fingerprint,
-    EvidenceFingerprint.inspect(metadata, second.id).fingerprint,
+    EvidFingerprint.inspect(original, second.id).fingerprint,
+    EvidFingerprint.inspect(metadata, second.id).fingerprint,
   );
 }

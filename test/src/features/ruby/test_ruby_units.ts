@@ -1,16 +1,15 @@
-import {
-  EvidenceLanguageRegistry,
-  EvidenceRubyAdapter,
-} from "@wrtnlabs/evidence";
-import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+import { EvidLanguageRegistry, EvidRubyAdapter } from "evid";
+import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Classifies Ruby public units across reopenings and member forms.
+/**
+ * Classifies Ruby public units across reopenings and member forms.
  *
- * Visibility, method sides, constants, and attributes determine owned public identities.
+ * Visibility, method sides, constants, and attributes determine owned public
+ * identities.
  *
  * 1. Verify the registered Ruby adapter metadata, then analyze public and hidden
  *    containers, methods, constants, aliases, attributes, and reopenings.
@@ -19,7 +18,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_ruby_units(): Promise<void> {
   // Certified metadata identifies the pinned grammar and declared source boundary.
-  const language = EvidenceLanguageRegistry.list().find(
+  const language = EvidLanguageRegistry.list().find(
     (entry) => entry.type === "ruby",
   );
   if (language?.adapter === undefined)
@@ -27,7 +26,7 @@ export async function test_ruby_units(): Promise<void> {
   TestValidator.equals(
     "certified Ruby adapter",
     language.adapter.entry,
-    "EvidenceRubyAdapter",
+    "EvidRubyAdapter",
   );
   TestValidator.equals(
     "published Ruby grammar version",
@@ -35,8 +34,8 @@ export async function test_ruby_units(): Promise<void> {
     true,
   );
 
-  const inventory = await new EvidenceRubyAdapter().analyze(
-    TestSourceSnapshot.create(
+  const inventory = await new EvidRubyAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "lib/shop.rb",
       dedent`
         module Shop
@@ -152,10 +151,7 @@ export async function test_ruby_units(): Promise<void> {
   TestValidator.equals("Ruby accessor property site", status.sites.length, 1);
 }
 
-function requireUnit(
-  inventory: IEvidenceInventory,
-  identity: string,
-): IEvidenceUnit {
+function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.join(".") === identity,
   );

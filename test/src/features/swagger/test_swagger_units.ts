@@ -1,15 +1,17 @@
-import { EvidenceSwaggerAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidSwaggerAdapter } from "evid";
+import type { IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
-/** Normalizes Swagger 2.0 and OpenAPI 3.x documents into operations.
+/**
+ * Normalizes Swagger 2.0 and OpenAPI 3.x documents into operations.
  *
- * Version-specific syntax must yield the same exact operation addressing model without conflating distinct documents.
+ * Version-specific syntax must yield the same exact operation addressing model
+ * without conflating distinct documents.
  *
  * 1. Analyze local Swagger and OpenAPI JSON and YAML documents.
  * 2. Verify exact operation targets and complete inventories.
@@ -17,7 +19,7 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  */
 export async function test_swagger_units(): Promise<void> {
   const location = join(__dirname, "units-" + randomUUID());
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     {
       "swagger.json": dedent`
@@ -101,7 +103,7 @@ export async function test_swagger_units(): Promise<void> {
     },
     async (directory) => {
       const config = join(directory, "evidence.config.ts");
-      const adapter = new EvidenceSwaggerAdapter();
+      const adapter = new EvidSwaggerAdapter();
       const swagger = await adapter.load(config, "swagger.json");
       const openapi = await adapter.load(config, "openapi.yaml");
       const openapi30 = await adapter.load(config, "openapi30.json");
@@ -141,6 +143,6 @@ export async function test_swagger_units(): Promise<void> {
   );
 }
 
-function targets(inventory: IEvidenceInventory): string[] {
+function targets(inventory: IEvidInventory): string[] {
   return inventory.units.map((unit) => unit.name);
 }

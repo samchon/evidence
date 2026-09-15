@@ -1,13 +1,15 @@
-import { EvidenceTypeScriptAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceUnit } from "@wrtnlabs/evidence";
+import { EvidTypeScriptAdapter } from "evid";
+import type { IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Extracts TypeScript declarations across ambient and structural forms.
+/**
+ * Extracts TypeScript declarations across ambient and structural forms.
  *
- * Ambient, abstract, parameter-property, and dotted namespace syntax each contribute different public units.
+ * Ambient, abstract, parameter-property, and dotted namespace syntax each
+ * contribute different public units.
  *
  * 1. Analyze the supported declaration matrix.
  * 2. Verify exact identities, symbols, and ownership.
@@ -48,8 +50,8 @@ export async function test_typescript_declarations(): Promise<void> {
       function implicit(): void;
     }
   `;
-  const inventory = await new EvidenceTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create("src/declarations.d.ts", content),
+  const inventory = await new EvidTypeScriptAdapter().analyze(
+    EvidTestSourceSnapshot.create("src/declarations.d.ts", content),
   );
 
   TestValidator.equals(
@@ -115,13 +117,13 @@ export async function test_typescript_declarations(): Promise<void> {
   );
 
   // Every TypeScript declaration-file extension makes namespace members ambient.
-  const extensions = await new EvidenceTypeScriptAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+  const extensions = await new EvidTypeScriptAdapter().analyze(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/module.d.mts",
         "export namespace Mts { function run(): void; }",
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/common.d.cts",
         "export namespace Cts { function run(): void; }",
       ),
@@ -142,10 +144,10 @@ export async function test_typescript_declarations(): Promise<void> {
 }
 
 function requireUnit(
-  units: IEvidenceUnit[],
-  symbol: IEvidenceUnit["symbol"],
+  units: IEvidUnit[],
+  symbol: IEvidUnit["symbol"],
   identity: string,
-): IEvidenceUnit {
+): IEvidUnit {
   const unit = units.find(
     (entry) => entry.symbol === symbol && entry.identity.join(".") === identity,
   );

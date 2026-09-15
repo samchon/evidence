@@ -1,38 +1,37 @@
 import {
-  EvidenceFingerprint,
-  EvidenceGraph,
-  EvidenceMarkdownAdapter,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
-import type {
-  IEvidenceGraphReference,
-  IEvidenceInventory,
-  IEvidenceUnit,
-} from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidGraph,
+  EvidMarkdownAdapter,
+  EvidTypeScriptAdapter,
+} from "evid";
+import type { IEvidGraphReference, IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
- * Reuses one current review across selected scopes and public aliases of the same identity.
+ * Reuses one current review across selected scopes and public aliases of the
+ * same identity.
  *
- * The pricing section has two public paths and contains a coupons subsection.
- * A single acknowledgement and review through the alias must satisfy separate
- * selector obligations without changing the target fingerprint carried by edges.
+ * The pricing section has two public paths and contains a coupons subsection. A
+ * single acknowledgement and review through the alias must satisfy separate
+ * selector obligations without changing the target fingerprint carried by
+ * edges.
  *
  * 1. Analyze aliased Markdown pricing and coupons scopes, then obtain the pricing
  *    fingerprint from the shared semantic unit.
  * 2. Analyze a function that acknowledges pricing through one path and reviews it
  *    through the other alias with that fingerprint.
- * 3. Evaluate separate pricing and coupons reference selectors with required reviews.
- * 4. Require no diagnostics and require both obligations' first edges to carry
- *    the same expected pricing fingerprint.
+ * 3. Evaluate separate pricing and coupons reference selectors with required
+ *    reviews.
+ * 4. Require no diagnostics and require both obligations' first edges to carry the
+ *    same expected pricing fingerprint.
  */
 export async function test_graph_review_selectors(): Promise<void> {
-  const requirements = await new EvidenceMarkdownAdapter().analyze(
-    TestSourceSnapshot.create(
+  const requirements = await new EvidMarkdownAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "docs/spec.md",
       dedent`
         ## Pricing {#pricing}
@@ -48,12 +47,12 @@ export async function test_graph_review_selectors(): Promise<void> {
   );
   const pricing = requireUnit(requirements, "pricing");
   const coupons = requireUnit(requirements, "coupons");
-  const expected = EvidenceFingerprint.inspect(
+  const expected = EvidFingerprint.inspect(
     requirements,
     pricing.id,
   ).fingerprint;
-  const claim = await new EvidenceTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+  const claim = await new EvidTypeScriptAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/sale.ts",
       dedent`
         /**
@@ -65,25 +64,25 @@ export async function test_graph_review_selectors(): Promise<void> {
     ),
   );
   const price = requireUnit(claim, "price");
-  const references: IEvidenceGraphReference[] = [];
+  const references: IEvidGraphReference[] = [];
   for (const unitIds of [[pricing.id], [coupons.id]])
     references.push({
       severity: "error",
       inventory: requirements,
       unitIds,
-      resolutions: await TestGraph.resolveDeclarations(
+      resolutions: await EvidTestGraph.resolveDeclarations(
         claim,
         requirements,
         unitIds,
       ),
-      reviewResolutions: await TestGraph.resolveReviews(
+      reviewResolutions: await EvidTestGraph.resolveReviews(
         claim,
         requirements,
         unitIds,
       ),
       requireReview: true,
     });
-  const result = EvidenceGraph.evaluate({
+  const result = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -111,10 +110,7 @@ export async function test_graph_review_selectors(): Promise<void> {
   );
 }
 
-function requireUnit(
-  inventory: IEvidenceInventory,
-  identity: string,
-): IEvidenceUnit {
+function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === identity || candidate.identity.at(-1) === identity,

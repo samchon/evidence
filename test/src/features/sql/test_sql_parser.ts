@@ -1,32 +1,37 @@
-import { EvidenceParser, EvidenceSqlAdapter } from "@wrtnlabs/evidence";
+import {
+  EvidParser,
+  EvidSqlAdapter,
+  EvidTreeSitterAssetScope,
+  EvidTreeSitterAssets,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
-import { TreeSitterAssetScope } from "../../../../packages/evidence/src/internal/TreeSitterAssetScope";
-import { TreeSitterAssets } from "../../../../packages/evidence/src/internal/TreeSitterAssets";
-import { TestFileSystem } from "../../internal/TestFileSystem";
-import { TestParserAssets } from "../../internal/TestParserAssets";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Loads the configured SQL grammar and preserves offline adapter analysis.
+/**
+ * Loads the configured SQL grammar and preserves offline adapter analysis.
  *
- * Cold acquisition must request only SQL parser assets, and the warmed cache must produce the same complete inventory.
+ * Cold acquisition must request only SQL parser assets, and the warmed cache
+ * must produce the same complete inventory.
  *
  * 1. Analyze SQL source cold while recording asset requests.
  * 2. Verify complete extraction and SQL-only parser state.
  * 3. Analyze again offline and require equivalent inventory.
  */
 export async function test_sql_parser(): Promise<void> {
-  const grammar = await new TreeSitterAssets().grammar("sql");
-  const bytes = await TestParserAssets.bytes(grammar);
-  const snapshot = TestSourceSnapshot.create(
+  const grammar = await new EvidTreeSitterAssets().grammar("sql");
+  const bytes = await EvidTestParserAssets.bytes(grammar);
+  const snapshot = EvidTestSourceSnapshot.create(
     "schema.sql",
     "CREATE TABLE account (id INTEGER);",
   );
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "sql-parser-cache",
     {},
     async (cacheDirectory) => {
       const requests: string[] = [];
-      const cold = await TreeSitterAssetScope.run(
+      const cold = await EvidTreeSitterAssetScope.run(
         {
           cacheDirectory,
           fetch: async (input) => {
@@ -34,7 +39,7 @@ export async function test_sql_parser(): Promise<void> {
             return new Response(Uint8Array.from(bytes));
           },
         },
-        async () => new EvidenceSqlAdapter().analyze(snapshot),
+        async () => new EvidSqlAdapter().analyze(snapshot),
       );
       TestValidator.equals("cold SQL source complete", cold.complete, true);
       TestValidator.equals(
@@ -42,19 +47,19 @@ export async function test_sql_parser(): Promise<void> {
         requests,
         [grammar.wasm.url],
       );
-      const warm = await TreeSitterAssetScope.run(
+      const warm = await EvidTreeSitterAssetScope.run(
         {
           cacheDirectory,
           fetch: async () => {
             throw new Error("offline");
           },
         },
-        async () => new EvidenceSqlAdapter().analyze(snapshot),
+        async () => new EvidSqlAdapter().analyze(snapshot),
       );
       TestValidator.equals("warm offline inventory equivalence", warm, cold);
     },
   );
-  const parser = new EvidenceParser();
+  const parser = new EvidParser();
   try {
     const names = await parser.parse(
       {

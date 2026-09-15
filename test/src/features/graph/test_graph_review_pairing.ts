@@ -1,15 +1,15 @@
 import {
-  EvidenceFingerprint,
-  EvidenceGraph,
-  EvidenceMarkdownAdapter,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
-import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidGraph,
+  EvidMarkdownAdapter,
+  EvidTypeScriptAdapter,
+} from "evid";
+import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Pairs reviews by semantic host, resolved target, and acknowledgement kind.
@@ -23,15 +23,16 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 2. Put Pricing evidence on an interface and its review on the merged namespace;
  *    require no review finding for that shared semantic identity.
  * 3. Add three independent invalid review scenarios and verify that:
+ *
  *    - A positive review of a Tax exclusion produces one wrong-kind finding.
  *    - A Pricing review on an unrelated host produces one orphan finding.
  *    - Two reviews on one acknowledgement produce one duplicate finding.
- * 4. Require no derivative missing-review finding for the wrong-kind pair, so
- *    the diagnostic identifies the actual repair rather than reporting it twice.
+ * 4. Require no derivative missing-review finding for the wrong-kind pair, so the
+ *    diagnostic identifies the actual repair rather than reporting it twice.
  */
 export async function test_graph_review_pairing(): Promise<void> {
-  const requirements = await new EvidenceMarkdownAdapter().analyze(
-    TestSourceSnapshot.create(
+  const requirements = await new EvidMarkdownAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "docs/spec.md",
       dedent`
         ## Pricing {#pricing}
@@ -46,16 +47,16 @@ export async function test_graph_review_pairing(): Promise<void> {
   );
   const pricing = requireUnit(requirements, "pricing");
   const tax = requireUnit(requirements, "tax");
-  const pricingFingerprint = EvidenceFingerprint.inspect(
+  const pricingFingerprint = EvidFingerprint.inspect(
     requirements,
     pricing.id,
   ).fingerprint;
-  const taxFingerprint = EvidenceFingerprint.inspect(
+  const taxFingerprint = EvidFingerprint.inspect(
     requirements,
     tax.id,
   ).fingerprint;
-  const claims = await new EvidenceTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+  const claims = await new EvidTypeScriptAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/pairing.ts",
       dedent`
         /** @evidence docs/spec.md#pricing Implements the pricing rule. */
@@ -90,7 +91,7 @@ export async function test_graph_review_pairing(): Promise<void> {
     (name) => requireUnit(claims, name).id,
   );
   const selected = [pricing.id, tax.id];
-  const result = EvidenceGraph.evaluate({
+  const result = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -101,12 +102,12 @@ export async function test_graph_review_pairing(): Promise<void> {
             severity: "error",
             inventory: requirements,
             unitIds: selected,
-            resolutions: await TestGraph.resolveDeclarations(
+            resolutions: await EvidTestGraph.resolveDeclarations(
               claims,
               requirements,
               selected,
             ),
-            reviewResolutions: await TestGraph.resolveReviews(
+            reviewResolutions: await EvidTestGraph.resolveReviews(
               claims,
               requirements,
               selected,
@@ -156,10 +157,7 @@ export async function test_graph_review_pairing(): Promise<void> {
  * The helper accepts either fixture spelling and throws if extraction loses the
  * declaration, preventing a missing fixture from weakening the graph setup.
  */
-function requireUnit(
-  inventory: IEvidenceInventory,
-  identity: string,
-): IEvidenceUnit {
+function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === identity || candidate.identity.at(-1) === identity,
@@ -171,11 +169,11 @@ function requireUnit(
 /**
  * Counts graph findings for one expected review failure code.
  *
- * Exact counts distinguish one actionable diagnosis from duplicated or derivative
- * findings, which a presence-only assertion would not detect.
+ * Exact counts distinguish one actionable diagnosis from duplicated or
+ * derivative findings, which a presence-only assertion would not detect.
  */
 function count(
-  result: ReturnType<typeof EvidenceGraph.evaluate>,
+  result: ReturnType<typeof EvidGraph.evaluate>,
   code: string,
 ): number {
   return result.diagnostics.filter((diagnostic) => diagnostic.code === code)

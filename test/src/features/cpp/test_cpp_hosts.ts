@@ -1,20 +1,23 @@
-import { EvidenceCppAdapter, EvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidCppAdapter, EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches C++ Doxygen evidence and reports annotations in unsupported carriers.
+/**
+ * Attaches C++ Doxygen evidence and reports annotations in unsupported
+ * carriers.
  *
- * A declaration-leading documentation comment can host evidence, while literals and unsupported comments cannot create a graph acknowledgement.
+ * A declaration-leading documentation comment can host evidence, while literals
+ * and unsupported comments cannot create a graph acknowledgement.
  *
  * 1. Analyze supported Doxygen comments before C++ declarations.
  * 2. Compare attached declarations and hosts with the expected public units.
  * 3. Require inert annotated carriers to remain diagnostics.
  */
 export async function test_cpp_hosts(): Promise<void> {
-  const inventory = await new EvidenceCppAdapter().analyze(
-    TestSourceSnapshot.create(
+  const inventory = await new EvidCppAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/contracts.cpp",
       dedent`
         /**
@@ -109,8 +112,8 @@ export async function test_cpp_hosts(): Promise<void> {
     7,
   );
 
-  const withdrawn = await new EvidenceCppAdapter().analyze(
-    TestSourceSnapshot.create(
+  const withdrawn = await new EvidCppAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "include/hidden.hpp",
       dedent`
         /** @internal This declaration withdraws the merged class. */
@@ -123,7 +126,7 @@ export async function test_cpp_hosts(): Promise<void> {
       `,
     ),
   );
-  const population = new EvidenceInventory([withdrawn]).select(
+  const population = new EvidInventory([withdrawn]).select(
     withdrawn.units.map((unit) => unit.id),
   );
   TestValidator.equals(

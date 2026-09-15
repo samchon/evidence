@@ -1,19 +1,20 @@
-import {
-  EvidenceFingerprint,
-  EvidenceInventory,
-  EvidenceMysqlAdapter,
-} from "@wrtnlabs/evidence";
+import { EvidFingerprint, EvidInventory, EvidMysqlAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches MySQL COMMENT annotations to their owning schema units.
+/**
+ * Attaches MySQL COMMENT annotations to their owning schema units.
  *
- * Documentation strings can acknowledge a declaration, while SQL examples and strings remain inert; withdrawals and fingerprints retain their separate semantics.
+ * Documentation strings can acknowledge a declaration, while SQL examples and
+ * strings remain inert; withdrawals and fingerprints retain their separate
+ * semantics.
  *
- * 1. Analyze documented tables, columns, reviews, withdrawals, and inert comment-shaped text.
- * 2. Verify attachment, CRLF coordinates, target resolution, and withdrawal metadata.
+ * 1. Analyze documented tables, columns, reviews, withdrawals, and inert
+ *    comment-shaped text.
+ * 2. Verify attachment, CRLF coordinates, target resolution, and withdrawal
+ *    metadata.
  * 3. Compare review fingerprints after annotation and semantic edits.
  * 4. Require ambiguous schema input to remain incomplete.
  */
@@ -36,9 +37,9 @@ export async function test_mysql_hosts(): Promise<void> {
      */
     CREATE TABLE Example (id INT);
   `.replaceAll("\n", "\r\n");
-  const adapter = new EvidenceMysqlAdapter();
+  const adapter = new EvidMysqlAdapter();
   const original = await adapter.analyze(
-    TestSourceSnapshot.create("schema.sql", source),
+    EvidTestSourceSnapshot.create("schema.sql", source),
   );
 
   TestValidator.equals(
@@ -68,7 +69,7 @@ export async function test_mysql_hosts(): Promise<void> {
   const selected = original.units.map((unit) => unit.id);
   TestValidator.equals(
     "withdrawn column remains diagnosed as hidden",
-    new EvidenceInventory([original]).resolve(
+    new EvidInventory([original]).resolve(
       { file: "/project/schema.sql", segments: ["Contract", "retired"] },
       selected,
     ).status,
@@ -77,7 +78,7 @@ export async function test_mysql_hosts(): Promise<void> {
   const model = original.units.find((unit) => unit.name === "Contract");
   if (model === undefined) throw new Error("Missing Contract model.");
   const annotated = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "schema.sql",
       source.replace(
         "Verifies the column.",
@@ -87,22 +88,22 @@ export async function test_mysql_hosts(): Promise<void> {
   );
   TestValidator.equals(
     "COMMENT annotation edits preserve ancestor review",
-    EvidenceFingerprint.inspect(original, model.id).fingerprint,
-    EvidenceFingerprint.inspect(annotated, model.id).fingerprint,
+    EvidFingerprint.inspect(original, model.id).fingerprint,
+    EvidFingerprint.inspect(annotated, model.id).fingerprint,
   );
   const changed = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "schema.sql",
       source.replace("id INT COMMENT", "id BIGINT COMMENT"),
     ),
   );
   TestValidator.notEquals(
     "column type edit invalidates ancestor review",
-    EvidenceFingerprint.inspect(original, model.id).fingerprint,
-    EvidenceFingerprint.inspect(changed, model.id).fingerprint,
+    EvidFingerprint.inspect(original, model.id).fingerprint,
+    EvidFingerprint.inspect(changed, model.id).fingerprint,
   );
   const escaped = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "escaped.sql",
       "CREATE TABLE Escaped (id INT COMMENT 'Owner''s note.\n@evidence ./spec.md#escaped Verifies escaped prose.');",
     ),
@@ -113,9 +114,12 @@ export async function test_mysql_hosts(): Promise<void> {
     ["./spec.md#escaped"],
   );
   const ambiguous = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create("one.sql", "CREATE TABLE Same (id INT);"),
-      TestSourceSnapshot.create("two.sql", "CREATE TABLE Same (other INT);"),
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create("one.sql", "CREATE TABLE Same (id INT);"),
+      EvidTestSourceSnapshot.create(
+        "two.sql",
+        "CREATE TABLE Same (other INT);",
+      ),
     ]),
   );
   TestValidator.equals(

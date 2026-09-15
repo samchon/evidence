@@ -1,14 +1,11 @@
-import {
-  EvidenceFingerprint,
-  EvidenceInventory,
-  EvidenceSwiftAdapter,
-} from "@wrtnlabs/evidence";
+import { EvidFingerprint, EvidInventory, EvidSwiftAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches Swift DocC with exact coordinates and withdrawal behavior.
+/**
+ * Attaches Swift DocC with exact coordinates and withdrawal behavior.
  *
  * Attributes, CRLF text, and examples must not alter eligible host semantics.
  *
@@ -36,9 +33,9 @@ export async function test_swift_hosts(): Promise<void> {
      */
     public func sample() {}
   `.replaceAll("\n", "\r\n");
-  const adapter = new EvidenceSwiftAdapter();
+  const adapter = new EvidSwiftAdapter();
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.create("src/Contract.swift", source),
+    EvidTestSourceSnapshot.create("src/Contract.swift", source),
   );
 
   TestValidator.equals(
@@ -65,7 +62,7 @@ export async function test_swift_hosts(): Promise<void> {
     contract.sites[0]?.range?.start?.offset,
     source.indexOf("@available"),
   );
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   TestValidator.equals(
     "withdrawn nested descendants",
     graph.resolve(
@@ -78,7 +75,7 @@ export async function test_swift_hosts(): Promise<void> {
     "hidden",
   );
   const rewritten = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Contract.swift",
       source.replace(
         "Implements the value.",
@@ -88,29 +85,29 @@ export async function test_swift_hosts(): Promise<void> {
   );
   TestValidator.equals(
     "annotation edits preserve ancestor reviews",
-    EvidenceFingerprint.inspect(inventory, contract.id).fingerprint,
-    EvidenceFingerprint.inspect(rewritten, contract.id).fingerprint,
+    EvidFingerprint.inspect(inventory, contract.id).fingerprint,
+    EvidFingerprint.inspect(rewritten, contract.id).fingerprint,
   );
   const changed = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Contract.swift",
       source.replace("let 값 = 1", "let 값 = 2"),
     ),
   );
   TestValidator.notEquals(
     "semantic member edit stales ancestor reviews",
-    EvidenceFingerprint.inspect(inventory, contract.id).fingerprint,
-    EvidenceFingerprint.inspect(changed, contract.id).fingerprint,
+    EvidFingerprint.inspect(inventory, contract.id).fingerprint,
+    EvidFingerprint.inspect(changed, contract.id).fingerprint,
   );
 
   // A string that resembles an annotation remains semantic implementation content.
   const literalSource =
     'public func literal() -> String { "@evidence docs/spec.md#value Literal content." }';
   const literal = await adapter.analyze(
-    TestSourceSnapshot.create("src/Literal.swift", literalSource),
+    EvidTestSourceSnapshot.create("src/Literal.swift", literalSource),
   );
   const literalChanged = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Literal.swift",
       literalSource.replace("Literal content.", "Changed content."),
     ),
@@ -119,8 +116,8 @@ export async function test_swift_hosts(): Promise<void> {
   if (literalUnit === undefined) throw new Error("Missing literal function.");
   TestValidator.notEquals(
     "unsupported annotation strings remain fingerprint content",
-    EvidenceFingerprint.inspect(literal, literalUnit.id).fingerprint,
-    EvidenceFingerprint.inspect(literalChanged, literalUnit.id).fingerprint,
+    EvidFingerprint.inspect(literal, literalUnit.id).fingerprint,
+    EvidFingerprint.inspect(literalChanged, literalUnit.id).fingerprint,
   );
 
   for (const tag of [
@@ -131,7 +128,7 @@ export async function test_swift_hosts(): Promise<void> {
     "link",
   ]) {
     const unsupported = await adapter.analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/Unsupported.swift",
         `// @${tag} docs/spec.md#contract Unsupported carrier.\npublic func run() {}\n`,
       ),

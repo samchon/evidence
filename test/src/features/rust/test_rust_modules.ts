@@ -1,10 +1,11 @@
-import { EvidenceAccessor, EvidenceRustAdapter } from "@wrtnlabs/evidence";
+import { EvidAccessor, EvidRustAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Resolves Rust inline and file modules through public visibility.
+/**
+ * Resolves Rust inline and file modules through public visibility.
  *
  * Public reexports and module files determine the addressable module graph.
  *
@@ -16,9 +17,9 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_rust_modules(): Promise<void> {
   // Inline, conventional, private, and orphan modules share one selected snapshot.
-  const inventory = await new EvidenceRustAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+  const inventory = await new EvidRustAdapter().analyze(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/lib.rs",
         dedent`
           pub mod sale;
@@ -39,7 +40,7 @@ export async function test_rust_modules(): Promise<void> {
           }
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/sale.rs",
         dedent`
           pub mod details;
@@ -53,21 +54,21 @@ export async function test_rust_modules(): Promise<void> {
           pub(crate) struct CrateOnly;
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/sale/details.rs",
         dedent`
           pub struct Detail;
           pub(crate) struct Restricted;
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/hidden.rs",
         dedent`
           pub struct Secret;
           pub(crate) struct CrateOnly;
         `,
       ),
-      TestSourceSnapshot.create("tools.rs", "pub struct Tool;\n"),
+      EvidTestSourceSnapshot.create("tools.rs", "pub struct Tool;\n"),
     ]),
   );
 
@@ -98,8 +99,7 @@ export async function test_rust_modules(): Promise<void> {
     inventory.addresses
       .filter((address) => address.unitId === sale.id)
       .map(
-        (address) =>
-          `${address.file}#${EvidenceAccessor.format(address.segments)}`,
+        (address) => `${address.file}#${EvidAccessor.format(address.segments)}`,
       )
       .sort(compare),
     [
@@ -119,8 +119,7 @@ export async function test_rust_modules(): Promise<void> {
     inventory.addresses
       .filter((address) => address.unitId === secret.id)
       .map(
-        (address) =>
-          `${address.file}#${EvidenceAccessor.format(address.segments)}`,
+        (address) => `${address.file}#${EvidAccessor.format(address.segments)}`,
       )
       .sort(compare),
     ["/project/src/hidden.rs#Secret", "/project/src/lib.rs#PublicSecret"],
@@ -136,8 +135,7 @@ export async function test_rust_modules(): Promise<void> {
     inventory.addresses
       .filter((address) => address.unitId === detail.id)
       .map(
-        (address) =>
-          `${address.file}#${EvidenceAccessor.format(address.segments)}`,
+        (address) => `${address.file}#${EvidAccessor.format(address.segments)}`,
       )
       .sort(compare),
     [
@@ -149,15 +147,15 @@ export async function test_rust_modules(): Promise<void> {
   );
 
   // Logical source addresses retain module layout when physical files are linked elsewhere.
-  const linked = await new EvidenceRustAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+  const linked = await new EvidRustAdapter().analyze(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "physical/crate/lib.rs",
         "pub mod sale;\n",
         ["workspace/src/lib.rs"],
         "/volume",
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "physical/modules/sale.rs",
         "pub struct Sale;\n",
         ["workspace/src/sale.rs"],

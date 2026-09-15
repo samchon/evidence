@@ -1,12 +1,14 @@
-import { EvidenceFingerprint, EvidenceObjcAdapter } from "@wrtnlabs/evidence";
+import { EvidFingerprint, EvidObjcAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Isolates Objective-C review fingerprints between sibling declarators.
+/**
+ * Isolates Objective-C review fingerprints between sibling declarators.
  *
- * A cited unit must ignore sibling edits but invalidate when its own semantic content changes.
+ * A cited unit must ignore sibling edits but invalidate when its own semantic
+ * content changes.
  *
  * 1. Analyze sibling declarations with separate cited units.
  * 2. Edit each sibling independently.
@@ -24,12 +26,12 @@ export async function test_objc_fingerprint_siblings(): Promise<void> {
     @end
     int run(void), other(int value);
   `;
-  const adapter = new EvidenceObjcAdapter();
+  const adapter = new EvidObjcAdapter();
   const original = await adapter.analyze(
-    TestSourceSnapshot.create("src/Contract.m", source),
+    EvidTestSourceSnapshot.create("src/Contract.m", source),
   );
   const changed = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Contract.m",
       source
         .replace("second[1]", "second[2]")
@@ -59,13 +61,13 @@ export async function test_objc_fingerprint_siblings(): Promise<void> {
       throw new Error("Missing sibling declaration.");
     TestValidator.equals(
       `${stableName} excludes sibling content`,
-      EvidenceFingerprint.inspect(original, stable.id).fingerprint,
-      EvidenceFingerprint.inspect(changed, stable.id).fingerprint,
+      EvidFingerprint.inspect(original, stable.id).fingerprint,
+      EvidFingerprint.inspect(changed, stable.id).fingerprint,
     );
     TestValidator.notEquals(
       `${changedName} retains its own semantic edit`,
-      EvidenceFingerprint.inspect(original, modified.id).fingerprint,
-      EvidenceFingerprint.inspect(changed, modified.id).fingerprint,
+      EvidFingerprint.inspect(original, modified.id).fingerprint,
+      EvidFingerprint.inspect(changed, modified.id).fingerprint,
     );
   }
 }

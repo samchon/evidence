@@ -1,24 +1,28 @@
-import { EvidenceCppAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidCppAdapter } from "evid";
+import type { IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Reports C++ preprocessing, specialization, lookup, and syntax boundaries as incomplete.
+/**
+ * Reports C++ preprocessing, specialization, lookup, and syntax boundaries as
+ * incomplete.
  *
- * Static extraction must decline to publish a complete surface when unsupported preprocessing or unresolved C++ forms change declaration meaning.
+ * Static extraction must decline to publish a complete surface when unsupported
+ * preprocessing or unresolved C++ forms change declaration meaning.
  *
- * 1. Analyze sources at preprocessing, specialization, qualified-lookup, and parse-error boundaries.
+ * 1. Analyze sources at preprocessing, specialization, qualified-lookup, and
+ *    parse-error boundaries.
  * 2. Require each uncertain source to be incomplete.
  * 3. Require diagnostics to describe the rejected condition.
  */
 export async function test_cpp_failures(): Promise<void> {
-  const adapter = new EvidenceCppAdapter();
+  const adapter = new EvidCppAdapter();
 
   // Conditional branches cannot be combined into one declared population.
   const conditional = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "include/conditional.hpp",
       dedent`
         #if DEBUG
@@ -39,7 +43,7 @@ export async function test_cpp_failures(): Promise<void> {
 
   // The pinned grammar rejects a declaration-position macro invocation.
   const macro = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "include/macro.hpp",
       dedent`
         #define DECLARE_API(TYPE, NAME) TYPE NAME()
@@ -56,7 +60,7 @@ export async function test_cpp_failures(): Promise<void> {
 
   // The pinned grammar rejects ABI-changing pragmas before extraction.
   const pragma = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "include/packed.hpp",
       dedent`
         #pragma pack(push, 1)
@@ -74,7 +78,7 @@ export async function test_cpp_failures(): Promise<void> {
 
   // Specializations and instantiations need an address beyond template arity.
   const specialization = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "include/specialization.hpp",
       dedent`
         template <class T>
@@ -97,7 +101,7 @@ export async function test_cpp_failures(): Promise<void> {
   );
 
   const partial = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "include/partial.hpp",
       dedent`
         template <class T>
@@ -117,7 +121,7 @@ export async function test_cpp_failures(): Promise<void> {
 
   // The grammar rejects explicit instantiation before it can share the primary.
   const instantiation = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "include/instantiation.hpp",
       dedent`
         template <class T>
@@ -140,7 +144,7 @@ export async function test_cpp_failures(): Promise<void> {
 
   // Inheritance, friends, and using-directives require semantic ownership.
   const lookup = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "include/lookup.hpp",
       dedent`
         class Base {};
@@ -165,7 +169,7 @@ export async function test_cpp_failures(): Promise<void> {
 
   // Qualified definitions need a selected declaration that proves ownership.
   const qualified = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/missing.cpp",
       "int Missing::run() { return 0; }\n",
     ),
@@ -179,7 +183,10 @@ export async function test_cpp_failures(): Promise<void> {
 
   // A bounded using declaration still has to resolve exactly one selected unit.
   const alias = await adapter.analyze(
-    TestSourceSnapshot.create("include/alias.hpp", "using missing::Thing;\n"),
+    EvidTestSourceSnapshot.create(
+      "include/alias.hpp",
+      "using missing::Thing;\n",
+    ),
   );
   TestValidator.equals("unresolved C++ alias", alias.complete, false);
   TestValidator.equals(
@@ -190,7 +197,7 @@ export async function test_cpp_failures(): Promise<void> {
 
   // Multiple selected type definitions cannot form one declaration family.
   const duplicate = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "include/duplicate.hpp",
       dedent`
         class Shared {};
@@ -207,7 +214,7 @@ export async function test_cpp_failures(): Promise<void> {
 
   // Reserved callable addresses cannot absorb an unrelated method name.
   const callable = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "include/callable.hpp",
       dedent`
         class Sale {
@@ -227,7 +234,7 @@ export async function test_cpp_failures(): Promise<void> {
 
   // A static data declaration may still have only one selected definition.
   const staticData = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/static-data.cpp",
       dedent`
         class Counters {
@@ -249,7 +256,7 @@ export async function test_cpp_failures(): Promise<void> {
 
   // Name-only families cannot assign qualified definitions across access levels.
   const overloadAccess = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/overload-access.cpp",
       dedent`
         class Api {
@@ -278,7 +285,7 @@ export async function test_cpp_failures(): Promise<void> {
 
   // The pinned grammar rejects modules before any export can become a unit.
   const module = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/shop.cppm",
       dedent`
         export module shop;
@@ -295,7 +302,7 @@ export async function test_cpp_failures(): Promise<void> {
 
   // Tree-sitter syntax errors never become a healthy partial inventory.
   const malformed = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/broken.cpp",
       "class Broken { public: int run( { return 0; }\n",
     ),
@@ -310,6 +317,6 @@ export async function test_cpp_failures(): Promise<void> {
   );
 }
 
-function hasCode(inventory: IEvidenceInventory, code: string): boolean {
+function hasCode(inventory: IEvidInventory, code: string): boolean {
   return inventory.diagnostics.some((diagnostic) => diagnostic.code === code);
 }

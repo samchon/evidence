@@ -1,19 +1,24 @@
-import { EvidenceMarkdownAdapter } from "@wrtnlabs/evidence";
+import { EvidMarkdownAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Attaches Markdown HTML comments to supported heading hosts.
  *
  * Comment ownership follows the current file or H1-H4 section. Comments below
- * H5/H6 are retained as hosts for diagnostics but cannot contribute declarations.
+ * H5/H6 are retained as hosts for diagnostics but cannot contribute
+ * declarations.
  *
- * 1. Analyze CRLF content with file, parent, child, deep-heading, and supported-heading comments.
- * 2. Verify host attachment counts and the collected evidence, exclusion, and review records.
- * 3. Require an unsupported-host diagnostic only for the comment under the H5 heading.
- * 4. Verify the review range uses original CRLF coordinates and slices to its annotation text.
+ * 1. Analyze CRLF content with file, parent, child, deep-heading, and
+ *    supported-heading comments.
+ * 2. Verify host attachment counts and the collected evidence, exclusion, and
+ *    review records.
+ * 3. Require an unsupported-host diagnostic only for the comment under the H5
+ *    heading.
+ * 4. Verify the review range uses original CRLF coordinates and slices to its
+ *    annotation text.
  */
 export async function test_markdown_hosts(): Promise<void> {
   const content = dedent`
@@ -21,14 +26,14 @@ export async function test_markdown_hosts(): Promise<void> {
     # Parent
     <!-- @evidenceReview docs/spec.md#file #abcdef0 Checked the document. -->
     ## Child
-    <!-- An eligible host without an Evidence tag. -->
+    <!-- An eligible host without an Evid tag. -->
     ##### Unsupported detail
     <!-- @evidence docs/spec.md#detail This host is too deep. -->
     #### Supported again
     <!-- @evidenceExclude docs/spec.md#optional This part does not apply. -->
   `.replaceAll("\n", "\r\n");
-  const inventory = await new EvidenceMarkdownAdapter().analyze(
-    TestSourceSnapshot.create("guide.md", content),
+  const inventory = await new EvidMarkdownAdapter().analyze(
+    EvidTestSourceSnapshot.create("guide.md", content),
   );
 
   TestValidator.equals(

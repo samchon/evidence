@@ -1,13 +1,15 @@
-import { EvidenceFingerprint, EvidencePhpAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidFingerprint, EvidPhpAdapter } from "evid";
+import type { IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Tracks PHP review fingerprints across semantic ownership changes.
+/**
+ * Tracks PHP review fingerprints across semantic ownership changes.
  *
- * Property hooks and namespace imports affect cited meaning, while unrelated sibling declarations remain isolated.
+ * Property hooks and namespace imports affect cited meaning, while unrelated
+ * sibling declarations remain isolated.
  *
  * 1. Analyze documented PHP declarations with hooks and imports.
  * 2. Apply annotation, sibling, hook, and import edits.
@@ -75,24 +77,26 @@ export async function test_php_fingerprints(): Promise<void> {
   );
 }
 
-/** Analyzes one independent PHP source revision for fingerprint comparison.
+/**
+ * Analyzes one independent PHP source revision for fingerprint comparison.
  *
  * Each caller receives a fresh inventory so a single textual mutation cannot
  * share parser or inventory state with the baseline revision.
  */
-async function analyze(content: string): Promise<IEvidenceInventory> {
-  return new EvidencePhpAdapter().analyze(
-    TestSourceSnapshot.create("src/contract.php", content),
+async function analyze(content: string): Promise<IEvidInventory> {
+  return new EvidPhpAdapter().analyze(
+    EvidTestSourceSnapshot.create("src/contract.php", content),
   );
 }
 
-/** Reads the review fingerprint for one uniquely named PHP declaration.
+/**
+ * Reads the review fingerprint for one uniquely named PHP declaration.
  *
  * A missing name fails the scenario immediately because the comparison cannot
  * establish fingerprint behavior without its intended semantic unit.
  */
-function fingerprint(inventory: IEvidenceInventory, name: string): string {
+function fingerprint(inventory: IEvidInventory, name: string): string {
   const unit = inventory.units.find((item) => item.name === name);
   if (unit === undefined) throw new Error(`Missing PHP unit ${name}`);
-  return EvidenceFingerprint.inspect(inventory, unit.id).fingerprint;
+  return EvidFingerprint.inspect(inventory, unit.id).fingerprint;
 }

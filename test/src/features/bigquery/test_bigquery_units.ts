@@ -1,18 +1,20 @@
-import {
-  EvidenceBigQueryAdapter,
-  EvidenceFingerprint,
-} from "@wrtnlabs/evidence";
+import { EvidBigQueryAdapter, EvidFingerprint } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Classifies BigQuery tables, fields, and declared keys with their full ownership paths.
+/**
+ * Classifies BigQuery tables, fields, and declared keys with their full
+ * ownership paths.
  *
- * The selected schema surface includes nested and repeated field structure, so identity must retain explicit project qualifiers and parent relationships.
+ * The selected schema surface includes nested and repeated field structure, so
+ * identity must retain explicit project qualifiers and parent relationships.
  *
- * 1. Analyze qualified tables with scalar, nested, repeated, and flexible-name fields plus key constraints.
- * 2. Compare the complete unit identities and symbols against the declared schema surface.
+ * 1. Analyze qualified tables with scalar, nested, repeated, and flexible-name
+ *    fields plus key constraints.
+ * 2. Compare the complete unit identities and symbols against the declared schema
+ *    surface.
  * 3. Verify nested fields and constraints retain the model as their owner.
  */
 export async function test_bigquery_units(): Promise<void> {
@@ -26,9 +28,9 @@ export async function test_bigquery_units(): Promise<void> {
       CONSTRAINT customer_key FOREIGN KEY (customer_id) REFERENCES \`acme-prod.sales.customers\` (id) NOT ENFORCED
     ) OPTIONS(description="Orders schema");
   `;
-  const adapter = new EvidenceBigQueryAdapter();
+  const adapter = new EvidBigQueryAdapter();
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.create("schema.sql", content, [
+    EvidTestSourceSnapshot.create("schema.sql", content, [
       "schema.sql",
       "alias.sql",
     ]),
@@ -86,7 +88,7 @@ export async function test_bigquery_units(): Promise<void> {
   );
 
   const moved = await adapter.analyze(
-    TestSourceSnapshot.create("moved.sql", content),
+    EvidTestSourceSnapshot.create("moved.sql", content),
   );
   TestValidator.equals(
     "schema identity independent of file",
@@ -95,18 +97,18 @@ export async function test_bigquery_units(): Promise<void> {
   );
   TestValidator.equals(
     "file move preserves review",
-    EvidenceFingerprint.inspect(moved, model.id).fingerprint,
-    EvidenceFingerprint.inspect(inventory, model.id).fingerprint,
+    EvidFingerprint.inspect(moved, model.id).fingerprint,
+    EvidFingerprint.inspect(inventory, model.id).fingerprint,
   );
   const changed = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "schema.sql",
       content.replace("quantity INT64", "quantity NUMERIC"),
     ),
   );
   TestValidator.notEquals(
     "nested semantic edit invalidates table review",
-    EvidenceFingerprint.inspect(changed, model.id).fingerprint,
-    EvidenceFingerprint.inspect(inventory, model.id).fingerprint,
+    EvidFingerprint.inspect(changed, model.id).fingerprint,
+    EvidFingerprint.inspect(inventory, model.id).fingerprint,
   );
 }

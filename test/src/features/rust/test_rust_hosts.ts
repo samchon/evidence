@@ -1,10 +1,11 @@
-import { EvidenceInventory, EvidenceRustAdapter } from "@wrtnlabs/evidence";
+import { EvidInventory, EvidRustAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches Rust doc comments and doc attributes to eligible hosts.
+/**
+ * Attaches Rust doc comments and doc attributes to eligible hosts.
  *
  * Ordinary carriers cannot create acknowledgements.
  *
@@ -15,10 +16,10 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *    withdrawal to hide a documented module hierarchy.
  */
 export async function test_rust_hosts(): Promise<void> {
-  const inventory = await new EvidenceRustAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create("src/lib.rs", "pub mod api;\n"),
-      TestSourceSnapshot.create(
+  const inventory = await new EvidRustAdapter().analyze(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create("src/lib.rs", "pub mod api;\n"),
+      EvidTestSourceSnapshot.create(
         "src/api.rs",
         dedent`
           //! @evidence docs/requirements.md#module Implements the module.
@@ -99,10 +100,10 @@ export async function test_rust_hosts(): Promise<void> {
     [],
   );
 
-  const withdrawn = await new EvidenceRustAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create("src/lib.rs", "pub mod hidden;\n"),
-      TestSourceSnapshot.create(
+  const withdrawn = await new EvidRustAdapter().analyze(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create("src/lib.rs", "pub mod hidden;\n"),
+      EvidTestSourceSnapshot.create(
         "src/hidden.rs",
         dedent`
           //! @internal This module and its public descendants are internal.
@@ -114,7 +115,7 @@ export async function test_rust_hosts(): Promise<void> {
       ),
     ]),
   );
-  const population = new EvidenceInventory([withdrawn]).select(
+  const population = new EvidInventory([withdrawn]).select(
     withdrawn.units.map((unit) => unit.id),
   );
   TestValidator.equals(

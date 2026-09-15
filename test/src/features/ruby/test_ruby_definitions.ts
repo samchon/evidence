@@ -1,23 +1,26 @@
-import { EvidenceRubyAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+import { EvidRubyAdapter } from "evid";
+import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Merges compatible Ruby reopenings while retaining replacement conflicts.
+/**
+ * Merges compatible Ruby reopenings while retaining replacement conflicts.
  *
- * Reopened declarations can share identity, but incompatible definitions must remain incomplete.
+ * Reopened declarations can share identity, but incompatible definitions must
+ * remain incomplete.
  *
  * 1. Analyze two compatible `Shop::Sale` class bodies and require one semantic
  *    type with two physical sites and no diagnostics.
  * 2. Analyze conflicting container, superclass, constant, attribute, and method
- *    replacements; require incompleteness, every conflict code, and both method sites.
+ *    replacements; require incompleteness, every conflict code, and both method
+ *    sites.
  */
 export async function test_ruby_definitions(): Promise<void> {
-  const compatible = await new EvidenceRubyAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+  const compatible = await new EvidRubyAdapter().analyze(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "lib/shop/sale.rb",
         dedent`
           module Shop
@@ -27,7 +30,7 @@ export async function test_ruby_definitions(): Promise<void> {
           end
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "lib/shop/sale_extensions.rb",
         dedent`
           module Shop
@@ -51,8 +54,8 @@ export async function test_ruby_definitions(): Promise<void> {
     2,
   );
 
-  const conflicting = await new EvidenceRubyAdapter().analyze(
-    TestSourceSnapshot.create(
+  const conflicting = await new EvidRubyAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "lib/conflicts.rb",
       dedent`
         module Conflict
@@ -107,10 +110,7 @@ export async function test_ruby_definitions(): Promise<void> {
   );
 }
 
-function requireUnit(
-  inventory: IEvidenceInventory,
-  identity: string,
-): IEvidenceUnit {
+function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.join(".") === identity,
   );

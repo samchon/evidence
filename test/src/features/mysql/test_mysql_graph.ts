@@ -1,13 +1,15 @@
-import { EvidenceChecker } from "@wrtnlabs/evidence";
+import { EvidChecker } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
-/** Evaluates MySQL selectors in both claim and reference graph roles.
+/**
+ * Evaluates MySQL selectors in both claim and reference graph roles.
  *
- * A TypeScript boundary must preserve selected database obligations whether MySQL supplies claims or referenced units.
+ * A TypeScript boundary must preserve selected database obligations whether
+ * MySQL supplies claims or referenced units.
  *
  * 1. Build graph configurations for each supported MySQL selector and role.
  * 2. Check covered and missing-evidence outcomes for each configuration.
@@ -16,7 +18,7 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
 export async function test_mysql_graph(): Promise<void> {
   for (const symbol of ["model", "column", "relation"] as const)
     for (const mysqlClaims of [true, false])
-      await TestFileSystem.experiment(
+      await EvidTestFileSystem.experiment(
         `mysql-graph-${symbol}-${mysqlClaims}`,
         {
           "evidence.config.ts": mysqlClaims
@@ -38,14 +40,14 @@ export async function test_mysql_graph(): Promise<void> {
         },
         async (directory) => {
           const config = join(directory, "evidence.config.ts");
-          const complete = await EvidenceChecker.check(config);
+          const complete = await EvidChecker.check(config);
 
           TestValidator.equals(
             `${symbol} role ${mysqlClaims} passes`,
             complete.success,
             true,
           );
-          await TestFileSystem.save(
+          await EvidTestFileSystem.save(
             directory,
             mysqlClaims
               ? {
@@ -54,7 +56,7 @@ export async function test_mysql_graph(): Promise<void> {
                 }
               : { "contract.ts": "export function run() {}" },
           );
-          const missing = await EvidenceChecker.check(config);
+          const missing = await EvidChecker.check(config);
           TestValidator.equals(
             `${symbol} role ${mysqlClaims} missing evidence fails`,
             missing.success,

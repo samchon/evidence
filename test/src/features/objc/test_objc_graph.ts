@@ -1,25 +1,23 @@
-import {
-  EvidenceGraph,
-  EvidenceObjcAdapter,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
+import { EvidGraph, EvidObjcAdapter, EvidTypeScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Evaluates every selected Objective-C declaration as a graph reference.
+/**
+ * Evaluates every selected Objective-C declaration as a graph reference.
  *
- * Evidence covers selected units, whereas reviews remain recorded without satisfying missing obligations.
+ * Evid covers selected units, whereas reviews remain recorded without
+ * satisfying missing obligations.
  *
  * 1. Extract Objective-C units and TypeScript claims for each selector.
  * 2. Evaluate covered and undocumented selector populations.
  * 3. Verify a review-only reference stays missing.
  */
 export async function test_objc_graph(): Promise<void> {
-  const reference = await new EvidenceObjcAdapter().analyze(
-    TestSourceSnapshot.create(
+  const reference = await new EvidObjcAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/Contract.h",
       dedent`
     @interface Contract
@@ -29,8 +27,8 @@ export async function test_objc_graph(): Promise<void> {
   `,
     ),
   );
-  const claims = await new EvidenceTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+  const claims = await new EvidTypeScriptAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/Claims.ts",
       dedent`
     /** @evidence ./Contract.h#Contract Verifies the type. */
@@ -66,7 +64,7 @@ export async function test_objc_graph(): Promise<void> {
             ),
           )
         : [];
-      const graph = EvidenceGraph.evaluate({
+      const graph = EvidGraph.evaluate({
         claims: [
           {
             severity: "error",
@@ -77,7 +75,7 @@ export async function test_objc_graph(): Promise<void> {
                 severity: "error",
                 inventory: reference,
                 unitIds,
-                resolutions: await TestGraph.resolveDeclarations(
+                resolutions: await EvidTestGraph.resolveDeclarations(
                   claim,
                   reference,
                   unitIds,
@@ -94,13 +92,13 @@ export async function test_objc_graph(): Promise<void> {
       );
       TestValidator.equals(
         `${symbol} exact missing population`,
-        TestGraph.obligation(graph, 0, 0).missingUnitIds,
+        EvidTestGraph.obligation(graph, 0, 0).missingUnitIds,
         acknowledged ? [] : unitIds,
       );
     }
   }
-  const review = await new EvidenceObjcAdapter().analyze(
-    TestSourceSnapshot.create(
+  const review = await new EvidObjcAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/Review.m",
       dedent`
     /** @evidenceReview ./Contract.h#run Reviewed without an acknowledgement. */
@@ -117,7 +115,7 @@ export async function test_objc_graph(): Promise<void> {
   const functions = reference.units
     .filter((unit) => unit.symbol === "function")
     .map((unit) => unit.id);
-  const graph = EvidenceGraph.evaluate({
+  const graph = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -129,7 +127,7 @@ export async function test_objc_graph(): Promise<void> {
             inventory: reference,
             unitIds: functions,
             resolutions: [],
-            reviewResolutions: await TestGraph.resolveReviews(
+            reviewResolutions: await EvidTestGraph.resolveReviews(
               review,
               reference,
               functions,
@@ -141,7 +139,7 @@ export async function test_objc_graph(): Promise<void> {
   });
   TestValidator.equals(
     "review never supplies missing coverage",
-    TestGraph.obligation(graph, 0, 0).missingUnitIds,
+    EvidTestGraph.obligation(graph, 0, 0).missingUnitIds,
     functions,
   );
 }

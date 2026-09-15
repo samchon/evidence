@@ -1,23 +1,25 @@
-import {
-  EvidenceCSharpAdapter,
-  EvidenceLanguageRegistry,
-} from "@wrtnlabs/evidence";
+import { EvidCSharpAdapter, EvidLanguageRegistry } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Classifies C# types, members, visibility defaults, and special members.
+/**
+ * Classifies C# types, members, visibility defaults, and special members.
  *
- * The fixture contrasts public declarations with inaccessible and generated forms so the graph denominator cannot silently shrink or grow.
+ * The fixture contrasts public declarations with inaccessible and generated
+ * forms so the graph denominator cannot silently shrink or grow.
  *
- * 1. Verify registered C# metadata identifies the certified adapter and grammar version.
- * 2. Analyze public records, interfaces, structs, enums, delegates, fields, events, operators, and nested members across partial files.
- * 3. Compare the full unit surface, retain two sites for the partial record and overload family, and exclude inaccessible declarations.
+ * 1. Verify registered C# metadata identifies the certified adapter and grammar
+ *    version.
+ * 2. Analyze public records, interfaces, structs, enums, delegates, fields,
+ *    events, operators, and nested members across partial files.
+ * 3. Compare the full unit surface, retain two sites for the partial record and
+ *    overload family, and exclude inaccessible declarations.
  */
 export async function test_csharp_units(): Promise<void> {
   // Certified metadata names the exact pinned grammar and adapter boundary.
-  const language = EvidenceLanguageRegistry.list().find(
+  const language = EvidLanguageRegistry.list().find(
     (entry) => entry.type === "csharp",
   );
   if (language === undefined) throw new Error("Missing C# language metadata.");
@@ -26,7 +28,7 @@ export async function test_csharp_units(): Promise<void> {
   TestValidator.equals(
     "certified C# adapter",
     language.adapter.entry,
-    "EvidenceCSharpAdapter",
+    "EvidCSharpAdapter",
   );
   TestValidator.equals(
     "published C# grammar version",
@@ -34,9 +36,9 @@ export async function test_csharp_units(): Promise<void> {
     true,
   );
 
-  const inventory = await new EvidenceCSharpAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+  const inventory = await new EvidCSharpAdapter().analyze(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/Sale.cs",
         dedent`
           namespace Shop;
@@ -76,7 +78,7 @@ export async function test_csharp_units(): Promise<void> {
           }
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/Sale.Partial.cs",
         dedent`
           namespace Shop;
@@ -87,7 +89,7 @@ export async function test_csharp_units(): Promise<void> {
           }
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/Contracts.cs",
         dedent`
           namespace Shop.Contracts

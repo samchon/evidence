@@ -1,20 +1,22 @@
-import { EvidenceSqlAdapter } from "@wrtnlabs/evidence";
+import { EvidSqlAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Distinguishes leading SQL documentation from trailing and detached comments.
+/**
+ * Distinguishes leading SQL documentation from trailing and detached comments.
  *
- * Attachment is determined by the declaration boundary, so adjacent comment positions can have different acknowledgement effects.
+ * Attachment is determined by the declaration boundary, so adjacent comment
+ * positions can have different acknowledgement effects.
  *
  * 1. Analyze leading, trailing, and detached SQL comment carriers.
  * 2. Verify only the supported leading comment attaches.
  * 3. Require exact host and declaration outcomes.
  */
 export async function test_sql_comment_boundaries(): Promise<void> {
-  const adapter = new EvidenceSqlAdapter();
+  const adapter = new EvidSqlAdapter();
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "comments.sql",
       dedent`
     CREATE TABLE account (

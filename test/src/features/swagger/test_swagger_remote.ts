@@ -1,13 +1,15 @@
-import { EvidenceSwaggerAdapter } from "@wrtnlabs/evidence";
+import { EvidSwaggerAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { once } from "node:events";
 import { createServer, type Server } from "node:http";
 import { join } from "node:path";
 
-/** Loads bounded remote Swagger snapshots through a controlled endpoint.
+/**
+ * Loads bounded remote Swagger snapshots through a controlled endpoint.
  *
- * HTTP failure and oversized responses must remain incomplete while valid bounded snapshots produce a normal inventory.
+ * HTTP failure and oversized responses must remain incomplete while valid
+ * bounded snapshots produce a normal inventory.
  *
  * 1. Serve valid, failing, and oversized document responses.
  * 2. Analyze each remote source.
@@ -34,7 +36,7 @@ export async function test_swagger_remote(): Promise<void> {
   const origin = await listen(server);
 
   try {
-    const adapter = new EvidenceSwaggerAdapter();
+    const adapter = new EvidSwaggerAdapter();
     const config = join(__dirname, "evidence.config.ts");
     const first = await adapter.load(
       config,

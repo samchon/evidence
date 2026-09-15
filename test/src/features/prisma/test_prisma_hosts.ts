@@ -1,17 +1,16 @@
-import { EvidenceInventory, EvidencePrismaAdapter } from "@wrtnlabs/evidence";
-import type {
-  IEvidenceDeclaration,
-  IEvidenceHost,
-  IEvidenceInventory,
-} from "@wrtnlabs/evidence";
+import { EvidInventory, EvidPrismaAdapter } from "evid";
+import type { IEvidDeclaration, IEvidHost, IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches Prisma documentation and preserves withdrawal and exclusion semantics.
+/**
+ * Attaches Prisma documentation and preserves withdrawal and exclusion
+ * semantics.
  *
- * Eligible documentation hosts create acknowledgements, while lexical withdrawals and exclusions remain independently observable.
+ * Eligible documentation hosts create acknowledgements, while lexical
+ * withdrawals and exclusions remain independently observable.
  *
  * 1. Analyze documented models and fields with withdrawals and exclusions.
  * 2. Verify attachment, targets, and ledger records.
@@ -49,7 +48,7 @@ export async function test_prisma_hosts(): Promise<void> {
       id String @id
     }
 
-    /// @evidence docs/spec.md#status Enums are outside the Evidence population.
+    /// @evidence docs/spec.md#status Enums are outside the Evid population.
     enum SaleStatus {
       ACTIVE
     }
@@ -69,13 +68,13 @@ export async function test_prisma_hosts(): Promise<void> {
     /// @evidenceExcludeReview docs/spec.md#deferred Reviewed the deferral.
     /// @evidence docs/spec.md#misplaced Positive evidence needs a declaration host.
   `;
-  const inventory = await new EvidencePrismaAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+  const inventory = await new EvidPrismaAdapter().analyze(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "prisma/schema.prisma",
         schema.replaceAll("\n", "\r\n"),
       ),
-      TestSourceSnapshot.create("prisma/exclusions.schema", ledger),
+      EvidTestSourceSnapshot.create("prisma/exclusions.schema", ledger),
     ]),
   );
 
@@ -127,7 +126,7 @@ export async function test_prisma_hosts(): Promise<void> {
   );
 
   // A model withdrawal removes the model and every member from public selection.
-  const selection = new EvidenceInventory([inventory]).select([
+  const selection = new EvidInventory([inventory]).select([
     "prisma:Seller",
     "prisma:Seller.id",
   ]);
@@ -162,9 +161,9 @@ export async function test_prisma_hosts(): Promise<void> {
 }
 
 function requireDeclaration(
-  inventory: IEvidenceInventory,
+  inventory: IEvidInventory,
   target: string,
-): IEvidenceDeclaration {
+): IEvidDeclaration {
   const declaration = inventory.declarations.find(
     (candidate) => candidate.target === target,
   );
@@ -174,9 +173,9 @@ function requireDeclaration(
 }
 
 function requireHost(
-  inventory: IEvidenceInventory,
-  declaration: IEvidenceDeclaration,
-): IEvidenceHost {
+  inventory: IEvidInventory,
+  declaration: IEvidDeclaration,
+): IEvidHost {
   const host = inventory.hosts.find(
     (candidate) => candidate.id === declaration.hostId,
   );
@@ -185,7 +184,7 @@ function requireHost(
   return host;
 }
 
-function requireLine(declaration: IEvidenceDeclaration): number {
+function requireLine(declaration: IEvidDeclaration): number {
   const range = declaration.location.range;
   if (range === undefined)
     throw new Error(`Missing Prisma declaration range: ${declaration.target}`);

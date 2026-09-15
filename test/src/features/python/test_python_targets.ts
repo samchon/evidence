@@ -1,24 +1,27 @@
-import { EvidencePythonAdapter } from "@wrtnlabs/evidence";
+import { EvidPythonAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Resolves canonical file-qualified targets for Python declarations.
  *
- * The reference and claim snapshots use a type, class property, instance method, and module function to test target parsing against the same public address model used by graph resolution.
+ * The reference and claim snapshots use a type, class property, instance
+ * method, and module function to test target parsing against the same public
+ * address model used by graph resolution.
  *
  * 1. Analyze the Python reference and TypeScript claim inventories.
  * 2. Resolve each canonical target and verify every resolution succeeds.
- * 3. Verify the resolved units have the expected type, property, method, and function identities.
+ * 3. Verify the resolved units have the expected type, property, method, and
+ *    function identities.
  */
 export async function test_python_targets(): Promise<void> {
-  const adapter = new EvidencePythonAdapter();
+  const adapter = new EvidPythonAdapter();
   const reference = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/sale.py",
         dedent`
           class Sale:
@@ -28,7 +31,7 @@ export async function test_python_targets(): Promise<void> {
                   return 0
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/calculator.py",
         dedent`
           def add(left, right):
@@ -38,7 +41,7 @@ export async function test_python_targets(): Promise<void> {
     ]),
   );
   const claim = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "test/test_sale.py",
       dedent`
         def verify():
@@ -52,7 +55,7 @@ export async function test_python_targets(): Promise<void> {
       `,
     ),
   );
-  const resolutions = await TestGraph.resolveDeclarations(
+  const resolutions = await EvidTestGraph.resolveDeclarations(
     claim,
     reference,
     reference.units.map((unit) => unit.id),

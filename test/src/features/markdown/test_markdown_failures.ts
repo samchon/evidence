@@ -1,25 +1,30 @@
-import { EvidenceMarkdownAdapter } from "@wrtnlabs/evidence";
+import { EvidMarkdownAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
- * Retains Markdown path and discovery failures without losing independent diagnostics.
+ * Retains Markdown path and discovery failures without losing independent
+ * diagnostics.
  *
  * A source spelling can fail to form a public Markdown address even when the
- * physical content is readable, and a source-read failure must keep parsing diagnostics visible.
+ * physical content is readable, and a source-read failure must keep parsing
+ * diagnostics visible.
  *
- * 1. Analyze a whitespace-containing source path and require no units plus its path diagnostic.
+ * 1. Analyze a whitespace-containing source path and require no units plus its
+ *    path diagnostic.
  * 2. Analyze that physical file through invalid and valid aliases:
+ *
  *    - Keep the valid address for both physical entries.
  *    - Retain the invalid alias diagnostic.
- * 3. Combine a failed source snapshot with malformed heading syntax and require incomplete status with both diagnostic classes.
+ * 3. Combine a failed source snapshot with malformed heading syntax and require
+ *    incomplete status with both diagnostic classes.
  */
 export async function test_markdown_failures(): Promise<void> {
-  const adapter = new EvidenceMarkdownAdapter();
+  const adapter = new EvidMarkdownAdapter();
 
   const whitespace = await adapter.analyze(
-    TestSourceSnapshot.create("docs/space name.md", "# Contract"),
+    EvidTestSourceSnapshot.create("docs/space name.md", "# Contract"),
   );
   TestValidator.equals("unaddressable file has no units", whitespace.units, []);
   TestValidator.equals(
@@ -30,7 +35,7 @@ export async function test_markdown_failures(): Promise<void> {
 
   // A valid alias preserves the physical unit while every invalid alias remains visible.
   const aliases = await adapter.analyze(
-    TestSourceSnapshot.create("physical.md", "# Contract", [
+    EvidTestSourceSnapshot.create("physical.md", "# Contract", [
       "docs/space name.md",
       "docs/contract.md",
     ]),
@@ -47,11 +52,14 @@ export async function test_markdown_failures(): Promise<void> {
   );
 
   const incomplete = await adapter.analyze(
-    TestSourceSnapshot.fail(TestSourceSnapshot.create("guide.md", "##"), {
-      code: "path-unreadable",
-      path: "/project/missing.md",
-      message: "The selected Markdown source could not be read.",
-    }),
+    EvidTestSourceSnapshot.fail(
+      EvidTestSourceSnapshot.create("guide.md", "##"),
+      {
+        code: "path-unreadable",
+        path: "/project/missing.md",
+        message: "The selected Markdown source could not be read.",
+      },
+    ),
   );
   TestValidator.equals(
     "source failure remains incomplete",

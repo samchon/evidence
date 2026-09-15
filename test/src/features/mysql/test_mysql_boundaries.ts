@@ -1,18 +1,21 @@
-import { EvidenceMysqlAdapter } from "@wrtnlabs/evidence";
+import { EvidMysqlAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Rejects MySQL inputs that could hide part of the selected schema.
+/**
+ * Rejects MySQL inputs that could hide part of the selected schema.
  *
- * Dialect changes, migration state, executable comments, invalid names, and source failures must produce incomplete analysis instead of a smaller success.
+ * Dialect changes, migration state, executable comments, invalid names, and
+ * source failures must produce incomplete analysis instead of a smaller
+ * success.
  *
  * 1. Analyze unsupported and malformed schema variants.
  * 2. Require each result to be incomplete with its boundary diagnostic.
  * 3. Verify failed snapshots and wrong extensions remain incomplete.
  */
 export async function test_mysql_boundaries(): Promise<void> {
-  const adapter = new EvidenceMysqlAdapter();
+  const adapter = new EvidMysqlAdapter();
   for (const source of [
     "CREATE TABLE broken (id INT;",
     "CREATE TABLE t (id INT); ALTER TABLE t ADD COLUMN added INT;",
@@ -51,7 +54,7 @@ export async function test_mysql_boundaries(): Promise<void> {
     "CREATE VIEW projected AS SELECT 1 AS id;",
   ]) {
     const inventory = await adapter.analyze(
-      TestSourceSnapshot.create("schema.sql", source),
+      EvidTestSourceSnapshot.create("schema.sql", source),
     );
 
     TestValidator.equals(`incomplete: ${source}`, inventory.complete, false);
@@ -61,15 +64,18 @@ export async function test_mysql_boundaries(): Promise<void> {
     );
   }
   const failed = await adapter.analyze(
-    TestSourceSnapshot.fail(TestSourceSnapshot.create("unreadable.sql", ""), {
-      code: "path-unreadable",
-      path: "/project/unreadable.sql",
-      message: "Unavailable schema source.",
-    }),
+    EvidTestSourceSnapshot.fail(
+      EvidTestSourceSnapshot.create("unreadable.sql", ""),
+      {
+        code: "path-unreadable",
+        path: "/project/unreadable.sql",
+        message: "Unavailable schema source.",
+      },
+    ),
   );
   TestValidator.equals("source failure is retained", failed.complete, false);
   const extension = await adapter.analyze(
-    TestSourceSnapshot.create("schema.pgsql", "CREATE TABLE t (id INT);"),
+    EvidTestSourceSnapshot.create("schema.pgsql", "CREATE TABLE t (id INT);"),
   );
   TestValidator.equals(
     "configured dialect owns selection",

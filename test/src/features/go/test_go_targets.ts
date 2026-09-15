@@ -1,23 +1,26 @@
-import { EvidenceGoAdapter } from "@wrtnlabs/evidence";
+import { EvidGoAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Resolves Go functions and receiver methods through declaration and owner files.
+/**
+ * Resolves Go functions and receiver methods through declaration and owner
+ * files.
  *
- * Receiver ownership and file-relative target paths determine the resolved public declaration.
+ * Receiver ownership and file-relative target paths determine the resolved
+ * public declaration.
  *
  * 1. Analyze functions and receiver methods.
  * 2. Resolve supported targets.
  * 3. Require wrong owner or file paths to remain unresolved.
  */
 export async function test_go_targets(): Promise<void> {
-  const adapter = new EvidenceGoAdapter();
+  const adapter = new EvidGoAdapter();
   const reference = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/sale.go",
         dedent`
           package shop
@@ -27,7 +30,7 @@ export async function test_go_targets(): Promise<void> {
           }
         ` + "\n",
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/methods.go",
         dedent`
           package shop
@@ -44,7 +47,7 @@ export async function test_go_targets(): Promise<void> {
     ]),
   );
   const claim = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "test/sale_test.go",
       dedent`
         package shop_test
@@ -60,7 +63,7 @@ export async function test_go_targets(): Promise<void> {
   );
   TestValidator.equals("complete Go reference", reference.diagnostics, []);
   TestValidator.equals("complete Go claim", claim.diagnostics, []);
-  const resolutions = await TestGraph.resolveDeclarations(
+  const resolutions = await EvidTestGraph.resolveDeclarations(
     claim,
     reference,
     reference.units.map((unit) => unit.id),

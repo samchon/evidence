@@ -1,24 +1,29 @@
-import { EvidenceCSharpAdapter } from "@wrtnlabs/evidence";
+import { EvidCSharpAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Merges C# partial declarations only inside one configured snapshot root.
+/**
+ * Merges C# partial declarations only inside one configured snapshot root.
  *
- * Parts of one public type contribute a single selected hierarchy, while equal source-relative names in unrelated configured roots must remain different compilation identities.
+ * Parts of one public type contribute a single selected hierarchy, while equal
+ * source-relative names in unrelated configured roots must remain different
+ * compilation identities.
  *
- * 1. Analyze two parts of Shop.Sale containing ordinary, partial property, and partial indexer members.
- * 2. Require the merged type to include members from both files and two sites for each partial member.
+ * 1. Analyze two parts of Shop.Sale containing ordinary, partial property, and
+ *    partial indexer members.
+ * 2. Require the merged type to include members from both files and two sites for
+ *    each partial member.
  * 3. Analyze Sale.cs under two distinct roots and require distinct unit IDs.
  */
 export async function test_csharp_partials(): Promise<void> {
-  const adapter = new EvidenceCSharpAdapter();
+  const adapter = new EvidCSharpAdapter();
 
   // Accessibility declared on one part applies to members selected from every part.
   const partial = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "Project/Sale.cs",
         dedent`
           namespace Shop
@@ -32,7 +37,7 @@ export async function test_csharp_partials(): Promise<void> {
           }
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "Project/Sale.Partial.cs",
         dedent`
           namespace Shop;
@@ -74,7 +79,7 @@ export async function test_csharp_partials(): Promise<void> {
   }
 
   // Relative configured roots are stable compilation-boundary keys.
-  const firstProject = TestSourceSnapshot.create(
+  const firstProject = EvidTestSourceSnapshot.create(
     "Sale.cs",
     "public class Sale {}\n",
     ["Sale.cs"],
@@ -82,7 +87,7 @@ export async function test_csharp_partials(): Promise<void> {
   );
   firstProject.root.declared = "First";
   firstProject.root.display = "First";
-  const secondProject = TestSourceSnapshot.create(
+  const secondProject = EvidTestSourceSnapshot.create(
     "Sale.cs",
     "public class Sale {}\n",
     ["Sale.cs"],

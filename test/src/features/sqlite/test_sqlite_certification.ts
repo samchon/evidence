@@ -1,21 +1,24 @@
-import { EvidenceSqliteAdapter } from "@wrtnlabs/evidence";
+import { EvidSqliteAdapter } from "evid";
 import { dedent } from "@typia/utils";
 
-import { DatabaseAdapterCertification } from "../../internal/certification/DatabaseAdapterCertification";
-import type { IDatabaseAdapterCertification } from "../../internal/certification/IDatabaseAdapterCertification";
+import { EvidDatabaseAdapterCertification } from "../../internal/certification/EvidDatabaseAdapterCertification";
+import type { IEvidDatabaseAdapterCertification } from "../../internal/certification/IEvidDatabaseAdapterCertification";
 
-/** Applies shared database certification to independently specified SQLite behavior.
+/**
+ * Applies shared database certification to independently specified SQLite
+ * behavior.
  *
- * The fixture fixes SQLite inventory, missing-edge, ambiguity, and review fingerprint expectations.
+ * The fixture fixes SQLite inventory, missing-edge, ambiguity, and review
+ * fingerprint expectations.
  *
  * 1. Construct the SQLite certification fixture.
  * 2. Run the common database certification suite.
  * 3. Require every declared gate to pass.
  */
 export async function test_sqlite_certification(): Promise<void> {
-  const fixture: IDatabaseAdapterCertification = {
+  const fixture: IEvidDatabaseAdapterCertification = {
     type: "sqlite",
-    adapter: new EvidenceSqliteAdapter(),
+    adapter: new EvidSqliteAdapter(),
     sources: [
       {
         file: "schema.sql",
@@ -128,12 +131,12 @@ export async function test_sqlite_certification(): Promise<void> {
     },
   };
 
-  DatabaseAdapterCertification.assertInventory(
+  EvidDatabaseAdapterCertification.assertInventory(
     fixture,
-    await DatabaseAdapterCertification.analyze(fixture),
+    await EvidDatabaseAdapterCertification.analyze(fixture),
   );
-  await DatabaseAdapterCertification.assertGraph(fixture);
-  await DatabaseAdapterCertification.assertFailures(fixture);
-  await DatabaseAdapterCertification.assertFingerprint(fixture);
-  await DatabaseAdapterCertification.assertAmbiguity(fixture);
+  await EvidDatabaseAdapterCertification.assertGraph(fixture);
+  await EvidDatabaseAdapterCertification.assertFailures(fixture);
+  await EvidDatabaseAdapterCertification.assertFingerprint(fixture);
+  await EvidDatabaseAdapterCertification.assertAmbiguity(fixture);
 }

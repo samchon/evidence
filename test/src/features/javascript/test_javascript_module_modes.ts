@@ -1,38 +1,41 @@
 import {
-  EvidenceJavaScriptAdapter,
-  EvidenceLanguageRegistry,
-  EvidenceSourceLoader,
-} from "@wrtnlabs/evidence";
+  EvidJavaScriptAdapter,
+  EvidLanguageRegistry,
+  EvidSourceLoader,
+  EvidSourcePath,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { SourcePath } from "../../../../packages/evidence/src/internal/SourcePath";
-import { TestFileSystem } from "../../internal/TestFileSystem";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Selects JavaScript module semantics from extensions and nearest package metadata.
+/**
+ * Selects JavaScript module semantics from extensions and nearest package
+ * metadata.
  *
- * Resolution must use the applicable file extension and package boundary rather than a global module assumption.
+ * Resolution must use the applicable file extension and package boundary rather
+ * than a global module assumption.
  *
  * 1. Create sources under contrasting package metadata.
  * 2. Analyze each extension.
  * 3. Verify the selected module mode and resulting exports.
  */
 export async function test_javascript_module_modes(): Promise<void> {
-  const language = EvidenceLanguageRegistry.list().find(
+  const language = EvidLanguageRegistry.list().find(
     (entry) => entry.type === "javascript",
   );
   TestValidator.equals(
     "certified JavaScript adapter",
     language?.adapter?.entry,
-    "EvidenceJavaScriptAdapter",
+    "EvidJavaScriptAdapter",
   );
 
   const location = join(__dirname, "modules " + randomUUID());
 
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     {
       "package.json": '{"type":"module"}',
@@ -50,7 +53,7 @@ export async function test_javascript_module_modes(): Promise<void> {
       `,
     },
     async (directory) => {
-      const snapshot = await EvidenceSourceLoader.glob(
+      const snapshot = await EvidSourceLoader.glob(
         join(directory, "evidence.config.ts"),
         {
           files: [
@@ -61,7 +64,7 @@ export async function test_javascript_module_modes(): Promise<void> {
           ],
         },
       );
-      const inventory = await new EvidenceJavaScriptAdapter().analyze(snapshot);
+      const inventory = await new EvidJavaScriptAdapter().analyze(snapshot);
 
       TestValidator.equals(
         "extension and package module units",
@@ -74,20 +77,20 @@ export async function test_javascript_module_modes(): Promise<void> {
       TestValidator.predicate(
         "root package metadata dependency",
         dependencies.includes(
-          SourcePath.slash(join(directory, "package.json")),
+          EvidSourcePath.slash(join(directory, "package.json")),
         ),
       );
       TestValidator.predicate(
         "nearest package metadata dependency",
         dependencies.includes(
-          SourcePath.slash(join(directory, "src/legacy/package.json")),
+          EvidSourcePath.slash(join(directory, "src/legacy/package.json")),
         ),
       );
     },
   );
 
-  const conflicting = await new EvidenceJavaScriptAdapter().analyze(
-    TestSourceSnapshot.create("src/alias.mjs", "export const value = 1;", [
+  const conflicting = await new EvidJavaScriptAdapter().analyze(
+    EvidTestSourceSnapshot.create("src/alias.mjs", "export const value = 1;", [
       "src/alias.mjs",
       "src/alias.cjs",
     ]),
@@ -99,18 +102,18 @@ export async function test_javascript_module_modes(): Promise<void> {
     ),
   );
 
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     join(__dirname, "invalid package " + randomUUID()),
     {
       "package.json": "{ invalid",
       "src/main.js": "const value = 1; exports.value = value;",
     },
     async (directory) => {
-      const snapshot = await EvidenceSourceLoader.glob(
+      const snapshot = await EvidSourceLoader.glob(
         join(directory, "evidence.config.ts"),
         { files: ["src/**/*.js"] },
       );
-      const inventory = await new EvidenceJavaScriptAdapter().analyze(snapshot);
+      const inventory = await new EvidJavaScriptAdapter().analyze(snapshot);
 
       TestValidator.predicate(
         "invalid package metadata",

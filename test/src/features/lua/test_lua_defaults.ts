@@ -1,18 +1,21 @@
-import { EvidenceChecker, EvidenceConfigLoader } from "@wrtnlabs/evidence";
+import { EvidChecker, EvidConfigLoader } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
-/** Prevents Lua from passing through an empty default type selector.
+/**
+ * Prevents Lua from passing through an empty default type selector.
  *
- * A language without type units must retain an explicit graph obligation instead of treating an empty selector as coverage.
+ * A language without type units must retain an explicit graph obligation
+ * instead of treating an empty selector as coverage.
  *
- * 1. Configure a default type reference for Lua. 2. Run graph evaluation. 3. Require the empty selection to fail visibly.
+ * 1. Configure a default type reference for Lua. 2. Run graph evaluation. 3.
+ *    Require the empty selection to fail visibly.
  */
 export async function test_lua_defaults(): Promise<void> {
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "lua-defaults",
     {
       "evidence.config.ts": dedent`
@@ -23,14 +26,14 @@ export async function test_lua_defaults(): Promise<void> {
     },
     async (directory) => {
       const file = join(directory, "evidence.config.ts");
-      const missing = await EvidenceChecker.check(file);
+      const missing = await EvidChecker.check(file);
 
       TestValidator.equals(
         "default reference includes real Lua declarations",
         missing.success,
         false,
       );
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "claim.ts": dedent`
       /**
        * @evidence ./contract.lua#run Covers the function.
@@ -41,11 +44,11 @@ export async function test_lua_defaults(): Promise<void> {
       });
       TestValidator.equals(
         "covering default selectors passes",
-        (await EvidenceChecker.check(file)).success,
+        (await EvidChecker.check(file)).success,
         true,
       );
       for (const role of ["claim", "reference"] as const) {
-        await TestFileSystem.save(directory, {
+        await EvidTestFileSystem.save(directory, {
           "evidence.config.ts":
             role === "claim"
               ? dedent`
@@ -57,7 +60,7 @@ export async function test_lua_defaults(): Promise<void> {
         });
         await TestValidator.error(
           `unsupported ${role} selector rejected`,
-          async () => EvidenceConfigLoader.load(file),
+          async () => EvidConfigLoader.load(file),
         );
       }
     },

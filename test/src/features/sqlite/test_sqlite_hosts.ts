@@ -1,16 +1,14 @@
-import {
-  EvidenceFingerprint,
-  EvidenceInventory,
-  EvidenceSqliteAdapter,
-} from "@wrtnlabs/evidence";
+import { EvidFingerprint, EvidInventory, EvidSqliteAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches SQLite documentation with stable Unicode source coordinates.
+/**
+ * Attaches SQLite documentation with stable Unicode source coordinates.
  *
- * Eligible comments can acknowledge a table or column, while examples and withdrawn tables remain outside normal evidence coverage.
+ * Eligible comments can acknowledge a table or column, while examples and
+ * withdrawn tables remain outside normal evidence coverage.
  *
  * 1. Analyze documented schema units, Unicode comments, examples, and withdrawals.
  * 2. Verify coordinates, target resolution, and withdrawal handling.
@@ -37,9 +35,9 @@ export async function test_sqlite_hosts(): Promise<void> {
      */
     CREATE TABLE Example (id INTEGER);
   `.replaceAll("\n", "\r\n");
-  const adapter = new EvidenceSqliteAdapter();
+  const adapter = new EvidSqliteAdapter();
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.create("schema.sql", source),
+    EvidTestSourceSnapshot.create("schema.sql", source),
   );
 
   TestValidator.equals(
@@ -65,7 +63,7 @@ export async function test_sqlite_hosts(): Promise<void> {
     annotation.location.range.start.line,
     2,
   );
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   TestValidator.equals(
     "withdrawn child resolves hidden",
     graph.resolve(
@@ -77,26 +75,26 @@ export async function test_sqlite_hosts(): Promise<void> {
   const table = inventory.units.find((unit) => unit.name === "주문");
   if (table === undefined) throw new Error("Missing Unicode table.");
   const annotationEdit = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "schema.sql",
       source.replace("Records the amount.", "Explains the same amount."),
     ),
   );
   const semanticEdit = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "schema.sql",
       source.replace("DEFAULT 1", "DEFAULT 2"),
     ),
   );
   TestValidator.equals(
     "annotation edit preserves parent fingerprint",
-    EvidenceFingerprint.inspect(inventory, table.id).fingerprint,
-    EvidenceFingerprint.inspect(annotationEdit, table.id).fingerprint,
+    EvidFingerprint.inspect(inventory, table.id).fingerprint,
+    EvidFingerprint.inspect(annotationEdit, table.id).fingerprint,
   );
   TestValidator.notEquals(
     "column semantic edit invalidates parent fingerprint",
-    EvidenceFingerprint.inspect(inventory, table.id).fingerprint,
-    EvidenceFingerprint.inspect(semanticEdit, table.id).fingerprint,
+    EvidFingerprint.inspect(inventory, table.id).fingerprint,
+    EvidFingerprint.inspect(semanticEdit, table.id).fingerprint,
   );
 
   for (const comment of [
@@ -104,7 +102,7 @@ export async function test_sqlite_hosts(): Promise<void> {
     "CREATE TABLE Fresh (id INTEGER); -- @evidence docs.md#trailing Trailing comment.",
   ]) {
     const detached = await adapter.analyze(
-      TestSourceSnapshot.create("detached.sql", comment),
+      EvidTestSourceSnapshot.create("detached.sql", comment),
     );
     TestValidator.equals(
       "detached comment has no acknowledgement",
@@ -119,7 +117,7 @@ export async function test_sqlite_hosts(): Promise<void> {
   }
 
   const adjacent = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "adjacent.sql",
       dedent`
     CREATE TABLE Fresh (

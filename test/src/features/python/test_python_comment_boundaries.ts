@@ -1,17 +1,21 @@
-import { EvidencePythonAdapter } from "@wrtnlabs/evidence";
+import { EvidPythonAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Reports only annotations attached to eligible Python declarations.
  *
- * The fixture separates comments from declarations by blank lines, indentation, statement kind, and lexical scope so host selection cannot silently move an acknowledgement.
+ * The fixture separates comments from declarations by blank lines, indentation,
+ * statement kind, and lexical scope so host selection cannot silently move an
+ * acknowledgement.
  *
- * 1. Analyze declarations with detached, misindented, private, pass-statement, local, header, inline, and nested comments.
+ * 1. Analyze declarations with detached, misindented, private, pass-statement,
+ *    local, header, inline, and nested comments.
  * 2. Verify the two adjacent public declarations are the only evidence hosts.
- * 3. Verify unsupported-host diagnostics and retained annotation ranges count every misplaced tag while discovery remains complete.
+ * 3. Verify unsupported-host diagnostics and retained annotation ranges count
+ *    every misplaced tag while discovery remains complete.
  */
 export async function test_python_comment_boundaries(): Promise<void> {
   const content = dedent`
@@ -50,8 +54,8 @@ export async function test_python_comment_boundaries(): Promise<void> {
         # @evidence docs/spec.md#sibling Documents the dedented sibling.
         sibling = ""
   `;
-  const inventory = await new EvidencePythonAdapter().analyze(
-    TestSourceSnapshot.create("src/boundaries.py", content),
+  const inventory = await new EvidPythonAdapter().analyze(
+    EvidTestSourceSnapshot.create("src/boundaries.py", content),
   );
 
   TestValidator.equals(

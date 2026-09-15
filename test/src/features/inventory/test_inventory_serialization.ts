@@ -1,15 +1,16 @@
-import { EvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestInventory } from "../../internal/TestInventory";
+import { EvidTestInventory } from "../../internal/EvidTestInventory";
 
 /**
- * Normalizes duplicate inventory inputs without losing selection or annotation meaning.
+ * Normalizes duplicate inventory inputs without losing selection or annotation
+ * meaning.
  *
  * Deterministic merging must treat source ranges as a set while retaining real
- * coordinate conflicts. Reviews and tag diagnostics also have different effects:
- * reviews cannot create acknowledgements, and tag problems do not shrink a
- * successfully extracted declaration population.
+ * coordinate conflicts. Reviews and tag diagnostics also have different
+ * effects: reviews cannot create acknowledgements, and tag problems do not
+ * shrink a successfully extracted declaration population.
  *
  * 1. Prepare matching inventories with a review, a tag diagnostic, an added public
  *    alias, and repeated content ranges; mark one source copy dependency-only.
@@ -18,18 +19,19 @@ import { TestInventory } from "../../internal/TestInventory";
  * 3. Require the merged inventory to retain one review, no acknowledgements, one
  *    selected declaration, and complete extraction despite the tag diagnostic.
  * 4. Alter the line coordinate of a duplicate content range while keeping its
- *    offset and require incomplete analysis rather than deduplicating away the conflict.
+ *    offset and require incomplete analysis rather than deduplicating away the
+ *    conflict.
  */
 export async function test_inventory_serialization(): Promise<void> {
-  const input = TestInventory.create();
-  TestInventory.unit(
+  const input = EvidTestInventory.create();
+  EvidTestInventory.unit(
     input,
     "box",
     ["Box"],
     "type",
     "export class Box { value = 1; }",
   );
-  const host = TestInventory.host(
+  const host = EvidTestInventory.host(
     input,
     "box-doc",
     "box-site",
@@ -73,12 +75,12 @@ export async function test_inventory_serialization(): Promise<void> {
   const repeatedSite = repeatedUnit.sites[0];
   if (originalSite === undefined || repeatedSite === undefined)
     throw new Error("Missing fixture declaration site.");
-  const body = TestInventory.range(input, "value = 1");
+  const body = EvidTestInventory.range(input, "value = 1");
   originalSite.content.push(body);
   repeatedSite.content = [body, ...repeatedSite.content, body];
 
-  const forward = new EvidenceInventory([input, second]);
-  const reverse = new EvidenceInventory([second, input]);
+  const forward = new EvidInventory([input, second]);
+  const reverse = new EvidInventory([second, input]);
 
   TestValidator.equals(
     "deterministic serialization",
@@ -122,6 +124,6 @@ export async function test_inventory_serialization(): Promise<void> {
         if (range.start.offset === body.start.offset) range.start.line += 1;
   TestValidator.predicate(
     "conflicting content coordinates fail",
-    !new EvidenceInventory([input, invalid]).snapshot().complete,
+    !new EvidInventory([input, invalid]).snapshot().complete,
   );
 }

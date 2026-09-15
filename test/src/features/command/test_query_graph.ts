@@ -1,15 +1,16 @@
-import { EvidenceGraphReporter, EvidenceQuery } from "@wrtnlabs/evidence";
-import type { IEvidenceGraphReport } from "@wrtnlabs/evidence";
+import { EvidGraphReporter, EvidQuery } from "evid";
+import type { IEvidGraphReport } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 import typia from "typia";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
-import { TestQueryAnalysis } from "../../internal/TestQueryAnalysis";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidTestQueryAnalysis } from "../../internal/EvidTestQueryAnalysis";
 
 /**
- * Exports independent graph obligations and safely renders untrusted target labels.
+ * Exports independent graph obligations and safely renders untrusted target
+ * labels.
  *
  * Two configured references can name the same target while retaining separate
  * policy boundaries. Graph formats must serialize the complete report
@@ -19,20 +20,20 @@ import { TestQueryAnalysis } from "../../internal/TestQueryAnalysis";
  * 1. Build the graph and require two distinct boundaries, four edges, independent
  *    evidence and exclusion edges, and two evidence-review records with error
  *    review policies.
- * 2. Serialize JSON, assert it against the public graph report type, and require
- *    a repeated serialization to have identical bytes.
+ * 2. Serialize JSON, assert it against the public graph report type, and require a
+ *    repeated serialization to have identical bytes.
  * 3. Insert quotes, a line break, and Mermaid syntax into a graph node target.
  * 4. Require Mermaid and DOT to preserve relation styling while escaping the
  *    hostile text so it cannot add a new graph statement.
  */
 export async function test_query_graph(): Promise<void> {
   const location = join(__dirname, `query graph ${randomUUID()}`);
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
-    TestQueryAnalysis.records(),
+    EvidTestQueryAnalysis.records(),
     async (directory) => {
-      const analysis = await TestQueryAnalysis.analyze(directory, 2);
-      const report = EvidenceQuery.graph(analysis, directory);
+      const analysis = await EvidTestQueryAnalysis.analyze(directory, 2);
+      const report = EvidQuery.graph(analysis, directory);
 
       // Equal targets in two configured references retain separate obligation IDs.
       TestValidator.equals(
@@ -68,15 +69,15 @@ export async function test_query_graph(): Promise<void> {
       );
 
       // JSON is a deterministic and structurally validated lossless report.
-      const json = EvidenceGraphReporter.json(report);
+      const json = EvidGraphReporter.json(report);
       TestValidator.equals(
         "graph JSON structure",
-        typia.json.assertParse<IEvidenceGraphReport>(json),
+        typia.json.assertParse<IEvidGraphReport>(json),
         report,
       );
       TestValidator.equals(
         "deterministic graph JSON",
-        EvidenceGraphReporter.json(report),
+        EvidGraphReporter.json(report),
         json,
       );
 
@@ -85,8 +86,8 @@ export async function test_query_graph(): Promise<void> {
       const node = hostile.nodes.find((candidate) => candidate.role !== "host");
       if (node === undefined) throw new Error("Missing graph identity node.");
       node.target = 'safe"]\nattacker --> victim["';
-      const mermaid = EvidenceGraphReporter.mermaid(hostile);
-      const dot = EvidenceGraphReporter.dot(hostile);
+      const mermaid = EvidGraphReporter.mermaid(hostile);
+      const dot = EvidGraphReporter.dot(hostile);
       TestValidator.predicate(
         "visual relation kinds",
         mermaid.includes("-.->") &&

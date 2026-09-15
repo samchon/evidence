@@ -1,9 +1,9 @@
-import { EvidenceInventory, EvidenceMarkdownAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+import { EvidInventory, EvidMarkdownAdapter } from "evid";
+import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Materializes the Markdown file and supported ATX heading identities.
@@ -11,11 +11,14 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * The adapter must make a file unit and H1 through H4 units without treating
  * Setext headings, code, malformed markers, or H5/H6 headings as public units.
  *
- * 1. Analyze headings with Unicode text, punctuation, explicit anchors, and duplicate anchors.
+ * 1. Analyze headings with Unicode text, punctuation, explicit anchors, and
+ *    duplicate anchors.
  * 2. Verify the supported units:
+ *
  *    - Their count, symbols, normalized identities, and parent hierarchy are exact.
  *    - Unsupported heading spellings do not add a unit.
- * 3. Resolve a repeated public anchor and require an ambiguous result while each duplicate remains a file child.
+ * 3. Resolve a repeated public anchor and require an ambiguous result while each
+ *    duplicate remains a file child.
  * 4. Require an otherwise diagnostic-free inventory.
  */
 export async function test_markdown_units(): Promise<void> {
@@ -35,9 +38,9 @@ export async function test_markdown_units(): Promise<void> {
     # First duplicate {#same}
     # Second duplicate {#same}
   `;
-  const adapter = new EvidenceMarkdownAdapter();
+  const adapter = new EvidMarkdownAdapter();
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.create("docs/guide.custom", content),
+    EvidTestSourceSnapshot.create("docs/guide.custom", content),
   );
   const file = requireUnit(inventory, "file", "docs/guide.custom");
   const first = requireUnit(inventory, "h1", "계약 명세");
@@ -80,7 +83,7 @@ export async function test_markdown_units(): Promise<void> {
       file.id,
     );
   }
-  const index = new EvidenceInventory([inventory]);
+  const index = new EvidInventory([inventory]);
   TestValidator.equals(
     "duplicate heading target",
     index.resolve(
@@ -93,10 +96,10 @@ export async function test_markdown_units(): Promise<void> {
 }
 
 function requireUnit(
-  inventory: IEvidenceInventory,
-  symbol: IEvidenceUnit["symbol"],
+  inventory: IEvidInventory,
+  symbol: IEvidUnit["symbol"],
   name: string,
-): IEvidenceUnit {
+): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.symbol === symbol && candidate.name === name,
   );

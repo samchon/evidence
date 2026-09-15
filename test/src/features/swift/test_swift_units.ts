@@ -1,23 +1,21 @@
-import {
-  EvidenceAccessor,
-  EvidenceInventory,
-  EvidenceSwiftAdapter,
-} from "@wrtnlabs/evidence";
+import { EvidAccessor, EvidInventory, EvidSwiftAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Extracts Swift public units with exact ownership.
+/**
+ * Extracts Swift public units with exact ownership.
  *
- * Visibility, overloads, protocols, aliases, and extensions determine public identities.
+ * Visibility, overloads, protocols, aliases, and extensions determine public
+ * identities.
  *
  * 1. Analyze the supported declaration matrix.
  * 2. Verify units, ownership, and target resolution.
  */
 export async function test_swift_units(): Promise<void> {
-  const snapshot = TestSourceSnapshot.combine([
-    TestSourceSnapshot.create(
+  const snapshot = EvidTestSourceSnapshot.combine([
+    EvidTestSourceSnapshot.create(
       "src/Contract.swift",
       dedent`
       /// Public contract.
@@ -51,7 +49,7 @@ export async function test_swift_units(): Promise<void> {
     `,
       ["src/Contract.swift", "alias/Contract.swift"],
     ),
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Additional.swift",
       dedent`
       public extension Alias {
@@ -69,13 +67,13 @@ export async function test_swift_units(): Promise<void> {
     `,
     ),
   ]);
-  const inventory = await new EvidenceSwiftAdapter().analyze(snapshot);
+  const inventory = await new EvidSwiftAdapter().analyze(snapshot);
 
   TestValidator.equals("complete Swift surface", inventory.diagnostics, []);
   TestValidator.equals(
     "exact source-public denominator",
     inventory.units
-      .map((unit) => `${unit.symbol}:${EvidenceAccessor.format(unit.identity)}`)
+      .map((unit) => `${unit.symbol}:${EvidAccessor.format(unit.identity)}`)
       .sort((left, right) => left.localeCompare(right)),
     [
       "type:Contract",
@@ -122,7 +120,7 @@ export async function test_swift_units(): Promise<void> {
     more?.parentId,
     contract?.id,
   );
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   const selected = inventory.units.map((unit) => unit.id);
   TestValidator.equals(
     "logical source alias",

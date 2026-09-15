@@ -1,26 +1,31 @@
-import { EvidenceCSharpAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidCSharpAdapter } from "evid";
+import type { IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Reports C# partial, preprocessing, and syntax uncertainty without compilation.
+/**
+ * Reports C# partial, preprocessing, and syntax uncertainty without
+ * compilation.
  *
- * Conflicting identities and undecidable source forms must leave an incomplete inventory instead of a passing smaller population.
+ * Conflicting identities and undecidable source forms must leave an incomplete
+ * inventory instead of a passing smaller population.
  *
- * 1. Analyze conflicting partial declarations and sources separated by preprocessor boundaries.
- * 2. Analyze malformed and otherwise unsupported C# forms that prevent static ownership.
+ * 1. Analyze conflicting partial declarations and sources separated by
+ *    preprocessor boundaries.
+ * 2. Analyze malformed and otherwise unsupported C# forms that prevent static
+ *    ownership.
  * 3. Require every affected inventory to be incomplete with a diagnostic.
  */
 export async function test_csharp_failures(): Promise<void> {
-  const adapter = new EvidenceCSharpAdapter();
+  const adapter = new EvidCSharpAdapter();
 
   // Duplicate public types must opt into one compatible partial identity.
   const duplicate = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create("src/First.cs", "public class Sale {}\n"),
-      TestSourceSnapshot.create("src/Second.cs", "public class Sale {}\n"),
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create("src/First.cs", "public class Sale {}\n"),
+      EvidTestSourceSnapshot.create("src/Second.cs", "public class Sale {}\n"),
     ]),
   );
   TestValidator.equals("duplicate C# type", duplicate.complete, false);
@@ -32,12 +37,12 @@ export async function test_csharp_failures(): Promise<void> {
 
   // Partial parts cannot disagree about accessibility or declaration form.
   const partialConflict = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/Public.cs",
         "public partial class Contract {}\n",
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/Internal.cs",
         "internal partial struct Contract {}\n",
       ),
@@ -61,12 +66,12 @@ export async function test_csharp_failures(): Promise<void> {
 
   // Record classes and record structs cannot form one partial declaration.
   const recordConflict = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/Record.cs",
         "public partial record Contract;\n",
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/RecordStruct.cs",
         "public partial record struct Contract;\n",
       ),
@@ -85,7 +90,7 @@ export async function test_csharp_failures(): Promise<void> {
 
   // Tree-sitter cannot choose the active preprocessor branch without build symbols.
   const conditional = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Conditional.cs",
       dedent`
         #if DEBUG
@@ -106,7 +111,7 @@ export async function test_csharp_failures(): Promise<void> {
 
   // Explicit interface implementations are reachable through the interface unit only.
   const explicitInterface = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Explicit.cs",
       dedent`
         public interface IService
@@ -159,7 +164,7 @@ export async function test_csharp_failures(): Promise<void> {
 
   // Source generators are not executed; selected declarations remain explicit.
   const generatedBoundary = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Model.cs",
       dedent`
         [GenerateBuilder]
@@ -185,7 +190,7 @@ export async function test_csharp_failures(): Promise<void> {
 
   // Tree-sitter syntax errors never become a healthy partial inventory.
   const malformed = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Broken.cs",
       "public class Broken { public void Run( { }\n",
     ),
@@ -200,7 +205,7 @@ export async function test_csharp_failures(): Promise<void> {
   );
 }
 
-function hasCode(inventory: IEvidenceInventory, code: string): boolean {
+function hasCode(inventory: IEvidInventory, code: string): boolean {
   return inventory.diagnostics.some((diagnostic) => diagnostic.code === code);
 }
 

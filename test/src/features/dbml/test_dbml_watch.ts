@@ -1,20 +1,26 @@
-﻿import { EvidenceChecker, EvidenceWatcher } from "@wrtnlabs/evidence";
+import { EvidChecker, EvidWatcher } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
-/** Rebuilds cross-file DBML relations as endpoints are discovered, broken, and repaired.
+/**
+ * Rebuilds cross-file DBML relations as endpoints are discovered, broken, and
+ * repaired.
  *
- * A relation with a missing endpoint is incomplete until a new schema source supplies it; subsequent malformed and repaired edits must update the same watch contract.
+ * A relation with a missing endpoint is incomplete until a new schema source
+ * supplies it; subsequent malformed and repaired edits must update the same
+ * watch contract.
  *
- * 1. Start a watcher with a posts relation whose users endpoint is absent and require an incomplete first cycle.
- * 2. Add users, then corrupt its table definition and require success followed by incompleteness.
+ * 1. Start a watcher with a posts relation whose users endpoint is absent and
+ *    require an incomplete first cycle.
+ * 2. Add users, then corrupt its table definition and require success followed by
+ *    incompleteness.
  * 3. Repair the users source and require the fourth cycle to recover.
  */
 export async function test_dbml_watch(): Promise<void> {
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "dbml-watch",
     {
       "evidence.config.ts": dedent`
@@ -29,7 +35,7 @@ export async function test_dbml_watch(): Promise<void> {
     },
     async (directory) => {
       const file = join(directory, "evidence.config.ts");
-      const watcher = new EvidenceWatcher(file, {
+      const watcher = new EvidWatcher(file, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
       });
@@ -39,7 +45,7 @@ export async function test_dbml_watch(): Promise<void> {
           TestValidator.equals(
             `fresh DBML watch cycle ${cycle.cycle}`,
             cycle.report,
-            await EvidenceChecker.check(file),
+            await EvidChecker.check(file),
           );
           if (cycle.cycle === 1) {
             TestValidator.equals(
@@ -47,7 +53,7 @@ export async function test_dbml_watch(): Promise<void> {
               cycle.status,
               "incomplete",
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "schema/users.dbml": "Table users { id int }",
             });
           } else if (cycle.cycle === 2) {
@@ -56,7 +62,7 @@ export async function test_dbml_watch(): Promise<void> {
               cycle.success,
               true,
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "schema/users.dbml": "Table users { id int",
             });
           } else if (cycle.cycle === 3) {
@@ -65,7 +71,7 @@ export async function test_dbml_watch(): Promise<void> {
               cycle.status,
               "incomplete",
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "schema/users.dbml": "Table users { id bigint }",
             });
           } else {

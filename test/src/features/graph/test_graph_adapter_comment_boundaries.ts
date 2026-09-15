@@ -1,29 +1,29 @@
 import {
-  EvidenceGoAdapter,
-  EvidenceGraph,
-  EvidenceMarkdownAdapter,
-  EvidenceRubyAdapter,
-  EvidenceRustAdapter,
-} from "@wrtnlabs/evidence";
-import type {
-  IEvidenceInventory,
-  IEvidenceGraphResult,
-} from "@wrtnlabs/evidence";
+  EvidGoAdapter,
+  EvidGraph,
+  EvidMarkdownAdapter,
+  EvidRubyAdapter,
+  EvidRustAdapter,
+} from "evid";
+import type { IEvidInventory, IEvidGraphResult } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
- * Rejects evidence tags that a language adapter cannot attach to the selected declaration.
+ * Rejects evidence tags that a language adapter cannot attach to the selected
+ * declaration.
  *
  * Comment-boundary handling is part of graph correctness: a tag must cover the
  * declaration that owns it, rather than a neighbouring declaration whose text
  * happens to be aligned with the annotation.
  *
  * 1. Analyze Ruby and Rust member declarations with correctly attached evidence
- *    tags, then require each selected member to cover the Markdown requirement.
+ *    tags, then require each selected member to cover the Markdown
+ *    requirement.
  * 2. Replace each tag with ordinary text and require both results to fail:
+ *
  *    - The requirement remains the missing unit.
  *    - Removing documentation cannot leave accidental coverage behind.
  * 3. Put a Go tag at the end of an earlier variable declaration and require that
@@ -32,8 +32,8 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *    coverage to recover.
  */
 export async function test_graph_adapter_comment_boundaries(): Promise<void> {
-  const reference = await new EvidenceMarkdownAdapter().analyze(
-    TestSourceSnapshot.create(
+  const reference = await new EvidMarkdownAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "docs/spec.md",
       "## Value {#value}\n\nRequires a value.\n",
     ),
@@ -41,7 +41,7 @@ export async function test_graph_adapter_comment_boundaries(): Promise<void> {
   const tag = "@evidence docs/spec.md#value Implements the value.";
   const cases = [
     {
-      adapter: new EvidenceRubyAdapter(),
+      adapter: new EvidRubyAdapter(),
       file: "src/value.rb",
       content: dedent`
       class Value
@@ -53,7 +53,7 @@ export async function test_graph_adapter_comment_boundaries(): Promise<void> {
     `,
     },
     {
-      adapter: new EvidenceRustAdapter(),
+      adapter: new EvidRustAdapter(),
       file: "src/value.rs",
       content: dedent`
       pub struct Value(
@@ -66,10 +66,10 @@ export async function test_graph_adapter_comment_boundaries(): Promise<void> {
   ];
   for (const scenario of cases) {
     const claim = await scenario.adapter.analyze(
-      TestSourceSnapshot.create(scenario.file, scenario.content),
+      EvidTestSourceSnapshot.create(scenario.file, scenario.content),
     );
     const removed = await scenario.adapter.analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         scenario.file,
         scenario.content.replace(
           tag,
@@ -91,7 +91,7 @@ export async function test_graph_adapter_comment_boundaries(): Promise<void> {
     );
     TestValidator.equals(
       "the selected requirement remains missing",
-      TestGraph.obligation(missing, 0, 0).missingUnitIds,
+      EvidTestGraph.obligation(missing, 0, 0).missingUnitIds,
       reference.units
         .filter((unit) => unit.symbol === "h2")
         .map((unit) => unit.id),
@@ -99,15 +99,15 @@ export async function test_graph_adapter_comment_boundaries(): Promise<void> {
   }
 
   // Aligned Go trailing comments previously supplied false coverage from the next declaration.
-  const go = new EvidenceGoAdapter();
+  const go = new EvidGoAdapter();
   const invalid = await go.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/value.go",
       `package value\nvar Before = 1 // ${tag}\n               var Value = 2\n`,
     ),
   );
   const fixed = await go.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/value.go",
       `package value\nvar Before = 1\n               // ${tag}\n               var Value = 2\n`,
     ),
@@ -125,20 +125,21 @@ export async function test_graph_adapter_comment_boundaries(): Promise<void> {
 }
 
 /**
- * Evaluates the selected public property against the independent Markdown requirement.
+ * Evaluates the selected public property against the independent Markdown
+ * requirement.
  *
  * The helper excludes the control declaration named `Before` and uses the
  * Markdown heading as the sole required reference, keeping each boundary case
  * focused on whether its comment attaches to the intended property host.
  */
 async function evaluate(
-  claim: IEvidenceInventory,
-  reference: IEvidenceInventory,
-): Promise<IEvidenceGraphResult> {
+  claim: IEvidInventory,
+  reference: IEvidInventory,
+): Promise<IEvidGraphResult> {
   const selected = reference.units
     .filter((unit) => unit.symbol === "h2")
     .map((unit) => unit.id);
-  return EvidenceGraph.evaluate({
+  return EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -153,8 +154,8 @@ async function evaluate(
             severity: "error",
             inventory: reference,
             unitIds: selected,
-            singleEvidencePerSymbol: true,
-            resolutions: await TestGraph.resolveDeclarations(
+            singleEvidPerSymbol: true,
+            resolutions: await EvidTestGraph.resolveDeclarations(
               claim,
               reference,
               selected,

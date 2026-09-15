@@ -1,18 +1,18 @@
-import {
-  EvidenceFingerprint,
-  EvidenceInventory,
-  EvidenceKotlinAdapter,
-} from "@wrtnlabs/evidence";
+import { EvidFingerprint, EvidInventory, EvidKotlinAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Preserves KDoc coordinates, lexical withdrawals, and fingerprints without accepting examples.
+/**
+ * Preserves KDoc coordinates, lexical withdrawals, and fingerprints without
+ * accepting examples.
  *
- * KDoc hosts evidence at original source positions while examples and withdrawn hierarchy stay outside acknowledgement.
+ * KDoc hosts evidence at original source positions while examples and withdrawn
+ * hierarchy stay outside acknowledgement.
  *
- * 1. Analyze KDoc with Unicode and withdrawals. 2. Verify coordinates and hidden descendants. 3. Compare semantic and annotation-only fingerprints.
+ * 1. Analyze KDoc with Unicode and withdrawals. 2. Verify coordinates and hidden
+ *    descendants. 3. Compare semantic and annotation-only fingerprints.
  */
 export async function test_kotlin_hosts(): Promise<void> {
   const source = dedent`
@@ -37,9 +37,9 @@ export async function test_kotlin_hosts(): Promise<void> {
      */
     fun sample() = 1
   `.replaceAll("\n", "\r\n");
-  const adapter = new EvidenceKotlinAdapter();
+  const adapter = new EvidKotlinAdapter();
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.create("src/Contract.kt", source),
+    EvidTestSourceSnapshot.create("src/Contract.kt", source),
   );
 
   TestValidator.equals(
@@ -66,7 +66,7 @@ export async function test_kotlin_hosts(): Promise<void> {
     3,
   );
   const selected = inventory.units.map((unit) => unit.id);
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   TestValidator.equals(
     "withdrawn descendant target",
     graph.resolve(
@@ -103,7 +103,7 @@ export async function test_kotlin_hosts(): Promise<void> {
   const contract = inventory.units.find((unit) => unit.name === "Contract");
   if (contract === undefined) throw new Error("Missing contract unit.");
   const rewritten = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Contract.kt",
       source.replace(
         "Implements the value.",
@@ -113,19 +113,22 @@ export async function test_kotlin_hosts(): Promise<void> {
   );
   TestValidator.equals(
     "descendant annotation does not stale ancestor review",
-    EvidenceFingerprint.inspect(inventory, contract.id).fingerprint,
-    EvidenceFingerprint.inspect(rewritten, contract.id).fingerprint,
+    EvidFingerprint.inspect(inventory, contract.id).fingerprint,
+    EvidFingerprint.inspect(rewritten, contract.id).fingerprint,
   );
   const changed = await adapter.analyze(
-    TestSourceSnapshot.create("src/Contract.kt", source.replace("= 1", "= 2")),
+    EvidTestSourceSnapshot.create(
+      "src/Contract.kt",
+      source.replace("= 1", "= 2"),
+    ),
   );
   TestValidator.notEquals(
     "semantic subtree edit changes fingerprint",
-    EvidenceFingerprint.inspect(inventory, contract.id).fingerprint,
-    EvidenceFingerprint.inspect(changed, contract.id).fingerprint,
+    EvidFingerprint.inspect(inventory, contract.id).fingerprint,
+    EvidFingerprint.inspect(changed, contract.id).fingerprint,
   );
 
-  // Every Evidence tag kind on an ordinary comment remains an unsupported carrier.
+  // Every Evid tag kind on an ordinary comment remains an unsupported carrier.
   for (const tag of [
     "evidence",
     "evidenceExclude",
@@ -134,7 +137,7 @@ export async function test_kotlin_hosts(): Promise<void> {
     "link",
   ]) {
     const unsupported = await adapter.analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/Unsupported.kt",
         `// @${tag} docs/spec.md#contract Unsupported carrier.\nfun run() = 1\n`,
       ),

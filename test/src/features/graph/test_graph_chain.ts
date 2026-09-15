@@ -1,40 +1,43 @@
 import {
-  EvidenceGraph,
-  EvidenceMarkdownAdapter,
-  EvidenceTargetResolver,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
+  EvidGraph,
+  EvidMarkdownAdapter,
+  EvidTargetResolver,
+  EvidTypeScriptAdapter,
+} from "evid";
 import type {
-  IEvidenceDeclaration,
-  IEvidenceHost,
-  IEvidenceInventory,
-  IEvidenceUnit,
-} from "@wrtnlabs/evidence";
+  IEvidDeclaration,
+  IEvidHost,
+  IEvidInventory,
+  IEvidUnit,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
- * Evaluates a requirement-to-implementation-to-test chain through real adapters.
+ * Evaluates a requirement-to-implementation-to-test chain through real
+ * adapters.
  *
- * Each link is an independent configured claim/reference pair. Evidence from the
- * test to the implementation cannot substitute for the implementation's citation
- * to a requirement, and breaking one link must not erase the other link's coverage.
+ * Each link is an independent configured claim/reference pair. Evid from the
+ * test to the implementation cannot substitute for the implementation's
+ * citation to a requirement, and breaking one link must not erase the other
+ * link's coverage.
  *
- * 1. Extract a Markdown rounding requirement, a TypeScript method citing it, and
- *    a TypeScript test citing that method; resolve both authored targets.
+ * 1. Extract a Markdown rounding requirement, a TypeScript method citing it, and a
+ *    TypeScript test citing that method; resolve both authored targets.
  * 2. Evaluate both claim/reference pairs and require success with no diagnostics.
- * 3. Remove only the implementation acknowledgement and require the requirement
- *    to become missing while the test-to-implementation obligation remains covered.
+ * 3. Remove only the implementation acknowledgement and require the requirement to
+ *    become missing while the test-to-implementation obligation remains
+ *    covered.
  * 4. Restore the implementation citation and remove only the test acknowledgement;
  *    require implementation-to-requirement coverage to remain and the test's
  *    reference obligation to report the method as missing.
  */
 export async function test_graph_chain(): Promise<void> {
-  const requirements = await new EvidenceMarkdownAdapter().analyze(
-    TestSourceSnapshot.create(
+  const requirements = await new EvidMarkdownAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "docs/requirements.md",
       dedent`
         # Pricing
@@ -45,8 +48,8 @@ export async function test_graph_chain(): Promise<void> {
       `,
     ),
   );
-  const implementation = await new EvidenceTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+  const implementation = await new EvidTypeScriptAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/calculator.ts",
       dedent`
         export class Calculator {
@@ -58,8 +61,8 @@ export async function test_graph_chain(): Promise<void> {
       `,
     ),
   );
-  const tests = await new EvidenceTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+  const tests = await new EvidTypeScriptAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/calculator.test.ts",
       dedent`
         /** @evidence ./calculator.ts#Calculator.prototype.add Verifies exact addition. */
@@ -76,21 +79,21 @@ export async function test_graph_chain(): Promise<void> {
   const implementationDeclaration = requireDeclaration(implementation);
   const testDeclaration = requireDeclaration(tests);
 
-  const requirementResolution = await new EvidenceTargetResolver([
+  const requirementResolution = await new EvidTargetResolver([
     requirements,
   ]).resolve(
     implementationDeclaration,
     requireHost(implementation, implementationDeclaration.hostId),
     [requirementUnit.id],
   );
-  const implementationResolution = await new EvidenceTargetResolver([
+  const implementationResolution = await new EvidTargetResolver([
     implementation,
   ]).resolve(testDeclaration, requireHost(tests, testDeclaration.hostId), [
     implementationUnit.id,
   ]);
 
   // Both configured claims must independently acknowledge the unit selected by their reference.
-  const complete = EvidenceGraph.evaluate({
+  const complete = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -137,7 +140,7 @@ export async function test_graph_chain(): Promise<void> {
   // Removing the implementation citation breaks only the requirement obligation.
   const uncitedImplementation = structuredClone(implementation);
   uncitedImplementation.declarations = [];
-  const missingRequirement = EvidenceGraph.evaluate({
+  const missingRequirement = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -175,19 +178,19 @@ export async function test_graph_chain(): Promise<void> {
 
   TestValidator.equals(
     "requirement becomes missing",
-    TestGraph.obligation(missingRequirement, 0, 0).missingUnitIds,
+    EvidTestGraph.obligation(missingRequirement, 0, 0).missingUnitIds,
     [requirementUnit.id],
   );
   TestValidator.equals(
     "test obligation remains covered",
-    TestGraph.obligation(missingRequirement, 1, 0).missingUnitIds,
+    EvidTestGraph.obligation(missingRequirement, 1, 0).missingUnitIds,
     [],
   );
 
   // Removing the test citation preserves implementation coverage and breaks only its own obligation.
   const uncitedTests = structuredClone(tests);
   uncitedTests.declarations = [];
-  const missingTest = EvidenceGraph.evaluate({
+  const missingTest = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -225,12 +228,12 @@ export async function test_graph_chain(): Promise<void> {
 
   TestValidator.equals(
     "implementation obligation remains covered",
-    TestGraph.obligation(missingTest, 0, 0).missingUnitIds,
+    EvidTestGraph.obligation(missingTest, 0, 0).missingUnitIds,
     [],
   );
   TestValidator.equals(
     "test becomes missing",
-    TestGraph.obligation(missingTest, 1, 0).missingUnitIds,
+    EvidTestGraph.obligation(missingTest, 1, 0).missingUnitIds,
     [implementationUnit.id],
   );
 }
@@ -241,10 +244,7 @@ export async function test_graph_chain(): Promise<void> {
  * Markdown explicit IDs can appear as the final identity segment, while code
  * fixtures use declaration names. Missing extraction fails setup immediately.
  */
-function requireUnit(
-  inventory: IEvidenceInventory,
-  name: string,
-): IEvidenceUnit {
+function requireUnit(inventory: IEvidInventory, name: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === name || candidate.identity.at(-1) === name,
@@ -254,14 +254,13 @@ function requireUnit(
 }
 
 /**
- * Requires the fixture's authored acknowledgement to survive adapter extraction.
+ * Requires the fixture's authored acknowledgement to survive adapter
+ * extraction.
  *
  * The scenario has one citation per citing inventory; absence must fail setup
  * instead of constructing an accidentally empty resolution list.
  */
-function requireDeclaration(
-  inventory: IEvidenceInventory,
-): IEvidenceDeclaration {
+function requireDeclaration(inventory: IEvidInventory): IEvidDeclaration {
   const declaration = inventory.declarations[0];
   if (declaration === undefined)
     throw new Error("Missing graph declaration fixture.");
@@ -274,7 +273,7 @@ function requireDeclaration(
  * Resolution needs that carrier's source origin, so a missing host is a setup
  * failure rather than a reason to invent a command-relative location.
  */
-function requireHost(inventory: IEvidenceInventory, id: string): IEvidenceHost {
+function requireHost(inventory: IEvidInventory, id: string): IEvidHost {
   const host = inventory.hosts.find((candidate) => candidate.id === id);
   if (host === undefined) throw new Error(`Missing graph host: ${id}`);
   return host;

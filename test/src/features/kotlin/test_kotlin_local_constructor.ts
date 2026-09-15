@@ -1,18 +1,21 @@
-import { EvidenceKotlinAdapter } from "@wrtnlabs/evidence";
+import { EvidKotlinAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Prevents local constructor parameters in defaults from becoming owner properties.
+/**
+ * Prevents local constructor parameters in defaults from becoming owner
+ * properties.
  *
  * Only declared public constructor properties belong to the enclosing type.
  *
- * 1. Analyze constructor defaults with local parameters. 2. Compare selected properties. 3. Require local names to stay absent.
+ * 1. Analyze constructor defaults with local parameters. 2. Compare selected
+ *    properties. 3. Require local names to stay absent.
  */
 export async function test_kotlin_local_constructor(): Promise<void> {
-  const inventory = await new EvidenceKotlinAdapter().analyze(
-    TestSourceSnapshot.create(
+  const inventory = await new EvidKotlinAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/Container.kt",
       dedent`
     class Container(val value: Int = run {

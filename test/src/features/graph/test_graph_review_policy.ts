@@ -1,22 +1,19 @@
 import {
-  EvidenceFingerprint,
-  EvidenceGraph,
-  EvidenceMarkdownAdapter,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
-import type {
-  IEvidenceGraphReference,
-  IEvidenceInventory,
-  IEvidenceUnit,
-} from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidGraph,
+  EvidMarkdownAdapter,
+  EvidTypeScriptAdapter,
+} from "evid";
+import type { IEvidGraphReference, IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
- * Classifies required evidence reviews by the presence and freshness of fingerprints.
+ * Classifies required evidence reviews by the presence and freshness of
+ * fingerprints.
  *
  * One requirement is acknowledged by four functions whose review states differ.
  * The graph should issue the actionable repair for each state once and stop
@@ -25,6 +22,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 1. Create missing, unfingerprinted, stale, and current review declarations for
  *    one Markdown requirement, then enable required reviews.
  * 2. Require exactly one diagnostic for each repairable state:
+ *
  *    - A missing review.
  *    - A review with no fingerprint.
  *    - A review whose fingerprint differs from the current target.
@@ -36,8 +34,8 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *    with no derived missing, absent-fingerprint, or stale-review finding.
  */
 export async function test_graph_review_policy(): Promise<void> {
-  const requirements = await new EvidenceMarkdownAdapter().analyze(
-    TestSourceSnapshot.create(
+  const requirements = await new EvidMarkdownAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "docs/spec.md",
       dedent`
         ## Pricing {#pricing}
@@ -47,12 +45,12 @@ export async function test_graph_review_policy(): Promise<void> {
     ),
   );
   const pricing = requireUnit(requirements, "pricing");
-  const expected = EvidenceFingerprint.inspect(
+  const expected = EvidFingerprint.inspect(
     requirements,
     pricing.id,
   ).fingerprint;
-  const claims = await new EvidenceTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+  const claims = await new EvidTypeScriptAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/reviews.ts",
       dedent`
         /** @evidence docs/spec.md#pricing Implements the pricing rule. */
@@ -81,19 +79,21 @@ export async function test_graph_review_policy(): Promise<void> {
   const unitIds = ["missing", "unfingerprinted", "stale", "current"].map(
     (name) => requireUnit(claims, name).id,
   );
-  const reference: IEvidenceGraphReference = {
+  const reference: IEvidGraphReference = {
     severity: "error",
     inventory: requirements,
     unitIds: [pricing.id],
-    resolutions: await TestGraph.resolveDeclarations(claims, requirements, [
+    resolutions: await EvidTestGraph.resolveDeclarations(claims, requirements, [
       pricing.id,
     ]),
-    reviewResolutions: await TestGraph.resolveReviews(claims, requirements, [
-      pricing.id,
-    ]),
+    reviewResolutions: await EvidTestGraph.resolveReviews(
+      claims,
+      requirements,
+      [pricing.id],
+    ),
     requireReview: true,
   };
-  const result = EvidenceGraph.evaluate({
+  const result = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -131,13 +131,13 @@ export async function test_graph_review_policy(): Promise<void> {
   );
   TestValidator.predicate(
     "inspection and graph edges agree",
-    TestGraph.obligation(result, 0, 0).edges.every(
+    EvidTestGraph.obligation(result, 0, 0).edges.every(
       (edge) => edge.fingerprint === expected,
     ),
   );
 
   // The same explicit reviews impose no freshness requirement without the policy.
-  const optional = EvidenceGraph.evaluate({
+  const optional = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -175,7 +175,7 @@ export async function test_graph_review_policy(): Promise<void> {
       repair: "Restore the referenced source and analyze it again.",
     },
   ];
-  const interrupted = EvidenceGraph.evaluate({
+  const interrupted = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -199,15 +199,12 @@ export async function test_graph_review_policy(): Promise<void> {
   );
   TestValidator.equals(
     "incomplete review lookup keeps obligation incomplete",
-    TestGraph.obligation(interrupted, 0, 0).complete,
+    EvidTestGraph.obligation(interrupted, 0, 0).complete,
     false,
   );
 }
 
-function requireUnit(
-  inventory: IEvidenceInventory,
-  identity: string,
-): IEvidenceUnit {
+function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === identity || candidate.identity.at(-1) === identity,
@@ -217,7 +214,7 @@ function requireUnit(
 }
 
 function count(
-  result: ReturnType<typeof EvidenceGraph.evaluate>,
+  result: ReturnType<typeof EvidGraph.evaluate>,
   code: string,
 ): number {
   return result.diagnostics.filter((diagnostic) => diagnostic.code === code)

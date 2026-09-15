@@ -1,21 +1,21 @@
-import {
-  EvidenceAccessor,
-  EvidenceInventory,
-  EvidenceLuaAdapter,
-} from "@wrtnlabs/evidence";
+import { EvidAccessor, EvidInventory, EvidLuaAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Classifies Lua module ownership, literal aliases, colon methods, scalar copies, and file isolation.
+/**
+ * Classifies Lua module ownership, literal aliases, colon methods, scalar
+ * copies, and file isolation.
  *
- * Module assignment determines public owners while literal names and physical files retain their boundaries.
+ * Module assignment determines public owners while literal names and physical
+ * files retain their boundaries.
  *
- * 1. Analyze module tables and members. 2. Compare symbols and identities. 3. Verify method, alias, copy, and file-isolation behavior.
+ * 1. Analyze module tables and members. 2. Compare symbols and identities. 3.
+ *    Verify method, alias, copy, and file-isolation behavior.
  */
 export async function test_lua_units(): Promise<void> {
-  const snapshot = TestSourceSnapshot.create(
+  const snapshot = EvidTestSourceSnapshot.create(
     "src/contract.lua",
     dedent`
     local hidden = 0
@@ -31,13 +31,13 @@ export async function test_lua_units(): Promise<void> {
   `,
     ["src/contract.lua", "alias/contract.lua"],
   );
-  const inventory = await new EvidenceLuaAdapter().analyze(snapshot);
+  const inventory = await new EvidLuaAdapter().analyze(snapshot);
 
   TestValidator.equals("static module complete", inventory.diagnostics, []);
   TestValidator.equals(
     "exact public denominator",
     inventory.units
-      .map((unit) => `${unit.symbol}:${EvidenceAccessor.format(unit.identity)}`)
+      .map((unit) => `${unit.symbol}:${EvidAccessor.format(unit.identity)}`)
       .sort((left, right) => left.localeCompare(right)),
     [
       "property:module",
@@ -51,7 +51,7 @@ export async function test_lua_units(): Promise<void> {
     ].sort((left, right) => left.localeCompare(right)),
   );
   const selected = inventory.units.map((unit) => unit.id);
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   const primary = graph.resolve(
     { file: "/project/src/contract.lua", segments: ["module", "run"] },
     selected,
@@ -84,10 +84,10 @@ export async function test_lua_units(): Promise<void> {
     ).status,
     "missing",
   );
-  const files = await new EvidenceLuaAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create("first.lua", "function run() end"),
-      TestSourceSnapshot.create("second.lua", "function run() end"),
+  const files = await new EvidLuaAdapter().analyze(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create("first.lua", "function run() end"),
+      EvidTestSourceSnapshot.create("second.lua", "function run() end"),
     ]),
   );
   TestValidator.equals(
@@ -95,8 +95,8 @@ export async function test_lua_units(): Promise<void> {
     new Set(files.units.map((unit) => unit.id)).size,
     2,
   );
-  const longKey = await new EvidenceLuaAdapter().analyze(
-    TestSourceSnapshot.create(
+  const longKey = await new EvidLuaAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "long.lua",
       "return { [ [=[\rname\n\rpart]=] ] = 1 }",
     ),

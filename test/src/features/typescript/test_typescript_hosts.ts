@@ -1,12 +1,14 @@
-import { EvidenceTypeScriptAdapter } from "@wrtnlabs/evidence";
+import { EvidTypeScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Binds TypeScript JSDoc only to supported declaration hosts.
+/**
+ * Binds TypeScript JSDoc only to supported declaration hosts.
  *
- * Tag-bearing comments outside declaration JSDoc remain findings and cannot create acknowledgements.
+ * Tag-bearing comments outside declaration JSDoc remain findings and cannot
+ * create acknowledgements.
  *
  * 1. Analyze eligible JSDoc and unsupported comment placements.
  * 2. Verify attached declarations and unsupported-host diagnostics.
@@ -42,8 +44,8 @@ export async function test_typescript_hosts(): Promise<void> {
     function reviewedLocally(): void {}
     export const text = "@evidence docs/spec.md#string This is a string.";
   `;
-  const inventory = await new EvidenceTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create("src/hosts.ts", content),
+  const inventory = await new EvidTypeScriptAdapter().analyze(
+    EvidTestSourceSnapshot.create("src/hosts.ts", content),
   );
 
   TestValidator.equals(

@@ -1,16 +1,18 @@
 import {
-  EvidenceAccessor,
-  EvidenceFingerprint,
-  EvidenceInventory,
-  EvidenceSqlAdapter,
-} from "@wrtnlabs/evidence";
+  EvidAccessor,
+  EvidFingerprint,
+  EvidInventory,
+  EvidSqlAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches SQL comment annotations while preserving source coordinates.
+/**
+ * Attaches SQL comment annotations while preserving source coordinates.
  *
- * Eligible documentation uses UTF-16 positions and literal qualified targets; examples and withdrawals must retain their separate behavior.
+ * Eligible documentation uses UTF-16 positions and literal qualified targets;
+ * examples and withdrawals must retain their separate behavior.
  *
  * 1. Analyze documented schema units, inert examples, and withdrawn declarations.
  * 2. Verify attachment, coordinates, targets, and withdrawal metadata.
@@ -36,9 +38,9 @@ export async function test_sql_hosts(): Promise<void> {
     -- @internal Entire retired model.
     CREATE TABLE retired (id INTEGER);
   `.replaceAll("\n", "\r\n");
-  const adapter = new EvidenceSqlAdapter();
+  const adapter = new EvidSqlAdapter();
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.create("schema.sql", source),
+    EvidTestSourceSnapshot.create("schema.sql", source),
   );
   TestValidator.equals(
     "complete literal qualified schema",
@@ -77,7 +79,7 @@ export async function test_sql_hosts(): Promise<void> {
     "literal dotted segments survive",
     inventory.addresses.some(
       (address) =>
-        EvidenceAccessor.format(address.segments) ===
+        EvidAccessor.format(address.segments) ===
         '["schema.dot"]["Table Name"]["literal.column"]',
     ),
   );
@@ -100,7 +102,7 @@ export async function test_sql_hosts(): Promise<void> {
   );
   const original = inventory.units.find((unit) => unit.symbol === "model");
   const updated = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "schema.sql",
       source.replace(
         "Documents the literal table.",
@@ -111,11 +113,11 @@ export async function test_sql_hosts(): Promise<void> {
   if (original === undefined) throw new Error("Missing model.");
   TestValidator.equals(
     "annotation reason leaves model fingerprint stable",
-    EvidenceFingerprint.inspect(inventory, original.id).fingerprint,
-    EvidenceFingerprint.inspect(updated, original.id).fingerprint,
+    EvidFingerprint.inspect(inventory, original.id).fingerprint,
+    EvidFingerprint.inspect(updated, original.id).fingerprint,
   );
 
-  const aliasSnapshot = TestSourceSnapshot.create(
+  const aliasSnapshot = EvidTestSourceSnapshot.create(
     "schema.sql",
     "CREATE TABLE account (id INTEGER);",
   );
@@ -131,7 +133,7 @@ export async function test_sql_hosts(): Promise<void> {
   const aliases = await adapter.analyze(aliasSnapshot);
   const model = aliases.units.find((unit) => unit.symbol === "model");
   if (model === undefined) throw new Error("Missing alias model.");
-  const index = new EvidenceInventory([aliases]);
+  const index = new EvidInventory([aliases]);
   for (const origin of file.addresses)
     TestValidator.equals(
       "logical file aliases resolve one schema identity",

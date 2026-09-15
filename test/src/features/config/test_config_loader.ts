@@ -1,20 +1,21 @@
-import { EvidenceConfigLoader } from "@wrtnlabs/evidence";
-import type { IEvidenceConfig } from "@wrtnlabs/evidence";
+import { evaluateTypeScriptConfig, EvidConfigLoader } from "evid";
+import type { IEvidConfig } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { rm } from "node:fs/promises";
 import { join } from "node:path";
 
-import { evaluateTypeScriptConfig } from "../../../../packages/evidence/src/internal/evaluateTypeScriptConfig";
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
- * Loads TypeScript configuration dependencies in isolation and preserves failures.
+ * Loads TypeScript configuration dependencies in isolation and preserves
+ * failures.
  *
- * Configuration evaluation must follow imported modules without checking unrelated
- * workspace files or leaking configuration logs into report stdout. Validation
- * still applies to artifact contracts before inactive populations are filtered.
+ * Configuration evaluation must follow imported modules without checking
+ * unrelated workspace files or leaking configuration logs into report stdout.
+ * Validation still applies to artifact contracts before inactive populations
+ * are filtered.
  *
  * 1. Use a path containing spaces and literal punctuation; load equivalent ts,
  *    cts, and mts configurations that import helper globs while an unrelated
@@ -26,7 +27,8 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  * 4. Configure an unsupported artifact and require its exact claims[0].type path
  *    and adapter-certification cause in the loading error.
  * 5. Plan a disabled claim with missing source and reference paths; require the
- *    correct configuration anchor and no active claims without touching those inputs.
+ *    correct configuration anchor and no active claims without touching those
+ *    inputs.
  * 6. Require runtime exceptions and type errors in an imported helper to reject
  *    loading rather than return partial configuration data.
  */
@@ -35,7 +37,7 @@ export async function test_config_loader(): Promise<void> {
   const location = join(__dirname, `loader $' ${randomUUID()}`);
   const source = dedent`
     import { files } from "./helpers/files";
-    import type { IEvidenceConfig } from "@wrtnlabs/evidence";
+    import type { IEvidConfig } from "evid";
 
     export default {
       claims: [
@@ -45,10 +47,10 @@ export async function test_config_loader(): Promise<void> {
           reference: { type: "markdown", files: ["docs/**"] },
         },
       ],
-    } satisfies IEvidenceConfig;
+    } satisfies IEvidConfig;
   `;
 
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     {
       "helpers/files.ts": dedent`
@@ -66,11 +68,9 @@ export async function test_config_loader(): Promise<void> {
       // All module extensions load imports without checking the unrelated source.
       for (const extension of ["ts", "cts", "mts"]) {
         const filename = `evidence.config.${extension}`;
-        await TestFileSystem.save(directory, { [filename]: source });
+        await EvidTestFileSystem.save(directory, { [filename]: source });
 
-        const output = await EvidenceConfigLoader.load(
-          join(directory, filename),
-        );
+        const output = await EvidConfigLoader.load(join(directory, filename));
 
         TestValidator.equals(
           `${extension} imported globs`,
@@ -81,7 +81,7 @@ export async function test_config_loader(): Promise<void> {
 
       // The evaluator supplies its own compiler project after resolving consumer dependencies.
       await rm(join(directory, "tsconfig.json"));
-      const isolated: IEvidenceConfig = await EvidenceConfigLoader.load(
+      const isolated: IEvidConfig = await EvidConfigLoader.load(
         join(directory, "evidence.config.ts"),
       );
       TestValidator.equals(
@@ -91,7 +91,7 @@ export async function test_config_loader(): Promise<void> {
       );
 
       // Evaluator stdout and stderr share the diagnostic sink instead of process stdout.
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "evidence.config.ts": dedent`
           console.log("config-output-token");
           console.error("config-error-token");
@@ -118,7 +118,7 @@ export async function test_config_loader(): Promise<void> {
       );
 
       // Unsupported artifact identifiers fail with their exact configuration path.
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "evidence.config.ts": dedent`
           export default {
             claims: [
@@ -132,20 +132,20 @@ export async function test_config_loader(): Promise<void> {
         `,
       });
       const unsupported = await failure(() =>
-        EvidenceConfigLoader.load(join(directory, "evidence.config.ts")),
+        EvidConfigLoader.load(join(directory, "evidence.config.ts")),
       );
 
       TestValidator.predicate(
         "unsupported artifact path",
         unsupported.includes(
-          "claims[0].type: artifact type 'graphql' has no certified Evidence adapter",
+          "claims[0].type: artifact type 'graphql' has no certified Evid adapter",
         ),
       );
 
       // A disabled population is validated and planned without touching its missing root.
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "evidence.config.ts": dedent`
-          import type { IEvidenceConfig } from "@wrtnlabs/evidence";
+          import type { IEvidConfig } from "evid";
 
           export default {
             claims: [
@@ -160,11 +160,11 @@ export async function test_config_loader(): Promise<void> {
                 },
               },
             ],
-          } satisfies IEvidenceConfig;
+          } satisfies IEvidConfig;
         `,
       });
 
-      const inactive = await EvidenceConfigLoader.plan(
+      const inactive = await EvidConfigLoader.plan(
         join(directory, "evidence.config.ts"),
       );
 
@@ -176,7 +176,7 @@ export async function test_config_loader(): Promise<void> {
       TestValidator.equals("inactive populations", inactive.claims, []);
 
       // Runtime exceptions reject the loader promise instead of returning data.
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "evidence.config.ts": dedent`
           throw new Error("Config failed during evaluation");
           export default {};
@@ -184,11 +184,11 @@ export async function test_config_loader(): Promise<void> {
       });
 
       await TestValidator.error("runtime exception", () =>
-        EvidenceConfigLoader.load(join(directory, "evidence.config.ts")),
+        EvidConfigLoader.load(join(directory, "evidence.config.ts")),
       );
 
       // Imported type errors reach the caller through the evaluator failure.
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "evidence.config.ts": source,
         "helpers/files.ts": dedent`
           export const files: string[] = [123];
@@ -196,7 +196,7 @@ export async function test_config_loader(): Promise<void> {
       });
 
       await TestValidator.error("imported TypeScript error", () =>
-        EvidenceConfigLoader.load(join(directory, "evidence.config.ts")),
+        EvidConfigLoader.load(join(directory, "evidence.config.ts")),
       );
     },
   );
@@ -205,8 +205,8 @@ export async function test_config_loader(): Promise<void> {
 /**
  * Captures a loading error for assertions about its configuration coordinates.
  *
- * Unexpected success fails the scenario, and non-Error rejections are propagated
- * so they cannot be mistaken for the diagnostic message under test.
+ * Unexpected success fails the scenario, and non-Error rejections are
+ * propagated so they cannot be mistaken for the diagnostic message under test.
  */
 async function failure(closure: () => Promise<unknown>): Promise<string> {
   try {
@@ -215,5 +215,5 @@ async function failure(closure: () => Promise<unknown>): Promise<string> {
     if (cause instanceof Error) return cause.message;
     throw cause;
   }
-  throw new Error("Expected Evidence configuration loading to fail.");
+  throw new Error("Expected Evid configuration loading to fail.");
 }

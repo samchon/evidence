@@ -1,9 +1,11 @@
-import { EvidenceAccessor } from "@wrtnlabs/evidence";
+import { EvidAccessor } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-/** Parses literal accessor segments without normalizing their public spelling.
+/**
+ * Parses literal accessor segments without normalizing their public spelling.
  *
- * Dots, spaces, Unicode, escapes, and unsigned numeric names remain distinct target segments.
+ * Dots, spaces, Unicode, escapes, and unsigned numeric names remain distinct
+ * target segments.
  *
  * 1. Round-trip identifier, quoted, numeric, Unicode, escaped, and empty literal
  *    segments through formatting and parsing.
@@ -25,17 +27,17 @@ export async function test_accessor_segments(): Promise<void> {
   for (const segments of cases)
     TestValidator.equals(
       "accessor round trip",
-      EvidenceAccessor.parse(EvidenceAccessor.format(segments)),
+      EvidAccessor.parse(EvidAccessor.format(segments)),
       segments,
     );
   TestValidator.equals(
     "numeric bracket stays a literal segment",
-    EvidenceAccessor.parse("Tuple[0]"),
+    EvidAccessor.parse("Tuple[0]"),
     ["Tuple", "0"],
   );
   TestValidator.equals(
     "literal dot stays quoted",
-    EvidenceAccessor.format(["A", "B.C"]),
+    EvidAccessor.format(["A", "B.C"]),
     'A["B.C"]',
   );
 
@@ -55,6 +57,6 @@ export async function test_accessor_segments(): Promise<void> {
     "\u0301startsWithMark",
   ])
     await TestValidator.error("malformed accessor", async () =>
-      EvidenceAccessor.parse(text),
+      EvidAccessor.parse(text),
     );
 }

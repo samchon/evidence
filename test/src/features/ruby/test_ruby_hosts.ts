@@ -1,10 +1,11 @@
-import { EvidenceInventory, EvidenceRubyAdapter } from "@wrtnlabs/evidence";
+import { EvidInventory, EvidRubyAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches Ruby RDoc only at supported documentation hosts.
+/**
+ * Attaches Ruby RDoc only at supported documentation hosts.
  *
  * Tags in non-documentation carriers cannot acknowledge Ruby units.
  *
@@ -15,8 +16,8 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Require all unsupported annotation carriers to remain diagnosable.
  */
 export async function test_ruby_hosts(): Promise<void> {
-  const inventory = await new EvidenceRubyAdapter().analyze(
-    TestSourceSnapshot.create(
+  const inventory = await new EvidRubyAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "lib/contracts.rb",
       dedent`
         # @evidence docs/requirements.md#type Implements the class.
@@ -90,8 +91,8 @@ export async function test_ruby_hosts(): Promise<void> {
     7,
   );
 
-  const withdrawn = await new EvidenceRubyAdapter().analyze(
-    TestSourceSnapshot.create(
+  const withdrawn = await new EvidRubyAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "lib/hidden.rb",
       dedent`
         # @internal This class and its descendants are internal.
@@ -101,7 +102,7 @@ export async function test_ruby_hosts(): Promise<void> {
       `,
     ),
   );
-  const population = new EvidenceInventory([withdrawn]).select(
+  const population = new EvidInventory([withdrawn]).select(
     withdrawn.units.map((unit) => unit.id),
   );
   TestValidator.equals(

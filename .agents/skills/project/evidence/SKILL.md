@@ -1,6 +1,6 @@
 ---
 name: evidence-graph
-description: Defines Evidence units, target grammar, coverage, exclusions, reviews, and language-adapter completeness. Use before changing graph semantics, public configuration, artifact adapters, or diagnostics; distinguish the compatibility baseline from implemented features.
+description: Defines Evidence Graph units, target grammar, coverage, exclusions, reviews, and language-adapter completeness. Use before changing graph semantics, public configuration, artifact adapters, or diagnostics; distinguish the compatibility baseline from implemented features.
 ---
 
 # Evidence Graph
@@ -39,9 +39,9 @@ Code paths resolve from the citing file, such as `../calculator.ts#add`. Keep se
 
 Ordinary evidence and permitted exclusions cover a selected target and its selected descendants. Evidence and exclusion scopes cannot overlap in one obligation; overlapping exclusions conflict. An exclusion belongs to one claim and an eligible carrier in that claim's files.
 
-- `noEvidenceExclude` refuses exclusions for its own reference and leaves missing positive coverage visible.
-- `uniqueEvidence` counts distinct positive semantic hosts per selected target, not tags or overload locations.
-- `singleEvidencePerSymbol` starts with all selected hosts and counts distinct selected units each positively acknowledges. Aggregate descendants each count.
+- `noEvidExclude` refuses exclusions for its own reference and leaves missing positive coverage visible.
+- `uniqueEvid` counts distinct positive semantic hosts per selected target, not tags or overload locations.
+- `singleEvidPerSymbol` starts with all selected hosts and counts distinct selected units each positively acknowledges. Aggregate descendants each count.
 - Markdown `checklist` makes every selected host answer every selected item. Positive evidence answers only the named item; exclusions retain their host-local cascade. Validate incompatible cardinality/carrier combinations at config loading.
 
 Keep reviews in a separate type from acknowledgements. They never discharge coverage. Pair review kind, semantic host, and resolved target. `requireReview` needs the current content fingerprint and diagnoses missing, fingerprintless, stale, orphaned, or wrong-kind reviews appropriately.

@@ -1,0 +1,32 @@
+import type { IEvidAddress } from "../../structures/IEvidAddress";
+
+/**
+ * Parses one whitespace-free Swagger operation target.
+ *
+ * Swagger has no physical source-file address, so accepted selectors are placed
+ * in the synthetic `swagger:` file namespace as one atomic segment.
+ */
+export namespace EvidSwaggerTarget {
+  /**
+   * Converts a public `METHOD:/path` selector to an Evid address.
+   *
+   * Validation here matches loader targets so a citation cannot select an
+   * operation shape the adapter would never materialize.
+   */
+  export function parse(target: string): IEvidAddress {
+    if (/\s/u.test(target))
+      throw new Error("Remove whitespace from the Swagger operation target.");
+    const separator = target.indexOf(":");
+    const method = separator < 0 ? "" : target.slice(0, separator);
+    const path = separator < 0 ? "" : target.slice(separator + 1);
+    if (
+      !/^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/u.test(method) ||
+      method !== method.toUpperCase() ||
+      !path.startsWith("/")
+    )
+      throw new Error(
+        "Use an uppercase METHOD:/path target such as POST:/members.",
+      );
+    return { file: "swagger:", segments: [target] };
+  }
+}

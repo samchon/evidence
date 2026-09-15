@@ -1,33 +1,32 @@
-import { EvidenceParser } from "@wrtnlabs/evidence";
-import type {
-  EvidenceParseSession,
-  IEvidenceParserInput,
-} from "@wrtnlabs/evidence";
+import { EvidParser } from "evid";
+import type { EvidParseSession, IEvidParserInput } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestParserError } from "../../internal/TestParserError";
-import { TestSignal } from "../../internal/TestSignal";
+import { EvidTestParserError } from "../../internal/EvidTestParserError";
+import { EvidTestSignal } from "../../internal/EvidTestSignal";
 
 /**
- * Keeps concurrent language trees independent and enforces session node ownership.
+ * Keeps concurrent language trees independent and enforces session node
+ * ownership.
  *
- * TypeScript and Python parses run in a two-slot pool and pause while both trees
- * are live. A node can be valid in one session yet still be invalid for another;
- * accepting it would mix source coordinates and grammar state across callbacks.
+ * TypeScript and Python parses run in a two-slot pool and pause while both
+ * trees are live. A node can be valid in one session yet still be invalid for
+ * another; accepting it would mix source coordinates and grammar state across
+ * callbacks.
  *
  * 1. Start both parses and hold their callbacks until two active sessions exist.
  * 2. Pass the second session's root to the first session's query and require a
  *    query-invalid failure while both sessions are still live.
- * 3. Release the callbacks and require the separate identifier results `alpha`
- *    and `beta` in their original request order.
+ * 3. Release the callbacks and require the separate identifier results `alpha` and
+ *    `beta` in their original request order.
  * 4. Close the parser and require every active slot to be released.
  */
 export async function test_parser_concurrent(): Promise<void> {
-  const parser = new EvidenceParser({ concurrency: 2 });
-  const ready = new TestSignal();
-  const release = new TestSignal();
-  const sessions: EvidenceParseSession[] = [];
-  const inputs: IEvidenceParserInput[] = [
+  const parser = new EvidParser({ concurrency: 2 });
+  const ready = new EvidTestSignal();
+  const release = new EvidTestSignal();
+  const sessions: EvidParseSession[] = [];
+  const inputs: IEvidParserInput[] = [
     {
       type: "typescript",
       file: "alpha.ts",
@@ -60,7 +59,7 @@ export async function test_parser_concurrent(): Promise<void> {
     const second = sessions[1];
     if (first === undefined || second === undefined)
       throw new Error("Both parser callbacks must be active.");
-    await TestParserError.expect("query-invalid", () =>
+    await EvidTestParserError.expect("query-invalid", () =>
       first.captures("(identifier) @name", second.root),
     );
 

@@ -1,24 +1,26 @@
-import {
-  EvidenceBigQueryAdapter,
-  EvidenceGraph,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
+import { EvidBigQueryAdapter, EvidGraph, EvidTypeScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Evaluates acknowledgement coverage for each BigQuery model, column, and relation selector.
+/**
+ * Evaluates acknowledgement coverage for each BigQuery model, column, and
+ * relation selector.
  *
- * Both directions of a database-to-TypeScript claim must use the exact selected denominator rather than treating a missing acknowledgement as an empty population.
+ * Both directions of a database-to-TypeScript claim must use the exact selected
+ * denominator rather than treating a missing acknowledgement as an empty
+ * population.
  *
- * 1. Create one schema unit of each selector kind and one TypeScript contract with and without reciprocal evidence.
+ * 1. Create one schema unit of each selector kind and one TypeScript contract with
+ *    and without reciprocal evidence.
  * 2. Evaluate each inventory as both claimant and reference.
- * 3. Require acknowledged graphs to pass and unacknowledged graphs to report every referenced unit as missing.
+ * 3. Require acknowledged graphs to pass and unacknowledged graphs to report every
+ *    referenced unit as missing.
  */
 export async function test_bigquery_graph(): Promise<void> {
-  const adapter = new EvidenceBigQueryAdapter();
+  const adapter = new EvidBigQueryAdapter();
   for (const symbol of ["model", "column", "relation"] as const) {
     const target =
       symbol === "model"
@@ -31,7 +33,7 @@ export async function test_bigquery_graph(): Promise<void> {
         ? "@evidence ./contract.ts#contract Matches the declared contract."
         : "No acknowledgement.";
       const inventory = await adapter.analyze(
-        TestSourceSnapshot.create(
+        EvidTestSourceSnapshot.create(
           "schema.sql",
           dedent`
         /* ${symbol === "model" ? annotation : "Orders"} */
@@ -44,8 +46,8 @@ export async function test_bigquery_graph(): Promise<void> {
       `,
         ),
       );
-      const contract = await new EvidenceTypeScriptAdapter().analyze(
-        TestSourceSnapshot.create(
+      const contract = await new EvidTypeScriptAdapter().analyze(
+        EvidTestSourceSnapshot.create(
           "contract.ts",
           dedent`
         /** ${acknowledged ? `@evidence ./schema.sql#${target} Implements the schema declaration.` : "No acknowledgement."} */
@@ -68,7 +70,7 @@ export async function test_bigquery_graph(): Promise<void> {
         const reference = claimRole ? contract : inventory;
         const claimIds = claimRole ? ids : contractIds;
         const referenceIds = claimRole ? contractIds : ids;
-        const graph = EvidenceGraph.evaluate({
+        const graph = EvidGraph.evaluate({
           claims: [
             {
               severity: "error",
@@ -79,7 +81,7 @@ export async function test_bigquery_graph(): Promise<void> {
                   severity: "error",
                   inventory: reference,
                   unitIds: referenceIds,
-                  resolutions: await TestGraph.resolveDeclarations(
+                  resolutions: await EvidTestGraph.resolveDeclarations(
                     claim,
                     reference,
                     referenceIds,
@@ -96,7 +98,7 @@ export async function test_bigquery_graph(): Promise<void> {
         );
         TestValidator.equals(
           "missing population remains exact",
-          TestGraph.obligation(graph, 0, 0).missingUnitIds,
+          EvidTestGraph.obligation(graph, 0, 0).missingUnitIds,
           acknowledged ? [] : referenceIds,
         );
       }

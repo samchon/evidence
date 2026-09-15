@@ -1,22 +1,24 @@
-import { TestParserAssets } from "../../internal/TestParserAssets";
+import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { readdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { TreeSitterAssetCache } from "../../../../packages/evidence/src/internal/TreeSitterAssetCache";
-import { TreeSitterAssets } from "../../../../packages/evidence/src/internal/TreeSitterAssets";
-import { TestFileSystem } from "../../internal/TestFileSystem";
-import { TestParserError } from "../../internal/TestParserError";
+import { EvidTreeSitterAssetCache, EvidTreeSitterAssets } from "evid";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidTestParserError } from "../../internal/EvidTestParserError";
 
 /**
- * Shares verified grammar acquisition and repairs corruption in a reusable cache.
+ * Shares verified grammar acquisition and repairs corruption in a reusable
+ * cache.
  *
  * Grammar bytes must remain immutable across callers, and offline reuse is safe
- * only after verification. The scenario supplies pinned bytes through a controlled
- * fetch implementation and uses a disposable cache to exercise cold and warm paths.
+ * only after verification. The scenario supplies pinned bytes through a
+ * controlled fetch implementation and uses a disposable cache to exercise cold
+ * and warm paths.
  *
  * 1. Request one cold grammar concurrently from eight callers:
+ *
  *    - Require exactly one request to the pinned URL.
  *    - Require complete bytes for every caller and independent returned arrays.
  * 2. Open the warm cache with a fetch implementation that always fails and require
@@ -26,17 +28,17 @@ import { TestParserError } from "../../internal/TestParserError";
  * 4. Restore network access and require one repair download, successful offline
  *    reuse afterward, and no transient files beside the verified cache entry.
  * 5. Omit cache overrides from a project working directory and require the grammar
- *    below that project's `node_modules/.cache/evidence` directory.
+ *    below that project's `node_modules/.cache/evid` directory.
  */
 export async function test_parser_assets(): Promise<void> {
-  const original = new TreeSitterAssets();
+  const original = new EvidTreeSitterAssets();
   const grammar = await original.grammar("python");
-  const pinned = Uint8Array.from(await TestParserAssets.bytes(grammar));
+  const pinned = Uint8Array.from(await EvidTestParserAssets.bytes(grammar));
   const directory = join(__dirname, "assets-" + randomUUID());
 
-  await TestFileSystem.experiment(directory, {}, async (location) => {
+  await EvidTestFileSystem.experiment(directory, {}, async (location) => {
     const requests: string[] = [];
-    const assets = new TreeSitterAssets({
+    const assets = new EvidTreeSitterAssets({
       cacheDirectory: location,
       fetch: async (input) => {
         requests.push(String(input));
@@ -61,7 +63,7 @@ export async function test_parser_assets(): Promise<void> {
     );
 
     // A separate resolver performs no request with verified cache bytes, including no HEAD.
-    const offline = new TreeSitterAssets({
+    const offline = new EvidTreeSitterAssets({
       cacheDirectory: location,
       attempts: 1,
       fetch: async () => {
@@ -81,7 +83,7 @@ export async function test_parser_assets(): Promise<void> {
       `${String(grammar.wasm.sha256)}.wasm`,
     );
     await writeFile(destination, "damaged grammar");
-    await TestParserError.expect("asset-download", () =>
+    await EvidTestParserError.expect("asset-download", () =>
       offline.bytes(grammar),
     );
     await assets.bytes(grammar);
@@ -98,32 +100,46 @@ export async function test_parser_assets(): Promise<void> {
     );
 
     const projectDirectory = join(location, "project");
-    await TestFileSystem.save(projectDirectory, {});
+    await EvidTestFileSystem.save(projectDirectory, {});
     const previousWorkingDirectory = process.cwd();
-    const previousCacheDirectory = process.env["EVIDENCE_CACHE_DIR"];
-    delete process.env["EVIDENCE_CACHE_DIR"];
+    const previousCacheDirectory = process.env["EVID_CACHE_DIR"];
+    delete process.env["EVID_CACHE_DIR"];
     try {
       process.chdir(projectDirectory);
-      await new TreeSitterAssetCache({
+      await new EvidTreeSitterAssetCache({
         fetch: async (): Promise<Response> => new Response(pinned),
       }).bytes(grammar);
     } finally {
       process.chdir(previousWorkingDirectory);
       if (previousCacheDirectory === undefined)
-        delete process.env["EVIDENCE_CACHE_DIR"];
-      else process.env["EVIDENCE_CACHE_DIR"] = previousCacheDirectory;
+        delete process.env["EVID_CACHE_DIR"];
+      else process.env["EVID_CACHE_DIR"] = previousCacheDirectory;
     }
     TestValidator.equals(
       "project-local default cache",
       await readdir(
-        join(
-          projectDirectory,
-          "node_modules",
-          ".cache",
-          "evidence",
-          "grammars-v1",
-        ),
+        join(projectDirectory, "node_modules", ".cache", "evid", "grammars-v1"),
       ),
+      [`${String(grammar.wasm.sha256)}.wasm`],
+    );
+
+    // The explicit environment override remains available for CI or read-only projects.
+    const environmentDirectory: string = join(location, "environment cache");
+    const previousEnvironmentDirectory: string | undefined =
+      process.env["EVID_CACHE_DIR"];
+    process.env["EVID_CACHE_DIR"] = environmentDirectory;
+    try {
+      await new EvidTreeSitterAssetCache({
+        fetch: async (): Promise<Response> => new Response(pinned),
+      }).bytes(grammar);
+    } finally {
+      if (previousEnvironmentDirectory === undefined)
+        delete process.env["EVID_CACHE_DIR"];
+      else process.env["EVID_CACHE_DIR"] = previousEnvironmentDirectory;
+    }
+    TestValidator.equals(
+      "environment cache override",
+      await readdir(join(environmentDirectory, "grammars-v1")),
       [`${String(grammar.wasm.sha256)}.wasm`],
     );
   });

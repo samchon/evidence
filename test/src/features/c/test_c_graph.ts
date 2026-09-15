@@ -1,27 +1,30 @@
 import {
-  EvidenceCAdapter,
-  EvidenceFingerprint,
-  EvidenceGraph,
-  EvidenceMarkdownAdapter,
-} from "@wrtnlabs/evidence";
-import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+  EvidCAdapter,
+  EvidFingerprint,
+  EvidGraph,
+  EvidMarkdownAdapter,
+} from "evid";
+import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Evaluates C type, function, and property evidence with semantic fingerprints.
+/**
+ * Evaluates C type, function, and property evidence with semantic fingerprints.
  *
- * Every selected C symbol kind must have reciprocal acknowledgement, while documentation-only edits must not change implementation identity.
+ * Every selected C symbol kind must have reciprocal acknowledgement, while
+ * documentation-only edits must not change implementation identity.
  *
  * 1. Build claim and reference inventories for each supported C symbol kind.
- * 2. Require covered declarations to pass and missing declarations to remain obligations.
+ * 2. Require covered declarations to pass and missing declarations to remain
+ *    obligations.
  * 3. Compare fingerprints before and after an evidence-prose-only edit.
  */
 export async function test_c_graph(): Promise<void> {
-  const requirements = await new EvidenceMarkdownAdapter().analyze(
-    TestSourceSnapshot.create(
+  const requirements = await new EvidMarkdownAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "docs/requirements.md",
       dedent`
         ## Record {#record}
@@ -38,8 +41,8 @@ export async function test_c_graph(): Promise<void> {
       `,
     ),
   );
-  const implementation = await new EvidenceCAdapter().analyze(
-    TestSourceSnapshot.create(
+  const implementation = await new EvidCAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/contracts.c",
       dedent`
         /** @evidence docs/requirements.md#record Implements the record. */
@@ -64,7 +67,7 @@ export async function test_c_graph(): Promise<void> {
     requireUnit(implementation, "value"),
   ];
 
-  const complete = EvidenceGraph.evaluate({
+  const complete = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -75,7 +78,7 @@ export async function test_c_graph(): Promise<void> {
             severity: "error",
             inventory: requirements,
             unitIds: requirementUnits.map((unit) => unit.id),
-            resolutions: await TestGraph.resolveDeclarations(
+            resolutions: await EvidTestGraph.resolveDeclarations(
               implementation,
               requirements,
               requirementUnits.map((unit) => unit.id),
@@ -94,7 +97,7 @@ export async function test_c_graph(): Promise<void> {
     missing.declarations = missing.declarations.filter(
       (declaration) => !declaration.target.endsWith(`#${anchor}`),
     );
-    const partial = EvidenceGraph.evaluate({
+    const partial = EvidGraph.evaluate({
       claims: [
         {
           severity: "error",
@@ -105,7 +108,7 @@ export async function test_c_graph(): Promise<void> {
               severity: "error",
               inventory: requirements,
               unitIds: requirementUnits.map((unit) => unit.id),
-              resolutions: await TestGraph.resolveDeclarations(
+              resolutions: await EvidTestGraph.resolveDeclarations(
                 missing,
                 requirements,
                 requirementUnits.map((unit) => unit.id),
@@ -117,7 +120,7 @@ export async function test_c_graph(): Promise<void> {
     });
     TestValidator.equals(
       `missing C ${anchor} acknowledgement`,
-      TestGraph.obligation(partial, 0, 0).missingUnitIds,
+      EvidTestGraph.obligation(partial, 0, 0).missingUnitIds,
       [required.id],
     );
   }
@@ -139,13 +142,13 @@ export async function test_c_graph(): Promise<void> {
   const bodyUnit = requireUnit(editedBody, "run");
   TestValidator.equals(
     "C evidence metadata preserves fingerprint",
-    EvidenceFingerprint.inspect(original, originalUnit.id).fingerprint,
-    EvidenceFingerprint.inspect(editedReason, reasonUnit.id).fingerprint,
+    EvidFingerprint.inspect(original, originalUnit.id).fingerprint,
+    EvidFingerprint.inspect(editedReason, reasonUnit.id).fingerprint,
   );
   TestValidator.notEquals(
     "C implementation moves fingerprint",
-    EvidenceFingerprint.inspect(original, originalUnit.id).fingerprint,
-    EvidenceFingerprint.inspect(editedBody, bodyUnit.id).fingerprint,
+    EvidFingerprint.inspect(original, originalUnit.id).fingerprint,
+    EvidFingerprint.inspect(editedBody, bodyUnit.id).fingerprint,
   );
 
   // Shared type text belongs to each object, while sibling initializers stay local.
@@ -155,17 +158,17 @@ export async function test_c_graph(): Promise<void> {
   const firstEdited = requireUnit(objectsEdited, "first");
   TestValidator.equals(
     "C sibling object fingerprint isolation",
-    EvidenceFingerprint.inspect(objectsOriginal, firstOriginal.id).fingerprint,
-    EvidenceFingerprint.inspect(objectsEdited, firstEdited.id).fingerprint,
+    EvidFingerprint.inspect(objectsOriginal, firstOriginal.id).fingerprint,
+    EvidFingerprint.inspect(objectsEdited, firstEdited.id).fingerprint,
   );
 }
 
 async function fingerprintInventory(
   reason: string,
   statement: string,
-): Promise<IEvidenceInventory> {
-  return new EvidenceCAdapter().analyze(
-    TestSourceSnapshot.create(
+): Promise<IEvidInventory> {
+  return new EvidCAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/fingerprint.c",
       dedent`
         /** @evidence docs/requirements.md#run ${reason} */
@@ -175,9 +178,9 @@ async function fingerprintInventory(
   );
 }
 
-async function objectInventory(second: string): Promise<IEvidenceInventory> {
-  return new EvidenceCAdapter().analyze(
-    TestSourceSnapshot.create(
+async function objectInventory(second: string): Promise<IEvidInventory> {
+  return new EvidCAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/objects.c",
       dedent`
         int first = 1, second = ${second};
@@ -186,10 +189,7 @@ async function objectInventory(second: string): Promise<IEvidenceInventory> {
   );
 }
 
-function requireUnit(
-  inventory: IEvidenceInventory,
-  name: string,
-): IEvidenceUnit {
+function requireUnit(inventory: IEvidInventory, name: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === name || candidate.identity.at(-1) === name,

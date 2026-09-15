@@ -1,24 +1,21 @@
-import {
-  EvidenceGraph,
-  EvidenceSwiftAdapter,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
+import { EvidGraph, EvidSwiftAdapter, EvidTypeScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Evaluates every selected Swift declaration as a reference.
+/**
+ * Evaluates every selected Swift declaration as a reference.
  *
- * Evidence covers a selector while a review-only target remains missing.
+ * Evid covers a selector while a review-only target remains missing.
  *
  * 1. Evaluate acknowledged and undocumented selectors.
  * 2. Verify exact missing populations and review behavior.
  */
 export async function test_swift_graph(): Promise<void> {
-  const reference = await new EvidenceSwiftAdapter().analyze(
-    TestSourceSnapshot.create(
+  const reference = await new EvidSwiftAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/Contract.swift",
       dedent`
     public struct Contract {}
@@ -27,8 +24,8 @@ export async function test_swift_graph(): Promise<void> {
   `,
     ),
   );
-  const claims = await new EvidenceTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+  const claims = await new EvidTypeScriptAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/Claims.ts",
       dedent`
     /** @evidence ./Contract.swift#Contract Verifies the type. */
@@ -64,7 +61,7 @@ export async function test_swift_graph(): Promise<void> {
             ),
           )
         : [];
-      const graph = EvidenceGraph.evaluate({
+      const graph = EvidGraph.evaluate({
         claims: [
           {
             severity: "error",
@@ -75,7 +72,7 @@ export async function test_swift_graph(): Promise<void> {
                 severity: "error",
                 inventory: reference,
                 unitIds,
-                resolutions: await TestGraph.resolveDeclarations(
+                resolutions: await EvidTestGraph.resolveDeclarations(
                   claim,
                   reference,
                   unitIds,
@@ -92,13 +89,13 @@ export async function test_swift_graph(): Promise<void> {
       );
       TestValidator.equals(
         `${symbol} exact missing population`,
-        TestGraph.obligation(graph, 0, 0).missingUnitIds,
+        EvidTestGraph.obligation(graph, 0, 0).missingUnitIds,
         acknowledged ? [] : unitIds,
       );
     }
   }
-  const review = await new EvidenceSwiftAdapter().analyze(
-    TestSourceSnapshot.create(
+  const review = await new EvidSwiftAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/Review.swift",
       dedent`
     /** @evidenceReview ./Contract.swift#run Reviewed without an acknowledgement. */
@@ -115,7 +112,7 @@ export async function test_swift_graph(): Promise<void> {
   const functions = reference.units
     .filter((unit) => unit.symbol === "function")
     .map((unit) => unit.id);
-  const graph = EvidenceGraph.evaluate({
+  const graph = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -127,7 +124,7 @@ export async function test_swift_graph(): Promise<void> {
             inventory: reference,
             unitIds: functions,
             resolutions: [],
-            reviewResolutions: await TestGraph.resolveReviews(
+            reviewResolutions: await EvidTestGraph.resolveReviews(
               review,
               reference,
               functions,
@@ -139,7 +136,7 @@ export async function test_swift_graph(): Promise<void> {
   });
   TestValidator.equals(
     "review never supplies missing coverage",
-    TestGraph.obligation(graph, 0, 0).missingUnitIds,
+    EvidTestGraph.obligation(graph, 0, 0).missingUnitIds,
     functions,
   );
 }

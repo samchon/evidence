@@ -1,24 +1,29 @@
-import { EvidencePythonAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidPythonAdapter } from "evid";
+import type { IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Resolves Python package exports through explicit and transitive public names.
  *
- * The combined package fixture exercises __all__ composition, star imports, renamed imports, namespace imports, and later bindings that shadow an earlier binding.
+ * The combined package fixture exercises **all** composition, star imports,
+ * renamed imports, namespace imports, and later bindings that shadow an earlier
+ * binding.
  *
- * 1. Analyze the package modules and verify barrel, namespace, and shadowed public addresses.
- * 2. Verify a renamed barrel address retains the source declaration identity and produces no diagnostics.
- * 3. Analyze a mutually importing pair and verify its finite exported address set completes without diagnostics.
+ * 1. Analyze the package modules and verify barrel, namespace, and shadowed public
+ *    addresses.
+ * 2. Verify a renamed barrel address retains the source declaration identity and
+ *    produces no diagnostics.
+ * 3. Analyze a mutually importing pair and verify its finite exported address set
+ *    completes without diagnostics.
  */
 export async function test_python_exports(): Promise<void> {
-  const adapter = new EvidencePythonAdapter();
+  const adapter = new EvidPythonAdapter();
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "pkg/dep.py",
         dedent`
           __all__ = ["Service", "_forced"]
@@ -30,14 +35,14 @@ export async function test_python_exports(): Promise<void> {
           _forced = 1
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "pkg/extras.py",
         dedent`
           def extra():
               return None
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "pkg/__init__.py",
         dedent`
           from .dep import Service as Renamed, _forced as forced
@@ -47,14 +52,14 @@ export async function test_python_exports(): Promise<void> {
           __all__ += ["extra"]
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "pkg/namespace.py",
         dedent`
           import pkg.dep as api
           __all__ = ["api"]
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "pkg/import-wins.py",
         dedent`
           class Value:
@@ -64,7 +69,7 @@ export async function test_python_exports(): Promise<void> {
           __all__ = ["Value"]
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "pkg/declaration-wins.py",
         dedent`
           from .dep import Service as Value
@@ -116,8 +121,8 @@ export async function test_python_exports(): Promise<void> {
   TestValidator.equals("complete Python exports", inventory.diagnostics, []);
 
   const cycle = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "cycle/a.py",
         dedent`
           from .b import b
@@ -125,7 +130,7 @@ export async function test_python_exports(): Promise<void> {
           __all__ = ["a", "b"]
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "cycle/b.py",
         dedent`
           from .a import a
@@ -143,7 +148,7 @@ export async function test_python_exports(): Promise<void> {
   TestValidator.equals("complete Python cycle", cycle.diagnostics, []);
 }
 
-function addresses(inventory: IEvidenceInventory, file: string): string[] {
+function addresses(inventory: IEvidInventory, file: string): string[] {
   return inventory.addresses
     .filter((address) => address.file === file)
     .map((address) => address.segments.join("."))

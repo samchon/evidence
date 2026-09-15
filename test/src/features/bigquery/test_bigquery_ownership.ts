@@ -1,19 +1,24 @@
-import { EvidenceBigQueryAdapter } from "@wrtnlabs/evidence";
+import { EvidBigQueryAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Preserves BigQuery ownership for literal paths, endpoint keys, and nested withdrawals.
+/**
+ * Preserves BigQuery ownership for literal paths, endpoint keys, and nested
+ * withdrawals.
  *
- * The inventory must distinguish declaration identity from syntax that merely resembles a table or member name.
+ * The inventory must distinguish declaration identity from syntax that merely
+ * resembles a table or member name.
  *
  * 1. Analyze qualified and quoted table paths with nested fields and inline keys.
- * 2. Verify anonymous relation endpoints and key units attach to their declaring model.
- * 3. Require a withdrawn nested member to remain excluded from the selected hierarchy.
+ * 2. Verify anonymous relation endpoints and key units attach to their declaring
+ *    model.
+ * 3. Require a withdrawn nested member to remain excluded from the selected
+ *    hierarchy.
  */
 export async function test_bigquery_ownership(): Promise<void> {
-  const adapter = new EvidenceBigQueryAdapter();
+  const adapter = new EvidBigQueryAdapter();
   const first = "FOREIGN KEY (ID) REFERENCES ds.Parent (id) NOT ENFORCED";
   const second = "FOREIGN KEY (id) REFERENCES ds.parent (id) NOT ENFORCED";
   const source = dedent`
@@ -27,7 +32,7 @@ export async function test_bigquery_ownership(): Promise<void> {
     );
   `;
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.create("schema.sql", source),
+    EvidTestSourceSnapshot.create("schema.sql", source),
   );
   TestValidator.equals(
     "valid ownership declarations",
@@ -70,7 +75,7 @@ export async function test_bigquery_ownership(): Promise<void> {
     source,
   );
   const reordered = await adapter.analyze(
-    TestSourceSnapshot.create("schema.sql", reorderedSource),
+    EvidTestSourceSnapshot.create("schema.sql", reorderedSource),
   );
   TestValidator.equals(
     "anonymous key identities ignore declaration order",
@@ -84,7 +89,7 @@ export async function test_bigquery_ownership(): Promise<void> {
   );
 
   const inline = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "inline.sql",
       dedent`
     CREATE TABLE ds.inline_key (

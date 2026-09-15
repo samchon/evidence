@@ -1,15 +1,13 @@
-import {
-  EvidenceFingerprint,
-  EvidenceInventory,
-  EvidenceRustAdapter,
-} from "@wrtnlabs/evidence";
+import { EvidFingerprint, EvidInventory, EvidRustAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Preserves Rust tuple-field identity across interleaved comments.
+/**
+ * Preserves Rust tuple-field identity across interleaved comments.
  *
- * Comments between field tokens cannot change tuple indexes, visibility, or documentation ownership.
+ * Comments between field tokens cannot change tuple indexes, visibility, or
+ * documentation ownership.
  *
  * 1. Analyze public and private tuple fields separated by ordinary comments,
  *    documentation, attributes, and whitespace.
@@ -33,9 +31,9 @@ export async function test_rust_tuple_comments(): Promise<void> {
       pub i64,
     );
   `;
-  const adapter = new EvidenceRustAdapter();
+  const adapter = new EvidRustAdapter();
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.create("src/lib.rs", content),
+    EvidTestSourceSnapshot.create("src/lib.rs", content),
   );
   const units = new Map(
     inventory.units.map((unit) => [unit.id, unit.identity.join(".")]),
@@ -73,7 +71,7 @@ export async function test_rust_tuple_comments(): Promise<void> {
     inventory.declarations.find((item) => item.target === "docs/spec.md#first")
       ?.hostId,
   );
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   for (const [segment, status] of [
     ["0", "resolved"],
     ["1", "missing"],
@@ -90,7 +88,7 @@ export async function test_rust_tuple_comments(): Promise<void> {
     );
 
   const edited = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/lib.rs",
       content.replace(
         "Reviewed the first field.",
@@ -99,7 +97,7 @@ export async function test_rust_tuple_comments(): Promise<void> {
     ),
   );
   const changed = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/lib.rs",
       content.replace("*/ i32", "*/ u32"),
     ),
@@ -109,13 +107,13 @@ export async function test_rust_tuple_comments(): Promise<void> {
     if (unit === undefined) throw new Error(`Missing ${name}.`);
     TestValidator.equals(
       "review metadata is excluded",
-      EvidenceFingerprint.inspect(inventory, unit.id).fingerprint,
-      EvidenceFingerprint.inspect(edited, unit.id).fingerprint,
+      EvidFingerprint.inspect(inventory, unit.id).fingerprint,
+      EvidFingerprint.inspect(edited, unit.id).fingerprint,
     );
     TestValidator.notEquals(
       "real field content is retained",
-      EvidenceFingerprint.inspect(inventory, unit.id).fingerprint,
-      EvidenceFingerprint.inspect(changed, unit.id).fingerprint,
+      EvidFingerprint.inspect(inventory, unit.id).fingerprint,
+      EvidFingerprint.inspect(changed, unit.id).fingerprint,
     );
   }
 }

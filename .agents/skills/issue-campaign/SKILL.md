@@ -1,6 +1,6 @@
 ---
 name: issue-campaign
-description: Defines broad Evidence issue discovery, detailed English handoffs, and authorized issue-to-implementation campaigns. Use for broad audits or repeated campaigns, not one already-defined issue or an ordinary PR.
+description: Defines broad Evidence Graph issue discovery, detailed English handoffs, and authorized issue-to-implementation campaigns. Use for broad audits or repeated campaigns, not one already-defined issue or an ordinary PR.
 ---
 
 # Issue Campaign

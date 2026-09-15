@@ -1,21 +1,22 @@
-import { EvidenceSourceLoader } from "@wrtnlabs/evidence";
+import { EvidSourceLoader, EvidSourcePath } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { link, symlink } from "node:fs/promises";
 import { join } from "node:path";
 
-import { SourcePath } from "../../../../packages/evidence/src/internal/SourcePath";
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
- * Deduplicates linked files without losing addresses and diagnoses traversed directory cycles.
+ * Deduplicates linked files without losing addresses and diagnoses traversed
+ * directory cycles.
  *
- * A snapshot identifies one physical file while preserving every selected logical
- * address, and follows links only while their topology remains acyclic.
+ * A snapshot identifies one physical file while preserving every selected
+ * logical address, and follows links only while their topology remains
+ * acyclic.
  *
- * 1. Create directory junction aliases and a hard link to one Prisma schema,
- *    then require one physical file with all three selected addresses and link
+ * 1. Create directory junction aliases and a hard link to one Prisma schema, then
+ *    require one physical file with all three selected addresses and link
  *    topology dependencies. Require the first logical address to own its stable
  *    fingerprint path while the physical project root maps to `.`.
  * 2. Select through a linked root and require its local relative address while
@@ -29,7 +30,7 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
 export async function test_source_links(): Promise<void> {
   const location: string = join(__dirname, "links-" + randomUUID());
 
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     {
       "project/evidence.config.ts": "export default {};",
@@ -57,7 +58,7 @@ export async function test_source_links(): Promise<void> {
       );
       const config: string = join(directory, "project/evidence.config.ts");
 
-      const snapshot = await EvidenceSourceLoader.glob(config, {
+      const snapshot = await EvidSourceLoader.glob(config, {
         files: ["**/*.prisma"],
       });
 
@@ -79,7 +80,7 @@ export async function test_source_links(): Promise<void> {
         "project fingerprint root",
         snapshot.files[0]?.fingerprintRoot,
         {
-          physicalPath: SourcePath.slash(join(directory, "project")),
+          physicalPath: EvidSourcePath.slash(join(directory, "project")),
           fingerprintPath: ".",
         },
       );
@@ -93,12 +94,12 @@ export async function test_source_links(): Promise<void> {
           "link topology dependency",
           snapshot.dependencies.some(
             (entry) =>
-              entry.path === SourcePath.slash(join(directory, dependency)),
+              entry.path === EvidSourcePath.slash(join(directory, dependency)),
           ),
         );
 
       // A linked root retains its own logical path space.
-      const linkedRoot = await EvidenceSourceLoader.glob(config, {
+      const linkedRoot = await EvidSourceLoader.glob(config, {
         root: "alias",
         files: ["*.prisma"],
       });
@@ -125,7 +126,7 @@ export async function test_source_links(): Promise<void> {
         "linked root fingerprint mapping",
         linkedRoot.files[0]?.fingerprintRoot,
         {
-          physicalPath: SourcePath.slash(join(directory, "schema")),
+          physicalPath: EvidSourcePath.slash(join(directory, "schema")),
           fingerprintPath: "alias",
         },
       );
@@ -137,10 +138,10 @@ export async function test_source_links(): Promise<void> {
         "junction",
       );
 
-      const cyclic = await EvidenceSourceLoader.glob(config, {
+      const cyclic = await EvidSourceLoader.glob(config, {
         files: ["**/*.prisma"],
       });
-      const excluded = await EvidenceSourceLoader.glob(config, {
+      const excluded = await EvidSourceLoader.glob(config, {
         files: ["**/*.prisma", "!loop/**"],
       });
 

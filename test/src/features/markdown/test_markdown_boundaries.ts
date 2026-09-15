@@ -1,23 +1,21 @@
-import { EvidenceMarkdownAdapter } from "@wrtnlabs/evidence";
-import type {
-  IEvidenceDeclaration,
-  IEvidenceHost,
-  IEvidenceUnit,
-} from "@wrtnlabs/evidence";
+import { EvidMarkdownAdapter } from "evid";
+import type { IEvidDeclaration, IEvidHost, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Excludes Markdown syntax examples from heading and annotation discovery.
  *
  * Fence, inline-code, rendered-code, MDX-template, indentation, and comment
- * regions may contain realistic Evidence syntax without declaring a public unit or host.
+ * regions may contain realistic Evid syntax without declaring a public unit or
+ * host.
  *
- * 1. Analyze one visible heading plus heading and annotation syntax in each excluded region.
- * 2. Mention rendered tags in several literal forms and require them not to hide
- *    a later real heading.
+ * 1. Analyze one visible heading plus heading and annotation syntax in each
+ *    excluded region.
+ * 2. Mention rendered tags in several literal forms and require them not to hide a
+ *    later real heading.
  * 3. Put close/open transitions on the same line and require their last boundary
  *    to govern whether following headings remain rendered.
  * 4. Put an unmatched closing tag inside an explicitly anchored heading and
@@ -28,9 +26,9 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *    following headings to remain visible and neither literal to own a host.
  * 7. Mention `<pre>` after prose and inside an anchored heading; require neither
  *    inline occurrence to begin a raw HTML block or hide later structure.
- * 8. Open raw blocks with spaced or compact slash syntax and incomplete
- *    line-start `pre` tags, ignore a malformed close, and resume structure only
- *    after each exact CommonMark close.
+ * 8. Open raw blocks with spaced or compact slash syntax and incomplete line-start
+ *    `pre` tags, ignore a malformed close, and resume structure only after each
+ *    exact CommonMark close.
  * 9. Compose comment and rendered transitions when one region closes before the
  *    other opens later on the same line, including a four-transition chain.
  * 10. Keep HTML and MDX rendered regions open across the other grammar's close.
@@ -38,8 +36,9 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 12. Remove real inline comments from generated and explicit heading names while
  *     retaining authored whitespace and a tag-bearing comment on the host.
  * 13. Keep a comment adjacent to an ATX marker from fabricating a heading.
- * 14. Verify only the visible headings and real children materialize as section units.
- * 15. Verify only real HTML comments declare their Evidence targets.
+ * 14. Verify only the visible headings and real children materialize as section
+ *     units.
+ * 15. Verify only real HTML comments declare their Evid targets.
  * 16. Require no diagnostics from the ignored examples.
  */
 export async function test_markdown_boundaries(): Promise<void> {
@@ -179,15 +178,13 @@ export async function test_markdown_boundaries(): Promise<void> {
 
     ## Real child
   `;
-  const inventory = await new EvidenceMarkdownAdapter().analyze(
-    TestSourceSnapshot.create("guide.md", content),
+  const inventory = await new EvidMarkdownAdapter().analyze(
+    EvidTestSourceSnapshot.create("guide.md", content),
   );
 
   TestValidator.equals(
     "only real headings materialize",
-    inventory.units
-      .map((unit: IEvidenceUnit): string => unit.name)
-      .sort(compare),
+    inventory.units.map((unit: IEvidUnit): string => unit.name).sort(compare),
     [
       "After backticked rendered close",
       "After close then open",
@@ -219,20 +216,19 @@ export async function test_markdown_boundaries(): Promise<void> {
   TestValidator.equals(
     "only real HTML annotations are parsed",
     inventory.declarations
-      .map((entry: IEvidenceDeclaration): string => entry.target)
+      .map((entry: IEvidDeclaration): string => entry.target)
       .sort(compare),
     ["docs/spec.md#heading", "docs/spec.md#rule"],
   );
-  const tagged: IEvidenceUnit | undefined = inventory.units.find(
-    (unit: IEvidenceUnit): boolean => unit.identity.at(-1) === "tagged-comment",
+  const tagged: IEvidUnit | undefined = inventory.units.find(
+    (unit: IEvidUnit): boolean => unit.identity.at(-1) === "tagged-comment",
   );
-  const declaration: IEvidenceDeclaration | undefined =
-    inventory.declarations.find(
-      (entry: IEvidenceDeclaration): boolean =>
-        entry.target === "docs/spec.md#heading",
-    );
-  const host: IEvidenceHost | undefined = inventory.hosts.find(
-    (entry: IEvidenceHost): boolean => entry.id === declaration?.hostId,
+  const declaration: IEvidDeclaration | undefined = inventory.declarations.find(
+    (entry: IEvidDeclaration): boolean =>
+      entry.target === "docs/spec.md#heading",
+  );
+  const host: IEvidHost | undefined = inventory.hosts.find(
+    (entry: IEvidHost): boolean => entry.id === declaration?.hostId,
   );
   TestValidator.equals(
     "heading-line annotation attaches to that heading",
@@ -249,8 +245,8 @@ export async function test_markdown_boundaries(): Promise<void> {
 /**
  * Orders fixture labels without relying on locale-specific collation.
  *
- * The expected unit list uses the same lexical comparison so the assertion tests
- * membership independently of adapter collection order.
+ * The expected unit list uses the same lexical comparison so the assertion
+ * tests membership independently of adapter collection order.
  */
 function compare(x: string, y: string): number {
   return x < y ? -1 : x > y ? 1 : 0;

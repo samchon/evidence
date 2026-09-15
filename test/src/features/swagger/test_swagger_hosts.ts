@@ -1,24 +1,22 @@
-import { EvidenceSwaggerAdapter } from "@wrtnlabs/evidence";
-import type {
-  IEvidenceDeclaration,
-  IEvidenceHost,
-  IEvidenceInventory,
-} from "@wrtnlabs/evidence";
+import { EvidSwaggerAdapter } from "evid";
+import type { IEvidDeclaration, IEvidHost, IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Parses annotation tags from supported Swagger operation descriptions.
+/**
+ * Parses annotation tags from supported Swagger operation descriptions.
  *
- * Descriptions on unrelated document nodes cannot acknowledge an operation, even when their text contains a tag.
+ * Descriptions on unrelated document nodes cannot acknowledge an operation,
+ * even when their text contains a tag.
  *
  * 1. Analyze eligible and ineligible descriptions.
  * 2. Verify extracted targets, coordinates, and host diagnostics.
  */
 export async function test_swagger_hosts(): Promise<void> {
-  const inventory = await new EvidenceSwaggerAdapter().analyze(
-    TestSourceSnapshot.create(
+  const inventory = await new EvidSwaggerAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "openapi.yaml",
       dedent`
         openapi: 3.1.0
@@ -98,8 +96,8 @@ export async function test_swagger_hosts(): Promise<void> {
   TestValidator.equals("Swagger host diagnostics", inventory.diagnostics, []);
 
   // YAML aliases retain the physical anchor location that owns their decoded text.
-  const aliased = await new EvidenceSwaggerAdapter().analyze(
-    TestSourceSnapshot.create(
+  const aliased = await new EvidSwaggerAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "aliased.yaml",
       dedent`
         openapi: 3.1.0
@@ -128,8 +126,8 @@ export async function test_swagger_hosts(): Promise<void> {
   );
 
   // One Unicode escape may decode to two UTF-16 units before a later annotation.
-  const escaped = await new EvidenceSwaggerAdapter().analyze(
-    TestSourceSnapshot.create(
+  const escaped = await new EvidSwaggerAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "escaped.yaml",
       dedent`
         openapi: 3.1.0
@@ -155,9 +153,9 @@ export async function test_swagger_hosts(): Promise<void> {
 }
 
 function requireDeclaration(
-  inventory: IEvidenceInventory,
+  inventory: IEvidInventory,
   target: string,
-): IEvidenceDeclaration {
+): IEvidDeclaration {
   const declaration = inventory.declarations.find(
     (candidate) => candidate.target === target,
   );
@@ -167,9 +165,9 @@ function requireDeclaration(
 }
 
 function requireHost(
-  inventory: IEvidenceInventory,
-  declaration: IEvidenceDeclaration,
-): IEvidenceHost {
+  inventory: IEvidInventory,
+  declaration: IEvidDeclaration,
+): IEvidHost {
   const host = inventory.hosts.find(
     (candidate) => candidate.id === declaration.hostId,
   );
@@ -178,7 +176,7 @@ function requireHost(
   return host;
 }
 
-function line(declaration: IEvidenceDeclaration): number {
+function line(declaration: IEvidDeclaration): number {
   const range = declaration.location.range;
   if (range === undefined)
     throw new Error(`Missing Swagger declaration range: ${declaration.target}`);
@@ -186,8 +184,8 @@ function line(declaration: IEvidenceDeclaration): number {
 }
 
 function declarationText(
-  inventory: IEvidenceInventory,
-  declaration: IEvidenceDeclaration,
+  inventory: IEvidInventory,
+  declaration: IEvidDeclaration,
 ): string {
   const source = inventory.sources.find(
     (candidate) => candidate.physicalPath === declaration.location.file,

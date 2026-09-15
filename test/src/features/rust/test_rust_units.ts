@@ -1,24 +1,24 @@
-import {
-  EvidenceLanguageRegistry,
-  EvidenceRustAdapter,
-} from "@wrtnlabs/evidence";
+import { EvidLanguageRegistry, EvidRustAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Classifies Rust's public declaration and member matrix.
+/**
+ * Classifies Rust's public declaration and member matrix.
  *
- * Types, fields, variants, traits, values, and impl items retain exact public ownership.
+ * Types, fields, variants, traits, values, and impl items retain exact public
+ * ownership.
  *
  * 1. Verify registered Rust metadata, then analyze public types, fields, variants,
  *    trait members, values, inherent members, and trait implementations.
  * 2. Require the exact public units and identities while excluding private and
- *    restricted declarations and preserving distinct associated-item ownership.
+ *    restricted declarations and preserving distinct associated-item
+ *    ownership.
  */
 export async function test_rust_units(): Promise<void> {
   // Certified metadata must accompany the pinned Rust grammar.
-  const language = EvidenceLanguageRegistry.list().find(
+  const language = EvidLanguageRegistry.list().find(
     (entry) => entry.type === "rust",
   );
   if (language === undefined)
@@ -26,12 +26,12 @@ export async function test_rust_units(): Promise<void> {
   TestValidator.equals(
     "certified Rust adapter",
     language.adapter?.entry,
-    "EvidenceRustAdapter",
+    "EvidRustAdapter",
   );
 
   // Public source forms cover every shared symbol kind and explicit associated policy.
-  const inventory = await new EvidenceRustAdapter().analyze(
-    TestSourceSnapshot.create(
+  const inventory = await new EvidRustAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/lib.rs",
       dedent`
         pub struct Sale<T> {

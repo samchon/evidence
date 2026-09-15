@@ -1,15 +1,13 @@
-import {
-  EvidenceFingerprint,
-  EvidenceInventory,
-  EvidenceZigAdapter,
-} from "@wrtnlabs/evidence";
+import { EvidFingerprint, EvidInventory, EvidZigAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Preserves Zig aliases, withdrawals, and copied-value independence.
+/**
+ * Preserves Zig aliases, withdrawals, and copied-value independence.
  *
- * Function aliases share their declaration sites, while copied values and withdrawals retain distinct identity effects.
+ * Function aliases share their declaration sites, while copied values and
+ * withdrawals retain distinct identity effects.
  *
  * 1. Analyze aliases, copied values, and withdrawn declarations.
  * 2. Verify sites, target resolution, and withdrawal behavior.
@@ -25,9 +23,9 @@ export async function test_zig_aliases(): Promise<void> {
     pub const first = scalar;
     pub const second = first;
   `;
-  const adapter = new EvidenceZigAdapter();
+  const adapter = new EvidZigAdapter();
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.create("src/Aliases.zig", content),
+    EvidTestSourceSnapshot.create("src/Aliases.zig", content),
   );
 
   TestValidator.equals("complete alias graph", inventory.diagnostics, []);
@@ -60,30 +58,30 @@ export async function test_zig_aliases(): Promise<void> {
     ["renamed", "run"],
   );
   const annotation = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Aliases.zig",
       content.replace("Exposes the function.", "Explains its public name."),
     ),
   );
   const semantic = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Aliases.zig",
       content.replace("return 1", "return 2"),
     ),
   );
   TestValidator.equals(
     "alias documentation preserves canonical fingerprint",
-    EvidenceFingerprint.inspect(annotation, callable.id).fingerprint,
-    EvidenceFingerprint.inspect(inventory, callable.id).fingerprint,
+    EvidFingerprint.inspect(annotation, callable.id).fingerprint,
+    EvidFingerprint.inspect(inventory, callable.id).fingerprint,
   );
   TestValidator.notEquals(
     "private implementation edit invalidates exposed fingerprint",
-    EvidenceFingerprint.inspect(semantic, callable.id).fingerprint,
-    EvidenceFingerprint.inspect(inventory, callable.id).fingerprint,
+    EvidFingerprint.inspect(semantic, callable.id).fingerprint,
+    EvidFingerprint.inspect(inventory, callable.id).fingerprint,
   );
 
   const withdrawn = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Aliases.zig",
       content
         .replace(
@@ -96,7 +94,7 @@ export async function test_zig_aliases(): Promise<void> {
         ),
     ),
   );
-  const graph = new EvidenceInventory([withdrawn]);
+  const graph = new EvidInventory([withdrawn]);
   for (const name of ["run", "renamed"])
     TestValidator.equals(
       `withdrawal reaches ${name}`,

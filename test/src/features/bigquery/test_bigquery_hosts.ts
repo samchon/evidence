@@ -1,22 +1,25 @@
-import {
-  EvidenceBigQueryAdapter,
-  EvidenceFingerprint,
-} from "@wrtnlabs/evidence";
+import { EvidBigQueryAdapter, EvidFingerprint } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches BigQuery description evidence while preserving source coordinates and inert carriers.
+/**
+ * Attaches BigQuery description evidence while preserving source coordinates
+ * and inert carriers.
  *
- * SQL descriptions are eligible hosts, whereas defaults, fenced examples, and review annotations must not become acknowledgements.
+ * SQL descriptions are eligible hosts, whereas defaults, fenced examples, and
+ * review annotations must not become acknowledgements.
  *
- * 1. Extract table and column description tags from CRLF source containing Unicode and compare their reasons.
- * 2. Verify the description tag's original UTF-16 offset, line, and column, then retain a hidden field without an attached host.
- * 3. Keep review annotations separate from declarations and preserve the model fingerprint across an annotation-only edit.
+ * 1. Extract table and column description tags from CRLF source containing Unicode
+ *    and compare their reasons.
+ * 2. Verify the description tag's original UTF-16 offset, line, and column, then
+ *    retain a hidden field without an attached host.
+ * 3. Keep review annotations separate from declarations and preserve the model
+ *    fingerprint across an annotation-only edit.
  */
 export async function test_bigquery_hosts(): Promise<void> {
-  const adapter = new EvidenceBigQueryAdapter();
+  const adapter = new EvidBigQueryAdapter();
   const content = dedent`
     -- Orders schema
     -- @evidence ./spec.ts#contract Documents the table.
@@ -29,7 +32,7 @@ export async function test_bigquery_hosts(): Promise<void> {
     );
   `.replaceAll("\n", "\r\n");
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.create("schema.sql", content),
+    EvidTestSourceSnapshot.create("schema.sql", content),
   );
 
   TestValidator.equals("description extraction", inventory.diagnostics, []);
@@ -84,7 +87,7 @@ export async function test_bigquery_hosts(): Promise<void> {
   );
 
   const baseline = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "review.sql",
       "CREATE TABLE ds.reviewed (id INT64) OPTIONS(description='Stable prose.');",
     ),
@@ -92,7 +95,7 @@ export async function test_bigquery_hosts(): Promise<void> {
   const model = baseline.units.find((unit) => unit.symbol === "model");
   if (model === undefined) throw new Error("Missing reviewed model.");
   const reviewed = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "review.sql",
       "CREATE TABLE ds.reviewed (id INT64) OPTIONS(description='Stable prose.\\n@evidenceReview ./spec.ts#contract Reviewed the definition.');",
     ),
@@ -109,12 +112,12 @@ export async function test_bigquery_hosts(): Promise<void> {
   );
   TestValidator.equals(
     "annotation-only description edit preserves review fingerprint",
-    EvidenceFingerprint.inspect(reviewed, model.id).fingerprint,
-    EvidenceFingerprint.inspect(baseline, model.id).fingerprint,
+    EvidFingerprint.inspect(reviewed, model.id).fingerprint,
+    EvidFingerprint.inspect(baseline, model.id).fingerprint,
   );
 
   const trailing = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "trailing.sql",
       dedent`
     CREATE TABLE ds.trailing (

@@ -1,10 +1,11 @@
-import { EvidenceJavaScriptAdapter } from "@wrtnlabs/evidence";
+import { EvidJavaScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Binds JavaScript evidence to JSDoc without reading JSX or literal examples.
+/**
+ * Binds JavaScript evidence to JSDoc without reading JSX or literal examples.
  *
  * Only declaration-owned JSDoc is eligible; JSX and literal text remain inert.
  *
@@ -34,8 +35,8 @@ export async function test_javascript_hosts(): Promise<void> {
     // @evidence docs/spec.md#line A line comment is not JSDoc.
     export const unsupported = 1;
   `;
-  const inventory = await new EvidenceJavaScriptAdapter().analyze(
-    TestSourceSnapshot.create("src/view.mjs", content),
+  const inventory = await new EvidJavaScriptAdapter().analyze(
+    EvidTestSourceSnapshot.create("src/view.mjs", content),
   );
 
   TestValidator.equals(

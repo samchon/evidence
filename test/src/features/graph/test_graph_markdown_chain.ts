@@ -1,15 +1,15 @@
 import {
-  EvidenceFingerprint,
-  EvidenceGraph,
-  EvidenceMarkdownAdapter,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
-import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidGraph,
+  EvidMarkdownAdapter,
+  EvidTypeScriptAdapter,
+} from "evid";
+import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Carries reviewed evidence through a Markdown-to-Markdown-to-TypeScript chain.
@@ -22,27 +22,28 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 2. Analyze a Markdown pricing requirement that acknowledges and reviews that
  *    export, then record the requirement's own fingerprint.
  * 3. Analyze a Markdown checkout guide that acknowledges and reviews the pricing
- *    requirement, evaluate both graph hops, and require no diagnostics or failures.
+ *    requirement, evaluate both graph hops, and require no diagnostics or
+ *    failures.
  * 4. Analyze a failed version of the Markdown claim and require that its graph
  *    result remains active and incomplete while suppressing empty-reference and
  *    missing-acknowledgement findings derived from unavailable claim content.
  */
 export async function test_graph_markdown_chain(): Promise<void> {
-  const implementation = await new EvidenceTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+  const implementation = await new EvidTypeScriptAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/calculator.ts",
       "export function calculatePrice(): number { return 0; }",
     ),
   );
   const calculatePrice = requireUnit(implementation, "calculatePrice");
-  const implementationFingerprint = EvidenceFingerprint.inspect(
+  const implementationFingerprint = EvidFingerprint.inspect(
     implementation,
     calculatePrice.id,
   ).fingerprint;
 
   // The middle Markdown document claims that one TypeScript export implements its rule.
-  const requirements = await new EvidenceMarkdownAdapter().analyze(
-    TestSourceSnapshot.create(
+  const requirements = await new EvidMarkdownAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "docs/requirements.md",
       dedent`
         ## Pricing {#pricing}
@@ -57,14 +58,14 @@ export async function test_graph_markdown_chain(): Promise<void> {
     ),
   );
   const pricing = requireUnit(requirements, "pricing");
-  const requirementFingerprint = EvidenceFingerprint.inspect(
+  const requirementFingerprint = EvidFingerprint.inspect(
     requirements,
     pricing.id,
   ).fingerprint;
 
   // The downstream Markdown guide claims that it explains the middle requirement.
-  const guide = await new EvidenceMarkdownAdapter().analyze(
-    TestSourceSnapshot.create(
+  const guide = await new EvidMarkdownAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "docs/guide.md",
       dedent`
         ## Checkout guide {#checkout}
@@ -79,7 +80,7 @@ export async function test_graph_markdown_chain(): Promise<void> {
     ),
   );
   const checkout = requireUnit(guide, "checkout");
-  const result = EvidenceGraph.evaluate({
+  const result = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -90,12 +91,12 @@ export async function test_graph_markdown_chain(): Promise<void> {
             severity: "error",
             inventory: requirements,
             unitIds: [pricing.id],
-            resolutions: await TestGraph.resolveDeclarations(
+            resolutions: await EvidTestGraph.resolveDeclarations(
               guide,
               requirements,
               [pricing.id],
             ),
-            reviewResolutions: await TestGraph.resolveReviews(
+            reviewResolutions: await EvidTestGraph.resolveReviews(
               guide,
               requirements,
               [pricing.id],
@@ -113,12 +114,12 @@ export async function test_graph_markdown_chain(): Promise<void> {
             severity: "error",
             inventory: implementation,
             unitIds: [calculatePrice.id],
-            resolutions: await TestGraph.resolveDeclarations(
+            resolutions: await EvidTestGraph.resolveDeclarations(
               requirements,
               implementation,
               [calculatePrice.id],
             ),
-            reviewResolutions: await TestGraph.resolveReviews(
+            reviewResolutions: await EvidTestGraph.resolveReviews(
               requirements,
               implementation,
               [calculatePrice.id],
@@ -134,9 +135,9 @@ export async function test_graph_markdown_chain(): Promise<void> {
   TestValidator.predicate("Markdown chain succeeds", result.success);
 
   // Failed claim discovery remains active and cannot become an empty passing host set.
-  const failedGuide = await new EvidenceMarkdownAdapter().analyze(
-    TestSourceSnapshot.fail(
-      TestSourceSnapshot.create("docs/guide.md", "## Checkout {#checkout}"),
+  const failedGuide = await new EvidMarkdownAdapter().analyze(
+    EvidTestSourceSnapshot.fail(
+      EvidTestSourceSnapshot.create("docs/guide.md", "## Checkout {#checkout}"),
       {
         code: "path-unreadable",
         path: "/project/docs/missing.md",
@@ -144,7 +145,7 @@ export async function test_graph_markdown_chain(): Promise<void> {
       },
     ),
   );
-  const interrupted = EvidenceGraph.evaluate({
+  const interrupted = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -186,10 +187,7 @@ export async function test_graph_markdown_chain(): Promise<void> {
   );
 }
 
-function requireUnit(
-  inventory: IEvidenceInventory,
-  identity: string,
-): IEvidenceUnit {
+function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.at(-1) === identity,
   );

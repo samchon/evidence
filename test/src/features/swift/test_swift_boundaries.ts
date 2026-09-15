@@ -1,18 +1,20 @@
-import { EvidenceSwiftAdapter } from "@wrtnlabs/evidence";
+import { EvidSwiftAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Rejects Swift surfaces with unavailable ownership or compiler expansion.
+/**
+ * Rejects Swift surfaces with unavailable ownership or compiler expansion.
  *
- * These boundaries must remain incomplete rather than reduce the selected population.
+ * These boundaries must remain incomplete rather than reduce the selected
+ * population.
  *
  * 1. Analyze each unsupported source boundary.
  * 2. Verify incomplete diagnostics and failed-source handling.
  */
 export async function test_swift_boundaries(): Promise<void> {
-  const adapter = new EvidenceSwiftAdapter();
+  const adapter = new EvidSwiftAdapter();
   const cases = new Map<string, string>([
     [
       "extension External { public func run() {} }",
@@ -46,7 +48,7 @@ export async function test_swift_boundaries(): Promise<void> {
   ]);
   for (const [source, code] of cases) {
     const inventory = await adapter.analyze(
-      TestSourceSnapshot.create("src/Boundary.swift", source),
+      EvidTestSourceSnapshot.create("src/Boundary.swift", source),
     );
     TestValidator.equals(
       "unsupported source remains incomplete",
@@ -64,8 +66,8 @@ export async function test_swift_boundaries(): Promise<void> {
     );
   }
   const sourceFailure = await adapter.analyze(
-    TestSourceSnapshot.fail(
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.fail(
+      EvidTestSourceSnapshot.create(
         "src/Missing.swift",
         "public struct Present {}",
       ),
@@ -82,7 +84,10 @@ export async function test_swift_boundaries(): Promise<void> {
     false,
   );
   const wrongExtension = await adapter.analyze(
-    TestSourceSnapshot.create("src/Contract.kt", "public struct Present {}"),
+    EvidTestSourceSnapshot.create(
+      "src/Contract.kt",
+      "public struct Present {}",
+    ),
   );
   TestValidator.equals(
     "configured language does not guess another source spelling",
@@ -90,9 +95,9 @@ export async function test_swift_boundaries(): Promise<void> {
     false,
   );
   const internalOwner = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create("src/Owner.swift", "struct Internal {}"),
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create("src/Owner.swift", "struct Internal {}"),
+      EvidTestSourceSnapshot.create(
         "src/Extension.swift",
         "public extension Internal { func exposed() {} }",
       ),

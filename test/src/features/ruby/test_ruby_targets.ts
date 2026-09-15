@@ -1,17 +1,18 @@
-import { EvidenceRubyAdapter } from "@wrtnlabs/evidence";
-import type { EvidenceTargetResolutionStatus } from "@wrtnlabs/evidence";
+import { EvidRubyAdapter } from "evid";
+import type { EvidTargetResolutionStatus } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-interface IRubyTargetStatus {
+interface IEvidRubyTargetStatus {
   target: string | undefined;
-  status: EvidenceTargetResolutionStatus;
+  status: EvidTargetResolutionStatus;
 }
 
-/** Resolves Ruby containers, method sides, attributes, setters, and operators.
+/**
+ * Resolves Ruby containers, method sides, attributes, setters, and operators.
  *
  * Ruby target spelling must preserve the owning container and callable form.
  *
@@ -21,9 +22,9 @@ interface IRubyTargetStatus {
  *    statuses and their intended public units.
  */
 export async function test_ruby_targets(): Promise<void> {
-  const adapter = new EvidenceRubyAdapter();
+  const adapter = new EvidRubyAdapter();
   const reference = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "lib/shop/sale.rb",
       dedent`
         module Shop
@@ -40,7 +41,7 @@ export async function test_ruby_targets(): Promise<void> {
     ),
   );
   const claim = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "test/verify.rb",
       dedent`
         module Verify
@@ -63,7 +64,7 @@ export async function test_ruby_targets(): Promise<void> {
     [],
   );
   TestValidator.equals("complete Ruby target claim", claim.diagnostics, []);
-  const resolutions = await TestGraph.resolveDeclarations(
+  const resolutions = await EvidTestGraph.resolveDeclarations(
     claim,
     reference,
     reference.units.map((unit) => unit.id),
@@ -79,7 +80,7 @@ export async function test_ruby_targets(): Promise<void> {
         status: resolution.resolution.status,
       }))
       .sort(compareTarget),
-    (<IRubyTargetStatus[]>[
+    (<IEvidRubyTargetStatus[]>[
       {
         target: '../lib/shop/sale.rb#Shop.Sale["[]"]',
         status: "resolved",
@@ -113,8 +114,8 @@ export async function test_ruby_targets(): Promise<void> {
 }
 
 function compareTarget(
-  left: IRubyTargetStatus,
-  right: IRubyTargetStatus,
+  left: IEvidRubyTargetStatus,
+  right: IEvidRubyTargetStatus,
 ): number {
   return compare(left.target ?? "", right.target ?? "");
 }

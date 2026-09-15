@@ -1,24 +1,26 @@
-import { EvidenceGoAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidGoAdapter } from "evid";
+import type { IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Keeps uncertain Go package surfaces incomplete.
+/**
+ * Keeps uncertain Go package surfaces incomplete.
  *
- * Missing ownership, package conflicts, conditional duplicates, and parse errors cannot shrink selected coverage.
+ * Missing ownership, package conflicts, conditional duplicates, and parse
+ * errors cannot shrink selected coverage.
  *
  * 1. Analyze each uncertain source form.
  * 2. Require an incomplete inventory and diagnostic.
  * 3. Retain no falsely complete population.
  */
 export async function test_go_failures(): Promise<void> {
-  const adapter = new EvidenceGoAdapter();
+  const adapter = new EvidGoAdapter();
 
   // A selected exported method cannot disappear when its receiver source is absent.
   const missing = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "shop/method.go",
       dedent`
         package shop
@@ -36,7 +38,7 @@ export async function test_go_failures(): Promise<void> {
 
   // Type aliases are public types but cannot establish local method ownership.
   const alias = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "shop/alias.go",
       dedent`
         package shop
@@ -50,7 +52,7 @@ export async function test_go_failures(): Promise<void> {
 
   // A qualified receiver must not attach to a same-named local type.
   const qualified = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "shop/qualified.go",
       dedent`
         package shop
@@ -69,8 +71,8 @@ export async function test_go_failures(): Promise<void> {
 
   // The configured source set is literal: incompatible platform alternatives conflict.
   const conditional = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "shop/api_linux.go",
         dedent`
           //go:build linux
@@ -80,7 +82,7 @@ export async function test_go_failures(): Promise<void> {
           func Open() {}
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "shop/api_windows.go",
         dedent`
           //go:build windows
@@ -107,9 +109,15 @@ export async function test_go_failures(): Promise<void> {
   );
 
   const packages = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create("mixed/one.go", "package one\nfunc One() {}\n"),
-      TestSourceSnapshot.create("mixed/two.go", "package two\nfunc Two() {}\n"),
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
+        "mixed/one.go",
+        "package one\nfunc One() {}\n",
+      ),
+      EvidTestSourceSnapshot.create(
+        "mixed/two.go",
+        "package two\nfunc Two() {}\n",
+      ),
     ]),
   );
   TestValidator.equals("incompatible Go packages", packages.complete, false);
@@ -121,7 +129,7 @@ export async function test_go_failures(): Promise<void> {
 
   // Tree-sitter syntax failures never become healthy empty inventories.
   const malformed = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "shop/broken.go",
       "package shop\nfunc Broken( {\n",
     ),
@@ -136,6 +144,6 @@ export async function test_go_failures(): Promise<void> {
   );
 }
 
-function hasCode(inventory: IEvidenceInventory, code: string): boolean {
+function hasCode(inventory: IEvidInventory, code: string): boolean {
   return inventory.diagnostics.some((diagnostic) => diagnostic.code === code);
 }

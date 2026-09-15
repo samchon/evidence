@@ -1,20 +1,25 @@
-﻿import { EvidenceAccessor, EvidenceScalaAdapter } from "@wrtnlabs/evidence";
+import { EvidAccessor, EvidScalaAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
- * Builds Scala identities across packages, companion namespaces, and literal names.
+ * Builds Scala identities across packages, companion namespaces, and literal
+ * names.
  *
- * The fixture combines chained and braced packages with companion objects, implicit declarations, an implicit class, type aliases, and backticked segments.
+ * The fixture combines chained and braced packages with companion objects,
+ * implicit declarations, an implicit class, type aliases, and backticked
+ * segments.
  *
  * 1. Analyze the package fixture and require no diagnostics.
- * 2. Verify the exact symbol-qualified identities for package, companion, implicit, extension, alias, and literal declarations.
- * 3. Verify implicit conversion syntax creates no extra hosts beyond discovered units.
+ * 2. Verify the exact symbol-qualified identities for package, companion,
+ *    implicit, extension, alias, and literal declarations.
+ * 3. Verify implicit conversion syntax creates no extra hosts beyond discovered
+ *    units.
  */
 export async function test_scala_packages(): Promise<void> {
-  const inventory = await new EvidenceScalaAdapter().analyze(
-    TestSourceSnapshot.create(
+  const inventory = await new EvidScalaAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/Packages.scala",
       dedent`
     package outer
@@ -41,7 +46,7 @@ export async function test_scala_packages(): Promise<void> {
   TestValidator.equals(
     "exact package identities",
     inventory.units
-      .map((unit) => `${unit.symbol}:${EvidenceAccessor.format(unit.identity)}`)
+      .map((unit) => `${unit.symbol}:${EvidAccessor.format(unit.identity)}`)
       .sort((a, b) => a.localeCompare(b, "en")),
     [
       "type:outer.nested.Contract",

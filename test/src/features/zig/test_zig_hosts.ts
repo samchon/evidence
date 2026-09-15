@@ -1,16 +1,14 @@
-import {
-  EvidenceFingerprint,
-  EvidenceInventory,
-  EvidenceZigAdapter,
-} from "@wrtnlabs/evidence";
+import { EvidFingerprint, EvidInventory, EvidZigAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches Zig documentation with exact coordinates and withdrawal semantics.
+/**
+ * Attaches Zig documentation with exact coordinates and withdrawal semantics.
  *
- * Lexical withdrawals and review fingerprints affect eligible documentation, while code examples cannot acknowledge units.
+ * Lexical withdrawals and review fingerprints affect eligible documentation,
+ * while code examples cannot acknowledge units.
  *
  * 1. Analyze documentation, withdrawals, and inert examples.
  * 2. Verify coordinates, records, and resolution.
@@ -37,9 +35,9 @@ export async function test_zig_hosts(): Promise<void> {
     /// </pre>
     pub fn sample() i32 { return 1; }
   `.replaceAll("\n", "\r\n");
-  const adapter = new EvidenceZigAdapter();
+  const adapter = new EvidZigAdapter();
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.create("src/Contract.zig", source),
+    EvidTestSourceSnapshot.create("src/Contract.zig", source),
   );
 
   TestValidator.equals(
@@ -66,7 +64,7 @@ export async function test_zig_hosts(): Promise<void> {
     2,
   );
   const selected = inventory.units.map((unit) => unit.id);
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   TestValidator.equals(
     "withdrawn descendant target",
     graph.resolve(
@@ -103,7 +101,7 @@ export async function test_zig_hosts(): Promise<void> {
   const contract = inventory.units.find((unit) => unit.name === "Contract");
   if (contract === undefined) throw new Error("Missing contract unit.");
   const rewritten = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Contract.zig",
       source.replace(
         "Implements the value.",
@@ -113,19 +111,22 @@ export async function test_zig_hosts(): Promise<void> {
   );
   TestValidator.equals(
     "descendant annotation does not stale ancestor review",
-    EvidenceFingerprint.inspect(inventory, contract.id).fingerprint,
-    EvidenceFingerprint.inspect(rewritten, contract.id).fingerprint,
+    EvidFingerprint.inspect(inventory, contract.id).fingerprint,
+    EvidFingerprint.inspect(rewritten, contract.id).fingerprint,
   );
   const changed = await adapter.analyze(
-    TestSourceSnapshot.create("src/Contract.zig", source.replace("= 1", "= 2")),
+    EvidTestSourceSnapshot.create(
+      "src/Contract.zig",
+      source.replace("= 1", "= 2"),
+    ),
   );
   TestValidator.notEquals(
     "semantic subtree edit changes fingerprint",
-    EvidenceFingerprint.inspect(inventory, contract.id).fingerprint,
-    EvidenceFingerprint.inspect(changed, contract.id).fingerprint,
+    EvidFingerprint.inspect(inventory, contract.id).fingerprint,
+    EvidFingerprint.inspect(changed, contract.id).fingerprint,
   );
 
-  // Every Evidence tag kind on an ordinary comment remains an unsupported carrier.
+  // Every Evid tag kind on an ordinary comment remains an unsupported carrier.
   for (const tag of [
     "evidence",
     "evidenceExclude",
@@ -134,7 +135,7 @@ export async function test_zig_hosts(): Promise<void> {
     "link",
   ]) {
     const unsupported = await adapter.analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/Unsupported.zig",
         `// @${tag} docs/spec.md#contract Unsupported carrier.\npub fn run() i32 { return 1; }\n`,
       ),
@@ -161,7 +162,7 @@ export async function test_zig_hosts(): Promise<void> {
     "pub fn run() void {\n/// @evidence docs/spec.md#contract Function-body documentation is not public.\nconst local = 1;\n}",
   ]) {
     const unsupported = await adapter.analyze(
-      TestSourceSnapshot.create("src/Unsupported.zig", content),
+      EvidTestSourceSnapshot.create("src/Unsupported.zig", content),
     );
     TestValidator.equals(
       "nonpublic documentation never acknowledges",

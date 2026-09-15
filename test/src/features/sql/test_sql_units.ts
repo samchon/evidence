@@ -1,24 +1,22 @@
-import {
-  EvidenceAccessor,
-  EvidenceInventory,
-  EvidenceSqlAdapter,
-} from "@wrtnlabs/evidence";
+import { EvidAccessor, EvidInventory, EvidSqlAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Extracts SQL models and composite foreign keys with exact ownership.
+/**
+ * Extracts SQL models and composite foreign keys with exact ownership.
  *
- * File order cannot change a schema unit, and qualified-name ambiguity must be reported rather than guessed.
+ * File order cannot change a schema unit, and qualified-name ambiguity must be
+ * reported rather than guessed.
  *
  * 1. Analyze composite schemas across independent files.
  * 2. Verify model identities, ordered relation endpoints, and target resolution.
  * 3. Require duplicate, ambiguous, and failed sources to remain incomplete.
  */
 export async function test_sql_units(): Promise<void> {
-  const adapter = new EvidenceSqlAdapter();
+  const adapter = new EvidSqlAdapter();
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "schema.sql",
       dedent`
     CREATE TABLE sales.child (
@@ -53,9 +51,12 @@ export async function test_sql_units(): Promise<void> {
   ]);
 
   const duplicate = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create("first.sql", "CREATE TABLE same (id INTEGER);"),
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
+        "first.sql",
+        "CREATE TABLE same (id INTEGER);",
+      ),
+      EvidTestSourceSnapshot.create(
         "second.sql",
         "CREATE TABLE same (value INTEGER);",
       ),
@@ -68,7 +69,7 @@ export async function test_sql_units(): Promise<void> {
   );
 
   const ambiguous = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "ambiguous.sql",
       "CREATE TABLE a (b INTEGER); CREATE TABLE a.b (id INTEGER);",
     ),
@@ -79,19 +80,19 @@ export async function test_sql_units(): Promise<void> {
     true,
   );
   const address = ambiguous.addresses.find(
-    (entry) => EvidenceAccessor.format(entry.segments) === "A.B",
+    (entry) => EvidAccessor.format(entry.segments) === "A.B",
   );
   if (address === undefined) throw new Error("Missing ambiguous address.");
   TestValidator.equals(
     "schema qualification and column collision stays ambiguous",
-    new EvidenceInventory([ambiguous]).resolve(
+    new EvidInventory([ambiguous]).resolve(
       address,
       ambiguous.units.map((unit) => unit.id),
     ).status,
     "ambiguous",
   );
 
-  const unavailable = TestSourceSnapshot.create("missing.sql", "");
+  const unavailable = EvidTestSourceSnapshot.create("missing.sql", "");
   unavailable.complete = false;
   unavailable.diagnostics.push({
     code: "path-unreadable",

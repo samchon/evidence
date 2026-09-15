@@ -1,24 +1,22 @@
-import {
-  EvidenceFingerprint,
-  EvidenceInventory,
-  EvidenceObjcAdapter,
-} from "@wrtnlabs/evidence";
+import { EvidFingerprint, EvidInventory, EvidObjcAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Merges Objective-C declaration sites without collapsing distinct members.
+/**
+ * Merges Objective-C declaration sites without collapsing distinct members.
  *
- * Properties, getter selectors, synthesized content, and duplicate definitions have different identity and completeness rules.
+ * Properties, getter selectors, synthesized content, and duplicate definitions
+ * have different identity and completeness rules.
  *
  * 1. Analyze class interfaces and implementations with properties and accessors.
  * 2. Verify expected merged identities and independent selector addresses.
  * 3. Require conflicting duplicate definitions to remain incomplete.
  */
 export async function test_objc_merges(): Promise<void> {
-  const adapter = new EvidenceObjcAdapter();
-  const header = TestSourceSnapshot.create(
+  const adapter = new EvidObjcAdapter();
+  const header = EvidTestSourceSnapshot.create(
     "src/Contract.h",
     dedent`
     @interface Contract
@@ -38,9 +36,9 @@ export async function test_objc_merges(): Promise<void> {
     @end
   `;
   const original = await adapter.analyze(
-    TestSourceSnapshot.combine([
+    EvidTestSourceSnapshot.combine([
       header,
-      TestSourceSnapshot.create("src/Contract.m", implementation),
+      EvidTestSourceSnapshot.create("src/Contract.m", implementation),
     ]),
   );
 
@@ -49,7 +47,7 @@ export async function test_objc_merges(): Promise<void> {
     original.diagnostics,
     [],
   );
-  const graph = new EvidenceInventory([original]);
+  const graph = new EvidInventory([original]);
   const ids = original.units.map((unit) => unit.id);
   for (const segment of ["class:value", "+value", "stored", "-:next:"])
     TestValidator.equals(
@@ -68,9 +66,9 @@ export async function test_objc_merges(): Promise<void> {
     2,
   );
   const changed = await adapter.analyze(
-    TestSourceSnapshot.combine([
+    EvidTestSourceSnapshot.combine([
       header,
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/Contract.m",
         implementation.replace("_stored", "_other"),
       ),
@@ -78,18 +76,18 @@ export async function test_objc_merges(): Promise<void> {
   );
   TestValidator.notEquals(
     "backing implementation changes property fingerprint",
-    EvidenceFingerprint.inspect(original, stored.id).fingerprint,
-    EvidenceFingerprint.inspect(changed, stored.id).fingerprint,
+    EvidFingerprint.inspect(original, stored.id).fingerprint,
+    EvidFingerprint.inspect(changed, stored.id).fingerprint,
   );
 
   const duplicate = await adapter.analyze(
-    TestSourceSnapshot.combine([
+    EvidTestSourceSnapshot.combine([
       header,
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/First.m",
         "@implementation Contract\n+ (int)value { return 1; }\n@end\n",
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/Second.m",
         "@implementation Contract\n+ (int)value { return 2; }\n@end\n",
       ),
@@ -108,9 +106,9 @@ export async function test_objc_merges(): Promise<void> {
     2,
   );
   const duplicateProperty = await adapter.analyze(
-    TestSourceSnapshot.combine([
+    EvidTestSourceSnapshot.combine([
       header,
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/Duplicate.m",
         "@implementation Contract\n@synthesize stored = _first;\n@synthesize stored = _second;\n@end\n",
       ),
@@ -130,12 +128,12 @@ export async function test_objc_merges(): Promise<void> {
   );
 
   const escaped = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/Escaped.h",
         "@interface \\u0057idget\n- (void)\\u0072un;\n@end\n",
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/Escaped.m",
         "@implementation Widget\n- (void)run {}\n@end\n",
       ),

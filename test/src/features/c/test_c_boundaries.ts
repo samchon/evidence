@@ -1,21 +1,24 @@
-import { EvidenceCAdapter } from "@wrtnlabs/evidence";
+import { EvidCAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Keeps C declaration families inside the selected physical file boundary.
+/**
+ * Keeps C declaration families inside the selected physical file boundary.
  *
- * C declarations sharing a spelling across files must not merge into one semantic unit merely because their syntax is compatible.
+ * C declarations sharing a spelling across files must not merge into one
+ * semantic unit merely because their syntax is compatible.
  *
- * 1. Analyze selected C sources containing related declaration and definition forms.
+ * 1. Analyze selected C sources containing related declaration and definition
+ *    forms.
  * 2. Compare the identities and sites within each physical source boundary.
  * 3. Require declarations from different files to remain distinct.
  */
 export async function test_c_boundaries(): Promise<void> {
-  const inventory = await new EvidenceCAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+  const inventory = await new EvidCAdapter().analyze(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "include/contracts.h",
         dedent`
           #ifndef CONTRACTS_H
@@ -34,14 +37,14 @@ export async function test_c_boundaries(): Promise<void> {
           #endif
         ` + "\n",
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "include/cycle.h",
         dedent`
           #pragma once
           #include "contracts.h"
         ` + "\n",
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/contracts.c",
         dedent`
           #include "../include/contracts.h"

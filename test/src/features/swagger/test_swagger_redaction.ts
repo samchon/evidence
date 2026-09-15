@@ -1,19 +1,15 @@
-import {
-  EvidenceCommand,
-  EvidenceSwaggerAdapter,
-  EvidenceWatcher,
-} from "@wrtnlabs/evidence";
+import { EvidCommand, EvidSwaggerAdapter, EvidWatcher } from "evid";
 import type {
-  EvidenceWatchCycle,
-  IEvidenceCommandResult,
-  IEvidenceDiagnostic,
-  IEvidenceInventory,
-} from "@wrtnlabs/evidence";
+  EvidWatchCycle,
+  IEvidCommandResult,
+  IEvidDiagnostic,
+  IEvidInventory,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
  * Credential sentinel that must never survive a public Swagger diagnostic.
@@ -38,21 +34,22 @@ const TOKEN: string = "fixture-token";
  * through JSON, text, query, or watch serialization.
  *
  * 1. Load credential-bearing HTTP, fragmented, unsupported-protocol, padded,
- *    malformed, repeated-userinfo, and percent-encoded URLs through the adapter.
- * 2. Require every failure to remain incomplete and actionable while retaining
- *    a safe origin/path label and excluding userinfo and query values from the
+ *    malformed, repeated-userinfo, and percent-encoded URLs through the
+ *    adapter.
+ * 2. Require every failure to remain incomplete and actionable while retaining a
+ *    safe origin/path label and excluding userinfo and query values from the
  *    entire serialized inventory.
- * 3. Load an ordinary local filename containing query punctuation and require
- *    its diagnostic spelling to remain intact rather than being treated as URL
+ * 3. Load an ordinary local filename containing query punctuation and require its
+ *    diagnostic spelling to remain intact rather than being treated as URL
  *    credentials.
  * 4. Run the deterministic credential-construction failure through check JSON,
- *    check text, and list JSON command paths; require exit code two and no secret
- *    in either output channel.
+ *    check text, and list JSON command paths; require exit code two and no
+ *    secret in either output channel.
  * 5. Publish the first watch cycle for the same config and require the serialized
  *    cycle and active dependencies to contain no credential or query value.
  */
 export async function test_swagger_redaction(): Promise<void> {
-  const adapter: EvidenceSwaggerAdapter = new EvidenceSwaggerAdapter();
+  const adapter: EvidSwaggerAdapter = new EvidSwaggerAdapter();
   const config: string = join(__dirname, "evidence.config.ts");
   const secretSources: string[] = [
     `https://user:${PASSWORD}@example.invalid/schema?token=${TOKEN}`,
@@ -67,7 +64,7 @@ export async function test_swagger_redaction(): Promise<void> {
   for (let index: number = 0; index < secretSources.length; ++index) {
     const source: string | undefined = secretSources[index];
     if (source === undefined) continue;
-    const failure: IEvidenceInventory = await adapter.load(config, source);
+    const failure: IEvidInventory = await adapter.load(config, source);
     const serialized: string = JSON.stringify(failure);
     TestValidator.equals(
       `remote failure ${index} incomplete`,
@@ -76,7 +73,7 @@ export async function test_swagger_redaction(): Promise<void> {
     );
     TestValidator.predicate(
       `remote failure ${index} retains safe source context`,
-      failure.diagnostics.some((diagnostic: IEvidenceDiagnostic): boolean => {
+      failure.diagnostics.some((diagnostic: IEvidDiagnostic): boolean => {
         const file: string | undefined = diagnostic.location?.file;
         return file !== undefined && file.includes("://");
       }),
@@ -85,7 +82,7 @@ export async function test_swagger_redaction(): Promise<void> {
   }
 
   const local: string = `local?token=${TOKEN}.yaml`;
-  const localFailure: IEvidenceInventory = await adapter.load(config, local);
+  const localFailure: IEvidInventory = await adapter.load(config, local);
   TestValidator.predicate(
     "local punctuation remains literal",
     JSON.stringify(localFailure).includes(local),
@@ -93,10 +90,10 @@ export async function test_swagger_redaction(): Promise<void> {
 
   const location: string = join(__dirname, `swagger redaction ${randomUUID()}`);
   const publicSource: string = secretSources[0] ?? "";
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     {
-      "evidence.json": JSON.stringify({
+      "evid.json": JSON.stringify({
         claims: [
           {
             type: "markdown",
@@ -108,29 +105,29 @@ export async function test_swagger_redaction(): Promise<void> {
       "rules.md": `# Rule {#rule}\n\nDo the work.\n`,
     },
     async (directory: string): Promise<void> => {
-      const json: IEvidenceCommandResult = await EvidenceCommand.run(
-        ["check", "--config", "evidence.json", "--format", "json"],
+      const json: IEvidCommandResult = await EvidCommand.run(
+        ["check", "--config", "evid.json", "--format", "json"],
         directory,
       );
-      const text: IEvidenceCommandResult = await EvidenceCommand.run(
-        ["check", "--config", "evidence.json", "--format", "text"],
+      const text: IEvidCommandResult = await EvidCommand.run(
+        ["check", "--config", "evid.json", "--format", "text"],
         directory,
       );
-      const query: IEvidenceCommandResult = await EvidenceCommand.run(
-        ["list", "--config", "evidence.json", "--format", "json"],
+      const query: IEvidCommandResult = await EvidCommand.run(
+        ["list", "--config", "evid.json", "--format", "json"],
         directory,
       );
-      const results: IEvidenceCommandResult[] = [json, text, query];
+      const results: IEvidCommandResult[] = [json, text, query];
       for (const result of results) {
         TestValidator.equals("remote failure command exit", result.exitCode, 2);
         assertRedacted("public command", result.stdout + result.stderr);
       }
 
-      const watcher: EvidenceWatcher = new EvidenceWatcher(
-        join(directory, "evidence.json"),
+      const watcher: EvidWatcher = new EvidWatcher(
+        join(directory, "evid.json"),
         { pollIntervalMilliseconds: 20, debounceMilliseconds: 20 },
       );
-      await watcher.watch(async (cycle: EvidenceWatchCycle): Promise<void> => {
+      await watcher.watch(async (cycle: EvidWatchCycle): Promise<void> => {
         assertRedacted(
           "watch cycle",
           JSON.stringify({ cycle, dependencies: watcher.dependencies() }),

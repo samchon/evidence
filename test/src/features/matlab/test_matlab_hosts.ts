@@ -1,14 +1,17 @@
-import { EvidenceFingerprint, EvidenceMatlabAdapter } from "@wrtnlabs/evidence";
+import { EvidFingerprint, EvidMatlabAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches MATLAB help annotations only at supported declaration sites.
+/**
+ * Attaches MATLAB help annotations only at supported declaration sites.
  *
- * Preceding and inline help can document declarations, whereas executable comments, examples, blocks, and strings must remain inert.
+ * Preceding and inline help can document declarations, whereas executable
+ * comments, examples, blocks, and strings must remain inert.
  *
- * 1. Analyze CRLF class, property, and method help with competing comment placements.
+ * 1. Analyze CRLF class, property, and method help with competing comment
+ *    placements.
  * 2. Verify the exact eligible targets, UTF-16 positions, and withdrawal handling.
  * 3. Compare fingerprints after documentation-only and semantic edits.
  */
@@ -57,9 +60,9 @@ export async function test_matlab_hosts(): Promise<void> {
   `
     .concat("\n")
     .replaceAll("\n", "\r\n");
-  const adapter = new EvidenceMatlabAdapter();
+  const adapter = new EvidMatlabAdapter();
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.create("src/Contract.m", content),
+    EvidTestSourceSnapshot.create("src/Contract.m", content),
   );
 
   TestValidator.equals("complete help extraction", inventory.diagnostics, []);
@@ -98,25 +101,25 @@ export async function test_matlab_hosts(): Promise<void> {
   const unit = inventory.units.find((candidate) => candidate.name === "run");
   if (unit === undefined) throw new Error("Missing function inventory.");
   const annotation = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Contract.m",
       content.replace("Function documentation.", "Updated documentation."),
     ),
   );
   const semantic = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Contract.m",
       content.replace('result = "', 'result = "Changed '),
     ),
   );
   TestValidator.equals(
     "annotation stable review",
-    EvidenceFingerprint.inspect(inventory, unit.id).fingerprint,
-    EvidenceFingerprint.inspect(annotation, unit.id).fingerprint,
+    EvidFingerprint.inspect(inventory, unit.id).fingerprint,
+    EvidFingerprint.inspect(annotation, unit.id).fingerprint,
   );
   TestValidator.notEquals(
     "semantic review invalidation",
-    EvidenceFingerprint.inspect(inventory, unit.id).fingerprint,
-    EvidenceFingerprint.inspect(semantic, unit.id).fingerprint,
+    EvidFingerprint.inspect(inventory, unit.id).fingerprint,
+    EvidFingerprint.inspect(semantic, unit.id).fingerprint,
   );
 }

@@ -1,17 +1,17 @@
-import { EvidenceChecker } from "@wrtnlabs/evidence";
+import { EvidChecker } from "evid";
 import type {
-  EvidenceCommandExitCode,
-  EvidenceProgrammingSymbol,
-  EvidenceSeverity,
-  IEvidenceCheckReport,
-  IEvidenceDiagnostic,
-  IEvidenceProgrammingClaim,
-} from "@wrtnlabs/evidence";
+  EvidCommandExitCode,
+  EvidProgrammingSymbol,
+  EvidSeverity,
+  IEvidCheckReport,
+  IEvidDiagnostic,
+  IEvidProgrammingClaim,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
  * Keeps deferred checklist findings inside their authored claim boundary.
@@ -25,8 +25,8 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  *    claim whose off-selector function citation must remain unhosted.
  * 2. Put the broad claim before and after the narrow claim; require exit code one,
  *    one unhosted diagnostic, and the narrow claim's authored index each time.
- * 3. Remove the broad claim and require the same narrow-claim failure, proving
- *    the added claim does not change the original obligation.
+ * 3. Remove the broad claim and require the same narrow-claim failure, proving the
+ *    added claim does not change the original obligation.
  * 4. Add an incomplete sibling claim before the narrow claim; require exit code
  *    two while preserving the narrow claim's unhosted diagnostic and index.
  */
@@ -35,7 +35,7 @@ export async function test_graph_checklist_claim_isolation(): Promise<void> {
     __dirname,
     `checklist claim isolation ${randomUUID()}`,
   );
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     {
       "claims.ts": [
@@ -48,13 +48,13 @@ export async function test_graph_checklist_claim_isolation(): Promise<void> {
       "rules.md": `# Rule {#rule}\n\nDo the work.\n`,
     },
     async (directory: string): Promise<void> => {
-      const config: string = join(directory, "evidence.json");
-      const disabled: IEvidenceProgrammingClaim = claim("type", "off");
-      const broad: IEvidenceProgrammingClaim = claim(
+      const config: string = join(directory, "evid.json");
+      const disabled: IEvidProgrammingClaim = claim("type", "off");
+      const broad: IEvidProgrammingClaim = claim(
         ["type", "function"],
         "warning",
       );
-      const narrow: IEvidenceProgrammingClaim = claim("type", "error");
+      const narrow: IEvidProgrammingClaim = claim("type", "error");
 
       await check(directory, config, [disabled, broad, narrow], 2, 1);
       await check(directory, config, [disabled, narrow, broad], 1, 1);
@@ -77,9 +77,9 @@ export async function test_graph_checklist_claim_isolation(): Promise<void> {
  * scenario resolves the same physical declarations and reference unit.
  */
 function claim(
-  symbol: EvidenceProgrammingSymbol | EvidenceProgrammingSymbol[],
-  severity: EvidenceSeverity,
-): IEvidenceProgrammingClaim {
+  symbol: EvidProgrammingSymbol | EvidProgrammingSymbol[],
+  severity: EvidSeverity,
+): IEvidProgrammingClaim {
   return {
     type: "typescript",
     files: ["claims.ts"],
@@ -100,7 +100,7 @@ function claim(
  * Its uncertainty must remain local even though it reuses the claim inventory
  * and declaration IDs exercised by the complete checklist claim.
  */
-function incompleteClaim(): IEvidenceProgrammingClaim {
+function incompleteClaim(): IEvidProgrammingClaim {
   return {
     ...claim("type", "error"),
     reference: {
@@ -122,16 +122,16 @@ function incompleteClaim(): IEvidenceProgrammingClaim {
 async function check(
   directory: string,
   config: string,
-  claims: IEvidenceProgrammingClaim[],
+  claims: IEvidProgrammingClaim[],
   expectedClaim: number,
-  exitCode: EvidenceCommandExitCode,
+  exitCode: EvidCommandExitCode,
 ): Promise<void> {
-  await TestFileSystem.save(directory, {
-    "evidence.json": JSON.stringify({ claims }),
+  await EvidTestFileSystem.save(directory, {
+    "evid.json": JSON.stringify({ claims }),
   });
-  const report: IEvidenceCheckReport = await EvidenceChecker.check(config);
-  const unhosted: IEvidenceDiagnostic[] = report.diagnostics.filter(
-    (diagnostic: IEvidenceDiagnostic): boolean =>
+  const report: IEvidCheckReport = await EvidChecker.check(config);
+  const unhosted: IEvidDiagnostic[] = report.diagnostics.filter(
+    (diagnostic: IEvidDiagnostic): boolean =>
       diagnostic.code === "graph-unhosted-checklist",
   );
   TestValidator.equals(

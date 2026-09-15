@@ -1,39 +1,41 @@
-import { EvidenceCommand } from "@wrtnlabs/evidence";
+import { EvidCommand } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
- * Separates configuration-free command output from structured operational failures.
+ * Separates configuration-free command output from structured operational
+ * failures.
  *
  * The command facade must make help and version usable in an empty directory,
  * preserve the equivalence of implicit and explicit check, and keep machine
  * output parseable even when configuration or report-file writing fails.
  *
- * 1. Run help and version without a config and require successful usage text and
- *    a semantic-version line.
+ * 1. Run help and version without a config and require successful usage text and a
+ *    semantic-version line.
  * 2. Run implicit and explicit JSON checks against a missing config under --cwd;
  *    require identical exit-2 results with an empty stderr, failed schema,
  *    resolved config location, and operational exit code in stdout.
- * 3. Request buffered watch mode and require guidance to use the streaming watcher API.
+ * 3. Request buffered watch mode and require guidance to use the streaming watcher
+ *    API.
  * 4. Use a directory as the JSON output destination and require an exit-2 write
  *    diagnostic on stderr with no partially emitted stdout report.
  */
 export async function test_command_output(): Promise<void> {
   const location = join(__dirname, `output ${randomUUID()}`);
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     { "nested/.keep": "" },
     async (directory) => {
       // Help and version never need a configuration in the selected working directory.
-      const help = await EvidenceCommand.run(["--help"], directory);
-      const version = await EvidenceCommand.run(["--version"], directory);
+      const help = await EvidCommand.run(["--help"], directory);
+      const version = await EvidCommand.run(["--version"], directory);
       TestValidator.equals("help exit", help.exitCode, 0);
       TestValidator.predicate(
         "help usage",
-        help.stdout.includes("Usage: evidence"),
+        help.stdout.includes("Usage: evid"),
       );
       TestValidator.equals("version exit", version.exitCode, 0);
       TestValidator.predicate(
@@ -42,7 +44,7 @@ export async function test_command_output(): Promise<void> {
       );
 
       // A missing config becomes a clean versioned JSON failure on stdout.
-      const missing = await EvidenceCommand.run(
+      const missing = await EvidCommand.run(
         [
           "--cwd",
           "nested",
@@ -53,7 +55,7 @@ export async function test_command_output(): Promise<void> {
         ],
         directory,
       );
-      const explicit = await EvidenceCommand.run(
+      const explicit = await EvidCommand.run(
         [
           "check",
           "--cwd",
@@ -87,15 +89,15 @@ export async function test_command_output(): Promise<void> {
       );
 
       // Buffered embedding directs infinite watch use to the public streaming API.
-      const watch = await EvidenceCommand.run(["--watch"], directory);
+      const watch = await EvidCommand.run(["--watch"], directory);
       TestValidator.equals("buffered watch exit", watch.exitCode, 2);
       TestValidator.predicate(
         "buffered watch guidance",
-        watch.stderr.includes("Use EvidenceWatcher for embedding"),
+        watch.stderr.includes("Use EvidWatcher for embedding"),
       );
 
       // A destination that is itself a directory reports its failed write on stderr.
-      const unwritable = await EvidenceCommand.run(
+      const unwritable = await EvidCommand.run(
         ["--config", "missing.config.ts", "--output", ".", "--format", "json"],
         directory,
       );
@@ -103,7 +105,7 @@ export async function test_command_output(): Promise<void> {
       TestValidator.equals("output failure stdout", unwritable.stdout, "");
       TestValidator.predicate(
         "output failure diagnostic",
-        unwritable.stderr.includes("Could not write Evidence report"),
+        unwritable.stderr.includes("Could not write Evidence Graph report"),
       );
     },
   );

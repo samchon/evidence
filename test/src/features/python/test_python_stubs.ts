@@ -1,23 +1,27 @@
-import { EvidencePythonAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidPythonAdapter } from "evid";
+import type { IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Extracts public Python units from stubs and explicit private exports.
  *
- * The stub fixture combines aliases, overloads, Unicode identifiers, properties, nested declarations, and __all__ selection to verify source spelling and public ownership.
+ * The stub fixture combines aliases, overloads, Unicode identifiers,
+ * properties, nested declarations, and **all** selection to verify source
+ * spelling and public ownership.
  *
  * 1. Analyze the .pyi and Unicode Python source snapshots together.
- * 2. Verify the expected unit identities, symbol kinds, overload sites, and Unicode target spelling.
- * 3. Verify explicitly exported private declarations remain selectable while unselected private declarations stay hidden.
+ * 2. Verify the expected unit identities, symbol kinds, overload sites, and
+ *    Unicode target spelling.
+ * 3. Verify explicitly exported private declarations remain selectable while
+ *    unselected private declarations stay hidden.
  */
 export async function test_python_stubs(): Promise<void> {
-  const inventory = await new EvidencePythonAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+  const inventory = await new EvidPythonAdapter().analyze(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "types/contracts.pyi",
         dedent`
           from typing import TypeAlias
@@ -37,7 +41,7 @@ export async function test_python_stubs(): Promise<void> {
               def run(self) -> None: ...
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "unicode/contract.py",
         dedent`
           __all__ = ["판매", "_강제"]
@@ -78,7 +82,7 @@ export async function test_python_stubs(): Promise<void> {
   TestValidator.equals("complete Python stubs", inventory.diagnostics, []);
 }
 
-function addresses(inventory: IEvidenceInventory, file: string): string[] {
+function addresses(inventory: IEvidInventory, file: string): string[] {
   return inventory.addresses
     .filter((address) => address.file === file)
     .map((address) => address.segments.join("."))

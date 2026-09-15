@@ -1,12 +1,14 @@
-import { EvidencePhpAdapter } from "@wrtnlabs/evidence";
+import { EvidPhpAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches PHPDoc annotations to exact declaration hosts.
+/**
+ * Attaches PHPDoc annotations to exact declaration hosts.
  *
- * PHPDoc may acknowledge its attached declaration, while strings, ordinary comments, and examples remain inert.
+ * PHPDoc may acknowledge its attached declaration, while strings, ordinary
+ * comments, and examples remain inert.
  *
  * 1. Analyze declarations with eligible and ineligible tag-shaped text.
  * 2. Verify exact host attachment and original coordinates.
@@ -47,8 +49,8 @@ export async function test_php_hosts(): Promise<void> {
     /** @hidden Hidden type subtree. */
     class Hidden { public function child() {} }
   `.replaceAll("\n", "\r\n");
-  const inventory = await new EvidencePhpAdapter().analyze(
-    TestSourceSnapshot.create("src/hosts.php", content),
+  const inventory = await new EvidPhpAdapter().analyze(
+    EvidTestSourceSnapshot.create("src/hosts.php", content),
   );
 
   TestValidator.equals(

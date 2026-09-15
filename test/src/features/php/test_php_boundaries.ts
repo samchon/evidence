@@ -1,11 +1,13 @@
-import { EvidencePhpAdapter } from "@wrtnlabs/evidence";
+import { EvidPhpAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Rejects PHP inputs whose declaration population is not statically knowable.
+/**
+ * Rejects PHP inputs whose declaration population is not statically knowable.
  *
- * Runtime-dependent declarations, malformed syntax, conflicts, and failed sources must remain incomplete.
+ * Runtime-dependent declarations, malformed syntax, conflicts, and failed
+ * sources must remain incomplete.
  *
  * 1. Analyze dynamic, unsupported, and malformed PHP sources.
  * 2. Require incomplete results with relevant diagnostics.
@@ -31,8 +33,8 @@ export async function test_php_boundaries(): Promise<void> {
     "<?php class Broken {",
     "<?php class Emoji { public int $\ud83d\ude00 = 1; }",
   ]) {
-    const inventory = await new EvidencePhpAdapter().analyze(
-      TestSourceSnapshot.create("src/boundary.php", source),
+    const inventory = await new EvidPhpAdapter().analyze(
+      EvidTestSourceSnapshot.create("src/boundary.php", source),
     );
 
     TestValidator.equals(source, inventory.complete, false);
@@ -45,8 +47,8 @@ export async function test_php_boundaries(): Promise<void> {
     );
   }
   for (const file of ["contract.PHP", "contract.phtml", "contract.inc"]) {
-    const unsupported = await new EvidencePhpAdapter().analyze(
-      TestSourceSnapshot.create(file, "<?php class Contract {}"),
+    const unsupported = await new EvidPhpAdapter().analyze(
+      EvidTestSourceSnapshot.create(file, "<?php class Contract {}"),
     );
     TestValidator.equals(
       "unadvertised source spelling is rejected",
@@ -60,8 +62,8 @@ export async function test_php_boundaries(): Promise<void> {
       ),
     );
   }
-  const grouped = await new EvidencePhpAdapter().analyze(
-    TestSourceSnapshot.create(
+  const grouped = await new EvidPhpAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "grouped.php",
       "<?php use Vendor\\{function define as publish}; function run() { publish(); }",
     ),
@@ -71,8 +73,8 @@ export async function test_php_boundaries(): Promise<void> {
     grouped.complete,
     true,
   );
-  const declared = await new EvidencePhpAdapter().analyze(
-    TestSourceSnapshot.create(
+  const declared = await new EvidPhpAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "declared.php",
       "<?php class Explicit { private int $value = 0; function update() { $this->value = 1; } function read() { return $this->external; } }",
     ),
@@ -82,13 +84,13 @@ export async function test_php_boundaries(): Promise<void> {
     declared.complete,
     true,
   );
-  const conflict = await new EvidencePhpAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+  const conflict = await new EvidPhpAdapter().analyze(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/one.php",
         "<?php namespace App; class Contract {}",
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/two.php",
         "<?php namespace app; class contract {}",
       ),
@@ -106,7 +108,7 @@ export async function test_php_boundaries(): Promise<void> {
     ),
   );
 
-  const sourceFailure = TestSourceSnapshot.create(
+  const sourceFailure = EvidTestSourceSnapshot.create(
     "src/missing.php",
     "<?php class Contract {}",
   );
@@ -116,7 +118,7 @@ export async function test_php_boundaries(): Promise<void> {
     path: "/project/src/missing.php",
     message: "Read denied",
   });
-  const failed = await new EvidencePhpAdapter().analyze(sourceFailure);
+  const failed = await new EvidPhpAdapter().analyze(sourceFailure);
   TestValidator.equals("source failure retained", failed.complete, false);
   TestValidator.predicate(
     "source diagnostic retained",

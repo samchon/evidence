@@ -1,22 +1,24 @@
-import { EvidenceTypeScriptAdapter } from "@wrtnlabs/evidence";
+import { EvidTypeScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Preserves TypeScript syntax and export failures as incomplete analysis.
+/**
+ * Preserves TypeScript syntax and export failures as incomplete analysis.
  *
- * Malformed source and missing export dependencies cannot be masked by tag-shaped strings or prior inventory state.
+ * Malformed source and missing export dependencies cannot be masked by
+ * tag-shaped strings or prior inventory state.
  *
  * 1. Analyze malformed sources and missing export edges.
  * 2. Verify incomplete status and diagnostics.
  * 3. Require strings containing tags to remain inert.
  */
 export async function test_typescript_failures(): Promise<void> {
-  const adapter = new EvidenceTypeScriptAdapter();
+  const adapter = new EvidTypeScriptAdapter();
 
   const malformed = await adapter.analyze(
-    TestSourceSnapshot.create("src/broken.ts", "export interface Broken {"),
+    EvidTestSourceSnapshot.create("src/broken.ts", "export interface Broken {"),
   );
   TestValidator.equals(
     "malformed source is incomplete",
@@ -32,13 +34,13 @@ export async function test_typescript_failures(): Promise<void> {
   // The pinned upstream grammar has not yet accepted TypeScript 5.0 type-only star exports.
   const typeOnlyStars = await Promise.all([
     adapter.analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/type-star.ts",
         'export type * from "./contract";',
       ),
     ),
     adapter.analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/type-namespace.ts",
         'export type * as Contract from "./contract";',
       ),
@@ -52,7 +54,7 @@ export async function test_typescript_failures(): Promise<void> {
     );
 
   const missing = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/index.ts",
       'export { Contract } from "./missing";',
     ),
@@ -69,9 +71,12 @@ export async function test_typescript_failures(): Promise<void> {
   );
 
   const missingBinding = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create("src/available.ts", "export const other = 1;"),
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
+        "src/available.ts",
+        "export const other = 1;",
+      ),
+      EvidTestSourceSnapshot.create(
         "src/reexport.ts",
         'export { Contract } from "./available";',
       ),
@@ -89,7 +94,7 @@ export async function test_typescript_failures(): Promise<void> {
   );
 
   const assignment = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/commonjs.ts",
       "const contract = {}; export = contract;",
     ),
@@ -106,7 +111,7 @@ export async function test_typescript_failures(): Promise<void> {
   );
 
   const ambient = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/ambient.d.ts",
       dedent`
         declare module "external" {
@@ -136,7 +141,7 @@ export async function test_typescript_failures(): Promise<void> {
   );
 
   const tsx = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/view.tsx",
       dedent`
         export const View = () => (

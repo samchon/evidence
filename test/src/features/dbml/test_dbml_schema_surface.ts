@@ -1,20 +1,22 @@
-﻿import {
-  EvidenceDbmlAdapter,
-  EvidenceInventory,
-  EvidenceFingerprint,
-} from "@wrtnlabs/evidence";
+import { EvidDbmlAdapter, EvidInventory, EvidFingerprint } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Classifies DBML aliases, relation cardinalities, composites, and Unicode source positions.
+/**
+ * Classifies DBML aliases, relation cardinalities, composites, and Unicode
+ * source positions.
  *
- * The schema surface must preserve canonical model ownership and literal column segments while relation identity records direction and cardinality.
+ * The schema surface must preserve canonical model ownership and literal column
+ * segments while relation identity records direction and cardinality.
  *
- * 1. Analyze aliased tables, scalar columns, all inline and named relation forms, and a composite reference.
- * 2. Compare model, column, relation, and relation-owner identities; resolve an alias to its canonical column unit.
- * 3. Verify UTF-16 positions for escaped Unicode notes and quoted names, then retain a review separately without changing the table fingerprint.
+ * 1. Analyze aliased tables, scalar columns, all inline and named relation forms,
+ *    and a composite reference.
+ * 2. Compare model, column, relation, and relation-owner identities; resolve an
+ *    alias to its canonical column unit.
+ * 3. Verify UTF-16 positions for escaped Unicode notes and quoted names, then
+ *    retain a review separately without changing the table fingerprint.
  */
 export async function test_dbml_schema_surface(): Promise<void> {
   const source = dedent`
@@ -43,8 +45,8 @@ export async function test_dbml_schema_surface(): Promise<void> {
     Ref pair: U.id - profiles.user_id
     Ref network: U.id <> posts.user_id
   `.replace(/\n/gu, "\r\n");
-  const inventory = await new EvidenceDbmlAdapter().analyze(
-    TestSourceSnapshot.create("schema/main.dbml", source),
+  const inventory = await new EvidDbmlAdapter().analyze(
+    EvidTestSourceSnapshot.create("schema/main.dbml", source),
   );
 
   TestValidator.equals("complete DBML schema", inventory.diagnostics, []);
@@ -161,14 +163,14 @@ export async function test_dbml_schema_surface(): Promise<void> {
       JSON.stringify(left).localeCompare(JSON.stringify(right), "en"),
     ),
   );
-  const canonical = new EvidenceInventory([inventory]).resolve(
+  const canonical = new EvidInventory([inventory]).resolve(
     {
       file: "/project/schema/main.dbml",
       segments: ["core", "users", "id"],
     },
     inventory.units.map((unit) => unit.id),
   );
-  const alias = new EvidenceInventory([inventory]).resolve(
+  const alias = new EvidInventory([inventory]).resolve(
     {
       file: "/project/schema/main.dbml",
       segments: ["U", "id"],
@@ -215,8 +217,8 @@ export async function test_dbml_schema_surface(): Promise<void> {
     3,
   );
 
-  const revised = await new EvidenceDbmlAdapter().analyze(
-    TestSourceSnapshot.create(
+  const revised = await new EvidDbmlAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "schema/main.dbml",
       source.replace(
         "Post storage.",
@@ -239,7 +241,7 @@ export async function test_dbml_schema_surface(): Promise<void> {
     throw new Error("DBML posts table is absent.");
   TestValidator.equals(
     "review-only note edit preserves subtree fingerprint",
-    EvidenceFingerprint.inspect(inventory, originalTable.id).fingerprint,
-    EvidenceFingerprint.inspect(revised, revisedTable.id).fingerprint,
+    EvidFingerprint.inspect(inventory, originalTable.id).fingerprint,
+    EvidFingerprint.inspect(revised, revisedTable.id).fingerprint,
   );
 }

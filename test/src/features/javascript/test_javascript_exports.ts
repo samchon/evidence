@@ -1,23 +1,26 @@
-import { EvidenceJavaScriptAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidJavaScriptAdapter } from "evid";
+import type { IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Resolves JavaScript aliases, defaults, imports, star exports, shadowing, and cycles.
+/**
+ * Resolves JavaScript aliases, defaults, imports, star exports, shadowing, and
+ * cycles.
  *
- * Module topology must retain defining identity while exposing supported public aliases.
+ * Module topology must retain defining identity while exposing supported public
+ * aliases.
  *
  * 1. Analyze the module graph.
  * 2. Resolve exported paths.
  * 3. Verify shadowing and cycles do not merge distinct owners.
  */
 export async function test_javascript_exports(): Promise<void> {
-  const adapter = new EvidenceJavaScriptAdapter();
+  const adapter = new EvidJavaScriptAdapter();
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/dep.mjs",
         dedent`
           export class Service { run() {} }
@@ -25,12 +28,15 @@ export async function test_javascript_exports(): Promise<void> {
           export const value = 1;
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/default.mjs",
         "export default class DefaultService { value = 1; }",
       ),
-      TestSourceSnapshot.create("src/star.mjs", "export const starred = true;"),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
+        "src/star.mjs",
+        "export const starred = true;",
+      ),
+      EvidTestSourceSnapshot.create(
         "src/index.mjs",
         dedent`
           export { Service as Renamed, execute as run } from "./dep.mjs";
@@ -85,15 +91,15 @@ export async function test_javascript_exports(): Promise<void> {
 
   // A barrel cycle terminates after retaining declarations reached before re-entry.
   const cycle = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/a.mjs",
         dedent`
           export const a = 1;
           export * as B from "./b.mjs";
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/b.mjs",
         dedent`
           export const b = 1;
@@ -113,7 +119,7 @@ export async function test_javascript_exports(): Promise<void> {
   TestValidator.equals("complete JavaScript cycle", cycle.diagnostics, []);
 }
 
-function addresses(inventory: IEvidenceInventory): string[] {
+function addresses(inventory: IEvidInventory): string[] {
   return inventory.addresses
     .filter((address) => address.file === "/project/src/index.mjs")
     .map((address) => address.segments.join("."))

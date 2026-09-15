@@ -1,20 +1,23 @@
-import { EvidenceChecker, EvidenceWatcher } from "@wrtnlabs/evidence";
+import { EvidChecker, EvidWatcher } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
-/** Recomputes SQLite populations as selected files appear and recover.
+/**
+ * Recomputes SQLite populations as selected files appear and recover.
  *
- * Watch cycles must discard stale coverage after a file is added or fails parsing, then restore it when repaired.
+ * Watch cycles must discard stale coverage after a file is added or fails
+ * parsing, then restore it when repaired.
  *
  * 1. Start with a covered SQLite schema and compare cycles to a fresh check.
  * 2. Add an undocumented selected file and require failed coverage.
- * 3. Make it malformed, repair it, and require incomplete status followed by recovery.
+ * 3. Make it malformed, repair it, and require incomplete status followed by
+ *    recovery.
  */
 export async function test_sqlite_watch(): Promise<void> {
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "sqlite-watch",
     {
       "evidence.config.ts": dedent`
@@ -28,7 +31,7 @@ export async function test_sqlite_watch(): Promise<void> {
     },
     async (directory) => {
       const config = join(directory, "evidence.config.ts");
-      const watcher = new EvidenceWatcher(config, {
+      const watcher = new EvidWatcher(config, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
       });
@@ -38,11 +41,11 @@ export async function test_sqlite_watch(): Promise<void> {
           TestValidator.equals(
             `SQLite watch agrees with fresh check ${cycle.cycle}`,
             cycle.report,
-            await EvidenceChecker.check(config),
+            await EvidChecker.check(config),
           );
           if (cycle.cycle === 1) {
             TestValidator.equals("initial schema covered", cycle.success, true);
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "schema/new.sql": "CREATE TABLE New (uncovered TEXT);\n",
             });
           } else if (cycle.cycle === 2) {
@@ -51,7 +54,7 @@ export async function test_sqlite_watch(): Promise<void> {
               cycle.success,
               false,
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "schema/new.sql": "CREATE TABLE New (\n",
             });
           } else if (cycle.cycle === 3) {
@@ -60,7 +63,7 @@ export async function test_sqlite_watch(): Promise<void> {
               cycle.status,
               "incomplete",
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "schema/new.sql":
                 "-- @internal Withdraws this table.\nCREATE TABLE New (uncovered TEXT);\n",
             });

@@ -1,20 +1,25 @@
-import { EvidenceChecker, EvidenceWatcher } from "@wrtnlabs/evidence";
+import { EvidChecker, EvidWatcher } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
-/** Recovers a missing generated Dart part and observes its public changes through the library alias.
+/**
+ * Recovers a missing generated Dart part and observes its public changes
+ * through the library alias.
  *
- * The defining library owns its parts, so watch must invalidate and recover the exported surface as a generated part appears and changes.
+ * The defining library owns its parts, so watch must invalidate and recover the
+ * exported surface as a generated part appears and changes.
  *
  * 1. Start a watcher with a library that references an absent generated part.
- * 2. Add the part and require the library alias to expose its selected declaration.
- * 3. Change the generated declaration and require the following watch result to reflect it.
+ * 2. Add the part and require the library alias to expose its selected
+ *    declaration.
+ * 3. Change the generated declaration and require the following watch result to
+ *    reflect it.
  */
 export async function test_dart_part_watch(): Promise<void> {
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "dart-part-watch",
     {
       "evidence.config.ts": dedent`
@@ -28,7 +33,7 @@ export async function test_dart_part_watch(): Promise<void> {
     },
     async (directory) => {
       const config = join(directory, "evidence.config.ts");
-      const watcher = new EvidenceWatcher(config, {
+      const watcher = new EvidWatcher(config, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
       });
@@ -38,7 +43,7 @@ export async function test_dart_part_watch(): Promise<void> {
           TestValidator.equals(
             `fresh part cycle ${cycle.cycle}`,
             cycle.report,
-            await EvidenceChecker.check(config),
+            await EvidChecker.check(config),
           );
           if (cycle.cycle === 1) {
             TestValidator.equals(
@@ -46,7 +51,7 @@ export async function test_dart_part_watch(): Promise<void> {
               cycle.status,
               "incomplete",
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "contracts/model.g.dart":
                 "part of 'api.dart'; class Model { int value = 1; }",
             });
@@ -56,7 +61,7 @@ export async function test_dart_part_watch(): Promise<void> {
               cycle.success,
               true,
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "contracts/model.g.dart":
                 "part of 'api.dart'; class Model { int value = 1; int extra = 2; }",
             });
@@ -66,7 +71,7 @@ export async function test_dart_part_watch(): Promise<void> {
               cycle.success,
               false,
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "contracts/model.g.dart":
                 "part of 'api.dart'; class Model { int value = 1; int _extra = 2; }",
             });

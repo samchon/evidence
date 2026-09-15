@@ -1,20 +1,23 @@
-import { EvidenceChecker, EvidenceWatcher } from "@wrtnlabs/evidence";
+import { EvidChecker, EvidWatcher } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
-/** Rebuilds Objective-C populations as selected files change.
+/**
+ * Rebuilds Objective-C populations as selected files change.
  *
- * Watch output must replace merged inventories after implementation edits, new headers, malformed source, and repair.
+ * Watch output must replace merged inventories after implementation edits, new
+ * headers, malformed source, and repair.
  *
  * 1. Start with covered input and compare each cycle to a fresh check.
- * 2. Add and mutate declarations, then require failed coverage and incomplete parsing.
+ * 2. Add and mutate declarations, then require failed coverage and incomplete
+ *    parsing.
  * 3. Repair the source and require coverage recovery.
  */
 export async function test_objc_watch(): Promise<void> {
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "objc-watch",
     {
       "evidence.config.ts": dedent`
@@ -30,7 +33,7 @@ export async function test_objc_watch(): Promise<void> {
     },
     async (directory) => {
       const file = join(directory, "evidence.config.ts");
-      const watcher = new EvidenceWatcher(file, {
+      const watcher = new EvidWatcher(file, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
       });
@@ -40,7 +43,7 @@ export async function test_objc_watch(): Promise<void> {
           TestValidator.equals(
             `fresh Objective-C cycle ${cycle.cycle}`,
             cycle.report,
-            await EvidenceChecker.check(file),
+            await EvidChecker.check(file),
           );
           if (cycle.cycle === 1) {
             TestValidator.equals(
@@ -48,7 +51,7 @@ export async function test_objc_watch(): Promise<void> {
               cycle.success,
               true,
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "contracts/Extra.h":
                 "@interface Extra\n@property int missing;\n@end\n",
             });
@@ -58,7 +61,7 @@ export async function test_objc_watch(): Promise<void> {
               cycle.success,
               false,
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "contracts/Extra.h": "@interface Broken\n",
             });
           } else if (cycle.cycle === 3) {
@@ -67,7 +70,7 @@ export async function test_objc_watch(): Promise<void> {
               cycle.status,
               "incomplete",
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "contracts/Extra.h": "@class Extra;\n",
             });
           } else if (cycle.cycle === 4) {
@@ -76,7 +79,7 @@ export async function test_objc_watch(): Promise<void> {
               cycle.success,
               true,
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "contracts/Contract.m":
                 "@interface Contract ()\n@property int privateValue;\n@end\n@implementation Contract\n@end\n",
             });

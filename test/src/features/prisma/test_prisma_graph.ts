@@ -1,34 +1,36 @@
 import {
-  EvidenceFingerprint,
-  EvidenceGraph,
-  EvidenceMarkdownAdapter,
-  EvidencePrismaAdapter,
-  EvidenceTargetResolver,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidGraph,
+  EvidMarkdownAdapter,
+  EvidPrismaAdapter,
+  EvidTargetResolver,
+  EvidTypeScriptAdapter,
+} from "evid";
 import type {
-  IEvidenceDeclaration,
-  IEvidenceHost,
-  IEvidenceInventory,
-  IEvidenceUnit,
-} from "@wrtnlabs/evidence";
+  IEvidDeclaration,
+  IEvidHost,
+  IEvidInventory,
+  IEvidUnit,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Evaluates Prisma as a claim and a reviewed reference.
+/**
+ * Evaluates Prisma as a claim and a reviewed reference.
  *
- * Prisma model and field populations require correct role-specific evidence; a review alone remains separate from coverage.
+ * Prisma model and field populations require correct role-specific evidence; a
+ * review alone remains separate from coverage.
  *
  * 1. Build Prisma claim and reference inventories.
  * 2. Evaluate matching, missing, and review-only target resolutions.
  * 3. Verify graph status and diagnostics for each case.
  */
 export async function test_prisma_graph(): Promise<void> {
-  const specification = await new EvidenceMarkdownAdapter().analyze(
-    TestSourceSnapshot.create(
+  const specification = await new EvidMarkdownAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "docs/spec.md",
       dedent`
         ## Pricing {#pricing}
@@ -43,19 +45,19 @@ export async function test_prisma_graph(): Promise<void> {
   );
   const pricing = requireUnit(specification, "pricing");
   const sellers = requireUnit(specification, "sellers");
-  const pricingFingerprint = EvidenceFingerprint.inspect(
+  const pricingFingerprint = EvidFingerprint.inspect(
     specification,
     pricing.id,
   ).fingerprint;
-  const sellersFingerprint = EvidenceFingerprint.inspect(
+  const sellersFingerprint = EvidFingerprint.inspect(
     specification,
     sellers.id,
   ).fingerprint;
 
   // Prisma claims the persisted model and excludes an external responsibility in a ledger.
-  const prisma = await new EvidencePrismaAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+  const prisma = await new EvidPrismaAdapter().analyze(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "prisma/schema.prisma",
         dedent`
           datasource db {
@@ -74,7 +76,7 @@ export async function test_prisma_graph(): Promise<void> {
           }
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "prisma/exclusions.schema",
         dedent`
           /// @evidenceExclude docs/spec.md#sellers Authentication owns seller identity.
@@ -85,18 +87,15 @@ export async function test_prisma_graph(): Promise<void> {
   );
   const sale = requireUnit(prisma, "prisma:Sale");
   const seller = requireUnit(prisma, "prisma:Seller");
-  const saleFingerprint = EvidenceFingerprint.inspect(
-    prisma,
-    sale.id,
-  ).fingerprint;
-  const sellerFingerprint = EvidenceFingerprint.inspect(
+  const saleFingerprint = EvidFingerprint.inspect(prisma, sale.id).fingerprint;
+  const sellerFingerprint = EvidFingerprint.inspect(
     prisma,
     seller.id,
   ).fingerprint;
 
   // TypeScript then cites the file-independent Prisma model targets.
-  const contract = await new EvidenceTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+  const contract = await new EvidTypeScriptAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/contracts.ts",
       dedent`
         /**
@@ -111,7 +110,7 @@ export async function test_prisma_graph(): Promise<void> {
   );
   const contractUnit = requireUnit(contract, "ISaleContract");
 
-  const graph = EvidenceGraph.evaluate({
+  const graph = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -122,12 +121,12 @@ export async function test_prisma_graph(): Promise<void> {
             severity: "error",
             inventory: specification,
             unitIds: [pricing.id, sellers.id],
-            resolutions: await TestGraph.resolveDeclarations(
+            resolutions: await EvidTestGraph.resolveDeclarations(
               prisma,
               specification,
               [pricing.id, sellers.id],
             ),
-            reviewResolutions: await TestGraph.resolveReviews(
+            reviewResolutions: await EvidTestGraph.resolveReviews(
               prisma,
               specification,
               [pricing.id, sellers.id],
@@ -145,11 +144,12 @@ export async function test_prisma_graph(): Promise<void> {
             severity: "error",
             inventory: prisma,
             unitIds: [sale.id, seller.id],
-            resolutions: await TestGraph.resolveDeclarations(contract, prisma, [
-              sale.id,
-              seller.id,
-            ]),
-            reviewResolutions: await TestGraph.resolveReviews(
+            resolutions: await EvidTestGraph.resolveDeclarations(
+              contract,
+              prisma,
+              [sale.id, seller.id],
+            ),
+            reviewResolutions: await EvidTestGraph.resolveReviews(
               contract,
               prisma,
               [sale.id, seller.id],
@@ -172,8 +172,8 @@ export async function test_prisma_graph(): Promise<void> {
   );
 
   // Prisma target syntax and selected-member lookup remain distinct failures.
-  const malformedClaim = await new EvidenceTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+  const malformedClaim = await new EvidTypeScriptAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/failures.ts",
       dedent`
         /** @evidence prisma:Sale..price Contains an empty member segment. */
@@ -184,7 +184,7 @@ export async function test_prisma_graph(): Promise<void> {
       `,
     ),
   );
-  const resolver = new EvidenceTargetResolver([prisma]);
+  const resolver = new EvidTargetResolver([prisma]);
   const malformed = requireDeclaration(malformedClaim, "prisma:Sale..price");
   const missing = requireDeclaration(malformedClaim, "prisma:Sale.absent");
   const ids = prisma.units.map((unit) => unit.id);
@@ -224,10 +224,7 @@ export async function test_prisma_graph(): Promise<void> {
   );
 }
 
-function requireUnit(
-  inventory: IEvidenceInventory,
-  identity: string,
-): IEvidenceUnit {
+function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.id === identity || candidate.identity.at(-1) === identity,
@@ -238,9 +235,9 @@ function requireUnit(
 }
 
 function requireDeclaration(
-  inventory: IEvidenceInventory,
+  inventory: IEvidInventory,
   target: string,
-): IEvidenceDeclaration {
+): IEvidDeclaration {
   const declaration = inventory.declarations.find(
     (candidate) => candidate.target === target,
   );
@@ -250,9 +247,9 @@ function requireDeclaration(
 }
 
 function requireHost(
-  inventory: IEvidenceInventory,
-  declaration: IEvidenceDeclaration,
-): IEvidenceHost {
+  inventory: IEvidInventory,
+  declaration: IEvidDeclaration,
+): IEvidHost {
   const host = inventory.hosts.find(
     (candidate) => candidate.id === declaration.hostId,
   );

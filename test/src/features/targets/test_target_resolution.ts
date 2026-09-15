@@ -1,32 +1,28 @@
-import {
-  EvidenceTargetResolver,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
-import type {
-  IEvidenceHost,
-  IEvidenceTargetStatement,
-} from "@wrtnlabs/evidence";
+import { EvidTargetResolver, EvidTypeScriptAdapter } from "evid";
+import type { IEvidHost, IEvidTargetStatement } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Resolves public files, ancestors, aliases, and literal members.
+/**
+ * Resolves public files, ancestors, aliases, and literal members.
  *
- * Resolution must distinguish structural containment from public identity while preserving aliases and literal member names.
+ * Resolution must distinguish structural containment from public identity while
+ * preserving aliases and literal member names.
  *
  * 1. Build units with files, ancestors, aliases, and literal members.
  * 2. Resolve each supported target form.
  * 3. Verify the exact resolved unit or failure status.
  */
 export async function test_target_resolution(): Promise<void> {
-  const inventory = await new EvidenceTypeScriptAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+  const inventory = await new EvidTypeScriptAdapter().analyze(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/calculator.ts",
         "export function add(x: number, y: number): number { return x + y; }",
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/SomeClass.ts",
         dedent`
           export class SomeClass {
@@ -37,7 +33,7 @@ export async function test_target_resolution(): Promise<void> {
           }
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/SomeNamespace.ts",
         dedent`
           export namespace SomeNamespace {
@@ -45,18 +41,24 @@ export async function test_target_resolution(): Promise<void> {
           }
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/barrel.ts",
         dedent`
           export { SomeClass as PublicClass } from "./SomeClass";
           export type { SomeClass as ClassType } from "./SomeClass";
         `,
       ),
-      TestSourceSnapshot.create("src/a # b.ts", "export const encoded = 1;"),
-      TestSourceSnapshot.create("src/wrong.ts", "export const different = 1;"),
+      EvidTestSourceSnapshot.create(
+        "src/a # b.ts",
+        "export const encoded = 1;",
+      ),
+      EvidTestSourceSnapshot.create(
+        "src/wrong.ts",
+        "export const different = 1;",
+      ),
     ]),
   );
-  const resolver = new EvidenceTargetResolver([inventory]);
+  const resolver = new EvidTargetResolver([inventory]);
   const host = createHost("/project/docs/requirements.md");
   const ids = inventory.units.map((unit) => unit.id);
 
@@ -180,7 +182,7 @@ export async function test_target_resolution(): Promise<void> {
   TestValidator.equals("encoded file path", encoded.status, "resolved");
 
   // A dependency loaded for a barrel remains addressable only through selected entries.
-  const dependencySnapshot = TestSourceSnapshot.create(
+  const dependencySnapshot = EvidTestSourceSnapshot.create(
     "src/dependency.ts",
     "export interface Dependency { value: string; }",
   );
@@ -191,16 +193,16 @@ export async function test_target_resolution(): Promise<void> {
   if (dependencyAddress === undefined)
     throw new Error("Missing dependency address fixture.");
   dependencyAddress.selected = false;
-  const dependencyInventory = await new EvidenceTypeScriptAdapter().analyze(
-    TestSourceSnapshot.combine([
+  const dependencyInventory = await new EvidTypeScriptAdapter().analyze(
+    EvidTestSourceSnapshot.combine([
       dependencySnapshot,
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/entry.ts",
         'export { Dependency as PublicDependency } from "./dependency";',
       ),
     ]),
   );
-  const dependencyResolver = new EvidenceTargetResolver([dependencyInventory]);
+  const dependencyResolver = new EvidTargetResolver([dependencyInventory]);
   const dependencyIds = dependencyInventory.units.map((unit) => unit.id);
   const throughEntry = await dependencyResolver.resolve(
     createStatement("../src/entry.ts#PublicDependency"),
@@ -221,7 +223,7 @@ export async function test_target_resolution(): Promise<void> {
   );
 }
 
-function createHost(file: string): IEvidenceHost {
+function createHost(file: string): IEvidHost {
   return {
     id: "claim-host",
     file,
@@ -236,7 +238,7 @@ function createHost(file: string): IEvidenceHost {
   };
 }
 
-function createStatement(target: string): IEvidenceTargetStatement {
+function createStatement(target: string): IEvidTargetStatement {
   return {
     hostId: "claim-host",
     target,

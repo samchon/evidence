@@ -1,24 +1,23 @@
-﻿import {
-  EvidenceFingerprint,
-  EvidenceInventory,
-  EvidenceScalaAdapter,
-} from "@wrtnlabs/evidence";
+import { EvidFingerprint, EvidInventory, EvidScalaAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Resolves Scala exports while preserving source declaration ownership.
  *
- * A forwarding object exports an overloaded method, property, and type alias from another selected source, with evidence on the forwarding export path.
+ * A forwarding object exports an overloaded method, property, and type alias
+ * from another selected source, with evidence on the forwarding export path.
  *
- * 1. Analyze the selected Scala sources and verify the exported alias resolves to its source unit without adding denominator units.
- * 2. Verify overload and export physical sites are retained and a source-body edit changes the exported fingerprint.
+ * 1. Analyze the selected Scala sources and verify the exported alias resolves to
+ *    its source unit without adding denominator units.
+ * 2. Verify overload and export physical sites are retained and a source-body edit
+ *    changes the exported fingerprint.
  * 3. Withdraw the source method and verify the exported alias resolves as hidden.
  */
 export async function test_scala_exports(): Promise<void> {
-  const sources = TestSourceSnapshot.combine([
-    TestSourceSnapshot.create(
+  const sources = EvidTestSourceSnapshot.combine([
+    EvidTestSourceSnapshot.create(
       "src/Forward.scala",
       dedent`
       package demo
@@ -28,7 +27,7 @@ export async function test_scala_exports(): Promise<void> {
       }
     `,
     ),
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Origin.scala",
       dedent`
       package demo
@@ -41,10 +40,10 @@ export async function test_scala_exports(): Promise<void> {
     `,
     ),
   ]);
-  const adapter = new EvidenceScalaAdapter();
+  const adapter = new EvidScalaAdapter();
   const inventory = await adapter.analyze(sources);
   TestValidator.equals("bounded exports complete", inventory.diagnostics, []);
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   const selected = inventory.units.map((unit) => unit.id);
   const alias = graph.resolve(
     {
@@ -79,9 +78,8 @@ export async function test_scala_exports(): Promise<void> {
   source.content = source.content.replace("def run = 1", "def run = 2");
   TestValidator.notEquals(
     "target edit invalidates exported fingerprint",
-    EvidenceFingerprint.inspect(inventory, run.id).fingerprint,
-    EvidenceFingerprint.inspect(await adapter.analyze(changed), run.id)
-      .fingerprint,
+    EvidFingerprint.inspect(inventory, run.id).fingerprint,
+    EvidFingerprint.inspect(await adapter.analyze(changed), run.id).fingerprint,
   );
   const withdrawn = structuredClone(sources);
   const originalSource = withdrawn.files[1];
@@ -93,7 +91,7 @@ export async function test_scala_exports(): Promise<void> {
   const hidden = await adapter.analyze(withdrawn);
   TestValidator.equals(
     "source withdrawal crosses export aliases",
-    new EvidenceInventory([hidden]).resolve(
+    new EvidInventory([hidden]).resolve(
       {
         file: "/project/src/Forward.scala",
         segments: ["demo", "object Forward", "call"],

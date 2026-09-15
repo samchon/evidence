@@ -1,15 +1,13 @@
-import {
-  EvidenceFingerprint,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
-import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+import { EvidFingerprint, EvidTypeScriptAdapter } from "evid";
+import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
- * Fingerprints TypeScript declaration content independently of annotations and siblings.
+ * Fingerprints TypeScript declaration content independently of annotations and
+ * siblings.
  *
  * Reviews must expire for semantic source changes while remaining stable when
  * only review metadata or checkout formatting changes. Leaf content also needs
@@ -21,8 +19,9 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 2. Mark the inventory incomplete and require fingerprint inspection to reject.
  * 3. Change review hash/prose, line endings, and trailing whitespace; require the
  *    enclosing type's fingerprint to remain unchanged.
- * 4. Change the member's type and require both leaf and enclosing-scope fingerprints
- *    to change; alter an ordinary inline comment and require the leaf to change.
+ * 4. Change the member's type and require both leaf and enclosing-scope
+ *    fingerprints to change; alter an ordinary inline comment and require the
+ *    leaf to change.
  * 5. Edit the unrelated type and second variable declarator, then require the
  *    original type scope and first declarator fingerprint to remain stable.
  */
@@ -43,9 +42,9 @@ export async function test_fingerprint_content(): Promise<void> {
   const sale = requireUnit(original, "Sale");
   const price = requireUnit(original, "price");
   const first = requireUnit(original, "first");
-  const saleFingerprint = EvidenceFingerprint.inspect(original, sale.id);
-  const priceFingerprint = EvidenceFingerprint.inspect(original, price.id);
-  const firstFingerprint = EvidenceFingerprint.inspect(original, first.id);
+  const saleFingerprint = EvidFingerprint.inspect(original, sale.id);
+  const priceFingerprint = EvidFingerprint.inspect(original, price.id);
+  const firstFingerprint = EvidFingerprint.inspect(original, first.id);
 
   TestValidator.equals("fingerprint version", saleFingerprint.version, 2);
   TestValidator.equals(
@@ -64,7 +63,7 @@ export async function test_fingerprint_content(): Promise<void> {
   incomplete.complete = false;
 
   await TestValidator.error("incomplete inventory", async () =>
-    EvidenceFingerprint.inspect(incomplete, sale.id),
+    EvidFingerprint.inspect(incomplete, sale.id),
   );
 
   // Annotation prose, fingerprints, and checkout line endings do not change reviewed content.
@@ -76,7 +75,7 @@ export async function test_fingerprint_content(): Promise<void> {
 
   TestValidator.equals(
     "annotation, line endings, and trailing whitespace ignored",
-    EvidenceFingerprint.inspect(annotated, requireUnit(annotated, "Sale").id)
+    EvidFingerprint.inspect(annotated, requireUnit(annotated, "Sale").id)
       .fingerprint,
     saleFingerprint.fingerprint,
   );
@@ -91,7 +90,7 @@ export async function test_fingerprint_content(): Promise<void> {
 
   TestValidator.equals(
     "member content expires leaf review",
-    EvidenceFingerprint.inspect(
+    EvidFingerprint.inspect(
       changedMember,
       requireUnit(changedMember, "price").id,
     ).fingerprint === priceFingerprint.fingerprint,
@@ -99,7 +98,7 @@ export async function test_fingerprint_content(): Promise<void> {
   );
   TestValidator.equals(
     "member content expires container review",
-    EvidenceFingerprint.inspect(
+    EvidFingerprint.inspect(
       changedMember,
       requireUnit(changedMember, "Sale").id,
     ).fingerprint === saleFingerprint.fingerprint,
@@ -113,7 +112,7 @@ export async function test_fingerprint_content(): Promise<void> {
 
   TestValidator.equals(
     "ordinary comment expires leaf review",
-    EvidenceFingerprint.inspect(
+    EvidFingerprint.inspect(
       changedComment,
       requireUnit(changedComment, "price").id,
     ).fingerprint === priceFingerprint.fingerprint,
@@ -129,7 +128,7 @@ export async function test_fingerprint_content(): Promise<void> {
 
   TestValidator.equals(
     "unrelated declaration preserves scope",
-    EvidenceFingerprint.inspect(
+    EvidFingerprint.inspect(
       changedSiblings,
       requireUnit(changedSiblings, "Sale").id,
     ).fingerprint,
@@ -137,7 +136,7 @@ export async function test_fingerprint_content(): Promise<void> {
   );
   TestValidator.equals(
     "sibling declarator preserves leaf",
-    EvidenceFingerprint.inspect(
+    EvidFingerprint.inspect(
       changedSiblings,
       requireUnit(changedSiblings, "first").id,
     ).fingerprint,
@@ -151,21 +150,20 @@ export async function test_fingerprint_content(): Promise<void> {
  * Keeping the path fixed ensures comparisons isolate edited declaration content
  * rather than fingerprint changes caused by rebinding to another source.
  */
-async function analyze(content: string): Promise<IEvidenceInventory> {
-  return new EvidenceTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create("src/contracts.ts", content),
+async function analyze(content: string): Promise<IEvidInventory> {
+  return new EvidTypeScriptAdapter().analyze(
+    EvidTestSourceSnapshot.create("src/contracts.ts", content),
   );
 }
 
 /**
- * Requires a named declaration before comparing its fingerprint across variants.
+ * Requires a named declaration before comparing its fingerprint across
+ * variants.
  *
- * Missing extraction fails explicitly instead of comparing an unrelated fallback unit.
+ * Missing extraction fails explicitly instead of comparing an unrelated
+ * fallback unit.
  */
-function requireUnit(
-  inventory: IEvidenceInventory,
-  name: string,
-): IEvidenceUnit {
+function requireUnit(inventory: IEvidInventory, name: string): IEvidUnit {
   const unit = inventory.units.find((candidate) => candidate.name === name);
   if (unit === undefined) throw new Error(`Missing fingerprint unit: ${name}`);
   return unit;

@@ -1,20 +1,25 @@
-import { EvidenceDartAdapter, EvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidDartAdapter, EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Classifies Dart declarations, complementary accessors, and lexical privacy in the denominator.
+/**
+ * Classifies Dart declarations, complementary accessors, and lexical privacy in
+ * the denominator.
  *
- * The selected surface must retain public lexical owners and accessor families while excluding names made private by their Dart spelling.
+ * The selected surface must retain public lexical owners and accessor families
+ * while excluding names made private by their Dart spelling.
  *
- * 1. Analyze explicit public types, functions, properties, members, constructors, and accessors.
+ * 1. Analyze explicit public types, functions, properties, members, constructors,
+ *    and accessors.
  * 2. Compare the complete unit symbols and identities.
- * 3. Verify private declarations are excluded while complementary public accessors share a unit.
+ * 3. Verify private declarations are excluded while complementary public accessors
+ *    share a unit.
  */
 export async function test_dart_units(): Promise<void> {
-  const inventory = await new EvidenceDartAdapter().analyze(
-    TestSourceSnapshot.create(
+  const inventory = await new EvidDartAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/contract.dart",
       dedent`
     class Contract {
@@ -92,7 +97,7 @@ export async function test_dart_units(): Promise<void> {
     inventory.units.find((unit) => unit.name === "top")?.sites?.length,
     2,
   );
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   const ids = inventory.units.map((unit) => unit.id);
   TestValidator.equals(
     "logical alias resolves",

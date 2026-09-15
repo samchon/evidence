@@ -1,20 +1,23 @@
-import {
-  EvidenceDartAdapter,
-  EvidenceFingerprint,
-  EvidenceInventory,
-} from "@wrtnlabs/evidence";
+import { EvidDartAdapter, EvidFingerprint, EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches Dart documentation at source coordinates without accepting inert examples.
+/**
+ * Attaches Dart documentation at source coordinates without accepting inert
+ * examples.
  *
- * Eligible DartDoc can acknowledge declarations and withdraw hierarchy, while fenced, indented, HTML, ordinary-comment, and literal annotations must stay inert.
+ * Eligible DartDoc can acknowledge declarations and withdraw hierarchy, while
+ * fenced, indented, HTML, ordinary-comment, and literal annotations must stay
+ * inert.
  *
- * 1. Extract type and property evidence from CRLF documentation after astral text and verify their UTF-16 mapping.
- * 2. Require a hidden type's descendant to resolve hidden, preserve fingerprints for annotation edits, and change them for semantic edits.
- * 3. Reject every unsupported tag carrier and every supported Dart string delimiter as an annotation host.
+ * 1. Extract type and property evidence from CRLF documentation after astral text
+ *    and verify their UTF-16 mapping.
+ * 2. Require a hidden type's descendant to resolve hidden, preserve fingerprints
+ *    for annotation edits, and change them for semantic edits.
+ * 3. Reject every unsupported tag carrier and every supported Dart string
+ *    delimiter as an annotation host.
  */
 export async function test_dart_hosts(): Promise<void> {
   const content = dedent`
@@ -38,9 +41,9 @@ export async function test_dart_hosts(): Promise<void> {
     /// <code>@evidence docs/spec.md#html Inert example.</code>
     int sample() => 1;
   `.replaceAll("\n", "\r\n");
-  const adapter = new EvidenceDartAdapter();
+  const adapter = new EvidDartAdapter();
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.create("src/contract.dart", content),
+    EvidTestSourceSnapshot.create("src/contract.dart", content),
   );
 
   TestValidator.equals(
@@ -63,7 +66,7 @@ export async function test_dart_hosts(): Promise<void> {
     inventory.declarations[0]?.location?.range?.start?.line,
     2,
   );
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   TestValidator.equals(
     "withdrawal reaches descendants",
     graph.resolve(
@@ -75,7 +78,7 @@ export async function test_dart_hosts(): Promise<void> {
   const contract = inventory.units.find((unit) => unit.name === "Contract");
   if (contract === undefined) throw new Error("Missing contract.");
   const annotation = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/contract.dart",
       content.replace(
         "Implements the value.",
@@ -84,20 +87,20 @@ export async function test_dart_hosts(): Promise<void> {
     ),
   );
   const changed = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/contract.dart",
       content.replace("value = 1", "value = 2"),
     ),
   );
   TestValidator.equals(
     "annotation-only edit preserves ancestor fingerprint",
-    EvidenceFingerprint.inspect(inventory, contract.id).fingerprint,
-    EvidenceFingerprint.inspect(annotation, contract.id).fingerprint,
+    EvidFingerprint.inspect(inventory, contract.id).fingerprint,
+    EvidFingerprint.inspect(annotation, contract.id).fingerprint,
   );
   TestValidator.notEquals(
     "semantic edit invalidates fingerprint",
-    EvidenceFingerprint.inspect(inventory, contract.id).fingerprint,
-    EvidenceFingerprint.inspect(changed, contract.id).fingerprint,
+    EvidFingerprint.inspect(inventory, contract.id).fingerprint,
+    EvidFingerprint.inspect(changed, contract.id).fingerprint,
   );
   for (const tag of [
     "evidence",
@@ -107,7 +110,7 @@ export async function test_dart_hosts(): Promise<void> {
     "link",
   ]) {
     const unsupported = await adapter.analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/unsupported.dart",
         `// @${tag} docs/spec.md#type Unsupported comment.\nint run() => 1;`,
       ),
@@ -136,7 +139,7 @@ export async function test_dart_hosts(): Promise<void> {
   ]) {
     const closing = delimiter.replace(/^r/u, "");
     const unsupported = await adapter.analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/literal.dart",
         `final text = ${delimiter}@evidence docs/spec.md#type Inert literal.${closing};`,
       ),

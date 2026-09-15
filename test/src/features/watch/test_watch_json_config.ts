@@ -1,16 +1,18 @@
 import { TestValidator } from "@nestia/e2e";
-import { EvidenceWatcher } from "@wrtnlabs/evidence";
-import type { IEvidenceConfig } from "@wrtnlabs/evidence";
+import { EvidWatcher } from "evid";
+import type { IEvidConfig } from "evid";
 import { unlink } from "node:fs/promises";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
- * Replaces valid JSON results with parse and deletion failures, then recovers on repair.
+ * Replaces valid JSON results with parse and deletion failures, then recovers
+ * on repair.
  *
- * The watcher must publish the current JSON configuration state rather than retain
- * a prior successful report when its only configuration file becomes unusable.
+ * The watcher must publish the current JSON configuration state rather than
+ * retain a prior successful report when its only configuration file becomes
+ * unusable.
  *
  * 1. Start from a JSON configuration whose Markdown source cites its target and
  *    require the initial cycle to complete.
@@ -20,7 +22,7 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  *    before closing the watcher.
  */
 export async function test_watch_json_config(): Promise<void> {
-  const config: IEvidenceConfig = {
+  const config: IEvidConfig = {
     claims: [
       {
         type: "markdown",
@@ -30,17 +32,17 @@ export async function test_watch_json_config(): Promise<void> {
     ],
   };
   const content = JSON.stringify(config);
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "json-watch",
     {
-      "evidence.json": content,
+      "evid.json": content,
       "source.md":
         "# Source\n<!-- @evidence target.md#target Implements the target. -->\n",
       "target.md": "# Target\n",
     },
     async (directory) => {
-      const file = join(directory, "evidence.json");
-      const watcher = new EvidenceWatcher(file, {
+      const file = join(directory, "evid.json");
+      const watcher = new EvidWatcher(file, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
       });
@@ -52,7 +54,7 @@ export async function test_watch_json_config(): Promise<void> {
               cycle.status,
               "complete",
             );
-            await TestFileSystem.save(directory, { "evidence.json": "{" });
+            await EvidTestFileSystem.save(directory, { "evid.json": "{" });
           } else if (cycle.cycle === 2) {
             TestValidator.equals(
               "malformed JSON fails",
@@ -62,7 +64,7 @@ export async function test_watch_json_config(): Promise<void> {
             await unlink(file);
           } else if (cycle.cycle === 3) {
             TestValidator.equals("deleted JSON fails", cycle.status, "failed");
-            await TestFileSystem.save(directory, { "evidence.json": content });
+            await EvidTestFileSystem.save(directory, { "evid.json": content });
           } else {
             TestValidator.equals(
               "recreated JSON recovers",

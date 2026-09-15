@@ -1,6 +1,6 @@
 ---
 name: documentation
-description: Defines Evidence prose, source JSDoc, implementation comments, test scenario documentation, and agent instructions. Use before writing or modifying documentation, source comments, AGENTS.md, or repository skills.
+description: Defines Evidence Graph prose, source JSDoc, implementation comments, test scenario documentation, and agent instructions. Use before writing or modifying documentation, source comments, AGENTS.md, or repository skills.
 ---
 
 # Documentation

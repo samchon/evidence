@@ -1,19 +1,22 @@
-import { EvidenceTypeScriptAdapter } from "@wrtnlabs/evidence";
+import { EvidTypeScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Preserves literal TypeScript member segments and default declaration identity.
+/**
+ * Preserves literal TypeScript member segments and default declaration
+ * identity.
  *
- * Punctuated member names stay literal, while each anonymous default declaration receives one public address.
+ * Punctuated member names stay literal, while each anonymous default
+ * declaration receives one public address.
  *
  * 1. Analyze literal members and anonymous defaults.
  * 2. Verify exact identities and resolution behavior.
  */
 export async function test_typescript_literals(): Promise<void> {
-  const snapshot = TestSourceSnapshot.combine([
-    TestSourceSnapshot.create(
+  const snapshot = EvidTestSourceSnapshot.combine([
+    EvidTestSourceSnapshot.create(
       "src/literals.ts",
       dedent`
         export interface Literal {
@@ -31,16 +34,16 @@ export async function test_typescript_literals(): Promise<void> {
         }
       `,
     ),
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/default-class.ts",
       "export default class { member = 1; }",
     ),
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/default-function.ts",
       "export default function (): void {}",
     ),
   ]);
-  const inventory = await new EvidenceTypeScriptAdapter().analyze(snapshot);
+  const inventory = await new EvidTypeScriptAdapter().analyze(snapshot);
 
   TestValidator.equals(
     "literal member segments",

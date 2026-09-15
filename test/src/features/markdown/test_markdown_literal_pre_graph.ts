@@ -1,15 +1,15 @@
-import { EvidenceChecker } from "@wrtnlabs/evidence";
+import { EvidChecker } from "evid";
 import type {
-  IEvidenceCheckObligation,
-  IEvidenceCheckClaim,
-  IEvidenceCheckReport,
-  IEvidenceDiagnostic,
-} from "@wrtnlabs/evidence";
+  IEvidCheckObligation,
+  IEvidCheckClaim,
+  IEvidCheckReport,
+  IEvidDiagnostic,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
  * Keeps uncovered requirements visible after literal rendered-tag examples.
@@ -21,23 +21,24 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  *
  * 1. Check two H1 requirements where prose after the first mentions opening,
  *    closing, and paired `pre` tags in inline code plus a `<prefix>` literal.
- * 2. Acknowledge only the first and require two selected requirements, one
- *    missing acknowledgement, and exit code one.
+ * 2. Acknowledge only the first and require two selected requirements, one missing
+ *    acknowledgement, and exit code one.
  * 3. Replace the prose with a genuine multiline `pre` block containing a fake
  *    heading, leaving the second real heading after its close.
  * 4. Require the fake heading to stay excluded while the second requirement
  *    remains selected and continues to prevent false success.
  * 5. Change the claim to Markdown whose close/open line leaves a rendered region
- *    around a fake citation, followed by one real citation after the final close.
+ *    around a fake citation, followed by one real citation after the final
+ *    close.
  * 6. Require only the real citation to cover its target, retaining one missing
  *    requirement and exit code one.
  */
 export async function test_markdown_literal_pre_graph(): Promise<void> {
   const location: string = join(__dirname, `literal pre graph ${randomUUID()}`);
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     {
-      "evidence.json": JSON.stringify({
+      "evid.json": JSON.stringify({
         claims: [
           {
             type: "typescript",
@@ -55,19 +56,18 @@ export async function test_markdown_literal_pre_graph(): Promise<void> {
       "rules.md": literalRules(),
     },
     async (directory: string): Promise<void> => {
-      const config: string = join(directory, "evidence.json");
-      const literal: IEvidenceCheckReport = await EvidenceChecker.check(config);
+      const config: string = join(directory, "evid.json");
+      const literal: IEvidCheckReport = await EvidChecker.check(config);
       assertMissingSecond("literal rendered tags", literal);
 
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "rules.md": renderedRules(),
       });
-      const rendered: IEvidenceCheckReport =
-        await EvidenceChecker.check(config);
+      const rendered: IEvidCheckReport = await EvidChecker.check(config);
       assertMissingSecond("genuine rendered block", rendered);
 
-      await TestFileSystem.save(directory, {
-        "evidence.json": JSON.stringify({
+      await EvidTestFileSystem.save(directory, {
+        "evid.json": JSON.stringify({
           claims: [
             {
               type: "markdown",
@@ -84,7 +84,7 @@ export async function test_markdown_literal_pre_graph(): Promise<void> {
         "claim.md": orderedClaim(),
         "rules.md": literalRules(),
       });
-      const ordered: IEvidenceCheckReport = await EvidenceChecker.check(config);
+      const ordered: IEvidCheckReport = await EvidChecker.check(config);
       assertMissingSecond("ordered rendered boundaries", ordered);
     },
   );
@@ -94,14 +94,12 @@ export async function test_markdown_literal_pre_graph(): Promise<void> {
  * Requires one of two Markdown requirements to remain uncovered.
  *
  * The first requirement has real evidence in each scenario; this assertion
- * proves that content made inert by rendered boundaries did not cover the second.
+ * proves that content made inert by rendered boundaries did not cover the
+ * second.
  */
-function assertMissingSecond(
-  label: string,
-  report: IEvidenceCheckReport,
-): void {
-  const claim: IEvidenceCheckClaim | undefined = report.claims[0];
-  const obligation: IEvidenceCheckObligation | undefined =
+function assertMissingSecond(label: string, report: IEvidCheckReport): void {
+  const claim: IEvidCheckClaim | undefined = report.claims[0];
+  const obligation: IEvidCheckObligation | undefined =
     claim === undefined ? undefined : claim.obligations[0];
   if (obligation === undefined)
     throw new Error(`${label} report has no graph obligation.`);
@@ -115,7 +113,7 @@ function assertMissingSecond(
   TestValidator.equals(
     `${label} missing acknowledgement`,
     report.diagnostics.filter(
-      (diagnostic: IEvidenceDiagnostic): boolean =>
+      (diagnostic: IEvidDiagnostic): boolean =>
         diagnostic.code === "graph-missing-acknowledgement",
     ).length,
     1,

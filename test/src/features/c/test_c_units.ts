@@ -1,20 +1,24 @@
-import { EvidenceCAdapter, EvidenceLanguageRegistry } from "@wrtnlabs/evidence";
+import { EvidCAdapter, EvidLanguageRegistry } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Classifies the public C surface across tags, aliases, callables, objects, and members.
+/**
+ * Classifies the public C surface across tags, aliases, callables, objects, and
+ * members.
  *
- * The inventory must retain each distinct declaration category so coverage cannot omit public aggregate structure.
+ * The inventory must retain each distinct declaration category so coverage
+ * cannot omit public aggregate structure.
  *
- * 1. Analyze C declarations for tags, typedefs, functions, objects, fields, and enumerators.
+ * 1. Analyze C declarations for tags, typedefs, functions, objects, fields, and
+ *    enumerators.
  * 2. Compare the selected unit symbols and full identities.
  * 3. Verify members retain their aggregate owner.
  */
 export async function test_c_units(): Promise<void> {
   // Certified metadata describes the exact grammar and explicit-source boundary.
-  const language = EvidenceLanguageRegistry.list().find(
+  const language = EvidLanguageRegistry.list().find(
     (entry) => entry.type === "c",
   );
   if (language === undefined) throw new Error("Missing C language metadata.");
@@ -23,7 +27,7 @@ export async function test_c_units(): Promise<void> {
   TestValidator.equals(
     "certified C adapter",
     language.adapter.entry,
-    "EvidenceCAdapter",
+    "EvidCAdapter",
   );
   TestValidator.equals(
     "published C grammar version",
@@ -31,8 +35,8 @@ export async function test_c_units(): Promise<void> {
     true,
   );
 
-  const inventory = await new EvidenceCAdapter().analyze(
-    TestSourceSnapshot.create(
+  const inventory = await new EvidCAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "include/shop.h",
       dedent`
         typedef struct Sale {

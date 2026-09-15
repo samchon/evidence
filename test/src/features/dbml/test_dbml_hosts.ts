@@ -1,12 +1,14 @@
-﻿import { EvidenceDbmlAdapter, EvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidDbmlAdapter, EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches DBML notes and comments only when their schema ownership is direct.
+/**
+ * Attaches DBML notes and comments only when their schema ownership is direct.
  *
- * Notes on declarations can host evidence, while values and examples are inert and duplicate physical-source aliases retain their own locations.
+ * Notes on declarations can host evidence, while values and examples are inert
+ * and duplicate physical-source aliases retain their own locations.
  *
  * 1. Analyze annotated notes and comments on supported schema declarations.
  * 2. Compare their declarations, hosts, and physical-source aliases.
@@ -32,8 +34,8 @@ export async function test_dbml_hosts(): Promise<void> {
       active [note: '@evidence ./spec.md#enum Unsupported enum carrier.']
     }
   `;
-  const inventory = await new EvidenceDbmlAdapter().analyze(
-    TestSourceSnapshot.create("schema.dbml", source),
+  const inventory = await new EvidDbmlAdapter().analyze(
+    EvidTestSourceSnapshot.create("schema.dbml", source),
   );
   TestValidator.equals(
     "only eligible documentation creates evidence",
@@ -66,21 +68,21 @@ export async function test_dbml_hosts(): Promise<void> {
     ),
   );
 
-  const first = TestSourceSnapshot.create(
+  const first = EvidTestSourceSnapshot.create(
     "schema.dbml",
     "Table users { id int }",
     ["schema.dbml"],
   );
-  const aliased = TestSourceSnapshot.create(
+  const aliased = EvidTestSourceSnapshot.create(
     "schema.dbml",
     "Table users { id int }",
     ["linked/schema.dbml"],
   );
-  const merged = await new EvidenceDbmlAdapter().analyze(
-    TestSourceSnapshot.combine([first, aliased]),
+  const merged = await new EvidDbmlAdapter().analyze(
+    EvidTestSourceSnapshot.combine([first, aliased]),
   );
   TestValidator.equals("one physical table inventory", merged.units.length, 2);
-  const resolver = new EvidenceInventory([merged]);
+  const resolver = new EvidInventory([merged]);
   const primary = resolver.resolve(
     {
       file: "/project/schema.dbml",

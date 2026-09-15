@@ -1,25 +1,23 @@
-import {
-  EvidenceAccessor,
-  EvidenceInventory,
-  EvidenceObjcAdapter,
-} from "@wrtnlabs/evidence";
+import { EvidAccessor, EvidInventory, EvidObjcAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Reconciles Objective-C headers and implementations into owned public units.
+/**
+ * Reconciles Objective-C headers and implementations into owned public units.
  *
- * Class, category, protocol, and selector sites can merge while retaining their distinct ownership and addresses.
+ * Class, category, protocol, and selector sites can merge while retaining their
+ * distinct ownership and addresses.
  *
  * 1. Analyze matching headers and implementations with categories and protocols.
  * 2. Verify exact public units, merged sites, parentage, and target resolution.
  * 3. Require diagnostics-free complete extraction.
  */
 export async function test_objc_units(): Promise<void> {
-  const inventory = await new EvidenceObjcAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+  const inventory = await new EvidObjcAdapter().analyze(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/Widget.h",
         dedent`
       @class NSObject;
@@ -49,7 +47,7 @@ export async function test_objc_units(): Promise<void> {
     `,
         ["src/Widget.h", "alias/Widget.h"],
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/Widget.m",
         dedent`
       #import "Widget.h"
@@ -81,7 +79,7 @@ export async function test_objc_units(): Promise<void> {
   TestValidator.equals(
     "exact public surface",
     inventory.units
-      .map((unit) => `${unit.symbol}:${EvidenceAccessor.format(unit.identity)}`)
+      .map((unit) => `${unit.symbol}:${EvidAccessor.format(unit.identity)}`)
       .sort((left, right) => left.localeCompare(right)),
     [
       "type:Widget",
@@ -118,7 +116,7 @@ export async function test_objc_units(): Promise<void> {
     method.parentId,
     widget.id,
   );
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   const selected = inventory.units.map((unit) => unit.id);
   for (const file of [
     "/project/src/Widget.h",

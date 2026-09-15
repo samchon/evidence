@@ -1,11 +1,14 @@
-import { EvidenceSqliteAdapter } from "@wrtnlabs/evidence";
+import { EvidSqliteAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Rejects SQLite input that changes schema interpretation or relation certainty.
+/**
+ * Rejects SQLite input that changes schema interpretation or relation
+ * certainty.
  *
- * Execution-dependent statements and invalid foreign keys must keep the inventory incomplete rather than silently remove obligations.
+ * Execution-dependent statements and invalid foreign keys must keep the
+ * inventory incomplete rather than silently remove obligations.
  *
  * 1. Analyze each schema-changing or invalid relation form.
  * 2. Require incomplete status with actionable diagnostics.
@@ -28,8 +31,8 @@ export async function test_sqlite_boundaries(): Promise<void> {
     "CREATE TABLE broken (id INTEGER, FOREIGN KEY (id) REFERENCES other(a, b));",
     "CREATE TABLE broken (id INTEGER,",
   ]) {
-    const inventory = await new EvidenceSqliteAdapter().analyze(
-      TestSourceSnapshot.create(
+    const inventory = await new EvidSqliteAdapter().analyze(
+      EvidTestSourceSnapshot.create(
         "schema.sql",
         `CREATE TABLE valid (id INTEGER);\n${statement}`,
       ),
@@ -47,8 +50,8 @@ export async function test_sqlite_boundaries(): Promise<void> {
   }
 
   // A declared qualified schema does not require ATTACH execution to inventory its names.
-  const qualified = await new EvidenceSqliteAdapter().analyze(
-    TestSourceSnapshot.create(
+  const qualified = await new EvidSqliteAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "schema.sql",
       "CREATE TABLE archive.items (id INTEGER PRIMARY KEY, owner INTEGER REFERENCES owners MATCH simple ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED);",
     ),
@@ -64,15 +67,15 @@ export async function test_sqlite_boundaries(): Promise<void> {
     1,
   );
 
-  const failed = TestSourceSnapshot.fail(
-    TestSourceSnapshot.create("schema.sql", ""),
+  const failed = EvidTestSourceSnapshot.fail(
+    EvidTestSourceSnapshot.create("schema.sql", ""),
     {
       code: "path-unreadable",
       message: "Read denied.",
       path: "/project/schema.sql",
     },
   );
-  const inventory = await new EvidenceSqliteAdapter().analyze(failed);
+  const inventory = await new EvidSqliteAdapter().analyze(failed);
   TestValidator.equals(
     "source failure stays incomplete",
     inventory.complete,

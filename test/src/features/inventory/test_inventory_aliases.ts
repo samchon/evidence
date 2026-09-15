@@ -1,34 +1,37 @@
-import { EvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestInventory } from "../../internal/TestInventory";
+import { EvidTestInventory } from "../../internal/EvidTestInventory";
 
 /**
- * Counts aliases once while preserving exact public addresses and distinct identities.
+ * Counts aliases once while preserving exact public addresses and distinct
+ * identities.
  *
  * A class is exposed through two barrel names, and another declaration supplies
- * a competing identity. Alias reconciliation must preserve citation paths without
- * either inflating the denominator or merging unrelated declarations by spelling.
+ * a competing identity. Alias reconciliation must preserve citation paths
+ * without either inflating the denominator or merging unrelated declarations by
+ * spelling.
  *
- * 1. Combine an inventory with its copy and select the class ID twice. Require
- *    one complete selected unit and successful lookup through a renamed export.
+ * 1. Combine an inventory with its copy and select the class ID twice. Require one
+ *    complete selected unit and successful lookup through a renamed export.
  * 2. Check exact file boundaries:
+ *
  *    - The same name in an absent file must remain missing.
  *    - Changing the barrel filename's case must not resolve the original path.
  * 3. Publish the second identity under the same address and require ambiguity.
- * 4. Clear the caller's input, a returned population, and a returned snapshot;
- *    the previously constructed index must still select the original class.
+ * 4. Clear the caller's input, a returned population, and a returned snapshot; the
+ *    previously constructed index must still select the original class.
  */
 export async function test_inventory_aliases(): Promise<void> {
-  const input = TestInventory.create();
-  TestInventory.unit(
+  const input = EvidTestInventory.create();
+  EvidTestInventory.unit(
     input,
     "box",
     ["Box"],
     "type",
     "export class Box { value = 1; }",
   );
-  TestInventory.unit(
+  EvidTestInventory.unit(
     input,
     "other",
     ["Other"],
@@ -46,7 +49,7 @@ export async function test_inventory_aliases(): Promise<void> {
     segments: ["Again"],
   });
 
-  const index = new EvidenceInventory([input, structuredClone(input)]);
+  const index = new EvidInventory([input, structuredClone(input)]);
   const population = index.select(["box", "box"]);
 
   TestValidator.predicate("complete identity inventory", population.complete);
@@ -82,7 +85,7 @@ export async function test_inventory_aliases(): Promise<void> {
     file: "/project/barrel.ts",
     segments: ["Renamed"],
   });
-  const ambiguous = new EvidenceInventory([input]).resolve(
+  const ambiguous = new EvidInventory([input]).resolve(
     { file: "/project/barrel.ts", segments: ["Renamed"] },
     ["box", "other"],
   );

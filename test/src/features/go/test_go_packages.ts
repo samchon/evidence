@@ -1,21 +1,23 @@
-import { EvidenceGoAdapter } from "@wrtnlabs/evidence";
+import { EvidGoAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Keeps ordinary and test-package Go identities separate.
+/**
+ * Keeps ordinary and test-package Go identities separate.
  *
- * Same-package tests share package identity while external test packages form their own public boundary.
+ * Same-package tests share package identity while external test packages form
+ * their own public boundary.
  *
  * 1. Analyze ordinary, package-test, and external-test files.
  * 2. Compare their unit IDs.
  * 3. Require only intended package sharing.
  */
 export async function test_go_packages(): Promise<void> {
-  const inventory = await new EvidenceGoAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+  const inventory = await new EvidGoAdapter().analyze(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "shop/api.go",
         dedent`
           package shop
@@ -24,7 +26,7 @@ export async function test_go_packages(): Promise<void> {
           func Shared() {}
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "shop/api_test.go",
         dedent`
           package shop
@@ -33,7 +35,7 @@ export async function test_go_packages(): Promise<void> {
           func (Record) Verify() {}
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "shop/external_test.go",
         dedent`
           package shop_test

@@ -1,17 +1,19 @@
-import { EvidenceSqlAdapter } from "@wrtnlabs/evidence";
+import { EvidSqlAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Rejects portable SQL constructs that could change the selected schema.
+/**
+ * Rejects portable SQL constructs that could change the selected schema.
  *
- * The broad grammar must not turn dialect-specific or schema-changing input into a smaller successful inventory.
+ * The broad grammar must not turn dialect-specific or schema-changing input
+ * into a smaller successful inventory.
  *
  * 1. Analyze unsupported and malformed portable SQL inputs.
  * 2. Require incomplete analysis with boundary diagnostics.
  * 3. Verify an understood empty schema remains complete without fabricated units.
  */
 export async function test_sql_boundaries(): Promise<void> {
-  const adapter = new EvidenceSqlAdapter();
+  const adapter = new EvidSqlAdapter();
   for (const content of [
     "CREATE TABLE account (id INTEGER DEFAULT nextval('sequence'));",
     "CREATE TABLE account (id INTEGER, UNIQUE INDEX named (id));",
@@ -32,7 +34,7 @@ export async function test_sql_boundaries(): Promise<void> {
     "CREATE TABLE account (id INTEGER, ID INTEGER);",
   ]) {
     const result = await adapter.analyze(
-      TestSourceSnapshot.create("schema.sql", content),
+      EvidTestSourceSnapshot.create("schema.sql", content),
     );
     TestValidator.equals(`incomplete: ${content}`, result.complete, false);
     TestValidator.predicate(
@@ -44,7 +46,7 @@ export async function test_sql_boundaries(): Promise<void> {
     );
   }
   const defaults = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "defaults.sql",
       "CREATE TABLE defaults (negative INTEGER DEFAULT -1, enabled BOOLEAN DEFAULT TRUE, label VARCHAR(10) DEFAULT 'ok', created TIMESTAMP DEFAULT CURRENT_TIMESTAMP);",
     ),
@@ -63,7 +65,10 @@ export async function test_sql_boundaries(): Promise<void> {
     ["CREATED", "ENABLED", "LABEL", "NEGATIVE"],
   );
   const empty = await adapter.analyze(
-    TestSourceSnapshot.create("empty.sql", "-- An explicitly empty schema.\n"),
+    EvidTestSourceSnapshot.create(
+      "empty.sql",
+      "-- An explicitly empty schema.\n",
+    ),
   );
   TestValidator.equals("empty understood schema", empty.complete, true);
   TestValidator.equals("no fabricated units", empty.units, []);

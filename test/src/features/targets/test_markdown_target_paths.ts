@@ -1,21 +1,22 @@
 import {
-  EvidenceMarkdownAdapter,
-  EvidenceTargetResolver,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
+  EvidMarkdownAdapter,
+  EvidTargetResolver,
+  EvidTypeScriptAdapter,
+} from "evid";
 import type {
-  IEvidenceDeclaration,
-  IEvidenceHost,
-  IEvidenceInventory,
-  IEvidenceTargetResolution,
-  IEvidenceUnit,
-} from "@wrtnlabs/evidence";
+  IEvidDeclaration,
+  IEvidHost,
+  IEvidInventory,
+  IEvidTargetResolution,
+  IEvidUnit,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Resolves root-relative Markdown paths and literal anchors.
+/**
+ * Resolves root-relative Markdown paths and literal anchors.
  *
  * Markdown target paths and anchors must retain their public spelling through
  * normalization and resolution.
@@ -28,12 +29,15 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *    derivative missing-file result.
  */
 export async function test_markdown_target_paths(): Promise<void> {
-  const reference = await new EvidenceMarkdownAdapter().analyze(
-    TestSourceSnapshot.create("docs/spec%value.md", "## Pricing {#price.v2}"),
+  const reference = await new EvidMarkdownAdapter().analyze(
+    EvidTestSourceSnapshot.create(
+      "docs/spec%value.md",
+      "## Pricing {#price.v2}",
+    ),
   );
   const pricing = requireUnit(reference, "price.v2");
-  const claim = await new EvidenceTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+  const claim = await new EvidTypeScriptAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/claim.ts",
       dedent`
         /** @evidence .\\docs\\spec%value.md#price.v2 Uses the portable Markdown target. */
@@ -47,7 +51,7 @@ export async function test_markdown_target_paths(): Promise<void> {
       `,
     ),
   );
-  const resolver = new EvidenceTargetResolver([reference]);
+  const resolver = new EvidTargetResolver([reference]);
   const declarations = claim.declarations;
 
   const portable = await resolve(
@@ -97,7 +101,7 @@ export async function test_markdown_target_paths(): Promise<void> {
     repair: "Restore its source before resolving targets.",
   });
   const interrupted = await resolve(
-    new EvidenceTargetResolver([incomplete]),
+    new EvidTargetResolver([incomplete]),
     claim,
     requireDeclaration(declarations, "docs/Spec%value.md#price.v2"),
     pricing,
@@ -111,20 +115,20 @@ export async function test_markdown_target_paths(): Promise<void> {
 }
 
 async function resolve(
-  resolver: EvidenceTargetResolver,
-  claim: IEvidenceInventory,
-  declaration: IEvidenceDeclaration,
-  unit: IEvidenceUnit,
-): Promise<IEvidenceTargetResolution> {
+  resolver: EvidTargetResolver,
+  claim: IEvidInventory,
+  declaration: IEvidDeclaration,
+  unit: IEvidUnit,
+): Promise<IEvidTargetResolution> {
   return resolver.resolve(declaration, requireHost(claim, declaration.hostId), [
     unit.id,
   ]);
 }
 
 function requireDeclaration(
-  declarations: IEvidenceDeclaration[],
+  declarations: IEvidDeclaration[],
   target: string,
-): IEvidenceDeclaration {
+): IEvidDeclaration {
   const declaration = declarations.find(
     (candidate) => candidate.target === target,
   );
@@ -133,17 +137,14 @@ function requireDeclaration(
   return declaration;
 }
 
-function requireHost(inventory: IEvidenceInventory, id: string): IEvidenceHost {
+function requireHost(inventory: IEvidInventory, id: string): IEvidHost {
   const host = inventory.hosts.find((candidate) => candidate.id === id);
   if (host === undefined)
     throw new Error(`Missing Markdown target host: ${id}`);
   return host;
 }
 
-function requireUnit(
-  inventory: IEvidenceInventory,
-  identity: string,
-): IEvidenceUnit {
+function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.at(-1) === identity,
   );

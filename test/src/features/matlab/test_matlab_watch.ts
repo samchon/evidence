@@ -1,21 +1,25 @@
-import { EvidenceChecker, EvidenceWatcher } from "@wrtnlabs/evidence";
+import { EvidChecker, EvidWatcher } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
-/** Rebuilds MATLAB coverage after source and configuration changes.
+/**
+ * Rebuilds MATLAB coverage after source and configuration changes.
  *
- * Watch cycles must replace stale inventories when a selected file appears, becomes malformed, is repaired, or the selector changes.
+ * Watch cycles must replace stale inventories when a selected file appears,
+ * becomes malformed, is repaired, or the selector changes.
  *
- * 1. Start with a covered MATLAB property and compare every watch report to a fresh check.
- * 2. Add an undocumented class, then make it malformed, and require failure followed by incomplete status.
+ * 1. Start with a covered MATLAB property and compare every watch report to a
+ *    fresh check.
+ * 2. Add an undocumented class, then make it malformed, and require failure
+ *    followed by incomplete status.
  * 3. Repair the source and require coverage recovery.
  * 4. Change the selector to types and require a fresh passing population.
  */
 export async function test_matlab_watch(): Promise<void> {
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "matlab-watch",
     {
       "evidence.config.ts": dedent`
@@ -30,7 +34,7 @@ export async function test_matlab_watch(): Promise<void> {
     },
     async (directory) => {
       const file = join(directory, "evidence.config.ts");
-      const watcher = new EvidenceWatcher(file, {
+      const watcher = new EvidWatcher(file, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
       });
@@ -40,7 +44,7 @@ export async function test_matlab_watch(): Promise<void> {
           TestValidator.equals(
             `fresh MATLAB cycle ${cycle.cycle}`,
             cycle.report,
-            await EvidenceChecker.check(file),
+            await EvidChecker.check(file),
           );
           if (cycle.cycle === 1) {
             TestValidator.equals(
@@ -48,7 +52,7 @@ export async function test_matlab_watch(): Promise<void> {
               cycle.success,
               true,
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "contracts/Extra.m":
                 "classdef Extra\nproperties\nextra = 2\nend\nend\n",
             });
@@ -58,7 +62,7 @@ export async function test_matlab_watch(): Promise<void> {
               cycle.success,
               false,
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "contracts/Extra.m": "classdef Extra\n",
             });
           } else if (cycle.cycle === 3) {
@@ -67,7 +71,7 @@ export async function test_matlab_watch(): Promise<void> {
               cycle.status,
               "incomplete",
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "contracts/Extra.m": "% Empty repaired source.\n",
             });
           } else if (cycle.cycle === 4) {
@@ -76,7 +80,7 @@ export async function test_matlab_watch(): Promise<void> {
               cycle.success,
               true,
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "evidence.config.ts": dedent`
             export default { claims: [{ type: "typescript", files: ["claims.ts"], reference: { type: "matlab", files: ["contracts/*.m"], symbol: "type" } }] };
           `.concat("\n"),

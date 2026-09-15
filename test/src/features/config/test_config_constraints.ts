@@ -1,10 +1,11 @@
-import type { IEvidenceConfig } from "@wrtnlabs/evidence";
+import type { IEvidConfig } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { validateEvidenceConfig } from "../../../../packages/evidence/src/internal/validateEvidenceConfig";
+import { validateEvidConfig } from "evid";
 
 /**
- * Validates malformed population declarations before inactive entries are filtered.
+ * Validates malformed population declarations before inactive entries are
+ * filtered.
  *
  * Disabled and off settings control execution, not whether configuration shape
  * is valid. Ignoring malformed inactive declarations would let later activation
@@ -26,7 +27,7 @@ export function test_config_constraints(): void {
     emptyGraph.includes("at least one claim is required"),
   );
 
-  const invalid: IEvidenceConfig = {
+  const invalid: IEvidConfig = {
     claims: [
       {
         type: "typescript",
@@ -84,7 +85,7 @@ export function test_config_constraints(): void {
       message.includes(expected),
     );
 
-  validateEvidenceConfig({
+  validateEvidConfig({
     claims: [
       {
         type: "kotlin",
@@ -102,12 +103,12 @@ export function test_config_constraints(): void {
  * Unexpected non-Error causes propagate, and successful validation fails the
  * scenario rather than returning text that could satisfy a negative assertion.
  */
-function failure(config: IEvidenceConfig): string {
+function failure(config: IEvidConfig): string {
   try {
-    validateEvidenceConfig(config);
+    validateEvidConfig(config);
   } catch (cause) {
     if (cause instanceof Error) return cause.message;
     throw cause;
   }
-  throw new Error("Expected Evidence configuration validation to fail.");
+  throw new Error("Expected Evid configuration validation to fail.");
 }

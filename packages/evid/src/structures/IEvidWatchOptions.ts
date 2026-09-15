@@ -1,0 +1,40 @@
+import type { tags } from "typia";
+
+/**
+ * Timing controls for dependency polling, edit settling, and parser recovery.
+ *
+ * The watcher compares dependency snapshots and waits for a quiet period before
+ * reevaluation. Parser acquisition has a separate retry clock because network
+ * or cache recovery may happen without any watched filesystem change.
+ */
+export interface IEvidWatchOptions {
+  /**
+   * Positive delay between dependency snapshots, in milliseconds.
+   *
+   * Shorter intervals detect changes sooner while performing filesystem
+   * inspection more often. Omission uses 250 milliseconds.
+   *
+   * @default 250
+   */
+  pollIntervalMilliseconds?: number & tags.Type<"uint32"> & tags.Minimum<1>;
+
+  /**
+   * Quiet period required before checking a changed snapshot, in milliseconds.
+   *
+   * Further changes restart settling. Zero skips the quiet wait; omission uses
+   * 100 milliseconds to coalesce a burst of related edits.
+   *
+   * @default 100
+   */
+  debounceMilliseconds?: number & tags.Type<"uint32">;
+
+  /**
+   * Positive delay before retrying failed parser acquisition, in milliseconds.
+   *
+   * The retry can trigger without a source edit, allowing download, cache, or
+   * integrity failures to recover. Omission waits five seconds.
+   *
+   * @default 5000
+   */
+  parserRetryMilliseconds?: number & tags.Type<"uint32"> & tags.Minimum<1>;
+}

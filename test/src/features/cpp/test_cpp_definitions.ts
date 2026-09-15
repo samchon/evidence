@@ -1,22 +1,25 @@
-import { EvidenceCppAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+import { EvidCppAdapter } from "evid";
+import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Merges compatible C++ declarations and definitions into their semantic identities.
+/**
+ * Merges compatible C++ declarations and definitions into their semantic
+ * identities.
  *
- * A callable family may appear as declarations, overloads, and qualified out-of-class definitions, all of which must contribute sites to one owner.
+ * A callable family may appear as declarations, overloads, and qualified
+ * out-of-class definitions, all of which must contribute sites to one owner.
  *
  * 1. Analyze class and namespace declarations with matching qualified definitions.
  * 2. Compare the resulting callable identities and their declaration-site counts.
  * 3. Require overload families to remain separate from unrelated names.
  */
 export async function test_cpp_definitions(): Promise<void> {
-  const inventory = await new EvidenceCppAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+  const inventory = await new EvidCppAdapter().analyze(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "include/shop.hpp",
         dedent`
           namespace shop {
@@ -46,7 +49,7 @@ export async function test_cpp_definitions(): Promise<void> {
           }
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/shop.cpp",
         dedent`
           namespace shop {
@@ -118,10 +121,7 @@ export async function test_cpp_definitions(): Promise<void> {
   );
 }
 
-function requireUnit(
-  inventory: IEvidenceInventory,
-  identity: string,
-): IEvidenceUnit {
+function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.join(".") === identity,
   );

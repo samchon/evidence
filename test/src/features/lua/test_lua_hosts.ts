@@ -1,14 +1,17 @@
-import { EvidenceFingerprint, EvidenceLuaAdapter } from "@wrtnlabs/evidence";
+import { EvidFingerprint, EvidLuaAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches LuaDoc at original UTF-16 coordinates and keeps inert carriers out.
+/**
+ * Attaches LuaDoc at original UTF-16 coordinates and keeps inert carriers out.
  *
- * Declaration-owned LuaDoc can acknowledge units while examples and detached comments cannot.
+ * Declaration-owned LuaDoc can acknowledge units while examples and detached
+ * comments cannot.
  *
- * 1. Analyze coordinate-sensitive LuaDoc. 2. Compare attached hosts and ranges. 3. Reject examples and detached annotations.
+ * 1. Analyze coordinate-sensitive LuaDoc. 2. Compare attached hosts and ranges. 3.
+ *    Reject examples and detached annotations.
  */
 export async function test_lua_hosts(): Promise<void> {
   const content = dedent`
@@ -24,9 +27,9 @@ export async function test_lua_hosts(): Promise<void> {
     local hidden = { child = 1 }
     return { hidden = hidden }
   `.replaceAll("\n", "\r\n");
-  const adapter = new EvidenceLuaAdapter();
+  const adapter = new EvidLuaAdapter();
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.create("source.lua", content),
+    EvidTestSourceSnapshot.create("source.lua", content),
   );
 
   TestValidator.equals(
@@ -62,15 +65,18 @@ export async function test_lua_hosts(): Promise<void> {
   const fn = inventory.units.find((unit) => unit.name === "run");
   if (fn === undefined) throw new Error("Public function is missing.");
   const normalized = await adapter.analyze(
-    TestSourceSnapshot.create("source.lua", content.replaceAll("\r\n", "\n")),
+    EvidTestSourceSnapshot.create(
+      "source.lua",
+      content.replaceAll("\r\n", "\n"),
+    ),
   );
   TestValidator.equals(
     "CRLF semantic fingerprints are stable",
-    EvidenceFingerprint.inspect(inventory, fn.id).fingerprint,
-    EvidenceFingerprint.inspect(normalized, fn.id).fingerprint,
+    EvidFingerprint.inspect(inventory, fn.id).fingerprint,
+    EvidFingerprint.inspect(normalized, fn.id).fingerprint,
   );
   const unsupported = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "source.lua",
       dedent`
     --- @evidence spec.md#private Private documentation cannot claim coverage.
@@ -98,7 +104,7 @@ export async function test_lua_hosts(): Promise<void> {
   if (unsupportedSource === undefined)
     throw new Error("Unsupported carrier source is missing.");
   const changedLiteral = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "source.lua",
       unsupportedSource.content.replace(
         "A string cannot claim coverage.",
@@ -113,7 +119,7 @@ export async function test_lua_hosts(): Promise<void> {
     throw new Error("Public string-returning function is missing.");
   TestValidator.notEquals(
     "unsupported tag-looking strings remain semantic content",
-    EvidenceFingerprint.inspect(unsupported, publicFunction.id).fingerprint,
-    EvidenceFingerprint.inspect(changedLiteral, publicFunction.id).fingerprint,
+    EvidFingerprint.inspect(unsupported, publicFunction.id).fingerprint,
+    EvidFingerprint.inspect(changedLiteral, publicFunction.id).fingerprint,
   );
 }

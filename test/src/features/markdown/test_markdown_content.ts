@@ -1,18 +1,22 @@
-import { EvidenceMarkdownAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+import { EvidMarkdownAdapter } from "evid";
+import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
- * Partitions Markdown content among file and heading units at real section boundaries.
+ * Partitions Markdown content among file and heading units at real section
+ * boundaries.
  *
- * Evidence needs each unit's owned ranges to exclude nested supported sections
- * while retaining deep headings, fenced text, and prose that belongs to the current section.
+ * Evid needs each unit's owned ranges to exclude nested supported sections
+ * while retaining deep headings, fenced text, and prose that belongs to the
+ * current section.
  *
- * 1. Analyze file prelude, nested H1-H4 sections, an anchorless heading, a deep heading, and annotations.
+ * 1. Analyze file prelude, nested H1-H4 sections, an anchorless heading, a deep
+ *    heading, and annotations.
  * 2. Verify owned content ranges:
+ *
  *    - The file retains its prelude and the H1 retains its anchorless region.
  *    - The H2 contains only its direct section.
  *    - The H4 retains deep and fenced content but excludes a comment-only line.
@@ -39,8 +43,8 @@ export async function test_markdown_content(): Promise<void> {
     ### Nested after missing
     Nested body.
   `;
-  const inventory = await new EvidenceMarkdownAdapter().analyze(
-    TestSourceSnapshot.create("guide.md", content),
+  const inventory = await new EvidMarkdownAdapter().analyze(
+    EvidTestSourceSnapshot.create("guide.md", content),
   );
   const file = requireUnit(inventory, "file", "guide.md");
   const parent = requireUnit(inventory, "h1", "Parent");
@@ -90,10 +94,10 @@ export async function test_markdown_content(): Promise<void> {
 }
 
 function requireUnit(
-  inventory: IEvidenceInventory,
-  symbol: IEvidenceUnit["symbol"],
+  inventory: IEvidInventory,
+  symbol: IEvidUnit["symbol"],
   name: string,
-): IEvidenceUnit {
+): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.symbol === symbol && candidate.name === name,
   );
@@ -102,7 +106,7 @@ function requireUnit(
   return unit;
 }
 
-function lines(content: string, unit: IEvidenceUnit): string[] {
+function lines(content: string, unit: IEvidUnit): string[] {
   const site = unit.sites[0];
   if (site === undefined)
     throw new Error(`Markdown unit ${unit.id} has no site.`);

@@ -1,37 +1,37 @@
 ---
 name: project
-description: Defines the Evidence workspace, current implementation status, product boundaries, dependencies, and canonical commands. Use when starting repository work or changing package architecture.
+description: Defines the evid workspace, current implementation status, product boundaries, dependencies, and canonical commands. Use when starting repository work or changing package architecture.
 ---
 
 # Project
 
 ## Product
 
-`@wrtnlabs/evidence` enforces explicit acknowledgements between specifications, skills, public declarations, and tests. Public configuration types follow `@ttsc/evidence`: Config, Claim, Reference, shared bases, and artifact selectors. Use `Programming` and `Database` for type families. The `type` discriminator names the source language, such as `typescript`, `cpp`, `rust`, `prisma`, `sql`, or `dbml`; do not add a separate `language` setting. Files are selected directly with globs.
+`evid` enforces explicit acknowledgements between specifications, skills, public declarations, and tests. Public configuration types follow `@ttsc/evidence`: Config, Claim, Reference, shared bases, and artifact selectors. Use `Programming` and `Database` for type families. The `type` discriminator names the source language, such as `typescript`, `cpp`, `rust`, `prisma`, `sql`, or `dbml`; do not add a separate `language` setting. Files are selected directly with globs.
 
-Keep programming and database language identifiers in `EvidenceProgrammingType` and `EvidenceDatabaseType`. Database languages share one Claim and one Reference interface. Use `model`, `column`, and `relation` as the common database selectors, and `type`, `function`, and `property` for programming declarations. Classes belong to `type`.
+Keep programming and database language identifiers in `EvidProgrammingType` and `EvidDatabaseType`. Database languages share one Claim and one Reference interface. Use `model`, `column`, and `relation` as the common database selectors, and `type`, `function`, and `property` for programming declarations. Classes belong to `type`.
 
-The [roadmap](https://github.com/wrtnlabs/evidence/issues/31) owns execution order. Follow the [issue campaign skill](../issue-campaign/SKILL.md) when changing issue handoffs or implementation ordering.
+The [roadmap](https://github.com/wrtnlabs/evid/issues/31) owns execution order. Follow the [issue campaign skill](../issue-campaign/SKILL.md) when changing issue handoffs or implementation ordering.
 
 ## Layout
 
 | Path | Owner |
 | --- | --- |
-| `packages/evidence/src` | Public API entry point and configuration-to-graph checker orchestration |
-| `packages/evidence/src/adapters/<artifact>` | Public adapter, extraction helpers, and private types for each language or artifact; shared JavaScript/TypeScript extraction lives in `ecmascript` |
-| `packages/evidence/src/commands` | Reusable CLI command handling and watch execution |
-| `packages/evidence/src/contexts` | Execution state and indexes owned by facade/controller instances |
-| `packages/evidence/src/graph` | Semantic inventory, graph evaluation, fingerprints, and queries |
-| `packages/evidence/src/loaders` | Configuration and local source loading |
-| `packages/evidence/src/parsers` | Parser sessions, language registry, documentation mapping, and evidence tags |
-| `packages/evidence/src/programmers` | Namespace algorithms operating on explicit execution contexts |
-| `packages/evidence/src/reporters` | Check, query, graph, and watch output rendering |
-| `packages/evidence/src/targets` | Accessor parsing, file-qualified targets, and target resolution |
-| `packages/evidence/src/internal` | Private implementation helpers and records |
-| `packages/evidence/src/structures` | Shared adapter contract, configuration, parser, source, and semantic inventory interfaces |
-| `packages/evidence/src/typings` | Language identifiers, symbol selectors, and diagnostic severity |
-| `packages/evidence/src/executable` | Small Node CLI bootstraps |
-| `packages/evidence/src/internal/parser-grammars.json` | Pinned grammar download metadata imported by the runtime asset reader |
+| `packages/evid/src` | Public API entry point and configuration-to-graph checker orchestration |
+| `packages/evid/src/adapters/<artifact>` | Public adapter, extraction helpers, and private types for each language or artifact; shared JavaScript/TypeScript extraction lives in `ecmascript` |
+| `packages/evid/src/commands` | Reusable CLI command handling and watch execution |
+| `packages/evid/src/contexts` | Execution state and indexes owned by facade/controller instances |
+| `packages/evid/src/graph` | Semantic inventory, graph evaluation, fingerprints, and queries |
+| `packages/evid/src/loaders` | Configuration and local source loading |
+| `packages/evid/src/parsers` | Parser sessions, language registry, documentation mapping, and evidence tags |
+| `packages/evid/src/programmers` | Namespace algorithms operating on explicit execution contexts |
+| `packages/evid/src/reporters` | Check, query, graph, and watch output rendering |
+| `packages/evid/src/targets` | Accessor parsing, file-qualified targets, and target resolution |
+| `packages/evid/src/internal` | Private implementation helpers and records |
+| `packages/evid/src/structures` | Shared adapter contract, configuration, parser, source, and semantic inventory interfaces |
+| `packages/evid/src/typings` | Language identifiers, symbol selectors, and diagnostic severity |
+| `packages/evid/src/executable` | Small Node CLI bootstraps |
+| `packages/evid/src/internal/parser-grammars.json` | Pinned grammar download metadata imported by the runtime asset reader |
 | `test/src/index.ts` | DynamicExecutor unit-test entry point |
 | `test/src/features/<category>` | Exported logic unit-test functions |
 | `config/package.json` | Private workspace with dependencies for shared configuration |
@@ -42,15 +42,15 @@ The [roadmap](https://github.com/wrtnlabs/evidence/issues/31) owns execution ord
 
 ## Dependencies And Distribution
 
-Use the root `packageManager` version. Keep `pnpm-workspace.yaml` to package globs and family catalogs: `samchon`, `typescript`, `tree-sitter`, and `utils`. Dependency and peer versions belong there; package manifests use named `catalog:<family>` or `workspace:` references. Do not add pnpm policy options. Consumers explicitly install `typescript`, `ttsc`, and `@wrtnlabs/evidence`; the first two remain required peers. `ttsx` is an executable in `ttsc`, not another dependency. `@ttsc/lint` is a development dependency. Each package and the test workspace have their own `lint.config.ts` extending `config/lint.config.ts`; keep shared rules in that common file.
+Use the root `packageManager` version. Keep `pnpm-workspace.yaml` to package globs and family catalogs: `samchon`, `typescript`, `tree-sitter`, and `utils`. Dependency and peer versions belong there; package manifests use named `catalog:<family>` or `workspace:` references. Do not add pnpm policy options. Consumers explicitly install `typescript`, `ttsc`, and `evid`; the first two remain required peers. `ttsx` is an executable in `ttsc`, not another dependency. `@ttsc/lint` is a development dependency. Each package and the test workspace have their own `lint.config.ts` extending `config/lint.config.ts`; keep shared rules in that common file.
 
 Use `typia` for runtime type checks and `@typia/utils` for `dedent`. Keep both in the `samchon` catalog. Register the development-only `@ttsc/evidence` contributor in each project's lint config and enable `evidence/singular` at error severity in the shared rules.
 
 Keep compiler dependencies in the workspaces that use them, including `config` for its typed lint configuration. The repository root only needs the formatter. Build scripts invoke `ttsc` with its default `tsconfig.json`; shared compiler settings do not declare plugins already discovered from package dependencies.
 
-`EvidenceParser` uses official `web-tree-sitter` and automatically downloaded, checksum-verified upstream grammars. A language needs an adapter and certification as well as a grammar. Read [the domain skill](evidence/SKILL.md) for the completeness boundary and the [adapter onboarding guide](evidence/adapter-onboarding.md) for grammar acquisition and manifest maintenance. Keep language WASM out of the repository and package allowlist.
+`EvidParser` uses official `web-tree-sitter` and automatically downloaded, checksum-verified upstream grammars. A language needs an adapter and certification as well as a grammar. Read [the domain skill](evidence/SKILL.md) for the completeness boundary and the [adapter onboarding guide](evidence/adapter-onboarding.md) for grammar acquisition and manifest maintenance. Keep language WASM out of the repository and package allowlist.
 
-Adapters implement `IEvidenceAdapter` and return serializable inventories. `EvidenceInventory` reconciles identities, validates ownership, and projects independent populations. `EvidenceTagParser` consumes mapped documentation after the adapter establishes attachment. Follow the [adapter onboarding guide](evidence/adapter-onboarding.md) for certification and distribution gates and the [adapter inventory guide](evidence/adapter-inventories.md) for extraction and host records.
+Adapters implement `IEvidAdapter` and return serializable inventories. `EvidInventory` reconciles identities, validates ownership, and projects independent populations. `EvidTagParser` consumes mapped documentation after the adapter establishes attachment. Follow the [adapter onboarding guide](evidence/adapter-onboarding.md) for certification and distribution gates and the [adapter inventory guide](evidence/adapter-inventories.md) for extraction and host records.
 
 Use CommonJS; do not add `type: "module"` or an unsupported Node engine constraint. Workspace `main` and `exports` point directly to `./src/index.ts`. JavaScript entry points, declaration paths, and the installed CLI bin belong only in `publishConfig`. Compiled package files go to ignored `lib` directories. Follow [development](../development/SKILL.md) for inert entry points, TypeScript execution, and maintenance scripts, and [documentation](../documentation/SKILL.md#readers-and-ownership) for authoritative README/LICENSE ownership.
 

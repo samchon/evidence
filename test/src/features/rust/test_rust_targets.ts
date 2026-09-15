@@ -1,27 +1,29 @@
-import { EvidenceRustAdapter } from "@wrtnlabs/evidence";
+import { EvidRustAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Resolves Rust public modules, aliases, fields, and associated items.
+/**
+ * Resolves Rust public modules, aliases, fields, and associated items.
  *
- * Target resolution follows public files and preserves associated-item ownership.
+ * Target resolution follows public files and preserves associated-item
+ * ownership.
  *
- * 1. Build a reference crate with module, declaration-file, alias, field, inherent,
- *    and trait-implementation access paths.
+ * 1. Build a reference crate with module, declaration-file, alias, field,
+ *    inherent, and trait-implementation access paths.
  * 2. Resolve corresponding evidence tags and require every target to resolve.
  * 3. Require aliases to share the Sale unit while colliding inherent and trait
  *    methods remain distinct units.
  */
 export async function test_rust_targets(): Promise<void> {
-  const adapter = new EvidenceRustAdapter();
+  const adapter = new EvidRustAdapter();
 
   // The reference exposes one owner through its module path, declaration file, and alias.
   const reference = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/lib.rs",
         dedent`
           pub mod sale;
@@ -32,7 +34,7 @@ export async function test_rust_targets(): Promise<void> {
           }
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/sale.rs",
         dedent`
           pub struct Sale {
@@ -52,7 +54,7 @@ export async function test_rust_targets(): Promise<void> {
     ]),
   );
   const claim = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "test/sale_test.rs",
       dedent`
         /// @evidence ../src/lib.rs#sale.Sale Verifies the module path.
@@ -74,7 +76,7 @@ export async function test_rust_targets(): Promise<void> {
     [],
   );
   TestValidator.equals("complete Rust target claim", claim.diagnostics, []);
-  const resolutions = await TestGraph.resolveDeclarations(
+  const resolutions = await EvidTestGraph.resolveDeclarations(
     claim,
     reference,
     reference.units.map((unit) => unit.id),

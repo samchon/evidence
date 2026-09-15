@@ -1,25 +1,23 @@
-import {
-  EvidenceGraph,
-  EvidenceZigAdapter,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
+import { EvidGraph, EvidZigAdapter, EvidTypeScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Evaluates Zig selectors as required cross-language references.
+/**
+ * Evaluates Zig selectors as required cross-language references.
  *
- * Selected units require evidence, and reviews remain recorded without supplying missing coverage.
+ * Selected units require evidence, and reviews remain recorded without
+ * supplying missing coverage.
  *
  * 1. Extract each Zig selector with matching claims.
  * 2. Evaluate acknowledged and undocumented populations.
  * 3. Verify review-only references remain missing.
  */
 export async function test_zig_graph(): Promise<void> {
-  const reference = await new EvidenceZigAdapter().analyze(
-    TestSourceSnapshot.create(
+  const reference = await new EvidZigAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/Contract.zig",
       dedent`
     pub const Contract = struct { const privateValue = 1; };
@@ -28,8 +26,8 @@ export async function test_zig_graph(): Promise<void> {
   `,
     ),
   );
-  const claims = await new EvidenceTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+  const claims = await new EvidTypeScriptAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/Claims.ts",
       dedent`
     /** @evidence ./Contract.zig#Contract Verifies the type. */
@@ -65,7 +63,7 @@ export async function test_zig_graph(): Promise<void> {
             ),
           )
         : [];
-      const graph = EvidenceGraph.evaluate({
+      const graph = EvidGraph.evaluate({
         claims: [
           {
             severity: "error",
@@ -76,7 +74,7 @@ export async function test_zig_graph(): Promise<void> {
                 severity: "error",
                 inventory: reference,
                 unitIds,
-                resolutions: await TestGraph.resolveDeclarations(
+                resolutions: await EvidTestGraph.resolveDeclarations(
                   claim,
                   reference,
                   unitIds,
@@ -93,13 +91,13 @@ export async function test_zig_graph(): Promise<void> {
       );
       TestValidator.equals(
         `${symbol} exact missing population`,
-        TestGraph.obligation(graph, 0, 0).missingUnitIds,
+        EvidTestGraph.obligation(graph, 0, 0).missingUnitIds,
         acknowledged ? [] : unitIds,
       );
     }
   }
-  const review = await new EvidenceZigAdapter().analyze(
-    TestSourceSnapshot.create(
+  const review = await new EvidZigAdapter().analyze(
+    EvidTestSourceSnapshot.create(
       "src/Review.zig",
       dedent`
     /// @evidenceReview ./Contract.zig#run Reviewed without an acknowledgement.
@@ -116,7 +114,7 @@ export async function test_zig_graph(): Promise<void> {
   const functions = reference.units
     .filter((unit) => unit.symbol === "function")
     .map((unit) => unit.id);
-  const graph = EvidenceGraph.evaluate({
+  const graph = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -128,7 +126,7 @@ export async function test_zig_graph(): Promise<void> {
             inventory: reference,
             unitIds: functions,
             resolutions: [],
-            reviewResolutions: await TestGraph.resolveReviews(
+            reviewResolutions: await EvidTestGraph.resolveReviews(
               review,
               reference,
               functions,
@@ -140,7 +138,7 @@ export async function test_zig_graph(): Promise<void> {
   });
   TestValidator.equals(
     "review never supplies missing coverage",
-    TestGraph.obligation(graph, 0, 0).missingUnitIds,
+    EvidTestGraph.obligation(graph, 0, 0).missingUnitIds,
     functions,
   );
 }
