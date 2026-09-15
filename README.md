@@ -19,7 +19,7 @@ Every rule, requirement, schema, and API becomes an obligation the check enforce
 export function CouponStackingNotice(props: IProps): JSX.Element;
 ```
 
-`@evidence <target> <reason>` is the agent's explicit claim about what the code implements and why. `@evidenceExclude` records why an obligation does not apply. A target is a Markdown section, a public declaration in one of 19 programming languages, a model, column, or relation in one of 7 database schema languages, or a Swagger operation. Evidence reads them through upstream Tree-sitter grammars, with no compiler, plugin, or build for the checked project. Leave one obligation unanswered and the check fails.
+`@evidence <target> <reason>` is the agent's claim about what the code implements and why; `@evidenceExclude` records why an obligation does not apply. A target is a Markdown section, a public declaration in 19 programming languages, a model in 7 database schema languages, or a Swagger operation, all read through Tree-sitter with no compiler or build.
 
 Delete the `useCouponStacking` line and the check stops:
 
@@ -49,7 +49,7 @@ npx evidence init
 npx evidence
 ```
 
-`typescript` and `ttsc` are peer dependencies; `ttsc` supplies `ttsx`, which evaluates `evidence.config.ts`. `init` writes a typed starter config and never overwrites one. Grammars download into a per-user cache on first use; install no grammar package and no compiler for the analyzed languages. [Step 1](#step-1-enforce-your-principles) fills the config in.
+`typescript` and `ttsc` are peer dependencies; `ttsc` supplies `ttsx`, which evaluates `evidence.config.ts`. Grammars download on first use; nothing else is installed. [Step 1](#step-1-enforce-your-principles) fills the config in.
 
 ## Why a graph
 
@@ -74,15 +74,15 @@ The agent reads all of it and says it understands. Four hours later, this is in 
 if (file === "wide-chars.ts") return WIDE_CHARS_EXPECTED;
 ```
 
-One test would not go green, so the agent hardcoded the answer. That breaks the first rule on the list, and the build passes anyway. The type checker looks at types, the tests look for green, the linter looks for unused variables. Nothing asks which rule was broken, because the rules live in a document and the build does not read documents. A human has to read the diff holding every rule in their head, and at 4,000 lines that check may as well not exist.
+One test would not go green, so the agent hardcoded the answer. That breaks the first rule on the list, and the build passes anyway. The type checker looks at types, the tests look for green, the linter looks for unused variables. The rules live in a document, and the build does not read documents.
 
-Writing the rules harder does not help. Nobody starts honoring a contract because you set it in a bigger font. [One study](https://arxiv.org/abs/2605.01771) read the tool logs instead of the model's own report: six frontier models followed a written instruction in 0 of 60 runs, and reported compliance in more than 90% of them. Under [eight simultaneous constraints](https://arxiv.org/abs/2608.12426), models satisfied each one about 41% of the time and all eight in 5.7% of responses. Every rule you add pushes one you already wrote further back.
+Writing the rules harder does not help. [One study](https://arxiv.org/abs/2605.01771) read the tool logs instead of the model's own report: six frontier models followed a written instruction in 0 of 60 runs, and reported compliance in more than 90% of them. Every rule you add pushes one you already wrote further back.
 
-This is not malice. If there is a cheaper way to pass the check, that is the way it goes: agents [saturate the visible test suite and fail the hidden one](https://arxiv.org/abs/2605.21384), [retrieve answers instead of deriving them](https://cursor.com/blog/reward-hacking-coding-benchmarks), and [hardcode return values per test input](https://debugml.github.io/cheating-agents). Not taking the exam, but finding the cheapest way to look like you took it.
+This is not malice. If there is a cheaper way to pass the check, that is the way it goes: agents [saturate the visible test suite and fail the hidden one](https://arxiv.org/abs/2605.21384), [retrieve answers instead of deriving them](https://cursor.com/blog/reward-hacking-coding-benchmarks), and [hardcode return values per test input](https://debugml.github.io/cheating-agents).
 
 ### So the checker asks
 
-Every function has to answer every rule in your skill file, in its own documentation comment, one sentence per rule. You never write those comments yourself; the check fails without them, so the agent writes them and you read what it says about the code.
+Every function answers every rule in your skill file, in its own documentation comment, one sentence per rule. The check fails without those sentences, so the agent writes them, and you read what it says about the code.
 
 ```ts
 /**
@@ -93,29 +93,11 @@ Every function has to answer every rule in your skill file, in its own documenta
 export function resolveHandler(name: string, registry: Map<string, Handler>): Handler;
 ```
 
-Delete any one of those three lines and the check stops:
-
-```bash
-$ npx evidence
-Evidence check complete.
-Config: /workspace/app/evidence.config.ts
-Claims: 1/1 active.
-Obligations: 1/1 active, 0 incomplete.
-Coverage: 2/3 units covered, 1 missing.
-Diagnostics: 1 errors, 0 warnings.
-
-ERROR [graph-checklist-missing] claim[0] 'every function answers every engineering principle' (typescript) -> reference[0] (markdown)
-Location: /workspace/app/src/resolve.ts:7:1
-Subject: configured population
-Claim 1 ('every function answers every engineering principle') reference 1: Host '/workspace/app/src/resolve.ts#resolveHandler' has not acknowledged 1 of 3 checklist item(s): '/workspace/app/.agents/skills/principles/SKILL.md#["fix-root-causes"]'.
-Repair: Cite every missing checklist item from this host, or exclude the scope that does not apply.
-```
-
-The configuration behind it is one claim; [Step 1](#step-1-enforce-your-principles) sets it up in a minute.
+Delete any one of those lines and the check stops. Add a rule to the document and every function owes one more answer.
 
 ### There are sentences it cannot write
 
-Suppose the agent special-cased a fixture name. That function must now answer `#no-hard-coding`, and the honest answer reads:
+Suppose the agent special-cased a fixture name. That function must answer `#no-hard-coding`, and the honest answer reads:
 
 ```ts
 /**
@@ -125,15 +107,15 @@ Suppose the agent special-cased a fixture name. That function must now answer `#
 
 Two options: write that sentence as it stands, or fix the code so it never has to be written. In practice it fixes the code.
 
-The checker cannot tell whether a sentence is true. That is the reviewer's job, and it is now a list of claims attached to the declarations they describe instead of a 4,000-line diff. `requireReview` turns that reading into a record that expires when the cited text changes.
+The checker cannot tell whether a sentence is true. That is the reviewer's job, and it is now a list of claims beside the declarations they describe instead of a 4,000-line diff.
 
 ### It outlives the prompt
 
-A prompt instruction gets buried as the conversation grows and is gone in the next session. It is not in CI, and it is not in a pull request from someone who never read your `AGENTS.md`. The checklist lives in the repository, and the same command runs in CI.
+A prompt instruction is gone in the next session and absent from CI. The checklist lives in the repository, and the same command runs in CI.
 
 ## Step 1: Enforce your principles
 
-The rule file is already there. It is already Markdown, it already has headings, and it is already the document you wish the agent would follow. Start here.
+The rule file is already there, already Markdown, already headed. Start with it.
 
 ### Point the checker at the rule file
 
@@ -160,7 +142,7 @@ export default {
 } satisfies IEvidenceConfig;
 ```
 
-A **claim** selects the declarations that must cite: every function under `src`. Its **reference** selects what must be cited: every H2 in the skill file. `checklist` makes every function answer every heading, so the denominator is functions times principles.
+A **claim** selects what must cite: every function under `src`. Its **reference** selects what must be cited: every H2 in the skill file. `checklist` makes every function answer every heading.
 
 ### Run
 
@@ -180,7 +162,7 @@ Claim 1 ('every function answers every engineering principle') reference 1: Host
 Repair: Cite every missing checklist item from this host, or exclude the scope that does not apply.
 ```
 
-On an existing repository this is hundreds of errors, one per function per rule. That number is the real distance between your rule file and your code, and it was invisible until now. Paying it down is not your job.
+On an existing repository this is hundreds of errors: the real distance between your rule file and your code. Paying it down is not your job.
 
 ### Hand it to the agent
 
@@ -196,7 +178,7 @@ Never write a tag to silence an error. Never weaken `evidence.config.ts` to pass
 Use `npx evidence list` to find an address and `npx evidence inspect '<target>'` to see why one does not resolve.
 ```
 
-The agent works through the list, fixing code first wherever an honest answer cannot be written, and leaves this behind:
+The agent works through the list, fixing code wherever an honest answer cannot be written, and leaves this behind:
 
 ```ts
 /**
@@ -217,7 +199,7 @@ Coverage: 3/3 units covered, 0 missing.
 Diagnostics: 0 errors, 0 warnings.
 ```
 
-You read three sentences per function instead of the diff. Add one rule to the document and every function owes one more answer. Add `requireReview: true` to the reference and each answer also needs an `@evidenceReview` that expires when the rule's text changes; see [Reviews](#reviews).
+You read three sentences per function instead of the diff. `requireReview: true` on the reference also demands an `@evidenceReview` per answer that expires when the rule's text changes; see [Reviews](#reviews).
 
 ### Add CI
 
@@ -226,22 +208,22 @@ You read three sentences per function instead of the diff. Add one rule to the d
 - run: npx evidence
 ```
 
-Exit 1 means complete analysis found violations. Exit 2 means analysis was incomplete and must be repaired before the graph can be trusted. Do not mask either.
+Exit 1 is a violation; exit 2 is incomplete analysis. Do not mask either.
 
 ## Step 2: Ground code in requirements
 
-The checker reads no meaning, only who cited what, so anything with an address can be cited. A requirements document is the next layer.
+The checker reads no meaning, only who cited what, so anything with an address can be cited. Requirements are the next layer.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://ttsc.dev/evidence/documents-dark.svg">
   <img alt="Idea notes grounding Requirements and Specifications, which ground Implementation and Test" src="https://ttsc.dev/evidence/documents-light.svg">
 </picture>
 
-Each arrow is one claim in `evidence.config.ts`, pointing at the evidence it cites. Requirements cite idea notes, so a dropped idea is caught before code exists. Tests cite requirements, specifications, and implementation, so an untested feature never passes. Hand over the requirements and the agent writes the rest. Hand over raw idea notes and it writes the requirements too. Whichever layer a human reviews last is the source of truth.
+Each arrow is one claim. Requirements cite idea notes, so a dropped idea is caught before code exists. Tests cite requirements and implementation, so an untested feature never passes. Whichever layer a human reviews last is the source of truth; the agent writes everything below it.
 
 ### Requirements, implementation, tests
 
-Two claims draw the bottom of that picture:
+Two claims draw the bottom of the picture:
 
 ```ts
 import type { IEvidenceConfig } from "@wrtnlabs/evidence";
@@ -275,7 +257,7 @@ export default {
 } satisfies IEvidenceConfig;
 ```
 
-Every H2 in the requirements must be cited by a function under `src`, and every function under `src` must be cited by a function under `test` without exclusions. Three files:
+Every requirement must be cited by a function under `src`; every function under `src` must be cited by a test, with no exclusions. Three files:
 
 ```md
 # Pricing requirements
@@ -321,7 +303,7 @@ Claim 2 ('tests') reference 1: Missing acknowledgement for '/workspace/app/src/c
 Repair: Cite the claim artifact that implements this unit with positive @evidence.
 ```
 
-Both findings are work items. Markdown targets resolve from the Markdown reference root, which defaults to the config directory; programming targets resolve from the citing file:
+Markdown targets resolve from the reference root, which defaults to the config directory; programming targets resolve from the citing file:
 
 ```ts
 /** @evidence docs/requirements.md#exact-addition Implements exact addition without intermediate rounding. */
@@ -349,11 +331,11 @@ Coverage: 2/2 units covered, 0 missing.
 Diagnostics: 0 errors, 0 warnings.
 ```
 
-Evidence checked two structural edges. It did not run `test_add` and did not prove either sentence true. When a symbol spelling is uncertain, `npx evidence list` prints every selected unit with its canonical target, and `npx evidence inspect '<target>'` resolves one target with the checker's own resolver.
+Evidence checked two structural edges. It did not run `test_add` and did not prove either sentence true.
 
 ### Documents above documents
 
-Markdown cites Markdown in HTML comments, so the rendered document stays clean. A requirement cites the idea note it came from:
+Markdown cites Markdown in HTML comments, so the rendered document stays clean:
 
 ```md
 ## Coupon stacking {#coupon-stacking}
@@ -363,11 +345,9 @@ Markdown cites Markdown in HTML comments, so the rendered document stays clean. 
 A buyer may apply at most one coupon per issuer to one order.
 ```
 
-Add a claim with `type: "markdown"` on the requirements and a reference on the idea notes, and the same rule applies one layer up.
+A `type: "markdown"` claim on the requirements with a reference on the idea notes applies the same rule one layer up.
 
 ## Step 3: Span the stack
-
-The same claims, drawn in detail for a backend, a frontend, and a text that is not code at all.
 
 ### Backend
 
@@ -376,7 +356,7 @@ The same claims, drawn in detail for a backend, a frontend, and a text that is n
   <img alt="Requirements and Specifications grounding DB schema, API operation, API schema and Test" src="https://ttsc.dev/evidence/backend-light.svg">
 </picture>
 
-No table without a document behind it, and no API without a test on it. Prisma schema, the server's published Swagger, and TypeScript tests form one graph:
+No table without a document behind it, and no API without a test on it. Prisma, Swagger, and TypeScript form one graph:
 
 ```ts
 import type { IEvidenceConfig } from "@wrtnlabs/evidence";
@@ -470,15 +450,15 @@ export default {
   <img alt="Principles and Settings grounding Treatments, Scripts and Prose" src="https://ttsc.dev/evidence/novel-light.svg">
 </picture>
 
-The graph reads no meaning, so it works on any text. Every layer cites the literary principles for its purpose and the settings for facts; scripts and prose cite treatments for cause and consequence; prose cites the script it executes. Editing a setting expires every review on it.
+The graph reads no meaning, so it works on any text. Every layer cites the principles for its purpose and the settings for facts; prose cites the script it executes. Editing a setting expires every review on it.
 
 ### What a green check means
 
-Every selected unit was cited or excluded with a reason, every citation resolved to an exact address, every required review matched the current content, and no analysis was incomplete. Code that cannot answer a rule goes green only after being changed into code that can.
+Every unit was cited or excluded with a reason, every citation resolved, every required review matched the current content, and nothing was incomplete. Code that cannot answer a rule goes green only after becoming code that can.
 
 ![Coverage and token spend across all four subjects](https://raw.githubusercontent.com/samchon/ttsc/gh-pages/benchmark/png/evidence-summary.png)
 
-The same method was measured upstream on `@ttsc/evidence`, which shares this package's configuration and graph semantics. One agent built four applications twice with the same model; only the graph differed. Without it, coverage landed between 51.6% and 85.5% and the review loop consumed about 90% of all tokens. With it, every application reached 100%. See the [benchmark](https://ttsc.dev/docs/benchmark/evidence).
+Measured upstream on `@ttsc/evidence`, which shares this package's graph semantics: one agent built four applications twice with the same model, with and without the graph. Without it, coverage landed between 51.6% and 85.5% and review consumed about 90% of all tokens. With it, every application reached 100%. See the [benchmark](https://ttsc.dev/docs/benchmark/evidence).
 
 ## Graph rules
 
@@ -510,7 +490,7 @@ A false tag removes the error, not the problem. `requireReview: true` demands a 
  */
 ```
 
-The fingerprint is seven lowercase hexadecimal characters over the cited unit and its structural subtree. Annotations, line endings, and trailing whitespace do not change it; semantic content, descendants, and withdrawals do. When the cited text changes, the diagnostic prints the new value:
+The fingerprint is seven hexadecimal characters over the cited unit and its subtree. Annotations and whitespace do not change it; content, descendants, and withdrawals do. When the cited text changes, the diagnostic prints the new value:
 
 ```bash
 ERROR [graph-missing-review] claim[0] 'every function answers every engineering principle' (typescript) -> reference[0] (markdown)
@@ -520,7 +500,7 @@ Claim 1 ('every function answers every engineering principle') reference 1: @evi
 Repair: Add '@evidenceReview .agents/skills/principles/SKILL.md#no-hard-coding #3eb537a <what you checked>' on the same semantic host.
 ```
 
-Reviews never provide coverage. `@evidenceReview` pairs with `@evidence`; `@evidenceExcludeReview` pairs with `@evidenceExclude`. Record a new fingerprint only after reviewing the cited scope again. The checker handles omissions; humans handle falsehoods.
+Reviews never provide coverage. `@evidenceReview` pairs with `@evidence`; `@evidenceExcludeReview` pairs with `@evidenceExclude`. The checker handles omissions; humans handle falsehoods.
 
 ### States
 
@@ -534,7 +514,7 @@ Reviews never provide coverage. `@evidenceReview` pairs with `@evidence`; `@evid
 | A source is unreadable, partially parsed, or has an unresolved export | The population is incomplete, derivative findings are suppressed, and exit is 2. |
 | A claim is disabled or a claim or reference has effective severity `off` | Removed before loading; no obligation and no watch dependency. |
 
-Warnings stay in the report without failing a complete check. Incomplete analysis never passes as an empty population, and a resolved citation is never proof that its reason is true.
+Incomplete analysis never passes as an empty population, and a resolved citation is never proof that its reason is true.
 
 ## Configuration
 
@@ -640,7 +620,7 @@ Relative roots resolve from the config file's directory, also under `--cwd`. Sym
 @evidenceExcludeReview <target> [#fingerprint] <description>
 ```
 
-Tags live in documentation attached to a supported public declaration; each adapter decides which comments qualify. A target is one whitespace-free token and the prose is required. `@evidence {@link Symbol}` is rejected: Evidence resolves file-qualified addresses, not compiler import scopes. `@internal`, `@hidden`, and `@ignore` withdraw a declaration and its descendants; a target reaching only a withdrawn unit reports `hidden`.
+Tags live in documentation attached to a public declaration. A target is one whitespace-free token; the prose is required. `{@link Symbol}` is rejected: addresses are file-qualified, not compiler-resolved. `@internal`, `@hidden`, and `@ignore` withdraw a declaration and its descendants.
 
 ### Programming addresses
 
@@ -709,7 +689,7 @@ The resolver never falls back to a project-wide name.
 
 ## Languages
 
-Every family can be a claim and a reference, and every family can cite every other. A language is listed only after its adapter passes inventory, host, address, graph, failure, mutation, and distribution gates; a grammar alone is not support. Adapters do not run compilers, preprocessors, macros, build systems, or applications. When they detect a construct that could change the public surface and cannot resolve it, analysis is incomplete and the check exits 2. `evidence languages` prints the shipped registry.
+Every family can be a claim and a reference and can cite every other. Adapters run no compiler, preprocessor, macro, or build; a construct that could change the public surface and cannot be resolved makes analysis incomplete and the check exit 2. `evidence languages` prints the shipped registry.
 
 ### Programming languages
 
@@ -735,7 +715,7 @@ Every family can be a claim and a reference, and every family can cite every oth
 | `objc` | `.m`, `.h` | Interfaces, protocols, categories, methods, properties, `@public` ivars | Doxygen blocks or `///` and `//!` lines |
 | `zig` | `.zig` | `pub` declarations, exposed container fields, direct aliases | Adjacent `///` |
 
-Every adapter maps its language onto `type`, `function`, and `property`, keeps undocumented public declarations in the population, treats tags inside code examples, strings, and ordinary comments as inert or unsupported, and keeps fingerprints stable across annotation-only edits.
+Every adapter maps its language onto `type`, `function`, and `property`, keeps undocumented public declarations in the population, and ignores tags inside code examples, strings, and ordinary comments.
 
 <details>
 <summary><strong>TypeScript</strong></summary>
@@ -995,7 +975,7 @@ evidence init [options]
 | `-w, --watch` | check | Recheck when an active dependency changes. |
 | `-h, --help`, `-v, --version` |  | Print help or the version without loading anything. |
 
-`check`, `list`, `inspect`, and `graph` evaluate the complete graph first; filters never change the denominator. JSON reports carry `schemaVersion: 1`; an operational failure in JSON mode stays on stdout as a versioned object. Watch polls dependencies every 250 milliseconds with a 100-millisecond quiet period, reevaluates from scratch, discards superseded results, keeps missing files watched, refetches remote Swagger on local changes, and emits text blocks or NDJSON per cycle. Ctrl+C exits 0.
+`check`, `list`, `inspect`, and `graph` evaluate the complete graph first; filters never change the denominator. JSON reports carry `schemaVersion: 1`. Watch polls every 250 milliseconds with a 100-millisecond quiet period, reevaluates from scratch, and emits text blocks or NDJSON per cycle; Ctrl+C exits 0.
 
 | Exit | Meaning |
 | --- | --- |
@@ -1052,7 +1032,7 @@ Copy values out of the callback before it returns; the tree is released afterwar
 
 ## Grammar cache
 
-The package ships no grammar WASM. A manifest pins each grammar's repository, commit, URL, SHA-256, size, and license. The first selected source of a language downloads its grammar, verifies it, and stores it under `grammars-v1/<sha256>.wasm`; every later read verifies it again. Help, version, init, and `languages` never download.
+The package ships no grammar WASM. A manifest pins each grammar's repository, commit, URL, SHA-256, size, and license. The first selected source of a language downloads its grammar and verifies it; every later read verifies it again.
 
 | Platform | Directory |
 | --- | --- |
@@ -1060,7 +1040,7 @@ The package ships no grammar WASM. A manifest pins each grammar's repository, co
 | macOS | `~/Library/Caches/wrtnlabs/evidence` |
 | Linux | `$XDG_CACHE_HOME/wrtnlabs/evidence` or `~/.cache/wrtnlabs/evidence` |
 
-`EVIDENCE_CACHE_DIR` overrides the location with an absolute writable directory outside selected roots. A cold cache needs network access once; downloads retry three times with a 30-second deadline each, and a checksum mismatch fails immediately with exit 2. Cache the directory in CI.
+`EVIDENCE_CACHE_DIR` overrides the location. A cold cache needs network access once; a checksum mismatch exits 2. Cache the directory in CI.
 
 ## Related
 
