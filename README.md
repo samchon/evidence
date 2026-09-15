@@ -1,516 +1,597 @@
 # @wrtnlabs/evidence
 
-An Evidence Graph connects specifications, engineering principles, public code contracts, and tests through explicit citations. `@wrtnlabs/evidence` checks that every selected requirement has evidence or a permitted exclusion, and that every citation names a valid target and explains its relationship.
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/wrtnlabs/evidence/blob/master/LICENSE) [![npm version](https://img.shields.io/npm/v/@wrtnlabs/evidence.svg)](https://www.npmjs.com/package/@wrtnlabs/evidence) [![npm downloads](https://img.shields.io/npm/dm/@wrtnlabs/evidence.svg)](https://www.npmjs.com/package/@wrtnlabs/evidence) [![build](https://github.com/wrtnlabs/evidence/actions/workflows/build.yml/badge.svg)](https://github.com/wrtnlabs/evidence/actions/workflows/build.yml) [![test](https://github.com/wrtnlabs/evidence/actions/workflows/test.yml/badge.svg)](https://github.com/wrtnlabs/evidence/actions/workflows/test.yml)
 
-The configuration and graph semantics follow [`@ttsc/evidence`](https://github.com/samchon/ttsc/tree/14a22f077caf23f1bfb8a97b3d9db765912074ef/packages/evidence), with programming-language declarations selected from files through Tree-sitter. The [compatibility ledger](https://github.com/wrtnlabs/evidence/blob/master/docs/development/compatibility.md) records preserved behavior, standalone translations, and compiler-dependent boundaries.
+![Evidence Graph: make every SKILL instruction 100% enforced](https://ttsc.dev/evidence/og-evidence-skill-instructions.png)
 
-## Installation
+Every rule, requirement, schema, and API becomes an obligation the check enforces.
 
-```bash
-pnpm i -D typescript ttsc @wrtnlabs/evidence
+- **100% coverage** of every requirement.
+- **100% compliance** with every principle.
+
+```tsx
+/**
+ * @evidence docs/discount.md#coupon-stacking States the per-issuer stacking limit this section defines, in the buyer's words.
+ * @evidence ../hooks/useCouponStacking.ts#useCouponStacking Renders the limit this hook resolves.
+ * @evidence .agents/skills/principles/SKILL.md#no-hard-coding Renders limits from props instead of branching on known issuer names.
+ * @evidenceExclude .agents/skills/principles/SKILL.md#fix-root-causes No failure path exists in a pure renderer.
+ */
+export function CouponStackingNotice(props: IProps): JSX.Element;
 ```
 
-`typescript` and `ttsc` are required peers supplied by the consumer. The `ttsx` executable comes from `ttsc` and evaluates `evidence.config.ts`.
+Four sentences the agent must write before the check passes: what the component takes from the requirement, which hook it renders, how it honors a principle, and why another principle does not apply. Delete the hook line and the check stops:
 
-Follow the [getting-started guide](https://github.com/wrtnlabs/evidence/blob/master/docs/getting-started.md) to create one failing obligation, repair it with a real citation, and add an implementation-to-test edge.
+```bash
+$ npx evidence
+Evidence check complete.
+Coverage: 3/4 units covered, 1 missing.
 
-## Guides
+ERROR [graph-missing-acknowledgement] claim[0] 'components' (typescript) -> reference[1] (typescript)
+Location: /workspace/app/src/hooks/useCouponStacking.ts:1:1
+Claim 1 ('components') reference 2: Missing acknowledgement for '/workspace/app/src/hooks/useCouponStacking.ts#useCouponStacking'.
+Repair: Cite the claim artifact that implements this unit with @evidence, or exclude it on an eligible carrier when it does not apply.
+```
 
-- [Evidence Graph contract](https://github.com/wrtnlabs/evidence/blob/master/docs/evidence-graph.md)
-- [Configuration reference](https://github.com/wrtnlabs/evidence/blob/master/docs/configuration.md)
-- [Tags and targets](https://github.com/wrtnlabs/evidence/blob/master/docs/tags-and-targets.md)
-- [CLI reference](https://github.com/wrtnlabs/evidence/blob/master/docs/cli.md)
-- [Certified languages](https://github.com/wrtnlabs/evidence/blob/master/docs/languages.md)
-- [Migration from `@ttsc/evidence`](https://github.com/wrtnlabs/evidence/blob/master/docs/migration-from-ttsc.md)
+The error list is the task list. Evidence reads 19 programming languages, 7 database schema languages, Markdown, and Swagger from source, with no compiler or build of the checked project.
 
-## Configuration
+## Setup
 
-Create `evidence.config.ts` at the project root:
+```bash
+npm install -D typescript ttsc @wrtnlabs/evidence
+npx evidence init
+npx evidence
+```
+
+`typescript` and [`ttsc`](https://github.com/samchon/ttsc) are peer dependencies; `ttsc` supplies `ttsx`, which evaluates `evidence.config.ts` without a project `tsconfig.json`. Grammars download on first use. [Step 1](#step-1-enforce-your-principles) fills the config in.
+
+## Why a graph
+
+You wrote the rules down. `AGENTS.md`, `CLAUDE.md`, a skill file; the name does not matter.
+
+```markdown
+## No hard coding {#no-hard-coding}
+## Fix causes, not symptoms {#fix-root-causes}
+## Do not build it before you need it {#yagni}
+```
+
+The agent reads all of it and says it understands. Four hours later, this is in the commit:
+
+```ts
+if (file === "wide-chars.ts") return WIDE_CHARS_EXPECTED;
+```
+
+That breaks the first rule, and the build passes. The type checker looks at types, the tests look for green, the linter looks for unused variables. The rules live in a document, and the build does not read documents.
+
+Writing them harder does not help. [One study](https://arxiv.org/abs/2605.01771) read the tool logs: six frontier models followed a written instruction in 0 of 60 runs, and reported compliance in more than 90% of them. This is not malice; if there is a cheaper way to pass the check, [that is the way it goes](https://debugml.github.io/cheating-agents).
+
+So the checker asks. Every function answers every rule in its own documentation comment, one sentence per rule:
+
+```ts
+/**
+ * @evidence .agents/skills/principles/SKILL.md#no-hard-coding Looks the handler up in the registry it was handed and branches on no known name.
+ * @evidence .agents/skills/principles/SKILL.md#fix-root-causes Rejects an unknown name at the lookup instead of retrying a failed call later.
+ * @evidence .agents/skills/principles/SKILL.md#yagni One lookup and one throw, with no cache or index built ahead of time.
+ */
+export function resolveHandler(name: string, registry: Map<string, Handler>): Handler;
+```
+
+Suppose the agent special-cased a fixture name. The honest answer to `#no-hard-coding` reads "Branches on the fixture name so the snapshot test passes." Two options: write that sentence, or fix the code so it never has to be written. In practice it fixes the code.
+
+The checker cannot tell whether a sentence is true. That is the reviewer's job, and it is now three sentences beside each function instead of a 4,000-line diff. The checklist lives in the repository, so it survives the session and runs in CI.
+
+## Step 1: Enforce your principles
+
+Replace the starter `evidence.config.ts` with one claim:
 
 ```ts
 import type { IEvidenceConfig } from "@wrtnlabs/evidence";
 
-const config: IEvidenceConfig = {
-  severity: "error",
+export default {
   claims: [
     {
+      name: "every function answers every engineering principle",
       type: "typescript",
-      files: ["src/**"],
+      files: ["src/**/*.ts"],
+      symbol: "function",
       reference: {
         type: "markdown",
-        files: ["docs/requirements.md"],
+        files: [".agents/skills/principles/SKILL.md"],
         symbol: "h2",
+        checklist: true,
       },
     },
+  ],
+} satisfies IEvidenceConfig;
+```
+
+A **claim** selects what must cite: every function under `src`. Its **reference** selects what must be cited: every H2 in the skill file. `checklist` makes every function answer every heading.
+
+```bash
+$ npx evidence
+Evidence check complete.
+Coverage: 0/3 units covered, 3 missing.
+
+ERROR [graph-checklist-missing] claim[0] 'every function answers every engineering principle' (typescript) -> reference[0] (markdown)
+Location: /workspace/app/src/resolve.ts:3:1
+Claim 1 ('every function answers every engineering principle') reference 1: Host '/workspace/app/src/resolve.ts#resolveHandler' has not acknowledged 3 of 3 checklist item(s): '/workspace/app/.agents/skills/principles/SKILL.md#["fix-root-causes"]', '/workspace/app/.agents/skills/principles/SKILL.md#["no-hard-coding"]', '/workspace/app/.agents/skills/principles/SKILL.md#yagni'.
+Repair: Cite every missing checklist item from this host, or exclude the scope that does not apply.
+```
+
+On an existing repository this is hundreds of errors: the real distance between your rule file and your code. Paying it down is not your job. Add this to `AGENTS.md`:
+
+```markdown
+## Evidence
+
+Run `npx evidence` before finishing any task. Every error names an obligation and its repair.
+Do the work first, then write the `@evidence` line on the declaration that supplies it, stating why in one sentence.
+Never write a tag to silence an error. Never weaken `evidence.config.ts` to pass.
+Use `npx evidence list` to find an address and `npx evidence inspect '<target>'` to see why one does not resolve.
+```
+
+The agent works through the list, fixing code wherever an honest answer cannot be written, and the check goes green:
+
+```bash
+$ npx evidence
+Evidence check complete.
+Coverage: 3/3 units covered, 0 missing.
+```
+
+Run the same command in CI and keep its exit code: 1 is a violation, 2 is incomplete analysis. `requireReview: true` on the reference also demands an `@evidenceReview` per answer that expires when the rule's text changes; see [Reviews](#reviews).
+
+## Step 2: Ground code in requirements
+
+The checker reads no meaning, only who cited what, so anything with an address can be cited.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://ttsc.dev/evidence/documents-dark.svg">
+  <img alt="Idea notes grounding Requirements and Specifications, which ground Implementation and Test" src="https://ttsc.dev/evidence/documents-light.svg">
+</picture>
+
+Each arrow is one claim. Requirements cite idea notes, so a dropped idea is caught before code exists. Tests cite requirements and implementation, so an untested feature never passes. Whichever layer a human reviews last is the source of truth; the agent writes everything below it.
+
+Two claims draw the bottom of the picture:
+
+```ts
+import type { IEvidenceConfig } from "@wrtnlabs/evidence";
+
+export default {
+  claims: [
     {
+      name: "implementation",
       type: "typescript",
-      files: ["test/**"],
+      files: ["src/**/*.ts"],
+      symbol: "function",
+      reference: { type: "markdown", files: ["docs/requirements.md"], symbol: "h2" },
+    },
+    {
+      name: "tests",
+      type: "typescript",
+      files: ["test/**/*.ts"],
       symbol: "function",
       reference: {
         type: "typescript",
-        files: ["src/**"],
+        files: ["src/**/*.ts"],
         symbol: "function",
         noEvidenceExclude: true,
       },
     },
   ],
-};
-
-export default config;
+} satisfies IEvidenceConfig;
 ```
 
-A **claim** selects the files and declarations that must cite evidence. Its **reference** selects what must be covered. Each claim and each element of its reference array has an independent coverage obligation; partial coverage from separate obligations is never pooled.
+Every requirement must be cited by a function under `src`; every function under `src` must be cited by a test, with no exclusions. With one requirement, `src/calculator.ts` exporting `add`, and `test/calculator.test.ts` exporting `test_add`, the first check fails twice:
 
-Use `type` to select the source language, such as `"typescript"`, `"cpp"`, or `"rust"`, and `files` to select its files with globs. File names distinguish syntax variants such as TSX. No separate `language` setting or TypeScript compiler Program is required. `EvidenceDatabaseType` selects the explicitly configured schema language. Only adapters listed below are accepted; SQL-like file names never cause dialect inference.
+```md
+## Exact addition {#exact-addition}
 
-Globs resolve from the directory containing `evidence.config.ts`, or from the population's `root`. Patterns are applied in order: `!` excludes matches, and a later positive pattern can include them again. Use `src/**` to select a directory's contents.
-
-Run the checker from the project root:
+Add prices without intermediate rounding.
+```
 
 ```bash
-pnpm exec evidence
+$ npx evidence
+Evidence check complete.
+Coverage: 0/2 units covered, 2 missing.
+
+ERROR [graph-missing-acknowledgement] claim[0] 'implementation' (typescript) -> reference[0] (markdown)
+Location: /workspace/app/docs/requirements.md:3:1
+Claim 1 ('implementation') reference 1: Missing acknowledgement for '/workspace/app/docs/requirements.md#["exact-addition"]'.
+Repair: Cite the claim artifact that implements this unit with @evidence, or exclude it on an eligible carrier when it does not apply.
+
+ERROR [graph-missing-acknowledgement] claim[1] 'tests' (typescript) -> reference[0] (typescript)
+Location: /workspace/app/src/calculator.ts:1:1
+Claim 2 ('tests') reference 1: Missing acknowledgement for '/workspace/app/src/calculator.ts#add'.
+Repair: Cite the claim artifact that implements this unit with positive @evidence.
 ```
 
-`evidence` and `evidence check` evaluate the same complete graph. Use `evidence init` to create a small typed starter configuration; it refuses to overwrite an existing file and changes no other project file.
-
-```bash
-pnpm exec evidence init
-pnpm exec evidence check --format json --output reports/check-report.json
-pnpm exec evidence check --watch
-pnpm exec evidence list --language typescript --kind function
-pnpm exec evidence inspect 'src/calculator.ts#add' --format json
-pnpm exec evidence graph --format mermaid --output reports/evidence.mmd
-pnpm exec evidence languages
-```
-
-| Option | Commands | Behavior |
-| --- | --- | --- |
-| `-c, --config <path>` | check, list, inspect, graph, init | Select a config instead of `evidence.config.ts`. |
-| `--cwd <path>` | check, list, inspect, graph, languages, init | Resolve CLI paths from another directory. Population roots still resolve from the config file. |
-| `--format text\|json` | check, list, inspect, languages | Select human-readable or versioned machine output. |
-| `--format json\|mermaid\|dot` | graph | Select the lossless graph report or a visual graph syntax. |
-| `-o, --output <path>` | check, list, inspect, graph, languages | Write command output to an explicit path instead of stdout. |
-| `--language <type>` | list | Keep only rows from one certified artifact type. |
-| `--kind <symbol>` | list | Keep only rows with one common symbol kind. |
-| `-h, --help` | all | Print help without loading a config or project. |
-| `-v, --version` | root | Print the package version without loading a config or project. |
-| `-w, --watch` | check | Run an initial check, then recheck after active dependencies change. |
-
-The [CLI reference](https://github.com/wrtnlabs/evidence/blob/master/docs/cli.md) gives each command's accepted options, output contract, and failure status.
-
-### Watch mode
-
-Run `pnpm exec evidence check --watch` or use `-w` while authoring. The watcher publishes an initial cycle, polls active filesystem dependencies every 250 milliseconds, waits for a 100-millisecond quiet period after a change, and serializes complete reevaluations. Each published result comes from a fresh configuration load, source inventory, parse, and graph evaluation. If a dependency changes during that work or the new analysis discovers an additional dependency, the superseded result is discarded and reevaluated before publication.
-
-The active set includes `evidence.config.ts`, its static runtime import/export chain, configured glob directories and matching files, module metadata and re-export inputs reported by adapters, exact Markdown, Prisma, and local Swagger inputs, and logical and physical link paths. Missing files and roots remain dependencies so their creation can repair a cycle. A failed config keeps the last active set plus every dependency found in the current config scan; it never reuses the old config value. Disabled claims, effective `off` claims, and `off` references create no artifact reads or watch inputs.
-
-Configuration dependency discovery accepts static import/export specifiers and literal `import()` or `require()` calls. Import-mode `data:` modules are decoded as immutable inputs: JavaScript payloads retain nested `data:`, builtin, and absolute `file:` imports, while JSON and Wasm payloads add no filesystem path. Relative and package imports from a data module have no Node resolution base and fail the watch cycle. A computed runtime module specifier cannot be watched completely and produces a failed cycle until it is made static. Each local filesystem change also refetches enabled remote Swagger references during the fresh check. Remote URLs are not polled independently, so a remote-only change does not create a cycle.
-
-Text output prints every cycle and keeps failures visible until another dependency change triggers recovery. JSON output is NDJSON: each line is one compact `schemaVersion: 1` object with `watch: true`, a sequential `cycle`, status, exit code, and either the complete check report or an operational failure. `--output` truncates its destination once when watch starts and appends each framed cycle. Cycle exit codes describe that result while the process stays alive; Ctrl+C requests cleanup and exits 0, and an output or watcher failure exits 2.
-
-`EvidenceWatcher` exposes the same loop for embedding. Its optional `pollIntervalMilliseconds` and `debounceMilliseconds` settings change the two default intervals, `watch(callback)` awaits asynchronous publication, `dependencies()` returns the current active set, and `close()` requests shutdown. The watcher retains no syntax tree, inventory, graph, or fingerprint cache between cycles. Tree-sitter grammar modules remain immutable process-wide assets, while each analysis releases its bounded parsers, trees, and queries.
-
-`evidence list` prints every selected unit and addressable aggregate ancestor in each configured claim/reference scope. Every row carries its stable semantic identity, canonical target, public aliases, symbol kind, and declaration locations. `--language` and `--kind` filter these rows after the complete graph has been evaluated, so they do not change any coverage denominator or check result.
-
-`evidence inspect <target>` resolves the target with the same inventories and exact resolver used by checking. It reports ambiguity, withdrawal, or incomplete analysis instead of guessing; a resolved identity includes aliases, children, obligation state, incoming acknowledgements and exclusions, reviews, host provenance, and its current fingerprint. Code paths entered at the command line and printed by list are relative to `--cwd`. Paths inside source `@evidence` and review annotations remain relative to their own citing file.
-
-`evidence graph` preserves each claim/reference obligation as an independent boundary. Its edges retain acknowledgement kind, while reviews remain separate relations. JSON is the authoritative lossless format. Mermaid and DOT use generated node identifiers and escape source-controlled labels so paths, quotes, line breaks, and graph operators remain label data.
-
-`evidence languages` reads the shipped language registry without loading `evidence.config.ts`. It reports grammar file patterns, symbol coverage, public-surface and documentation policies, and unsupported capabilities for certified adapters. Grammar-only candidates are omitted.
-
-Text and JSON contain the same deterministic findings and coverage counts. JSON reports use `schemaVersion: 1`, identify the config and original claim/reference indexes, and distinguish `complete`, `incomplete`, and operationally `failed` analysis. Config output and operational messages use stderr, so JSON stdout remains parseable. When `--output` is present, stdout stays empty; an unwritable destination is an explicit command failure.
-
-The process exits with 0 after complete analysis without error-severity findings, including a warning-only result. It exits with 1 after complete analysis with Evidence errors, and 2 for invalid CLI/configuration or incomplete source and parser analysis. `severity: "off"` and `disabled: true` populations are skipped before source loading; they do not count as completed coverage.
-
-For programmatic loading, import `EvidenceConfigLoader` from `@wrtnlabs/evidence` and call `await EvidenceConfigLoader.load("evidence.config.ts")`. It returns the validated `IEvidenceConfig` with authored optional values intact. `EvidenceConfigLoader.plan()` additionally resolves severity and symbol defaults into an `IEvidenceConfigPlan` containing only populations that may load artifacts. Both methods default to `evidence.config.ts` in the current working directory.
-
-`EvidenceChecker.check(configFile)` runs configuration loading, source discovery, adapter analysis, target resolution, and graph evaluation, then returns `IEvidenceCheckReport`. `EvidenceChecker.analyze(configFile)` returns the report together with its exact `IEvidenceGraphInput` and materialized `IEvidenceGraphResult`; `EvidenceChecker.evaluate(plan)` provides the same analysis for an already validated plan. `EvidenceQuery` derives list, inspection, language, and graph reports from that model. `EvidenceReporter`, `EvidenceQueryReporter`, and `EvidenceGraphReporter` render the corresponding output forms.
-
-Use `new EvidenceChecker(configFile)` for repeated checks; each `analyze()`, `check()`, or `evaluate(plan)` call creates an independent execution context. Use `new EvidenceQuery(analysis, cwd)` to run `list(language?, kind?)`, `inspect(target)`, and `graph()` against one captured analysis with shared population indexes. Query reports are independent copies, so modifying an input or returned report does not change subsequent queries. Create a new query instance after obtaining a new analysis. The static methods remain available for individual operations.
-
-`new EvidenceGraph(input).evaluate()` and `new EvidenceTagParser(content, host, documentation).parse()` capture their inputs and create fresh evaluation or parsing state for each call. Their static `evaluate(input)` and `parse(content, host, documentation)` methods provide the same individual operations.
-
-The loader checks the configuration and its imports through the consumer's `ttsx`, then applies `typia.assert<IEvidenceConfig>` to the default export. Compiler and runtime failures reject the promise, and evaluator logs go to stderr. Every declaration is validated before activation, so `disabled` and `off` cannot conceal a malformed population. A disabled claim, a claim whose effective severity is `off`, and a claim with no enabled reference are absent from the plan; an `off` reference is absent from its claim.
-
-For direct local source access, `EvidenceSourceLoader.glob(configFile, { root, files })` loads an enabled population, and `EvidenceSourceLoader.file(configFile, file, root)` loads one exact local path. Relative roots resolve from the configuration file's directory; file globs run left to right, including exclusions and later reinclusions. A bare directory selects no children; use `directory/**`.
-
-Source snapshots retain UTF-8 contents, byte digests, physical file identities, every selected logical address, and filesystem dependencies for detecting changes. Directory links and hard links share physical files without losing their addresses. Always inspect `complete` and `diagnostics`: a healthy empty selection is complete, while an inaccessible root, cyclic link, or unreadable file makes the snapshot incomplete. Invalid root or glob syntax rejects the promise. Discovery retains all selected formats for adapter processing; filesystem completeness alone does not establish parser support or evidence coverage.
-
-`EvidenceMarkdownAdapter.analyze(snapshot)` turns a Markdown snapshot into file and ATX H1-H4 units, public file/anchor addresses, section ownership, HTML-comment hosts, acknowledgements, and reviews. It retains discovery failures and reports whitespace paths, unresolved heading anchors, annotations below H5/H6, and tag lines rendered as prose. Fenced, indented, HTML `<pre>`, and MDX template examples do not produce annotations.
-
-For direct syntax analysis, use `EvidenceParser.parse(input, callback)`. The callback receives a borrowed tree and query helpers; copy extracted values into ordinary data before it returns:
+Markdown targets resolve from the reference root, which defaults to the config directory; programming targets resolve from the citing file:
 
 ```ts
-import { EvidenceParser } from "@wrtnlabs/evidence";
-
-const parser = new EvidenceParser();
-try {
-  const names = await parser.parse(
-    {
-      type: "typescript",
-      file: "calculator.ts",
-      content: "export function add(a: number, b: number) { return a + b; }",
-    },
-    (session) =>
-      session
-        .captures("(function_declaration name: (identifier) @name)")
-        .map((capture) => capture.node.text),
-  );
-  console.log(names);
-} finally {
-  await parser.close();
+/** @evidence docs/requirements.md#exact-addition Implements exact addition without intermediate rounding. */
+export function add(left: number, right: number): number {
+  return left + right;
 }
 ```
 
-The runtime automatically downloads the pinned grammar when a selected source first needs it, verifies its byte length and SHA-256, and stores it in a per-user cache. Evidence contains no language grammar WASM files. Consumers need no per-language installation, manual download, or native compilation. The core runtime comes from the `web-tree-sitter` dependency. Each parse owns its parser, tree, and query cache. `concurrency` limits live sessions and defaults to four; `close()` waits for accepted callbacks and prevents new requests. A callback must not await another parse or close on the same runtime. Syntax errors, missing tokens, incompatible queries, and truncated query results throw `EvidenceParserError` with a stable `code` instead of returning incomplete captures. `session.range(node)` produces a half-open span with zero-based UTF-16 offsets and one-based lines and UTF-16 columns in the original source string.
+```ts
+/** @evidence ../src/calculator.ts#add Verifies exact addition through the public function. */
+export function test_add(): void {
+  if (add(1, 2) !== 3) throw new Error("Unexpected sum.");
+}
+```
 
-A cold cache requires network access. Verified cached grammars work offline without network requests, and damaged entries are downloaded again automatically. The default cache is `%LOCALAPPDATA%/wrtnlabs/evidence/Cache` on Windows, `~/Library/Caches/wrtnlabs/evidence` on macOS, and `$XDG_CACHE_HOME/wrtnlabs/evidence` or `~/.cache/wrtnlabs/evidence` on Linux. Set `EVIDENCE_CACHE_DIR` to an absolute writable directory to override it; keep this directory outside selected source roots. Cache entries use `grammars-v1/<sha256>.wasm` and are verified on every read.
+```bash
+$ npx evidence
+Evidence check complete.
+Coverage: 2/2 units covered, 0 missing.
+```
 
-Concurrent callers share downloads, and cache files are published atomically. Transient failures receive up to three attempts with a 30-second deadline per attempt; permanent HTTP failures and checksum mismatches fail immediately. Preparation failures leave analysis incomplete with exit code 2. CLI preparation messages go to stderr and are suppressed with `--output`. Watch retries parser acquisition failures after five seconds even without a source edit; `parserRetryMilliseconds` changes that interval. Imports, configuration loading, help, version, init, and language metadata do not download source grammars. TypeScript configuration dependency scanning in watch also uses the pinned TypeScript grammar.
+Evidence checked two edges. It did not run `test_add` and did not prove either sentence true. One layer up, Markdown cites Markdown in HTML comments, so the rendered document stays clean:
 
-`EvidenceLanguageRegistry.list()` reports certified programming languages including TypeScript, JavaScript, Python, Go, Rust, Java, C#, C, C++, Ruby, Kotlin, Scala, Swift, MATLAB, PHP, Dart, Lua, Zig, and Objective-C. Syntax variants remain explicit: `.h` follows the configured `c`, `cpp`, or `objc` type, `.tsx` selects the TSX grammar within TypeScript, and JSX shares the JavaScript grammar. `select(type, file)` uses the configured language and case-sensitive logical file name. `parser.grammars()` reports pinned asset provenance without loading WASM; `parser.state()` exposes the instance's loaded grammar IDs and active/queued session counts. Grammar metadata alone does not establish public export resolution or graph coverage.
+```md
+## Coupon stacking {#coupon-stacking}
 
-For adapter development, `IEvidenceAdapter.analyze(snapshot)` returns an ordinary `IEvidenceInventory`. `new EvidenceInventory(inventories)` combines adapter-established identities, checks declaration ownership and original source coordinates, and reconciles withdrawal across merged declarations. `select(ids)` returns an independent population with its structural ancestors and eligible hosts; `resolve({ file, segments }, ids)` looks up an exact public address inside that scope. Check `complete` and `diagnostics` before using a population. Reviews have a separate collection and never supply acknowledgements. New languages require adapter certification and a pinned downloadable grammar that parses real declarations through the shared runtime.
+<!-- @evidence ideas/2026-03-checkout.md#stacking-limit Turns the note's per-issuer idea into a testable limit. -->
 
-`EvidenceDocumentation.read()` maps a classified comment into its original source, and `EvidenceTagParser.parse()` reads acknowledgements, exclusions, reviews, and withdrawal markers from that mapped text. Adapters establish comment identity and attachment before invoking these helpers. `EvidenceAccessor.parse()` and `format()` preserve literal member segments such as `SomeClass["field.name"]`. See the [adapter inventory guide](https://github.com/wrtnlabs/evidence/blob/master/docs/development/adapter-inventories.md) for ownership, completeness, and documentation contracts.
+A buyer may apply at most one coupon per issuer to one order.
+```
 
-## Artifacts and symbol selectors
+## Step 3: Span the stack
 
-| Artifact | Claim | Reference | Symbol selectors | Default claim / reference |
-| --- | --- | --- | --- | --- |
-| Programming | Yes | Yes | Supported `type`, `function`, `property` | All supported / `type`, or all supported when no types exist |
-| Markdown | Yes | Yes | `file`, `h1`, `h2`, `h3`, `h4` | All / all |
-| BigQuery | Yes | Yes | `model`, `column`, `relation` | All / `model` |
-| Prisma | Yes | Yes | `model`, `column`, `relation` | All / `model` |
-| DBML | Yes | Yes | `model`, `column`, `relation` | All / `model` |
-| PostgreSQL | Yes | Yes | `model`, `column`, `relation` | All / `model` |
-| Portable SQL | Yes | Yes | `model`, `column`, `relation` | All / `model` |
-| SQLite | Yes | Yes | `model`, `column`, `relation` | All / `model` |
-| MySQL | Yes | Yes | `model`, `column`, `relation` | All / `model` |
-| Swagger / OpenAPI | Yes | Yes | `operation` | Every operation / every operation |
+### Backend
 
-Every artifact family can cite every other family, including its own. Markdown can cite programming declarations or Swagger operations, and Swagger operations can cite Markdown, programming declarations, database schemas, or other operations.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://ttsc.dev/evidence/backend-dark.svg">
+  <img alt="Requirements and Specifications grounding DB schema, API operation, API schema and Test" src="https://ttsc.dev/evidence/backend-light.svg">
+</picture>
 
-A `symbol` accepts one selector or a nonempty array. Programming `type` symbols include classes, interfaces, type aliases, and namespaces. Database `model` symbols describe record structures, `column` symbols describe data fields, and `relation` symbols describe connections between models. A foreign-key value is a column; the declaration describing its connection is a relation.
-
-Database schema typings share `IEvidenceDatabaseClaim` and `IEvidenceDatabaseReference`. Select the schema language rather than the database server: MongoDB models written in Prisma use `type: "prisma"`.
-
-`EvidencePostgresqlAdapter` selects `.sql` files explicitly configured as `postgresql` and uses the pinned SQL grammar. Tables are `model` units; explicit columns are `column` units; each foreign key is one `relation` unit owned by its table. Other column and table constraints contribute to table content without creating additional units. `CREATE SCHEMA` supplies structural namespace context and does not add a model obligation. Tables and referenced tables must use explicit `schema.table` names: the checker does not evaluate `search_path` or assume a default schema. PostgreSQL identifiers fold unquoted ASCII letters to lowercase and preserve quoted case and literal dots. Use `schema.sql#app.item.id` or `schema.sql#app["Order.Item"]["Item.ID"]`; file aliases resolve the same schema identity. Anonymous relations use a literal segment containing both ordered endpoint lists, such as `["foreign key [\"owner_id\"] references [\"app\",\"owner\",\"id\"]"]`. Named additive foreign-key constraints use `["constraint owner_fk"]`.
-
-PostgreSQL supports unconditional `ALTER TABLE ADD COLUMN` and named `ADD CONSTRAINT` against exactly one selected table declaration, including declarations in another selected file. Extension sites contribute to the same semantic table and its fingerprint. Adjacent `--` and block comments document declarations; ordinary string values remain inert. `COMMENT ON TABLE` and `COMMENT ON COLUMN` accept ordinary single-quoted strings and attach to exactly one selected declaration, retaining the original UTF-16 offsets through doubled apostrophes. Documentation fences remain examples, and `@internal`, `@hidden`, and `@ignore` withdraw the attached declaration and its descendants. Schema comments, unattached annotations, and unsupported comment targets cannot acknowledge selected units.
-
-The PostgreSQL surface is a declared schema snapshot. Duplicate CREATE declarations, temporary or conditional tables, stateful settings, inherited or partitioned schemas, `LIKE`/`OF`/`AS` derivation, destructive ALTER operations, `COMMENT ... IS NULL`, and other unsupported statements produce incomplete analysis. Names longer than 63 UTF-8 bytes are rejected to avoid server-side truncation ambiguities. The pinned grammar rejects identifiers containing doubled double quotes. It also rejects named foreign keys inside CREATE TABLE; express named foreign keys with the supported ALTER TABLE ADD CONSTRAINT form. The grammar also rejects other valid syntax it does not recognize; those parser errors remain incomplete rather than silently removing units. No database engine, SQL migration, function body, or application code is executed.
-
-BigQuery populations use `type: "bigquery"` with `.sql` or `.bqsql` files. The configured type selects the pinned GoogleSQL grammar independently of other SQL dialects. Explicit `CREATE TABLE` statements expose models, scalar and repeated fields expose columns, and declared foreign keys expose relations. Primary keys constrain column content and do not create relation units. Every key must use `NOT ENFORCED`; Evidence records the declared relationship without claiming that BigQuery enforces it. Temporary tables remain outside the public schema population.
-
-BigQuery addresses are file-qualified declared paths, such as `schema.sql#project.dataset.orders.id`. A backtick pair around `project.dataset.orders` is split into project, dataset, and table segments; omitted qualifiers are never inferred from an ambient database connection. Table paths retain their declared case. Column and named constraint identities normalize case while addresses retain declared spelling. Quoted flexible field names containing whitespace use an escaped accessor segment, such as `schema.sql#dataset.orders["display name"]`. A nested `STRUCT` or `ARRAY<STRUCT<...>>` field has an address such as `schema.sql#dataset.orders.details.sku`; each field remains directly owned by its table model. Withdrawing a STRUCT field also withdraws its nested fields. An unnamed foreign key uses the segment `foreign key ` followed by JSON containing its ordered local columns, referenced table path, and ordered referenced columns. Reordering independent constraints preserves these identities. Duplicate table, column, or relation identities are incomplete analysis; declarations do not merge across files.
-
-Leading adjacent `--`, `#`, and block comments and static `OPTIONS(description=...)` strings document the exact BigQuery table, field, or foreign-key declaration. Consecutive line comments form one documentation host. A blank line detaches a comment, and trailing source comments never document the following declaration; defaults, other option values, and fenced code examples cannot acknowledge evidence. Single, double, and triple quoted descriptions support raw strings, common escaped characters, and Unicode escapes with original UTF-16 source locations. An unsupported description expression or escape is incomplete analysis. Query-derived tables and views, external schemas, `LIKE`, `COPY`, `CLONE`, conditional or replacing table declarations, schema migrations, and other statements outside explicit table declarations are incomplete analysis. Evidence does not execute SQL or discover database state.
-
-Prisma files selected for one population are parsed together with `@prisma/prisma-schema-wasm`, which ships with this package. Evidence first uses a parser version visible from the project root and falls back to its pinned copy, so consumers do not install a separate Prisma parser. Parser output decides whether a member is a column or relation; the source scanner only supplies locations and documentation attachment. Views are model units, while enums, composite types, indexes, generators, and datasources do not form units.
-
-`EvidenceSqliteAdapter` parses explicitly configured `.sql` and `.sqlite` source with the pinned [SQLite Tree-sitter grammar](https://github.com/dhcmrlchtdj/tree-sitter-sqlite/tree/993be0a91c0c90b0cc7799e6ff65922390e2cefe). Each `CREATE TABLE` forms a `model`, each declared column forms a `column`, and each explicit inline or table foreign key forms a `relation` owned directly by its table. Generated columns, omitted column types, `WITHOUT ROWID`, `STRICT`, inline and composite constraints, and double-quoted, single-quoted, backtick, and bracket names are supported. These are source declarations; Evidence never runs SQLite, evaluates a query, or inspects PRAGMA results.
-
-SQLite identities use ASCII-insensitive schema and declaration names across the selected files. An unqualified ordinary table belongs to `main`, a `TEMP` table belongs to `temp`, and an explicit schema qualifier remains part of identity. A duplicate selected declaration leaves analysis incomplete instead of choosing migration order. Public file-qualified addresses retain decoded source spelling: `schema.sql#Account.owner` or `schema.sql#main["Order.Items"]["id.part"]`. Unqualified declarations also expose `main.Account.owner` or `temp.Account.owner` aliases so same-name tables in different schemas remain addressable; their shared unqualified alias is ambiguous. Named foreign keys use a separate literal segment such as `Account["foreign key:owner_link"]`; anonymous keys use `foreign key:` followed by the JSON local-column array, `->`, and a JSON array containing the referenced table and explicit target columns. An omitted target-column list denotes the referenced primary key without inventing endpoint columns.
-
-A consecutive leading SQLite `--` comment run or one adjacent leading `/* */` or `/** */` block carries evidence, exclusions, reviews, and withdrawals. Blank lines and trailing comments detach documentation; literal strings and fenced examples do not create acknowledgements. Every visible declaration remains an eligible host without documentation, and withdrawing a table withdraws its columns and foreign keys. Explicit qualified schemas can be inventoried without executing `ATTACH`. Virtual tables, views, triggers, `CREATE TABLE AS`, schema mutations, other executable statements, and parser errors leave analysis incomplete with a repair diagnostic. Select a declarative schema snapshot rather than migration scripts.
-
-`EvidenceDbmlAdapter` analyzes explicitly configured `dbml` files using a pinned MIT-licensed upstream Tree-sitter grammar with an audited, reproducibly built syntax patch. Consumers download verified WASM automatically and install no parser or database tool. Tables are `model` units, all scalar fields remain `column` units, and each inline or standalone Ref adds a separate `relation` owned by one table. Enum declarations and index definitions add no selectable units; enum values contribute to schema fingerprints. Tables default to schema `public`, and names preserve case and quoted literal punctuation. Duplicate table, alias, column, enum or named relation identities, unresolved endpoints and mismatched composite endpoints make analysis incomplete.
-
-DBML addresses are file-qualified: `schema.dbml#public.users.id` and `schema.dbml#users.id` address the same default-schema column. An explicit `Table core.users as U` also exposes `schema.dbml#U.id`. Quoted names stay literal segments, such as `schema.dbml#users["display.name"]`. Schema identities survive file moves, while file-qualified addresses follow their declarations. Named relations use a reserved literal `$ref:` segment: `schema.dbml#posts["$ref:owner"]` for `Ref owner: posts.user_id > users.id`. Anonymous relation segments begin with `$ref:` followed by the JSON tuple of resolved left table, ordered left columns, cardinality, right table and ordered right columns; use the query output to obtain the escaped accessor.
-
-DBML supports inline, short and long Ref forms, schema-qualified and composite endpoints, and `>`, `<`, `-` and `<>` cardinalities. The owning table is the left endpoint for `>` and `<>`, the right endpoint for `<` and standalone `-`, and the declaring table for inline `-`. All endpoint tables and columns must be selected; newly selected files participate in watch invalidation. Relations do not replace their foreign-key columns. Table and column notes and adjacent standalone comments are annotation hosts; an inline relation shares its declaring column's documentation site. Enum/index/project notes, trailing comments, default strings and fenced examples cannot acknowledge evidence. Withdrawal annotations hide the documented unit and its descendants. Annotation-only edits preserve fingerprints; column types, defaults, enum values and relationship semantics affect them.
-
-DBML partial definitions/injection, table groups, module imports, optional `?` cardinality modifiers, checks and records remain outside this declared-source boundary and make selected analysis incomplete. Expand these constructs into supported declarations or add parser/adapter support before checking coverage.
-
-`EvidenceSqlAdapter` selects `type: "sql"` and `.sql` files explicitly. Its portable DDL subset consists of unconditional `CREATE TABLE` with an explicit column list, standard scalar types (`SMALLINT`, `INTEGER`/`INT`, `BIGINT`, `DECIMAL`, `NUMERIC`, `REAL`, `DOUBLE PRECISION`, `FLOAT`, `BOOLEAN`, `CHAR`/`CHARACTER`, `VARCHAR`/`CHARACTER VARYING`, `DATE`, `TIME`, and `TIMESTAMP`, with supported numeric size/precision parameters), nullability, scalar literal or `CURRENT_TIMESTAMP` defaults, primary/unique/check constraints, inline `REFERENCES`, and anonymous table-level `FOREIGN KEY`. Tables are `model` units, every explicit column is a `column`, and each declared foreign key is one `relation`, including composite keys. Columns and relations each belong to their declaring table. Referenced tables may be outside the selected snapshot; relation identity retains the explicit ordered local columns, target name, and ordered remote columns rather than inferring database metadata.
-
-SQL regular ASCII identifiers use uppercase semantic and public spelling; standard double-quoted identifiers preserve their decoded contents, including literal dots and spaces. Qualified names are segmented, so `sales.account.id` and `"sales.account".id` stay distinct. The adapter does not assume a default schema. Table identities are independent of file names within one selected snapshot, and repeated declarations of a table or column are incomplete rather than merged. Each selected logical file address exposes that identity. An anonymous foreign key uses the literal final segment `foreign-key:["ID"]->["PARENT"](["ID"])`; use `EvidenceAccessor.format` to escape that segment in a file-qualified target. Named column constraints and named foreign-key constraints are outside the pinned portable grammar's accepted subset.
-
-Leading standalone `--` runs and `/* */` or `/** */` comments immediately adjacent to a table, column, or foreign-key declaration carry SQL evidence. Blank-line-separated, trailing, and unattached tag-bearing comments are unsupported hosts; SQL strings and fenced, indented, or HTML code examples stay inert. Inline foreign keys share their column's physical host, while table-level foreign keys have their own host. Undocumented declarations remain selected. Attached `@internal`, `@hidden`, and `@ignore` withdraw a declaration and its owned descendants; accepted documentation ranges are excluded from review fingerprints.
-
-Portable SQL never tries another dialect after a parse failure. `ALTER`, `DROP`, views, query-derived or conditional tables, temporary tables, generated columns, dialect data types/options, malformed syntax, unresolved local foreign-key columns, and mismatched composite endpoints leave the inventory incomplete with actionable diagnostics. Source is not executed and no database server, migration order, search path, or runtime schema is consulted. `EvidenceLanguageRegistry.databases()` lists independently certified database grammars; `evidence languages` reports both programming and database adapters.
-
-`EvidenceMysqlAdapter` selects `.sql` files only when configured as `type: "mysql"`. It inventories explicit, unconditional `CREATE TABLE` statements: tables are `model`, their explicit columns are `column`, and table `FOREIGN KEY` declarations are `relation`. Primary keys, unique constraints, checks, and indexes contribute table content without creating relations. MySQL ignores inline column `REFERENCES`, so those clauses add no relation. Relations describe declared source dependencies, independently of whether a particular storage engine enforces them. Evidence never executes a database or infers a dialect from successful parsing.
-
-MySQL addresses use source-spelled database and table segments, such as `schema.sql#Store.Child.parent_id`. An unqualified `CREATE TABLE` name remains unqualified; `USE`, server defaults, and `lower_case_table_names` are not evaluated. An unqualified foreign-key target inherits its owning table's explicitly declared database. Backticks decode into literal segments, preserving embedded punctuation. Column spelling also remains exact in Evidence addresses; case-only duplicate columns are rejected, and foreign-key endpoints must use the declaration's spelling. Schema ownership is independent of file location, so duplicate selected table declarations are incomplete rather than merged. File aliases expose the same semantic units.
-
-MySQL foreign keys use a literal endpoint segment: `Child["foreign-key:[\"parent_id\"]->[\"Parent\"]([\"id\"])"]`. Composite endpoints retain their declared order. The optional name after `FOREIGN KEY` is an index name, not a constraint symbol, and does not replace endpoint identity. Each column and relation has exactly one owning table. The pinned grammar does not support `CONSTRAINT name FOREIGN KEY` syntax; such input is incomplete.
-
-Adjacent `-- ` line comments or `/* ... */` block comments and table or column `COMMENT` strings carry MySQL evidence, exclusions, reviews, and withdrawals. `COMMENT` strings use single quotes and SQL doubled apostrophes; backslash escapes requiring a server mode are unsupported. Strings in defaults, index comments, detached comments, and code examples create no evidence. Undocumented declarations remain eligible hosts. Annotation-only edits preserve review fingerprints, while column, constraint, and option changes invalidate affected table reviews.
-
-MySQL columns accept the pinned grammar's integer, fixed/floating numeric, boolean/bit, character/text, binary/blob, temporal, JSON, ENUM, and SET forms, with numeric size/precision and UNSIGNED/ZEROFILL where recognized. User-defined types, array suffixes, and generated columns are outside this declared subset.
-
-The supported MySQL table options are explicit `ENGINE=` values (`InnoDB`, `NDB`, `NDBCLUSTER`, `MyISAM`, `MEMORY`, `CSV`, `ARCHIVE`, or `BLACKHOLE`), `COMMENT='...'`, character set, collation, and row format forms recognized by the pinned grammar. Unsupported options, executable comments, `ALTER`, `DROP`, `RENAME`, temporary or conditional tables, generated columns, query-derived tables, views, routines, `DELIMITER`, dynamic SQL, and session changes leave analysis incomplete. Supply the resulting explicit schema instead of a migration script. Parser `ERROR` and `MISSING` nodes always remain incomplete, including doubled-backtick identifiers and other valid MySQL syntax absent from the pinned upstream grammar.
-
-`EvidenceJavaScriptAdapter` parses `.js`, `.jsx`, `.mjs`, and `.cjs` with the pinned JavaScript grammar. `.mjs` always uses ESM and `.cjs` always uses CommonJS. A `.js` or `.jsx` file follows the nearest `package.json` `type`; missing metadata defaults to CommonJS. Checked package paths become watch dependencies, and unreadable, malformed, unsupported, or conflicting metadata leaves the inventory incomplete.
-
-Exported classes are `type` units. Functions, generators, function-valued `const` declarations, methods, and function-valued class fields are `function` units; other exported values and public fields are `property` units. Static members use `Class.member`, while instance members use `Class.prototype.member`. Constructors, accessors, private fields, and computed member names do not form units. Anonymous default classes, functions, function expressions, and values use the public `default` address.
-
-JavaScript ESM follows direct exports, aliases, defaults, imported bindings that are re-exported, named and star reexports, namespace exports, explicit shadowing, ambiguity, and finite cycles through relative snapshot files. CommonJS accepts unconditional top-level `exports.name = local`, `module.exports.name = local`, `module.exports = local`, and `module.exports = { name, alias: local }`. Replacing `module.exports` clears earlier names and detaches `exports`; `exports = module.exports` reconnects it. Computed keys, conditional mutation, dynamic replacement, inline values, shadowed bindings, and escaped aliases make analysis incomplete.
-
-Only attached JSDoc carries JavaScript evidence, exclusions, or reviews. JSX text, strings, templates, regular expressions, line comments, ordinary block comments, and detached JSDoc do not create evidence edges. Exported declarations without JSDoc remain policy hosts.
-
-`EvidencePythonAdapter` parses `.py` and `.pyi` with the pinned Python grammar. Module classes and explicit type aliases are `type` units; functions, async functions, and methods are `function` units; simple module/class assignments and direct `self.name` assignments in `__init__` are `property` units. Nested classes retain their owners. Static and class methods use `Class.member`; ordinary methods, property-decorated methods, and instance fields use `Class.prototype.member`. Leading-underscore class members and special methods are excluded. An underscored module declaration can still be exported explicitly through `__all__`.
-
-A static `__all__` accepts literal string lists or tuples, `+` composition, and top-level `+=` additions. Without `__all__`, supported module declarations and statically resolved imported bindings are public unless their local name starts with an underscore. Relative imports resolve from the importing package directory; absolute imports resolve from the configured population root. Resolution follows local `.py`, `.pyi`, and package `__init__` modules already present in the source snapshot, including aliases, namespace imports, star imports, and finite cycles. Missing local sources, unresolved explicit names, conditional public declarations, and dynamic `__all__` mutation leave analysis incomplete.
-
-Python evidence can live in a real class or function docstring, or in a same-indent `#` comment run immediately before a supported declaration. A comment before decorators attaches across the decorator list. Assigned and otherwise arbitrary strings, module docstrings, detached comments, and local nested helpers do not become public evidence hosts. Decorators, imports, metaclasses, module initialization, and dynamic attribute hooks are never executed; members they generate remain outside the declared-source guarantee.
-
-`EvidenceGoAdapter` parses selected `.go` files as directory-and-package populations. Exported defined types and aliases are `type` units; exported package functions, receiver methods, and interface methods are `function` units; exported constants, variables, and explicit struct fields, including embedded fields, are `property` units. Go's Unicode uppercase rule decides visibility. Receiver methods use `Type.Method` and can be addressed through either their declaration file or the selected file that declares their owner type.
-
-Adjacent standalone `//` runs and block comments are Go documentation hosts. Trailing code comments remain separate from a following documentation run and never attach to the next declaration. A comment on a grouped declaration can host all declarations in the group, while a comment on one specification or member remains local to it. Detached comments, function-body comments, strings, raw strings, and commented-out declarations do not supply evidence. The adapter reads only selected source: it does not run the Go toolchain, evaluate build tags or filename platform constraints, promote embedded members, or fabricate generated declarations absent from the snapshot. Conflicting declarations across selected build variants and missing receiver owners make the inventory incomplete. Same-package `_test.go` files join their package, while external `_test` packages remain distinct.
-
-`EvidenceRustAdapter` parses selected `.rs` files as static crate and module graphs. Public modules, structs, enums, traits, and type aliases are `type` units. Public free functions, inherent methods, and trait methods are `function` units. Public fields, tuple fields, constants, statics, enum variants, and associated constants are `property` units; trait associated types and their impl realizations are `type` units. Tuple fields use numeric segments such as `Pair[0]`.
-
-Unrestricted `pub` establishes the external surface; restricted visibility does not. Conventional `mod name;` files, inline modules, named/grouped/wildcard `pub use` declarations, private-module reexports, and finite reexport chains preserve one originating identity across public aliases. Inherent members use `Type.member`. Trait implementation members use an explicit qualifier such as `Sale["impl crate::Service"].run`, so they cannot collide with inherent members.
-
-Rust evidence attaches to outer or inner doc comments and static `#[doc = "..."]` attributes. Ordinary comments remain whitespace between outer attributes and their declaration: they cannot cancel documentation, withdrawals, or conditional-attribute diagnostics, and do not occupy tuple-field indexes. The adapter does not run Cargo, rustc, build scripts, or macros. Missing or ambiguous module files, `#[path]`, unresolved public reexports, item-position macros, expansion attributes, `cfg` alternatives, blanket or external impl ownership, and syntax failures leave the inventory incomplete. Expression macros inside function bodies do not affect declaration completeness.
-
-`EvidenceJavaAdapter` parses selected `.java` files as one source-public population with `tree-sitter-java` v0.23.5. Public classes, interfaces, enums, annotations, records, and publicly reachable nested types are `type` units. Public methods, including interface default and static methods, are `function` units. Public fields, interface constants, record components, enum constants, and annotation elements are `property` units. Constructors and compiler-generated record or enum methods do not form units.
-
-Package names and nested owners establish semantic identity, while a file target begins with the top-level type, such as `Sale.java#Sale.calculate`. Methods with the same owner and name form one overload-family unit with every declaration site. A field and method may share a target spelling; the reference's `symbol` selection disambiguates them, while selecting both makes the target ambiguous. Imports and inherited members do not create units. The adapter applies Java source visibility independently of JPMS exports and does not execute annotation processors; generated source participates only when selected explicitly.
-
-Only Javadoc immediately attached to a supported public declaration carries Java evidence, exclusions, reviews, or withdrawal. Attachment survives intervening declaration annotations and modifiers. Tags inside `{@code ...}`, `{@literal ...}`, `{@snippet ...}`, `<code>...</code>`, and `<pre>...</pre>` examples stay inert. Ordinary comments, strings, text blocks, and Javadoc on unpublished declarations do not create evidence edges. Conflicting selected identities and syntax failures leave the inventory incomplete.
-
-`EvidenceLuaAdapter` parses selected `.lua` files with `tree-sitter-lua` v0.5.0. Explicit global functions and variables are public. Lexical locals become public only through an exported table or function alias. Lua has no type declarations: callable values are `function` units; tables and scalar fields are `property` units. Both claim and reference defaults select `function` and `property`. Explicit `type` selectors are rejected.
-
-The module convention accepts one final return of a literal table or an already initialized local table. Address its root as `contract.lua#module` and its fields as `contract.lua#module.run`. Global declarations use their own names. The name `module` is reserved for the return accessor. Table owners are properties with explicit parent relationships; they are not classes. Dot and colon methods use the same field address, and a colon method's implicit receiver does not create a `prototype` segment. String keys are literal segments, so `["a.b"]` remains distinct from `a.b`. Unescaped short strings and long strings are supported as keys; numeric, positional, computed, and escape-dependent keys are diagnosed.
-
-Initialization supports one binding per statement, literal scalar values, function declarations and expressions, nested literal tables, resolved local aliases, and first assignments to absent literal table fields. A table or function alias retains one identity and its original declaration host; scalar assignment copies into a separate property. Nil fields are absent and add no property. The first public path establishes canonical ownership, and other public paths under that same owner resolve as aliases. A shared value under distinct containing tables leaves analysis incomplete because aggregate coverage and withdrawal require one structural owner. Documentation belongs to the original declaration, not a later alias assignment. Same-spelled declarations in different selected files remain distinct. There is no loader-derived cross-file export resolution.
-
-Adjacent `---` LuaDoc groups and long `--[[...]]` or `--[=[...]=]` comments attach to supported public declarations and literal fields. Ordinary comments, strings, detached annotations, and private declaration comments cannot acknowledge evidence; tag-bearing unsupported carriers are diagnosed. Fenced, indented, and HTML code examples are inert. `@internal`, `@hidden`, and `@ignore` withdraw a documented owner and its descendants.
-
-Metatables, `require` loaders, chunk-level calls or control flow, table cycles, unresolved values, reassignment, shadowing, and replacement or deletion of fields leave analysis incomplete. Syntactic deferred writes to public or unresolved bindings and exported tables escaping through function arguments, function-local assignments, or function returns are also diagnosed. Local function-body state does not add public declarations. The adapter does not execute Lua or infer runtime-generated members.
-
-`EvidenceDartAdapter` analyzes selected `.dart` files, including supplied generated `.g.dart` source, with a pinned `tree-sitter-dart` grammar. Classes, mixins, enums, named extensions, extension types, and typedefs are `type` units. Explicit functions, methods, class-body constructors, and operators are `function` units. Variables, fields, enum constants, extension-type representation fields, and getter/setter pairs are `property` units. Undocumented declarations remain selected. Names beginning with `_`, their descendants, and unnamed extensions remain library-private. Inherited members, implicit constructors, and other compiler-generated members absent from source do not create units.
-
-Addresses use lexical names such as `api.dart#Contract.value`, `api.dart#Numbers.twice`, `api.dart#Contract.new`, and `api.dart#Contract.named`. Operators retain a literal segment such as `api.dart#Contract["operator +"]`. Static and instance members both live directly under their declared owner. Complementary getters and setters share one property identity with separate declaration sites; other conflicting definitions make analysis incomplete. Typedefs are independent type declarations and do not expand the aliased type's members. Separate defining libraries retain separate identities even when they declare the same name. An extension type's primary constructor is represented by its type declaration; its representation field is a separate property.
-
-Select the whole relevant library graph in each population. Relative `part` and URI or named `part of` directives must agree on one selected defining library. Library files share public addresses without duplicating units. Static relative exports add transitive aliases and apply ordered `show`/`hide` combinators to root names; a local declaration shadows the same exported name, while competing exported definitions are incomplete. An export combinator only filters that export address: a declaration in another selected source remains an obligation at its defining library. Missing parts and exports retain exact watch dependencies and make analysis incomplete. Package or SDK export URIs, conditional exports, escaped or interpolated directive URIs, and augmentations require additional resolution and are reported as incomplete. Imports do not publish declarations, and external package imports do not imply traversal or member synthesis.
-
-Adjacent `///` groups and `/** */` documentation attach to the following declaration, including metadata inside its syntax node. Ordinary comments and strings cannot acknowledge evidence; annotation-like text there receives an unsupported-host diagnostic. Fenced, indented, and HTML code examples inside documentation are inert. Withdrawal tags hide the attached declaration and descendants. Documentation mappings preserve original UTF-16 positions, including Unicode and CRLF, and annotation-only edits preserve review fingerprints.
-
-`EvidenceKotlinAdapter` analyzes selected `.kt` files with `tree-sitter-kotlin` v1.1.0. Classes, interfaces, objects, companions, and type aliases are `type` units. Top-level and member functions are `function` units, grouped into overload families by package, lexical owner, receiver, and name. Explicit properties, primary-constructor `val`/`var` parameters, and enum entries are `property` units. A property's getter and setter belong to the property; a private setter does not hide its public getter. Constructors themselves and compiler-generated or inherited members do not add units.
-
-Kotlin declarations are public by default. Private, internal, and protected declarations and their descendants do not participate. An override with no explicit visibility produces incomplete analysis because its visibility depends on the inherited member. Explicit public overrides participate. `expect`/`actual` declarations and public delegation also produce incomplete analysis. The snapshot does not execute a compiler, annotation processor, build system, or application. `.kts` scripts are rejected rather than interpreted as ordinary source files.
-
-Package names contribute to Kotlin semantic identity; file accessors begin at the top-level declaration. Use `Contract.kt#Contract.value` for a property and `Contract.kt#Contract.Companion.run` for an unnamed companion member. Named companions retain their declared name, such as `Contract.Tools.run`. Extensions stay under their lexical owner and add a quoted receiver segment, such as `Contract.kt#["extension(kotlin.String)"].measure`. Selected nominal declarations, selected type-alias chains, explicit imports, and Kotlin core scalar types establish canonical receiver names; imports do not create exported declarations. Generic, function-type, type-parameter, cyclic, ambiguous, and unresolved wildcard-dependent receivers produce incomplete analysis. Type aliases are independent named type declarations, and dependency-derived member expansion is outside the declared-source surface. Backtick names are literal segments, so a property named `value.part` is addressed as `Contract["value.part"]`.
-
-Adjacent `/** */` KDoc attaches before declaration annotations. Evidence tags in ordinary comments, strings, and unattached KDoc never acknowledge a target; recognized tags on unsupported carriers produce diagnostics. Fenced and indented examples remain inert. Withdrawals propagate through lexical ownership, and annotation-only edits preserve semantic fingerprints.
-
-The pinned upstream Kotlin grammar requires a newline or semicolon before some closing class-body braces, including `class Example { val value = 1; }`. The equivalent spelling without that separator can produce an `ERROR` node and is reported as incomplete analysis. Evidence does not rewrite source or discard parser errors to obtain a smaller passing inventory.
-
-`EvidenceSwiftAdapter` analyzes selected `.swift` files with `tree-sitter-swift` 0.7.3 as one module per physical population root. Configure separate `root` directories for separate Swift modules, and use the same root for populations belonging to one module. Selected files form that module's declared-source snapshot; Evidence does not infer Swift Package Manager or Xcode targets. Public/open classes, structs, actors, enums, protocols, nested types, type aliases, and protocol associated types are `type` units. Functions, initializers, subscripts, and operator implementations are `function` units. Properties, constants, and enum cases are `property` units. Undocumented public declarations remain selected. Ordinary members of a public type default to internal; public protocol requirements inherit their protocol's visibility. Private, fileprivate, internal, and package declarations are excluded. Setter-only restrictions preserve the public getter and its property unit.
-
-File-qualified paths use lexical owners, such as `Contract.swift#Contract.value`, `Contract.swift#Contract.init`, and `Contract.swift#Contract.subscript`. All overloads with the same owner and base name share one function identity, including different argument labels, parameter types, and initializer signatures. Static and class members add a `static` segment; an operator implementation can be addressed as `Contract.swift#Contract.static["+"]`. Backtick identifiers are literal segments. Type aliases retain independent type identities and do not project another type's members through alias addresses.
-
-Extensions resolve selected local nominal types and finite nominal type-alias chains across files. Their type sites and explicit members merge under the original nominal owner, using that owner's canonical accessor in the extension's file. An ordinary extension defaults to internal members, while `public extension` defaults to public members; individual modifiers override the extension default and the original owner's visibility bounds every member. Extension documentation attaches to the reopened type. Every selected source is an analysis dependency, so owner changes and newly selected files invalidate watch analysis.
-
-Adjacent `///` runs and `/** */` DocC attach before declaration attributes. Fenced, indented, and HTML code examples supply no evidence. Recognized tags in ordinary comments, strings, or unattached documentation produce unsupported-host findings. Withdrawals propagate through semantic ownership, and annotation edits preserve review fingerprints. Macros, custom expansion attributes, conditional compilation, constrained extensions, external or ambiguous extension ownership, extension-added conformances, and known synthesized conformances or enum raw-value surfaces leave analysis incomplete. Evidence does not execute Swift or fabricate inherited members, implicit initializers, destructors, operator precedence declarations, or other compiler-generated declarations absent from selected source.
-
-`EvidenceMatlabAdapter` analyzes textual `.m` files with the pinned `tree-sitter-matlab` grammar. Configuration selects MATLAB explicitly; Objective-C's `.m` spelling does not infer MATLAB. Binary `.p`, live `.mlx`, MEX files, Octave extensions, and executable script files are outside this adapter's source contract. The primary function or `classdef` name must match the physical file name. File-local and nested functions create no public obligations.
-
-MATLAB `classdef` declarations are `type` units. Primary functions, declared methods, constructors, and abstract method signatures are `function` units. Declared class properties, enumeration members, and events are `property` units. Public/default access participates; private and protected methods and properties with neither public read nor public write access do not. `GetAccess` and `SetAccess` are independent. Event access is public when either notification or listening is public. Static, constant, dependent, abstract, and Hidden metadata retain their declared units. Hidden metadata does not act as an Evidence withdrawal. A declared property's getter and setter share its identity and contribute eligible accessible sites; they never create another property or function obligation. No inherited or compiler-generated declarations are invented.
-
-Package folders contribute literal owner segments: `+pkg/@Widget/Widget.m#pkg.Widget.run`. All members use their class directly, including static methods and constructors such as `Widget.Widget`. An external `@Widget/run.m` method requires the selected `@Widget/Widget.m` classdef, shares the class member identity, and resolves through both the external file and class file. Nonabstract prototypes require selected method implementations and preserve their declared access; unlisted external methods are public by default. Missing class files, missing implementations, conflicting declarations, and unsupported legacy classes produce incomplete analysis. Class folders and required files participate in watch invalidation. Ordinary same-named declarations in different physical files remain separate file-qualified identities.
-
-MATLAB help comments attach according to [MathWorks class help documentation](https://www.mathworks.com/help/matlab/matlab_prog/create-help-for-classes.html): classes and function definitions use the contiguous percent comments immediately following their signature; properties, enumeration members, and events use preceding help, with same-line help as a fallback. Signature-only method declarations accept preceding or same-line percent documentation at their declaration site. Preceding property help takes precedence over same-line help. Only percent-line help is eligible. Percent block comments (`%{` and `%}`), including blocks placed after signatures, remain inert. Strings, executable-body comments, unattached comments, fenced examples, HTML code examples, and help text indented four spaces beyond its baseline are inert. Attached `@internal`, `@hidden`, and `@ignore` help tags withdraw declarations and descendants. Help edits preserve review fingerprints; semantic changes invalidate them.
-
-MATLAB analysis never runs MATLAB, Octave, scripts, constructors, or build tools. `dynamicprops`, recognized dynamic-property operations, runtime path changes, `eval`/`evalin`, `assignin`, legacy multiargument `class` construction, `feval`, and `str2func` are reported as incomplete because their public surface cannot be established statically. Unknown class attributes and unsupported declaration forms also produce actionable incomplete diagnostics. Runtime name shadowing, generated code, inherited member expansion, and application-created declarations are outside this explicit source model. Select original static sources and all relevant class-folder files; parser errors are never discarded to obtain a smaller passing inventory.
-
-The pinned MATLAB grammar requires a newline or semicolon after the closing `end` of a primary `classdef`. A class file ending directly at that token produces a parser diagnostic even though MATLAB itself accepts it. Add a final line ending; Evidence preserves the original source and reports the grammar boundary rather than dropping its error.
-
-`EvidenceScalaAdapter` analyzes selected `.scala` files with `tree-sitter-scala` v0.26.2, including Scala 2 braces and Scala 3 indentation. Classes, traits, objects, package objects, enums, type aliases, abstract type members, and parameterized enum cases are `type` units. Methods and extension methods are `function` units, grouped by lexical owner and name into overload families. Values, variables, named givens, singleton enum cases, explicit constructor `val`/`var` parameters, and first-list case-class parameters are `property` units. Ordinary constructor parameters, constructors, inherited members, compiler-assigned anonymous-given names, case-class `copy`/`apply` methods, enum helper methods, and other synthesized declarations do not add units. Anonymous givens report incomplete analysis; name a given explicitly to include its source declaration. Explicit members in a named given's body remain owned by that given.
-
-Scala declarations have unrestricted visibility by default. `private` and `protected`, including every `[this]` or enclosing-scope qualifier, exclude the declaration and its descendants. A private primary constructor does not hide the enclosing class or its public fields. Scala 2 implicit declarations retain their explicit source kinds; implicit conversion and inherited-member expansion are outside this source inventory. `derives`, `uses`, macros, unresolved extractor patterns, structural member types, and anonymous initializer members report incomplete analysis. Tuple bindings and comma-separated simple bindings retain each declared property. The adapter parses source without executing Scala, build tools, or application code.
-
-Scala package clauses contribute namespace segments, including chained and braced packages. File accessors include the package, such as `Contract.scala#demo.Contract.run`. An object is always a distinct owner addressed as `Contract.scala#demo["object Contract"]`; its members use `demo["object Contract"].apply`. A package object uses `demo["package object util"].ready`, preserving its explicit source owner. Companion classes and objects never merge. Extension methods belong to their lexical owner, with the extension header included in their fingerprint. Type aliases remain independent declarations. Backtick identifiers are literal segments, such as `demo.Contract["value.part"]`.
-
-Explicit named exports from selected public singleton objects through package and singleton-object owners expose alternate addresses of the original source member. For `object Forward { export Origin.{run as call} }`, `demo["object Forward"].call` and `demo["object Origin"].run` resolve to the same semantic method, retain its original parent, and share withdrawals and review content. The export's documentation has its own physical site on that method. Exporting a container, chaining exports, wildcard/given exports, exports in files containing imports, private targets, or missing/ambiguous source objects reports incomplete analysis. Select the declaring object source to resolve a supported export; no import or build metadata is executed.
-
-Only adjacent Scaladoc attaches to Scala declarations. Annotations within declaration syntax preserve attachment, while intervening ordinary comments break it. Undocumented public declarations remain selected. Scaladoc Markdown fences, indented examples, HTML code blocks, and `{{{ ... }}}` examples are inert. Evidence tags in ordinary comments, strings, local or private declaration documentation receive unsupported-host diagnostics. Withdrawals propagate through explicit ownership and exports. Original UTF-16 positions and CRLF line endings are retained. `.sc` scripts and differently cased extensions are rejected; parser `ERROR`/`MISSING` nodes keep analysis incomplete.
-
-`EvidenceZigAdapter` analyzes `.zig` sources with `tree-sitter-zig` v1.1.2 and its Zig 0.14 syntax. Explicit `pub` declarations participate; unmarked declarations and private containers stay outside the public population unless exposed by a supported local alias. Structs, enums, unions, opaque types, error sets, and explicit primitive or compound type values are `type` units. Functions are `function` units. Variables, scalar constants, container fields, enum cases, and error names are `property` units. Fields and cases of an exposed container participate without a `pub` keyword. Functions with comptime parameters and a fixed primitive return type participate as source declarations. Local declarations, test bodies, compiler-generated declarations, and linker-only `export` declarations do not add public units.
-
-Zig addresses follow lexical owners, such as `contract.zig#Contract.run` and `contract.zig#Contract.value`; quoted identifiers preserve literal segments, such as `Contract["value.part"]`. Zig-specific hexadecimal and brace Unicode escapes in identifiers produce incomplete analysis; literal Unicode and JSON-compatible quoted escapes are supported. Physical files retain independent identities. Same-container direct name aliases of types and functions expose the canonical declaration and its members under the alias path, preserve declaration sites and documentation, and detect cycles or unresolved targets. Qualified aliases, imported namespaces, `usingnamespace`, namespace `comptime` blocks, type-producing functions, dependent generic returns, other inferred expressions such as calls or conditional values, and anonymous aggregate values or declaration types produce incomplete analysis. These forms can expose members that require further static resolution. Evidence does not evaluate build options, execute Zig or follow imports; explicitly typed scalar values can use external expressions without creating namespace members.
-
-Adjacent `///` documentation attaches to the following public Zig declaration, including alias sites. `@internal`, `@hidden`, and `@ignore` withdraw its canonical unit and descendants through every alias. `//!` container documentation, ordinary comments, function-body comments, detached documentation, and strings do not provide acknowledgements; tag-bearing unsupported carriers produce diagnostics. Fenced, indented, and HTML code examples in attached documentation remain inert. Original UTF-16 coordinates and CRLF positions are retained, and annotation-only changes preserve review fingerprints.
-
-The pinned Zig grammar reports MISSING nodes for valid empty `struct {}` and `opaque {}` containers. Evidence retains these parser failures as incomplete analysis. It does not rewrite source to bypass unsupported grammar forms.
-
-`EvidenceCSharpAdapter` parses selected `.cs` files with `tree-sitter-c-sharp` v0.23.5. Public classes, structs, interfaces, records, enums, delegates, and reachable nested types are `type` units. Public methods and operators are `function` units. Public fields, properties, events, enum members, and indexers are `property` units. Constructors, explicit interface implementations, positional record properties, inherited members, and other compiler-generated members do not form units.
-
-C# semantic identity and target addresses include block or file-scoped namespaces: `Sale.cs#Shop.Sale`, `#Shop.Sale.Total`, and `#Shop.Sale.Calculate`. Methods with the same owner and name form one overload family. Indexers use `Owner["this[]"]`; operators use literal segments such as `Owner["operator +"]` and `Owner["implicit operator int"]`. Static and instance members both use their declared owner because C# does not permit them to establish independent same-name member identities.
-
-Generic type identity includes arity. ``Shop["Box`1"]`` selects `Box<T>` exactly. `Shop.Box` is a source-name alias: one generic arity can own it, multiple generic arities make it ambiguous, and a declared nongeneric `Box` takes precedence. The configured source snapshot is the partial-type compilation boundary. Compatible partial declarations share one unit and retain every site; the normalized configured root participates in the unit ID so separate project roots remain distinct. Conflicting forms, accessibilities, or non-partial duplicate types leave analysis incomplete.
-
-Only externally reachable declarations enter the population. Top-level types require `public`; nested types require `public` except that a type declared in an interface is public by default. Every containing type must also be public. Interface members are public when they omit an accessibility modifier, including members with implementations. `internal`, `file`, `private`, `protected`, `protected internal`, and `private protected` declarations stay outside the population. Attached `///` and `/** */` XML documentation carries evidence across attributes. Tags inside `<c>`, `<code>`, `<example>`, and `<pre>` stay inert. Other comments and string forms are unsupported hosts. Declaration-position conditional compilation makes the inventory incomplete because the adapter does not evaluate build symbols. It does not run the .NET SDK, source generators, or application code; generated `.cs` participates only when selected directly.
-
-`EvidenceCAdapter` parses selected `.c` and `.h` files with `tree-sitter-c` v0.24.2. Named structs, unions, enums, and typedefs are `type` units. Non-static functions are `function` units. Non-static external objects, aggregate fields, and enumerators are `property` units. A function prototype and definition share one unit inside a physical file, while declarations in a header and source file remain separate because the adapter does not preprocess includes or perform linker analysis.
-
-C tags use exact addresses such as `models.h#["struct Sale"]`; an unambiguous source-name alias permits `models.h#Sale`. A direct typedef such as `typedef struct Sale Sale` adds `Sale` as a canonical address for the same type, and its fields are available through both spellings. If an ordinary declaration already owns `Sale`, the tag's convenient `Sale` alias and its member subtree are suppressed while the exact tag address remains available. Anonymous aggregates become type units when a direct typedef names them; unnamed struct or union members promote their explicit fields to the containing aggregate.
-
-The adapter follows nested declarators to distinguish functions returning pointers from function-pointer objects, including arrays, qualifiers, attributes, and multi-declarator statements. Attached leading or trailing Doxygen carries graph tags, while ordinary comments, strings, body comments, and detached Doxygen are unsupported hosts. Doxygen code and preformatted regions stay inert. Conventional whole-file include guards and `#pragma once` are structural wrappers; other conditional preprocessing, declaration-position macro invocations, and declaration-affecting directives make the inventory incomplete. Includes are not traversed, macro definitions are not expanded, and generated headers participate only when selected explicitly.
-
-`EvidenceCppAdapter` parses selected C++ source and header files with `tree-sitter-cpp` v0.23.4. Namespaces, classes, structs, unions, enums, aliases, typedefs, and concepts are `type` units. Free and member functions, constructors, destructors, operators, and conversions are `function` units. External variables, public fields, static data members, and enumerators are `property` units.
-
-C++ identities retain namespaces, nested owners, and template arity. ``shop["Box`1"].value`` identifies a member of `Box<T>`. Constructors and destructors use `constructor` and `destructor`; operators use literal segments such as `["operator +"]` and `["operator bool"]`. Header declarations and qualified source definitions merge across the selected snapshot, while name-only overloads contribute every declaration and definition site to one unit. Bounded `using` declarations and namespace aliases add addresses when they resolve to exactly one selected public unit.
-
-Only declarations reachable through public owners enter the population. Class members default to private, struct and union members default to public, and namespace-scope `static`, plain `const`, `constexpr`, and anonymous-namespace declarations stay outside the external surface. Attached leading or trailing Doxygen carries graph tags. The adapter does not run a preprocessor, compiler, build system, template instantiator, module resolver, or linker; conditional declarations, specializations, inheritance, friends, unresolved aliases, and other semantic boundaries leave the inventory incomplete.
-
-`EvidencePhpAdapter` analyzes selected `.php` files with the full tagged `tree-sitter-php` v0.24.2 grammar. The pinned grammar accepts Latin-1 identifier characters but rejects some other valid PHP byte-based identifiers, including emoji; these inputs remain incomplete with parser diagnostics. Files require an opening PHP tag; tagless PHP-only source and alternative extensions are unsupported. HTML surrounding PHP blocks is inert, and declarations in every PHP block participate. Namespace names prefix addresses without creating selectable namespace units. Classes, interfaces, traits, and enums are `type` units; named functions and methods, including explicit constructors, are `function` units; properties, constructor-promoted properties, constants, and enum cases are `property` units. Property hooks belong to their property, and asymmetric setter visibility does not hide a public getter.
-
-PHP namespace declarations and members with omitted visibility are public. Private and protected members do not participate. Methods and constants use `contract.php#App.Contract.run` and `contract.php#App.Contract.VALUE`; properties retain the dollar sign, as in `contract.php#App.Contract.$value`. Addresses use exact source spelling. Class and function identity comparison folds ASCII case, and conflicting declarations leave analysis incomplete; PHP declarations do not form overload families. Namespace `use`, grouped imports, and `as` aliases change local lookup without creating public declarations or additional addresses. Inherited and compiler-generated members are outside the explicit source surface.
-
-Adjacent `/** ... */` PHPDoc attaches across declaration attributes. One comment before a multi-property or multi-constant declaration owns all declarators, and each declarator has independent content. Ordinary comments, strings, and template text do not supply evidence. PHPDoc in unsupported positions produces an unsupported-host diagnostic when it contains annotations. Markdown fenced and indented examples and HTML `pre`/`code` examples remain inert. Withdrawal annotations remove declarations and their descendants from selection.
-
-Trait composition and adaptations, declarations inside executable blocks, includes, `require`, `eval`, `define`, `class_alias`, explicit autoload registration, and writes to computed `$this` properties or properties not declared on the lexical type produce incomplete analysis with source diagnostics. Evidence does not execute application code, follow Composer or autoload metadata, or infer declarations from arbitrary runtime calls. Select all relevant explicit sources in the configured population. Snapshot loading and watch discovery retain source failures and rebuild populations after source changes.
-
-`EvidenceObjcAdapter` parses selected `.m` and `.h` files with `tree-sitter-objc` v3.0.2. Configure `type: "objc"` explicitly for overlapping extensions; `.mm` Objective-C++ files are rejected. Interfaces, protocols, and named categories are `type` units. Methods and external C functions are `function` units. Explicit properties and `@public` ivars are `property` units. Undocumented public declarations remain obligations. Default, protected, private, and package ivars, static functions, and implementation-only methods stay unpublished.
-
-Selected files form one declared-source boundary. Interfaces and matching implementations share identities across files. Class extensions add sites to existing public classes, and their members join only independently public declarations. Named categories own their members under a distinct type such as `Widget(Extras)`, including categories on external classes; protocols use `protocol(Widget)`. Duplicate primary interfaces, protocols, or named categories are incomplete. Forward declarations and inherited or synthesized members do not add units. Explicit `@synthesize` and `@dynamic` sites contribute content to their declared property without inventing accessors or backing ivars.
-
-Use `Widget.h#Widget["-send:to:"]` for an instance selector and `Widget.h#Widget["+send:to:"]` for the class selector. Every colon remains part of the selector. Properties use `Widget.value`, class properties use `Widget["class:value"]`, and public ivars use `Widget["ivar:value"]`. A category member uses `Widget.h#["Widget(Extras)"]["-extra"]`; a protocol member uses `Widget.h#["protocol(Widget)"]["-run"]`. Matching declarations and implementations expose their own file-qualified addresses, and logical aliases preserve identity.
-
-Adjacent Doxygen block comments (`/** */` and `/*! */`) and contiguous `///` or `//!` lines attach to declarations. Fenced examples, Doxygen code blocks, HTML code examples, and strings never supply evidence. Annotations on ordinary or detached comments produce unsupported-host diagnostics. Withdrawals on any merged site apply to the complete identity and descendants. Original UTF-16 positions and CRLF are preserved, annotation changes preserve review fingerprints, and semantic edits invalidate them.
-
-Literal imports and includes do not traverse headers or load modules; select relevant headers explicitly. All selected files participate in watch invalidation. Conventional top-level include guards and `#pragma once` are accepted. Other conditional preprocessing, macro definitions or expansion, computed includes, compatibility aliases, external C data, typedefs, and C aggregate declarations leave analysis incomplete. The adapter does not invoke Clang, execute build scripts, or infer linker visibility.
-
-`EvidenceRubyAdapter` parses selected `.rb`, `.rake`, and `.gemspec` files, plus `Gemfile` and `Rakefile`, with `tree-sitter-ruby` v0.23.1. Classes and modules are `type` units. Public instance and singleton methods and bounded aliases are `function` units. Public constants and literal `attr_reader`, `attr_writer`, and `attr_accessor` declarations are `property` units. A reader and writer for the same attribute share one property identity while retaining both declaration sites.
-
-Ruby instance methods use `Shop.Sale.total`; singleton methods use `Shop.Sale.self.find`. Setters and operators preserve their Ruby spelling through quoted segments such as `Shop.Sale["price="]` and `Shop.Sale["[]"]`. Lexical `public`, `private`, and `protected` state and literal named visibility calls control publication. `module_function` publishes the singleton copy and removes its private instance copy from the public population. Compatible class and module reopenings retain all sites, while class/module mismatches, superclass conflicts, method or constant replacements, and ambiguous public addresses leave analysis incomplete.
-
-Adjacent same-indent `#` runs and embedded `=begin`/`=end` RDoc attach to supported declarations. Embedded RDoc starts at column zero as required by Ruby and can document indented nested declarations; a blank line or intervening source token breaks attachment. Tags in detached comments, method bodies, strings, heredocs, or documentation on unpublished declarations remain unsupported hosts. Top-level methods do not form Ruby export units. The adapter does not execute Ruby, resolve load order, expand inheritance or mixins, or evaluate `define_method`, `class_eval`, refinements, and generated class or module bodies; detectable changes across those boundaries leave the inventory incomplete.
-
-Markdown preserves its document outline, and Prisma preserves its schema structure. Swagger claims select local JSON/YAML documents with `files` globs. Swagger references use `file` for an exact local JSON/YAML path or an HTTP(S) URL, with an optional `root` for local paths.
-
-Markdown section anchors prefer a valid trailing `{#anchor}`. Otherwise, the adapter lowercases the heading, retains Unicode letters, numbers, and underscores, removes punctuation, and collapses whitespace or hyphens. Repeated anchors remain distinct sections and make the shared target ambiguous until the author supplies unique anchors.
-
-## Evidence declarations
-
-Write `@evidence <target> <reason>` in a declaration's documentation comment. Code targets name a file relative to the citing file, followed by `#` and a public symbol:
+No table without a document behind it, and no API without a test on it:
 
 ```ts
-/** @evidence ../calculator.ts#add Verifies the addition contract. */
-/** @evidence ../SomeClass.ts#SomeClass.member Supplies the public static member. */
-/** @evidence ../SomeClass.ts#SomeClass Represents the class contract. */
-/** @evidence ../SomeNamespace.ts#SomeNamespace.property Supplies the namespace value. */
+import type { IEvidenceConfig } from "@wrtnlabs/evidence";
+
+export default {
+  claims: [
+    {
+      name: "schema models the documents",
+      type: "prisma",
+      files: ["prisma/schema.prisma"],
+      symbol: "model",
+      reference: { type: "markdown", files: ["docs/requirements/**/*.md"], symbol: ["h2", "h3"] },
+    },
+    {
+      name: "operations expose the schema and the documents",
+      type: "swagger",
+      files: ["packages/api/swagger.json"],
+      reference: [
+        { type: "prisma", files: ["prisma/schema.prisma"], symbol: "model" },
+        { type: "markdown", files: ["docs/requirements/**/*.md"], symbol: ["h2", "h3"] },
+      ],
+    },
+    {
+      name: "tests exercise every operation",
+      type: "typescript",
+      files: ["test/features/**/*.ts"],
+      symbol: "function",
+      reference: { type: "swagger", file: "packages/api/swagger.json", noEvidenceExclude: true },
+    },
+  ],
+} satisfies IEvidenceConfig;
 ```
 
-TypeScript and Python instance members use `SomeClass.prototype.member`; Ruby instance members use `SomeClass.member`, and Ruby singleton members use `SomeClass.self.member`. Go receiver, Rust inherent, Java, C#, C++, and C aggregate members use `SomeType.member`. Rust trait impl members use a quoted `impl Trait` segment. C# and C++ targets include their namespace. C exact tag targets quote a segment such as `["struct Sale"]`. File-qualified targets identify declarations without compiler import-scoped `{@link Symbol}` lookup.
+- Prisma: `/// @evidence docs/requirements/orders.md#order-lifecycle Persists every state the lifecycle names.`
+- Swagger `description`: `@evidence prisma:Order Reads and transitions the persisted order.`
+- Test: `/** @evidence POST:/orders/{orderId}/coupons Rejects an over-stacked coupon set. */`
 
-| Target                 | Example                               |
-| ---------------------- | ------------------------------------- |
-| Code symbol            | `../calculator.ts#add`                |
-| Go receiver method     | `../sale.go#Sale.Calculate`           |
-| Rust inherent method   | `../sale.rs#Sale.calculate`           |
-| Rust trait impl method | `../sale.rs#Sale["impl Service"].run` |
-| Java overload family   | `../Sale.java#Sale.calculate`         |
-| Java record component  | `../Point.java#Point.x`               |
-| C# namespaced property | `../Sale.cs#Shop.Sale.Total`          |
-| C# generic type        | ``../Box.cs#Shop["Box`1"]``           |
-| C# indexer family      | `../Sale.cs#Shop.Sale["this[]"]`      |
-| C++ template member    | ``../box.hpp#shop["Box`1"].value``    |
-| C++ operator family    | `../sale.hpp#shop.Sale["operator +"]` |
-| C exact struct field   | `../sale.h#["struct Sale"].total`     |
-| C typedef field        | `../sale.h#Sale.total`                |
-| Python symbol          | `../calculator.py#add`                |
-| Python instance member | `../sale.py#Sale.prototype.total`     |
-| Ruby instance method   | `../sale.rb#Shop.Sale.total`          |
-| Ruby singleton method  | `../sale.rb#Shop.Sale.self.find`      |
-| Ruby setter method     | `../sale.rb#Shop.Sale["price="]`      |
-| Markdown document      | `docs/requirements.md`                |
-| Markdown heading       | `docs/requirements.md#pricing`        |
-| Prisma model or field  | `prisma:Sale`, `prisma:Sale.price`    |
-| Swagger operation      | `POST:/sales`                         |
+### Frontend
 
-Markdown paths resolve from the reference population's root. Backslashes are accepted as portable separators and leading `./` is ignored, while case and percent signs remain literal. The text after `#` is one exact Markdown anchor, so `docs/spec.md#price.v2` does not mean nested members. Markdown claims place tags in HTML comments. Prisma claims use `///` or block documentation attached to models and members; an unattached top-level `///` run may carry exclusions only.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://ttsc.dev/evidence/frontend-dark.svg">
+  <img alt="Requirements and Specifications grounding Swagger, Hooks, Screens and Journeys" src="https://ttsc.dev/evidence/frontend-light.svg">
+</picture>
 
-Swagger claims read tags from each operation's `description`. For example, an operation can cite a Markdown requirement:
+The first layer is a document somebody else publishes:
 
-```yaml
-paths:
-  /sales:
-    post:
-      description: |
-        Creates a sale.
-        @evidence docs/requirements.md#sales Exposes the required sale creation operation.
+```ts
+import type { IEvidenceConfig } from "@wrtnlabs/evidence";
+
+export default {
+  claims: [
+    {
+      name: "hooks call published operations",
+      type: "typescript",
+      files: ["src/hooks/**/*.ts"],
+      symbol: "function",
+      reference: { type: "swagger", file: "https://api.example.com/swagger.json" },
+    },
+    {
+      name: "screens render hooks",
+      type: "typescript",
+      files: ["src/screens/**/*.tsx"],
+      symbol: "function",
+      reference: { type: "typescript", files: ["src/hooks/**/*.ts"], symbol: "function" },
+    },
+    {
+      name: "journeys walk through screens",
+      type: "typescript",
+      files: ["test/journeys/**/*.ts"],
+      symbol: "function",
+      reference: { type: "typescript", files: ["src/screens/**/*.tsx"], symbol: "function" },
+    },
+  ],
+} satisfies IEvidenceConfig;
 ```
 
-Fenced examples and other JSON/YAML string fields do not host tags. Operations without descriptions remain selected hosts for coverage policies.
+"The API is wired up but there is no screen yet" stops being a green check.
 
-Swagger 2.0 and supported OpenAPI 3.x JSON/YAML documents are normalized into standard and additional operations under `paths`. Paths keep their exact case, spelling, and trailing slash; methods become uppercase. Components, path items, webhooks, and the whole document do not become aggregate units. Each operation fingerprint includes its normalized content, effective inherited servers and security, every used security-scheme definition, and recursively referenced local components. Security alternatives, conjunctive scheme names, and required scope or role names are order-independent; server preference order remains semantic. Recursive references terminate, while unresolved or external schema references remain unfetched.
+### Novels
 
-Swagger references load one exact local path or explicit HTTP(S) URL. Remote documents are fetched for every load with a 30-second timeout and a 16 MiB response limit; retained paths and diagnostics omit URL credentials and query values. Any file, fetch, UTF-8, parse, version, normalization, duplicate-operation, or target-shape failure leaves the inventory incomplete.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://ttsc.dev/evidence/novel-dark.svg">
+  <img alt="Principles and Settings grounding Treatments, Scripts and Prose" src="https://ttsc.dev/evidence/novel-light.svg">
+</picture>
 
-A citation to a containing type, namespace, document section, or model covers its selected descendants. `@evidenceExclude <target> <reason>` records why a selected obligation does not apply, subject to the reference's policy. The checker validates the declaration and its target; reviewers judge whether the explanation is true.
+The graph reads no meaning, so it works on any text: prose cites the script it executes, and editing a setting expires every review on it.
 
-## Reviews
+### What a green check means
 
-Set `requireReview: true` on a reference when every accepted acknowledgement must carry a current review. Pair `@evidence` with `@evidenceReview`, and pair `@evidenceExclude` with `@evidenceExcludeReview`, on the same semantic claim host and resolved target:
+![Coverage and token spend across all four subjects](https://raw.githubusercontent.com/samchon/ttsc/gh-pages/benchmark/png/evidence-summary.png)
+
+Measured upstream on `@ttsc/evidence`, which shares this package's graph semantics: one agent built four applications twice with the same model, with and without the graph. Without it, coverage landed between 51.6% and 85.5% and review consumed about 90% of all tokens. With it, every application reached 100%. See the [benchmark](https://ttsc.dev/docs/benchmark/evidence).
+
+## Graph rules
+
+A **claim** is a population whose hosts must cite; a **reference** is a population that forms one coverage denominator. Every claim/reference pair is an independent obligation: two references never pool coverage, and a claim `name` merges nothing. A **unit** is one declaration; a function exported from its file and from a barrel is one unit with two addresses.
+
+### Coverage
+
+- `@evidence` covers its target and the target's selected descendants: a class covers its methods, a file its sections, a model its columns.
+- `@evidenceExclude` covers the same way while recording that the target does not apply. The two cannot overlap in one obligation.
+- `noEvidenceExclude` refuses exclusions. `uniqueEvidence` allows at most one positive host per unit. `singleEvidencePerSymbol` requires every host, tagged or not, to cite exactly one unit. `evidenceExcludeCarriers` limits which claim files may carry exclusions.
+- `checklist` (Markdown references) requires every host to answer every selected heading; `@evidenceExclude docs/rules.md <reason>` excuses one host from the whole file. It cannot combine with `uniqueEvidence` or `singleEvidencePerSymbol`.
+
+### Reviews
+
+A false tag removes the error, not the problem. `requireReview: true` demands a review of the same kind, on the same host, naming the same target, with the current fingerprint:
 
 ```ts
 /**
- * @evidence docs/requirements.md#pricing Implements the pricing rule.
- * @evidenceReview docs/requirements.md#pricing #4c0e8e1 Read the rule and exercised its boundary cases.
+ * @evidence .agents/skills/principles/SKILL.md#no-hard-coding Looks the handler up in the registry it was handed and branches on no known name.
+ * @evidenceReview .agents/skills/principles/SKILL.md#no-hard-coding #6385235 Searched the body for literal names and fixture values; found none.
  */
-export function calculatePrice(): number {
-  return 0;
-}
 ```
 
-The seven-character fingerprint represents the cited identity and its full structural subtree. It is independent of the reference selector and public alias used to reach that identity. Evidence annotations, checkout line endings, and trailing whitespace do not change it; semantic content, descendants, declaring identity, and withdrawal decisions do.
-
-`EvidenceFingerprint.inspect(inventory, unitId)` returns the fingerprint version, the unit's content digest, the full scope digest, and the presented seven-character value. It refuses incomplete inventories. Source snapshot digests remain separate cache identities.
-
-Fingerprint version changes are review migrations. Fingerprint v2 removes checkout-root, filesystem identity, source-offset, and line-ending noise from review identity while retaining semantic source paths and declaration structure. Existing v1 review tags become stale once after upgrading: inspect the v2 value, review the cited scope again, and update the tag only after that review. The checker reports the expected current value but does not write approving prose or renew reviews automatically.
-
-## Coverage policies
-
-Set policies on each reference:
-
-| Option | Obligation |
-| --- | --- |
-| `noEvidenceExclude` | Require positive evidence; exclusions do not provide coverage. |
-| `uniqueEvidence` | Allow at most one distinct claim host to cite each selected unit. |
-| `singleEvidencePerSymbol` | Require every selected claim host to cite exactly one selected unit. |
-| `requireReview` | Require a matching review with the current target content fingerprint. |
-| `checklist` | For Markdown references, require every selected claim host to answer every selected item. |
-
-A checklist's positive citation answers only the named item. It cannot combine with `uniqueEvidence` or `singleEvidencePerSymbol`.
-
-A claim's `evidenceExcludeCarriers` globs restrict where exclusions may be written within its selected files. They cannot combine with a checklist that accepts exclusions.
-
-The root configuration accepts an optional `severity: "off" | "warning" | "error"`, defaulting to `"error"`. Claims and references may override it with their own optional `severity`: a claim inherits the root level, and a reference inherits its claim's level. A claim can also set `disabled: true`.
-
-## Public types
-
-The package exports `IEvidenceConfig`, `IEvidenceClaim`, `IEvidenceReference`, and their shared base interfaces. `IEvidenceClaimBase<Type, SymbolKind>` and `IEvidenceReferenceBase<Type, SymbolKind>` own their common settings and symbol selectors. Both specialize into programming, database, Markdown, and Swagger populations. `IEvidenceSwaggerClaim` selects operations and reads evidence declarations from their descriptions.
-
-`EvidenceProgrammingType` and `EvidenceDatabaseType` define source-language identifiers. `EvidenceProgrammingSymbol`, `EvidenceDatabaseSymbol`, and `EvidenceMarkdownSymbol` define symbol selectors; `EvidenceSeverity` defines diagnostic levels. `IEvidenceDocumentedConfig` selects programming symbols that must carry documentation comments.
-
-## Development
+The fingerprint is seven hexadecimal characters over the cited unit and its subtree. Annotations and whitespace do not change it; content does, and the diagnostic then prints the new value:
 
 ```bash
-pnpm install --frozen-lockfile
-pnpm build
-pnpm start --include config_loader
-pnpm check:format
+ERROR [graph-missing-review] claim[0] 'every function answers every engineering principle' (typescript) -> reference[0] (markdown)
+Location: /workspace/app/src/resolve.ts:4:4
+Claim 1 ('every function answers every engineering principle') reference 1: @evidence for '.agents/skills/principles/SKILL.md#no-hard-coding' has no matching @evidenceReview; the current scope fingerprint is '#6385235'.
+Repair: Add '@evidenceReview .agents/skills/principles/SKILL.md#no-hard-coding #6385235 <what you checked>' on the same semantic host.
 ```
 
-The pnpm workspace contains the published library in `packages/evidence` and logic unit tests in `test`. `pnpm build` compiles through `ttsc` with strict `@ttsc/lint` rules, including `@ttsc/evidence`'s `evidence/singular` rule. Run affected local tests with `pnpm start --include <filter>`; repeat `--include` to select several groups. CI runs the complete suite through `pnpm test`. Both commands execute exported unit-test functions through `ttsx` and `@nestia/e2e`'s `DynamicExecutor`.
+Reviews never provide coverage. `@evidenceReview` pairs with `@evidence`; `@evidenceExcludeReview` pairs with `@evidenceExclude`. A fingerprint version upgrade expires every review once; re-review before updating the value. The checker handles omissions; humans handle falsehoods.
 
-Dependency versions are centralized in the family catalogs in `pnpm-workspace.yaml`. Each package and the test workspace extend the shared configuration under `config`. VS Code uses Prettier on save through `.vscode/settings.json`.
+### States
 
-The root README and LICENSE are authoritative. During package preparation, `scripts/copy-readme-and-license.js` copies them into `packages/evidence`. Workspace imports resolve to TypeScript source; `publishConfig` supplies the compiled entry points, declarations, and CLI.
+| State | Result |
+| --- | --- |
+| A claim selects no units | Inactive, not fabricated coverage. |
+| A reference selects no units | `graph-empty-reference`; exit 1. |
+| A unit has no valid acknowledgement | Missing coverage; exit 1. |
+| A source is unreadable, partially parsed, or unresolved | The population is incomplete, derivative findings are suppressed; exit 2. |
+| A claim is disabled or has effective severity `off` | Removed before loading. |
 
-Grammar download pins live in `packages/evidence/src/internal/parser-grammars.json`. The package imports that file directly, validates every record with `typia` before use, and emits it into `lib` during the build; there is no generated catalog to regenerate. Tests automatically obtain real pinned grammars into the ignored `test/.tmp/parser-fixtures` directory, reused by CI. Missing test fixtures require network access; acquisition tests use those verified bytes with a separate disposable cache. Keep temporary test trees and maintenance experiments under `test/.tmp`.
+Incomplete analysis never passes as an empty population, and a resolved citation is never proof that its reason is true.
 
-For a grammar without a suitable upstream WASM release, add a recipe to `scripts/parser-builds.json` with its full source commit, grammar subdirectory, license path, ABI, and a real declaration/query probe. The manifest pins the Tree-sitter CLI and WASI SDK versions and download digests. Run `node scripts/build-parser-wasm.js <recipe>` on Linux or Windows x64. It builds two independent checkouts, compares their WASM bytes, and verifies parsing and capture through the installed `web-tree-sitter`. Outputs under `test/.tmp/parser-builds` include the grammar record and source/scanner/toolchain provenance. A recipe may pin a patch file under `scripts/parser-patches` with its SHA-256; the builder verifies and applies it to both checkouts, and provenance retains the exact patch bytes as base64. Upstream repositories may omit `tree-sitter.json`; when present, it participates in the input hashes. These are maintainer operations; checking a consumer project never builds a parser.
+## Configuration
 
-The `parser-wasm` workflow validates recipes on pull requests. To publish a verified artifact, dispatch it on `master` with the recipe identifier and `publish: true`. Its release tag includes the complete WASM digest, and publication never replaces existing assets. The publication job verifies a cold download through `TreeSitterAssets` and then reads the same cache with network access disabled. Register the resulting grammar record in `packages/evidence/src/internal/parser-grammars.json` only alongside its implemented, certified adapter.
+`evidence.config.ts` exports one `IEvidenceConfig`: `claims` and an optional root `severity`. It is evaluated through the consumer's `ttsx` and validated with `typia` before any source is read.
 
-## License
+### Claim
 
-MIT, copyright 2026 Jeongho Nam. See [LICENSE](https://github.com/wrtnlabs/evidence/blob/master/LICENSE).
+| Property | Type | Default | Behavior |
+| --- | --- | --- | --- |
+| `type` | Artifact type |  | Selects the adapter: `typescript`, `rust`, `prisma`, `markdown`, `swagger`, and every other certified type. |
+| `files` | `string[]` |  | Ordered globs relative to `root`; `!` excludes, a later pattern reincludes. |
+| `reference` | `IEvidenceReference \| IEvidenceReference[]` |  | One reference or an array of independent obligations. |
+| `name` | `string` |  | Labels diagnostics. |
+| `severity` | `"error" \| "warning" \| "off"` | root, then `error` | `off` removes the claim; `warning` never fails the check. |
+| `disabled` | `boolean` | `false` | Validates the shape but loads nothing. |
+| `root` | `string` | config directory | One directory, not a glob. |
+| `symbol` | Symbol or nonempty array | family default | Selects claim hosts. |
+| `evidenceExcludeCarriers` | `string[]` | all selected files | Narrows exclusions to matching selected files. |
+
+### Reference
+
+| Property | Type | Default | Behavior |
+| --- | --- | --- | --- |
+| `type` | Artifact type |  | Selects the referenced adapter independently of the claim. |
+| `files` / `file` | `string[]` / `string` |  | Globs, or for a Swagger reference one local path or URL. |
+| `root` | `string` | config directory | Same rules as claim roots. |
+| `symbol` | Symbol or nonempty array | family default | Selects the denominator. |
+| `severity` | Evidence severity | claim | `off` removes the reference. |
+| `noEvidenceExclude` | `boolean` | `false` | Exclusions fail and provide no coverage. |
+| `uniqueEvidence` | `boolean` | `false` | At most one positive host per unit. |
+| `singleEvidencePerSymbol` | `boolean` | `false` | Every host cites exactly one unit. |
+| `requireReview` | `boolean` | `false` | Every acknowledgement needs a current review. |
+| `checklist` | `boolean` | `false` | Markdown only. Every host answers every selected heading. |
+
+### Symbols
+
+| Family | Symbols | Claim default | Reference default |
+| --- | --- | --- | --- |
+| Programming | `type`, `function`, `property` | all | `type` |
+| Markdown | `file`, `h1`, `h2`, `h3`, `h4` | all | all |
+| Database | `model`, `column`, `relation` | all | `model` |
+| Swagger | `operation` | `operation` | `operation` |
+
+`type` chooses the language before file selection: `.h` follows `c`, `cpp`, or `objc`; `.sql` follows the configured dialect. Roots resolve from the config file; globs are case-sensitive, and a bare `src` selects nothing.
+
+## Tags and targets
+
+```text
+@evidence <target> <reason>
+@evidenceExclude <target> <reason>
+@evidenceReview <target> [#fingerprint] <description>
+@evidenceExcludeReview <target> [#fingerprint] <description>
+```
+
+Tags live in documentation attached to a public declaration. A target is one whitespace-free token; the prose is required. `{@link Symbol}` is rejected: addresses are file-qualified. `@internal`, `@hidden`, and `@ignore` withdraw a declaration and its descendants.
+
+| Target | Form |
+| --- | --- |
+| Programming | `<path>#<accessor>`, path from the citing file: `../calculator.ts#add` |
+| Instance member | `SomeClass.prototype.member` in TypeScript, JavaScript, Python; owner-direct elsewhere; `Shop.Sale.self.find` for Ruby singletons |
+| Literal segment | JSON-string brackets: `Namespace["member.with.dots"]`, ``Shop["Box`1"]``, `Sale["impl Service"].run`, `Widget["-send:to:"]` |
+| Markdown | `docs/requirements.md#anchor` from the reference root; `{#anchor}` wins, otherwise the lowercased heading |
+| Prisma | `prisma:Sale`, `prisma:Sale.price`, no path |
+| SQL and DBML | File-qualified: `schema.sql#app.item.id`; `evidence list` prints relation segments |
+| Swagger | `POST:/sales`, uppercase method and exact path |
+
+Markdown tags go in HTML comments under the heading they belong to. Prisma tags go in `///` on models and fields. Swagger tags go in each operation's `description`. Aliases such as barrels add addresses without adding obligations.
+
+| Outcome | Meaning |
+| --- | --- |
+| `resolved` | Exactly one unit owns the address in this scope. |
+| `missing-file`, `missing-member`, `out-of-population` | Nothing selected owns it. |
+| `ambiguous` | Several units own it. |
+| `hidden` | The unit was withdrawn. |
+| `malformed`, `unsupported-host`, `incomplete` | The target or its host cannot be interpreted. |
+
+The resolver never falls back to a project-wide name.
+
+## Languages
+
+Every family can be a claim and a reference and can cite every other. Programming languages and SQL dialects parse through upstream Tree-sitter grammars, Prisma through its own parser, and Swagger as JSON or YAML. Adapters run no compiler, preprocessor, macro, or build; a construct that could change the public surface and cannot be resolved makes analysis incomplete. `evidence languages` prints the shipped registry.
+
+| Type | Files | Public surface | Documentation |
+| --- | --- | --- | --- |
+| `typescript` | `.ts`, `.cts`, `.mts`, `.tsx` | Static module exports and declaration files | Attached JSDoc |
+| `javascript` | `.js`, `.jsx`, `.cjs`, `.mjs` | Static ESM exports and unconditional CommonJS initialization | Attached JSDoc |
+| `python` | `.py`, `.pyi` | Module exports with static import and `__all__` resolution | Docstrings or adjacent `#` runs |
+| `go` | `.go` | Exported package declarations with receiver ownership | Adjacent comments |
+| `rust` | `.rs` | Crate modules, public reexports, nominal impl members | Doc comments or `#[doc]` |
+| `java` | `.java` | Source-public declarations, independent of JPMS | Attached Javadoc |
+| `csharp` | `.cs` | Source-public declarations and partial identities | `///` or `/** */` XML |
+| `c` | `.c`, `.h` | External declarations, tags, typedefs, fields, enumerators per file | Attached Doxygen |
+| `cpp` | `.cpp`, `.cc`, `.cxx`, `.h`, `.hpp`, and other C++ spellings | Namespaces, public members, templates, bounded aliases | Attached Doxygen |
+| `ruby` | `.rb`, `.rake`, `.gemspec`, `Gemfile`, `Rakefile` | Classes, modules, public methods, constants, `attr_*`, reopenings | Adjacent `#` runs or RDoc |
+| `kotlin` | `.kt` | Public-by-default declarations, companions, resolvable extensions | Adjacent KDoc |
+| `swift` | `.swift` | Public/open declarations of one module per root, extensions merged | `///` or `/** */` DocC |
+| `php` | `.php` | Namespace declarations and public class members | Adjacent PHPDoc |
+| `dart` | `.dart` | Non-underscore declarations across `part` and relative `export` | `///` or `/** */` |
+| `scala` | `.scala` | Unrestricted Scala 2 and 3 declarations, named givens, object exports | Adjacent Scaladoc |
+| `lua` | `.lua` | Explicit globals and one returned literal module table | `---` LuaDoc or long comments |
+| `matlab` | `.m` | `classdef` types, primary functions, public members, `@Class` folders | Percent help |
+| `objc` | `.m`, `.h` | Interfaces, protocols, categories, methods, properties, `@public` ivars | Doxygen, `///`, `//!` |
+| `zig` | `.zig` | `pub` declarations, exposed container fields, direct aliases | Adjacent `///` |
+
+Every adapter maps its language onto `type`, `function`, and `property`, keeps undocumented public declarations in the population, and ignores tags inside code examples, strings, and ordinary comments.
+
+<details>
+<summary><strong>Per-language addresses and boundaries</strong></summary>
+
+- **TypeScript.** `Class.member` static, `Class.prototype.member` instance. Direct, aliased, default, star, and namespace exports resolve through relative paths; type-only exports keep type-space units. Package `exports`, path aliases, ambient modules, global augmentations, and `export =` are incomplete.
+- **JavaScript.** `.js` follows the nearest `package.json` `type`. CommonJS accepts unconditional top-level `exports.x = local`, `module.exports.x = local`, and `module.exports = { x, alias: local }`; computed keys and conditional mutation are incomplete.
+- **Python.** `Class.member` static, `Class.prototype.member` instance. Static `__all__` or non-underscore declarations; docstrings or a same-indent `#` run before the declaration. Missing local sources and dynamic `__all__` are incomplete.
+- **Go.** `Type.Method`; a grouped declaration's comment hosts every member. Build tags, promoted members, and generated declarations are outside the surface.
+- **Rust.** Unrestricted `pub` only; `pub use` chains keep one identity. `Sale["impl crate::Service"].run` for trait impls, `Pair[0]` for tuple fields. Cargo features, macros, `#[path]`, and `cfg` alternatives are incomplete.
+- **Java.** `Sale.java#Sale.calculate`; same-owner same-name methods form one overload family. `{@code}` and `<pre>` content is inert.
+- **C#.** Namespaced `Sale.cs#Shop.Sale.Total`; ``["Box`1"]`` for generics, `["this[]"]` for indexers, `["operator +"]` for operators. Partial declarations share one unit. Conditional compilation is incomplete.
+- **C.** `models.h#["struct Sale"]`, or `models.h#Sale` when unambiguous. Include guards are accepted; other preprocessing is incomplete, and includes are not traversed.
+- **C++.** ``shop["Box`1"].value``, `constructor`, `destructor`, `["operator +"]`. Class members default private, struct members public. Macros, specialization, inheritance, and modules are incomplete.
+- **Ruby.** `Shop.Sale.total`, `Shop.Sale.self.find`, `Shop.Sale["price="]`. Lexical visibility and `module_function` apply; `define_method` and mixins are not evaluated.
+- **Kotlin.** `Contract.Companion.run`, `["extension(kotlin.String)"].measure`. Overrides without explicit visibility and `expect`/`actual` are incomplete; `.kts` is rejected.
+- **Swift.** One module per root. `Contract.init`, `Contract.subscript`, `Contract.static["+"]`; extensions merge under their owner. Macros and conditional compilation are incomplete.
+- **PHP.** `App.Contract.run`, `App.Contract.$value`. Trait composition, `include`, `eval`, and `class_alias` are incomplete.
+- **Dart.** `Contract.new`, `Contract["operator +"]`; `part` and relative `export` graphs resolve. Package or SDK export URIs are incomplete.
+- **Scala.** `demo.Contract.run`, `demo["object Contract"].apply`; companions never merge. Anonymous givens, `derives`, and macros are incomplete.
+- **Lua.** `contract.lua#module.run`; dot and colon methods share one address; no `type` units. Metatables and `require` are incomplete.
+- **MATLAB.** `+pkg/@Widget/Widget.m#pkg.Widget.run`; percent help after signatures or before members. `eval`, `dynamicprops`, and missing class folders are incomplete.
+- **Objective-C.** `Widget["-send:to:"]`, `["Widget(Extras)"]["-extra"]`, `["protocol(Widget)"]["-run"]`; configure `type: "objc"` explicitly. Non-guard preprocessing and Objective-C++ are incomplete.
+- **Zig.** `contract.zig#Contract.run`; quoted identifiers are literal segments. `usingnamespace`, comptime namespaces, and build options are incomplete.
+
+</details>
+
+### Database schema languages
+
+Database adapters share `model`, `column`, and `relation`. Selected files are a declared schema snapshot; migrations, views, and executable statements are incomplete, and no adapter runs SQL.
+
+| Type | Files | Units | Documentation |
+| --- | --- | --- | --- |
+| `prisma` | `.prisma` | Models and views; parser output decides column versus relation | `///` on models and fields |
+| `postgresql` | `.sql` | `schema.table` tables, columns, foreign keys, `ADD COLUMN`, named `ADD CONSTRAINT` | Adjacent comments, `COMMENT ON` |
+| `mysql` | `.sql` | `CREATE TABLE` tables, columns, table `FOREIGN KEY` | Adjacent comments, `COMMENT` strings |
+| `sqlite` | `.sql`, `.sqlite` | `CREATE TABLE` tables, columns, inline or table foreign keys | Leading `--` runs or one block comment |
+| `bigquery` | `.sql`, `.bqsql` | `CREATE TABLE` tables, scalar and `STRUCT` fields, `NOT ENFORCED` foreign keys | Leading comments, `OPTIONS(description)` |
+| `sql` | `.sql` | Portable `CREATE TABLE`, inline `REFERENCES`, anonymous `FOREIGN KEY` | Leading `--` runs or block comments |
+| `dbml` | `.dbml` | Tables, scalar fields, inline or standalone `Ref` relations | Notes or adjacent standalone comments |
+
+Addresses are file-qualified except Prisma: `schema.sql#app.item.id`, `schema.sql#Store.Child.parent_id`, `schema.dbml#users.id`. Relation segments are dialect-specific (`["constraint owner_fk"]`, `["foreign-key:...]`, `posts["$ref:owner"]`); `evidence list` prints the escaped form.
+
+### Markdown and Swagger
+
+Markdown yields one `file` unit and one per ATX `h1` to `h4`; HTML comments are the only hosts. Swagger 2.0 and OpenAPI 3.x yield `METHOD:/path` operations whose `description` hosts tags; an operation's fingerprint covers its content, effective servers and security, and referenced local components. A reference by URL is fetched on every load.
+
+## CLI
+
+| Command | Purpose | Formats |
+| --- | --- | --- |
+| `check` | Evaluate every enabled obligation. Default command. | `text`, `json` |
+| `list` | List selected units and addressable ancestors with canonical targets. | `text`, `json` |
+| `inspect <target>` | Resolve one target in every scope and show its fingerprint and citations. | `text`, `json` |
+| `graph` | Export boundaries, nodes, edges, reviews, and diagnostics. | `json`, `mermaid`, `dot` |
+| `languages` | Print the certified adapter registry without loading a config. | `text`, `json` |
+| `init` | Create a typed starter config without overwriting. |  |
+
+| Option | Behavior |
+| --- | --- |
+| `-c, --config <path>` | Config path, default `evidence.config.ts`. |
+| `--cwd <path>` | Resolve CLI paths from another directory. |
+| `--format <value>` | Output format from the table above. |
+| `-o, --output <path>` | Write the result to a file and keep stdout empty. |
+| `--language`, `--kind` | Filter `list` rows after the full check. |
+| `-w, --watch` | Recheck `check` when a dependency changes; NDJSON with `--format json`. |
+
+Exit 0 is a complete analysis without errors, 1 is a complete analysis with violations, 2 is an invalid command or incomplete analysis. JSON reports carry `schemaVersion: 1`.
+
+## Programmatic API
+
+Importing the package starts no parser, loads no configuration, and runs no command.
+
+```ts
+import { EvidenceChecker, EvidenceReporter } from "@wrtnlabs/evidence";
+
+const report = await EvidenceChecker.check("evidence.config.ts");
+process.stdout.write(EvidenceReporter.render(report, "text"));
+process.exitCode = report.exitCode;
+```
+
+| Entry point | Purpose |
+| --- | --- |
+| `EvidenceChecker.check` / `analyze` | The report, or the report with its graph input and result. |
+| `new EvidenceQuery(analysis, cwd)` | `list`, `inspect`, and `graph` over one captured analysis. |
+| `EvidenceCommand.run(args)` | A finite CLI command with buffered output. |
+| `new EvidenceWatcher(configFile, options)` | `watch(callback)` and `close()`; poll, debounce, and parser-retry intervals. |
+| `EvidenceConfigLoader.load` / `plan` | The validated config, or the plan with defaults resolved. |
+| `new EvidenceParser()` | `parse(input, callback)` over a borrowed Tree-sitter tree with query helpers. |
+| `EvidenceLanguageRegistry` | `list()`, `databases()`, `candidates()`, `select(type, file)`. |
+| `Evidence*Adapter`, `EvidenceInventory`, `EvidenceGraph`, `EvidenceFingerprint` | Adapter analysis, inventory merging, graph evaluation, fingerprints. |
+
+## Grammar cache
+
+The package ships no grammar WASM. A manifest pins each grammar's commit, URL, SHA-256, and license; the first selected source of a language downloads and verifies it, and every later read verifies it again.
+
+| Platform | Directory |
+| --- | --- |
+| Windows | `%LOCALAPPDATA%\wrtnlabs\evidence\Cache` |
+| macOS | `~/Library/Caches/wrtnlabs/evidence` |
+| Linux | `$XDG_CACHE_HOME/wrtnlabs/evidence` or `~/.cache/wrtnlabs/evidence` |
+
+`EVIDENCE_CACHE_DIR` overrides the location. A cold cache needs network access once; cache the directory in CI.
+
+## Related
+
+- [Evidence Graph: Make Every SKILL Instruction 100% Enforced](https://ttsc.dev/blog/evidence-graph-make-every-skill-instruction-100-percent-enforced/), the article this README follows.
+- [`@ttsc/evidence`](https://github.com/samchon/ttsc/tree/master/packages/evidence), the compiler-integrated variant for TypeScript projects on `ttsc`.
+- [Benchmark](https://ttsc.dev/docs/benchmark/evidence) and [raw sessions](https://github.com/samchon/evidence-benchmark-results).

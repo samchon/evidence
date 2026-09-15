@@ -14,7 +14,7 @@ Choose an upstream Tree-sitter grammar that is maintained, has a usable license,
 - Add the grammar ID and its exact extensions or special filenames to `EvidenceLanguageRegistry`.
 - Keep multiple syntax variants, such as TypeScript and TSX, under one programming-language entry when they share one Evidence surface contract.
 
-Follow [parser-assets.md](parser-assets.md) for acquisition and checksum rules. A normal `@wrtnlabs/evidence` package update ships new certified grammar support; consumers do not install a separate grammar package or language plugin.
+Follow [parser assets](#parser-assets) below for acquisition, checksum, and build rules. A normal `@wrtnlabs/evidence` package update ships new certified grammar support; consumers do not install a separate grammar package or language plugin.
 
 ## 2. Define the declared public surface
 
@@ -111,6 +111,36 @@ Count each concept separately:
 - **Pinned grammar variants:** unique grammar IDs across the registry entries. TypeScript and TSX use separate grammars; JSX shares the JavaScript grammar.
 - **Database schema languages:** entries returned by `EvidenceLanguageRegistry.databases()` plus the Prisma parser. They share the `model`, `column`, and `relation` symbols and are counted separately from programming languages.
 - **Artifact formats:** Markdown and Swagger/OpenAPI are two additional non-programming Evidence families. They are not included in either language count.
-- **Candidates:** researched entries returned by `EvidenceLanguageRegistry.candidates()`. They are excluded from supported counts until their adapters pass this process.
+- **Candidates:** researched entries returned by `EvidenceLanguageRegistry.candidates()`. They are excluded from supported counts until their adapters pass this process. The registry record is the checked candidate matrix; a candidate is not supported because a grammar exists or parses a fixture.
 
-See [language-candidates.md](language-candidates.md) for the checked candidate matrix and bounded next tasks.
+## Parser assets
+
+The runtime uses the official CommonJS entry of `web-tree-sitter`, pinned in the `tree-sitter` family catalog. The binding's core WASM comes from that npm dependency and is resolved through `require.resolve`, independent of the caller's working directory.
+
+Language grammars are not packaged. The grammar manifest at `packages/evidence/src/internal/parser-grammars.json` pins every grammar the runtime may acquire: upstream repository, release or reproducible build identifier, full source commit, WASM download URL, SHA-256 digest, byte length, and the license asset with its own digest and length. `TreeSitterAssets` imports the manifest directly, validates every record with `typia`, rejects duplicate identifiers, and refuses non-HTTPS or credential-bearing URLs before any record can choose a cache key or download destination. The package emits the manifest into `lib` during the build; there is no generated catalog to regenerate. TypeScript and TSX share an upstream repository and license but use separate grammars.
+
+### Acquisition at runtime
+
+`TreeSitterAssetCache` downloads a pinned grammar the first time a selected source needs it, verifies the byte length and SHA-256 against the manifest, and publishes the file atomically under `grammars-v1/<sha256>.wasm` in the per-user cache. Every later read verifies size and digest again, so a damaged entry is downloaded afresh instead of being trusted. Concurrent callers in one process share a transfer and receive independent byte arrays; a cross-process lock prevents two processes from publishing the same entry at once, and stale locks from dead processes are recovered.
+
+The cache root is `EVIDENCE_CACHE_DIR` when set, otherwise the platform user cache documented in the root README. `ITreeSitterAssetOptions` lets an embedding caller override the cache directory, fetch transport, per-attempt timeout, attempt count, cancellation signal, and progress sink; `TreeSitterAssetScope` carries those controls through one asynchronous execution chain so nested checker and adapter instances inherit them. Imports, configuration loading, help, version, init, and `evidence languages` never download a grammar.
+
+### Tests and CI
+
+Logic tests obtain the real pinned grammars into the gitignored `test/.tmp/parser-fixtures` cache through `TestParserAssets`. A cold checkout therefore needs network access once; the test workflow caches that directory keyed by the manifest's hash. Acquisition tests copy those verified bytes into a disposable cache and drive a controlled fetch implementation, so cold, warm, offline, corrupt, and repair paths are exercised without touching the shared fixtures. `test_parser_assets` and the `test_parser_acquisition_*` scenarios in `test/src/features/parser` own that coverage.
+
+### Add or update a grammar
+
+1. Choose an upstream release that publishes a WASM asset compatible with the pinned `web-tree-sitter` ABI, and resolve its tag to a full source commit. If upstream publishes no WASM, add a recipe to `scripts/parser-builds.json` and let the `parser-wasm` workflow build, verify, and publish it as described below.
+2. Obtain the WASM and the license at that commit. Record both files' byte lengths and SHA-256 digests, the download URLs, the repository, the version, and the commit as one record in the manifest. Register a record only alongside its implemented, certified adapter.
+3. Add the grammar ID and its exact extensions or special filenames to `EvidenceLanguageRegistry`.
+4. Add a real declaration fixture to `test_parser_grammars` and run the parser logic tests through the test workspace: `pnpm start --include parser`.
+5. Review successful linking, parsing, query captures, Unicode coordinates, and external-scanner behavior with the installed binding. Matching ABI versions alone do not prove compatibility.
+
+The runtime releases parsers, trees, cursors, and per-session queries; immutable language modules remain cached for the process lifetime because the binding exposes no language-unload API.
+
+### Build a grammar without an upstream WASM release
+
+Add a recipe to `scripts/parser-builds.json` with its full source commit, grammar subdirectory, license path, ABI, and a real declaration/query probe. The manifest pins the Tree-sitter CLI and WASI SDK versions and download digests. Run `node scripts/build-parser-wasm.js <recipe>` on Linux or Windows x64. It builds two independent checkouts, compares their WASM bytes, and verifies parsing and capture through the installed `web-tree-sitter`. Outputs under `test/.tmp/parser-builds` include the grammar record and source/scanner/toolchain provenance. A recipe may pin a patch file under `scripts/parser-patches` with its SHA-256; the builder verifies and applies it to both checkouts, and provenance retains the exact patch bytes as base64. Upstream repositories may omit `tree-sitter.json`; when present, it participates in the input hashes. These are maintainer operations; checking a consumer project never builds a parser.
+
+The `parser-wasm` workflow validates recipes on pull requests. To publish a verified artifact, dispatch it on `master` with the recipe identifier and `publish: true`. Its release tag includes the complete WASM digest, and publication never replaces existing assets. The publication job verifies a cold download through `TreeSitterAssets` and then reads the same cache with network access disabled. Register the resulting grammar record in the manifest only alongside its implemented, certified adapter.
