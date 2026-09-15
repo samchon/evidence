@@ -56,7 +56,9 @@ export class EvidenceCppAdapter implements IEvidenceAdapter<"cpp"> {
    * diagnostics, and the invocation's parser closes regardless of the
    * extraction outcome.
    */
-  public async analyze(snapshot: IEvidenceSourceSnapshot): Promise<IEvidenceInventory> {
+  public async analyze(
+    snapshot: IEvidenceSourceSnapshot,
+  ): Promise<IEvidenceInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidenceInventory = {
       schemaVersion: 1,
@@ -108,7 +110,8 @@ export class EvidenceCppAdapter implements IEvidenceAdapter<"cpp"> {
         (session) => new EvidenceCppFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError = cause instanceof EvidenceParserError ? cause : undefined;
+      const parserError =
+        cause instanceof EvidenceParserError ? cause : undefined;
       return {
         source,
         declarations: [],

@@ -18,8 +18,8 @@ import type { IEvidenceClaimBase } from "./IEvidenceClaimBase";
  *   Ordinary double-slash comments do not host tags.
  * - A blank line before a top-level block detaches the comment. Comments above
  *   block attributes or closing braces also have no declaration host.
- * - evidence and exclusions require a target and nonempty reason. Invalid or detached
- *   declarations are reported.
+ * - Evidence and exclusions require a target and nonempty reason. Invalid or
+ *   detached declarations are reported.
  * - An unattached top-level triple-slash run may carry a file-level exclusion,
  *   independently of the symbol selector. It cannot carry ordinary Evidence.
  */

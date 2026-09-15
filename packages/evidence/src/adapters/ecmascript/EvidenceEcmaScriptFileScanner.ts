@@ -37,10 +37,16 @@ export class EvidenceEcmaScriptFileScanner {
   private readonly excludedRoots = new Set<string>();
   private readonly comments = new Map<string, IEvidenceEcmaScriptComment>();
   private readonly exports: IEvidenceEcmaScriptExport[] = [];
-  private readonly positions = new Map<string, IEvidenceEcmaScriptHostPosition>();
+  private readonly positions = new Map<
+    string,
+    IEvidenceEcmaScriptHostPosition
+  >();
   private readonly imports: IEvidenceEcmaScriptImport[] = [];
   private readonly diagnostics: IEvidenceDiagnostic[] = [];
-  private readonly commonJsExports = new Map<string, IEvidenceEcmaScriptExport>();
+  private readonly commonJsExports = new Map<
+    string,
+    IEvidenceEcmaScriptExport
+  >();
   private commonJsAliasAttached = true;
   private commonJsStaticObject = true;
   private complete = true;
@@ -119,7 +125,10 @@ export class EvidenceEcmaScriptFileScanner {
         (child) => child.type === "import_clause",
       );
       if (clause === undefined) continue;
-      const statementTypeOnly = EvidenceEcmaScriptSyntax.token(statement, "type");
+      const statementTypeOnly = EvidenceEcmaScriptSyntax.token(
+        statement,
+        "type",
+      );
       const direct = clause.namedChildren.find(
         (child) => child.type === "identifier",
       );
@@ -153,7 +162,8 @@ export class EvidenceEcmaScriptFileScanner {
       for (const entry of named?.namedChildren ?? []) {
         if (entry.type !== "import_specifier") continue;
         const imported = EvidenceEcmaScriptSyntax.specifierName(entry);
-        const local = EvidenceEcmaScriptSyntax.specifierAlias(entry) ?? imported;
+        const local =
+          EvidenceEcmaScriptSyntax.specifierAlias(entry) ?? imported;
         if (imported === undefined || local === undefined) continue;
         this.imports.push({
           localName: local,
@@ -522,7 +532,9 @@ export class EvidenceEcmaScriptFileScanner {
         constant &&
         bindingNode?.type === "identifier" &&
         EvidenceEcmaScriptSyntax.functionValue(value);
-      const symbol: EvidenceProgrammingSymbol = callable ? "function" : "property";
+      const symbol: EvidenceProgrammingSymbol = callable
+        ? "function"
+        : "property";
       for (const binding of EvidenceEcmaScriptSyntax.bindings(bindingNode)) {
         const local = EvidenceEcmaScriptSyntax.name(binding);
         if (local === undefined) continue;
@@ -685,7 +697,10 @@ export class EvidenceEcmaScriptFileScanner {
         "constructor"
       );
     });
-    const effective: Map<string, EvidenceNode> = new Map<string, EvidenceNode>();
+    const effective: Map<string, EvidenceNode> = new Map<
+      string,
+      EvidenceNode
+    >();
     if (this.type === "javascript")
       for (const member of body.namedChildren) {
         const name: string | undefined =
@@ -754,7 +769,9 @@ export class EvidenceEcmaScriptFileScanner {
           EvidenceEcmaScriptSyntax.functionValue(
             member.childForFieldName("value"),
           ) ||
-          EvidenceEcmaScriptSyntax.functionType(member.childForFieldName("type"))
+          EvidenceEcmaScriptSyntax.functionType(
+            member.childForFieldName("type"),
+          )
             ? "function"
             : "property";
         this.addClassMember(
@@ -775,10 +792,13 @@ export class EvidenceEcmaScriptFileScanner {
    *
    * Static methods and fields replace one property on the class object.
    * Instance methods live on the prototype while instance fields initialize own
-   * properties, so those two forms remain separate even when evidence projects both
-   * through a `prototype` address segment.
+   * properties, so those two forms remain separate even when evidence projects
+   * both through a `prototype` address segment.
    */
-  private classMemberSlot(member: EvidenceNode, name: string): string | undefined {
+  private classMemberSlot(
+    member: EvidenceNode,
+    name: string,
+  ): string | undefined {
     const method: boolean =
       member.type === "method_definition" ||
       member.type === "method_signature" ||
@@ -836,7 +856,9 @@ export class EvidenceEcmaScriptFileScanner {
         EvidenceEcmaScriptSyntax.functionValue(
           parameter.childForFieldName("value"),
         ) ||
-        EvidenceEcmaScriptSyntax.functionType(parameter.childForFieldName("type"))
+        EvidenceEcmaScriptSyntax.functionType(
+          parameter.childForFieldName("type"),
+        )
           ? "function"
           : "property";
       const field = this.addUnit(
@@ -950,7 +972,8 @@ export class EvidenceEcmaScriptFileScanner {
       for (const child of clause.namedChildren) {
         if (child.type !== "export_specifier") continue;
         const local = EvidenceEcmaScriptSyntax.specifierName(child);
-        const publicName = EvidenceEcmaScriptSyntax.specifierAlias(child) ?? local;
+        const publicName =
+          EvidenceEcmaScriptSyntax.specifierAlias(child) ?? local;
         if (local === undefined || publicName === undefined) continue;
         this.exports.push(
           specifier === undefined
@@ -958,14 +981,16 @@ export class EvidenceEcmaScriptFileScanner {
                 kind: "local",
                 publicName,
                 localName: local,
-                typeOnly: typeOnly || EvidenceEcmaScriptSyntax.token(child, "type"),
+                typeOnly:
+                  typeOnly || EvidenceEcmaScriptSyntax.token(child, "type"),
               }
             : {
                 kind: "named",
                 publicName,
                 importedName: local,
                 specifier,
-                typeOnly: typeOnly || EvidenceEcmaScriptSyntax.token(child, "type"),
+                typeOnly:
+                  typeOnly || EvidenceEcmaScriptSyntax.token(child, "type"),
               },
         );
       }
@@ -995,13 +1020,13 @@ export class EvidenceEcmaScriptFileScanner {
     }
   }
 
-  private scanJavaScriptDefault(statement: EvidenceNode, value: EvidenceNode): void {
+  private scanJavaScriptDefault(
+    statement: EvidenceNode,
+    value: EvidenceNode,
+  ): void {
     const localName = `default:${statement.startIndex}`;
-    const symbol: EvidenceProgrammingSymbol = EvidenceEcmaScriptSyntax.functionValue(
-      value,
-    )
-      ? "function"
-      : "property";
+    const symbol: EvidenceProgrammingSymbol =
+      EvidenceEcmaScriptSyntax.functionValue(value) ? "function" : "property";
     this.addUnit(
       statement,
       value,
@@ -1216,7 +1241,9 @@ export class EvidenceEcmaScriptFileScanner {
         continue;
       }
       if (child.type === "pair") {
-        const name = EvidenceEcmaScriptSyntax.name(child.childForFieldName("key"));
+        const name = EvidenceEcmaScriptSyntax.name(
+          child.childForFieldName("key"),
+        );
         const value = child.childForFieldName("value");
         if (name === "__proto__") {
           this.problem(
@@ -1318,7 +1345,10 @@ export class EvidenceEcmaScriptFileScanner {
     return this.moduleExports(node) ? "module" : undefined;
   }
 
-  private containsCommonJsMutation(node: EvidenceNode, nested: boolean): boolean {
+  private containsCommonJsMutation(
+    node: EvidenceNode,
+    nested: boolean,
+  ): boolean {
     if (
       nested &&
       (node.type === "function_declaration" ||

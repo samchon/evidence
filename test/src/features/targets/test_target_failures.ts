@@ -140,7 +140,9 @@ export async function test_target_failures(): Promise<void> {
       ),
     ]),
   );
-  const ambiguous = await new EvidenceTargetResolver([ambiguousInventory]).resolve(
+  const ambiguous = await new EvidenceTargetResolver([
+    ambiguousInventory,
+  ]).resolve(
     createStatement("../src/index.ts#value", "/project"),
     createHost("/project/docs/review.md"),
     ambiguousInventory.units.map((unit) => unit.id),
@@ -151,7 +153,10 @@ export async function test_target_failures(): Promise<void> {
   // Any export-analysis failure prevents an otherwise valid address from covering.
   const incompleteInventory = await new EvidenceTypeScriptAdapter().analyze(
     EvidenceTestSourceSnapshot.combine([
-      EvidenceTestSourceSnapshot.create("src/value.ts", "export const value = 1;"),
+      EvidenceTestSourceSnapshot.create(
+        "src/value.ts",
+        "export const value = 1;",
+      ),
       EvidenceTestSourceSnapshot.create(
         "src/index.ts",
         'export { value, missing } from "./value";',
@@ -206,7 +211,10 @@ function createHost(file: string): IEvidenceHost {
   };
 }
 
-function createStatement(target: string, root: string): IEvidenceTargetStatement {
+function createStatement(
+  target: string,
+  root: string,
+): IEvidenceTargetStatement {
   return {
     hostId: "claim-host",
     target,

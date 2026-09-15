@@ -2,7 +2,10 @@ import type { IEvidenceGrammar } from "evidence";
 import { randomUUID } from "node:crypto";
 import { resolve } from "node:path";
 
-import { EvidenceTreeSitterAssets, EvidenceTreeSitterAssetScope } from "evidence";
+import {
+  EvidenceTreeSitterAssets,
+  EvidenceTreeSitterAssetScope,
+} from "evidence";
 import { EvidenceTestFileSystem } from "./EvidenceTestFileSystem";
 
 /**

@@ -188,8 +188,9 @@ export namespace EvidenceRubySyntax {
    * Detects calls that generate a runtime constant instead of a declared
    * container.
    *
-   * EvidenceRubyFileScanner reports these forms as incomplete because their members
-   * cannot be derived from the declared source model without executing Ruby.
+   * EvidenceRubyFileScanner reports these forms as incomplete because their
+   * members cannot be derived from the declared source model without executing
+   * Ruby.
    */
   export function generatedConstant(node: EvidenceNode | null): boolean {
     if (node?.type !== "call") return false;

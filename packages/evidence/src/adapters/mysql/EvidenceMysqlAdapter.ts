@@ -10,8 +10,8 @@ const Evidence_MYSQL_TYPE = "mysql" as const;
  * Extracts explicitly configured MySQL schema declarations with static
  * ownership.
  *
- * EvidenceMysqlFileScanner supplies MySQL identifier, table, and member records to
- * the common SQL materializer. Schema meaning comes from selected source
+ * EvidenceMysqlFileScanner supplies MySQL identifier, table, and member records
+ * to the common SQL materializer. Schema meaning comes from selected source
  * statements; the adapter neither connects to a server nor executes
  * migrations.
  */
@@ -44,7 +44,9 @@ export class EvidenceMysqlAdapter implements IEvidenceAdapter<"mysql"> {
    * The adapter fixes dialect policy before analysis; parser allocation waits
    * until this method receives a snapshot.
    */
-  public analyze(snapshot: IEvidenceSourceSnapshot): Promise<IEvidenceInventory> {
+  public analyze(
+    snapshot: IEvidenceSourceSnapshot,
+  ): Promise<IEvidenceInventory> {
     return this.materializer.analyze(snapshot);
   }
 }

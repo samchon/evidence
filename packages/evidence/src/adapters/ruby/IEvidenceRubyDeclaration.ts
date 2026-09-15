@@ -39,7 +39,7 @@ export interface IEvidenceRubyDeclaration {
   runtimeName: string;
 
   /**
-   * evidence selector family assigned to this declaration.
+   * Evidence selector family assigned to this declaration.
    *
    * It distinguishes types, methods, and property-like constant or attribute
    * surfaces.

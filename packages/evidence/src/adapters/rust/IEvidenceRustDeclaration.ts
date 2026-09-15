@@ -7,8 +7,8 @@ import type { EvidenceRustVisibility } from "./EvidenceRustVisibility";
  * Captures one Rust declaration before module reachability and impl ownership
  * resolve.
  *
- * EvidenceRustModuleResolver combines this lexical record with the selected crate
- * graph; scanners do not assume that a visible spelling is externally
+ * EvidenceRustModuleResolver combines this lexical record with the selected
+ * crate graph; scanners do not assume that a visible spelling is externally
  * reachable.
  */
 export interface IEvidenceRustDeclaration {
@@ -35,7 +35,7 @@ export interface IEvidenceRustDeclaration {
   name: string;
 
   /**
-   * evidence selector family assigned to the declaration.
+   * Evidence selector family assigned to the declaration.
    *
    * Consumers distinguish nominal types, functions, and properties through this
    * value.

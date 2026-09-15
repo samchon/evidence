@@ -4,10 +4,10 @@ import type { IEvidenceLuaDeclaration } from "./IEvidenceLuaDeclaration";
 /**
  * Represents a statically understood Lua value during file scanning.
  *
- * EvidenceLuaFileScanner keeps these records for bindings, table fields, aliases,
- * and final module returns so it can construct public declarations without
- * evaluating Lua; they are internal scanner state rather than serialized
- * output.
+ * EvidenceLuaFileScanner keeps these records for bindings, table fields,
+ * aliases, and final module returns so it can construct public declarations
+ * without evaluating Lua; they are internal scanner state rather than
+ * serialized output.
  */
 export interface IEvidenceLuaValue {
   /**
@@ -21,8 +21,9 @@ export interface IEvidenceLuaValue {
   /**
    * Points to the source node that establishes this value's declaration site.
    *
-   * EvidenceLuaFileScanner derives a stable declaration ID and diagnostic location
-   * from this node, including a copied site for scalar alias assignments.
+   * EvidenceLuaFileScanner derives a stable declaration ID and diagnostic
+   * location from this node, including a copied site for scalar alias
+   * assignments.
    */
   node: EvidenceNode;
 

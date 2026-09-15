@@ -8,9 +8,10 @@ export interface IEvidenceTreeSitterAssetOptions {
   /**
    * Writable root for the immutable grammar cache.
    *
-   * Omission first uses `Evidence_CACHE_DIR`, then `node_modules/.cache/evidence` under
-   * the current working directory. `EvidenceTreeSitterAssetCache` places verified
-   * grammar bytes below this root and never treats it as catalog provenance.
+   * Omission first uses `Evidence_CACHE_DIR`, then
+   * `node_modules/.cache/evidence` under the current working directory.
+   * `EvidenceTreeSitterAssetCache` places verified grammar bytes below this
+   * root and never treats it as catalog provenance.
    */
   cacheDirectory?: string;
 

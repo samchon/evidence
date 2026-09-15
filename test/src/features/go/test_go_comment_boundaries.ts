@@ -1,4 +1,8 @@
-import { EvidenceFingerprint, EvidenceGoAdapter, EvidenceInventory } from "evidence";
+import {
+  EvidenceFingerprint,
+  EvidenceGoAdapter,
+  EvidenceInventory,
+} from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
@@ -6,7 +10,8 @@ import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSna
 /**
  * Separates trailing Go comments from leading documentation runs.
  *
- * Evidence attaches only to the declaration-leading run despite matching columns.
+ * Evidence attaches only to the declaration-leading run despite matching
+ * columns.
  *
  * 1. Analyze leading and trailing annotated comments.
  * 2. Compare attached declarations.

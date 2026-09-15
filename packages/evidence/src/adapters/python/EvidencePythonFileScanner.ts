@@ -52,7 +52,7 @@ export class EvidencePythonFileScanner {
   /**
    * Effective class-dictionary unit for each owner and runtime binding name.
    *
-   * evidence symbols and public address projections can differ for a method,
+   * Evidence symbols and public address projections can differ for a method,
    * property, alias, or nested class even though Python assigns them through
    * one class namespace. The map lets a later statement remove the replaced
    * unit and its descendants before publication.
@@ -88,7 +88,10 @@ export class EvidencePythonFileScanner {
    * Attachments are added as declarations are recognized instead of inferred
    * later from line adjacency.
    */
-  private readonly documentation = new Map<string, IEvidencePythonDocumentation>();
+  private readonly documentation = new Map<
+    string,
+    IEvidencePythonDocumentation
+  >();
 
   /**
    * Indexes contiguous comment runs by their final one-based source line.
@@ -256,7 +259,9 @@ export class EvidencePythonFileScanner {
       statement.namedChildren.forEach((entry, index) => {
         if (entry.type === "aliased_import") {
           const imported = entry.childForFieldName("name")?.text;
-          const local = EvidencePythonSyntax.name(entry.childForFieldName("alias"));
+          const local = EvidencePythonSyntax.name(
+            entry.childForFieldName("alias"),
+          );
           if (imported !== undefined && local !== undefined)
             this.bindings.push({
               kind: "namespace",
@@ -306,7 +311,9 @@ export class EvidencePythonFileScanner {
       if (module !== null && entry.equals(module)) continue;
       if (entry.type === "aliased_import") {
         const imported = entry.childForFieldName("name")?.text;
-        const local = EvidencePythonSyntax.name(entry.childForFieldName("alias"));
+        const local = EvidencePythonSyntax.name(
+          entry.childForFieldName("alias"),
+        );
         if (imported !== undefined && local !== undefined)
           this.bindings.push({
             kind: "named",
@@ -339,7 +346,9 @@ export class EvidencePythonFileScanner {
     definition: EvidenceNode,
     parent?: IEvidencePythonClassContext,
   ): void {
-    const name = EvidencePythonSyntax.name(definition.childForFieldName("name"));
+    const name = EvidencePythonSyntax.name(
+      definition.childForFieldName("name"),
+    );
     if (name === undefined || (parent !== undefined && this.private(name)))
       return;
     const root = parent?.root ?? this.rootToken(name, wrapper);
@@ -403,7 +412,9 @@ export class EvidencePythonFileScanner {
    * the semantic name and source content range.
    */
   private scanFunction(wrapper: EvidenceNode, definition: EvidenceNode): void {
-    const name = EvidencePythonSyntax.name(definition.childForFieldName("name"));
+    const name = EvidencePythonSyntax.name(
+      definition.childForFieldName("name"),
+    );
     if (name === undefined) return;
     const root = this.rootToken(name, wrapper);
     this.addUnit(
@@ -430,7 +441,9 @@ export class EvidencePythonFileScanner {
     definition: EvidenceNode,
     context: IEvidencePythonClassContext,
   ): void {
-    const name = EvidencePythonSyntax.name(definition.childForFieldName("name"));
+    const name = EvidencePythonSyntax.name(
+      definition.childForFieldName("name"),
+    );
     if (name === undefined) return;
     if (name === "__init__") {
       this.removeUnitTrees(
@@ -610,7 +623,9 @@ export class EvidencePythonFileScanner {
         if (context === undefined || !this.private(name)) {
           const root = context?.root ?? this.rootToken(name, current);
           const symbol: EvidenceProgrammingSymbol =
-            EvidencePythonSyntax.typeAliasAnnotation(current) ? "type" : "property";
+            EvidencePythonSyntax.typeAliasAnnotation(current)
+              ? "type"
+              : "property";
           if (context !== undefined)
             this.replaceClassBinding(context.parentId, name);
           const record: IEvidencePythonOwnedUnit = this.addUnit(
@@ -655,11 +670,13 @@ export class EvidencePythonFileScanner {
     for (const statement of body.namedChildren) {
       if (statement.type === "comment") continue;
       if (statement.type === "expression_statement") {
-        let assignment: EvidenceNode | null = statement.namedChildren[0] ?? null;
+        let assignment: EvidenceNode | null =
+          statement.namedChildren[0] ?? null;
         while (assignment?.type === "assignment") {
           const left = assignment.childForFieldName("left");
           const name =
-            left !== null && EvidencePythonSyntax.attributeObject(left) === receiver
+            left !== null &&
+            EvidencePythonSyntax.attributeObject(left) === receiver
               ? EvidencePythonSyntax.attributeName(left)
               : undefined;
           if (name !== undefined && !this.private(name)) {
@@ -754,7 +771,8 @@ export class EvidencePythonFileScanner {
       range: this.session.range(wrapper),
       content: [content],
     };
-    let record: IEvidencePythonOwnedUnit | undefined = this.units.get(semanticId);
+    let record: IEvidencePythonOwnedUnit | undefined =
+      this.units.get(semanticId);
     if (record === undefined || !merges) {
       const unit: IEvidenceUnit = {
         id,

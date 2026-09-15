@@ -4,7 +4,10 @@ import { randomUUID } from "node:crypto";
 import { readdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { EvidenceTreeSitterAssetCache, EvidenceTreeSitterAssets } from "evidence";
+import {
+  EvidenceTreeSitterAssetCache,
+  EvidenceTreeSitterAssets,
+} from "evidence";
 import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
 import { EvidenceTestParserError } from "../../internal/EvidenceTestParserError";
 
@@ -118,7 +121,13 @@ export async function test_parser_assets(): Promise<void> {
     TestValidator.equals(
       "project-local default cache",
       await readdir(
-        join(projectDirectory, "node_modules", ".cache", "evidence", "grammars-v1"),
+        join(
+          projectDirectory,
+          "node_modules",
+          ".cache",
+          "evidence",
+          "grammars-v1",
+        ),
       ),
       [`${String(grammar.wasm.sha256)}.wasm`],
     );

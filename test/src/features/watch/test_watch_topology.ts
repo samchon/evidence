@@ -1,4 +1,8 @@
-import { EvidenceChecker, EvidenceWatchReporter, EvidenceWatcher } from "evidence";
+import {
+  EvidenceChecker,
+  EvidenceWatchReporter,
+  EvidenceWatcher,
+} from "evidence";
 import type { EvidenceWatchCycle } from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
@@ -94,7 +98,9 @@ export async function test_watch_topology(): Promise<void> {
       TestValidator.equals("NDJSON cycle count", lines.length, 4);
       TestValidator.equals(
         "NDJSON cycle identifiers",
-        lines.map((line) => typia.json.assertParse<EvidenceWatchCycle>(line).cycle),
+        lines.map(
+          (line) => typia.json.assertParse<EvidenceWatchCycle>(line).cycle,
+        ),
         [1, 2, 3, 4],
       );
     },

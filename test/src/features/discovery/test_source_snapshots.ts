@@ -94,7 +94,9 @@ export async function test_source_snapshots(): Promise<void> {
       const previous = relative.files.find((file) =>
         file.addresses.some((address) => address.relative === "a.md"),
       );
-      await EvidenceTestFileSystem.save(directory, { "shared/a.md": "# Changed" });
+      await EvidenceTestFileSystem.save(directory, {
+        "shared/a.md": "# Changed",
+      });
 
       const changed = await EvidenceSourceLoader.file(config, "../shared/a.md");
 

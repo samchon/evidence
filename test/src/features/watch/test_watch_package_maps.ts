@@ -125,7 +125,8 @@ export async function test_watch_package_maps(): Promise<void> {
     },
     async (directory: string): Promise<void> => {
       const configFile: string = join(directory, "evidence.config.ts");
-      const config: IEvidenceConfig = await EvidenceConfigLoader.load(configFile);
+      const config: IEvidenceConfig =
+        await EvidenceConfigLoader.load(configFile);
       TestValidator.equals(
         "package-map config severity",
         config.severity,
@@ -175,7 +176,8 @@ export async function test_watch_package_maps(): Promise<void> {
         "package-map mode invalidates snapshot",
         !commonSnapshot.equals(changedScope),
       );
-      const esmConfig: IEvidenceConfig = await EvidenceConfigLoader.load(configFile);
+      const esmConfig: IEvidenceConfig =
+        await EvidenceConfigLoader.load(configFile);
       TestValidator.equals(
         "ESM package-map severity",
         esmConfig.severity,
@@ -217,7 +219,8 @@ export async function test_watch_package_maps(): Promise<void> {
         "missing package-map target fails",
         missingFailure.includes("#settings"),
       );
-      const failedDependencies: IEvidenceSourceDependency[] = missingScanner.list();
+      const failedDependencies: IEvidenceSourceDependency[] =
+        missingScanner.list();
       const missingFile: string = join(directory, "missing.mjs").replaceAll(
         "\\",
         "/",
@@ -246,7 +249,8 @@ export async function test_watch_package_maps(): Promise<void> {
           "./unused-internal.mjs",
         ]),
       });
-      const arrayConfig: IEvidenceConfig = await EvidenceConfigLoader.load(configFile);
+      const arrayConfig: IEvidenceConfig =
+        await EvidenceConfigLoader.load(configFile);
       TestValidator.equals(
         "package-map array severity",
         arrayConfig.severity,

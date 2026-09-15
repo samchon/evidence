@@ -74,6 +74,8 @@ export namespace EvidenceAdapterFactory {
     if (type === "swagger") return new EvidenceSwaggerAdapter();
     if (type === "typescript") return new EvidenceTypeScriptAdapter();
     if (type === "zig") return new EvidenceZigAdapter();
-    throw new Error(`Artifact type '${type}' has no certified evidence adapter.`);
+    throw new Error(
+      `Artifact type '${type}' has no certified evidence adapter.`,
+    );
   }
 }

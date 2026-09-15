@@ -18,8 +18,8 @@ export interface IEvidencePrismaLocation {
   /**
    * Exact physical source range used for the materialized site.
    *
-   * The resulting evidence site owns this range for diagnostics, fingerprints, and
-   * documentation attachment in the immutable source snapshot.
+   * The resulting evidence site owns this range for diagnostics, fingerprints,
+   * and documentation attachment in the immutable source snapshot.
    */
   range: IEvidenceSourceRange;
 }

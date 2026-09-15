@@ -14,8 +14,8 @@ export namespace EvidenceTreeSitterAssetScope {
    * Returns a defensive copy of the current asset controls, or an empty default
    * outside a scope.
    *
-   * EvidenceTreeSitterAssets merges this result with constructor options so callers
-   * cannot mutate async-local state through the returned object.
+   * EvidenceTreeSitterAssets merges this result with constructor options so
+   * callers cannot mutate async-local state through the returned object.
    */
   export function current(): IEvidenceTreeSitterAssetOptions {
     return { ...storage.getStore() };

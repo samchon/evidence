@@ -226,7 +226,8 @@ export async function test_graph_checklist(): Promise<void> {
   );
   TestValidator.equals(
     "aggregate explains both missing items",
-    EvidenceTestGraph.hostCoverage(aggregate, 0, 0, checksFile.id).explainedUnitIds,
+    EvidenceTestGraph.hostCoverage(aggregate, 0, 0, checksFile.id)
+      .explainedUnitIds,
     [hardcoding.id, whackAMole.id],
   );
 
@@ -444,7 +445,8 @@ export async function test_graph_checklist(): Promise<void> {
 
   TestValidator.equals(
     "shared carrier does not answer checklist host",
-    EvidenceTestGraph.hostCoverage(sharedCarrier, 0, 0, owing.id).missingUnitIds,
+    EvidenceTestGraph.hostCoverage(sharedCarrier, 0, 0, owing.id)
+      .missingUnitIds,
     [hardcoding.id],
   );
   TestValidator.equals(
@@ -708,7 +710,10 @@ async function resolveAll(
  * The fixtures deliberately avoid candidates that collide across symbol, name,
  * and final identity segment, so a miss signals broken test setup.
  */
-function requireUnit(inventory: IEvidenceInventory, identity: string): IEvidenceUnit {
+function requireUnit(
+  inventory: IEvidenceInventory,
+  identity: string,
+): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.symbol === identity ||

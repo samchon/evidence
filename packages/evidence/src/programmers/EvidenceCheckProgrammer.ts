@@ -41,7 +41,10 @@ import type { IEvidenceClaimContext } from "../contexts/IEvidenceClaimContext";
  *
  * @example
  *   const claims = await EvidenceCheckProgrammer.materialize(plan);
- *   const analysis = await EvidenceCheckProgrammer.evaluate({ plan, claims });
+ *   const analysis = await EvidenceCheckProgrammer.evaluate({
+ *     plan,
+ *     claims,
+ *   });
  */
 export namespace EvidenceCheckProgrammer {
   /**
@@ -313,20 +316,21 @@ export namespace EvidenceCheckProgrammer {
           : [],
       ),
     );
-    const reviewResolutions: IEvidenceGraphReviewResolution[] = await Promise.all(
-      claim.reviews.flatMap((review) =>
-        selected(reviews, review.id, position)
-          ? [
-              resolveReview(
-                resolver,
-                review,
-                requireHost(hosts, review.hostId),
-                materialized.unitIds,
-              ),
-            ]
-          : [],
-      ),
-    );
+    const reviewResolutions: IEvidenceGraphReviewResolution[] =
+      await Promise.all(
+        claim.reviews.flatMap((review) =>
+          selected(reviews, review.id, position)
+            ? [
+                resolveReview(
+                  resolver,
+                  review,
+                  requireHost(hosts, review.hostId),
+                  materialized.unitIds,
+                ),
+              ]
+            : [],
+        ),
+      );
     const population = materialized.plan.population;
     return {
       index: materialized.plan.index,
@@ -398,7 +402,10 @@ export namespace EvidenceCheckProgrammer {
    * Throwing here prevents a later resolver error from losing the statement
    * identity that caused the invalid graph input.
    */
-  function requireHost(hosts: Map<string, IEvidenceHost>, id: string): IEvidenceHost {
+  function requireHost(
+    hosts: Map<string, IEvidenceHost>,
+    id: string,
+  ): IEvidenceHost {
     const host = hosts.get(id);
     if (host === undefined)
       throw new Error(`evidence statement '${id}' has no documentation host.`);

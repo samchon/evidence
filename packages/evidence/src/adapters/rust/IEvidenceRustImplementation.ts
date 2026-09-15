@@ -1,8 +1,8 @@
 /**
  * Describes a Rust impl block before its local nominal owner is resolved.
  *
- * The scanner records source-level paths; EvidenceRustModuleResolver resolves them
- * in the containing module and assigns member identities to the selected
+ * The scanner records source-level paths; EvidenceRustModuleResolver resolves
+ * them in the containing module and assigns member identities to the selected
  * owner.
  */
 export interface IEvidenceRustImplementation {

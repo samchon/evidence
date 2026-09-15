@@ -28,7 +28,7 @@ export interface IEvidenceJavaDocumentation {
   /**
    * Delimiter details needed to read the Javadoc text accurately.
    *
-   * evidence parsing consumes this syntax instead of inferring comments again.
+   * Evidence parsing consumes this syntax instead of inferring comments again.
    */
   syntax: IEvidenceCommentSyntax;
 

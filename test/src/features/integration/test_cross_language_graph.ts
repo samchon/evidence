@@ -33,68 +33,71 @@ export async function test_cross_language_graph(): Promise<void> {
   const location = join(__dirname, `cross-language-${randomUUID()}`);
   const records = fixtureRecords();
 
-  await EvidenceTestFileSystem.experiment(location, records, async (directory) => {
-    const plan = createPlan(directory);
+  await EvidenceTestFileSystem.experiment(
+    location,
+    records,
+    async (directory) => {
+      const plan = createPlan(directory);
 
-    // The baseline has six independent obligations spanning every artifact family.
-    const complete = await EvidenceChecker.evaluate(plan);
-    assertCompleteGraph(complete, "baseline");
+      // The baseline has six independent obligations spanning every artifact family.
+      const complete = await EvidenceChecker.evaluate(plan);
+      assertCompleteGraph(complete, "baseline");
 
-    TestValidator.equals(
-      "cross-language obligations",
-      complete.report.claims.map((claim) => [
-        claim.claim,
-        claim.type,
-        claim.obligations.map((obligation) => [
-          obligation.reference,
-          obligation.type,
-          obligation.units,
-          obligation.coveredUnits,
-          obligation.missingUnits,
+      TestValidator.equals(
+        "cross-language obligations",
+        complete.report.claims.map((claim) => [
+          claim.claim,
+          claim.type,
+          claim.obligations.map((obligation) => [
+            obligation.reference,
+            obligation.type,
+            obligation.units,
+            obligation.coveredUnits,
+            obligation.missingUnits,
+          ]),
         ]),
-      ]),
-      [
         [
-          0,
-          "typescript",
           [
-            [0, "markdown", 1, 1, 0],
-            [1, "prisma", 1, 1, 0],
+            0,
+            "typescript",
+            [
+              [0, "markdown", 1, 1, 0],
+              [1, "prisma", 1, 1, 0],
+            ],
           ],
+          [1, "typescript", [[0, "typescript", 1, 1, 0]]],
+          [2, "prisma", [[0, "markdown", 1, 1, 0]]],
+          [3, "swagger", [[0, "markdown", 1, 1, 0]]],
+          [4, "markdown", [[0, "swagger", 1, 1, 0]]],
         ],
-        [1, "typescript", [[0, "typescript", 1, 1, 0]]],
-        [2, "prisma", [[0, "markdown", 1, 1, 0]]],
-        [3, "swagger", [[0, "markdown", 1, 1, 0]]],
-        [4, "markdown", [[0, "swagger", 1, 1, 0]]],
-      ],
-    );
+      );
 
-    // Removing one implementation citation breaks only its Markdown obligation.
-    await EvidenceTestFileSystem.save(directory, {
-      "src/sale.ts": implementationSource(false),
-    });
-    const removedCitation = await EvidenceChecker.evaluate(plan);
+      // Removing one implementation citation breaks only its Markdown obligation.
+      await EvidenceTestFileSystem.save(directory, {
+        "src/sale.ts": implementationSource(false),
+      });
+      const removedCitation = await EvidenceChecker.evaluate(plan);
 
-    TestValidator.equals(
-      "removed citation exit",
-      removedCitation.report.exitCode,
-      1,
-    );
-    TestValidator.equals(
-      "removed citation counts",
-      [
-        removedCitation.report.counts.units,
-        removedCitation.report.counts.coveredUnits,
-        removedCitation.report.counts.missingUnits,
-      ],
-      [6, 5, 1],
-    );
-    assertDiagnostic(removedCitation, "graph-missing-acknowledgement", 0, 0);
+      TestValidator.equals(
+        "removed citation exit",
+        removedCitation.report.exitCode,
+        1,
+      );
+      TestValidator.equals(
+        "removed citation counts",
+        [
+          removedCitation.report.counts.units,
+          removedCitation.report.counts.coveredUnits,
+          removedCitation.report.counts.missingUnits,
+        ],
+        [6, 5, 1],
+      );
+      assertDiagnostic(removedCitation, "graph-missing-acknowledgement", 0, 0);
 
-    // Adding one requirement expands the denominator instead of passing silently.
-    await EvidenceTestFileSystem.save(directory, {
-      "src/sale.ts": requireRecord(records, "src/sale.ts"),
-      "docs/implementation.md": dedent`
+      // Adding one requirement expands the denominator instead of passing silently.
+      await EvidenceTestFileSystem.save(directory, {
+        "src/sale.ts": requireRecord(records, "src/sale.ts"),
+        "docs/implementation.md": dedent`
         ## Implementation {#implementation}
 
         The sale service exposes a public creation function.
@@ -103,103 +106,104 @@ export async function test_cross_language_graph(): Promise<void> {
 
         The sale service exposes a public cancellation function.
       `,
-    });
-    const addedRequirement = await EvidenceChecker.evaluate(plan);
+      });
+      const addedRequirement = await EvidenceChecker.evaluate(plan);
 
-    TestValidator.equals(
-      "new requirement exit",
-      addedRequirement.report.exitCode,
-      1,
-    );
-    TestValidator.equals(
-      "new requirement denominator",
-      [
-        addedRequirement.report.counts.units,
-        addedRequirement.report.counts.coveredUnits,
-        addedRequirement.report.counts.missingUnits,
-      ],
-      [7, 6, 1],
-    );
-    assertDiagnostic(addedRequirement, "graph-missing-acknowledgement", 0, 0);
+      TestValidator.equals(
+        "new requirement exit",
+        addedRequirement.report.exitCode,
+        1,
+      );
+      TestValidator.equals(
+        "new requirement denominator",
+        [
+          addedRequirement.report.counts.units,
+          addedRequirement.report.counts.coveredUnits,
+          addedRequirement.report.counts.missingUnits,
+        ],
+        [7, 6, 1],
+      );
+      assertDiagnostic(addedRequirement, "graph-missing-acknowledgement", 0, 0);
 
-    // Renaming a barrel export invalidates the test's file-qualified public target.
-    await EvidenceTestFileSystem.save(directory, {
-      "docs/implementation.md": requireRecord(
-        records,
-        "docs/implementation.md",
-      ),
-      "src/index.ts": 'export { createSale as makeSale } from "./sale";\n',
-    });
-    const renamedExport = await EvidenceChecker.evaluate(plan);
+      // Renaming a barrel export invalidates the test's file-qualified public target.
+      await EvidenceTestFileSystem.save(directory, {
+        "docs/implementation.md": requireRecord(
+          records,
+          "docs/implementation.md",
+        ),
+        "src/index.ts": 'export { createSale as makeSale } from "./sale";\n',
+      });
+      const renamedExport = await EvidenceChecker.evaluate(plan);
 
-    TestValidator.equals(
-      "renamed export exit",
-      renamedExport.report.exitCode,
-      1,
-    );
-    TestValidator.equals(
-      "renamed export target",
-      renamedExport.report.diagnostics
-        .filter((diagnostic) => diagnostic.code === "target-missing-member")
-        .map((diagnostic) => [
-          diagnostic.claim,
-          diagnostic.reference,
-          diagnostic.target,
-        ]),
-      [[1, 0, "../src/index.ts#createSale"]],
-    );
-    assertDiagnostic(renamedExport, "graph-missing-acknowledgement", 1, 0);
+      TestValidator.equals(
+        "renamed export exit",
+        renamedExport.report.exitCode,
+        1,
+      );
+      TestValidator.equals(
+        "renamed export target",
+        renamedExport.report.diagnostics
+          .filter((diagnostic) => diagnostic.code === "target-missing-member")
+          .map((diagnostic) => [
+            diagnostic.claim,
+            diagnostic.reference,
+            diagnostic.target,
+          ]),
+        [[1, 0, "../src/index.ts#createSale"]],
+      );
+      assertDiagnostic(renamedExport, "graph-missing-acknowledgement", 1, 0);
 
-    // A malformed Swagger document interrupts both directions that depend on it.
-    await EvidenceTestFileSystem.save(directory, {
-      "src/index.ts": requireRecord(records, "src/index.ts"),
-      "openapi.yaml": "openapi: [",
-    });
-    const malformedSwagger = await EvidenceChecker.evaluate(plan);
+      // A malformed Swagger document interrupts both directions that depend on it.
+      await EvidenceTestFileSystem.save(directory, {
+        "src/index.ts": requireRecord(records, "src/index.ts"),
+        "openapi.yaml": "openapi: [",
+      });
+      const malformedSwagger = await EvidenceChecker.evaluate(plan);
 
-    TestValidator.equals(
-      "malformed parser exit",
-      malformedSwagger.report.exitCode,
-      2,
-    );
-    TestValidator.equals(
-      "malformed parser status",
-      malformedSwagger.report.status,
-      "incomplete",
-    );
-    TestValidator.equals(
-      "malformed parser affected graph positions",
-      malformedSwagger.report.diagnostics
-        .filter(
+      TestValidator.equals(
+        "malformed parser exit",
+        malformedSwagger.report.exitCode,
+        2,
+      );
+      TestValidator.equals(
+        "malformed parser status",
+        malformedSwagger.report.status,
+        "incomplete",
+      );
+      TestValidator.equals(
+        "malformed parser affected graph positions",
+        malformedSwagger.report.diagnostics
+          .filter(
+            (diagnostic) =>
+              diagnostic.code === "swagger-normalization-failed" ||
+              diagnostic.code === "inventory-incomplete",
+          )
+          .map((diagnostic) => [diagnostic.claim, diagnostic.reference]),
+        [
+          [3, undefined],
+          [3, undefined],
+          [4, 0],
+          [4, 0],
+        ],
+      );
+      TestValidator.equals(
+        "malformed parser suppresses derivative gaps",
+        malformedSwagger.report.diagnostics.filter(
           (diagnostic) =>
-            diagnostic.code === "swagger-normalization-failed" ||
-            diagnostic.code === "inventory-incomplete",
-        )
-        .map((diagnostic) => [diagnostic.claim, diagnostic.reference]),
-      [
-        [3, undefined],
-        [3, undefined],
-        [4, 0],
-        [4, 0],
-      ],
-    );
-    TestValidator.equals(
-      "malformed parser suppresses derivative gaps",
-      malformedSwagger.report.diagnostics.filter(
-        (diagnostic) =>
-          diagnostic.code === "graph-empty-reference" ||
-          diagnostic.code === "graph-missing-acknowledgement",
-      ),
-      [],
-    );
+            diagnostic.code === "graph-empty-reference" ||
+            diagnostic.code === "graph-missing-acknowledgement",
+        ),
+        [],
+      );
 
-    // Repairing every mutation restores the exact complete graph in the same process.
-    await EvidenceTestFileSystem.save(directory, {
-      "openapi.yaml": requireRecord(records, "openapi.yaml"),
-    });
-    const repaired = await EvidenceChecker.evaluate(plan);
-    assertCompleteGraph(repaired, "repaired");
-  });
+      // Repairing every mutation restores the exact complete graph in the same process.
+      await EvidenceTestFileSystem.save(directory, {
+        "openapi.yaml": requireRecord(records, "openapi.yaml"),
+      });
+      const repaired = await EvidenceChecker.evaluate(plan);
+      assertCompleteGraph(repaired, "repaired");
+    },
+  );
 }
 
 function fixtureRecords(): Record<string, string> {

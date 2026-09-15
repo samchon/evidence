@@ -1,4 +1,8 @@
-import { EvidenceFingerprint, EvidenceInventory, EvidenceScalaAdapter } from "evidence";
+import {
+  EvidenceFingerprint,
+  EvidenceInventory,
+  EvidenceScalaAdapter,
+} from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 

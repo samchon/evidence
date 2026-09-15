@@ -1,10 +1,10 @@
 /**
  * Retains a Kotlin receiver reference for later static nominal lookup.
  *
- * EvidenceKotlinFileScanner records lookup candidates while file scope and imports
- * are available, and EvidenceKotlinReceivers resolves the reference after
- * declarations and supported aliases have been collected without invoking the
- * Kotlin compiler.
+ * EvidenceKotlinFileScanner records lookup candidates while file scope and
+ * imports are available, and EvidenceKotlinReceivers resolves the reference
+ * after declarations and supported aliases have been collected without invoking
+ * the Kotlin compiler.
  */
 export interface IEvidenceKotlinTypeReference {
   /**
@@ -19,8 +19,8 @@ export interface IEvidenceKotlinTypeReference {
    * Lists nominal lookup candidates from lexical, imported, and package scope.
    *
    * EvidenceKotlinReceivers checks these paths in order and accepts exactly one
-   * visible declaration, so their ordering represents EvidenceKotlinFileScanner's
-   * precedence.
+   * visible declaration, so their ordering represents
+   * EvidenceKotlinFileScanner's precedence.
    */
   paths: string[][];
 
@@ -44,9 +44,9 @@ export interface IEvidenceKotlinTypeReference {
   /**
    * Explains why this receiver cannot use nominal static resolution.
    *
-   * Omission permits EvidenceKotlinReceivers lookup; when present, callers preserve
-   * the unsupported-receiver diagnostic instead of guessing substitutions or
-   * imports.
+   * Omission permits EvidenceKotlinReceivers lookup; when present, callers
+   * preserve the unsupported-receiver diagnostic instead of guessing
+   * substitutions or imports.
    */
   problem?: string;
 }

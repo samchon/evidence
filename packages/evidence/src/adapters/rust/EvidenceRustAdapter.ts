@@ -23,9 +23,9 @@ import { EvidenceRustModuleResolver } from "./EvidenceRustModuleResolver";
  *
  * File scans retain declaration and documentation candidates without assuming
  * that lexical presence makes an item publicly reachable.
- * EvidenceRustModuleResolver publishes semantic identities across the configured
- * snapshot before doc comments attach to those identities and inherited
- * withdrawal removes eligible hosts.
+ * EvidenceRustModuleResolver publishes semantic identities across the
+ * configured snapshot before doc comments attach to those identities and
+ * inherited withdrawal removes eligible hosts.
  */
 export class EvidenceRustAdapter implements IEvidenceAdapter<"rust"> {
   /**
@@ -45,7 +45,9 @@ export class EvidenceRustAdapter implements IEvidenceAdapter<"rust"> {
    * failures retain incomplete state, and the parser runtime closes after all
    * accepted file scans finish.
    */
-  public async analyze(snapshot: IEvidenceSourceSnapshot): Promise<IEvidenceInventory> {
+  public async analyze(
+    snapshot: IEvidenceSourceSnapshot,
+  ): Promise<IEvidenceInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidenceInventory = {
       schemaVersion: 1,
@@ -107,7 +109,8 @@ export class EvidenceRustAdapter implements IEvidenceAdapter<"rust"> {
         (session) => new EvidenceRustFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError = cause instanceof EvidenceParserError ? cause : undefined;
+      const parserError =
+        cause instanceof EvidenceParserError ? cause : undefined;
       return {
         source,
         declarations: [],

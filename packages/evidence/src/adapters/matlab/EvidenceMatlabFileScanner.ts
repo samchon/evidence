@@ -249,7 +249,10 @@ export class EvidenceMatlabFileScanner {
    * records the combined public surface without treating a private accessor as
    * a new unit.
    */
-  private members(block: EvidenceNode, owner: IEvidenceMatlabDeclaration): void {
+  private members(
+    block: EvidenceNode,
+    owner: IEvidenceMatlabDeclaration,
+  ): void {
     const attributes = this.attributes(block);
     const access = attributes.get("Access") ?? "public";
     const getPublic = (attributes.get("GetAccess") ?? access) === "public";
@@ -473,7 +476,10 @@ export class EvidenceMatlabFileScanner {
    * invoke, so the scanner preserves this ambiguity as an actionable
    * diagnostic.
    */
-  private filename(declaration: IEvidenceMatlabDeclaration, node: EvidenceNode): void {
+  private filename(
+    declaration: IEvidenceMatlabDeclaration,
+    node: EvidenceNode,
+  ): void {
     if (posix.basename(this.file, ".m") !== declaration.name)
       this.problem(
         "filename",
@@ -501,7 +507,10 @@ export class EvidenceMatlabFileScanner {
    * eligible carriers and leaves unsupported nearby comments visible for
    * diagnostics.
    */
-  private attach(node: EvidenceNode, declaration: IEvidenceMatlabDeclaration): void {
+  private attach(
+    node: EvidenceNode,
+    declaration: IEvidenceMatlabDeclaration,
+  ): void {
     const after =
       node.type === "class_definition" || node.type === "function_definition";
     let comments: EvidenceNode[] = [];

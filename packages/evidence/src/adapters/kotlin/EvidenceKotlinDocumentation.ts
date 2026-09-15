@@ -15,7 +15,8 @@ export namespace EvidenceKotlinDocumentation {
    * Maps a carrier and removes examples without moving source offsets.
    *
    * Only block KDoc receives Kotlin-specific masking; other classified carriers
-   * retain EvidenceDocumentation's normalized text and source mapping unchanged.
+   * retain EvidenceDocumentation's normalized text and source mapping
+   * unchanged.
    */
   export function read(
     source: IEvidenceSourceFile,

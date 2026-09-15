@@ -46,7 +46,9 @@ export class EvidencePythonAdapter implements IEvidenceAdapter<"python"> {
    * resolves public exports, and materializes annotations on their published
    * owners. Native resources close in cleanup even when extraction fails.
    */
-  public async analyze(snapshot: IEvidenceSourceSnapshot): Promise<IEvidenceInventory> {
+  public async analyze(
+    snapshot: IEvidenceSourceSnapshot,
+  ): Promise<IEvidenceInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidenceInventory = {
       schemaVersion: 1,
@@ -167,7 +169,8 @@ export class EvidencePythonAdapter implements IEvidenceAdapter<"python"> {
         (session) => new EvidencePythonFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError = cause instanceof EvidenceParserError ? cause : undefined;
+      const parserError =
+        cause instanceof EvidenceParserError ? cause : undefined;
       return {
         source,
         all: { state: "absent", names: [] },

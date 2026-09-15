@@ -52,7 +52,9 @@ export class EvidenceCSharpAdapter implements IEvidenceAdapter<"csharp"> {
    * released in the failure path as well as after a successful inventory
    * snapshot.
    */
-  public async analyze(snapshot: IEvidenceSourceSnapshot): Promise<IEvidenceInventory> {
+  public async analyze(
+    snapshot: IEvidenceSourceSnapshot,
+  ): Promise<IEvidenceInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidenceInventory = {
       schemaVersion: 1,
@@ -108,7 +110,8 @@ export class EvidenceCSharpAdapter implements IEvidenceAdapter<"csharp"> {
         (session) => new EvidenceCSharpFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError = cause instanceof EvidenceParserError ? cause : undefined;
+      const parserError =
+        cause instanceof EvidenceParserError ? cause : undefined;
       return {
         source,
         declarations: [],

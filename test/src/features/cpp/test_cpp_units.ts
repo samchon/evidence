@@ -178,7 +178,10 @@ export async function test_cpp_units(): Promise<void> {
   TestValidator.equals("C++ enumerator parent", ready.parentId, state.id);
 }
 
-function requireUnit(inventory: IEvidenceInventory, identity: string): IEvidenceUnit {
+function requireUnit(
+  inventory: IEvidenceInventory,
+  identity: string,
+): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.join(".") === identity,
   );

@@ -568,7 +568,10 @@ export class EvidenceZigFileScanner {
    * preventing strings and ordinary comments from creating an accidental
    * documentation host.
    */
-  private attach(node: EvidenceNode, declaration: IEvidenceZigDeclaration): void {
+  private attach(
+    node: EvidenceNode,
+    declaration: IEvidenceZigDeclaration,
+  ): void {
     const previous = node.previousNamedSibling;
     if (
       previous === null ||

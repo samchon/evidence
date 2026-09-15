@@ -34,7 +34,10 @@ export async function test_rust_failures(): Promise<void> {
     EvidenceTestSourceSnapshot.combine([
       EvidenceTestSourceSnapshot.create("src/lib.rs", "pub mod sale;\n"),
       EvidenceTestSourceSnapshot.create("src/sale.rs", "pub struct Flat;\n"),
-      EvidenceTestSourceSnapshot.create("src/sale/mod.rs", "pub struct Nested;\n"),
+      EvidenceTestSourceSnapshot.create(
+        "src/sale/mod.rs",
+        "pub struct Nested;\n",
+      ),
     ]),
   );
   TestValidator.equals(
@@ -58,7 +61,10 @@ export async function test_rust_failures(): Promise<void> {
           pub mod api;
         `,
       ),
-      EvidenceTestSourceSnapshot.create("src/generated.rs", "pub struct Api;\n"),
+      EvidenceTestSourceSnapshot.create(
+        "src/generated.rs",
+        "pub struct Api;\n",
+      ),
     ]),
   );
   TestValidator.equals("Rust path override", overridden.complete, false);

@@ -7,7 +7,7 @@ import type { IEvidenceScalaDocumentation } from "./IEvidenceScalaDocumentation"
 /**
  * Reads Scaladoc while preserving source mappings and masking code examples.
  *
- * evidence tag parsing receives the masked text so examples cannot create
+ * Evidence tag parsing receives the masked text so examples cannot create
  * declarations, while original offsets remain valid for diagnostics and hosts.
  */
 export namespace EvidenceScalaDocumentation {

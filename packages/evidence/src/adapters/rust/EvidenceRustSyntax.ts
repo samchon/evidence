@@ -8,8 +8,8 @@ import type { EvidenceRustVisibility } from "./EvidenceRustVisibility";
  * and documentation.
  *
  * EvidenceRustFileScanner uses these functions to retain syntax facts.
- * EvidenceRustModuleResolver later decides crate reachability and public ownership
- * from the scanner records.
+ * EvidenceRustModuleResolver later decides crate reachability and public
+ * ownership from the scanner records.
  */
 export namespace EvidenceRustSyntax {
   /**
@@ -189,8 +189,9 @@ export namespace EvidenceRustSyntax {
   /**
    * Supplies delimiter rules for a Rust comment carrier.
    *
-   * EvidenceRustFileScanner uses the returned syntax to map text and preserve tag
-   * coordinates for line, block, ordinary, and documentation comment forms.
+   * EvidenceRustFileScanner uses the returned syntax to map text and preserve
+   * tag coordinates for line, block, ordinary, and documentation comment
+   * forms.
    */
   export function comment(node: EvidenceNode): IEvidenceCommentSyntax {
     const outer = isOuterDocumentation(node);
@@ -230,7 +231,9 @@ export namespace EvidenceRustSyntax {
    * Annotation scanning uses this result for ordinary and raw strings, whose
    * contents can report unsupported tags but cannot authorize withdrawals.
    */
-  export function string(node: EvidenceNode): IEvidenceCommentSyntax | undefined {
+  export function string(
+    node: EvidenceNode,
+  ): IEvidenceCommentSyntax | undefined {
     if (node.type === "string_literal")
       return {
         opening: '"',

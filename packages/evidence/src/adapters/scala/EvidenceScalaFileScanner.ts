@@ -32,7 +32,10 @@ export class EvidenceScalaFileScanner {
    * The offset permits adjacent declaration attachment without reparsing the
    * carrier text.
    */
-  private readonly documentation = new Map<number, IEvidenceScalaDocumentation>();
+  private readonly documentation = new Map<
+    number,
+    IEvidenceScalaDocumentation
+  >();
 
   /**
    * Collects explicit exports for resolution after every selected file is
@@ -556,7 +559,10 @@ export class EvidenceScalaFileScanner {
    * Other comments, intervening syntax, and non-Scaladoc blocks remain
    * unattached for unsupported-host handling.
    */
-  private attach(node: EvidenceNode, declaration: IEvidenceScalaDeclaration): void {
+  private attach(
+    node: EvidenceNode,
+    declaration: IEvidenceScalaDeclaration,
+  ): void {
     const previous = node.previousNamedSibling;
     if (
       previous === null ||

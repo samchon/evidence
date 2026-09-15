@@ -48,7 +48,9 @@ export class EvidenceKotlinAdapter implements IEvidenceAdapter<"kotlin"> {
    * contribute to completeness before units and documentation are published,
    * and the parser closes after both successful and failed materialization.
    */
-  public async analyze(snapshot: IEvidenceSourceSnapshot): Promise<IEvidenceInventory> {
+  public async analyze(
+    snapshot: IEvidenceSourceSnapshot,
+  ): Promise<IEvidenceInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidenceInventory = {
       schemaVersion: 1,
@@ -107,7 +109,8 @@ export class EvidenceKotlinAdapter implements IEvidenceAdapter<"kotlin"> {
         (session) => new EvidenceKotlinFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError = cause instanceof EvidenceParserError ? cause : undefined;
+      const parserError =
+        cause instanceof EvidenceParserError ? cause : undefined;
       return {
         source,
         declarations: [],
@@ -297,8 +300,8 @@ export class EvidenceKotlinAdapter implements IEvidenceAdapter<"kotlin"> {
   /**
    * Retains public declaration sites even when they carry no documentation.
    *
-   * evidence needs a host for every visible unit so unhosted checklist results can
-   * identify declarations that have no attached KDoc.
+   * Evidence needs a host for every visible unit so unhosted checklist results
+   * can identify declarations that have no attached KDoc.
    */
   private materializeUndocumentedHosts(
     inventory: IEvidenceInventory,

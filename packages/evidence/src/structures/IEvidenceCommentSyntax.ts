@@ -2,9 +2,9 @@
  * Comment-normalization rules supplied by an artifact adapter.
  *
  * The adapter must first establish that a source span is a documentation
- * comment and determine its host. EvidenceDocumentation uses these rules to remove
- * known syntax while preserving source mappings; it does not discover comments
- * itself.
+ * comment and determine its host. EvidenceDocumentation uses these rules to
+ * remove known syntax while preserving source mappings; it does not discover
+ * comments itself.
  */
 export interface IEvidenceCommentSyntax {
   /**

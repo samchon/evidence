@@ -27,7 +27,7 @@ export interface IEvidenceGoDocumentation {
   /**
    * Line-comment syntax used to recover normalized documentation text.
    *
-   * evidence parsing relies on this captured syntax after parsing closes.
+   * Evidence parsing relies on this captured syntax after parsing closes.
    */
   syntax: IEvidenceCommentSyntax;
 

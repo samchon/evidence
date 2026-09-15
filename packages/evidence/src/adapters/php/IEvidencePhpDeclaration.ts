@@ -4,9 +4,9 @@ import type { EvidenceProgrammingSymbol } from "../../typings/EvidenceProgrammin
 /**
  * Captures one PHP declaration before public inventory materialization.
  *
- * EvidencePhpAdapter groups these lexical records into semantic units, retaining
- * exact source spelling for public addresses while separately normalizing
- * identity.
+ * EvidencePhpAdapter groups these lexical records into semantic units,
+ * retaining exact source spelling for public addresses while separately
+ * normalizing identity.
  */
 export interface IEvidencePhpDeclaration {
   /**
@@ -25,7 +25,7 @@ export interface IEvidencePhpDeclaration {
   name: string;
 
   /**
-   * evidence selector family assigned to this declaration.
+   * Evidence selector family assigned to this declaration.
    *
    * Consumers use it to distinguish nominal types, functions, and properties.
    */
@@ -42,8 +42,8 @@ export interface IEvidencePhpDeclaration {
   /**
    * Namespace and lexical-owner segments forming semantic identity.
    *
-   * EvidencePhpAdapter applies PHP case rules to this path without changing public
-   * spelling.
+   * EvidencePhpAdapter applies PHP case rules to this path without changing
+   * public spelling.
    */
   identity: string[];
 

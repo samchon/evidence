@@ -46,7 +46,9 @@ export class EvidenceScalaAdapter implements IEvidenceAdapter<"scala"> {
    * materialization. Diagnostics preserve incomplete scans, and parser cleanup
    * runs on every exit.
    */
-  public async analyze(snapshot: IEvidenceSourceSnapshot): Promise<IEvidenceInventory> {
+  public async analyze(
+    snapshot: IEvidenceSourceSnapshot,
+  ): Promise<IEvidenceInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidenceInventory = {
       schemaVersion: 1,
@@ -107,7 +109,8 @@ export class EvidenceScalaAdapter implements IEvidenceAdapter<"scala"> {
         (session) => new EvidenceScalaFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError = cause instanceof EvidenceParserError ? cause : undefined;
+      const parserError =
+        cause instanceof EvidenceParserError ? cause : undefined;
       return {
         source,
         declarations: [],

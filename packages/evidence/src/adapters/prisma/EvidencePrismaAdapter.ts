@@ -51,7 +51,9 @@ export class EvidencePrismaAdapter implements IEvidenceAdapter<"prisma"> {
    * for models, and joined to source locations before annotations are
    * materialized.
    */
-  public async analyze(snapshot: IEvidenceSourceSnapshot): Promise<IEvidenceInventory> {
+  public async analyze(
+    snapshot: IEvidenceSourceSnapshot,
+  ): Promise<IEvidenceInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory = this.inventory(input);
     if (!input.complete || input.files.length === 0)
@@ -60,8 +62,9 @@ export class EvidencePrismaAdapter implements IEvidenceAdapter<"prisma"> {
     const files = this.schemaFiles(input.files);
     let models: IEvidencePrismaModel[];
     try {
-      models = (await EvidencePrismaModelLoader.load(input.root.absolute, files))
-        .models;
+      models = (
+        await EvidencePrismaModelLoader.load(input.root.absolute, files)
+      ).models;
     } catch (cause) {
       inventory.complete = false;
       inventory.diagnostics.push({
@@ -125,7 +128,9 @@ export class EvidencePrismaAdapter implements IEvidenceAdapter<"prisma"> {
    * twice. All addresses are retained while the first sorted selected relative
    * path names the schema input supplied to the model loader.
    */
-  private schemaFiles(sources: IEvidenceSourceFile[]): IEvidencePrismaSchemaFile[] {
+  private schemaFiles(
+    sources: IEvidenceSourceFile[],
+  ): IEvidencePrismaSchemaFile[] {
     const records = new Map<string, IEvidenceSourceFile>();
     for (const source of sources) {
       const previous = records.get(source.id);
@@ -134,7 +139,9 @@ export class EvidencePrismaAdapter implements IEvidenceAdapter<"prisma"> {
     }
     return Array.from(records.values())
       .map((source) => {
-        source.addresses = EvidenceInventoryMerge.sourceAddresses(source.addresses);
+        source.addresses = EvidenceInventoryMerge.sourceAddresses(
+          source.addresses,
+        );
         return {
           name:
             source.addresses
@@ -465,7 +472,8 @@ export class EvidencePrismaAdapter implements IEvidenceAdapter<"prisma"> {
         inventory.diagnostics.push({
           code: "prisma-buried-annotation",
           severity: "error",
-          message: "An evidence tag is buried behind extra comment punctuation.",
+          message:
+            "An evidence tag is buried behind extra comment punctuation.",
           repair:
             "Remove the extra leading slash or asterisk so the evidence tag opens its documentation line.",
           location: {

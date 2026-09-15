@@ -438,9 +438,10 @@ export namespace EvidenceQueryProgrammer {
    * Lists one population's selected identities and visible structural
    * ancestors.
    *
-   * Visibility is owned by {@link EvidenceQueryPopulationContext}; this helper only
-   * turns visible units into public rows. Units without a public address are
-   * excluded because list output must contain targets that inspect can accept.
+   * Visibility is owned by {@link EvidenceQueryPopulationContext}; this helper
+   * only turns visible units into public rows. Units without a public address
+   * are excluded because list output must contain targets that inspect can
+   * accept.
    */
   function listPopulation(
     population: EvidenceQueryPopulationContext,
@@ -568,7 +569,10 @@ export namespace EvidenceQueryProgrammer {
         .sort((left, right) => compare(left.id, right.id)),
       ...(population.inventory.complete
         ? {
-            fingerprint: EvidenceFingerprint.inspect(population.inventory, unit.id),
+            fingerprint: EvidenceFingerprint.inspect(
+              population.inventory,
+              unit.id,
+            ),
           }
         : {}),
     };
@@ -1099,7 +1103,9 @@ export namespace EvidenceQueryProgrammer {
    * need not reproduce configuration defaults. Severity is retained unchanged
    * because it controls the consequence of coverage diagnostics.
    */
-  function graphPolicy(reference: IEvidenceGraphReference): IEvidenceGraphPolicy {
+  function graphPolicy(
+    reference: IEvidenceGraphReference,
+  ): IEvidenceGraphPolicy {
     return {
       severity: reference.severity,
       noEvidenceExclude: reference.noEvidenceExclude === true,

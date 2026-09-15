@@ -33,7 +33,8 @@ import type { IEvidenceUnit } from "./IEvidenceUnit";
  * @example
  *   const raw: IEvidenceInventory = await adapter.analyze(snapshot);
  *   const inventory: EvidenceInventory = new EvidenceInventory([raw]);
- *   const population: IEvidencePopulation = inventory.select(requiredUnitIds);
+ *   const population: IEvidencePopulation =
+ *     inventory.select(requiredUnitIds);
  *   // population.units contains requirements; scopes additionally includes owners.
  */
 export interface IEvidenceInventory {

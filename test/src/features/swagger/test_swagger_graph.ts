@@ -236,7 +236,10 @@ function swaggerDocument(description: string): string {
   `;
 }
 
-function requireUnit(inventory: IEvidenceInventory, identity: string): IEvidenceUnit {
+function requireUnit(
+  inventory: IEvidenceInventory,
+  identity: string,
+): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === identity || candidate.identity.at(-1) === identity,

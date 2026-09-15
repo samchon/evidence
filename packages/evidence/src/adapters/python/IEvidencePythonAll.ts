@@ -3,9 +3,9 @@ import type { EvidencePythonAllState } from "./EvidencePythonAllState";
 /**
  * Records the statically known portion of a module's `__all__` declaration.
  *
- * EvidencePythonExportResolver uses this state to choose between explicit exports
- * and Python's underscore convention. Dynamic mutation stays incomplete because
- * executing module code would make coverage depend on runtime state.
+ * EvidencePythonExportResolver uses this state to choose between explicit
+ * exports and Python's underscore convention. Dynamic mutation stays incomplete
+ * because executing module code would make coverage depend on runtime state.
  */
 export interface IEvidencePythonAll {
   /**

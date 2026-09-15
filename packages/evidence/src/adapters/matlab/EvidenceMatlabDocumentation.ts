@@ -38,8 +38,8 @@ export namespace EvidenceMatlabDocumentation {
   /**
    * Masks HTML examples and Markdown-indented code in MATLAB help text.
    *
-   * Shared evidence parsing handles fenced examples separately; this helper only
-   * replaces content whose physical offsets must remain aligned with the
+   * Shared evidence parsing handles fenced examples separately; this helper
+   * only replaces content whose physical offsets must remain aligned with the
    * source.
    */
   function mask(input: string): string {

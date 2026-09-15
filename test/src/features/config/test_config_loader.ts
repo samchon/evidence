@@ -70,7 +70,9 @@ export async function test_config_loader(): Promise<void> {
         const filename = `evidence.config.${extension}`;
         await EvidenceTestFileSystem.save(directory, { [filename]: source });
 
-        const output = await EvidenceConfigLoader.load(join(directory, filename));
+        const output = await EvidenceConfigLoader.load(
+          join(directory, filename),
+        );
 
         TestValidator.equals(
           `${extension} imported globs`,

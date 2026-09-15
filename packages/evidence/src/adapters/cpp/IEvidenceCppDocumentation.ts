@@ -6,10 +6,10 @@ import type { IEvidenceCppDocumentationAttachment } from "./IEvidenceCppDocument
  * Captures one C++ documentation carrier that may contain evidence tags.
  *
  * EvidenceCppFileScanner collects supported Doxygen and tag-bearing unsupported
- * carriers, then records their physical attachments. EvidenceCppAdapter later reads
- * the carrier with its syntax, maps attachments through materialized units, and
- * emits attached or unsupported evidence hosts without treating a comment as a
- * declaration itself.
+ * carriers, then records their physical attachments. EvidenceCppAdapter later
+ * reads the carrier with its syntax, maps attachments through materialized
+ * units, and emits attached or unsupported evidence hosts without treating a
+ * comment as a declaration itself.
  */
 export interface IEvidenceCppDocumentation {
   /**
@@ -30,7 +30,7 @@ export interface IEvidenceCppDocumentation {
   /**
    * Delimiter and indentation rules required to read this Doxygen carrier.
    *
-   * evidence parsing uses the syntax instead of guessing from raw source text.
+   * Evidence parsing uses the syntax instead of guessing from raw source text.
    */
   syntax: IEvidenceCommentSyntax;
 

@@ -48,7 +48,9 @@ export class EvidenceZigAdapter implements IEvidenceAdapter<"zig"> {
    * owner and withdrawals. Completeness includes every scan's outcome, and the
    * invocation releases parser resources on all completion paths.
    */
-  public async analyze(snapshot: IEvidenceSourceSnapshot): Promise<IEvidenceInventory> {
+  public async analyze(
+    snapshot: IEvidenceSourceSnapshot,
+  ): Promise<IEvidenceInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidenceInventory = {
       schemaVersion: 1,
@@ -106,7 +108,8 @@ export class EvidenceZigAdapter implements IEvidenceAdapter<"zig"> {
         (session) => new EvidenceZigFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError = cause instanceof EvidenceParserError ? cause : undefined;
+      const parserError =
+        cause instanceof EvidenceParserError ? cause : undefined;
       return {
         source,
         declarations: [],
@@ -406,7 +409,8 @@ export class EvidenceZigAdapter implements IEvidenceAdapter<"zig"> {
   }
 
   /**
-   * Parses evidence tags after the adapter establishes their documentation host.
+   * Parses evidence tags after the adapter establishes their documentation
+   * host.
    *
    * Host identity and unit membership are required by tag parsing, so parsing
    * cannot occur while alias and withdrawal eligibility remain unresolved.
@@ -446,7 +450,7 @@ export class EvidenceZigAdapter implements IEvidenceAdapter<"zig"> {
   /**
    * Detects claims that remain relevant when a carrier's unit is withdrawn.
    *
-   * evidence claims are excluded here, leaving acknowledgement and review tags
+   * Evidence claims are excluded here, leaving acknowledgement and review tags
    * available for validation without publishing a hidden declaration host.
    */
   private claimAnnotation(

@@ -72,7 +72,10 @@ export async function test_swagger_failures(): Promise<void> {
   // One rejected document does not erase valid operations from another source.
   const partial = await adapter.analyze(
     EvidenceTestSourceSnapshot.combine([
-      EvidenceTestSourceSnapshot.create("valid.yaml", document("/health", "get")),
+      EvidenceTestSourceSnapshot.create(
+        "valid.yaml",
+        document("/health", "get"),
+      ),
       EvidenceTestSourceSnapshot.create("invalid.yaml", "openapi: ["),
     ]),
   );
@@ -111,7 +114,10 @@ export async function test_swagger_failures(): Promise<void> {
 
   // A corrected document with a new digest succeeds after a cached rejection.
   const repaired = await adapter.analyze(
-    EvidenceTestSourceSnapshot.create("malformed.yaml", document("/health", "get")),
+    EvidenceTestSourceSnapshot.create(
+      "malformed.yaml",
+      document("/health", "get"),
+    ),
   );
   TestValidator.equals(
     "repaired document is complete",

@@ -195,7 +195,8 @@ export class EvidenceCppFileScanner {
           this.preprocessorDirective(item);
         return;
       case "expression_statement":
-        if (!EvidenceCppSyntax.isStaticAssertion(item)) this.macroDeclaration(item);
+        if (!EvidenceCppSyntax.isStaticAssertion(item))
+          this.macroDeclaration(item);
         return;
       default:
         this.problem(
@@ -689,7 +690,9 @@ export class EvidenceCppFileScanner {
       return;
     const declarator = item.childForFieldName("declarator");
     const shape =
-      declarator === null ? undefined : EvidenceCppSyntax.declarator(declarator);
+      declarator === null
+        ? undefined
+        : EvidenceCppSyntax.declarator(declarator);
     if (shape === undefined || shape.kind !== "function") {
       this.problem(
         "cpp-function-declarator",
@@ -994,7 +997,10 @@ export class EvidenceCppFileScanner {
     );
   }
 
-  private scanEnumerators(body: EvidenceNode, owner: IEvidenceCppScopeContext): void {
+  private scanEnumerators(
+    body: EvidenceNode,
+    owner: IEvidenceCppScopeContext,
+  ): void {
     for (const item of body.namedChildren) {
       if (item.type === "comment") continue;
       if (item.type === "preproc_if" || item.type === "preproc_ifdef") {

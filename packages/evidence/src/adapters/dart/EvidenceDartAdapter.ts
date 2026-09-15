@@ -49,7 +49,9 @@ export class EvidenceDartAdapter implements IEvidenceAdapter<"dart"> {
    * parser cleanup runs even if publication or documentation materialization
    * throws.
    */
-  public async analyze(snapshot: IEvidenceSourceSnapshot): Promise<IEvidenceInventory> {
+  public async analyze(
+    snapshot: IEvidenceSourceSnapshot,
+  ): Promise<IEvidenceInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidenceInventory = {
       schemaVersion: 1,
@@ -109,7 +111,8 @@ export class EvidenceDartAdapter implements IEvidenceAdapter<"dart"> {
         (session) => new EvidenceDartFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError = cause instanceof EvidenceParserError ? cause : undefined;
+      const parserError =
+        cause instanceof EvidenceParserError ? cause : undefined;
       return {
         source,
         declarations: [],

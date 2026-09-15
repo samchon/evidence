@@ -48,7 +48,7 @@ export interface IEvidenceReferenceBase<
   root?: string;
 
   /**
-   * evidence symbol kinds selected as required units.
+   * Evidence symbol kinds selected as required units.
    *
    * Accepts one kind or a nonempty array. Defaults by family:
    *
@@ -106,8 +106,8 @@ export interface IEvidenceReferenceBase<
   /**
    * Require a matching review with the current target content fingerprint.
    *
-   * - evidence needs EvidenceReview; exclusions need EvidenceExcludeReview. Reviews
-   *   do not provide coverage.
+   * - Evidence needs EvidenceReview; exclusions need EvidenceExcludeReview.
+   *   Reviews do not provide coverage.
    * - Reviews carry a #-prefixed fingerprint. Missing or stale reviews fail the
    *   obligation; diagnostics provide the expected fingerprint.
    * - Fingerprints belong to the cited unit and its structural subtree,

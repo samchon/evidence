@@ -34,7 +34,10 @@ export class EvidenceKotlinFileScanner {
    * Adjacent declaration attachment looks up the preceding comment by this
    * stable parser coordinate while nodes are still borrowed.
    */
-  private readonly documentation = new Map<number, IEvidenceKotlinDocumentation>();
+  private readonly documentation = new Map<
+    number,
+    IEvidenceKotlinDocumentation
+  >();
 
   /**
    * Failures that prevent a complete public denominator.
@@ -549,7 +552,10 @@ export class EvidenceKotlinFileScanner {
    * Whitespace-only separation prevents a nearby unrelated documentation block
    * from being attached to the next declaration.
    */
-  private attach(node: EvidenceNode, declaration: IEvidenceKotlinDeclaration): void {
+  private attach(
+    node: EvidenceNode,
+    declaration: IEvidenceKotlinDeclaration,
+  ): void {
     const prefix = this.annotationPrefix(node);
     const previous = prefix.previousNamedSibling;
     if (

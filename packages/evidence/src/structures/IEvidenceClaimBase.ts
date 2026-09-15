@@ -112,7 +112,8 @@ export interface IEvidenceClaimBase<
    * - Use the same root and glob rules as files; never widen that population.
    * - Omit to allow every eligible carrier. An exclusion outside these globs is
    *   reported and provides no coverage.
-   * - Each reference may independently refuse all exclusions with noEvidenceExclude.
+   * - Each reference may independently refuse all exclusions with
+   *   noEvidenceExclude.
    * - A Markdown checklist permits these globs only with noEvidenceExclude.
    */
   EvidenceExcludeCarriers?: string[];

@@ -118,7 +118,10 @@ export async function test_javascript_failures(): Promise<void> {
   );
 
   const mixed = await adapter.analyze(
-    EvidenceTestSourceSnapshot.create("src/mixed.cjs", "export const value = 1;"),
+    EvidenceTestSourceSnapshot.create(
+      "src/mixed.cjs",
+      "export const value = 1;",
+    ),
   );
   TestValidator.predicate(
     "ESM syntax in CommonJS",
@@ -128,7 +131,10 @@ export async function test_javascript_failures(): Promise<void> {
   );
 
   const malformed = await adapter.analyze(
-    EvidenceTestSourceSnapshot.create("src/broken.mjs", "export class Broken {"),
+    EvidenceTestSourceSnapshot.create(
+      "src/broken.mjs",
+      "export class Broken {",
+    ),
   );
   TestValidator.predicate(
     "malformed JavaScript",

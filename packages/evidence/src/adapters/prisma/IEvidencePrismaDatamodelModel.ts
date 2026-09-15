@@ -19,16 +19,16 @@ export interface IEvidencePrismaDatamodelModel {
    * Parser-attached block documentation when present.
    *
    * Omission or `null` means the parser found no block documentation;
-   * `EvidencePrismaModelLoader` normalizes both states to its detached empty text
-   * value.
+   * `EvidencePrismaModelLoader` normalizes both states to its detached empty
+   * text value.
    */
   documentation?: string | null;
 
   /**
    * Members belonging to this parser-established model.
    *
-   * Their parser classifications are converted into evidence columns or relations
-   * only after the containing model has been materialized.
+   * Their parser classifications are converted into evidence columns or
+   * relations only after the containing model has been materialized.
    */
   fields: IEvidencePrismaDatamodelField[];
 }

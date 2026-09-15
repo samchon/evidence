@@ -6,9 +6,9 @@ import type { IEvidenceRubyDocumentationAttachment } from "./IEvidenceRubyDocume
 /**
  * Retains one Ruby comment run or annotation-bearing unsupported literal.
  *
- * EvidenceRubyAdapter attaches it after reopened declaration groups become public,
- * keeping tags on invalid positions available for diagnostics rather than
- * discarding them.
+ * EvidenceRubyAdapter attaches it after reopened declaration groups become
+ * public, keeping tags on invalid positions available for diagnostics rather
+ * than discarding them.
  */
 export interface IEvidenceRubyDocumentation {
   /**

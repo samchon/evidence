@@ -10,9 +10,9 @@ import type { IEvidenceCppQualifiedName } from "./IEvidenceCppQualifiedName";
 /**
  * Provides C++ grammar helpers for names, declarators, comments, and modifiers.
  *
- * EvidenceCppFileScanner uses these helpers to preserve C++-specific spelling and
- * scope distinctions while it decides which supported declarations form graph
- * units.
+ * EvidenceCppFileScanner uses these helpers to preserve C++-specific spelling
+ * and scope distinctions while it decides which supported declarations form
+ * graph units.
  */
 export namespace EvidenceCppSyntax {
   export function name(node: EvidenceNode | null): string | undefined {
@@ -244,7 +244,9 @@ export namespace EvidenceCppSyntax {
     return /^(?:_Static_assert|static_assert)\s*\(/u.test(node.text);
   }
 
-  export function guardedDeclarations(node: EvidenceNode): EvidenceNode[] | undefined {
+  export function guardedDeclarations(
+    node: EvidenceNode,
+  ): EvidenceNode[] | undefined {
     if (node.type !== "preproc_ifdef" || !/^#\s*ifndef\b/u.test(node.text))
       return undefined;
     if (node.childForFieldName("alternative") !== null) return undefined;
@@ -314,7 +316,9 @@ export namespace EvidenceCppSyntax {
     };
   }
 
-  export function string(node: EvidenceNode): IEvidenceCommentSyntax | undefined {
+  export function string(
+    node: EvidenceNode,
+  ): IEvidenceCommentSyntax | undefined {
     if (node.type === "string_literal") {
       const opening = /^(?:u8|u|U|L)?"/u.exec(node.text)?.[0];
       return opening === undefined

@@ -2,8 +2,8 @@
  * Executable mapping from the consumer-installed `ttsc` package manifest.
  *
  * The isolated configuration evaluator reads this projection through
- * `IEvidenceTtsxManifest` so it can invoke the consumer's compiler launcher instead
- * of resolving a tool from evidence's own dependency graph.
+ * `IEvidenceTtsxManifest` so it can invoke the consumer's compiler launcher
+ * instead of resolving a tool from evidence's own dependency graph.
  */
 export interface IEvidenceTtsxExecutables {
   /**

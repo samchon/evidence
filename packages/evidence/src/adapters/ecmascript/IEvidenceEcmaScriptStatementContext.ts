@@ -31,7 +31,7 @@ export interface IEvidenceEcmaScriptStatementContext {
   root?: string;
 
   /**
-   * evidence unit ID of the direct enclosing declaration.
+   * Evidence unit ID of the direct enclosing declaration.
    *
    * Omission denotes a root unit. Nested scanner calls pass this ID so
    * inventory structure follows language containment instead of public path

@@ -376,9 +376,9 @@ export class EvidenceSourceCollector {
   /**
    * Converts an expected collection failure into a retained diagnostic.
    *
-   * Sibling paths continue scanning, while `EvidenceSourceFailure` preserves its
-   * specific diagnostic code instead of becoming the caller-supplied fallback
-   * category.
+   * Sibling paths continue scanning, while `EvidenceSourceFailure` preserves
+   * its specific diagnostic code instead of becoming the caller-supplied
+   * fallback category.
    */
   private report(
     fallback: IEvidenceSourceDiagnostic["code"],

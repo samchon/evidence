@@ -54,7 +54,9 @@ export async function test_watch_json_config(): Promise<void> {
               cycle.status,
               "complete",
             );
-            await EvidenceTestFileSystem.save(directory, { "evidence.json": "{" });
+            await EvidenceTestFileSystem.save(directory, {
+              "evidence.json": "{",
+            });
           } else if (cycle.cycle === 2) {
             TestValidator.equals(
               "malformed JSON fails",
@@ -64,7 +66,9 @@ export async function test_watch_json_config(): Promise<void> {
             await unlink(file);
           } else if (cycle.cycle === 3) {
             TestValidator.equals("deleted JSON fails", cycle.status, "failed");
-            await EvidenceTestFileSystem.save(directory, { "evidence.json": content });
+            await EvidenceTestFileSystem.save(directory, {
+              "evidence.json": content,
+            });
           } else {
             TestValidator.equals(
               "recreated JSON recovers",

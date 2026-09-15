@@ -1,9 +1,9 @@
 /**
  * Describes a statically resolved Kotlin nominal receiver.
  *
- * EvidenceKotlinReceivers produces this result after lexical lookup and supported
- * type alias expansion, then uses it to place extension declarations beneath
- * their effective receiver address.
+ * EvidenceKotlinReceivers produces this result after lexical lookup and
+ * supported type alias expansion, then uses it to place extension declarations
+ * beneath their effective receiver address.
  */
 export interface IEvidenceKotlinResolvedType {
   /**
@@ -17,9 +17,9 @@ export interface IEvidenceKotlinResolvedType {
   /**
    * Indicates whether the effective receiver permits null.
    *
-   * EvidenceKotlinReceivers preserves a nullable suffix from the source reference
-   * or from any selected alias expansion when constructing the extension
-   * address.
+   * EvidenceKotlinReceivers preserves a nullable suffix from the source
+   * reference or from any selected alias expansion when constructing the
+   * extension address.
    */
   nullable: boolean;
 }

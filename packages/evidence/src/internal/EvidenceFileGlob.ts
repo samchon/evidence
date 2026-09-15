@@ -65,8 +65,8 @@ export class EvidenceFileGlob {
  * Parses one authored glob into normalized segments while rejecting ambiguous
  * root escapes.
  *
- * `EvidenceFileGlob` uses the result for portable matching relative to one selected
- * population root.
+ * `EvidenceFileGlob` uses the result for portable matching relative to one
+ * selected population root.
  */
 function compile(raw: string): IEvidenceFileGlobPattern {
   if (raw.trim() === "") throw new Error("Glob strings must not be empty.");

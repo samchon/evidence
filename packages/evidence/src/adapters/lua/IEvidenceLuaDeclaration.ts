@@ -30,8 +30,8 @@ export interface IEvidenceLuaDeclaration {
    * Classifies callable values as functions and tables or scalar fields as
    * properties.
    *
-   * This evidence selector is assigned from static value shape without executing
-   * the Lua module.
+   * This evidence selector is assigned from static value shape without
+   * executing the Lua module.
    */
   symbol: EvidenceProgrammingSymbol;
 

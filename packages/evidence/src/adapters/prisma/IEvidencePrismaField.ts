@@ -16,7 +16,7 @@ export interface IEvidencePrismaField {
   name: string;
 
   /**
-   * evidence unit symbol selected from the parser field kind.
+   * Evidence unit symbol selected from the parser field kind.
    *
    * Prisma scalar fields become columns and object fields become relations, so
    * this normalized symbol controls selector matching without retaining WASM
@@ -37,7 +37,8 @@ export interface IEvidencePrismaField {
    * Semantic field digest excluding documentation metadata.
    *
    * Review fingerprints use this value to detect changes to the field itself
-   * without treating explanatory or evidence annotation edits as semantic drift.
+   * without treating explanatory or evidence annotation edits as semantic
+   * drift.
    */
   digest: string;
 }

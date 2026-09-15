@@ -1,6 +1,10 @@
 import typia from "typia";
 import type { IEvidenceInventory } from "evidence";
-import { EvidenceAccessor, EvidenceInventory, EvidenceScalaAdapter } from "evidence";
+import {
+  EvidenceAccessor,
+  EvidenceInventory,
+  EvidenceScalaAdapter,
+} from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";

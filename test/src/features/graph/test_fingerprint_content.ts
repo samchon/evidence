@@ -163,7 +163,10 @@ async function analyze(content: string): Promise<IEvidenceInventory> {
  * Missing extraction fails explicitly instead of comparing an unrelated
  * fallback unit.
  */
-function requireUnit(inventory: IEvidenceInventory, name: string): IEvidenceUnit {
+function requireUnit(
+  inventory: IEvidenceInventory,
+  name: string,
+): IEvidenceUnit {
   const unit = inventory.units.find((candidate) => candidate.name === name);
   if (unit === undefined) throw new Error(`Missing fingerprint unit: ${name}`);
   return unit;

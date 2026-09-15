@@ -88,8 +88,9 @@ const NATIVE_DOCUMENTATION_TYPES: ReadonlySet<string> = new Set<string>([
  * 9. Apply the same separated-fence and HTML-boundary checks to SQL, PostgreSQL,
  *    MySQL, SQLite, and BigQuery adapters and compare their complete
  *    inventories with an unmodified baseline.
- * 10. Run the combined PHP reproductions through EvidenceChecker and require the real
- *     statement after the HTML close to cover its requirement with exit zero.
+ * 10. Run the combined PHP reproductions through EvidenceChecker and require the
+ *     real statement after the HTML close to cover its requirement with exit
+ *     zero.
  * 11. Replace that PHP host with only an acknowledgement inside an unclosed HTML
  *     example and require the checker to report the requirement as uncovered.
  * 12. Put fake annotations in HTML comments across all programming adapters, keep
@@ -124,7 +125,10 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
       );
       const commentedInventory: IEvidenceInventory =
         await EvidenceAdapterCertification.analyze(commented);
-      EvidenceAdapterCertification.assertInventory(commented, commentedInventory);
+      EvidenceAdapterCertification.assertInventory(
+        commented,
+        commentedInventory,
+      );
     }
 
     if (HTML_DOCUMENTATION_TYPES.has(certification.type)) {
@@ -271,7 +275,10 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
     "@evidence rules.md#rule Real statement.",
   ].join("\n");
   const nestedCharacters: string[] = nested.split("");
-  EvidenceDocumentationExamples.maskHtml(nestedCharacters, nested, ["pre", "code"]);
+  EvidenceDocumentationExamples.maskHtml(nestedCharacters, nested, [
+    "pre",
+    "code",
+  ]);
   TestValidator.predicate(
     "outer HTML close ends nested example",
     !nestedCharacters.join("").includes("@evidence rules.md#rendered") &&
@@ -294,7 +301,10 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
       EvidenceTestSourceSnapshot.create("schema.sql", separatedFences(source)),
     );
     const rendered: IEvidenceInventory = await adapter.analyze(
-      EvidenceTestSourceSnapshot.create("schema.sql", genuineHtmlExample(source)),
+      EvidenceTestSourceSnapshot.create(
+        "schema.sql",
+        genuineHtmlExample(source),
+      ),
     );
     const slashClosed: IEvidenceInventory = await adapter.analyze(
       EvidenceTestSourceSnapshot.create(
@@ -303,13 +313,22 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
       ),
     );
     const unclosed: IEvidenceInventory = await adapter.analyze(
-      EvidenceTestSourceSnapshot.create("schema.sql", unclosedHtmlExample(source)),
+      EvidenceTestSourceSnapshot.create(
+        "schema.sql",
+        unclosedHtmlExample(source),
+      ),
     );
     const indentedOpening: IEvidenceInventory = await adapter.analyze(
-      EvidenceTestSourceSnapshot.create("schema.sql", indentedHtmlOpening(source)),
+      EvidenceTestSourceSnapshot.create(
+        "schema.sql",
+        indentedHtmlOpening(source),
+      ),
     );
     const indentedClose: IEvidenceInventory = await adapter.analyze(
-      EvidenceTestSourceSnapshot.create("schema.sql", indentedHtmlClose(source)),
+      EvidenceTestSourceSnapshot.create(
+        "schema.sql",
+        indentedHtmlClose(source),
+      ),
     );
     const indented: IEvidenceInventory = await adapter.analyze(
       EvidenceTestSourceSnapshot.create(
@@ -318,13 +337,22 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
       ),
     );
     const malformedClose: IEvidenceInventory = await adapter.analyze(
-      EvidenceTestSourceSnapshot.create("schema.sql", malformedHtmlClose(source)),
+      EvidenceTestSourceSnapshot.create(
+        "schema.sql",
+        malformedHtmlClose(source),
+      ),
     );
     const commented: IEvidenceInventory = await adapter.analyze(
-      EvidenceTestSourceSnapshot.create("schema.sql", htmlCommentedEvid(source)),
+      EvidenceTestSourceSnapshot.create(
+        "schema.sql",
+        htmlCommentedEvid(source),
+      ),
     );
     const commentedTags: IEvidenceInventory = await adapter.analyze(
-      EvidenceTestSourceSnapshot.create("schema.sql", commentedHtmlTags(source)),
+      EvidenceTestSourceSnapshot.create(
+        "schema.sql",
+        commentedHtmlTags(source),
+      ),
     );
     const quotedComment: IEvidenceInventory = await adapter.analyze(
       EvidenceTestSourceSnapshot.create(
@@ -515,16 +543,17 @@ function mutateCertification(
   mutation: (content: string) => string,
 ): IEvidenceAdapterCertification {
   let changed: number = 0;
-  const sources: IEvidenceAdapterCertificationSource[] = certification.sources.map(
-    (
-      source: IEvidenceAdapterCertificationSource,
-    ): IEvidenceAdapterCertificationSource => {
-      if (changed !== 0 || !source.content.includes("@evidence "))
-        return source;
-      ++changed;
-      return { ...source, content: mutation(source.content) };
-    },
-  );
+  const sources: IEvidenceAdapterCertificationSource[] =
+    certification.sources.map(
+      (
+        source: IEvidenceAdapterCertificationSource,
+      ): IEvidenceAdapterCertificationSource => {
+        if (changed !== 0 || !source.content.includes("@evidence "))
+          return source;
+        ++changed;
+        return { ...source, content: mutation(source.content) };
+      },
+    );
   if (changed !== 1)
     throw new Error(
       `${certification.type} fixture has no unique evidence carrier to mutate.`,
@@ -763,27 +792,30 @@ function commentedHtmlTags(content: string): string {
  * inventory.
  */
 function nativeCodePrecedence(type: string, content: string): string {
-  return replaceEvidenceLine(content, (prefix: string, line: string): string => {
-    if (type === "c" || type === "cpp")
-      return [
-        `${prefix}@code`,
-        `${prefix}<pre>`,
-        `${prefix}@endcode`,
-        line,
-        `${prefix}@code`,
-        `${prefix}</pre>`,
-        `${prefix}@endcode`,
-      ].join("\n");
-    if (type === "java")
-      return [`${prefix}{@code <pre>}`, line, `${prefix}{@code </pre>}`].join(
-        "\n",
-      );
-    if (type === "scala")
-      return [`${prefix}{{{ <pre> }}}`, line, `${prefix}{{{ </pre> }}}`].join(
-        "\n",
-      );
-    throw new Error(`No native documentation example syntax for ${type}.`);
-  });
+  return replaceEvidenceLine(
+    content,
+    (prefix: string, line: string): string => {
+      if (type === "c" || type === "cpp")
+        return [
+          `${prefix}@code`,
+          `${prefix}<pre>`,
+          `${prefix}@endcode`,
+          line,
+          `${prefix}@code`,
+          `${prefix}</pre>`,
+          `${prefix}@endcode`,
+        ].join("\n");
+      if (type === "java")
+        return [`${prefix}{@code <pre>}`, line, `${prefix}{@code </pre>}`].join(
+          "\n",
+        );
+      if (type === "scala")
+        return [`${prefix}{{{ <pre> }}}`, line, `${prefix}{{{ </pre> }}}`].join(
+          "\n",
+        );
+      throw new Error(`No native documentation example syntax for ${type}.`);
+    },
+  );
 }
 
 /**
@@ -793,30 +825,33 @@ function nativeCodePrecedence(type: string, content: string): string {
  * statement before a later fenced closing delimiter.
  */
 function markdownNativeLiteral(type: string, content: string): string {
-  return replaceEvidenceLine(content, (prefix: string, line: string): string => {
-    let opening: string;
-    let closing: string;
-    if (type === "c" || type === "cpp") {
-      opening = "@code";
-      closing = "@endcode";
-    } else if (type === "java") {
-      opening = "{@code";
-      closing = "}";
-    } else if (type === "scala") {
-      opening = "{{{";
-      closing = "}}}";
-    } else
-      throw new Error(`No native documentation example syntax for ${type}.`);
-    return [
-      `${prefix}\`\`\`\`text`,
-      `${prefix}${opening}`,
-      `${prefix}\`\`\`\``,
-      line,
-      `${prefix}\`\`\`\`text`,
-      `${prefix}${closing}`,
-      `${prefix}\`\`\`\``,
-    ].join("\n");
-  });
+  return replaceEvidenceLine(
+    content,
+    (prefix: string, line: string): string => {
+      let opening: string;
+      let closing: string;
+      if (type === "c" || type === "cpp") {
+        opening = "@code";
+        closing = "@endcode";
+      } else if (type === "java") {
+        opening = "{@code";
+        closing = "}";
+      } else if (type === "scala") {
+        opening = "{{{";
+        closing = "}}}";
+      } else
+        throw new Error(`No native documentation example syntax for ${type}.`);
+      return [
+        `${prefix}\`\`\`\`text`,
+        `${prefix}${opening}`,
+        `${prefix}\`\`\`\``,
+        line,
+        `${prefix}\`\`\`\`text`,
+        `${prefix}${closing}`,
+        `${prefix}\`\`\`\``,
+      ].join("\n");
+    },
+  );
 }
 
 /**

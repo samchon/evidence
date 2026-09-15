@@ -20,8 +20,8 @@ import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSna
  * Evaluates a requirement-to-implementation-to-test chain through real
  * adapters.
  *
- * Each link is an independent configured claim/reference pair. Evidence from the
- * test to the implementation cannot substitute for the implementation's
+ * Each link is an independent configured claim/reference pair. Evidence from
+ * the test to the implementation cannot substitute for the implementation's
  * citation to a requirement, and breaking one link must not erase the other
  * link's coverage.
  *
@@ -244,7 +244,10 @@ export async function test_graph_chain(): Promise<void> {
  * Markdown explicit IDs can appear as the final identity segment, while code
  * fixtures use declaration names. Missing extraction fails setup immediately.
  */
-function requireUnit(inventory: IEvidenceInventory, name: string): IEvidenceUnit {
+function requireUnit(
+  inventory: IEvidenceInventory,
+  name: string,
+): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === name || candidate.identity.at(-1) === name,
@@ -260,7 +263,9 @@ function requireUnit(inventory: IEvidenceInventory, name: string): IEvidenceUnit
  * The scenario has one citation per citing inventory; absence must fail setup
  * instead of constructing an accidentally empty resolution list.
  */
-function requireDeclaration(inventory: IEvidenceInventory): IEvidenceDeclaration {
+function requireDeclaration(
+  inventory: IEvidenceInventory,
+): IEvidenceDeclaration {
   const declaration = inventory.declarations[0];
   if (declaration === undefined)
     throw new Error("Missing graph declaration fixture.");

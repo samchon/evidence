@@ -21,12 +21,15 @@ import { EvidenceSourceText } from "../../internal/EvidenceSourceText";
  * materialization.
  *
  * Ownership and visibility are recorded from selected source only;
- * `EvidenceJavaAdapter` later reconciles compatible declaration families into graph
- * units.
+ * `EvidenceJavaAdapter` later reconciles compatible declaration families into
+ * graph units.
  */
 export class EvidenceJavaFileScanner {
   private readonly declarations: IEvidenceJavaDeclaration[] = [];
-  private readonly documentation = new Map<string, IEvidenceJavaDocumentation>();
+  private readonly documentation = new Map<
+    string,
+    IEvidenceJavaDocumentation
+  >();
   private readonly carrierDocumentation = new Map<
     string,
     IEvidenceJavaDocumentation
@@ -159,7 +162,10 @@ export class EvidenceJavaFileScanner {
     if (body !== null) this.scanTypeBody(body, context);
   }
 
-  private scanTypeBody(body: EvidenceNode, owner: IEvidenceJavaTypeContext): void {
+  private scanTypeBody(
+    body: EvidenceNode,
+    owner: IEvidenceJavaTypeContext,
+  ): void {
     for (const member of body.namedChildren)
       switch (member.type) {
         case "line_comment":
@@ -257,7 +263,9 @@ export class EvidenceJavaFileScanner {
     const documentation = EvidenceJavaSyntax.javadoc(item);
     const visible = this.memberPublic(item, owner, form !== "field");
     for (const declarator of declarators) {
-      const name = EvidenceJavaSyntax.name(declarator.childForFieldName("name"));
+      const name = EvidenceJavaSyntax.name(
+        declarator.childForFieldName("name"),
+      );
       if (name === undefined) continue;
       this.addDeclaration(
         declarator,
@@ -275,7 +283,10 @@ export class EvidenceJavaFileScanner {
     }
   }
 
-  private scanMethod(item: EvidenceNode, owner: IEvidenceJavaTypeContext): void {
+  private scanMethod(
+    item: EvidenceNode,
+    owner: IEvidenceJavaTypeContext,
+  ): void {
     const name = EvidenceJavaSyntax.name(item.childForFieldName("name"));
     if (name === undefined) return;
     this.addDeclaration(
@@ -293,7 +304,10 @@ export class EvidenceJavaFileScanner {
     );
   }
 
-  private scanEnumConstant(item: EvidenceNode, owner: IEvidenceJavaTypeContext): void {
+  private scanEnumConstant(
+    item: EvidenceNode,
+    owner: IEvidenceJavaTypeContext,
+  ): void {
     const name = EvidenceJavaSyntax.name(item.childForFieldName("name"));
     if (name === undefined) return;
     this.addDeclaration(
@@ -336,7 +350,8 @@ export class EvidenceJavaFileScanner {
     item: EvidenceNode,
     owner: IEvidenceJavaTypeContext | undefined,
   ): boolean {
-    if (owner === undefined) return EvidenceJavaSyntax.hasModifier(item, "public");
+    if (owner === undefined)
+      return EvidenceJavaSyntax.hasModifier(item, "public");
     if (!owner.public) return false;
     if (EvidenceJavaSyntax.hasModifier(item, "private")) return false;
     if (EvidenceJavaSyntax.hasModifier(item, "protected")) return false;

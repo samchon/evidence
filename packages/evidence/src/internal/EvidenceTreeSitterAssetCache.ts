@@ -40,7 +40,9 @@ export class EvidenceTreeSitterAssetCache {
    * Bytes applies these controls when it resolves the cache location, downloads
    * a grammar, and reports progress for this cache instance.
    */
-  public constructor(private readonly options: IEvidenceTreeSitterAssetOptions) {}
+  public constructor(
+    private readonly options: IEvidenceTreeSitterAssetOptions,
+  ) {}
 
   /**
    * Returns verified caller-owned grammar bytes, repairing missing or damaged

@@ -3,8 +3,8 @@ import type { IEvidenceRustFileAnalysis } from "./IEvidenceRustFileAnalysis";
 /**
  * Assigns a selected Rust file to one crate root and module prefix.
  *
- * EvidenceRustModuleResolver creates placements before building module records, so
- * the same scan result can be addressed in the crate namespace and source
+ * EvidenceRustModuleResolver creates placements before building module records,
+ * so the same scan result can be addressed in the crate namespace and source
  * files.
  */
 export interface IEvidenceRustFilePlacement {

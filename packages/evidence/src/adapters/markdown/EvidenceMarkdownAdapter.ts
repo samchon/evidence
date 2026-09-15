@@ -10,8 +10,8 @@ import type { IEvidenceSourceSnapshot } from "../../structures/IEvidenceSourceSn
  * Extracts Markdown file and heading units with HTML-comment annotation hosts.
  *
  * Every supplied source is interpreted as Markdown regardless of its extension.
- * EvidenceMarkdownScanner owns heading hierarchy, fenced-content boundaries, and
- * comment attachment; this adapter combines those records with discovery
+ * EvidenceMarkdownScanner owns heading hierarchy, fenced-content boundaries,
+ * and comment attachment; this adapter combines those records with discovery
  * diagnostics and validates the resulting shared inventory.
  */
 export class EvidenceMarkdownAdapter implements IEvidenceAdapter<"markdown"> {
@@ -32,7 +32,9 @@ export class EvidenceMarkdownAdapter implements IEvidenceAdapter<"markdown"> {
    * Discovery failures remain attached to the result, preventing unreadable
    * files from silently reducing the coverage population.
    */
-  public async analyze(snapshot: IEvidenceSourceSnapshot): Promise<IEvidenceInventory> {
+  public async analyze(
+    snapshot: IEvidenceSourceSnapshot,
+  ): Promise<IEvidenceInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidenceInventory = {
       schemaVersion: 1,

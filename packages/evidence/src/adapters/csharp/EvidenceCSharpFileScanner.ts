@@ -22,11 +22,15 @@ import { EvidenceSourceText } from "../../internal/EvidenceSourceText";
  * Extracts C# namespaces, declarations, and XML documentation.
  *
  * It preserves declaration ownership and physical attachment decisions for
- * `EvidenceCSharpAdapter`, which reconciles partial families after parsing closes.
+ * `EvidenceCSharpAdapter`, which reconciles partial families after parsing
+ * closes.
  */
 export class EvidenceCSharpFileScanner {
   private readonly declarations: IEvidenceCSharpDeclaration[] = [];
-  private readonly documentation = new Map<string, IEvidenceCSharpDocumentation>();
+  private readonly documentation = new Map<
+    string,
+    IEvidenceCSharpDocumentation
+  >();
   private readonly carrierDocumentation = new Map<
     string,
     IEvidenceCSharpDocumentation
@@ -290,7 +294,9 @@ export class EvidenceCSharpFileScanner {
     const documentation = this.documentationFor(item);
     const implicitPublic = owner.kind === "interface";
     for (const declarator of declarators) {
-      const name = EvidenceCSharpSyntax.name(declarator.childForFieldName("name"));
+      const name = EvidenceCSharpSyntax.name(
+        declarator.childForFieldName("name"),
+      );
       if (name === undefined) continue;
       this.addDeclaration(
         declarator,
@@ -340,7 +346,10 @@ export class EvidenceCSharpFileScanner {
     );
   }
 
-  private scanEnumMember(item: EvidenceNode, owner: IEvidenceCSharpTypeContext): void {
+  private scanEnumMember(
+    item: EvidenceNode,
+    owner: IEvidenceCSharpTypeContext,
+  ): void {
     const name = EvidenceCSharpSyntax.name(item.childForFieldName("name"));
     if (name === undefined) return;
     this.addDeclaration(
@@ -359,7 +368,10 @@ export class EvidenceCSharpFileScanner {
     );
   }
 
-  private scanIndexer(item: EvidenceNode, owner: IEvidenceCSharpTypeContext): void {
+  private scanIndexer(
+    item: EvidenceNode,
+    owner: IEvidenceCSharpTypeContext,
+  ): void {
     const name = "this[]";
     this.addDeclaration(
       item,
@@ -377,7 +389,10 @@ export class EvidenceCSharpFileScanner {
     );
   }
 
-  private scanOperator(item: EvidenceNode, owner: IEvidenceCSharpTypeContext): void {
+  private scanOperator(
+    item: EvidenceNode,
+    owner: IEvidenceCSharpTypeContext,
+  ): void {
     const name = EvidenceCSharpSyntax.operatorName(item);
     if (name === undefined) {
       this.problem(

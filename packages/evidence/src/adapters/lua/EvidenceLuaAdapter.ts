@@ -48,7 +48,9 @@ export class EvidenceLuaAdapter implements IEvidenceAdapter<"lua"> {
    * after success or failure; returned records contain no borrowed syntax
    * nodes.
    */
-  public async analyze(snapshot: IEvidenceSourceSnapshot): Promise<IEvidenceInventory> {
+  public async analyze(
+    snapshot: IEvidenceSourceSnapshot,
+  ): Promise<IEvidenceInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidenceInventory = {
       schemaVersion: 1,
@@ -107,7 +109,8 @@ export class EvidenceLuaAdapter implements IEvidenceAdapter<"lua"> {
         (session) => new EvidenceLuaFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError = cause instanceof EvidenceParserError ? cause : undefined;
+      const parserError =
+        cause instanceof EvidenceParserError ? cause : undefined;
       return {
         source,
         declarations: [],

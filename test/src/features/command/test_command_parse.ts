@@ -37,7 +37,10 @@ export function test_command_parse(): void {
   );
   TestValidator.equals(
     "watch aliases",
-    [EvidenceCommand.parse(["--watch"]), EvidenceCommand.parse(["check", "-w"])],
+    [
+      EvidenceCommand.parse(["--watch"]),
+      EvidenceCommand.parse(["check", "-w"]),
+    ],
     [
       { ...defaults, watch: true },
       { ...defaults, watch: true },
@@ -161,9 +164,13 @@ export function test_command_parse(): void {
       { operation: "help" },
     );
   for (const flag of ["--version", "-v"])
-    TestValidator.equals(`version flag: ${flag}`, EvidenceCommand.parse([flag]), {
-      operation: "version",
-    });
+    TestValidator.equals(
+      `version flag: ${flag}`,
+      EvidenceCommand.parse([flag]),
+      {
+        operation: "version",
+      },
+    );
 
   // Typos, duplicates, bad formats, and incompatible flags all fail loudly.
   for (const args of [

@@ -7,17 +7,17 @@ import type { IEvidenceCppDocumentation } from "./IEvidenceCppDocumentation";
 /**
  * Holds the complete node-free extraction for one scanned C++ source file.
  *
- * `EvidenceCppFileScanner` returns this boundary after its parse session closes.
- * `EvidenceCppAdapter` consumes the records to reconcile declaration families,
- * resolve aliases, and materialize documentation without retaining Tree-sitter
- * nodes.
+ * `EvidenceCppFileScanner` returns this boundary after its parse session
+ * closes. `EvidenceCppAdapter` consumes the records to reconcile declaration
+ * families, resolve aliases, and materialize documentation without retaining
+ * Tree-sitter nodes.
  */
 export interface IEvidenceCppFileAnalysis {
   /**
    * Captured source file that owns every record in this analysis.
    *
-   * `EvidenceCppAdapter` uses its physical path and configured addresses while it
-   * materializes units and documentation hosts.
+   * `EvidenceCppAdapter` uses its physical path and configured addresses while
+   * it materializes units and documentation hosts.
    */
   source: IEvidenceSourceFile;
 

@@ -15,10 +15,10 @@ import { EvidenceSourcePath } from "../../internal/EvidenceSourcePath";
 /**
  * Selects JavaScript module mode for every selected source file.
  *
- * `EvidenceEcmaScriptAdapter` uses this resolver before scanning JavaScript because
- * `.js` and `.jsx` files inherit ESM or CommonJS semantics from the nearest
- * package metadata. The resolver also records consulted manifests as watch
- * dependencies and turns unreadable or conflicting package scopes into
+ * `EvidenceEcmaScriptAdapter` uses this resolver before scanning JavaScript
+ * because `.js` and `.jsx` files inherit ESM or CommonJS semantics from the
+ * nearest package metadata. The resolver also records consulted manifests as
+ * watch dependencies and turns unreadable or conflicting package scopes into
  * inventory diagnostics.
  */
 export class EvidenceEcmaScriptModuleResolver {
@@ -27,8 +27,8 @@ export class EvidenceEcmaScriptModuleResolver {
    * analysis.
    *
    * The lazy cache reads each package directory at most once. Missing manifests
-   * delegate to the parent directory, matching EvidenceNode's nearest-package scope
-   * rule.
+   * delegate to the parent directory, matching EvidenceNode's nearest-package
+   * scope rule.
    */
   public constructor() {
     this.packages = new VariadicSingleton(
@@ -39,9 +39,10 @@ export class EvidenceEcmaScriptModuleResolver {
         this.dependencies.set(manifest, { path: manifest, recursive: false });
         try {
           const content = await readFile(manifest, "utf8");
-          const metadata = typia.json.assertParse<IEvidenceJavaScriptPackageJson>(
-            content.replace(/^\uFEFF/u, ""),
-          );
+          const metadata =
+            typia.json.assertParse<IEvidenceJavaScriptPackageJson>(
+              content.replace(/^\uFEFF/u, ""),
+            );
           if (metadata.type === undefined || metadata.type === "commonjs")
             return "commonjs";
           if (metadata.type === "module") return "esm";

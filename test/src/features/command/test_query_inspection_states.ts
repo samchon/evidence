@@ -35,7 +35,11 @@ export async function test_query_inspection_states(): Promise<void> {
       const target = requireReviewedTarget(analysis, directory);
 
       // The inspection pairs the authored stale hash with the current requested hash.
-      const inspected = await EvidenceQuery.inspect(analysis, directory, target);
+      const inspected = await EvidenceQuery.inspect(
+        analysis,
+        directory,
+        target,
+      );
       const resolved = inspected.inspections[0];
       if (resolved === undefined) throw new Error("Missing inspection result.");
       const unit = resolved.units[0];
@@ -92,7 +96,11 @@ export async function test_query_inspection_states(): Promise<void> {
           .map((address) => ({ ...address, unitId: duplicate.id })),
       );
       requireReference(ambiguous).unitIds.push(duplicate.id);
-      const collision = await EvidenceQuery.inspect(ambiguous, directory, target);
+      const collision = await EvidenceQuery.inspect(
+        ambiguous,
+        directory,
+        target,
+      );
       TestValidator.equals(
         "ambiguous status",
         collision.inspections[0]?.status,

@@ -1,4 +1,8 @@
-import { EvidenceFingerprint, EvidenceInventory, EvidenceScalaAdapter } from "evidence";
+import {
+  EvidenceFingerprint,
+  EvidenceInventory,
+  EvidenceScalaAdapter,
+} from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
@@ -43,7 +47,10 @@ export async function test_scala_context(): Promise<void> {
     inventory.declarations.length,
     2,
   );
-  const fingerprint = EvidenceFingerprint.inspect(inventory, first.id).fingerprint;
+  const fingerprint = EvidenceFingerprint.inspect(
+    inventory,
+    first.id,
+  ).fingerprint;
   const sibling = await adapter.analyze(
     EvidenceTestSourceSnapshot.create(
       "src/Context.scala",

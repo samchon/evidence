@@ -6,11 +6,12 @@ import type { IEvidenceSourceLocation } from "../structures/IEvidenceSourceLocat
 import type { IEvidenceTagParseResult } from "../structures/IEvidenceTagParseResult";
 
 /**
- * Parses evidence annotations from documentation already mapped to a source host.
+ * Parses evidence annotations from documentation already mapped to a source
+ * host.
  *
  * Adapters own comment syntax and provide a normalized documentation map; this
- * namespace owns only evidence tag semantics. Its mutable context carries a pending
- * multiline tag, fenced-code state, and parse result so every emitted
+ * namespace owns only evidence tag semantics. Its mutable context carries a
+ * pending multiline tag, fenced-code state, and parse result so every emitted
  * annotation can retain coordinates in the original source file.
  *
  * @example
@@ -19,13 +20,15 @@ import type { IEvidenceTagParseResult } from "../structures/IEvidenceTagParseRes
  */
 export namespace EvidenceTagProgrammer {
   /**
-   * Parses valid evidence tags and diagnostics from one mapped documentation block.
+   * Parses valid evidence tags and diagnostics from one mapped documentation
+   * block.
    *
-   * The function consumes no text outside {@link IEvidenceTagContext.documentation}.
-   * It preserves multiline tag bodies, ignores apparent tags inside fenced code
-   * or HTML comments, and flushes a pending annotation at every boundary that
-   * makes continuation impossible. Invalid tags become diagnostics rather than
-   * aborting sibling tags.
+   * The function consumes no text outside
+   * {@link IEvidenceTagContext.documentation}. It preserves multiline tag
+   * bodies, ignores apparent tags inside fenced code or HTML comments, and
+   * flushes a pending annotation at every boundary that makes continuation
+   * impossible. Invalid tags become diagnostics rather than aborting sibling
+   * tags.
    */
   export function parse(context: IEvidenceTagContext): IEvidenceTagParseResult {
     validate(context);
@@ -36,7 +39,8 @@ export namespace EvidenceTagProgrammer {
     );
     const input: string = characters.join("");
     const lines: string[] = input.split("\n");
-    const documentBaseline: number = EvidenceDocumentationExamples.baseline(input);
+    const documentBaseline: number =
+      EvidenceDocumentationExamples.baseline(input);
     let cursor = 0;
     for (const rawLine of lines) {
       const line = rawLine.trim();

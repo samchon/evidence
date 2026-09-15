@@ -25,7 +25,7 @@ export interface IEvidenceSwaggerOperation {
   /**
    * Provides the stable public address in `METHOD:/path` form.
    *
-   * evidence tags resolve operations through this combined method-and-path
+   * Evidence tags resolve operations through this combined method-and-path
    * identity.
    */
   target: string;

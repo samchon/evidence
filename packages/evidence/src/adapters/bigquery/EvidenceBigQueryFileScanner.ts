@@ -117,7 +117,8 @@ export class EvidenceBigQueryFileScanner {
   /**
    * Publishes a table only when its full schema is declared in this statement.
    *
-   * Query-derived and inferred schemas cannot define a reliable evidence inventory.
+   * Query-derived and inferred schemas cannot define a reliable evidence
+   * inventory.
    */
   private table(node: EvidenceNode): void {
     const name = node.childForFieldName("table_name");
@@ -337,7 +338,9 @@ export class EvidenceBigQueryFileScanner {
   ): void {
     const target = reference.childForFieldName("referenced_table_name");
     const path =
-      target === null ? undefined : EvidenceBigQueryIdentifier.table(target.text);
+      target === null
+        ? undefined
+        : EvidenceBigQueryIdentifier.table(target.text);
     const list = reference.childForFieldName("referenced_column_list");
     const endpoints =
       list === null
@@ -397,7 +400,10 @@ export class EvidenceBigQueryFileScanner {
    * Restricting the search to this node prevents nested or unrelated strings
    * becoming documentation.
    */
-  private options(node: EvidenceNode, declaration: IEvidenceSqlDeclaration): void {
+  private options(
+    node: EvidenceNode,
+    declaration: IEvidenceSqlDeclaration,
+  ): void {
     const clause = node.namedChildren.find(
       (child) => child.type === "option_clause",
     );

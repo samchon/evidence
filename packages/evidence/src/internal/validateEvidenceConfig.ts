@@ -96,7 +96,8 @@ export function validateEvidenceConfig(
  * Requires each configured artifact type to have a complete certified adapter.
  *
  * Configuration validation uses the registry-backed artifact list rather than
- * accepting a parser grammar that cannot produce a supported evidence inventory.
+ * accepting a parser grammar that cannot produce a supported evidence
+ * inventory.
  */
 function validateArtifactType(
   problems: string[],

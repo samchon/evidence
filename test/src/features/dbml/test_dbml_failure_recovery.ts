@@ -1,4 +1,8 @@
-import { EvidenceDbmlAdapter, EvidenceInventory, EvidenceFingerprint } from "evidence";
+import {
+  EvidenceDbmlAdapter,
+  EvidenceInventory,
+  EvidenceFingerprint,
+} from "evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -54,7 +58,10 @@ export async function test_dbml_failure_recovery(): Promise<void> {
   }
   const inaccessible = await adapter.analyze(
     EvidenceTestSourceSnapshot.fail(
-      EvidenceTestSourceSnapshot.create("schema.dbml", "Table users { id int }"),
+      EvidenceTestSourceSnapshot.create(
+        "schema.dbml",
+        "Table users { id int }",
+      ),
       {
         code: "path-unreadable",
         path: "/project/schema.dbml",

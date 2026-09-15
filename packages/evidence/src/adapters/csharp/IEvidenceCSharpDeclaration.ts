@@ -10,8 +10,8 @@ import type { IEvidenceCSharpDeclarationAddress } from "./IEvidenceCSharpDeclara
  *
  * `EvidenceCSharpFileScanner` creates this record with the declaration's
  * syntax-derived identity, addresses, visibility inputs, and documentation
- * site. `EvidenceCSharpAdapter` groups compatible records into semantic units, so
- * partial declarations and overloads can retain their distinct source
+ * site. `EvidenceCSharpAdapter` groups compatible records into semantic units,
+ * so partial declarations and overloads can retain their distinct source
  * attachments while sharing one unit.
  */
 export interface IEvidenceCSharpDeclaration {

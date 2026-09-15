@@ -92,7 +92,9 @@ export class EvidenceConfigDependencyScanner {
       );
       this.watch(logical, false);
       this.watch(EvidenceSourcePath.slash(path.dirname(logical)), true);
-      const physical: string = EvidenceSourcePath.slash(await realpath(logical));
+      const physical: string = EvidenceSourcePath.slash(
+        await realpath(logical),
+      );
       this.watch(physical, false);
       this.watch(EvidenceSourcePath.slash(path.dirname(physical)), true);
       this.configMode = await this.moduleMode(physical);
@@ -137,11 +139,12 @@ export class EvidenceConfigDependencyScanner {
     if (type === undefined) return;
     const content = await readFile(physical, "utf8");
     const mode: EvidenceConfigModuleMode = await this.staticMode(physical);
-    const specifiers: IEvidenceConfigModuleSpecifier[] = await this.parser.parse(
-      { type, file: physical, content },
-      (session: EvidenceParseSession): IEvidenceConfigModuleSpecifier[] =>
-        collectSpecifiers(session, mode, type),
-    );
+    const specifiers: IEvidenceConfigModuleSpecifier[] =
+      await this.parser.parse(
+        { type, file: physical, content },
+        (session: EvidenceParseSession): IEvidenceConfigModuleSpecifier[] =>
+          collectSpecifiers(session, mode, type),
+      );
     for (const request of specifiers)
       for (const resolved of await this.resolve(physical, request))
         await this.scanFile(resolved);
@@ -363,7 +366,10 @@ export class EvidenceConfigDependencyScanner {
         path.join(nodeModules, packageName),
       );
       this.watch(nodeModules, true);
-      this.watch(EvidenceSourcePath.slash(path.dirname(packageDirectory)), true);
+      this.watch(
+        EvidenceSourcePath.slash(path.dirname(packageDirectory)),
+        true,
+      );
       this.watch(packageDirectory, false);
       try {
         if ((await stat(packageDirectory)).isDirectory())
@@ -503,7 +509,10 @@ export class EvidenceConfigDependencyScanner {
         path.join(nodeModules, packageName),
       );
       this.watch(nodeModules, true);
-      this.watch(EvidenceSourcePath.slash(path.dirname(packageDirectory)), true);
+      this.watch(
+        EvidenceSourcePath.slash(path.dirname(packageDirectory)),
+        true,
+      );
       this.watch(packageDirectory, false);
       try {
         if ((await stat(packageDirectory)).isDirectory())
@@ -689,7 +698,9 @@ export class EvidenceConfigDependencyScanner {
    * executes.
    */
   private async resolveRuntimeIndex(directory: string): Promise<string[]> {
-    const base: string = EvidenceSourcePath.slash(path.join(directory, "index"));
+    const base: string = EvidenceSourcePath.slash(
+      path.join(directory, "index"),
+    );
     for (const extension of [".js", ".json", ".node"]) {
       const candidate: string = base + extension;
       this.watch(candidate, false);
@@ -755,7 +766,9 @@ export class EvidenceConfigDependencyScanner {
  * removes that decoded marker before applying the same field-shape validation
  * on every fresh resolution cycle.
  */
-function parseResolutionManifest(input: string): IEvidenceConfigResolutionManifest {
+function parseResolutionManifest(
+  input: string,
+): IEvidenceConfigResolutionManifest {
   return typia.json.assertParse<IEvidenceConfigResolutionManifest>(
     packageJson(input),
   );
@@ -768,7 +781,9 @@ function parseResolutionManifest(input: string): IEvidenceConfigResolutionManife
  * config and its dependencies cannot disagree about a BOM-prefixed boundary.
  */
 function parsePackageScope(input: string): IEvidenceConfigPackageScope {
-  return typia.json.assertParse<IEvidenceConfigPackageScope>(packageJson(input));
+  return typia.json.assertParse<IEvidenceConfigPackageScope>(
+    packageJson(input),
+  );
 }
 
 /**
@@ -894,7 +909,9 @@ function collectSpecifiers(
  * runtime. Other expressions require value flow and remain outside static
  * dependency discovery, while dynamic `import` stays dedicated syntax.
  */
-function moduleLoader(callee: Node | null): EvidenceConfigModuleMode | undefined {
+function moduleLoader(
+  callee: Node | null,
+): EvidenceConfigModuleMode | undefined {
   if (callee?.text === "import") return "import";
   let expression: Node | undefined = callee ?? undefined;
   while (expression !== undefined) {
@@ -1173,7 +1190,8 @@ function strictDirective(scope: Node): boolean {
     if (statement.type !== "expression_statement") return false;
     const expression: Node | undefined = statement.namedChildren[0];
     if (expression?.type !== "string") return false;
-    if (EvidenceEcmaScriptSyntax.module(expression) === "use strict") return true;
+    if (EvidenceEcmaScriptSyntax.module(expression) === "use strict")
+      return true;
   }
   return false;
 }

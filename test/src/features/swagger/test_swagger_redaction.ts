@@ -1,4 +1,8 @@
-import { EvidenceCommand, EvidenceSwaggerAdapter, EvidenceWatcher } from "evidence";
+import {
+  EvidenceCommand,
+  EvidenceSwaggerAdapter,
+  EvidenceWatcher,
+} from "evidence";
 import type {
   EvidenceWatchCycle,
   IEvidenceCommandResult,

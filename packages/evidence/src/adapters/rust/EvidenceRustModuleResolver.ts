@@ -31,9 +31,15 @@ export class EvidenceRustModuleResolver {
     string,
     Map<string, IEvidenceRustExportRecord[]>
   >();
-  private readonly externalTargets = new Map<string, IEvidenceRustFileAnalysis>();
+  private readonly externalTargets = new Map<
+    string,
+    IEvidenceRustFileAnalysis
+  >();
   private readonly identities = new Map<string, string>();
-  private readonly implMembers = new Map<string, IEvidenceRustResolvedMember[]>();
+  private readonly implMembers = new Map<
+    string,
+    IEvidenceRustResolvedMember[]
+  >();
   private readonly modules = new Map<string, IEvidenceRustModuleRecord>();
   private readonly placements = new Map<string, IEvidenceRustFilePlacement>();
   private readonly published = new Map<string, string>();

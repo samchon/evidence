@@ -2,10 +2,10 @@
  * Records one scanner-approved ownership link from XML documentation to a C#
  * declaration site.
  *
- * IEvidenceCSharpDocumentation stores these physical links while parsing is still
- * close to source syntax. EvidenceCSharpAdapter resolves the declaration record to
- * a published semantic unit and groups links by site when it creates Evidence
- * hosts.
+ * IEvidenceCSharpDocumentation stores these physical links while parsing is
+ * still close to source syntax. EvidenceCSharpAdapter resolves the declaration
+ * record to a published semantic unit and groups links by site when it creates
+ * Evidence hosts.
  */
 export interface IEvidenceCSharpDocumentationAttachment {
   /**

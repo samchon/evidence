@@ -84,7 +84,9 @@ export namespace EvidenceJavaSyntax {
     };
   }
 
-  export function string(node: EvidenceNode): IEvidenceCommentSyntax | undefined {
+  export function string(
+    node: EvidenceNode,
+  ): IEvidenceCommentSyntax | undefined {
     if (node.type !== "string_literal") return undefined;
     const delimiter = node.text.startsWith('"""') ? '"""' : '"';
     return {

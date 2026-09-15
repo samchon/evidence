@@ -51,7 +51,9 @@ export class EvidenceSqlInventoryMaterializer {
    * resolution precedes public grouping and annotation attachment, and native
    * parser resources close in cleanup after accepted scans settle.
    */
-  public async analyze(snapshot: IEvidenceSourceSnapshot): Promise<IEvidenceInventory> {
+  public async analyze(
+    snapshot: IEvidenceSourceSnapshot,
+  ): Promise<IEvidenceInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidenceInventory = {
       schemaVersion: 1,
@@ -111,7 +113,8 @@ export class EvidenceSqlInventoryMaterializer {
         (session) => this.options.scan(session, source),
       );
     } catch (cause) {
-      const parserError = cause instanceof EvidenceParserError ? cause : undefined;
+      const parserError =
+        cause instanceof EvidenceParserError ? cause : undefined;
       return {
         source,
         declarations: [],

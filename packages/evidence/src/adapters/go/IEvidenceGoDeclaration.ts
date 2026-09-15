@@ -6,8 +6,9 @@ import type { EvidenceGoDeclarationForm } from "./EvidenceGoDeclarationForm";
  * Records one exported Go declaration before package-wide ownership is
  * resolved.
  *
- * EvidenceGoFileScanner creates these physical records, and EvidenceGoPackageResolver
- * combines compatible records into the semantic units that evidence publishes.
+ * EvidenceGoFileScanner creates these physical records, and
+ * EvidenceGoPackageResolver combines compatible records into the semantic units
+ * that evidence publishes.
  */
 export interface IEvidenceGoDeclaration {
   /**

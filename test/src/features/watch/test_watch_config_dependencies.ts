@@ -62,7 +62,9 @@ export async function test_watch_config_dependencies(): Promise<void> {
     async (directory: string): Promise<void> => {
       // Static local imports contribute their exact resolved source file.
       const scanner: EvidenceConfigDependencyScanner =
-        new EvidenceConfigDependencyScanner(join(directory, "evidence.config.ts"));
+        new EvidenceConfigDependencyScanner(
+          join(directory, "evidence.config.ts"),
+        );
       const dependencies: IEvidenceSourceDependency[] = await scanner.scan();
       TestValidator.predicate(
         "static helper discovered",
@@ -313,8 +315,9 @@ export async function test_watch_config_dependencies(): Promise<void> {
       );
       TestValidator.equals(
         "later literals are not dependencies",
-        literalDependencies.some((dependency: IEvidenceSourceDependency): boolean =>
-          dependency.path.includes("missing-later-literal"),
+        literalDependencies.some(
+          (dependency: IEvidenceSourceDependency): boolean =>
+            dependency.path.includes("missing-later-literal"),
         ),
         false,
       );
@@ -383,8 +386,9 @@ export async function test_watch_config_dependencies(): Promise<void> {
       );
       TestValidator.equals(
         "imported require call omitted",
-        importDependencies.some((dependency: IEvidenceSourceDependency): boolean =>
-          dependency.path.includes("missing-import"),
+        importDependencies.some(
+          (dependency: IEvidenceSourceDependency): boolean =>
+            dependency.path.includes("missing-import"),
         ),
         false,
       );
@@ -502,8 +506,9 @@ export async function test_watch_config_dependencies(): Promise<void> {
         await new EvidenceConfigDependencyScanner(dataConfig).scan();
       TestValidator.equals(
         "data URL adds no filesystem dependency",
-        dataDependencies.some((dependency: IEvidenceSourceDependency): boolean =>
-          dependency.path.includes("data:text"),
+        dataDependencies.some(
+          (dependency: IEvidenceSourceDependency): boolean =>
+            dependency.path.includes("data:text"),
         ),
         false,
       );
@@ -521,8 +526,9 @@ export async function test_watch_config_dependencies(): Promise<void> {
         ).scan();
       TestValidator.equals(
         "JSON and Wasm data URLs are dependency leaves",
-        leafDependencies.some((dependency: IEvidenceSourceDependency): boolean =>
-          dependency.path.includes("data:"),
+        leafDependencies.some(
+          (dependency: IEvidenceSourceDependency): boolean =>
+            dependency.path.includes("data:"),
         ),
         false,
       );

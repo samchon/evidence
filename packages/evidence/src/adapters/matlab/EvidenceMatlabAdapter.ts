@@ -46,7 +46,9 @@ export class EvidenceMatlabAdapter implements IEvidenceAdapter<"matlab"> {
    * comment hosts. Failed source discovery or parsing remains an incomplete
    * result.
    */
-  public async analyze(snapshot: IEvidenceSourceSnapshot): Promise<IEvidenceInventory> {
+  public async analyze(
+    snapshot: IEvidenceSourceSnapshot,
+  ): Promise<IEvidenceInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidenceInventory = {
       schemaVersion: 1,
@@ -106,7 +108,8 @@ export class EvidenceMatlabAdapter implements IEvidenceAdapter<"matlab"> {
         (session) => new EvidenceMatlabFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError = cause instanceof EvidenceParserError ? cause : undefined;
+      const parserError =
+        cause instanceof EvidenceParserError ? cause : undefined;
       return {
         source,
         declarations: [],

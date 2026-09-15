@@ -144,7 +144,10 @@ function requireHost(inventory: IEvidenceInventory, id: string): IEvidenceHost {
   return host;
 }
 
-function requireUnit(inventory: IEvidenceInventory, identity: string): IEvidenceUnit {
+function requireUnit(
+  inventory: IEvidenceInventory,
+  identity: string,
+): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.at(-1) === identity,
   );

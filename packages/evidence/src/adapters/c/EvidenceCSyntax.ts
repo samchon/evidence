@@ -85,7 +85,9 @@ export namespace EvidenceCSyntax {
     return /^(?:_Static_assert|static_assert)\s*\(/u.test(node.text);
   }
 
-  export function guardedDeclarations(node: EvidenceNode): EvidenceNode[] | undefined {
+  export function guardedDeclarations(
+    node: EvidenceNode,
+  ): EvidenceNode[] | undefined {
     if (node.type !== "preproc_ifdef" || !/^#\s*ifndef\b/u.test(node.text))
       return undefined;
     if (node.childForFieldName("alternative") !== null) return undefined;
@@ -156,7 +158,9 @@ export namespace EvidenceCSyntax {
     };
   }
 
-  export function string(node: EvidenceNode): IEvidenceCommentSyntax | undefined {
+  export function string(
+    node: EvidenceNode,
+  ): IEvidenceCommentSyntax | undefined {
     if (node.type !== "string_literal") return undefined;
     const prefix = /^(?:u8|u|U|L)?"/u.exec(node.text)?.[0];
     return prefix === undefined

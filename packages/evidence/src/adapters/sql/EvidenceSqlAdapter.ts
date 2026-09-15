@@ -38,7 +38,9 @@ export class EvidenceSqlAdapter implements IEvidenceAdapter<"sql"> {
    * No dialect probing occurs: the fixed portable scanner remains responsible
    * for syntax interpretation while the shared materializer publishes records.
    */
-  public analyze(snapshot: IEvidenceSourceSnapshot): Promise<IEvidenceInventory> {
+  public analyze(
+    snapshot: IEvidenceSourceSnapshot,
+  ): Promise<IEvidenceInventory> {
     return this.materializer.analyze(snapshot);
   }
 }

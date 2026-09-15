@@ -6,8 +6,9 @@ import type { EvidenceRubyVisibility } from "./EvidenceRubyVisibility";
 /**
  * Carries mutable lexical state while scanning one Ruby scope.
  *
- * EvidenceRubyFileScanner updates this record as visibility and `module_function`
- * change, so members receive the state in effect at their own source position.
+ * EvidenceRubyFileScanner updates this record as visibility and
+ * `module_function` change, so members receive the state in effect at their own
+ * source position.
  */
 export interface IEvidenceRubyScopeContext {
   /**

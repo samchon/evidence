@@ -21,8 +21,8 @@ import { EvidenceSourceText } from "../../internal/EvidenceSourceText";
 /**
  * Extracts explicit C declarations and Doxygen without preprocessing source.
  *
- * It records physical declaration and attachment facts for `EvidenceCAdapter` to
- * reconcile; it never infers declarations from included or expanded source.
+ * It records physical declaration and attachment facts for `EvidenceCAdapter`
+ * to reconcile; it never infers declarations from included or expanded source.
  */
 export class EvidenceCFileScanner {
   private readonly declarations: IEvidenceCDeclaration[] = [];
@@ -106,7 +106,8 @@ export class EvidenceCFileScanner {
           this.preprocessorDirective(item);
         return;
       case "expression_statement":
-        if (!EvidenceCSyntax.isStaticAssertion(item)) this.macroDeclaration(item);
+        if (!EvidenceCSyntax.isStaticAssertion(item))
+          this.macroDeclaration(item);
         return;
       default:
         this.problem(
@@ -372,7 +373,10 @@ export class EvidenceCFileScanner {
     }
   }
 
-  private scanEnumerators(body: EvidenceNode, owner: IEvidenceCTypeContext): void {
+  private scanEnumerators(
+    body: EvidenceNode,
+    owner: IEvidenceCTypeContext,
+  ): void {
     for (const item of body.namedChildren)
       switch (item.type) {
         case "comment":

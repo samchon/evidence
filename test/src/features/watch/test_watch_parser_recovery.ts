@@ -30,7 +30,9 @@ import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
  */
 export async function test_watch_parser_recovery(): Promise<void> {
   const grammar = await new EvidenceTreeSitterAssets().grammar("python");
-  const configGrammar = await new EvidenceTreeSitterAssets().grammar("typescript");
+  const configGrammar = await new EvidenceTreeSitterAssets().grammar(
+    "typescript",
+  );
   const pinned = Uint8Array.from(await EvidenceTestParserAssets.bytes(grammar));
   const configPinned = Uint8Array.from(
     await EvidenceTestParserAssets.bytes(configGrammar),

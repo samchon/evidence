@@ -6,8 +6,9 @@ import type { IEvidenceSourceRange } from "../structures/IEvidenceSourceRange";
  * Converts web-tree-sitter UTF-16, zero-based coordinates into evidence source
  * ranges.
  *
- * Adapters use this boundary to preserve parser offsets while exposing evidence's
- * one-based line and column positions for diagnostics, hosts, and unit sites.
+ * Adapters use this boundary to preserve parser offsets while exposing
+ * evidence's one-based line and column positions for diagnostics, hosts, and
+ * unit sites.
  */
 export namespace EvidenceTreeSitterRange {
   /**

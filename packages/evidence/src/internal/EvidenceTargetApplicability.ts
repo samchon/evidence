@@ -113,7 +113,10 @@ function affinity(
  * An exact source address may be reachable through multiple configured
  * spellings, each of which can make a target applicable.
  */
-function parseFileTargets(target: string, host: IEvidenceHost): IEvidenceAddress[] {
+function parseFileTargets(
+  target: string,
+  host: IEvidenceHost,
+): IEvidenceAddress[] {
   const output: IEvidenceAddress[] = [];
   for (const origin of host.origins ?? [host.file])
     try {

@@ -61,7 +61,9 @@ export async function test_config_json(): Promise<void> {
       );
       TestValidator.equals("JSON config anchoring", fromJson.configFile, json);
 
-      const dependencies = await new EvidenceConfigDependencyScanner(json).scan();
+      const dependencies = await new EvidenceConfigDependencyScanner(
+        json,
+      ).scan();
       TestValidator.predicate(
         "JSON strings are not imports",
         dependencies.every((entry) => !entry.path.includes("missing-module")),

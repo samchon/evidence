@@ -45,7 +45,9 @@ export class EvidenceBigQueryAdapter implements IEvidenceAdapter<"bigquery"> {
    * The configured grammar controls interpretation even when input shares the
    * `.sql` suffix with other database families.
    */
-  public analyze(snapshot: IEvidenceSourceSnapshot): Promise<IEvidenceInventory> {
+  public analyze(
+    snapshot: IEvidenceSourceSnapshot,
+  ): Promise<IEvidenceInventory> {
     return this.materializer.analyze(snapshot);
   }
 }

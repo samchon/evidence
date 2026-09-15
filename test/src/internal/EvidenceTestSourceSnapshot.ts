@@ -1,4 +1,7 @@
-import type { IEvidenceSourceDiagnostic, IEvidenceSourceSnapshot } from "evidence";
+import type {
+  IEvidenceSourceDiagnostic,
+  IEvidenceSourceSnapshot,
+} from "evidence";
 import { createHash } from "node:crypto";
 
 /**

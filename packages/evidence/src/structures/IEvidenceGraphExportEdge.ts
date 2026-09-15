@@ -28,7 +28,8 @@ export interface IEvidenceGraphExportEdge {
   /**
    * Accepted acknowledgement form determining the cited scope.
    *
-   * evidence and exclusion variants retain their authored distinction in export.
+   * Evidence and exclusion variants retain their authored distinction in
+   * export.
    */
   kind: EvidenceAcknowledgementKind;
 

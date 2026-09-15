@@ -15,7 +15,8 @@ import { EvidenceEcmaScriptAdapter } from "../ecmascript/EvidenceEcmaScriptAdapt
  * assignments are outside this adapter's supported publication boundary.
  *
  * @example
- *   const adapter: EvidenceTypeScriptAdapter = new EvidenceTypeScriptAdapter();
+ *   const adapter: EvidenceTypeScriptAdapter =
+ *     new EvidenceTypeScriptAdapter();
  *   const inventory: IEvidenceInventory = await adapter.analyze(snapshot);
  *   // api.ts#Client.prototype.send names an instance method.
  *   // api.ts#Client.create names a static member.

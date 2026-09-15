@@ -7,8 +7,8 @@ import type { IEvidenceCDocumentation } from "./IEvidenceCDocumentation";
 /**
  * Reads C Doxygen documentation while masking embedded source examples.
  *
- * The C adapter uses this wrapper around the shared reader so evidence tags in code
- * and preformatted examples cannot be mistaken for documentation claims.
+ * The C adapter uses this wrapper around the shared reader so evidence tags in
+ * code and preformatted examples cannot be mistaken for documentation claims.
  */
 export namespace EvidenceCDocumentation {
   /**

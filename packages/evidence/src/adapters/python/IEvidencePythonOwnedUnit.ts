@@ -9,7 +9,7 @@ import type { IEvidenceUnit } from "../../structures/IEvidenceUnit";
  */
 export interface IEvidencePythonOwnedUnit {
   /**
-   * evidence unit with semantic identity, source position, and parent relation.
+   * Evidence unit with semantic identity, source position, and parent relation.
    *
    * The adapter publishes only units reachable from a supported module export.
    */

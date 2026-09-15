@@ -28,8 +28,8 @@ export interface IEvidencePhpDocumentation {
   /**
    * Delimiter and tag-boundary rules used to map the carrier's text.
    *
-   * EvidencePhpDocumentation also uses this classification to mask examples without
-   * moving offsets.
+   * EvidencePhpDocumentation also uses this classification to mask examples
+   * without moving offsets.
    */
   syntax: IEvidenceCommentSyntax;
 

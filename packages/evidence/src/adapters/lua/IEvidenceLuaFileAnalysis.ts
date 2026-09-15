@@ -22,8 +22,8 @@ export interface IEvidenceLuaFileAnalysis {
    * Lists declarations and alias projections established by supported static
    * initialization.
    *
-   * `EvidenceLuaAdapter` reconciles these node-free records into public units after
-   * scanning ends.
+   * `EvidenceLuaAdapter` reconciles these node-free records into public units
+   * after scanning ends.
    */
   declarations: IEvidenceLuaDeclaration[];
 

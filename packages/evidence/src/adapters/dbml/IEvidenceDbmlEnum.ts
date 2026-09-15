@@ -3,8 +3,8 @@ import type { IEvidenceSourceRange } from "../../structures/IEvidenceSourceRange
 /**
  * Retains DBML enum semantics that affect dependent table fingerprints.
  *
- * Enums are not independently selectable evidence units, so their semantic content
- * travels with declarations that refer to them.
+ * Enums are not independently selectable evidence units, so their semantic
+ * content travels with declarations that refer to them.
  */
 export interface IEvidenceDbmlEnum {
   /**

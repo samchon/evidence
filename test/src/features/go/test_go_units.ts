@@ -158,7 +158,10 @@ export async function test_go_units(): Promise<void> {
   );
 }
 
-function requireUnit(inventory: IEvidenceInventory, name: string): IEvidenceUnit {
+function requireUnit(
+  inventory: IEvidenceInventory,
+  name: string,
+): IEvidenceUnit {
   const unit = inventory.units.find((candidate) => candidate.name === name);
   if (unit === undefined) throw new Error(`Missing Go unit: ${name}`);
   return unit;

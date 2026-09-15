@@ -275,7 +275,9 @@ export class EvidencePostgresqlFileScanner {
       (child) => child.type === "object_reference",
     );
     const identity =
-      target === undefined ? undefined : EvidencePostgresqlIdentity.path(target);
+      target === undefined
+        ? undefined
+        : EvidencePostgresqlIdentity.path(target);
     const targetIndex =
       target === undefined
         ? -1
@@ -319,7 +321,9 @@ export class EvidencePostgresqlFileScanner {
       (child) => child.type === "object_reference",
     );
     const identity =
-      target === undefined ? undefined : EvidencePostgresqlIdentity.path(target);
+      target === undefined
+        ? undefined
+        : EvidencePostgresqlIdentity.path(target);
     if (identity?.length !== 2) {
       this.problem(
         node,
@@ -419,7 +423,9 @@ export class EvidencePostgresqlFileScanner {
       (child) => child.type === "object_reference",
     );
     const identity =
-      target === undefined ? undefined : EvidencePostgresqlIdentity.path(target);
+      target === undefined
+        ? undefined
+        : EvidencePostgresqlIdentity.path(target);
     const literal = node.namedChildren.find(
       (child) => child.type === "literal",
     );

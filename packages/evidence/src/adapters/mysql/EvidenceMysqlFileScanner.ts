@@ -70,7 +70,11 @@ export namespace EvidenceMysqlFileScanner {
               });
       for (const range of ranges) {
         const id = `${source.id}:mysql-comment:${range.start.offset}`;
-        const mapped = EvidenceMysqlDocumentation.read(source.content, range, id);
+        const mapped = EvidenceMysqlDocumentation.read(
+          source.content,
+          range,
+          id,
+        );
         if (mapped === undefined) {
           analysis.complete = false;
           analysis.diagnostics.push({

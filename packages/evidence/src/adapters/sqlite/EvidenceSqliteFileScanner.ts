@@ -212,7 +212,9 @@ export class EvidenceSqliteFileScanner {
     if (
       local.length === 0 ||
       target === undefined ||
-      local.some((name) => !columns.includes(EvidenceSqliteSyntax.fold(name))) ||
+      local.some(
+        (name) => !columns.includes(EvidenceSqliteSyntax.fold(name)),
+      ) ||
       (endpoints.length !== 0 && endpoints.length !== local.length)
     ) {
       this.incomplete(

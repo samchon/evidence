@@ -151,7 +151,10 @@ export async function test_ruby_units(): Promise<void> {
   TestValidator.equals("Ruby accessor property site", status.sites.length, 1);
 }
 
-function requireUnit(inventory: IEvidenceInventory, identity: string): IEvidenceUnit {
+function requireUnit(
+  inventory: IEvidenceInventory,
+  identity: string,
+): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.join(".") === identity,
   );

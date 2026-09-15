@@ -76,7 +76,9 @@ async function main() {
         }),
       ].join("\n"),
     );
-  console.log(`Verified compiled output for ${sources.length} evidence sources.`);
+  console.log(
+    `Verified compiled output for ${sources.length} evidence sources.`,
+  );
 }
 
 void main().catch(function reportFailure(error) {

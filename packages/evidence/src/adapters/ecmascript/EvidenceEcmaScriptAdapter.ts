@@ -72,7 +72,9 @@ export abstract class EvidenceEcmaScriptAdapter<
    * available, and failures remain in completeness and diagnostics. Native
    * parser resources close whether publication succeeds or throws.
    */
-  public async analyze(snapshot: IEvidenceSourceSnapshot): Promise<IEvidenceInventory> {
+  public async analyze(
+    snapshot: IEvidenceSourceSnapshot,
+  ): Promise<IEvidenceInventory> {
     const input = structuredClone(typia.assert(snapshot));
     // JavaScript export semantics depend on package scope as well as syntax.
     // Capture that dependency before choosing a file scanner's module mode.
@@ -222,7 +224,8 @@ export abstract class EvidenceEcmaScriptAdapter<
           ).scan(),
       );
     } catch (cause) {
-      const parserError = cause instanceof EvidenceParserError ? cause : undefined;
+      const parserError =
+        cause instanceof EvidenceParserError ? cause : undefined;
       return {
         source,
         mode,

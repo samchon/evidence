@@ -1,8 +1,8 @@
 /**
  * One resolved model member returned by Prisma's schema parser.
  *
- * This reduced parser payload contains only information that affects evidence unit
- * selection, documentation, and fingerprints.
+ * This reduced parser payload contains only information that affects evidence
+ * unit selection, documentation, and fingerprints.
  */
 export interface IEvidencePrismaDatamodelField {
   /**

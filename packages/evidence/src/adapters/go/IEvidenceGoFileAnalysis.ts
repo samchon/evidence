@@ -6,8 +6,9 @@ import type { IEvidenceGoDocumentation } from "./IEvidenceGoDocumentation";
 /**
  * Stores a node-free extraction of one Go source file after parsing closes.
  *
- * EvidenceGoAdapter collects these file fragments, while EvidenceGoPackageResolver uses
- * their directory and package context to publish package-wide Evidence units.
+ * EvidenceGoAdapter collects these file fragments, while
+ * EvidenceGoPackageResolver uses their directory and package context to publish
+ * package-wide Evidence units.
  */
 export interface IEvidenceGoFileAnalysis {
   /**

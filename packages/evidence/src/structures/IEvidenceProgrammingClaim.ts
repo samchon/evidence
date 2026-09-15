@@ -11,7 +11,7 @@ import type { IEvidenceClaimBase } from "./IEvidenceClaimBase";
  * recognizing an exclusion authored on another eligible declaration in the
  * selected files.
  *
- * - evidence needs a target, a nonempty reason, and a selected declaration host.
+ * - Evidence needs a target, a nonempty reason, and a selected declaration host.
  * - Exclusions may use any supported public declaration in a selected file,
  *   regardless of the claim's symbol selector.
  * - Unsupported or unexported declarations host neither form. A TypeScript

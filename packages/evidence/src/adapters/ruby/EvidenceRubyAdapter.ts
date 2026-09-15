@@ -46,7 +46,9 @@ export class EvidenceRubyAdapter implements IEvidenceAdapter<"ruby"> {
    * materialized. Source and scan diagnostics are retained, and parser cleanup
    * runs on every exit.
    */
-  public async analyze(snapshot: IEvidenceSourceSnapshot): Promise<IEvidenceInventory> {
+  public async analyze(
+    snapshot: IEvidenceSourceSnapshot,
+  ): Promise<IEvidenceInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidenceInventory = {
       schemaVersion: 1,
@@ -105,7 +107,8 @@ export class EvidenceRubyAdapter implements IEvidenceAdapter<"ruby"> {
         (session) => new EvidenceRubyFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError = cause instanceof EvidenceParserError ? cause : undefined;
+      const parserError =
+        cause instanceof EvidenceParserError ? cause : undefined;
       return {
         source,
         declarations: [],

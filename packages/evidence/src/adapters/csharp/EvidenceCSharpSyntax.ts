@@ -7,9 +7,9 @@ import type { EvidenceCSharpAccessibility } from "./EvidenceCSharpAccessibility"
  * Provides C# grammar helpers for names, modifiers, documentation, and special
  * members.
  *
- * EvidenceCSharpFileScanner uses these helpers to classify source constructs and
- * preserve C# accessibility and member spelling before it builds declaration
- * records.
+ * EvidenceCSharpFileScanner uses these helpers to classify source constructs
+ * and preserve C# accessibility and member spelling before it builds
+ * declaration records.
  */
 export namespace EvidenceCSharpSyntax {
   export function name(node: EvidenceNode | null): string | undefined {
@@ -58,7 +58,9 @@ export namespace EvidenceCSharpSyntax {
     return node.children.some((child) => child.type === token);
   }
 
-  export function accessibility(node: EvidenceNode): EvidenceCSharpAccessibility {
+  export function accessibility(
+    node: EvidenceNode,
+  ): EvidenceCSharpAccessibility {
     const modifiers = new Set(
       node.namedChildren
         .filter((child) => child.type === "modifier")
@@ -123,7 +125,9 @@ export namespace EvidenceCSharpSyntax {
     return `operator ${checked ? "checked " : ""}${operator.text}`;
   }
 
-  export function conversionOperatorName(node: EvidenceNode): string | undefined {
+  export function conversionOperatorName(
+    node: EvidenceNode,
+  ): string | undefined {
     const type = node.childForFieldName("type");
     if (type === null) return undefined;
     const conversion = node.children.some((child) => child.type === "implicit")
@@ -137,7 +141,9 @@ export namespace EvidenceCSharpSyntax {
       : `${conversion} operator ${checked ? "checked " : ""}${normalize(type.text)}`;
   }
 
-  export function string(node: EvidenceNode): IEvidenceCommentSyntax | undefined {
+  export function string(
+    node: EvidenceNode,
+  ): IEvidenceCommentSyntax | undefined {
     const rawOpening = node.namedChildren.find(
       (child) => child.type === "raw_string_start",
     );

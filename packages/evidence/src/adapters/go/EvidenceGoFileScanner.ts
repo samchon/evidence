@@ -94,7 +94,9 @@ export class EvidenceGoFileScanner {
     this.collectLiteralAnnotations();
     return {
       source: this.source,
-      directory: EvidenceSourcePath.slash(path.dirname(this.source.physicalPath)),
+      directory: EvidenceSourcePath.slash(
+        path.dirname(this.source.physicalPath),
+      ),
       ...(packageName === undefined ? {} : { packageName }),
       testFile: this.source.physicalPath.endsWith("_test.go"),
       declarations: this.declarations,
@@ -234,7 +236,10 @@ export class EvidenceGoFileScanner {
       this.attachPreceding(position, declarationId, positionSite.id);
   }
 
-  private site(node: EvidenceNode, content: IEvidenceSourceRange[]): IEvidenceUnitSite {
+  private site(
+    node: EvidenceNode,
+    content: IEvidenceSourceRange[],
+  ): IEvidenceUnitSite {
     return {
       id: this.siteId(node),
       file: this.source.physicalPath,
