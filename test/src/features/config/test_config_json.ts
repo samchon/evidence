@@ -1,10 +1,13 @@
 import { TestValidator } from "@nestia/e2e";
-import { EvidConfigLoader, EvidCommand } from "evid";
+import {
+  EvidConfigDependencyScanner,
+  EvidConfigLoader,
+  EvidCommand,
+} from "evid";
 import type { IEvidConfig } from "evid";
 import assert from "node:assert/strict";
 import { join } from "node:path";
 
-import { EvidConfigDependencyScanner } from "evid";
 import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**

@@ -1,4 +1,4 @@
-import { EvidTargetResolver } from "evid";
+import { EvidSourceText, EvidTargetResolver } from "evid";
 import type {
   EvidAcknowledgementKind,
   IEvidDeclaration,
@@ -12,7 +12,6 @@ import type {
   IEvidTargetResolution,
   IEvidUnit,
 } from "evid";
-import { EvidSourceText } from "evid";
 
 /** Builds graph statements and already-resolved targets for pure policy tests. */
 export namespace EvidTestGraph {

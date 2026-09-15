@@ -7,6 +7,6 @@ coverage/
 .discussions/
 
 # Generated from the repository root by the package's prepack hook.
-/packages/evidence/README.md
-/packages/evidence/LICENSE
+/packages/evid/README.md
+/packages/evid/LICENSE
 /test/.tmp/

@@ -2,13 +2,13 @@ import {
   EvidJavaScriptAdapter,
   EvidLanguageRegistry,
   EvidSourceLoader,
+  EvidSourcePath,
 } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidSourcePath } from "evid";
 import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 

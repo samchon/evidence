@@ -1,6 +1,5 @@
-import { EvidDocumentation } from "evid";
+import { EvidDocumentation, EvidSourceText } from "evid";
 import type { IEvidCommentSyntax, IEvidHost } from "evid";
-import { EvidSourceText } from "evid";
 import type { IEvidTestDocumentation } from "./IEvidTestDocumentation";
 
 /**

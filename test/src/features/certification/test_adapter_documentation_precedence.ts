@@ -1,6 +1,7 @@
 import {
   EvidBigQueryAdapter,
   EvidChecker,
+  EvidDocumentationExamples,
   EvidMysqlAdapter,
   EvidPostgresqlAdapter,
   EvidSqlAdapter,
@@ -17,7 +18,6 @@ import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidDocumentationExamples } from "evid";
 import { EvidAdapterCertification } from "../../internal/certification/EvidAdapterCertification";
 import { EvidAdapterCertificationFixtures } from "../../internal/certification/EvidAdapterCertificationFixtures";
 import type { IEvidAdapterCertification } from "../../internal/certification/IEvidAdapterCertification";

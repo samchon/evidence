@@ -1,4 +1,4 @@
-import { EvidConfigLoader } from "evid";
+import { evaluateTypeScriptConfig, EvidConfigLoader } from "evid";
 import type { IEvidConfig } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
@@ -6,7 +6,6 @@ import { randomUUID } from "node:crypto";
 import { rm } from "node:fs/promises";
 import { join } from "node:path";
 
-import { evaluateTypeScriptConfig } from "evid";
 import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
