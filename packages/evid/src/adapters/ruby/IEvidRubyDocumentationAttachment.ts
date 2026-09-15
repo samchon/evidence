@@ -8,7 +8,7 @@ export interface IEvidRubyDocumentationAttachment {
   /**
    * Scanner identity of the declaration receiving this comment.
    *
-   * EvidRubyAdapterBase converts it to a published semantic unit before parsing
+   * EvidRubyAdapter converts it to a published semantic unit before parsing
    * tags.
    */
   declarationId: string;

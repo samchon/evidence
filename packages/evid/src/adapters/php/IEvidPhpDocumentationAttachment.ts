@@ -1,7 +1,7 @@
 /**
  * Links a PHPDoc carrier to one declaration at an adjacent source site.
  *
- * EvidPhpAdapterBase resolves this scanner-local relationship only after it has
+ * EvidPhpAdapter resolves this scanner-local relationship only after it has
  * created public units, allowing unsupported or private attachment to remain
  * visible.
  */

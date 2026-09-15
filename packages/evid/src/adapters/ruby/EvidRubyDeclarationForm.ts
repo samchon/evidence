@@ -2,7 +2,7 @@
  * Enumerates Ruby source forms retained until public units are materialized.
  *
  * EvidRubyFileScanner assigns the form to each lexical record.
- * EvidRubyAdapterBase uses it with runtime names and ownership to apply
+ * EvidRubyAdapter uses it with runtime names and ownership to apply
  * form-specific reopening and replacement rules.
  */
 export type EvidRubyDeclarationForm =

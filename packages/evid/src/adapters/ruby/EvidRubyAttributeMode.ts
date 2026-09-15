@@ -3,7 +3,7 @@
  * macro.
  *
  * EvidRubyFileScanner emits one declaration for each generated reader or
- * writer. EvidRubyAdapterBase uses this distinction to detect redefinitions
+ * writer. EvidRubyAdapter uses this distinction to detect redefinitions
  * without executing the macro.
  */
 export type EvidRubyAttributeMode = "read" | "write";

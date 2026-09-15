@@ -6,7 +6,7 @@ import type { IEvidPhpDocumentation } from "./IEvidPhpDocumentation";
 /**
  * Preserves one PHP file's serializable extraction after parsing.
  *
- * EvidPhpAdapterBase materializes its units only after all selected files have
+ * EvidPhpAdapter materializes its units only after all selected files have
  * yielded declarations, diagnostics, documentation carriers, and context for
  * digests.
  */

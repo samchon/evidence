@@ -7,7 +7,7 @@ import type { IEvidPythonDocumentationAttachment } from "./IEvidPythonDocumentat
  * Retains one Python docstring or adjacent comment run after parsing.
  *
  * The scanner keeps source coordinates and either a precomputed mapping or the
- * syntax needed to derive one. EvidPythonAdapterBase attaches the text only
+ * syntax needed to derive one. EvidPythonAdapter attaches the text only
  * after it knows which declarations are part of the public export surface.
  */
 export interface IEvidPythonDocumentation {

@@ -4,7 +4,7 @@ import type { EvidProgrammingSymbol } from "../../typings/EvidProgrammingSymbol"
 /**
  * Captures one PHP declaration before public inventory materialization.
  *
- * EvidPhpAdapterBase groups these lexical records into semantic units,
+ * EvidPhpAdapter groups these lexical records into semantic units,
  * retaining exact source spelling for public addresses while separately
  * normalizing identity.
  */
@@ -42,7 +42,7 @@ export interface IEvidPhpDeclaration {
   /**
    * Namespace and lexical-owner segments forming semantic identity.
    *
-   * EvidPhpAdapterBase applies PHP case rules to this path without changing
+   * EvidPhpAdapter applies PHP case rules to this path without changing
    * public spelling.
    */
   identity: string[];

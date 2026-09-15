@@ -12,7 +12,7 @@ import type { IEvidDatabaseAdapterCertificationUnit } from "../../internal/certi
  * BigQuery adapter must satisfy without deriving expected values from its own
  * syntax-tree output.
  */
-export namespace BigQueryCertificationFixture {
+export namespace EvidBigQueryCertificationFixture {
   /**
    * Creates the complete BigQuery adapter certification fixture.
    *

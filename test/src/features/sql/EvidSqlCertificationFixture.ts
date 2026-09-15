@@ -10,7 +10,7 @@ import type { IEvidDatabaseAdapterCertificationUnit } from "../../internal/certi
  * This fixture keeps expected declarations, diagnostics, and fingerprint
  * behavior independent of the SQL scanner output under test.
  */
-export namespace SqlCertificationFixture {
+export namespace EvidSqlCertificationFixture {
   /**
    * Creates the complete portable SQL adapter certification fixture.
    *

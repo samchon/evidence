@@ -1,7 +1,7 @@
 import { TestValidator } from "@nestia/e2e";
 
 import { EvidDatabaseAdapterCertification } from "../../internal/certification/EvidDatabaseAdapterCertification";
-import { BigQueryCertificationFixture } from "./BigQueryCertificationFixture";
+import { EvidBigQueryCertificationFixture } from "./EvidBigQueryCertificationFixture";
 
 /**
  * Certifies BigQuery inventory, graph, failure, fingerprint, and ambiguity
@@ -17,7 +17,7 @@ import { BigQueryCertificationFixture } from "./BigQueryCertificationFixture";
  * 3. Require inventory validation to reject each mutated report.
  */
 export async function test_bigquery_certification(): Promise<void> {
-  const fixture = BigQueryCertificationFixture.create();
+  const fixture = EvidBigQueryCertificationFixture.create();
   const inventory = await EvidDatabaseAdapterCertification.analyze(fixture);
   EvidDatabaseAdapterCertification.assertInventory(fixture, inventory);
   await EvidDatabaseAdapterCertification.assertGraph(fixture);

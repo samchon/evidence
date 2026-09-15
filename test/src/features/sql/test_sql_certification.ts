@@ -1,6 +1,6 @@
 import { TestValidator } from "@nestia/e2e";
 import { EvidDatabaseAdapterCertification } from "../../internal/certification/EvidDatabaseAdapterCertification";
-import { SqlCertificationFixture } from "./SqlCertificationFixture";
+import { EvidSqlCertificationFixture } from "./EvidSqlCertificationFixture";
 
 /**
  * Certifies SQL inventory against exact database adapter expectations.
@@ -13,7 +13,7 @@ import { SqlCertificationFixture } from "./SqlCertificationFixture";
  * 3. Require every removal and behavior gate to be rejected.
  */
 export async function test_sql_certification(): Promise<void> {
-  const fixture = SqlCertificationFixture.create();
+  const fixture = EvidSqlCertificationFixture.create();
   const inventory = await EvidDatabaseAdapterCertification.analyze(fixture);
   EvidDatabaseAdapterCertification.assertInventory(fixture, inventory);
   await EvidDatabaseAdapterCertification.assertGraph(fixture);

@@ -9,7 +9,7 @@ import type { IEvidPythonOwnedUnit } from "./IEvidPythonOwnedUnit";
 /**
  * Preserves one Python file's serializable extraction after parsing.
  *
- * EvidPythonAdapterBase combines these records before resolving imports and
+ * EvidPythonAdapter combines these records before resolving imports and
  * exports, so parser-owned nodes never escape their session and failures remain
  * visible.
  */

@@ -7,7 +7,7 @@ import type { IEvidSwiftDocumentation } from "./IEvidSwiftDocumentation";
 /**
  * Reads DocC while preserving source mappings and masking code examples.
  *
- * EvidSwiftAdapterBase uses the normalized result for tag parsing after it
+ * EvidSwiftAdapter uses the normalized result for tag parsing after it
  * establishes a documentation host.
  */
 export namespace EvidSwiftDocumentation {

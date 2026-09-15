@@ -6,7 +6,7 @@ import { dedent } from "@typia/utils";
 import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-interface ICppTargetStatus {
+interface IEvidCppTargetStatus {
   target: string | undefined;
   status: EvidTargetResolutionStatus;
 }
@@ -96,7 +96,7 @@ export async function test_cpp_targets(): Promise<void> {
         status: resolution.resolution.status,
       }))
       .sort(compareTarget),
-    (<ICppTargetStatus[]>[
+    (<IEvidCppTargetStatus[]>[
       {
         target: "../include/models.hpp#public_api.Sale.total",
         status: "resolved",
@@ -137,8 +137,8 @@ export async function test_cpp_targets(): Promise<void> {
 }
 
 function compareTarget(
-  left: ICppTargetStatus,
-  right: ICppTargetStatus,
+  left: IEvidCppTargetStatus,
+  right: IEvidCppTargetStatus,
 ): number {
   return compare(left.target ?? "", right.target ?? "");
 }

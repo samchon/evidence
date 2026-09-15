@@ -6,7 +6,7 @@ import { dedent } from "@typia/utils";
 import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-interface IRubyTargetStatus {
+interface IEvidRubyTargetStatus {
   target: string | undefined;
   status: EvidTargetResolutionStatus;
 }
@@ -80,7 +80,7 @@ export async function test_ruby_targets(): Promise<void> {
         status: resolution.resolution.status,
       }))
       .sort(compareTarget),
-    (<IRubyTargetStatus[]>[
+    (<IEvidRubyTargetStatus[]>[
       {
         target: '../lib/shop/sale.rb#Shop.Sale["[]"]',
         status: "resolved",
@@ -114,8 +114,8 @@ export async function test_ruby_targets(): Promise<void> {
 }
 
 function compareTarget(
-  left: IRubyTargetStatus,
-  right: IRubyTargetStatus,
+  left: IEvidRubyTargetStatus,
+  right: IEvidRubyTargetStatus,
 ): number {
   return compare(left.target ?? "", right.target ?? "");
 }

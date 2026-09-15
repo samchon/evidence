@@ -6,7 +6,7 @@ import type { IEvidRubyDocumentation } from "./IEvidRubyDocumentation";
 /**
  * Preserves one Ruby file's serializable extraction after parsing.
  *
- * EvidRubyAdapterBase merges all analyses to reconcile reopened declarations,
+ * EvidRubyAdapter merges all analyses to reconcile reopened declarations,
  * visibility, documentation attachment, and failures without retaining
  * Tree-sitter nodes.
  */

@@ -6,7 +6,7 @@ import { dedent } from "@typia/utils";
 import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-interface ICSharpTargetStatus {
+interface IEvidCSharpTargetStatus {
   target: string | undefined;
   status: EvidTargetResolutionStatus;
 }
@@ -103,7 +103,7 @@ export async function test_csharp_targets(): Promise<void> {
         status: resolution.resolution.status,
       }))
       .sort(compareTarget),
-    (<ICSharpTargetStatus[]>[
+    (<IEvidCSharpTargetStatus[]>[
       { target: "Models.cs#Shop.Sale", status: "resolved" },
       { target: "Models.cs#Shop.Sale.Total", status: "resolved" },
       { target: "Models.cs#Shop.Sale.Calculate", status: "resolved" },
@@ -149,8 +149,8 @@ export async function test_csharp_targets(): Promise<void> {
 }
 
 function compareTarget(
-  left: ICSharpTargetStatus,
-  right: ICSharpTargetStatus,
+  left: IEvidCSharpTargetStatus,
+  right: IEvidCSharpTargetStatus,
 ): number {
   return compare(left.target ?? "", right.target ?? "");
 }

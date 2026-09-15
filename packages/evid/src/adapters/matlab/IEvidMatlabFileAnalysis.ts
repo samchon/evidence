@@ -29,7 +29,7 @@ export interface IEvidMatlabFileAnalysis {
   /**
    * Lists classified help text and unsupported annotation carriers.
    *
-   * EvidMatlabAdapterBase creates hosts only after ownership reconciliation
+   * EvidMatlabAdapter creates hosts only after ownership reconciliation
    * establishes eligible units.
    */
   documentation: IEvidMatlabDocumentation[];

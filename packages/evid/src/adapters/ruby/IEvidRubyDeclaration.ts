@@ -10,7 +10,7 @@ import type { EvidRubyVisibility } from "./EvidRubyVisibility";
  * Captures one Ruby declaration before reopenings and runtime-name families
  * reconcile.
  *
- * EvidRubyAdapterBase groups compatible records into semantic units after
+ * EvidRubyAdapter groups compatible records into semantic units after
  * source-order visibility changes, lexical ownership, and generated attribute
  * surfaces are known.
  */

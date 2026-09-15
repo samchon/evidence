@@ -6,7 +6,7 @@ import type { IEvidRubyDocumentationAttachment } from "./IEvidRubyDocumentationA
 /**
  * Retains one Ruby comment run or annotation-bearing unsupported literal.
  *
- * EvidRubyAdapterBase attaches it after reopened declaration groups become
+ * EvidRubyAdapter attaches it after reopened declaration groups become
  * public, keeping tags on invalid positions available for diagnostics rather
  * than discarding them.
  */

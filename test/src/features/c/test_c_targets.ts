@@ -6,7 +6,7 @@ import { dedent } from "@typia/utils";
 import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-interface ICTargetStatus {
+interface IEvidCTargetStatus {
   target: string | undefined;
   status: EvidTargetResolutionStatus;
 }
@@ -91,7 +91,7 @@ export async function test_c_targets(): Promise<void> {
         status: resolution.resolution.status,
       }))
       .sort(compareTarget),
-    (<ICTargetStatus[]>[
+    (<IEvidCTargetStatus[]>[
       {
         target: '../include/models.h#["struct Collision"]',
         status: "resolved",
@@ -115,7 +115,10 @@ export async function test_c_targets(): Promise<void> {
   );
 }
 
-function compareTarget(left: ICTargetStatus, right: ICTargetStatus): number {
+function compareTarget(
+  left: IEvidCTargetStatus,
+  right: IEvidCTargetStatus,
+): number {
   return compare(left.target ?? "", right.target ?? "");
 }
 
