@@ -42,7 +42,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 7. Vary sibling-reference health and require an incomplete sibling to withhold
  *    the unhosted conclusion, while a complete empty sibling preserves it.
  * 8. Give a separately selected aggregate carrier its own refused-aggregate
- *    repair and require that diagnostic to suppress the deferred unhosted report.
+ *    repair and require the original claim's deferred finding to remain isolated.
  * 9. Supply failed and empty reference populations and require respectively:
  *    - An incomplete obligation with no derivative per-host finding.
  *    - Only the empty-reference finding and no host-coverage ledger.
@@ -183,7 +183,8 @@ export async function test_graph_checklist(): Promise<void> {
     [hardcoding.id, whackAMole.id],
   );
 
-  // An unselected positive aggregate is diagnosed once and suppresses duplicate host repair demands.
+  // An unselected positive aggregate is diagnosed once and suppresses duplicate
+  // host repair demands.
   const aggregate = EvidenceGraph.evaluate({
     claims: [
       {
@@ -222,7 +223,8 @@ export async function test_graph_checklist(): Promise<void> {
     [hardcoding.id, whackAMole.id],
   );
 
-  // An exclusion keeps its subtree cascade on its own host without conflicting with another host's evidence.
+  // An exclusion keeps its subtree cascade on its own host without conflicting
+  // with another host's evidence.
   const exclusions = await new EvidenceTypeScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/exclusions.ts",
@@ -328,7 +330,8 @@ export async function test_graph_checklist(): Promise<void> {
     1,
   );
 
-  // Refusing exclusions removes only that answer and leaves each host's positive obligation visible.
+  // Refusing exclusions removes only that answer and leaves each host's positive
+  // obligation visible.
   const strictChecklist = EvidenceGraph.evaluate({
     claims: [
       {
@@ -363,7 +366,8 @@ export async function test_graph_checklist(): Promise<void> {
     1,
   );
 
-  // An unselected carrier can answer an ordinary sibling reference but cannot clear any host's checklist.
+  // An unselected carrier can answer an ordinary sibling reference but cannot
+  // clear any host's checklist.
   const carrierClaim = await new EvidenceTypeScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/carrier.ts",
@@ -521,7 +525,7 @@ export async function test_graph_checklist(): Promise<void> {
     1,
   );
 
-  // A refused aggregate has its own repair, so it consumes a deferred unhosted report.
+  // A refused aggregate in another claim cannot consume the original claim's deferred report.
   const aggregateCarrierClaim = await new EvidenceTypeScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/aggregate-carrier.ts",
@@ -582,9 +586,9 @@ export async function test_graph_checklist(): Promise<void> {
     1,
   );
   TestValidator.equals(
-    "refused aggregate suppresses deferred unhosted finding",
+    "other claim cannot suppress deferred unhosted finding",
     count(answeredAggregate, "graph-unhosted-checklist"),
-    0,
+    1,
   );
 
   // Failed and empty populations stop before deriving per-host checklist findings.
@@ -687,6 +691,12 @@ async function resolveAll(
   return output;
 }
 
+/**
+ * Requires one checklist fixture unit by its unique public-facing identity.
+ *
+ * The fixtures deliberately avoid candidates that collide across symbol, name,
+ * and final identity segment, so a miss signals broken test setup.
+ */
 function requireUnit(
   inventory: IEvidenceInventory,
   identity: string,
@@ -702,12 +712,24 @@ function requireUnit(
   return unit;
 }
 
+/**
+ * Requires the exact host that owns one checklist declaration.
+ *
+ * Resolution cannot substitute another host because attachment is part of the
+ * claim-local checklist policy being exercised.
+ */
 function requireHost(inventory: IEvidenceInventory, id: string): IEvidenceHost {
   const host = inventory.hosts.find((candidate) => candidate.id === id);
   if (host === undefined) throw new Error(`Missing checklist host: ${id}`);
   return host;
 }
 
+/**
+ * Counts diagnostics with one stable graph code.
+ *
+ * Checklist scenarios assert both the presence and multiplicity of findings so
+ * deduplication cannot silently merge independent obligations.
+ */
 function count(
   result: ReturnType<typeof EvidenceGraph.evaluate>,
   code: string,

@@ -2,21 +2,21 @@
 
 `EvidenceLanguageRegistry.list()` is the authoritative set of shipped programming adapters. `evidence languages` renders the same records without loading a config or any grammar WASM. This release certifies nineteen programming languages; TSX is a TypeScript grammar variant and JSX uses the JavaScript grammar. `EvidenceLanguageRegistry.databases()` lists the six Tree-sitter database schema languages certified alongside the Prisma parser.
 
-Each adapter produces the common programming symbols `type`, `function`, and `property`. Those names classify an Evidence obligation rather than reproduce every source language's terminology. Classes, interfaces, aliases, modules, namespaces, and similar declaration containers may be `type`; callable declarations are `function`; fields, constants, variables, enum values, and analogous data declarations may be `property` where the language contract includes them.
+Most programming adapters produce the common symbols `type`, `function`, and `property`. Those names classify an Evidence obligation rather than reproduce every source language's terminology. Classes, interfaces, aliases, modules, namespaces, and similar declaration containers may be `type`; callable declarations are `function`; fields, constants, variables, enum values, and analogous data declarations may be `property`. Lua exposes only `function` and `property` because its certified surface has no type declarations.
 
-## Support matrix
+## Programming support matrix
 
 | Type | Grammar and selected files | Certified public surface | Documentation and addressing |
 | --- | --- | --- | --- |
 | `typescript` | `typescript` for `.ts`, `.cts`, `.mts`; `tsx` for `.tsx` | Static module exports and declaration files within the selected snapshot | Attached JSDoc; file-qualified export accessors, with `prototype` for instance members |
 | `javascript` | `javascript` for `.js`, `.jsx`, `.cjs`, `.mjs` | Static ESM exports and bounded unconditional CommonJS initialization | Attached JSDoc; file-qualified export accessors, with `prototype` for instance members |
-| `python` | `python` for `.py`, `.pyi` | Statically declared module exports with bounded local import and `__all__` resolution | Docstrings or adjacent `#` documentation; file-qualified module accessors, with `prototype` for instance members |
+| `python` | `python` for `.py`, `.pyi` | Final statically declared module bindings with bounded local import and `__all__` resolution | Docstrings or adjacent `#` documentation; file-qualified module accessors, with `prototype` for instance members |
 | `go` | `go` for `.go` | Exported package declarations with package-wide receiver ownership | Adjacent line or block documentation; receiver and interface members below their owner type |
 | `rust` | `rust` for `.rs` | Crate modules, public reexports, and local nominal implementation members in selected source | Outer/inner documentation or static doc attributes; public paths, with quoted `impl Trait` segments for trait implementations |
 | `java` | `java` for `.java` | Source-public top-level and nested declarations, independent of JPMS exports | Attached Javadoc; package and owner accessors, with overloads grouped by owner and name |
 | `csharp` | `c-sharp` for `.cs` | Source-public declarations and partial identities within one configured snapshot | Attached XML documentation; namespace and owner accessors with quoted generic arity, indexer, and operator segments |
 | `c` | `c` for `.c`, `.h` | Explicit external declarations, tags, typedefs, aggregate fields, and enumerators within each physical file | Attached Doxygen; exact quoted tag names and unambiguous typedef or source-name aliases |
-| `cpp` | `cpp` for `.cpp`, `.cc`, `.cxx`, `.c++`, `.C`, `.h`, `.hpp`, `.hh`, `.hxx`, `.h++`, `.H`, `.ipp`, `.tpp`, `.ixx`, `.cppm`, `.ccm`, `.cxxm`, `.c++m` | Explicit namespaces, public types and members, external declarations, templates, and bounded aliases across the selected snapshot | Attached Doxygen; namespace and owner accessors with quoted template arity and operator segments |
+| `cpp` | `cpp` for common C++ source, header, template, and module-interface extensions | Explicit namespaces, public types and members, external declarations, templates, and bounded aliases across the selected snapshot | Attached Doxygen; namespace and owner accessors with quoted template arity and operator segments |
 | `ruby` | `ruby` for `.rb`, `.rake`, `.gemspec`, `Gemfile`, `Rakefile` | Explicit classes/modules, public instance and singleton methods, constants, literal attributes, bounded aliases, and reopenings | Adjacent line or embedded RDoc; constant paths, direct instance ownership, and `self` for singleton members |
 | `kotlin` | `kotlin` for `.kt` | Public-by-default declarations, overload families, primary-constructor properties, companions, and extensions on resolvable receivers | Adjacent KDoc before annotations; package-qualified accessors with `Companion` and quoted `extension(...)` segments |
 | `swift` | `swift` for `.swift` | Public/open declarations of one module per population root, with extensions merged under their selected nominal owner | Adjacent `///` runs or `/** */` DocC; lexical owner accessors with `init`, `subscript`, and `static` segments, overloads sharing one identity |
@@ -54,9 +54,9 @@ The configured `type` chooses the language before file selection. A `.h` file fo
 | `objc` | Header traversal, non-guard preprocessing, macro expansion, computed includes, C typedefs and aggregates, Objective-C++, and inherited or synthesized members |
 | `zig` | `usingnamespace`, qualified aliases, imported namespaces, comptime namespace blocks, type-producing functions, inferred declaration types, and build options |
 
-These boundaries do not all behave as silent exclusions. When the adapter can detect a construct that may change the configured public population but cannot resolve it safely, it marks the inventory incomplete and the check exits 2. Constructs outside the explicit declared-source contract, such as compiler-synthesized inherited members, are not invented as units.
+These boundaries do not all behave as silent exclusions. When an adapter detects a construct that may change the configured public population but cannot resolve it safely, it marks the inventory incomplete and the check exits 2. Constructs outside the explicit declared-source contract, such as compiler-synthesized inherited members, are not invented as units.
 
-Read the [adapter inventory guide](development/adapter-inventories.md) for exact declaration forms, merging, visibility, host attachment, aliases, and failure cases in each language.
+Read the [adapter inventory guide](development/adapter-inventories.md) for exact declaration forms, merging, visibility, host attachment, aliases, and failure cases. The registry and `evidence languages` remain authoritative when prose and executable metadata disagree.
 
 ## Database schema languages
 
@@ -91,7 +91,7 @@ The package contains no grammar WASM. Each grammar manifest record pins the upst
 
 Consumers do not install per-language packages, download grammars by hand, or install a language compiler. A cold cache needs network access once; see the root README for the cache location and `EVIDENCE_CACHE_DIR`. Prisma uses `@prisma/prisma-schema-wasm`, and Swagger/OpenAPI uses local JSON/YAML parsing rather than Tree-sitter.
 
-See [parser assets](development/parser-assets.md) for provenance and maintenance and [adapter onboarding](development/adapter-onboarding.md) for the certification gate.
+See [parser assets](development/parser-assets.md) for provenance, acquisition, cache, and maintenance rules and [adapter onboarding](development/adapter-onboarding.md) for the certification gate.
 
 ## Candidate grammars
 

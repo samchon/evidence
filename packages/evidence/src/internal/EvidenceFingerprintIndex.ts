@@ -5,10 +5,19 @@ import type { IEvidenceInventory } from "../structures/IEvidenceInventory";
 import type { IEvidenceSourceFile } from "../structures/IEvidenceSourceFile";
 import type { IEvidenceSourceRange } from "../structures/IEvidenceSourceRange";
 import type { IEvidenceUnit } from "../structures/IEvidenceUnit";
+import type { IEvidenceUnitSite } from "../structures/IEvidenceUnitSite";
 import { InventoryMerge } from "./InventoryMerge";
 
-const VERSION = 1;
-const PRESENTED_LENGTH = 7;
+const VERSION: number = 2;
+const PRESENTED_LENGTH: number = 7;
+
+/**
+ * One process-local token and its checkout-stable fingerprint replacement.
+ *
+ * Replacement operates on the original adapter identity so generated marker
+ * text can never be interpreted as another source token.
+ */
+type PortableReplacement = readonly [token: string, value: string];
 
 /**
  * Computes and memoizes stable fingerprints for inventory units and descendants.
@@ -18,16 +27,57 @@ const PRESENTED_LENGTH = 7;
  * owns only references to the immutable analysis inventory.
  */
 export class EvidenceFingerprintIndex {
+  /**
+   * Annotation ranges grouped by their physical source file.
+   *
+   * Content hashing removes these mapped spans while preserving surrounding
+   * semantic source text.
+   */
   private readonly annotations = new Map<string, IEvidenceSourceRange[]>();
+
+  /**
+   * Structurally owned child units grouped by parent identity.
+   *
+   * Subtree fingerprints traverse this index without rescanning the inventory.
+   */
   private readonly children = new Map<string, IEvidenceUnit[]>();
+
+  /**
+   * Memoized content digest for each process-local unit identity.
+   *
+   * A single inventory snapshot owns the index, so unit IDs are safe cache keys
+   * even though the resulting digest excludes them.
+   */
   private readonly contentDigests = new Map<string, string>();
+
+  /**
+   * Memoized public fingerprint result for each unit identity.
+   *
+   * Repeated review checks reuse both the presented prefix and full scope hash.
+   */
   private readonly fingerprints = new Map<string, IEvidenceFingerprint>();
+
+  /**
+   * Source snapshots indexed by physical path for site content lookup.
+   *
+   * Fingerprint identity is read from each snapshot's checkout-stable declaring
+   * path after the physical site resolves here.
+   */
   private readonly sources = new Map<string, IEvidenceSourceFile>();
+
+  /**
+   * Semantic units indexed by their process-local graph identity.
+   *
+   * Public callers request a unit by this ID before hashing replaces it with a
+   * portable declaration identity.
+   */
   private readonly units = new Map<string, IEvidenceUnit>();
 
-  /** Builds source, annotation, and parent indexes once for one inventory snapshot.
+  /**
+   * Builds source, annotation, and parent indexes once for one inventory snapshot.
    *
-   * Fingerprint generation reuses these indexes to connect units to their physical content without repeatedly scanning inventory collections.
+   * Fingerprint generation reuses these indexes to connect units to their
+   * physical content without repeatedly scanning inventory collections.
    */
   public constructor(inventory: IEvidenceInventory) {
     for (const source of inventory.sources)
@@ -63,18 +113,26 @@ export class EvidenceFingerprintIndex {
       throw new Error(
         `Cannot fingerprint unknown semantic identity: ${unitId}`,
       );
-    const scope = this.collect(root).sort((x, y) => {
-      const identity = InventoryMerge.compare(x.id, y.id);
-      if (identity !== 0) return identity;
-      const symbol = InventoryMerge.compare(x.symbol, y.symbol);
-      return symbol !== 0
-        ? symbol
-        : InventoryMerge.compare(this.contentDigest(x), this.contentDigest(y));
-    });
+    const scope: IEvidenceUnit[] = this.collect(root).sort(
+      (x: IEvidenceUnit, y: IEvidenceUnit): number => {
+        const identity: number = InventoryMerge.compare(
+          this.identity(x),
+          this.identity(y),
+        );
+        if (identity !== 0) return identity;
+        const symbol: number = InventoryMerge.compare(x.symbol, y.symbol);
+        return symbol !== 0
+          ? symbol
+          : InventoryMerge.compare(
+              this.contentDigest(x),
+              this.contentDigest(y),
+            );
+      },
+    );
     const hash = createHash("sha256");
     hash.update(`@wrtnlabs/evidence:fingerprint:${VERSION}\0`);
     for (const unit of scope) {
-      hash.update(unit.id);
+      hash.update(this.identity(unit));
       hash.update("\0");
       hash.update(unit.symbol);
       hash.update("\0");
@@ -93,9 +151,93 @@ export class EvidenceFingerprintIndex {
     return output;
   }
 
-  /** Collects a cycle-safe structural subtree for one unit.
+  /**
+   * Describes a semantic declaration without process-local source or site IDs.
    *
-   * The visited set prevents malformed parent links from looping fingerprint generation while preserving each reachable child once.
+   * Each adapter's unit ID already decides whether a file, package, library, or
+   * schema owns semantic identity. Rewriting its physical tokens preserves that
+   * boundary: file-scoped declarations keep a portable path, while database
+   * declarations designed to survive file moves do not acquire a new one.
+   */
+  private identity(unit: IEvidenceUnit): string {
+    return JSON.stringify([
+      unit.type,
+      unit.type === "markdown"
+        ? this.declaringPaths(unit)
+        : this.portableUnitId(unit),
+      unit.symbol,
+      unit.identity,
+    ]);
+  }
+
+  /**
+   * Collects portable paths for Markdown's position-bearing unit IDs.
+   *
+   * Heading offsets are physical parser coordinates rather than semantic
+   * identity. Markdown declarations remain file-scoped, so their declaring
+   * paths replace that unstable suffix while still distinguishing equal anchors
+   * in separate files.
+   */
+  private declaringPaths(unit: IEvidenceUnit): string[] {
+    return InventoryMerge.unique(
+      unit.sites.map((site: IEvidenceUnitSite): string => {
+        const source: IEvidenceSourceFile | undefined = this.sources.get(
+          site.file,
+        );
+        if (source === undefined)
+          throw new Error(
+            `Cannot fingerprint missing source snapshot: ${site.file}`,
+          );
+        return source.fingerprintPath;
+      }),
+      (value: string): string => value,
+    ).sort(InventoryMerge.compare);
+  }
+
+  /**
+   * Rewrites one adapter-owned unit ID into checkout-stable source coordinates.
+   *
+   * Source IDs may contain inode data, and several language resolvers retain an
+   * absolute source or module root in their semantic key. One longest-token pass
+   * keeps overlapping identities independent and prevents generated markers from
+   * participating in later replacements.
+   */
+  private portableUnitId(unit: IEvidenceUnit): string {
+    const sources: IEvidenceSourceFile[] = Array.from(this.sources.values());
+    const replacements: PortableReplacement[] = [];
+    for (const source of sources) {
+      const marker: string = `@source:${JSON.stringify(source.fingerprintPath)}`;
+      replacements.push([source.id, marker]);
+      replacements.push([
+        source.physicalPath,
+        `@file:${source.fingerprintPath}`,
+      ]);
+      if (source.fingerprintRoot !== undefined)
+        replacements.push([
+          source.fingerprintRoot.physicalPath,
+          `@root:${JSON.stringify(source.fingerprintRoot.fingerprintPath)}`,
+        ]);
+    }
+    const roots: string[] = InventoryMerge.unique(
+      sources.flatMap((source: IEvidenceSourceFile): string[] => {
+        if (source.fingerprintRoot !== undefined) return [];
+        const suffix: string = `/${source.fingerprintPath}`;
+        return source.physicalPath.endsWith(suffix)
+          ? [source.physicalPath.slice(0, -suffix.length)]
+          : [];
+      }),
+      (value: string): string => value,
+    );
+    for (const root of roots)
+      if (root !== "") replacements.push([root, "@root"]);
+    return replacePortableTokens(unit.id, replacements);
+  }
+
+  /**
+   * Collects a cycle-safe structural subtree for one unit.
+   *
+   * The visited set prevents malformed parent links from looping fingerprint
+   * generation while preserving each reachable child once.
    */
   private collect(root: IEvidenceUnit): IEvidenceUnit[] {
     const output: IEvidenceUnit[] = [];
@@ -111,9 +253,11 @@ export class EvidenceFingerprintIndex {
     return output;
   }
 
-  /** Adds withdrawal tags to the content contribution because they alter effective scope.
+  /**
+   * Adds withdrawal tags to the content contribution because they alter effective scope.
    *
-   * A unit's fingerprint must change when a withdrawal changes which declarations remain active, even if its source range is unchanged.
+   * A unit's fingerprint must change when a withdrawal changes which declarations
+   * remain active, even if its source range is unchanged.
    */
   private contribution(unit: IEvidenceUnit): string {
     const withdrawals = InventoryMerge.unique(
@@ -125,30 +269,29 @@ export class EvidenceFingerprintIndex {
       : `${this.contentDigest(unit)}\0withdrawn:${withdrawals.join(",")}`;
   }
 
-  /** Hashes source sites after stripping mapped annotations and normalizing presentation differences.
+  /**
+   * Hashes source sites after stripping annotations and presentation differences.
    *
-   * Annotation edits are tracked separately, while substantive source changes remain stable across line-ending and trailing-space differences.
+   * Annotation edits are tracked separately, while substantive source changes
+   * remain stable across line-ending and trailing-space differences.
    */
   private contentDigest(unit: IEvidenceUnit): string {
     if (unit.contentDigest !== undefined) return unit.contentDigest;
     const remembered = this.contentDigests.get(unit.id);
     if (remembered !== undefined) return remembered;
     const parts: string[] = [];
-    const sites = [...unit.sites].sort((x, y) =>
-      InventoryMerge.compare(
-        JSON.stringify([
-          x.file,
-          x.range.start.offset,
-          x.range.end.offset,
-          x.id,
-        ]),
-        JSON.stringify([
-          y.file,
-          y.range.start.offset,
-          y.range.end.offset,
-          y.id,
-        ]),
-      ),
+    const sites: IEvidenceUnitSite[] = [...unit.sites].sort(
+      (x: IEvidenceUnitSite, y: IEvidenceUnitSite): number => {
+        const left: IEvidenceSourceFile | undefined = this.sources.get(x.file);
+        const right: IEvidenceSourceFile | undefined = this.sources.get(y.file);
+        const identity: number = InventoryMerge.compare(
+          left?.fingerprintPath ?? x.file,
+          right?.fingerprintPath ?? y.file,
+        );
+        if (identity !== 0) return identity;
+        const start: number = x.range.start.offset - y.range.start.offset;
+        return start !== 0 ? start : x.range.end.offset - y.range.end.offset;
+      },
     );
     for (const site of sites) {
       const source = this.sources.get(site.file);
@@ -168,9 +311,11 @@ export class EvidenceFingerprintIndex {
     return digest;
   }
 
-  /** Removes only overlapping annotation spans while retaining surrounding source exactly for semantic hashing.
+  /**
+   * Removes overlapping annotation spans while retaining surrounding source.
    *
-   * Ranges are ordered before removal so adjacent or overlapping tags cannot duplicate or erase unrelated source fragments.
+   * Ranges are ordered before removal so adjacent or overlapping tags cannot
+   * duplicate or erase unrelated source fragments.
    */
   private withoutAnnotations(
     source: IEvidenceSourceFile,
@@ -195,9 +340,69 @@ export class EvidenceFingerprintIndex {
   }
 }
 
-/** Orders source spans by position before content fragments are concatenated.
+/**
+ * Replaces process-local identity tokens without revisiting generated text.
  *
- * Stable ordering makes a fingerprint independent of adapter collection order for sites in the same file.
+ * At each original input position, the longest matching token wins. Equal
+ * tokens must agree on their stable value so source collection order cannot
+ * choose a fingerprint silently.
+ */
+function replacePortableTokens(
+  input: string,
+  replacements: PortableReplacement[],
+): string {
+  const unique = new Map<string, string>();
+  for (const [token, value] of replacements) {
+    if (token === "") continue;
+    const previous: string | undefined = unique.get(token);
+    if (previous !== undefined && previous !== value)
+      throw new Error(
+        `Cannot fingerprint ambiguous portable token: ${JSON.stringify(token)}`,
+      );
+    unique.set(token, value);
+  }
+  const ordered: PortableReplacement[] = Array.from(unique.entries()).sort(
+    (left: PortableReplacement, right: PortableReplacement): number => {
+      const lengthDifference: number = right[0].length - left[0].length;
+      return lengthDifference !== 0
+        ? lengthDifference
+        : InventoryMerge.compare(left[0], right[0]);
+    },
+  );
+  if (ordered.length === 0) return input;
+
+  let output: string = "";
+  let cursor: number = 0;
+  while (cursor < input.length) {
+    let selected: PortableReplacement | undefined;
+    let selectedAt: number = -1;
+    for (const candidate of ordered) {
+      const found: number = input.indexOf(candidate[0], cursor);
+      if (found < 0) continue;
+      if (
+        selected === undefined ||
+        found < selectedAt ||
+        (found === selectedAt && candidate[0].length > selected[0].length)
+      ) {
+        selected = candidate;
+        selectedAt = found;
+      }
+    }
+    if (selected === undefined) {
+      output += input.slice(cursor);
+      break;
+    }
+    output += input.slice(cursor, selectedAt) + selected[1];
+    cursor = selectedAt + selected[0].length;
+  }
+  return output;
+}
+
+/**
+ * Orders source spans by position before content fragments are concatenated.
+ *
+ * Stable ordering makes a fingerprint independent of adapter collection order
+ * for sites in the same file.
  */
 function compareRanges(
   x: IEvidenceSourceRange,
@@ -207,7 +412,8 @@ function compareRanges(
   return start !== 0 ? start : x.end.offset - y.end.offset;
 }
 
-/** Normalizes line endings and trailing whitespace without changing interior source content.
+/**
+ * Normalizes line endings and trailing whitespace without changing interior source content.
  *
  * Fingerprints ignore presentation differences that do not affect the authored declaration body.
  */

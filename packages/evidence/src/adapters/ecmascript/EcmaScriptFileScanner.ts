@@ -24,6 +24,13 @@ import { EcmaScriptSyntax } from "./EcmaScriptSyntax";
  * `EcmaScriptExportResolver` alone decides which local units become public.
  */
 export class EcmaScriptFileScanner {
+  /**
+   * Effective local declaration for each semantic identity in this file.
+   *
+   * TypeScript declarations can merge several sites. JavaScript runtime
+   * redefinitions replace this record while their occurrence-specific unit IDs
+   * keep obsolete documentation from attaching to the survivor.
+   */
   private readonly units = new Map<string, IEcmaScriptOwnedUnit>();
   private readonly excludedRoots = new Set<string>();
   private readonly comments = new Map<string, IEcmaScriptComment>();
@@ -164,8 +171,31 @@ export class EcmaScriptFileScanner {
     );
     const functionNames = new Set<string>();
     const classNames = new Set<string>();
+    // Function declarations bind during instantiation, before execution reaches
+    // any `var` initializer. Retaining the last initializer per name identifies
+    // the final assignment while declaration-only occurrences leave that value intact.
+    const initializedVariables: Map<string, number> = new Map<string, number>();
     for (const statement of declarations) {
       const declaration = this.declaration(statement);
+      if (
+        this.type === "javascript" &&
+        declaration.type === "variable_declaration"
+      )
+        for (const declarator of declaration.namedChildren) {
+          if (
+            declarator.type !== "variable_declarator" ||
+            declarator.childForFieldName("value") === null
+          )
+            continue;
+          for (const binding of EcmaScriptSyntax.bindings(
+            declarator.childForFieldName("name"),
+          )) {
+            const variableName: string | undefined =
+              EcmaScriptSyntax.name(binding);
+            if (variableName !== undefined)
+              initializedVariables.set(variableName, declarator.startIndex);
+          }
+        }
       const name = EcmaScriptSyntax.qualifiedName(
         declaration.childForFieldName("name"),
       )[0];
@@ -236,6 +266,7 @@ export class EcmaScriptFileScanner {
         context,
         functionNames,
         classNames,
+        initializedVariables,
       );
     }
   }
@@ -246,6 +277,7 @@ export class EcmaScriptFileScanner {
     context: IEcmaScriptStatementContext,
     functionNames: Set<string>,
     classNames: Set<string>,
+    initializedVariables: ReadonlyMap<string, number>,
   ): void {
     switch (declaration.type) {
       case "interface_declaration":
@@ -264,11 +296,17 @@ export class EcmaScriptFileScanner {
       case "function_signature":
       case "generator_function":
       case "generator_function_declaration":
-        this.scanFunction(wrapper, declaration, context);
+        this.scanFunction(wrapper, declaration, context, initializedVariables);
         break;
       case "lexical_declaration":
       case "variable_declaration":
-        this.scanVariables(wrapper, declaration, context);
+        this.scanVariables(
+          wrapper,
+          declaration,
+          context,
+          functionNames,
+          initializedVariables,
+        );
         break;
       case "internal_module":
         this.scanNamespace(wrapper, declaration, context, functionNames);
@@ -421,6 +459,7 @@ export class EcmaScriptFileScanner {
     wrapper: Node,
     declaration: Node,
     context: IEcmaScriptStatementContext,
+    initializedVariables: ReadonlyMap<string, number>,
   ): void {
     if (context.typeOnly || !context.visible) return;
     const declared = EcmaScriptSyntax.name(
@@ -432,6 +471,7 @@ export class EcmaScriptFileScanner {
     const local =
       declared ?? (defaulted ? `default:${declaration.startIndex}` : undefined);
     if (local === undefined) return;
+    if (this.type === "javascript" && initializedVariables.has(local)) return;
     const semanticName = declared ?? "default";
     const identity = [...context.semanticPrefix, semanticName];
     const root = context.root ?? local;
@@ -447,6 +487,9 @@ export class EcmaScriptFileScanner {
       context.parentId,
       false,
       true,
+      undefined,
+      true,
+      this.type === "javascript",
     );
     this.directExport(wrapper, local, context, defaulted);
   }
@@ -455,6 +498,8 @@ export class EcmaScriptFileScanner {
     wrapper: Node,
     declaration: Node,
     context: IEcmaScriptStatementContext,
+    functionNames: Set<string>,
+    initializedVariables: ReadonlyMap<string, number>,
   ): void {
     if (context.typeOnly || !context.visible) return;
     const constant = EcmaScriptSyntax.token(declaration, "const");
@@ -472,6 +517,14 @@ export class EcmaScriptFileScanner {
       for (const binding of EcmaScriptSyntax.bindings(bindingNode)) {
         const local = EcmaScriptSyntax.name(binding);
         if (local === undefined) continue;
+        if (
+          this.type === "javascript" &&
+          declaration.type === "variable_declaration" &&
+          (value === null
+            ? functionNames.has(local) || initializedVariables.has(local)
+            : initializedVariables.get(local) !== declarator.startIndex)
+        )
+          continue;
         const identity = [...context.semanticPrefix, local];
         const root = context.root ?? local;
         const suffix =
@@ -487,6 +540,10 @@ export class EcmaScriptFileScanner {
           false,
           true,
           declarator,
+          true,
+          this.type === "javascript" &&
+            declaration.type === "variable_declaration" &&
+            value !== null,
         );
         this.directExport(wrapper, local, context, false);
       }
@@ -616,10 +673,34 @@ export class EcmaScriptFileScanner {
         "constructor"
       );
     });
+    const effective: Map<string, Node> = new Map<string, Node>();
+    if (this.type === "javascript")
+      for (const member of body.namedChildren) {
+        const name: string | undefined = EcmaScriptSyntax.memberName(member);
+        const slot: string | undefined =
+          name === undefined ? undefined : this.classMemberSlot(member, name);
+        if (slot === undefined) continue;
+        const previous: Node | undefined = effective.get(slot);
+        const field: boolean = this.classField(member);
+        const previousField: boolean =
+          previous !== undefined && this.classField(previous);
+        // Methods and accessors are installed before static initialization.
+        // Once a static field owns the slot, only a later static field can
+        // replace it; source-later method syntax has already executed.
+        if (slot.startsWith("static:") && previousField && !field) continue;
+        effective.set(slot, member);
+      }
     for (const member of body.namedChildren) {
       if (member.type === "comment") continue;
       const name = EcmaScriptSyntax.memberName(member);
       if (name === undefined) continue;
+      const slot: string | undefined = this.classMemberSlot(member, name);
+      if (
+        this.type === "javascript" &&
+        slot !== undefined &&
+        !member.equals(effective.get(slot) ?? member)
+      )
+        continue;
       const method =
         member.type === "method_definition" ||
         member.type === "method_signature" ||
@@ -672,6 +753,40 @@ export class EcmaScriptFileScanner {
         );
       }
     }
+  }
+
+  /**
+   * Names the runtime storage slot used by one supported class member.
+   *
+   * Static methods and fields replace one property on the class object. Instance
+   * methods live on the prototype while instance fields initialize own properties,
+   * so those two forms remain separate even when Evidence projects both through
+   * a `prototype` address segment.
+   */
+  private classMemberSlot(member: Node, name: string): string | undefined {
+    const method: boolean =
+      member.type === "method_definition" ||
+      member.type === "method_signature" ||
+      member.type === "abstract_method_signature";
+    const field: boolean = this.classField(member);
+    if (!method && !field) return undefined;
+    if (method && name === "constructor") return undefined;
+    if (EcmaScriptSyntax.modifier(member, "static")) return `static:${name}`;
+    return `${method ? "prototype" : "instance"}:${name}`;
+  }
+
+  /**
+   * Reports whether one supported class element declares a field initializer.
+   *
+   * The same grammar nodes represent static fields when they carry a `static`
+   * modifier. Runtime-slot selection uses this phase distinction independently
+   * of the Evidence symbol inferred from the initializer value.
+   */
+  private classField(member: Node): boolean {
+    return (
+      member.type === "public_field_definition" ||
+      member.type === "field_definition"
+    );
   }
 
   private scanParameterProperties(
@@ -750,6 +865,9 @@ export class EcmaScriptFileScanner {
       parentId,
       false,
       true,
+      undefined,
+      true,
+      this.type === "javascript",
     );
   }
 
@@ -1253,6 +1371,14 @@ export class EcmaScriptFileScanner {
     );
   }
 
+  /**
+   * Records the effective declaration for one ECMAScript semantic identity.
+   *
+   * TypeScript overloads and declaration merges append sites to one stable unit.
+   * JavaScript runtime definitions instead receive occurrence-specific IDs and
+   * replace the semantic lookup, preventing documentation on an obsolete value
+   * from attaching to the binding selected by exports.
+   */
   private addUnit(
     siteNode: Node,
     contentNode: Node,
@@ -1265,8 +1391,12 @@ export class EcmaScriptFileScanner {
     valueSpace: boolean,
     extraHost?: Node,
     attachDocumentation: boolean = true,
+    runtimeReplacement: boolean = false,
   ): IEcmaScriptOwnedUnit {
-    const id = `${this.type}:${this.source.id}:${symbol}:${JSON.stringify(identity)}`;
+    const semanticId: string = `${this.type}:${this.source.id}:${symbol}:${JSON.stringify(identity)}`;
+    const id: string = runtimeReplacement
+      ? `${semanticId}:binding:${String(siteNode.startIndex)}`
+      : semanticId;
     const siteId = this.siteId(siteNode);
     const site: IEvidenceUnitSite = {
       id: siteId,
@@ -1274,8 +1404,8 @@ export class EcmaScriptFileScanner {
       range: this.session.range(siteNode),
       content: [this.session.range(contentNode)],
     };
-    let record = this.units.get(id);
-    if (record === undefined) {
+    let record: IEcmaScriptOwnedUnit | undefined = this.units.get(semanticId);
+    if (record === undefined || runtimeReplacement) {
       const unit: IEvidenceUnit = {
         id,
         type: this.type,
@@ -1287,7 +1417,7 @@ export class EcmaScriptFileScanner {
         ...(parentId === undefined ? {} : { parentId }),
       };
       record = { unit, root, suffix, typeSpace, valueSpace };
-      this.units.set(id, record);
+      this.units.set(semanticId, record);
     } else {
       const previous = record.unit.sites.find(
         (candidate) => candidate.id === site.id,

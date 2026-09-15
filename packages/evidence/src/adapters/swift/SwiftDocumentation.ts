@@ -1,4 +1,5 @@
 import { EvidenceDocumentation } from "../../parsers/EvidenceDocumentation";
+import { DocumentationExamples } from "../../parsers/DocumentationExamples";
 import type { IEvidenceDocumentation } from "../../structures/IEvidenceDocumentation";
 import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { ISwiftDocumentation } from "./ISwiftDocumentation";
@@ -6,11 +7,12 @@ import type { ISwiftDocumentation } from "./ISwiftDocumentation";
 /**
  * Reads DocC while preserving source mappings and masking code examples.
  *
- * SwiftAdapter uses the normalized result for tag parsing after it establishes a documentation host.
+ * SwiftAdapter uses the normalized result for tag parsing after it establishes a
+ * documentation host.
  */
 export namespace SwiftDocumentation {
   /**
-   * Maps a classified carrier and removes ineligible example text without moving offsets.
+   * Maps a carrier and removes examples without moving source offsets.
    *
    * Preserved line positions let tag diagnostics map back to the original Swift source.
    */
@@ -33,15 +35,13 @@ export namespace SwiftDocumentation {
   }
 
   /**
-   * Masks HTML examples and Markdown indented code; shared tag parsing handles fences.
+   * Masks HTML examples and Markdown indented code before tag parsing.
    *
    * Example text cannot accidentally create Evidence annotations.
    */
   function mask(input: string): string {
     const characters = input.split("");
-    const htmlCode = /<(pre|code)\b[^>]*>[\s\S]*?<\/\1\s*>/giu;
-    for (const match of input.matchAll(htmlCode))
-      hide(characters, match.index, match.index + match[0].length);
+    DocumentationExamples.maskHtml(characters, input, ["pre", "code"]);
     const lines = input.split("\n");
     const indents = lines.filter((line) => line.trim() !== "").map(indentation);
     const baseline = indents.reduce(
@@ -73,7 +73,7 @@ export namespace SwiftDocumentation {
   }
 
   /**
-   * Replaces example characters with spaces while retaining original line boundaries.
+   * Replaces example characters while retaining original line boundaries.
    *
    * Keeping newlines intact preserves offsets for subsequent parsing and diagnostics.
    */

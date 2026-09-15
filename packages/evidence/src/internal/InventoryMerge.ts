@@ -47,7 +47,9 @@ export namespace InventoryMerge {
         if (previous === undefined) sources.set(source.id, source);
         else if (
           previous.digest !== source.digest ||
-          previous.content !== source.content
+          previous.content !== source.content ||
+          previous.fingerprintPath !== source.fingerprintPath ||
+          fingerprintRootKey(previous) !== fingerprintRootKey(source)
         )
           conflict(output, "source", source.id);
         else previous.addresses.push(...source.addresses);
@@ -105,7 +107,8 @@ export namespace InventoryMerge {
     output.units = Array.from(units.values());
     output.hosts = Array.from(hosts.values());
 
-    // Duplicate physical tags can appear through aliases; conflicting bodies cannot be chosen by scan order.
+    // Duplicate physical tags can appear through aliases; conflicting bodies
+    // cannot be chosen by scan order.
     const declarations = new Map<string, string>();
     for (const declaration of output.declarations) {
       const previous = declarations.get(declaration.id);
@@ -269,4 +272,19 @@ export namespace InventoryMerge {
         "Correct the adapter identity or use a consistent source snapshot before combining inventories.",
     });
   }
+}
+
+/**
+ * Serializes optional portable-root metadata for source conflict detection.
+ *
+ * A shared process-local source identity cannot select different logical roots
+ * according to inventory order because that would change public fingerprints.
+ */
+function fingerprintRootKey(source: IEvidenceSourceFile): string {
+  return source.fingerprintRoot === undefined
+    ? ""
+    : JSON.stringify([
+        source.fingerprintRoot.physicalPath,
+        source.fingerprintRoot.fingerprintPath,
+      ]);
 }

@@ -1,4 +1,5 @@
 import { EvidenceDocumentation } from "../../parsers/EvidenceDocumentation";
+import { DocumentationExamples } from "../../parsers/DocumentationExamples";
 import type { IEvidenceDocumentation } from "../../structures/IEvidenceDocumentation";
 import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { ICSharpDocumentation } from "./ICSharpDocumentation";
@@ -10,6 +11,12 @@ import type { ICSharpDocumentation } from "./ICSharpDocumentation";
  * content so its code-like text cannot be interpreted as Evidence annotations.
  */
 export namespace CSharpDocumentation {
+  /**
+   * Maps one C# XML documentation carrier and removes its example elements.
+   *
+   * Character replacement keeps the shared source offsets intact while preventing
+   * tags inside `c`, `code`, `example`, or `pre` content from becoming evidence.
+   */
   export function read(
     source: IEvidenceSourceFile,
     documentation: ICSharpDocumentation,
@@ -28,17 +35,21 @@ export namespace CSharpDocumentation {
     };
   }
 
+  /**
+   * Masks supported XML documentation elements without moving source offsets.
+   *
+   * The shared helper owns Markdown, HTML comment, nesting, and unclosed-region
+   * precedence for all four C# example element names. XML mode keeps a true
+   * self-closing element from consuming the annotation that follows it.
+   */
   function mask(input: string): string {
     const characters = input.split("");
-    const examples = /<(c|code|example|pre)\b[^>]*>[\s\S]*?<\/\1\s*>/giu;
-    for (const match of input.matchAll(examples))
-      hide(characters, match.index, match.index + match[0].length);
+    DocumentationExamples.maskHtml(
+      characters,
+      input,
+      ["c", "code", "example", "pre"],
+      true,
+    );
     return characters.join("");
-  }
-
-  function hide(characters: string[], start: number, end: number): void {
-    for (let index = start; index < end; ++index)
-      if (characters[index] !== "\n" && characters[index] !== "\r")
-        characters[index] = " ";
   }
 }

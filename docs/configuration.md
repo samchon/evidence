@@ -1,6 +1,6 @@
 # Configuration reference
 
-`evidence.config.ts` exports one `IEvidenceConfig` value. Evidence asks the consumer's `ttsx` to typecheck and evaluate the file, validates the resulting value with `typia`, then applies path, policy, and adapter constraints before loading enabled artifacts.
+An Evidence configuration is either JSON data or one TypeScript module whose default export is an `IEvidenceConfig` value. Evidence validates the resulting value with `typia`, then applies path, policy, and adapter constraints before loading enabled artifacts.
 
 ```ts
 import type { IEvidenceConfig } from "@wrtnlabs/evidence";
@@ -25,7 +25,11 @@ export default {
 } satisfies IEvidenceConfig;
 ```
 
-The supported configuration extensions are `.ts`, `.cts`, and `.mts`. `EvidenceConfigLoader.load()` returns the validated authored value. `EvidenceConfigLoader.plan()` also resolves defaults and removes inactive populations.
+The supported extensions are `.json`, `.ts`, `.cts`, and `.mts`. JSON needs no TypeScript toolchain. For a TypeScript configuration, Evidence creates an isolated temporary project and asks the consumer's `ttsx` to typecheck and evaluate the module. A consumer `tsconfig.json` is neither required nor inherited; `typescript` and `ttsc` must still be resolvable beside the configuration. `.mts` always uses ESM, `.cts` always uses CommonJS, and `.ts` follows the nearest `package.json` `type` field.
+
+Watch dependency discovery follows static imports, exports, and literal `import()` or `require()` calls under their runtime loading mode. Import-mode JavaScript `data:` modules are decoded recursively for builtin, nested data, and absolute file-URL imports; JSON and Wasm data modules are immutable leaves. A data module cannot resolve a relative or package request, and CommonJS cannot `require()` a data URL. Computed module requests remain unsupported because they cannot produce a complete watch set without executing arbitrary dependency selection.
+
+`EvidenceConfigLoader.load()` returns the validated authored value. `EvidenceConfigLoader.plan()` also resolves defaults and removes inactive populations.
 
 ## Root configuration
 
@@ -103,7 +107,7 @@ const files = ["src/**", "!src/internal/**", "src/internal/public.ts"];
 
 `*` stays within one path segment, `**` crosses segments, and `?` matches one character. Both slash styles are accepted. A bare `src` or `src/` does not select descendants; use `src/**`. At least one positive pattern is required. Identity remains case-sensitive on every platform.
 
-Programming targets resolve their file path from the source file carrying the tag. Markdown target paths resolve from the Markdown reference root. Prisma and Swagger targets contain no source path. See [tags and targets](tags-and-targets.md) for address syntax.
+Programming and Tree-sitter database targets resolve their file path from the source file carrying the tag. Markdown target paths resolve from the Markdown reference root. Prisma uses the virtual `prisma:` address because all selected files form one schema, and Swagger uses `METHOD:/path`. See [tags and targets](tags-and-targets.md) for address syntax.
 
 ## Independent references
 
