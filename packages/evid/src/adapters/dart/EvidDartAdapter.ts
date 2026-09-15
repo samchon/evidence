@@ -30,14 +30,16 @@ import { EvidDartLibraries } from "./EvidDartLibraries";
  * library inputs remain dependencies so a later watch cycle can observe their
  * creation.
  */
-export class EvidDartAdapter implements IEvidAdapter {
+export class EvidDartAdapter implements IEvidAdapter<"dart"> {
   /**
    * Dart artifact discriminator for library-aware extraction.
    *
    * The public entry point uses this fixed language for grammar selection and
    * inventory records, independently of claim or reference role.
    */
-  public readonly type = "dart";
+  public get type(): "dart" {
+    return "dart";
+  }
 
   /**
    * Builds an owned Dart inventory from captured source and library directives.

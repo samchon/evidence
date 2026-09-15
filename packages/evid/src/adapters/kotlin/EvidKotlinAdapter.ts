@@ -30,14 +30,16 @@ import { EvidKotlinReceivers } from "./EvidKotlinReceivers";
  * preserving the distinction between a receiver-qualified public path and its
  * original source.
  */
-export class EvidKotlinAdapter implements IEvidAdapter {
+export class EvidKotlinAdapter implements IEvidAdapter<"kotlin"> {
   /**
    * Kotlin discriminator selecting KDoc and receiver-aware declaration rules.
    *
    * This fixes the language of inventory records; it does not widen selection
    * to scripts or compiler-generated declarations absent from the snapshot.
    */
-  public readonly type = "kotlin";
+  public get type(): "kotlin" {
+    return "kotlin";
+  }
 
   /**
    * Extracts and reconciles Kotlin declarations from an owned source snapshot.

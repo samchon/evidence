@@ -15,14 +15,16 @@ const EVID_BIGQUERY_TYPE = "bigquery" as const;
  * Analysis operates on source snapshots without querying a service or executing
  * SQL.
  */
-export class EvidBigQueryAdapter implements IEvidAdapter {
+export class EvidBigQueryAdapter implements IEvidAdapter<"bigquery"> {
   /**
    * GoogleSQL grammar selected for this adapter.
    *
    * The explicit discriminator preserves BigQuery's declaration semantics for
    * files that otherwise share the `.sql` extension with other dialects.
    */
-  public readonly type = EVID_BIGQUERY_TYPE;
+  public get type(): "bigquery" {
+    return EVID_BIGQUERY_TYPE;
+  }
 
   /**
    * Materializes BigQuery scanner records into graph-facing inventory records.

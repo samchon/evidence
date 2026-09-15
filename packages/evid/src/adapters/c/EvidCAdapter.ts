@@ -34,14 +34,16 @@ import { EvidCFileScanner } from "./EvidCFileScanner";
  * remain on the inventory through final ownership validation, preventing
  * partial extraction from being mistaken for a complete empty population.
  */
-export class EvidCAdapter implements IEvidAdapter {
+export class EvidCAdapter implements IEvidAdapter<"c"> {
   /**
    * C artifact discriminator for extraction and inventory records.
    *
    * A header extension alone does not select C++ semantics; configuration
    * chooses this adapter and its C-specific declaration and tag namespaces.
    */
-  public readonly type = "c";
+  public get type(): "c" {
+    return "c";
+  }
 
   /**
    * Analyzes captured C source and returns reconciled, serializable records.

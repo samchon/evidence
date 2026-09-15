@@ -27,14 +27,16 @@ import { EvidDbmlFileScanner } from "./EvidDbmlFileScanner";
  * annotation carriers are materialized, preserving semantic ownership and
  * explicit failures instead of guessing unresolved schema links.
  */
-export class EvidDbmlAdapter implements IEvidAdapter {
+export class EvidDbmlAdapter implements IEvidAdapter<"dbml"> {
   /**
    * Database family discriminator selecting DBML parsing and schema rules.
    *
    * Claims and references use this value to apply the adapter's database
    * selectors.
    */
-  public readonly type = "dbml";
+  public get type(): "dbml" {
+    return "dbml";
+  }
 
   /**
    * Builds a normalized DBML inventory from a validated, cloned source

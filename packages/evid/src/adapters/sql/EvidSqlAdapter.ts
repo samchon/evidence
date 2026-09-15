@@ -12,14 +12,16 @@ const EVID_SQL_TYPE = "sql" as const;
  * This entry fixes interpretation to the portable grammar; shared `.sql` files
  * never trigger dialect probing that could change the selected population.
  */
-export class EvidSqlAdapter implements IEvidAdapter {
+export class EvidSqlAdapter implements IEvidAdapter<"sql"> {
   /**
    * Portable SQL grammar selected for this adapter.
    *
    * This fixed identity prevents a shared `.sql` suffix from implicitly
    * selecting a dialect with a different declaration population.
    */
-  public readonly type = EVID_SQL_TYPE;
+  public get type(): "sql" {
+    return "sql";
+  }
 
   /**
    * Materializes scanner records into the public SQL inventory.

@@ -28,14 +28,16 @@ import { EvidMatlabOwnership } from "./EvidMatlabOwnership";
  * sites, and incomplete-analysis diagnostics across the selected source
  * population.
  */
-export class EvidMatlabAdapter implements IEvidAdapter {
+export class EvidMatlabAdapter implements IEvidAdapter<"matlab"> {
   /**
    * Artifact discriminator selecting MATLAB source interpretation.
    *
    * It disambiguates .m sources from other languages that accept the same
    * suffix.
    */
-  public readonly type = "matlab";
+  public get type(): "matlab" {
+    return "matlab";
+  }
 
   /**
    * Builds an owned MATLAB inventory and closes the bounded parser runtime.

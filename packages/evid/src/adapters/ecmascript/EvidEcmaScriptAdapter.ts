@@ -34,22 +34,17 @@ import type { EvidEcmaScriptType } from "./EvidEcmaScriptType";
  * Package dependencies remain observable for watch, and each analysis owns its
  * parser and copied input rather than retaining prior mutable inventories.
  */
-export class EvidEcmaScriptAdapter implements IEvidAdapter {
+export abstract class EvidEcmaScriptAdapter<
+  Type extends EvidEcmaScriptType,
+> implements IEvidAdapter<Type> {
   /**
    * Selects the language variant and diagnostic name for the shared pipeline.
    *
-   * Public JavaScript and TypeScript entry points supply these fixed values.
-   * Construction itself performs no package resolution or grammar acquisition.
+   * Public JavaScript and TypeScript entry points expose their fixed literal
+   * type through the abstract accessor. Construction itself performs no package
+   * resolution or grammar acquisition.
    */
   public constructor(
-    /**
-     * Language variant controlling grammar and publication semantics.
-     *
-     * JavaScript additionally resolves module modes from file/package context;
-     * TypeScript follows the selected TypeScript/TSX source forms.
-     */
-    public readonly type: EvidEcmaScriptType,
-
     /**
      * Human-readable language name included in extraction diagnostics.
      *
@@ -58,6 +53,15 @@ export class EvidEcmaScriptAdapter implements IEvidAdapter {
      */
     private readonly name: string,
   ) {}
+
+  /**
+   * Language variant controlling grammar and publication semantics.
+   *
+   * JavaScript additionally resolves module modes from file/package context;
+   * TypeScript follows the selected TypeScript/TSX source forms. Concrete
+   * adapters preserve their literal discriminator for callers.
+   */
+  public abstract get type(): Type;
 
   /**
    * Extracts a fresh public module inventory from the supplied source

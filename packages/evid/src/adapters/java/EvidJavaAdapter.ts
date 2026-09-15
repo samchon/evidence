@@ -31,7 +31,7 @@ import { EvidJavaFileScanner } from "./EvidJavaFileScanner";
  * inventory. Each invocation owns its parser lifetime and mutable extraction
  * state.
  */
-export class EvidJavaAdapter implements IEvidAdapter {
+export class EvidJavaAdapter implements IEvidAdapter<"java"> {
   /**
    * Java artifact discriminator for grammar selection and unit classification.
    *
@@ -39,7 +39,9 @@ export class EvidJavaAdapter implements IEvidAdapter {
    * reference targets; it does not infer another language from a selected
    * source filename.
    */
-  public readonly type = "java";
+  public get type(): "java" {
+    return "java";
+  }
 
   /**
    * Extracts source-public Java declarations from a captured snapshot.

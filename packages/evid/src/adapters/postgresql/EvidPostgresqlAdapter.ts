@@ -16,14 +16,16 @@ const EVID_POSTGRESQL_TYPE = "postgresql" as const;
  * when annotation-only COMMENT statements add eligible documentation
  * positions.
  */
-export class EvidPostgresqlAdapter implements IEvidAdapter {
+export class EvidPostgresqlAdapter implements IEvidAdapter<"postgresql"> {
   /**
    * PostgreSQL grammar selected for this adapter.
    *
    * The explicit dialect keeps PostgreSQL DDL and COMMENT semantics stable for
    * source files that share the `.sql` extension with other databases.
    */
-  public readonly type = EVID_POSTGRESQL_TYPE;
+  public get type(): "postgresql" {
+    return "postgresql";
+  }
 
   /**
    * Materializes PostgreSQL scanner records before fingerprint adjustment.

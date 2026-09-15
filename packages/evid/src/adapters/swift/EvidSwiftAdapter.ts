@@ -28,14 +28,16 @@ import { EvidSwiftOwnership } from "./EvidSwiftOwnership";
  * distinct. Documentation then attaches to the reconciled owners, while source
  * dependencies retain every physical file needed to invalidate the analysis.
  */
-export class EvidSwiftAdapter implements IEvidAdapter {
+export class EvidSwiftAdapter implements IEvidAdapter<"swift"> {
   /**
    * Swift discriminator for explicit public and open source declarations.
    *
    * The module boundary comes from the snapshot root. This value selects Swift
    * grammar and visibility rules without inferring generated members.
    */
-  public readonly type = "swift";
+  public get type(): "swift" {
+    return "swift";
+  }
 
   /**
    * Builds a module-scoped Swift inventory from a captured source population.

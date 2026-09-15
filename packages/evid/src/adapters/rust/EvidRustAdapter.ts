@@ -27,14 +27,16 @@ import { EvidRustModuleResolver } from "./EvidRustModuleResolver";
  * snapshot before doc comments attach to those identities and inherited
  * withdrawal removes eligible hosts.
  */
-export class EvidRustAdapter implements IEvidAdapter {
+export class EvidRustAdapter implements IEvidAdapter<"rust"> {
   /**
    * Artifact discriminator selecting Rust grammar and visibility rules.
    *
    * Population configuration uses this value to choose the crate-oriented
    * adapter.
    */
-  public readonly type = "rust";
+  public get type(): "rust" {
+    return "rust";
+  }
 
   /**
    * Extracts an isolated Rust inventory from captured source contents.

@@ -28,14 +28,16 @@ import { EvidPythonFileScanner } from "./EvidPythonFileScanner";
  * and export failures remain incomplete inventory diagnostics instead of
  * shrinking coverage.
  */
-export class EvidPythonAdapter implements IEvidAdapter {
+export class EvidPythonAdapter implements IEvidAdapter<"python"> {
   /**
    * Artifact family selecting Python parsing and public-surface rules.
    *
    * The common adapter contract uses this discriminator independently of query
    * selectors.
    */
-  public readonly type = "python";
+  public get type(): "python" {
+    return "python";
+  }
 
   /**
    * Builds an owned inventory from the supplied Python source snapshot.

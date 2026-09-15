@@ -18,11 +18,13 @@ import type { IEvidSourceSnapshot } from "./IEvidSourceSnapshot";
  * escape in output.
  *
  * @example
- *   const adapter: IEvidAdapter = new EvidTypeScriptAdapter();
+ *   const adapter: IEvidAdapter<"typescript"> = new EvidTypeScriptAdapter();
  *   const inventory: IEvidInventory = await adapter.analyze(snapshot);
  *   // An incomplete inventory must not be accepted as a smaller full population.
  */
-export interface IEvidAdapter {
+export interface IEvidAdapter<
+  Type extends EvidArtifactType = EvidArtifactType,
+> {
   /**
    * Artifact language or format handled by this adapter.
    *
@@ -30,7 +32,7 @@ export interface IEvidAdapter {
    * extraction rules. The same adapter supports claim and reference
    * populations.
    */
-  type: EvidArtifactType;
+  readonly type: Type;
 
   /**
    * Extracts serializable declaration and documentation records from a

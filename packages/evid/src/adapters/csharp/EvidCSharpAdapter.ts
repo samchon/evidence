@@ -33,14 +33,16 @@ import { EvidCSharpFileScanner } from "./EvidCSharpFileScanner";
  * unsupported declaration is not discarded as though the remaining source were
  * the complete public surface.
  */
-export class EvidCSharpAdapter implements IEvidAdapter {
+export class EvidCSharpAdapter implements IEvidAdapter<"csharp"> {
   /**
    * C# artifact discriminator selecting source-public extraction rules.
    *
    * The inherited public entry point exposes this value to the adapter
    * contract; claim and reference roles use the same C# extraction semantics.
    */
-  public readonly type = "csharp";
+  public get type(): "csharp" {
+    return "csharp";
+  }
 
   /**
    * Extracts and reconciles one captured C# source population.

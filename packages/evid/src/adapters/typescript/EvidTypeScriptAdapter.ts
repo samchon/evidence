@@ -20,7 +20,7 @@ import { EvidEcmaScriptAdapter } from "../ecmascript/EvidEcmaScriptAdapter";
  *   // api.ts#Client.prototype.send names an instance method.
  *   // api.ts#Client.create names a static member.
  */
-export class EvidTypeScriptAdapter extends EvidEcmaScriptAdapter {
+export class EvidTypeScriptAdapter extends EvidEcmaScriptAdapter<"typescript"> {
   /**
    * Configures the shared extractor for TypeScript grammar and publication
    * rules.
@@ -29,6 +29,16 @@ export class EvidTypeScriptAdapter extends EvidEcmaScriptAdapter {
    * selects TypeScript or TSX syntax from each file in the supplied snapshot.
    */
   public constructor() {
-    super("typescript", "TypeScript");
+    super("TypeScript");
+  }
+
+  /**
+   * TypeScript discriminator for the shared ECMAScript extraction pipeline.
+   *
+   * The literal return type lets adapter registries preserve this entry point's
+   * artifact identity without narrowing a shared base instance at runtime.
+   */
+  public get type(): "typescript" {
+    return "typescript";
   }
 }

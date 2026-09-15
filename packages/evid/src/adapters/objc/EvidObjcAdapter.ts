@@ -26,14 +26,16 @@ import { EvidObjcFileScanner } from "./EvidObjcFileScanner";
  * adapter retains each physical site while normalizing published identities and
  * preserving failures that prevent complete extraction.
  */
-export class EvidObjcAdapter implements IEvidAdapter {
+export class EvidObjcAdapter implements IEvidAdapter<"objc"> {
   /**
    * Configured language discriminator for Objective-C extraction.
    *
    * It selects Objective-C rules even when headers or .m files overlap other
    * registered language extensions.
    */
-  public readonly type = "objc";
+  public get type(): "objc" {
+    return "objc";
+  }
 
   /**
    * Builds an owned Objective-C inventory from captured source contents.

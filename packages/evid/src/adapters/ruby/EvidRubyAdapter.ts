@@ -29,13 +29,15 @@ import { EvidRubyFileScanner } from "./EvidRubyFileScanner";
  * physical origins and withdrawal causes. Unsupported analysis remains visible
  * as incompleteness.
  */
-export class EvidRubyAdapter implements IEvidAdapter {
+export class EvidRubyAdapter implements IEvidAdapter<"ruby"> {
   /**
    * Artifact discriminator selecting Ruby source and named-file rules.
    *
    * Configuration uses this value independently of the filename's extension.
    */
-  public readonly type = "ruby";
+  public get type(): "ruby" {
+    return "ruby";
+  }
 
   /**
    * Builds a normalized Ruby inventory from an owned copy of the snapshot.

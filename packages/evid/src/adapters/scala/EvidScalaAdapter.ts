@@ -28,14 +28,16 @@ import { EvidScalaExports } from "./EvidScalaExports";
  * published, ensuring public aliases and documentation refer to the same
  * underlying identity rather than creating independent coverage units.
  */
-export class EvidScalaAdapter implements IEvidAdapter {
+export class EvidScalaAdapter implements IEvidAdapter<"scala"> {
   /**
    * Artifact discriminator selecting Scala grammar and extraction rules.
    *
    * Population configuration uses this value to select public declarations and
    * supported documentation carriers through the common adapter contract.
    */
-  public readonly type = "scala";
+  public get type(): "scala" {
+    return "scala";
+  }
 
   /**
    * Builds a normalized Scala inventory from a validated, cloned snapshot.

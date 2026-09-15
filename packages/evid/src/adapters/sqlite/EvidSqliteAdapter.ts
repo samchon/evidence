@@ -13,14 +13,16 @@ const EVID_SQLITE_TYPE = "sqlite" as const;
  * the shared SQL materializer. Analysis uses captured DDL source and does not
  * open a database or infer schema by executing statements.
  */
-export class EvidSqliteAdapter implements IEvidAdapter {
+export class EvidSqliteAdapter implements IEvidAdapter<"sqlite"> {
   /**
    * SQLite grammar selected for this adapter.
    *
    * The explicit dialect keeps SQLite's ownership and identifier rules stable
    * for source files with a shared `.sql` extension.
    */
-  public readonly type = EVID_SQLITE_TYPE;
+  public get type(): "sqlite" {
+    return "sqlite";
+  }
 
   /**
    * Materializes SQLite scanner records into graph-facing inventory records.

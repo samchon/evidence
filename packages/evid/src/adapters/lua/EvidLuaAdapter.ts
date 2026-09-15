@@ -28,7 +28,7 @@ import { EvidLuaFileScanner } from "./EvidLuaFileScanner";
  * is not assigned an arbitrary table owner merely because a comment names it.
  * Source and syntax uncertainty remain part of the final inventory status.
  */
-export class EvidLuaAdapter implements IEvidAdapter {
+export class EvidLuaAdapter implements IEvidAdapter<"lua"> {
   /**
    * Lua discriminator for static global and module-table extraction.
    *
@@ -36,7 +36,9 @@ export class EvidLuaAdapter implements IEvidAdapter {
    * units rather than becoming type declarations by analogy with another
    * language.
    */
-  public readonly type = "lua";
+  public get type(): "lua" {
+    return "lua";
+  }
 
   /**
    * Analyzes a copied Lua snapshot and returns reconciled public records.

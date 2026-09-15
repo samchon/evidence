@@ -22,7 +22,6 @@ import type { IEvidSourceFile } from "../../structures/IEvidSourceFile";
 import type { IEvidSourceSnapshot } from "../../structures/IEvidSourceSnapshot";
 import type { IEvidUnit } from "../../structures/IEvidUnit";
 import type { IEvidUnitSite } from "../../structures/IEvidUnitSite";
-import type { EvidArtifactType } from "../../typings/EvidArtifactType";
 
 /**
  * Extracts Swagger/OpenAPI operations and their description-based annotation
@@ -34,14 +33,16 @@ import type { EvidArtifactType } from "../../typings/EvidArtifactType";
  * description spans map annotations back to source coordinates. EvidDocument
  * failures remain incomplete.
  */
-export class EvidSwaggerAdapter implements IEvidAdapter {
+export class EvidSwaggerAdapter implements IEvidAdapter<"swagger"> {
   /**
    * Artifact discriminator selecting API-operation extraction.
    *
    * Operations use method/path targets within each independent document
    * population.
    */
-  public readonly type: EvidArtifactType = "swagger";
+  public get type(): "swagger" {
+    return "swagger";
+  }
 
   /**
    * Normalizes captured JSON/YAML documents into operation inventories.

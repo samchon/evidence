@@ -21,7 +21,6 @@ import type { IEvidSourceSnapshot } from "../../structures/IEvidSourceSnapshot";
 import type { IEvidTagParseResult } from "../../structures/IEvidTagParseResult";
 import type { IEvidUnit } from "../../structures/IEvidUnit";
 import type { IEvidUnitSite } from "../../structures/IEvidUnitSite";
-import type { EvidArtifactType } from "../../typings/EvidArtifactType";
 import type { EvidDatabaseSymbol } from "../../typings/EvidDatabaseSymbol";
 
 /**
@@ -33,14 +32,16 @@ import type { EvidDatabaseSymbol } from "../../typings/EvidDatabaseSymbol";
  * their physical hosts. A schema-loading failure produces incomplete analysis
  * instead of an empty pass.
  */
-export class EvidPrismaAdapter implements IEvidAdapter {
+export class EvidPrismaAdapter implements IEvidAdapter<"prisma"> {
   /**
    * Artifact discriminator selecting Prisma schema extraction.
    *
    * Prisma target spelling and database selectors apply to the resulting
    * inventory.
    */
-  public readonly type: EvidArtifactType = "prisma";
+  public get type(): "prisma" {
+    return "prisma";
+  }
 
   /**
    * Loads one combined schema from a validated, cloned source snapshot.

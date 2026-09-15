@@ -15,14 +15,16 @@ const EVID_MYSQL_TYPE = "mysql" as const;
  * statements; the adapter neither connects to a server nor executes
  * migrations.
  */
-export class EvidMysqlAdapter implements IEvidAdapter {
+export class EvidMysqlAdapter implements IEvidAdapter<"mysql"> {
   /**
    * MySQL grammar selected for this adapter.
    *
    * This identity prevents a shared `.sql` extension from changing the
    * declaration surface through dialect probing.
    */
-  public readonly type = EVID_MYSQL_TYPE;
+  public get type(): "mysql" {
+    return "mysql";
+  }
 
   /**
    * Materializes MySQL scanner records into graph-facing inventory records.

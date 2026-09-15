@@ -17,7 +17,7 @@ import { EvidEcmaScriptAdapter } from "../ecmascript/EvidEcmaScriptAdapter";
  *   // A declared instance method is addressed as client.js#Client.prototype.send.
  *   // Adding another supported export name does not create a second method unit.
  */
-export class EvidJavaScriptAdapter extends EvidEcmaScriptAdapter {
+export class EvidJavaScriptAdapter extends EvidEcmaScriptAdapter<"javascript"> {
   /**
    * Configures the shared extractor for JavaScript and JSX source.
    *
@@ -25,6 +25,16 @@ export class EvidJavaScriptAdapter extends EvidEcmaScriptAdapter {
    * context. No grammar or source is loaded until a snapshot is analyzed.
    */
   public constructor() {
-    super("javascript", "JavaScript");
+    super("JavaScript");
+  }
+
+  /**
+   * JavaScript discriminator for the shared ECMAScript extraction pipeline.
+   *
+   * The literal return type lets adapter registries preserve this entry point's
+   * artifact identity without narrowing a shared base instance at runtime.
+   */
+  public get type(): "javascript" {
+    return "javascript";
   }
 }

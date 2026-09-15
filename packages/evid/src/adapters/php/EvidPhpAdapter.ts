@@ -30,14 +30,16 @@ import { EvidPhpFileScanner } from "./EvidPhpFileScanner";
  * its own source span, so complete inventories incorporate that context into
  * content digests after normalization.
  */
-export class EvidPhpAdapter implements IEvidAdapter {
+export class EvidPhpAdapter implements IEvidAdapter<"php"> {
   /**
    * Artifact family selecting PHP parsing and source-public extraction.
    *
    * The value connects population configuration to this adapter's visibility
    * and documentation attachment rules.
    */
-  public readonly type = "php";
+  public get type(): "php" {
+    return "php";
+  }
 
   /**
    * Builds a serializable PHP inventory while retaining source and parser

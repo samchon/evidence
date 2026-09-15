@@ -5,7 +5,6 @@ import { EvidMarkdownScanner } from "./EvidMarkdownScanner";
 import type { IEvidAdapter } from "../../structures/IEvidAdapter";
 import type { IEvidInventory } from "../../structures/IEvidInventory";
 import type { IEvidSourceSnapshot } from "../../structures/IEvidSourceSnapshot";
-import type { EvidArtifactType } from "../../typings/EvidArtifactType";
 
 /**
  * Extracts Markdown file and heading units with HTML-comment annotation hosts.
@@ -15,14 +14,16 @@ import type { EvidArtifactType } from "../../typings/EvidArtifactType";
  * comment attachment; this adapter combines those records with discovery
  * diagnostics and validates the resulting shared inventory.
  */
-export class EvidMarkdownAdapter implements IEvidAdapter {
+export class EvidMarkdownAdapter implements IEvidAdapter<"markdown"> {
   /**
    * Artifact discriminator selecting Markdown structure and target grammar.
    *
    * Population symbol policies can select files or supported exact heading
    * levels.
    */
-  public readonly type: EvidArtifactType = "markdown";
+  public get type(): "markdown" {
+    return "markdown";
+  }
 
   /**
    * Scans captured Markdown contents into an owned normalized inventory.

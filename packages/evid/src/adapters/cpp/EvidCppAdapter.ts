@@ -36,7 +36,7 @@ import type { IEvidCppResolvedAlias } from "./IEvidCppResolvedAlias";
  * output. It does not replace C++ lookup, preprocessing, or instantiation with
  * name-based guesses merely to produce a smaller public inventory.
  */
-export class EvidCppAdapter implements IEvidAdapter {
+export class EvidCppAdapter implements IEvidAdapter<"cpp"> {
   /**
    * C++ artifact discriminator used by the public adapter.
    *
@@ -44,7 +44,9 @@ export class EvidCppAdapter implements IEvidAdapter {
    * header extensions also accepted by C; extension overlap does not choose
    * semantics.
    */
-  public readonly type = "cpp";
+  public get type(): "cpp" {
+    return "cpp";
+  }
 
   /**
    * Builds a C++ inventory from an owned copy of the source snapshot.
