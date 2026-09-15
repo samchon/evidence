@@ -88,7 +88,9 @@ export namespace EvidenceCommand {
     for (let index = 0; index < tokens.length; index++) {
       const token = tokens[index];
       if (token === undefined)
-        throw new EvidenceCommandError("The argument list changed while parsing.");
+        throw new EvidenceCommandError(
+          "The argument list changed while parsing.",
+        );
       if (token === "-w" || token === "--watch") {
         if (operation !== "check")
           throw new EvidenceCommandError(
@@ -157,7 +159,9 @@ export namespace EvidenceCommand {
       };
     if (operation === "inspect") {
       if (target === undefined)
-        throw new EvidenceCommandError("Evidence inspect requires exactly one target.");
+        throw new EvidenceCommandError(
+          "Evidence inspect requires exactly one target.",
+        );
       return {
         operation,
         target,
@@ -169,13 +173,18 @@ export namespace EvidenceCommand {
     }
     if (operation === "list") {
       const language = values.get("language");
-      if (language !== undefined && !EvidenceArtifactTypes.isSupported(language))
+      if (
+        language !== undefined &&
+        !EvidenceArtifactTypes.isSupported(language)
+      )
         throw new EvidenceCommandError(
           `Unknown evid artifact type '${language}'. Use a type backed by a shipped adapter.`,
         );
       const kind = values.get("kind");
       if (kind !== undefined && !typia.is<EvidenceSymbol>(kind))
-        throw new EvidenceCommandError(`Unknown Evidence symbol kind '${kind}'.`);
+        throw new EvidenceCommandError(
+          `Unknown Evidence symbol kind '${kind}'.`,
+        );
       return {
         operation,
         cwd,
@@ -207,7 +216,9 @@ export namespace EvidenceCommand {
    * {@link main}.
    *
    * @example
-   *   const result: IEvidenceCommandResult = await EvidenceCommand.run(["--help"]);
+   *   const result: IEvidenceCommandResult = await EvidenceCommand.run([
+   *     "--help",
+   *   ]);
    *   // result.exitCode === 0 and result.stdout contains the command reference.
    */
   export async function run(
@@ -801,7 +812,7 @@ const INITIAL_DATA: IEvidenceConfig = {
  * starter object readable and directly editable after `evid init`.
  */
 const INITIAL_CONFIG = dedent`
-  import type { IEvidenceConfig } from "evid";
+  import type { IEvidenceConfig } from "@wrtnlabs/evidence";
 
   // Replace these globs with the public source and requirements in this project.
   export default ${JSON.stringify(INITIAL_DATA, null, 2)} satisfies IEvidenceConfig;
