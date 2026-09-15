@@ -16,16 +16,18 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  *
  * 1. Create directory junction aliases and a hard link to one Prisma schema,
  *    then require one physical file with all three selected addresses and link
- *    topology dependencies.
+ *    topology dependencies. Require the first logical address to own its stable
+ *    fingerprint path while the physical project root maps to `.`.
  * 2. Select through a linked root and require its local relative address while
- *    preserving the same physical identity as the original snapshot.
+ *    preserving the same physical identity as the original snapshot. Require
+ *    the root's configured alias to remain in portable fingerprint metadata.
  * 3. Add a junction cycle and require an incomplete snapshot with the
  *    symlink-cycle diagnostic.
  * 4. Exclude the cyclic path and require complete discovery with the original
  *    single physical schema still present.
  */
 export async function test_source_links(): Promise<void> {
-  const location = join(__dirname, "links-" + randomUUID());
+  const location: string = join(__dirname, "links-" + randomUUID());
 
   await TestFileSystem.experiment(
     location,
@@ -37,7 +39,7 @@ export async function test_source_links(): Promise<void> {
         }
       `,
     },
-    async (directory) => {
+    async (directory: string): Promise<void> => {
       // Directory aliases and hard links identify the same physical schema.
       await symlink(
         join(directory, "schema"),
@@ -53,7 +55,7 @@ export async function test_source_links(): Promise<void> {
         join(directory, "schema/model.prisma"),
         join(directory, "project/hard.prisma"),
       );
-      const config = join(directory, "project/evidence.config.ts");
+      const config: string = join(directory, "project/evidence.config.ts");
 
       const snapshot = await EvidenceSourceLoader.glob(config, {
         files: ["**/*.prisma"],
@@ -68,7 +70,25 @@ export async function test_source_links(): Promise<void> {
         ),
         ["alias/model.prisma", "chain/model.prisma", "hard.prisma"],
       );
-      for (const dependency of ["schema", "project/alias", "project/chain"])
+      TestValidator.equals(
+        "logical fingerprint path",
+        snapshot.files[0]?.fingerprintPath,
+        "alias/model.prisma",
+      );
+      TestValidator.equals(
+        "project fingerprint root",
+        snapshot.files[0]?.fingerprintRoot,
+        {
+          physicalPath: SourcePath.slash(join(directory, "project")),
+          fingerprintPath: ".",
+        },
+      );
+      const linkDependencies: string[] = [
+        "schema",
+        "project/alias",
+        "project/chain",
+      ];
+      for (const dependency of linkDependencies)
         TestValidator.predicate(
           "link topology dependency",
           snapshot.dependencies.some(
@@ -95,6 +115,19 @@ export async function test_source_links(): Promise<void> {
         "shared physical identity",
         linkedRoot.files[0]?.id,
         snapshot.files[0]?.id,
+      );
+      TestValidator.equals(
+        "linked root fingerprint path",
+        linkedRoot.files[0]?.fingerprintPath,
+        "alias/model.prisma",
+      );
+      TestValidator.equals(
+        "linked root fingerprint mapping",
+        linkedRoot.files[0]?.fingerprintRoot,
+        {
+          physicalPath: SourcePath.slash(join(directory, "schema")),
+          fingerprintPath: "alias",
+        },
       );
 
       // A followed cycle is a failure; an explicitly excluded cycle is never traversed.

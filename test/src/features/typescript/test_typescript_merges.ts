@@ -1,16 +1,28 @@
 import { EvidenceTypeScriptAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+import type {
+  IEvidenceInventory,
+  IEvidencePublicAddress,
+  IEvidenceUnit,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
-/** Reconciles TypeScript merged declarations into stable units.
+/**
+ * Reconciles TypeScript merged declarations into stable units.
  *
- * Overloads and class/interface merges share semantic identity while retaining the sites needed for review.
+ * TypeScript overloads and declaration merging share semantic identity while
+ * retaining every site needed for review. A namespace nested interface remains
+ * addressable through the merged outer interface and namespace spelling.
  *
- * 1. Analyze overload and declaration merge inputs.
- * 2. Verify merged identities, sites, and resolution.
+ * 1. Analyze function overloads, class/interface merges, function namespaces,
+ *    and an interface with a companion namespace containing another interface.
+ * 2. Require overload and class/interface sites to merge without duplicating
+ *    semantic units.
+ * 3. Verify namespace members retain their public nested paths, including
+ *    `IShoppingSale.ICreate.title`.
+ * 4. Require the resulting inventory to remain complete and diagnostic-free.
  */
 export async function test_typescript_merges(): Promise<void> {
   const content = dedent`
@@ -40,6 +52,15 @@ export async function test_typescript_merges(): Promise<void> {
       export const member = 1;
     }
     export type { Order };
+
+    export interface IShoppingSale {
+      id: string;
+    }
+    export namespace IShoppingSale {
+      export interface ICreate {
+        title: string;
+      }
+    }
   `;
   const inventory = await new EvidenceTypeScriptAdapter().analyze(
     TestSourceSnapshot.create("src/merged.ts", content),
@@ -72,7 +93,6 @@ export async function test_typescript_merges(): Promise<void> {
     ],
   );
 
-  // A function companion namespace contributes its type identity without generated static members.
   TestValidator.equals(
     "function namespace static side excluded",
     inventory.units.some(
@@ -81,7 +101,6 @@ export async function test_typescript_merges(): Promise<void> {
     false,
   );
 
-  // Either half of a merged member can make one identity available in type space.
   const orderMember = requireUnit(inventory, "property", "Order.member");
   TestValidator.equals(
     "merged member retains both declarations",
@@ -91,14 +110,63 @@ export async function test_typescript_merges(): Promise<void> {
   TestValidator.predicate(
     "type-only merge keeps the interface member",
     inventory.addresses.some(
-      (address) =>
+      (address: IEvidencePublicAddress): boolean =>
         address.unitId === orderMember.id &&
         address.segments.join(".") === "Order.member",
+    ),
+  );
+
+  const shoppingSale: IEvidenceUnit = requireUnit(
+    inventory,
+    "type",
+    "IShoppingSale",
+  );
+  TestValidator.equals(
+    "interface and namespace sites merge",
+    shoppingSale.sites.length,
+    2,
+  );
+  const create: IEvidenceUnit = requireUnit(
+    inventory,
+    "type",
+    "IShoppingSale.ICreate",
+  );
+  const title: IEvidenceUnit = requireUnit(
+    inventory,
+    "property",
+    "IShoppingSale.ICreate.title",
+  );
+  TestValidator.equals(
+    "nested interface parent",
+    create.parentId,
+    shoppingSale.id,
+  );
+  TestValidator.equals("nested property parent", title.parentId, create.id);
+  TestValidator.predicate(
+    "nested namespace type address",
+    inventory.addresses.some(
+      (address: IEvidencePublicAddress): boolean =>
+        address.unitId === create.id &&
+        address.segments.join(".") === "IShoppingSale.ICreate",
+    ),
+  );
+  TestValidator.predicate(
+    "nested namespace property address",
+    inventory.addresses.some(
+      (address: IEvidencePublicAddress): boolean =>
+        address.unitId === title.id &&
+        address.segments.join(".") === "IShoppingSale.ICreate.title",
     ),
   );
   TestValidator.equals("valid merged inventory", inventory.diagnostics, []);
 }
 
+/**
+ * Requires one TypeScript unit with an exact symbol and semantic identity.
+ *
+ * Merge assertions must fail on absence before site or ownership checks can
+ * accidentally inspect a different declaration kind at the same address.
+ */
 function requireUnit(
   inventory: IEvidenceInventory,
   symbol: IEvidenceUnit["symbol"],
@@ -112,11 +180,22 @@ function requireUnit(
   return unit;
 }
 
+/**
+ * Counts units sharing one rendered semantic identity.
+ *
+ * The count exposes duplicate merge records even when a public-address lookup
+ * could resolve only the first occurrence.
+ */
 function count(inventory: IEvidenceInventory, identity: string): number {
   return inventory.units.filter((unit) => unit.identity.join(".") === identity)
     .length;
 }
 
+/**
+ * Orders expected TypeScript identities by exact spelling.
+ *
+ * Locale-independent comparison keeps fixture output stable across CI hosts.
+ */
 function compare(x: string, y: string): number {
   return x < y ? -1 : x > y ? 1 : 0;
 }

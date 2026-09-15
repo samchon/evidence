@@ -1,4 +1,5 @@
 import type { IEvidenceSourceAddress } from "./IEvidenceSourceAddress";
+import type { IEvidenceSourceFingerprintRoot } from "./IEvidenceSourceFingerprintRoot";
 
 /**
  * Captured UTF-8 file content with every selected logical address preserved.
@@ -28,6 +29,24 @@ export interface IEvidenceSourceFile {
    * same source ID, while logical citation paths remain in `addresses`.
    */
   physicalPath: string;
+
+  /**
+   * Checkout-stable declaring path used by semantic review fingerprints.
+   *
+   * Filesystem discovery selects a deterministic logical address relative to the
+   * configuration directory. It stays independent of device/inode identity and
+   * canonical link targets while still distinguishing separate declaring files.
+   */
+  fingerprintPath: string;
+
+  /**
+   * Portable mapping for an adapter-owned physical population root.
+   *
+   * Filesystem snapshots provide this when the configured root was resolved.
+   * Remote and caller-authored snapshots may omit it when their unit IDs do not
+   * contain a physical root or when file-derived normalization is sufficient.
+   */
+  fingerprintRoot?: IEvidenceSourceFingerprintRoot;
 
   /**
    * Decoded source text with its original line endings and byte-order mark.

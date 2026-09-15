@@ -1,4 +1,5 @@
 import { EvidenceDocumentation } from "../../parsers/EvidenceDocumentation";
+import { DocumentationExamples } from "../../parsers/DocumentationExamples";
 import type { IEvidenceDocumentation } from "../../structures/IEvidenceDocumentation";
 import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { IScalaDocumentation } from "./IScalaDocumentation";
@@ -6,13 +7,15 @@ import type { IScalaDocumentation } from "./IScalaDocumentation";
 /**
  * Reads Scaladoc while preserving source mappings and masking code examples.
  *
- * Evidence tag parsing receives the masked text so examples cannot create declarations, while original offsets remain valid for diagnostics and hosts.
+ * Evidence tag parsing receives the masked text so examples cannot create
+ * declarations, while original offsets remain valid for diagnostics and hosts.
  */
 export namespace ScalaDocumentation {
   /**
-   * Maps a classified documentation carrier and masks ineligible examples without moving offsets.
+   * Maps a documentation carrier and masks examples without moving source offsets.
    *
-   * Non-Scaladoc carriers retain the shared parser mapping unchanged because only Scaladoc supports example masking here.
+   * Non-Scaladoc carriers retain the shared parser mapping unchanged because only
+   * Scaladoc supports example masking here.
    */
   export function read(
     source: IEvidenceSourceFile,
@@ -33,24 +36,36 @@ export namespace ScalaDocumentation {
   }
 
   /**
-   * Masks Scaladoc brace blocks, HTML code elements, and indented Markdown examples.
+   * Masks Scaladoc brace blocks, HTML code, and indented Markdown examples.
    *
-   * Fenced examples are left for the shared tag parser, and replacement spaces preserve every unmasked source position.
+   * Fenced examples remain for the shared tag parser, and replacement spaces
+   * preserve every unmasked source position.
    */
   function mask(input: string): string {
-    const characters = input.split("");
-    for (const match of input.matchAll(/\{\{\{[\s\S]*?(?:\}\}\}|$)/gu))
-      hide(characters, match.index, match.index + match[0].length);
-    const htmlCode = /<(pre|code)\b[^>]*>[\s\S]*?<\/\1\s*>/giu;
-    for (const match of input.matchAll(htmlCode))
-      hide(characters, match.index, match.index + match[0].length);
-    const lines = input.split("\n");
-    const indents = lines.filter((line) => line.trim() !== "").map(indentation);
-    const baseline = indents.reduce(
-      (minimum, indent) => Math.min(minimum, indent),
+    const characters: string[] = input.split("");
+    const markdown: readonly boolean[] =
+      DocumentationExamples.markdownCode(input);
+    let opening: number | undefined;
+    for (const match of input.matchAll(/\{\{\{|\}\}\}/gu)) {
+      const index: number = match.index;
+      if (opening === undefined) {
+        if (match[0] === "{{{" && markdown[index] !== true) opening = index;
+      } else if (match[0] === "}}}") {
+        hide(characters, opening, index + match[0].length);
+        opening = undefined;
+      }
+    }
+    if (opening !== undefined) hide(characters, opening, input.length);
+    DocumentationExamples.maskHtml(characters, input, ["pre", "code"]);
+    const lines: string[] = input.split("\n");
+    const indents: number[] = lines
+      .filter((line: string): boolean => line.trim() !== "")
+      .map((line: string): number => indentation(line));
+    const baseline: number = indents.reduce(
+      (minimum: number, indent: number): number => Math.min(minimum, indent),
       Infinity,
     );
-    let offset = 0;
+    let offset: number = 0;
     for (const line of lines) {
       if (indentation(line) >= baseline + 4)
         hide(characters, offset, offset + line.length);
@@ -60,12 +75,13 @@ export namespace ScalaDocumentation {
   }
 
   /**
-   * Counts a line's Markdown indentation after its documentation delimiter is removed.
+   * Counts indentation after the documentation delimiter is removed.
    *
-   * Tabs advance to the next four-column boundary so mixed indentation uses the same threshold as spaces.
+   * Tabs advance to the next four-column boundary so mixed indentation uses the
+   * same threshold as spaces.
    */
   function indentation(line: string): number {
-    let spaces = 0;
+    let spaces: number = 0;
     for (const character of line) {
       if (character === " ") ++spaces;
       else if (character === "\t") spaces += 4 - (spaces % 4);
@@ -75,9 +91,10 @@ export namespace ScalaDocumentation {
   }
 
   /**
-   * Replaces example characters with spaces while retaining original line boundaries.
+   * Replaces example characters while retaining original line boundaries.
    *
-   * Newline and carriage-return characters remain intact so ranges and line numbers continue to map to source.
+   * Newline and carriage-return characters remain intact so ranges and line
+   * numbers continue to map to source.
    */
   function hide(characters: string[], start: number, end: number): void {
     for (let index = start; index < end; ++index)

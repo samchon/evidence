@@ -40,13 +40,15 @@ const METHODS: OpenApi.Method[] = [
 ];
 const cache = new Map<string, ISwaggerCacheEntry>();
 
-/** Normalizes Swagger/OpenAPI documents and fingerprints their operations.
+/**
+ * Normalizes Swagger/OpenAPI documents and fingerprints their operations.
  *
  * This is the single version-conversion boundary: callers receive detached,
  * serializable records rather than parser nodes or mutable converter objects.
  */
 export namespace SwaggerDocumentLoader {
-  /** Loads one source snapshot with digest-keyed success and failure caching.
+  /**
+   * Loads one source snapshot with digest-keyed success and failure caching.
    *
    * Cache entries are cloned on both insertion and return so no caller can
    * mutate the shared semantic result used by another analysis.
@@ -83,12 +85,26 @@ export namespace SwaggerDocumentLoader {
   }
 }
 
+/**
+ * Materializes every operation with its inherited OpenAPI contract context.
+ *
+ * Server and security inheritance is resolved here while the path-item and
+ * document scopes are still available. Passing only the operation object would
+ * let a root policy change preserve an obsolete review fingerprint.
+ */
 function operations(
   content: string,
   yaml: Document.Parsed<ParsedNode>,
   document: OpenApi.IDocument,
 ): ISwaggerOperation[] {
   const output: ISwaggerOperation[] = [];
+  // OpenAPI defines an absent or empty root server list as `/`. Normalize that
+  // default before nested scopes choose whether to inherit or override it.
+  const rootServers: OpenApi.IServer[] =
+    document.servers === undefined || document.servers.length === 0
+      ? [{ url: "/" }]
+      : document.servers;
+  const rootSecurity: Record<string, string[]>[] = document.security ?? [];
   for (const [operationPath, item] of Object.entries(document.paths ?? {})) {
     for (const method of METHODS) {
       const operation = item[method];
@@ -101,6 +117,8 @@ function operations(
             operationPath,
             operation,
             document.components,
+            operation.servers ?? item.servers ?? rootServers,
+            operation.security ?? rootSecurity,
           ),
         );
     }
@@ -115,6 +133,8 @@ function operations(
           operationPath,
           operation,
           document.components,
+          operation.servers ?? item.servers ?? rootServers,
+          operation.security ?? rootSecurity,
         ),
       );
   }
@@ -130,6 +150,13 @@ function operations(
   return output;
 }
 
+/**
+ * Creates one target and digest after validating its public target spelling.
+ *
+ * Location remains tied to the authored YAML node, while the digest receives
+ * the effective contract assembled across OpenAPI scopes and resolved component
+ * references. Presentation-only description formatting is normalized later.
+ */
 function operationOf(
   content: string,
   yaml: Document.Parsed<ParsedNode>,
@@ -137,6 +164,8 @@ function operationOf(
   operationPath: string,
   operation: OpenApi.IOperation,
   components: OpenApi.IComponents,
+  servers: OpenApi.IServer[],
+  security: Record<string, string[]>[],
 ): ISwaggerOperation {
   if (!operationPath.startsWith("/") || /\s/u.test(operationPath))
     throw new Error(
@@ -160,7 +189,10 @@ function operationOf(
     path: operationPath,
     target,
     digest: CanonicalJson.digest(
-      withResolvedReferences(semanticOperation(operation), components),
+      withResolvedReferences(
+        semanticOperation(operation, components, servers, security),
+        components,
+      ),
     ),
     ...(operation.description === undefined
       ? {}
@@ -169,15 +201,86 @@ function operationOf(
   };
 }
 
-function semanticOperation(operation: OpenApi.IOperation): object {
-  const output = CanonicalJson.without(operation, ["description"]);
+/**
+ * Builds the semantic operation payload consumed by canonical hashing.
+ *
+ * Effective servers and security replace raw operation-level fields. Only
+ * security schemes named by the effective requirements are included, so a used
+ * authentication definition expires review while an unrelated component edit
+ * leaves the operation stable.
+ */
+function semanticOperation(
+  operation: OpenApi.IOperation,
+  components: OpenApi.IComponents,
+  servers: OpenApi.IServer[],
+  security: Record<string, string[]>[],
+): object {
+  const output: Record<string, unknown> = CanonicalJson.without(operation, [
+    "description",
+  ]);
+  output["servers"] = servers;
+  output["security"] = normalizedSecurity(security);
+  // Scheme names are JSON keys. A null prototype keeps `__proto__` as data and
+  // prevents inherited members from masquerading as authored definitions.
+  const schemes: Record<string, OpenApi.ISecurityScheme> = Object.create(
+    null,
+  ) as Record<string, OpenApi.ISecurityScheme>;
+  for (const requirement of security)
+    for (const name of Object.keys(requirement)) {
+      const catalog: Record<string, OpenApi.ISecurityScheme> | undefined =
+        components.securitySchemes;
+      const scheme: OpenApi.ISecurityScheme | undefined =
+        catalog !== undefined && Object.hasOwn(catalog, name)
+          ? catalog[name]
+          : undefined;
+      if (scheme !== undefined) schemes[name] = scheme;
+    }
+  if (Object.keys(schemes).length !== 0) output["securitySchemes"] = schemes;
   if (operation.description !== undefined) {
-    const description = SwaggerDescription.semantic(operation.description);
+    const description: string = SwaggerDescription.semantic(
+      operation.description,
+    );
     if (description !== "") output["description"] = description;
   }
   return output;
 }
 
+/**
+ * Canonicalizes the set-like portions of an effective security contract.
+ *
+ * OpenAPI treats requirement objects as alternatives and every listed scheme
+ * and scope as a conjunction. Sorting those members prevents presentation-only
+ * reordering from expiring reviews while retaining duplicate alternatives.
+ */
+function normalizedSecurity(
+  security: Record<string, string[]>[],
+): Record<string, string[]>[] {
+  const normalized: Record<string, string[]>[] = security.map(
+    (requirement: Record<string, string[]>): Record<string, string[]> =>
+      Object.fromEntries(
+        Object.entries(requirement)
+          .sort((left: [string, string[]], right: [string, string[]]): number =>
+            compare(left[0], right[0]),
+          )
+          .map((entry: [string, string[]]): [string, string[]] => [
+            entry[0],
+            [...entry[1]].sort(compare),
+          ]),
+      ),
+  );
+  normalized.sort(
+    (left: Record<string, string[]>, right: Record<string, string[]>): number =>
+      compare(JSON.stringify(left), JSON.stringify(right)),
+  );
+  return normalized;
+}
+
+/**
+ * Maps one converted operation back to its authored YAML source.
+ *
+ * Direct mappings and alias-backed descriptions both preserve the scalar map
+ * needed for Evidence tags; unavailable parser ranges leave location optional.
+ */
 function location(
   content: string,
   yaml: Document.Parsed<ParsedNode>,
@@ -207,6 +310,12 @@ function location(
   };
 }
 
+/**
+ * Finds the authored YAML node that supplied an operation description.
+ *
+ * A direct description wins. If the operation is a YAML alias, the resolved map
+ * supplies the scalar whose source token still belongs to the original document.
+ */
 function descriptionSource(
   yaml: Document.Parsed<ParsedNode>,
   paths: unknown[][],
@@ -227,6 +336,12 @@ function descriptionSource(
   return undefined;
 }
 
+/**
+ * Enumerates YAML lookup paths for one converted operation.
+ *
+ * Case variants and supported additional-operation containers account for the
+ * shapes normalized by OpenApiConverter while retaining authored locations.
+ */
 function operationPaths(operationPath: string, method: string): unknown[][] {
   const methods = Array.from(
     new Set([method, method.toLowerCase(), method.toUpperCase()]),
@@ -239,6 +354,12 @@ function operationPaths(operationPath: string, method: string): unknown[][] {
   ];
 }
 
+/**
+ * Returns the first YAML node found at a list of candidate paths.
+ *
+ * Candidate order expresses source-location precedence, and scalar values are
+ * accepted because operation descriptions can be direct nodes.
+ */
 function firstNode(
   yaml: Document.Parsed<ParsedNode>,
   paths: unknown[][],
@@ -250,6 +371,13 @@ function firstNode(
   return undefined;
 }
 
+/**
+ * Expands local component references into the operation fingerprint payload.
+ *
+ * Sibling fields override the resolved component value. The active-reference
+ * set terminates cycles, while unresolved references remain literal so edits to
+ * their spelling still affect the digest.
+ */
 function withResolvedReferences(
   value: unknown,
   components: object,
@@ -263,7 +391,9 @@ function withResolvedReferences(
     );
   }
   const entries: Array<[string, unknown]> = Object.entries(value);
-  const reference: unknown = Reflect.get(value, "$ref");
+  const reference: unknown = Object.hasOwn(value, "$ref")
+    ? Reflect.get(value, "$ref")
+    : undefined;
   if (typeof reference !== "string" || open.has(reference))
     return resolveEntries(entries, components, open);
   const target = componentAt(components, reference);
@@ -278,12 +408,18 @@ function withResolvedReferences(
     if (siblings.length === 0) return resolved;
     if (resolved === null || typeof resolved !== "object")
       return Object.fromEntries(siblings);
-    return Object.assign({}, resolved, Object.fromEntries(siblings));
+    return Object.fromEntries([...Object.entries(resolved), ...siblings]);
   } finally {
     open.delete(reference);
   }
 }
 
+/**
+ * Recursively resolves every value in one ordinary object entry list.
+ *
+ * Rebuilding through entries preserves authored own keys, including names that
+ * would otherwise interact with an object's prototype.
+ */
 function resolveEntries(
   entries: Array<[string, unknown]>,
   components: object,
@@ -297,6 +433,12 @@ function resolveEntries(
   );
 }
 
+/**
+ * Resolves one local OpenAPI component pointer through authored own properties.
+ *
+ * URI and JSON Pointer escapes are decoded per segment. Inherited properties are
+ * excluded because only document-owned components may alter an operation digest.
+ */
 function componentAt(components: object, reference: string): unknown {
   if (!reference.startsWith(COMPONENT_REFERENCE_PREFIX)) return undefined;
   const segments = reference
@@ -311,7 +453,7 @@ function componentAt(components: object, reference: string): unknown {
       current === null ||
       typeof current !== "object" ||
       Array.isArray(current) ||
-      !Reflect.has(current, segment)
+      !Object.hasOwn(current, segment)
     )
       return undefined;
     current = Reflect.get(current, segment);
@@ -319,6 +461,12 @@ function componentAt(components: object, reference: string): unknown {
   return current;
 }
 
+/**
+ * Stores one detached load result in the bounded insertion-order cache.
+ *
+ * Existing digests remain stable entries; new values evict the oldest digest and
+ * are cloned so later callers cannot mutate shared state.
+ */
 function remember(key: string, entry: ISwaggerCacheEntry): void {
   if (cache.has(key)) return;
   while (cache.size >= CACHE_LIMIT) {
@@ -329,10 +477,22 @@ function remember(key: string, entry: ISwaggerCacheEntry): void {
   cache.set(key, structuredClone(entry));
 }
 
+/**
+ * Orders operation targets by their exact portable spelling.
+ *
+ * Locale-independent comparison keeps duplicate detection deterministic across
+ * machines and Node locales.
+ */
 function compare(x: string, y: string): number {
   return x < y ? -1 : x > y ? 1 : 0;
 }
 
+/**
+ * Converts an unknown load failure into stable cached diagnostic text.
+ *
+ * Error instances retain their authored message; non-errors use JavaScript's
+ * string conversion so every failure can cross the serializable cache boundary.
+ */
 function message(cause: unknown): string {
   return cause instanceof Error ? cause.message : String(cause);
 }

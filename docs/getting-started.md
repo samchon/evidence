@@ -10,7 +10,7 @@ Install Evidence with the TypeScript toolchain that evaluates its typed configur
 pnpm i -D typescript ttsc @wrtnlabs/evidence
 ```
 
-`ttsc` supplies `ttsx`. Evidence uses it to typecheck and evaluate `evidence.config.ts`; it does not add another config runtime. The runtime downloads each certified Tree-sitter grammar into a per-user cache on first use and verifies its pinned checksum. Do not install a grammar package or a compiler for each analyzed language.
+`ttsc` supplies `ttsx`. Evidence uses it to typecheck and evaluate `evidence.config.ts`; it does not add another config runtime or require a project `tsconfig.json`. The runtime downloads each certified Tree-sitter grammar into a per-user cache on first use and verifies its pinned checksum. Do not install a grammar package or a compiler for each analyzed language.
 
 Create the starter file:
 

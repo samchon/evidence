@@ -104,7 +104,7 @@ Run `pnpm exec evidence check --watch` or use `-w` while authoring. The watcher 
 
 The active set includes `evidence.config.ts`, its static runtime import/export chain, configured glob directories and matching files, module metadata and re-export inputs reported by adapters, exact Markdown, Prisma, and local Swagger inputs, and logical and physical link paths. Missing files and roots remain dependencies so their creation can repair a cycle. A failed config keeps the last active set plus every dependency found in the current config scan; it never reuses the old config value. Disabled claims, effective `off` claims, and `off` references create no artifact reads or watch inputs.
 
-Configuration dependency discovery accepts static import/export specifiers and literal `import()` or `require()` calls. A computed runtime module specifier cannot be watched completely and produces a failed watch cycle until it is made static. Each local filesystem change also refetches enabled remote Swagger references during the fresh check. Remote URLs are not polled independently, so a remote-only change does not create a cycle.
+Configuration dependency discovery accepts static import/export specifiers and literal `import()` or `require()` calls. Import-mode `data:` modules are decoded as immutable inputs: JavaScript payloads retain nested `data:`, builtin, and absolute `file:` imports, while JSON and Wasm payloads add no filesystem path. Relative and package imports from a data module have no Node resolution base and fail the watch cycle. A computed runtime module specifier cannot be watched completely and produces a failed cycle until it is made static. Each local filesystem change also refetches enabled remote Swagger references during the fresh check. Remote URLs are not polled independently, so a remote-only change does not create a cycle.
 
 Text output prints every cycle and keeps failures visible until another dependency change triggers recovery. JSON output is NDJSON: each line is one compact `schemaVersion: 1` object with `watch: true`, a sequential `cycle`, status, exit code, and either the complete check report or an operational failure. `--output` truncates its destination once when watch starts and appends each framed cycle. Cycle exit codes describe that result while the process stays alive; Ctrl+C requests cleanup and exits 0, and an output or watcher failure exits 2.
 
@@ -440,7 +440,7 @@ paths:
 
 Fenced examples and other JSON/YAML string fields do not host tags. Operations without descriptions remain selected hosts for coverage policies.
 
-Swagger 2.0 and supported OpenAPI 3.x JSON/YAML documents are normalized into standard and additional operations under `paths`. Paths keep their exact case, spelling, and trailing slash; methods become uppercase. Components, path items, webhooks, and the whole document do not become aggregate units. Each operation fingerprint includes its normalized content and recursively referenced local components. Recursive references terminate, while unresolved or external schema references remain unfetched.
+Swagger 2.0 and supported OpenAPI 3.x JSON/YAML documents are normalized into standard and additional operations under `paths`. Paths keep their exact case, spelling, and trailing slash; methods become uppercase. Components, path items, webhooks, and the whole document do not become aggregate units. Each operation fingerprint includes its normalized content, effective inherited servers and security, every used security-scheme definition, and recursively referenced local components. Security alternatives, conjunctive scheme names, and required scope or role names are order-independent; server preference order remains semantic. Recursive references terminate, while unresolved or external schema references remain unfetched.
 
 Swagger references load one exact local path or explicit HTTP(S) URL. Remote documents are fetched for every load with a 30-second timeout and a 16 MiB response limit; retained paths and diagnostics omit URL credentials and query values. Any file, fetch, UTF-8, parse, version, normalization, duplicate-operation, or target-shape failure leaves the inventory incomplete.
 
@@ -464,7 +464,7 @@ The seven-character fingerprint represents the cited identity and its full struc
 
 `EvidenceFingerprint.inspect(inventory, unitId)` returns the fingerprint version, the unit's content digest, the full scope digest, and the presented seven-character value. It refuses incomplete inventories. Source snapshot digests remain separate cache identities.
 
-Fingerprint version changes are review migrations. Inspect the new value, review the cited scope again, and update the tag only after that review. The checker reports the expected current value but does not write approving prose or renew reviews automatically.
+Fingerprint version changes are review migrations. Fingerprint v2 removes checkout-root, filesystem identity, source-offset, and line-ending noise from review identity while retaining semantic source paths and declaration structure. Existing v1 review tags become stale once after upgrading: inspect the v2 value, review the cited scope again, and update the tag only after that review. The checker reports the expected current value but does not write approving prose or renew reviews automatically.
 
 ## Coverage policies
 

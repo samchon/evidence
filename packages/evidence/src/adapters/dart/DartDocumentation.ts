@@ -1,16 +1,18 @@
 import { EvidenceDocumentation } from "../../parsers/EvidenceDocumentation";
+import { DocumentationExamples } from "../../parsers/DocumentationExamples";
 import type { IEvidenceDocumentation } from "../../structures/IEvidenceDocumentation";
 import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { IDartDocumentation } from "./IDartDocumentation";
 
 /**
- * Reads Dart documentation while preserving source mappings and masking code examples.
+ * Reads Dart documentation while preserving source mappings and masking code
+ * examples.
  *
  * DartAdapter uses the mapped text before Evidence tags are parsed for each host.
  */
 export namespace DartDocumentation {
   /**
-   * Maps a classified carrier and removes ineligible example text without moving offsets.
+   * Maps a carrier and removes examples without moving source offsets.
    *
    * Stable offsets keep tag diagnostics aligned with the original Dart source.
    */
@@ -32,15 +34,13 @@ export namespace DartDocumentation {
   }
 
   /**
-   * Masks HTML examples and Markdown indented code while shared tag parsing handles fences.
+   * Masks HTML examples and Markdown indented code before tag parsing.
    *
    * Only visible characters are replaced, preserving source line and UTF-16 positions.
    */
   function mask(input: string): string {
     const characters = input.split("");
-    const htmlCode = /<(pre|code)\b[^>]*>[\s\S]*?<\/\1\s*>/giu;
-    for (const match of input.matchAll(htmlCode))
-      hide(characters, match.index, match.index + match[0].length);
+    DocumentationExamples.maskHtml(characters, input, ["pre", "code"]);
     const lines = input.split("\n");
     const indents = lines.filter((line) => line.trim() !== "").map(indentation);
     const baseline = indents.reduce(
@@ -72,7 +72,7 @@ export namespace DartDocumentation {
   }
 
   /**
-   * Replaces example characters with spaces while retaining original line boundaries.
+   * Replaces example characters while retaining original line boundaries.
    *
    * Newlines remain available for the caller's source-offset mapping.
    */

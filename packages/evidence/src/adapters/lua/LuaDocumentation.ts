@@ -1,4 +1,5 @@
 import { EvidenceDocumentation } from "../../parsers/EvidenceDocumentation";
+import { DocumentationExamples } from "../../parsers/DocumentationExamples";
 import type { IEvidenceDocumentation } from "../../structures/IEvidenceDocumentation";
 import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { ILuaDocumentation } from "./ILuaDocumentation";
@@ -42,9 +43,7 @@ export namespace LuaDocumentation {
    */
   function mask(input: string): string {
     const characters = input.split("");
-    const htmlCode = /<(pre|code)\b[^>]*>[\s\S]*?<\/\1\s*>/giu;
-    for (const match of input.matchAll(htmlCode))
-      hide(characters, match.index, match.index + match[0].length);
+    DocumentationExamples.maskHtml(characters, input, ["pre", "code"]);
     const lines = input.split("\n");
     const indents = lines.filter((line) => line.trim() !== "").map(indentation);
     const baseline = indents.reduce(
@@ -61,7 +60,8 @@ export namespace LuaDocumentation {
   }
 
   /**
-   * Counts visual Markdown indentation after documentation delimiters are removed.
+   * Counts visual Markdown indentation after documentation delimiters are
+   * removed.
    *
    * Tabs advance to the next four-column boundary so indented-code detection
    * follows Markdown's column semantics instead of raw character count.
@@ -80,7 +80,8 @@ export namespace LuaDocumentation {
    * Replaces an example span with spaces while retaining line boundaries.
    *
    * Keeping newlines and carriage returns preserves offsets shared with the
-   * original documentation carrier and prevents later source mappings from drifting.
+   * original documentation carrier and prevents later source mappings from
+   * drifting.
    */
   function hide(characters: string[], start: number, end: number): void {
     for (let index = start; index < end; ++index)

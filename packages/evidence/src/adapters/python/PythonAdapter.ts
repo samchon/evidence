@@ -85,11 +85,64 @@ export class PythonAdapter implements IEvidenceAdapter {
       inventory.units = inventory.units.filter((unit) =>
         published.has(unit.id),
       );
-      this.materializeDocumentation(inventory, analyses, published);
+      const stablePublished: Set<string> = this.stabilizeRuntimeUnits(
+        inventory,
+        analyses,
+        published,
+      );
+      this.materializeDocumentation(inventory, analyses, stablePublished);
       return new EvidenceInventory([inventory]).snapshot();
     } finally {
       await parser.close();
     }
+  }
+
+  /**
+   * Restores stable semantic IDs after runtime-rebinding selection is complete.
+   *
+   * The scanner gives executable occurrences private suffixes so documentation
+   * on a replaced definition cannot attach to its survivor. Export resolution
+   * first chooses the winning occurrences; this pass then removes only their
+   * suffixes and rewrites the selected units, parents, addresses, and attachment
+   * candidates together. Unpublished attachments retain their occurrence IDs and
+   * therefore cannot regain eligibility after canonicalization.
+   */
+  private stabilizeRuntimeUnits(
+    inventory: IEvidenceInventory,
+    analyses: IPythonFileAnalysis[],
+    published: Set<string>,
+  ): Set<string> {
+    const stableIds: Map<string, string> = new Map<string, string>();
+    const owners: Set<string> = new Set<string>();
+    for (const id of published) {
+      const stable: string = id.replace(/:binding:\d+$/u, "");
+      if (owners.has(stable))
+        throw new Error(
+          `Python runtime bindings share semantic identity: ${stable}`,
+        );
+      owners.add(stable);
+      stableIds.set(id, stable);
+    }
+    for (const unit of inventory.units) {
+      const stable: string | undefined = stableIds.get(unit.id);
+      if (stable === undefined) continue;
+      unit.id = stable;
+      if (unit.parentId !== undefined)
+        unit.parentId = stableIds.get(unit.parentId) ?? unit.parentId;
+    }
+    for (const address of inventory.addresses)
+      address.unitId = stableIds.get(address.unitId) ?? address.unitId;
+    for (const analysis of analyses) {
+      for (const documentation of analysis.documentation)
+        for (const attachment of documentation.attachments)
+          attachment.unitId =
+            stableIds.get(attachment.unitId) ?? attachment.unitId;
+      for (const position of analysis.positions)
+        position.unitIds = position.unitIds.map(
+          (unitId: string): string => stableIds.get(unitId) ?? unitId,
+        );
+    }
+    return owners;
   }
 
   /**

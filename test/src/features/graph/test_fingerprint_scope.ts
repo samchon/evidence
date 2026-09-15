@@ -1,14 +1,21 @@
 import {
   EvidenceFingerprint,
+  EvidenceGraph,
   EvidenceInventory,
   EvidenceMarkdownAdapter,
   EvidenceTypeScriptAdapter,
 } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+import type {
+  IEvidenceGraphReference,
+  IEvidenceInventory,
+  IEvidenceUnit,
+  IEvidenceUnitSite,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { TestGraph } from "../../internal/TestGraph";
 
 /**
  * Fingerprints complete structural scopes, including identity rebinding and withdrawn descendants.
@@ -19,14 +26,21 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *
  * 1. Edit a nested Markdown section and require its parent's own content digest
  *    to stay stable while the parent scope fingerprint changes.
- * 2. Edit an unrelated sibling section and require the original scope to stay stable.
- * 3. Rebind identical Markdown content to another source path, then rebind one
+ * 2. Insert ordinary prose and accepted Evidence metadata before the reviewed
+ *    heading; require its fingerprint and exact shifted range to remain stable,
+ *    then exercise `requireReview` against the shifted document.
+ * 3. Edit prose after single- and multiline HTML comments; require the owning
+ *    heading fingerprint to expire while annotation text remains excluded.
+ * 4. Edit an unrelated sibling section and require the original scope to stay stable.
+ * 5. Rebind identical Markdown content to another source path, then rebind one
  *    TypeScript public alias between identical declarations; require both identity
  *    changes to expire their respective fingerprints.
- * 4. Withdraw a TypeScript member through documentation and require unchanged parent
+ * 6. Withdraw a TypeScript member through documentation and require unchanged parent
  *    own content but a changed parent scope fingerprint.
- * 5. Change the already withdrawn member's type and require the enclosing scope
+ * 7. Change the already withdrawn member's type and require the enclosing scope
  *    to change again, proving hidden descendants remain part of reviewed content.
+ * 8. Edit only an HTML-comment annotation inside a generated-anchor heading and
+ *    require its public identity and fingerprint to remain stable.
  */
 export async function test_fingerprint_scope(): Promise<void> {
   const markdown = dedent`
@@ -64,6 +78,168 @@ export async function test_fingerprint_scope(): Promise<void> {
     "child moves parent scope",
     changedPricing.fingerprint === pricingFingerprint.fingerprint,
     false,
+  );
+
+  // File-level material before a heading moves its site but not that heading's identity.
+  const prefix: string = `${dedent`
+    Unrelated file introduction.
+
+    <!-- @evidence other.md Explains the file aggregate. -->
+  `}\n\n`;
+  const prefixed: IEvidenceInventory = await markdownInventory(
+    prefix + markdown,
+  );
+  const prefixedPricing: IEvidenceUnit = requireUnit(prefixed, "pricing");
+  const prefixedSite: IEvidenceUnitSite | undefined = prefixedPricing.sites[0];
+  if (prefixedSite === undefined)
+    throw new Error("Shifted Markdown heading has no declaration site.");
+  TestValidator.equals(
+    "earlier prose and metadata preserve heading fingerprint",
+    EvidenceFingerprint.inspect(prefixed, prefixedPricing.id).fingerprint,
+    pricingFingerprint.fingerprint,
+  );
+  TestValidator.equals(
+    "shifted heading retains exact source position",
+    prefixedSite.range.start.offset,
+    (prefix + markdown).indexOf("## Pricing"),
+  );
+  const reviewedClaim: IEvidenceInventory =
+    await new EvidenceTypeScriptAdapter().analyze(
+      TestSourceSnapshot.create(
+        "src/review.ts",
+        dedent`
+          /**
+           * @evidence docs/rules.md#pricing Implements pricing.
+           * @evidenceReview docs/rules.md#pricing #${pricingFingerprint.fingerprint} Rechecked the unchanged rule.
+           */
+          export function price(): number {
+            return 1;
+          }
+        `,
+      ),
+    );
+  const reviewedUnit: IEvidenceUnit = requireUnit(reviewedClaim, "price");
+  const reviewedReference: IEvidenceGraphReference = {
+    severity: "error",
+    inventory: prefixed,
+    unitIds: [prefixedPricing.id],
+    resolutions: await TestGraph.resolveDeclarations(reviewedClaim, prefixed, [
+      prefixedPricing.id,
+    ]),
+    reviewResolutions: await TestGraph.resolveReviews(reviewedClaim, prefixed, [
+      prefixedPricing.id,
+    ]),
+    requireReview: true,
+  };
+  TestValidator.predicate(
+    "shifted heading keeps required review current",
+    EvidenceGraph.evaluate({
+      claims: [
+        {
+          severity: "error",
+          inventory: reviewedClaim,
+          unitIds: [reviewedUnit.id],
+          references: [reviewedReference],
+        },
+      ],
+    }).success,
+  );
+
+  const commentSuffix: string = dedent`
+    ## Pricing {#pricing}
+
+    <!-- @evidence other.md Explains the rule. --> First semantic suffix.
+  `;
+  const commentSuffixInventory: IEvidenceInventory =
+    await markdownInventory(commentSuffix);
+  const changedCommentSuffix: IEvidenceInventory = await markdownInventory(
+    commentSuffix.replace("First semantic suffix.", "Second semantic suffix."),
+  );
+  TestValidator.notEquals(
+    "prose after one-line comment expires fingerprint",
+    EvidenceFingerprint.inspect(
+      changedCommentSuffix,
+      requireUnit(changedCommentSuffix, "pricing").id,
+    ).fingerprint,
+    EvidenceFingerprint.inspect(
+      commentSuffixInventory,
+      requireUnit(commentSuffixInventory, "pricing").id,
+    ).fingerprint,
+  );
+
+  const multilineSuffix: string = dedent`
+    ## Pricing {#pricing}
+
+    <!--
+    @evidence other.md Explains the rule.
+    --> First multiline suffix.
+  `;
+  const multilineSuffixInventory: IEvidenceInventory =
+    await markdownInventory(multilineSuffix);
+  const changedMultilineSuffix: IEvidenceInventory = await markdownInventory(
+    multilineSuffix.replace(
+      "First multiline suffix.",
+      "Second multiline suffix.",
+    ),
+  );
+  TestValidator.notEquals(
+    "prose after multiline comment expires fingerprint",
+    EvidenceFingerprint.inspect(
+      changedMultilineSuffix,
+      requireUnit(changedMultilineSuffix, "pricing").id,
+    ).fingerprint,
+    EvidenceFingerprint.inspect(
+      multilineSuffixInventory,
+      requireUnit(multilineSuffixInventory, "pricing").id,
+    ).fingerprint,
+  );
+
+  const plainSection: IEvidenceInventory = await markdownInventory(dedent`
+    ## Pricing {#pricing}
+    Stable semantic prose.
+  `);
+  const annotatedSection: IEvidenceInventory = await markdownInventory(dedent`
+    ## Pricing {#pricing}
+    <!-- @evidence other.md Explains the rule. -->
+    Stable semantic prose.
+  `);
+  TestValidator.equals(
+    "full annotation line preserves fingerprint",
+    EvidenceFingerprint.inspect(
+      annotatedSection,
+      requireUnit(annotatedSection, "pricing").id,
+    ).fingerprint,
+    EvidenceFingerprint.inspect(
+      plainSection,
+      requireUnit(plainSection, "pricing").id,
+    ).fingerprint,
+  );
+
+  const inlineHeadingComment: IEvidenceInventory = await markdownInventory(
+    "# Rule <!-- @evidence other.md First explanation. -->\n",
+  );
+  const changedInlineHeadingComment: IEvidenceInventory =
+    await markdownInventory(
+      "# Rule <!-- @evidence other.md Second explanation. -->\n",
+    );
+  const inlineRule: IEvidenceUnit = requireUnit(inlineHeadingComment, "rule");
+  const changedInlineRule: IEvidenceUnit = requireUnit(
+    changedInlineHeadingComment,
+    "rule",
+  );
+  TestValidator.equals(
+    "inline heading annotation preserves generated identity",
+    changedInlineRule.identity,
+    inlineRule.identity,
+  );
+  TestValidator.equals(
+    "inline heading annotation preserves fingerprint",
+    EvidenceFingerprint.inspect(
+      changedInlineHeadingComment,
+      changedInlineRule.id,
+    ).fingerprint,
+    EvidenceFingerprint.inspect(inlineHeadingComment, inlineRule.id)
+      .fingerprint,
   );
 
   const changedSibling = await markdownInventory(

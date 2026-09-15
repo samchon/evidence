@@ -1,5 +1,4 @@
 import type { EvidenceMarkdownSymbol } from "../../typings/EvidenceMarkdownSymbol";
-import type { EvidenceMarkdownRenderedEdge } from "./EvidenceMarkdownRenderedEdge";
 import type { IMarkdownFence } from "./IMarkdownFence";
 import type { IMarkdownHeading } from "./IMarkdownHeading";
 
@@ -20,6 +19,13 @@ export namespace MarkdownSyntax {
     "@link",
   ];
 
+  /**
+   * Recognizes a CommonMark fenced-code boundary on one source line.
+   *
+   * Up to three leading spaces are allowed. The returned marker, run length,
+   * and remainder let the scanner apply the opening and closing rules without
+   * discarding the line's original spelling.
+   */
   export function fence(line: string): IMarkdownFence | undefined {
     let indent = 0;
     while (indent < line.length && line[indent] === " ") ++indent;
@@ -35,6 +41,12 @@ export namespace MarkdownSyntax {
     return { marker, length, remainder };
   }
 
+  /**
+   * Parses one supported ATX heading and its stable anchor identity.
+   *
+   * Explicit `{#anchor}` suffixes win over generated slugs. Unsupported depth,
+   * indentation, or missing marker separation leaves the line as ordinary prose.
+   */
   export function heading(line: string): IMarkdownHeading | undefined {
     let cursor = 0;
     while (cursor < line.length && line[cursor] === " " && cursor < 4) ++cursor;
@@ -67,6 +79,12 @@ export namespace MarkdownSyntax {
     return { level, title, anchor: slug(title) };
   }
 
+  /**
+   * Derives Evidence's deterministic anchor for an unanchored heading title.
+   *
+   * Letters, numbers, and underscores remain significant; punctuation and
+   * whitespace collapse only into the hyphen separators admitted by this adapter.
+   */
   export function slug(title: string): string {
     let output = "";
     let separated = false;
@@ -86,6 +104,12 @@ export namespace MarkdownSyntax {
     return output.replace(/-$/, "");
   }
 
+  /**
+   * Finds a supported Evidence marker after Markdown container prefixes.
+   *
+   * The marker must occupy the complete line or be followed by whitespace, so a
+   * longer prose token cannot be misreported as an unreadable annotation.
+   */
   export function annotation(line: string): string | undefined {
     const content = lineContent(line);
     return markers.find(
@@ -96,6 +120,12 @@ export namespace MarkdownSyntax {
     );
   }
 
+  /**
+   * Removes repeated blockquote and list prefixes from one annotation line.
+   *
+   * Tag recognition consumes this logical content while source ranges continue
+   * to use the unchanged physical line owned by the scanner.
+   */
   export function lineContent(line: string): string {
     let content = line.trim();
     let changed = true;
@@ -115,16 +145,12 @@ export namespace MarkdownSyntax {
     return content;
   }
 
-  export function renderedEdge(line: string): EvidenceMarkdownRenderedEdge {
-    const lower = line.toLowerCase();
-    if (lower.includes("<pre"))
-      return lower.includes("</pre>") ? "both" : "open";
-    if (lower.includes("</pre>")) return "close";
-    if (line.includes("={`")) return line.includes("`}") ? "both" : "open";
-    if (line.includes("`}")) return "close";
-    return "none";
-  }
-
+  /**
+   * Reports whether one physical line belongs to an indented code block.
+   *
+   * Four spaces or one leading tab make headings and annotation syntax inert at
+   * the top-level Markdown boundary supported by this scanner.
+   */
   export function indentedCode(line: string): boolean {
     return line.startsWith("    ") || line.startsWith("\t");
   }
@@ -164,6 +190,12 @@ export namespace MarkdownSyntax {
     return false;
   }
 
+  /**
+   * Detects whitespace that prevents a path from forming one target token.
+   *
+   * Markdown public addresses preserve literal path spelling, so callers reject
+   * any Unicode whitespace instead of silently escaping or normalizing it.
+   */
   export function hasWhitespace(value: string): boolean {
     for (const character of value) if (character.trim() === "") return true;
     return false;
@@ -190,6 +222,12 @@ export namespace MarkdownSyntax {
     }
   }
 
+  /**
+   * Measures one supported Markdown list prefix at the start of logical text.
+   *
+   * Annotation parsing removes bullet and ordered-list containers repeatedly;
+   * zero means the current text begins with neither supported form.
+   */
   function listMarker(content: string): number {
     for (const marker of ["- ", "* ", "+ "])
       if (content.startsWith(marker)) return marker.length;
@@ -209,13 +247,25 @@ export namespace MarkdownSyntax {
     return cursor + 2;
   }
 
+  /**
+   * Measures one contiguous backtick run from its opening column.
+   *
+   * Inline spans close only with a run of the same length, so the caller uses
+   * this value both for comparison and for advancing beyond a delimiter.
+   */
   function delimiterLength(line: string, opening: number): number {
     let cursor = opening;
     while (line[cursor] === "`") ++cursor;
     return cursor - opening;
   }
 
-  function escaped(line: string, offset: number): boolean {
+  /**
+   * Reports whether Markdown backslash escaping neutralizes a token boundary.
+   *
+   * An odd immediately preceding slash run escapes the next punctuation token;
+   * an even run represents literal slashes and leaves that token active.
+   */
+  export function escaped(line: string, offset: number): boolean {
     let slashes = 0;
     for (let index = offset - 1; index >= 0 && line[index] === "\\"; --index)
       ++slashes;

@@ -42,12 +42,37 @@ export class PythonFileScanner {
   private readonly bindings: IPythonBinding[] = [];
 
   /**
-   * Owns units indexed by their semantic identity within this source file.
+   * Owns the currently effective unit for each semantic identity in this file.
    *
-   * Repeated declaration sites contribute to the same record before it is
-   * returned as a serializable file analysis.
+   * Runtime rebindings replace the record, while property families and stub
+   * overloads retain their language-established declaration sites.
    */
   private readonly units = new Map<string, IPythonOwnedUnit>();
+
+  /**
+   * Effective class-dictionary unit for each owner and runtime binding name.
+   *
+   * Evidence symbols and public address projections can differ for a method,
+   * property, alias, or nested class even though Python assigns them through one
+   * class namespace. The map lets a later statement remove the replaced unit and
+   * its descendants before publication.
+   */
+  private readonly classBindings: Map<string, string> = new Map<
+    string,
+    string
+  >();
+
+  /**
+   * Owns instance-field units produced by each class's effective constructor.
+   *
+   * A later `__init__` replaces the complete initializer body. Keeping its
+   * generated units together lets the scanner discard fields that only the dead
+   * constructor assigned before it scans the surviving body.
+   */
+  private readonly constructorUnits: Map<string, Set<string>> = new Map<
+    string,
+    Set<string>
+  >();
 
   /**
    * Tracks declaration positions used to identify enclosing public hosts.
@@ -317,7 +342,8 @@ export class PythonFileScanner {
     const suffix = parent === undefined ? [] : [...parent.suffix, name];
     const body = definition.childForFieldName("body");
     const headerEnd = body?.startIndex ?? definition.endIndex;
-    const record = this.addUnit(
+    if (parent !== undefined) this.replaceClassBinding(parent.parentId, name);
+    const record: IPythonOwnedUnit = this.addUnit(
       wrapper,
       definition,
       "type",
@@ -327,6 +353,8 @@ export class PythonFileScanner {
       parent?.parentId,
       this.text.range(wrapper.startIndex, headerEnd),
     );
+    if (parent !== undefined)
+      this.rememberClassBinding(parent.parentId, name, record.unit.id);
     if (parent === undefined) this.bindLocal(name, wrapper.startIndex, root);
     if (body === null) return;
     const context: IPythonClassContext = {
@@ -400,6 +428,10 @@ export class PythonFileScanner {
     const name = PythonSyntax.name(definition.childForFieldName("name"));
     if (name === undefined) return;
     if (name === "__init__") {
+      this.removeUnitTrees(
+        this.constructorUnits.get(context.parentId) ?? new Set<string>(),
+      );
+      this.constructorUnits.set(context.parentId, new Set<string>());
       this.scanInstanceFields(definition, context);
       return;
     }
@@ -418,8 +450,25 @@ export class PythonFileScanner {
         decorator.endsWith(".setter") ||
         decorator.endsWith(".deleter"),
     );
+    // Python assigns the decorator result under the declared method name. Only
+    // an accessor based on that same name extends its existing property; an
+    // accessor copied from another binding replaces the declared name instead.
+    const accessorExtension: boolean = decorators.some(
+      (decorator: string): boolean =>
+        decorator === `${name}.getter` ||
+        decorator === `${name}.setter` ||
+        decorator === `${name}.deleter`,
+    );
     const ownership = direct ? [] : ["prototype"];
-    this.addUnit(
+    const merges: boolean =
+      accessorExtension ||
+      this.source.physicalPath.toLowerCase().endsWith(".pyi");
+    this.replaceClassBinding(
+      context.parentId,
+      name,
+      merges ? (property ? "property" : "function") : undefined,
+    );
+    const record: IPythonOwnedUnit = this.addUnit(
       wrapper,
       definition,
       property ? "property" : "function",
@@ -428,7 +477,9 @@ export class PythonFileScanner {
       [...context.suffix, ...ownership, name],
       context.parentId,
       this.session.range(wrapper),
+      accessorExtension,
     );
+    this.rememberClassBinding(context.parentId, name, record.unit.id);
   }
 
   /**
@@ -445,7 +496,8 @@ export class PythonFileScanner {
     if (name === undefined || (context !== undefined && this.private(name)))
       return;
     const root = context?.root ?? this.rootToken(name, wrapper);
-    this.addUnit(
+    if (context !== undefined) this.replaceClassBinding(context.parentId, name);
+    const record: IPythonOwnedUnit = this.addUnit(
       wrapper,
       definition,
       "type",
@@ -455,6 +507,8 @@ export class PythonFileScanner {
       context?.parentId,
       this.session.range(wrapper),
     );
+    if (context !== undefined)
+      this.rememberClassBinding(context.parentId, name, record.unit.id);
     if (context === undefined) this.bindLocal(name, wrapper.startIndex, root);
   }
 
@@ -490,9 +544,11 @@ export class PythonFileScanner {
   }
 
   /**
-   * Rejects augmented assignments that can dynamically change public surface.
+   * Records an augmented assignment as a property update.
    *
-   * Python does not provide a static declaration contract for these mutations.
+   * A same-kind class property keeps its earlier declaration sites. When the
+   * update reuses a name previously occupied by another supported kind, the class
+   * dictionary replacement removes that obsolete unit before the property is added.
    */
   private scanAugmentedAssignment(
     statement: Node,
@@ -510,7 +566,9 @@ export class PythonFileScanner {
       context?.root ??
       this.currentLocalRoot(name) ??
       this.rootToken(name, statement);
-    this.addUnit(
+    if (context === undefined) this.replaceRootBinding(root, "property");
+    else this.replaceClassBinding(context.parentId, name, "property");
+    const record: IPythonOwnedUnit = this.addUnit(
       statement,
       assignment,
       "property",
@@ -519,7 +577,10 @@ export class PythonFileScanner {
       context === undefined ? [] : [...context.suffix, name],
       context?.parentId,
       this.session.range(assignment),
+      true,
     );
+    if (context !== undefined)
+      this.rememberClassBinding(context.parentId, name, record.unit.id);
     if (context === undefined) this.bindLocal(name, statement.startIndex, root);
   }
 
@@ -544,7 +605,9 @@ export class PythonFileScanner {
           const root = context?.root ?? this.rootToken(name, current);
           const symbol: EvidenceProgrammingSymbol =
             PythonSyntax.typeAliasAnnotation(current) ? "type" : "property";
-          this.addUnit(
+          if (context !== undefined)
+            this.replaceClassBinding(context.parentId, name);
+          const record: IPythonOwnedUnit = this.addUnit(
             statement,
             current,
             symbol,
@@ -554,6 +617,8 @@ export class PythonFileScanner {
             context?.parentId,
             this.session.range(current),
           );
+          if (context !== undefined)
+            this.rememberClassBinding(context.parentId, name, record.unit.id);
           if (context === undefined)
             this.bindLocal(name, statement.startIndex, root);
         }
@@ -591,8 +656,8 @@ export class PythonFileScanner {
             left !== null && PythonSyntax.attributeObject(left) === receiver
               ? PythonSyntax.attributeName(left)
               : undefined;
-          if (name !== undefined && !this.private(name))
-            this.addUnit(
+          if (name !== undefined && !this.private(name)) {
+            const record: IPythonOwnedUnit = this.addUnit(
               statement,
               assignment,
               "property",
@@ -602,7 +667,8 @@ export class PythonFileScanner {
               context.parentId,
               this.session.range(assignment),
             );
-          else if (this.receiverAttributes(left, receiver).length !== 0)
+            this.rememberConstructorUnit(context.parentId, record.unit.id);
+          } else if (this.receiverAttributes(left, receiver).length !== 0)
             this.problem(
               "python-binding-pattern",
               "A destructuring assignment declares instance fields outside the supported direct receiver form.",
@@ -635,10 +701,26 @@ export class PythonFileScanner {
   }
 
   /**
-   * Adds a declaration site to its semantic unit and records its local binding.
+   * Associates one generated field with its class's effective constructor.
    *
-   * Reusing unit identity keeps repeated sites and overload-like declarations
-   * together while preserving each physical source location.
+   * Initializing the owner defensively keeps field extraction self-contained if
+   * another supported constructor spelling reaches it in a future grammar.
+   */
+  private rememberConstructorUnit(parentId: string, unitId: string): void {
+    let units: Set<string> | undefined = this.constructorUnits.get(parentId);
+    if (units === undefined) {
+      units = new Set<string>();
+      this.constructorUnits.set(parentId, units);
+    }
+    units.add(unitId);
+  }
+
+  /**
+   * Adds the effective declaration site for one semantic unit.
+   *
+   * Runtime occurrences receive distinct IDs and replace the previous record so
+   * their documentation cannot survive a rebinding. Explicit property families
+   * and function overloads in stub files merge their physical sites.
    */
   private addUnit(
     wrapper: Node,
@@ -649,17 +731,25 @@ export class PythonFileScanner {
     suffix: string[],
     parentId: string | undefined,
     content: IEvidenceSourceRange,
+    mergeSites: boolean = false,
   ): IPythonOwnedUnit {
-    const id = `python:${this.source.id}:${symbol}:${JSON.stringify(identity)}`;
-    const siteId = this.siteId(wrapper);
+    const semanticId: string = `python:${this.source.id}:${symbol}:${JSON.stringify(identity)}`;
+    const merges: boolean =
+      mergeSites ||
+      (symbol === "function" &&
+        this.source.physicalPath.toLowerCase().endsWith(".pyi"));
+    const id: string = merges
+      ? semanticId
+      : `${semanticId}:binding:${String(wrapper.startIndex)}`;
+    const siteId: string = this.siteId(wrapper);
     const site: IEvidenceUnitSite = {
       id: siteId,
       file: this.source.physicalPath,
       range: this.session.range(wrapper),
       content: [content],
     };
-    let record = this.units.get(id);
-    if (record === undefined) {
+    let record: IPythonOwnedUnit | undefined = this.units.get(semanticId);
+    if (record === undefined || !merges) {
       const unit: IEvidenceUnit = {
         id,
         type: "python",
@@ -671,7 +761,7 @@ export class PythonFileScanner {
         ...(parentId === undefined ? {} : { parentId }),
       };
       record = { unit, roots: [root], suffix };
-      this.units.set(id, record);
+      this.units.set(semanticId, record);
     } else {
       if (!record.roots.includes(root)) record.roots.push(root);
       const previous = record.unit.sites.find(
@@ -680,10 +770,129 @@ export class PythonFileScanner {
       if (previous === undefined) record.unit.sites.push(site);
       else previous.content.push(content);
     }
-    this.registerPosition(wrapper, siteId, id);
-    this.attachPrecedingComment(wrapper, siteId, id);
-    this.attachDocstring(definition, siteId, id);
+    const unitId: string = record.unit.id;
+    this.registerPosition(wrapper, siteId, unitId);
+    this.attachPrecedingComment(wrapper, siteId, unitId);
+    this.attachDocstring(definition, siteId, unitId);
     return record;
+  }
+
+  /**
+   * Removes the class binding displaced by one later suite statement.
+   *
+   * Python stores methods, attributes, aliases, and nested classes in the same
+   * executed class dictionary. Unless the new declaration extends an established
+   * overload or accessor family, replacing a binding also removes every unit
+   * structurally owned by the obsolete nested declaration.
+   */
+  private replaceClassBinding(
+    parentId: string,
+    name: string,
+    mergeSymbol?: EvidenceProgrammingSymbol,
+  ): void {
+    const previous: string | undefined = this.classBindings.get(
+      this.classBindingKey(parentId, name),
+    );
+    if (previous === undefined) return;
+    if (
+      mergeSymbol !== undefined &&
+      Array.from(this.units.values()).some(
+        (record: IPythonOwnedUnit): boolean =>
+          record.unit.id === previous && record.unit.symbol === mergeSymbol,
+      )
+    )
+      return;
+    this.removeUnitTrees([previous]);
+  }
+
+  /**
+   * Removes top-level declaration kinds displaced at one retained local root.
+   *
+   * Augmented assignment reuses the current binding token because it reads and
+   * updates that value. A property update can extend an earlier property, while
+   * a function, type, or class at the same root no longer describes the final
+   * public value and takes its structurally owned descendants with it.
+   */
+  private replaceRootBinding(
+    root: string,
+    mergeSymbol: EvidenceProgrammingSymbol,
+  ): void {
+    const removed: string[] = Array.from(this.units.values())
+      .filter(
+        (record: IPythonOwnedUnit): boolean =>
+          record.suffix.length === 0 &&
+          record.roots.includes(root) &&
+          record.unit.symbol !== mergeSymbol,
+      )
+      .map((record: IPythonOwnedUnit): string => record.unit.id);
+    this.removeUnitTrees(removed);
+  }
+
+  /**
+   * Deletes selected units, their descendants, and stale class-slot ownership.
+   *
+   * Unit IDs are occurrence-specific for runtime declarations, so walking
+   * `parentId` removes exactly the obsolete declaration tree without disturbing
+   * a later declaration that reuses the same semantic name.
+   */
+  private removeUnitTrees(unitIds: Iterable<string>): void {
+    const removed: Set<string> = new Set<string>(unitIds);
+    let changed: boolean = true;
+    while (changed) {
+      changed = false;
+      const records: IterableIterator<IPythonOwnedUnit> = this.units.values();
+      for (const record of records)
+        if (
+          record.unit.parentId !== undefined &&
+          removed.has(record.unit.parentId) &&
+          !removed.has(record.unit.id)
+        ) {
+          removed.add(record.unit.id);
+          changed = true;
+        }
+    }
+    const unitEntries: IterableIterator<[string, IPythonOwnedUnit]> =
+      this.units.entries();
+    for (const [key, record] of unitEntries)
+      if (removed.has(record.unit.id)) this.units.delete(key);
+    const classEntries: IterableIterator<[string, string]> =
+      this.classBindings.entries();
+    for (const [key, unitId] of classEntries)
+      if (removed.has(unitId)) this.classBindings.delete(key);
+    const constructorEntries: IterableIterator<[string, Set<string>]> =
+      this.constructorUnits.entries();
+    for (const [parentId, unitIds] of constructorEntries) {
+      if (removed.has(parentId)) {
+        this.constructorUnits.delete(parentId);
+        continue;
+      }
+      for (const unitId of unitIds)
+        if (removed.has(unitId)) unitIds.delete(unitId);
+    }
+  }
+
+  /**
+   * Records the unit currently occupying one executed class binding.
+   *
+   * The owner uses an occurrence-specific unit ID, preventing a replacement
+   * class from sharing binding state with an obsolete class of the same name.
+   */
+  private rememberClassBinding(
+    parentId: string,
+    name: string,
+    unitId: string,
+  ): void {
+    this.classBindings.set(this.classBindingKey(parentId, name), unitId);
+  }
+
+  /**
+   * Creates the collision key for one Python class dictionary entry.
+   *
+   * Runtime ownership, rather than the Evidence symbol or projected `prototype`
+   * segment, determines whether two declarations replace the same value.
+   */
+  private classBindingKey(parentId: string, name: string): string {
+    return JSON.stringify([parentId, name]);
   }
 
   /**

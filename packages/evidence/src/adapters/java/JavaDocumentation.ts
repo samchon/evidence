@@ -1,4 +1,5 @@
 import { EvidenceDocumentation } from "../../parsers/EvidenceDocumentation";
+import { DocumentationExamples } from "../../parsers/DocumentationExamples";
 import type { IEvidenceDocumentation } from "../../structures/IEvidenceDocumentation";
 import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { IJavaDocumentation } from "./IJavaDocumentation";
@@ -10,6 +11,12 @@ import type { IJavaDocumentation } from "./IJavaDocumentation";
  * from tag parsing, so code-looking annotations cannot create evidence records.
  */
 export namespace JavaDocumentation {
+  /**
+   * Maps one Java documentation carrier and removes its code examples.
+   *
+   * Javadoc applies native inline-tag precedence before HTML pairing. Other Java
+   * comment forms retain their shared mapping because they do not own this syntax.
+   */
   export function read(
     source: IEvidenceSourceFile,
     documentation: IJavaDocumentation,
@@ -28,30 +35,53 @@ export namespace JavaDocumentation {
     };
   }
 
+  /**
+   * Masks native Javadoc and HTML examples without changing mapped coordinates.
+   *
+   * Inline tags are hidden before HTML pairing so their literal markup cannot
+   * consume ordinary documentation between two separate examples.
+   */
   function mask(input: string): string {
-    const characters = input.split("");
-    const htmlCode = /<(pre|code)\b[^>]*>[\s\S]*?<\/\1\s*>/giu;
-    for (const match of input.matchAll(htmlCode))
-      hide(characters, match.index, match.index + match[0].length);
-    for (const opening of ["{@code", "{@literal", "{@snippet"])
-      for (let index = input.indexOf(opening); index >= 0;) {
-        const end = closingBrace(input, index);
+    const characters: string[] = input.split("");
+    const markdown: readonly boolean[] =
+      DocumentationExamples.markdownCode(input);
+    const openings: string[] = ["{@code", "{@literal", "{@snippet"];
+    for (const opening of openings)
+      for (let index: number = input.indexOf(opening); index >= 0;) {
+        if (markdown[index] === true) {
+          index = input.indexOf(opening, index + opening.length);
+          continue;
+        }
+        const end: number = closingBrace(input, index);
         hide(characters, index, end);
         index = input.indexOf(opening, Math.max(end, index + opening.length));
       }
+    DocumentationExamples.maskHtml(characters, input, ["pre", "code"]);
     return characters.join("");
   }
 
+  /**
+   * Finds the balanced end of one native Javadoc inline example.
+   *
+   * Nested braces belong to the inline body. An unmatched opening owns the rest
+   * of the documentation carrier so its contents cannot become annotations.
+   */
   function closingBrace(input: string, start: number): number {
-    let depth = 0;
-    for (let index = start; index < input.length; ++index) {
-      const character = input[index];
+    let depth: number = 0;
+    for (let index: number = start; index < input.length; ++index) {
+      const character: string | undefined = input[index];
       if (character === "{") ++depth;
       else if (character === "}" && --depth === 0) return index + 1;
     }
     return input.length;
   }
 
+  /**
+   * Replaces a Javadoc example span while preserving mapped source positions.
+   *
+   * Newline bytes remain intact so annotations after the example retain their
+   * original diagnostic and host ranges.
+   */
   function hide(characters: string[], start: number, end: number): void {
     for (let index = start; index < end; ++index)
       if (characters[index] !== "\n" && characters[index] !== "\r")

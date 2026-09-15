@@ -6,7 +6,7 @@ Contract version 1 defines how `@wrtnlabs/evidence` turns selected artifacts int
 
 | Term | Meaning |
 | --- | --- |
-| Artifact | One supported source family: a programming language, Markdown, Prisma, or Swagger/OpenAPI. |
+| Artifact | One supported source family: a programming language, Markdown, a database schema language, or Swagger/OpenAPI. |
 | Semantic unit | One declaration that may enter a coverage denominator, such as a public type, function, property, Markdown section, Prisma model, or Swagger operation. |
 | Host position | A documentation position attached to one or more claim units where Evidence tags may be written. |
 | Public address | A target spelling that resolves to a semantic unit. One unit may have several aliases without creating more obligations. |
