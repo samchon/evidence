@@ -4,9 +4,14 @@
 
 Evidence Graph for 100% coverage and 100% compliance.
 
-Every requirement, every engineering principle, every public declaration, and every test becomes an obligation that something in the repository must cite. Every citation names an exact target and states, in one sentence, why the code satisfies it. Leave one obligation unanswered and the check fails.
+> - Writing rules into `AGENTS.md` or a skill file does not make a coding agent follow them. In [one measurement](https://arxiv.org/abs/2605.01771), six frontier models followed a written instruction in 0 of 60 runs, and reported that they had in more than 90% of them.
+> - `@wrtnlabs/evidence` turns those rules, and your requirements, schemas, and APIs, into obligations that a check enforces.
+> - Every obligation becomes one sentence a declaration must write. Leave one out and the check fails.
 
-```ts
+- **100% coverage** of every requirement.
+- **100% compliance** with every principle.
+
+```tsx
 /**
  * @evidence docs/discount.md#coupon-stacking States the per-issuer stacking limit this section defines, in the buyer's words.
  * @evidence ../hooks/useCouponStacking.ts#useCouponStacking Renders the limit this hook resolves.
@@ -16,21 +21,23 @@ Every requirement, every engineering principle, every public declaration, and ev
 export function CouponStackingNotice(props: IProps): JSX.Element;
 ```
 
-`@wrtnlabs/evidence` reads that graph from source files in 19 programming languages, 7 database schema languages, Markdown, and Swagger/OpenAPI documents through upstream Tree-sitter grammars. It needs no compiler for the languages it checks, no language plugin, and no build of the project under review.
+`@evidence <target> <reason>` is the agent's explicit claim about what the code implements and why. `@evidenceExclude` records why an obligation does not apply. A target is a Markdown section, a public declaration in any of 19 programming languages, a model, column, or relation in 7 database schema languages, or a Swagger operation. Evidence reads all of them through upstream Tree-sitter grammars, with no compiler for the checked languages, no language plugin, and no build of the project under review.
+
+Delete the second line above and the check stops:
 
 ```bash
 $ npx evidence
 Evidence check complete.
 Config: /workspace/app/evidence.config.ts
-Claims: 2/2 active.
-Obligations: 2/2 active, 0 incomplete.
-Coverage: 0/2 units covered, 2 missing.
-Diagnostics: 2 errors, 0 warnings.
+Claims: 1/1 active.
+Obligations: 3/3 active, 0 incomplete.
+Coverage: 3/4 units covered, 1 missing.
+Diagnostics: 1 errors, 0 warnings.
 
-ERROR [graph-missing-acknowledgement] claim[0] 'implementation' (typescript) -> reference[0] (markdown)
-Location: /workspace/app/docs/requirements.md:3:1
+ERROR [graph-missing-acknowledgement] claim[0] 'components' (typescript) -> reference[1] (typescript)
+Location: /workspace/app/src/hooks/useCouponStacking.ts:1:1
 Subject: configured population
-Claim 1 ('implementation') reference 1: Missing acknowledgement for '/workspace/app/docs/requirements.md#["exact-addition"]'.
+Claim 1 ('components') reference 2: Missing acknowledgement for '/workspace/app/src/hooks/useCouponStacking.ts#useCouponStacking'.
 Repair: Cite the claim artifact that implements this unit with @evidence, or exclude it on an eligible carrier when it does not apply.
 ```
 
@@ -58,6 +65,7 @@ The error list is the task list.
 - [CLI](#cli)
 - [Programmatic API](#programmatic-api)
 - [Grammar acquisition and cache](#grammar-acquisition-and-cache)
+- [Related](#related)
 - [License](#license)
 
 ## Why a graph
@@ -110,6 +118,13 @@ You never write those comments yourself. The check fails without them, so the ag
 
 ```bash
 $ npx evidence
+Evidence check complete.
+Config: /workspace/app/evidence.config.ts
+Claims: 1/1 active.
+Obligations: 1/1 active, 0 incomplete.
+Coverage: 2/3 units covered, 1 missing.
+Diagnostics: 1 errors, 0 warnings.
+
 ERROR [graph-checklist-missing] claim[0] 'every function answers every engineering principle' (typescript) -> reference[0] (markdown)
 Location: /workspace/app/src/resolve.ts:7:1
 Subject: configured population
@@ -154,7 +169,7 @@ Suppose the agent took the shortcut and special-cased a fixture name. That funct
 
 Two options. Write that sentence as it stands, or fix the code so it never has to be written. In practice it fixes the code.
 
-The checker cannot tell whether a sentence is true. That is the reviewer's job, and it is a much smaller job than before: instead of rereading a 4,000-line diff against eighteen rules, the reviewer reads a list of claims, each one attached to the declaration it describes, each one pointing at the exact rule or requirement it answers. `requireReview` turns that reading into a record that expires when the cited text changes; see [reviews and fingerprints](#reviews-and-fingerprints).
+The checker cannot tell whether a sentence is true. That is the reviewer's job, and it is a much smaller job than before: instead of rereading a 4,000-line diff against every rule on the list, the reviewer reads a list of claims, each one attached to the declaration it describes, each one pointing at the exact rule or requirement it answers. `requireReview` turns that reading into a record that expires when the cited text changes; see [reviews and fingerprints](#reviews-and-fingerprints).
 
 ### It outlives the prompt
 
@@ -367,6 +382,22 @@ Run the same command after dependency installation:
 
 Keep the exit status. Exit 1 means complete analysis found Evidence violations. Exit 2 means configuration, discovery, parsing, or another required analysis step was incomplete and must be repaired before the graph can be trusted. Do not mask either with a shell fallback.
 
+### Hand it to the agent
+
+The check is designed to be read by the agent that caused it. Add a few lines to `AGENTS.md` or `CLAUDE.md` so the loop closes without you:
+
+```markdown
+## Evidence
+
+Run `npx evidence` before finishing any task. Every error names an obligation and its repair.
+Do the work first: implement, test, or document what the obligation asks for.
+Then write the `@evidence` line on the declaration that supplies it, stating why in one sentence.
+Never write a tag to silence an error. Never weaken `evidence.config.ts` to pass.
+Use `npx evidence list` to find an address and `npx evidence inspect '<target>'` to see why one does not resolve.
+```
+
+On an existing repository the first run may produce hundreds of errors. That number is the real distance between your documents and your code, and it was invisible until now. Paying it down is not your job.
+
 ## Spec-driven development
 
 The checker reads no meaning. It only looks at who cited what, so anything you can address can be cited: a Markdown heading, a Prisma model, a Swagger operation, a Go method, a Rust trait implementation, a SQL foreign key. Each arrow below is one claim in `evidence.config.ts`, pointing at the evidence it cites.
@@ -393,7 +424,7 @@ Existing projects rarely have a human-reviewed requirements document, but the ru
 
 `checklist` changes the denominator from principles to functions times principles: every selected function must answer every selected heading, and one missing answer fails the check. `requireReview` demands a review record beside each answer and expires it when the principle's text changes.
 
-On an existing repository the first run produces hundreds of errors, function count times rule count. That number is the real distance between your rule file and your code, and it was invisible until now. Paying it down is not your job. Hand the error list to the agent; it works through the list one item at a time, fixing code first wherever an honest answer cannot be written.
+On an existing repository the first checklist run produces function count times rule count errors. Hand the list to the agent; it works through it one item at a time, fixing code first wherever an honest answer cannot be written.
 
 ### Documents hold up the code
 
@@ -1314,18 +1345,22 @@ npx evidence graph --format dot --output reports/evidence.dot
 
 JSON is the lossless graph: each claim/reference boundary with its policy, unit and host nodes, acknowledgement edges with their kind and fingerprint, reviews as separate relations, and diagnostics. Mermaid and DOT are visual projections. Generated node identifiers and escaped labels keep source-controlled paths, quotes, newlines, and graph operators as label data.
 
+The quick start graph renders as:
+
 ```mermaid
 flowchart LR
-  subgraph b0["claim[0] (typescript) -> reference[0] (markdown); complete, error"]
+  subgraph b0["claim[0] (typescript) -&gt; reference[0] (markdown); complete, error"]
     n0["claim function src/calculator.ts#add (covered)"]
+    n1["reference file docs/requirements.md (covered)"]
+    n2["reference h1 docs/requirements.md#pricing-requirements (covered)"]
     n3["reference h2 docs/requirements.md#exact-addition (covered)"]
   end
-  subgraph b1["claim[1] (typescript) -> reference[0] (typescript); complete, error, no-exclude"]
+  subgraph b1["claim[1] (typescript) -&gt; reference[0] (typescript); complete, error, no-exclude"]
     n4["claim function test/calculator.test.ts#test_add (covered)"]
     n5["reference function src/calculator.ts#add (covered)"]
   end
-  n0 -->|"@evidence #1a3f8bd"| n3
-  n4 -->|"@evidence #94fea3d"| n5
+  n0 -->|@evidence #1a3f8bd| n3
+  n4 -->|@evidence #94fea3d| n5
 ```
 
 ### languages
@@ -1459,6 +1494,13 @@ The runtime downloads a grammar the first time a selected source needs it, verif
 | Linux | `$XDG_CACHE_HOME/wrtnlabs/evidence`, otherwise `~/.cache/wrtnlabs/evidence` |
 
 Set `EVIDENCE_CACHE_DIR` to an absolute writable directory to override the location, and keep it outside selected source roots. A cold cache needs network access once; verified cached grammars work offline. Concurrent callers share downloads, and cache files are published atomically with a cross-process lock. Transient failures receive up to three attempts with a 30-second deadline per attempt; permanent HTTP failures and checksum mismatches fail immediately. A preparation failure leaves analysis incomplete with exit code 2. Preparation messages go to stderr and are suppressed with `--output`. In CI, cache the directory or point `EVIDENCE_CACHE_DIR` at a restored one.
+
+## Related
+
+- [Evidence Graph: Make Every SKILL Instruction 100% Enforced](https://ttsc.dev/blog/evidence-graph-make-every-skill-instruction-100-percent-enforced/): the article this README follows.
+- [`@ttsc/evidence`](https://github.com/samchon/ttsc/tree/master/packages/evidence): the compiler-integrated variant for TypeScript projects on `ttsc`, sharing this package's configuration and graph semantics.
+- [`ttsc`](https://github.com/samchon/ttsc): the TypeScript-Go toolchain whose `ttsx` evaluates `evidence.config.ts`.
+- [Benchmark](https://ttsc.dev/docs/benchmark/evidence) and [raw sessions](https://github.com/samchon/evidence-benchmark-results): the measurements behind the coverage and token numbers above.
 
 ## License
 
