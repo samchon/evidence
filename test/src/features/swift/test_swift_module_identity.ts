@@ -1,4 +1,4 @@
-import { EvidenceInventory, EvidenceSwiftAdapter } from "evidence";
+import { EvidenceInventory, EvidenceSwiftAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
 import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";

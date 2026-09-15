@@ -1,5 +1,11 @@
-import { EvidenceTargetResolver, EvidenceTypeScriptAdapter } from "evidence";
-import type { IEvidenceHost, IEvidenceTargetStatement } from "evidence";
+import {
+  EvidenceTargetResolver,
+  EvidenceTypeScriptAdapter,
+} from "@wrtnlabs/evidence";
+import type {
+  IEvidenceHost,
+  IEvidenceTargetStatement,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 

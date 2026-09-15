@@ -1,5 +1,5 @@
-import { EvidenceChecker } from "evidence";
-import type { EvidenceDatabaseSymbol } from "evidence";
+import { EvidenceChecker } from "@wrtnlabs/evidence";
+import type { EvidenceDatabaseSymbol } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";

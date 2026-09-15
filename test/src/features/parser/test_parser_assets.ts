@@ -7,7 +7,7 @@ import { join } from "node:path";
 import {
   EvidenceTreeSitterAssetCache,
   EvidenceTreeSitterAssets,
-} from "evidence";
+} from "@wrtnlabs/evidence";
 import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
 import { EvidenceTestParserError } from "../../internal/EvidenceTestParserError";
 

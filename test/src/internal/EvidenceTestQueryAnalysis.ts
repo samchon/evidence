@@ -1,9 +1,9 @@
-import { EvidenceChecker } from "evidence";
+import { EvidenceChecker } from "@wrtnlabs/evidence";
 import type {
   IEvidenceCheckAnalysis,
   IEvidenceConfigPlan,
   IEvidenceConfigPlanReference,
-} from "evidence";
+} from "@wrtnlabs/evidence";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
 

@@ -1,5 +1,5 @@
-import { EvidenceQuery } from "evidence";
-import type { IEvidenceCheckAnalysis } from "evidence";
+import { EvidenceQuery } from "@wrtnlabs/evidence";
+import type { IEvidenceCheckAnalysis } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";

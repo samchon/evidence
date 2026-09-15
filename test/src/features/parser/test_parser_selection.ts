@@ -1,4 +1,4 @@
-import { EvidenceLanguageRegistry, EvidenceParser } from "evidence";
+import { EvidenceLanguageRegistry, EvidenceParser } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
 import { EvidenceTestParserError } from "../../internal/EvidenceTestParserError";

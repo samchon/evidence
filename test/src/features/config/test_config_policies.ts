@@ -1,7 +1,7 @@
-import type { IEvidenceConfig, IEvidenceReference } from "evidence";
+import type { IEvidenceConfig, IEvidenceReference } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { validateEvidenceConfig } from "evidence";
+import { validateEvidenceConfig } from "@wrtnlabs/evidence";
 
 /**
  * Rejects checklist policies that contradict per-host Markdown answers.

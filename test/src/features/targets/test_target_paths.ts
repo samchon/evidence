@@ -1,4 +1,4 @@
-import { EvidenceFileTarget } from "evidence";
+import { EvidenceFileTarget } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
 /**

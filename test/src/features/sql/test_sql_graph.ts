@@ -1,4 +1,4 @@
-import { EvidenceAccessor, EvidenceChecker } from "evidence";
+import { EvidenceAccessor, EvidenceChecker } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";

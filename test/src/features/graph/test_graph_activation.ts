@@ -1,4 +1,4 @@
-import { EvidenceGraph } from "evidence";
+import { EvidenceGraph } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
 import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";

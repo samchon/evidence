@@ -1,9 +1,9 @@
-import { EvidenceMarkdownAdapter } from "evidence";
+import { EvidenceMarkdownAdapter } from "@wrtnlabs/evidence";
 import type {
   IEvidenceDeclaration,
   IEvidenceHost,
   IEvidenceUnit,
-} from "evidence";
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 

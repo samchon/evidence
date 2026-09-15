@@ -1,7 +1,7 @@
-import type { IEvidenceConfig } from "evidence";
+import type { IEvidenceConfig } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { createEvidenceConfigPlan } from "evidence";
+import { createEvidenceConfigPlan } from "@wrtnlabs/evidence";
 
 /**
  * Resolves artifact defaults and severity inheritance without losing authored

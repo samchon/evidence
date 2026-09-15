@@ -4,13 +4,13 @@ import {
   EvidenceInventory,
   EvidenceMarkdownAdapter,
   EvidenceTypeScriptAdapter,
-} from "evidence";
+} from "@wrtnlabs/evidence";
 import type {
   IEvidenceGraphReference,
   IEvidenceInventory,
   IEvidenceUnit,
   IEvidenceUnitSite,
-} from "evidence";
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 

@@ -1,6 +1,6 @@
 import { TestValidator } from "@nestia/e2e";
-import { EvidenceWatcher } from "evidence";
-import type { IEvidenceConfig } from "evidence";
+import { EvidenceWatcher } from "@wrtnlabs/evidence";
+import type { IEvidenceConfig } from "@wrtnlabs/evidence";
 import { unlink } from "node:fs/promises";
 import { join } from "node:path";
 

@@ -1,5 +1,5 @@
-import { EvidenceCommand, EvidenceCommandError } from "evidence";
-import type { IEvidenceCheckCommand } from "evidence";
+import { EvidenceCommand, EvidenceCommandError } from "@wrtnlabs/evidence";
+import type { IEvidenceCheckCommand } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import assert from "node:assert/strict";
 

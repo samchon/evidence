@@ -3,7 +3,7 @@ import {
   EvidenceParser,
   EvidencePhpAdapter,
   EvidenceTreeSitterAssets,
-} from "evidence";
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
 import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";

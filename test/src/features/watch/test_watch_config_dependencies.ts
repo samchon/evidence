@@ -4,7 +4,7 @@ import {
   EvidenceConfigLoader,
   type IEvidenceConfig,
   type IEvidenceSourceDependency,
-} from "evidence";
+} from "@wrtnlabs/evidence";
 import { dedent } from "@typia/utils";
 import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";

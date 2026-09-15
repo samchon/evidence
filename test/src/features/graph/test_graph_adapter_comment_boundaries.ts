@@ -4,8 +4,11 @@ import {
   EvidenceMarkdownAdapter,
   EvidenceRubyAdapter,
   EvidenceRustAdapter,
-} from "evidence";
-import type { IEvidenceInventory, IEvidenceGraphResult } from "evidence";
+} from "@wrtnlabs/evidence";
+import type {
+  IEvidenceInventory,
+  IEvidenceGraphResult,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";

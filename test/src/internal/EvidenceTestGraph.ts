@@ -1,4 +1,4 @@
-import { EvidenceSourceText, EvidenceTargetResolver } from "evidence";
+import { EvidenceSourceText, EvidenceTargetResolver } from "@wrtnlabs/evidence";
 import type {
   EvidenceAcknowledgementKind,
   IEvidenceDeclaration,
@@ -11,7 +11,7 @@ import type {
   IEvidenceInventory,
   IEvidenceTargetResolution,
   IEvidenceUnit,
-} from "evidence";
+} from "@wrtnlabs/evidence";
 
 /** Builds graph statements and already-resolved targets for pure policy tests. */
 export namespace EvidenceTestGraph {

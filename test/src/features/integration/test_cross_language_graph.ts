@@ -1,5 +1,8 @@
-import { createEvidenceConfigPlan, EvidenceChecker } from "evidence";
-import type { IEvidenceCheckAnalysis, IEvidenceConfigPlan } from "evidence";
+import { createEvidenceConfigPlan, EvidenceChecker } from "@wrtnlabs/evidence";
+import type {
+  IEvidenceCheckAnalysis,
+  IEvidenceConfigPlan,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";

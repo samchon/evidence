@@ -1,4 +1,4 @@
-import { EvidenceGoAdapter, EvidenceInventory } from "evidence";
+import { EvidenceGoAdapter, EvidenceInventory } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 

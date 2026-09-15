@@ -1,4 +1,4 @@
-import type { EvidenceProgrammingSymbol } from "evidence";
+import type { EvidenceProgrammingSymbol } from "@wrtnlabs/evidence";
 import type { IEvidenceAdapterCertificationUnitBase } from "./IEvidenceAdapterCertificationUnitBase";
 
 /** Expected exact inventory for one programming declaration. */

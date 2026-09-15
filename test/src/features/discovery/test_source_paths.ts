@@ -1,4 +1,4 @@
-import { EvidenceSourceLoader, EvidenceSourcePath } from "evidence";
+import { EvidenceSourceLoader, EvidenceSourcePath } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";

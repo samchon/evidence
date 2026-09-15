@@ -2,14 +2,14 @@ import {
   EvidenceMarkdownAdapter,
   EvidenceTargetResolver,
   EvidenceTypeScriptAdapter,
-} from "evidence";
+} from "@wrtnlabs/evidence";
 import type {
   IEvidenceDeclaration,
   IEvidenceHost,
   IEvidenceInventory,
   IEvidenceTargetResolution,
   IEvidenceUnit,
-} from "evidence";
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 

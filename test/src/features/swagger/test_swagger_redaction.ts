@@ -2,13 +2,13 @@ import {
   EvidenceCommand,
   EvidenceSwaggerAdapter,
   EvidenceWatcher,
-} from "evidence";
+} from "@wrtnlabs/evidence";
 import type {
   EvidenceWatchCycle,
   IEvidenceCommandResult,
   IEvidenceDiagnostic,
   IEvidenceInventory,
-} from "evidence";
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";

@@ -1,6 +1,6 @@
 import { EvidenceTestParserAssets } from "../../internal/EvidenceTestParserAssets";
 import { TestValidator } from "@nestia/e2e";
-import { EvidenceTreeSitterAssets } from "evidence";
+import { EvidenceTreeSitterAssets } from "@wrtnlabs/evidence";
 import { randomUUID } from "node:crypto";
 import { readdir } from "node:fs/promises";
 import { join } from "node:path";

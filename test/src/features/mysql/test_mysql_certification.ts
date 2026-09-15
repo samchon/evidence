@@ -1,5 +1,5 @@
-import { EvidenceAccessor, EvidenceMysqlAdapter } from "evidence";
-import type { EvidenceDatabaseSymbol } from "evidence";
+import { EvidenceAccessor, EvidenceMysqlAdapter } from "@wrtnlabs/evidence";
+import type { EvidenceDatabaseSymbol } from "@wrtnlabs/evidence";
 import { dedent } from "@typia/utils";
 
 import { EvidenceDatabaseAdapterCertification } from "../../internal/certification/EvidenceDatabaseAdapterCertification";

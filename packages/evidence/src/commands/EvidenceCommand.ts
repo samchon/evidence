@@ -812,7 +812,7 @@ const INITIAL_DATA: IEvidenceConfig = {
  * starter object readable and directly editable after `evidence init`.
  */
 const INITIAL_CONFIG = dedent`
-  import type { IEvidenceConfig } from "evidence";
+  import type { IEvidenceConfig } from "@wrtnlabs/evidence";
 
   // Replace these globs with the public source and requirements in this project.
   export default ${JSON.stringify(INITIAL_DATA, null, 2)} satisfies IEvidenceConfig;

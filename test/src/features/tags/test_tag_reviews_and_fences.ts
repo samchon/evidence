@@ -1,5 +1,5 @@
-import { EvidenceTagParser } from "evidence";
-import type { IEvidenceDiagnostic } from "evidence";
+import { EvidenceTagParser } from "@wrtnlabs/evidence";
+import type { IEvidenceDiagnostic } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 

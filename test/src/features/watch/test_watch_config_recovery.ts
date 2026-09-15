@@ -1,4 +1,4 @@
-import { EvidenceChecker, EvidenceWatcher } from "evidence";
+import { EvidenceChecker, EvidenceWatcher } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
@@ -108,7 +108,7 @@ export async function test_watch_config_recovery(): Promise<void> {
 function config(): string {
   return dedent`
     import { files, root } from "./helpers/settings";
-    import type { IEvidenceConfig } from "evidence";
+    import type { IEvidenceConfig } from "@wrtnlabs/evidence";
 
     export default {
       claims: [

@@ -1,4 +1,4 @@
-import { EvidenceZigAdapter } from "evidence";
+import { EvidenceZigAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 

@@ -3,13 +3,13 @@ import {
   EvidenceMarkdownAdapter,
   EvidenceSourceLoader,
   EvidenceTypeScriptAdapter,
-} from "evidence";
+} from "@wrtnlabs/evidence";
 import type {
   IEvidenceInventory,
   IEvidenceSourceFile,
   IEvidenceSourceSnapshot,
   IEvidenceUnit,
-} from "evidence";
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { rename, rm } from "node:fs/promises";

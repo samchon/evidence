@@ -1,4 +1,4 @@
-import { EvidenceDbmlAdapter, EvidenceInventory } from "evidence";
+import { EvidenceDbmlAdapter, EvidenceInventory } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 

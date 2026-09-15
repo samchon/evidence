@@ -1,4 +1,4 @@
-import { EvidenceCommand, EvidenceConfigLoader } from "evidence";
+import { EvidenceCommand, EvidenceConfigLoader } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { readFile, readdir } from "node:fs/promises";

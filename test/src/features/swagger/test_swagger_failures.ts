@@ -1,5 +1,5 @@
-import { EvidenceGraph, EvidenceSwaggerAdapter } from "evidence";
-import type { IEvidenceInventory } from "evidence";
+import { EvidenceGraph, EvidenceSwaggerAdapter } from "@wrtnlabs/evidence";
+import type { IEvidenceInventory } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";

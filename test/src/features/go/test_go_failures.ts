@@ -1,5 +1,5 @@
-import { EvidenceGoAdapter } from "evidence";
-import type { IEvidenceInventory } from "evidence";
+import { EvidenceGoAdapter } from "@wrtnlabs/evidence";
+import type { IEvidenceInventory } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 

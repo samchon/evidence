@@ -1,5 +1,8 @@
-import { EvidenceCommand, EvidenceQuery } from "evidence";
-import type { IEvidenceInspectReport, IEvidenceListReport } from "evidence";
+import { EvidenceCommand, EvidenceQuery } from "@wrtnlabs/evidence";
+import type {
+  IEvidenceInspectReport,
+  IEvidenceListReport,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";

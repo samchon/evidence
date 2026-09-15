@@ -6,14 +6,14 @@ import {
   EvidencePostgresqlAdapter,
   EvidenceSqlAdapter,
   EvidenceSqliteAdapter,
-} from "evidence";
+} from "@wrtnlabs/evidence";
 import type {
   IEvidenceAdapter,
   IEvidenceCheckReport,
   IEvidenceDeclaration,
   IEvidenceInventory,
   IEvidenceUnit,
-} from "evidence";
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";

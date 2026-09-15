@@ -1,5 +1,5 @@
-import { EvidenceJavaAdapter } from "evidence";
-import type { IEvidenceInventory } from "evidence";
+import { EvidenceJavaAdapter } from "@wrtnlabs/evidence";
+import type { IEvidenceInventory } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 

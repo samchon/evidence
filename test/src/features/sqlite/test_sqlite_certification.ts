@@ -1,4 +1,4 @@
-import { EvidenceSqliteAdapter } from "evidence";
+import { EvidenceSqliteAdapter } from "@wrtnlabs/evidence";
 import { dedent } from "@typia/utils";
 
 import { EvidenceDatabaseAdapterCertification } from "../../internal/certification/EvidenceDatabaseAdapterCertification";

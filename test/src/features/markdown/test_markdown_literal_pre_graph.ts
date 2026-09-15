@@ -1,10 +1,10 @@
-import { EvidenceChecker } from "evidence";
+import { EvidenceChecker } from "@wrtnlabs/evidence";
 import type {
   IEvidenceCheckObligation,
   IEvidenceCheckClaim,
   IEvidenceCheckReport,
   IEvidenceDiagnostic,
-} from "evidence";
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";

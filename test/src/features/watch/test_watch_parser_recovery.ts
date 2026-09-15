@@ -3,7 +3,7 @@ import {
   EvidenceTreeSitterAssets,
   EvidenceWatcher,
   type EvidenceWatchCycle,
-} from "evidence";
+} from "@wrtnlabs/evidence";
 import { EvidenceTestParserAssets } from "../../internal/EvidenceTestParserAssets";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";

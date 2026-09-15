@@ -1,4 +1,4 @@
-import { EvidenceLuaAdapter } from "evidence";
+import { EvidenceLuaAdapter } from "@wrtnlabs/evidence";
 import { dedent } from "@typia/utils";
 
 import type { IEvidenceAdapterCertification } from "./IEvidenceAdapterCertification";

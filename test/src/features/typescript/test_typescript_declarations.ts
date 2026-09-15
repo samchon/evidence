@@ -1,5 +1,5 @@
-import { EvidenceTypeScriptAdapter } from "evidence";
-import type { IEvidenceUnit } from "evidence";
+import { EvidenceTypeScriptAdapter } from "@wrtnlabs/evidence";
+import type { IEvidenceUnit } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 

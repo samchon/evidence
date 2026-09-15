@@ -18,8 +18,11 @@ import {
   EvidenceRustAdapter,
   EvidenceTypeScriptAdapter,
   EvidenceZigAdapter,
-} from "evidence";
-import type { EvidenceProgrammingSymbol, IEvidenceWithdrawal } from "evidence";
+} from "@wrtnlabs/evidence";
+import type {
+  EvidenceProgrammingSymbol,
+  IEvidenceWithdrawal,
+} from "@wrtnlabs/evidence";
 import { dedent } from "@typia/utils";
 
 import { EvidenceLuaCertificationFixture } from "./EvidenceLuaCertificationFixture";

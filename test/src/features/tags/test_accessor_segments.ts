@@ -1,4 +1,4 @@
-import { EvidenceAccessor } from "evidence";
+import { EvidenceAccessor } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
 /**

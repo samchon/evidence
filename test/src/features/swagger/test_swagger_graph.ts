@@ -5,13 +5,13 @@ import {
   EvidenceSwaggerAdapter,
   EvidenceTargetResolver,
   EvidenceTypeScriptAdapter,
-} from "evidence";
+} from "@wrtnlabs/evidence";
 import type {
   IEvidenceDeclaration,
   IEvidenceHost,
   IEvidenceInventory,
   IEvidenceUnit,
-} from "evidence";
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 

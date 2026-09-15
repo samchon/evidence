@@ -1,4 +1,4 @@
-import { EvidenceFingerprint, EvidenceMatlabAdapter } from "evidence";
+import { EvidenceFingerprint, EvidenceMatlabAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 

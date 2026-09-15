@@ -1,7 +1,7 @@
 import {
   EvidenceWatchDependencySnapshot,
   type IEvidenceSourceDependency,
-} from "evidence";
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { rm, symlink } from "node:fs/promises";

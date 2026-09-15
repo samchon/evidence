@@ -4,11 +4,11 @@ import type {
   IEvidenceInventory,
   IEvidenceSourceRange,
   IEvidenceUnit,
-} from "evidence";
+} from "@wrtnlabs/evidence";
 import { dedent } from "@typia/utils";
 import { createHash } from "node:crypto";
 
-import { EvidenceSourceText } from "evidence";
+import { EvidenceSourceText } from "@wrtnlabs/evidence";
 
 /**
  * Builds explicit adapter records independently of language extraction.

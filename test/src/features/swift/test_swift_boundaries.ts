@@ -1,4 +1,4 @@
-import { EvidenceSwiftAdapter } from "evidence";
+import { EvidenceSwiftAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 

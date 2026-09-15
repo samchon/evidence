@@ -1,4 +1,4 @@
-import { EvidenceAccessor, EvidenceScalaAdapter } from "evidence";
+import { EvidenceAccessor, EvidenceScalaAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";

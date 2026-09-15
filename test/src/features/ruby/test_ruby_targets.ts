@@ -1,5 +1,5 @@
-import { EvidenceRubyAdapter } from "evidence";
-import type { EvidenceTargetResolutionStatus } from "evidence";
+import { EvidenceRubyAdapter } from "@wrtnlabs/evidence";
+import type { EvidenceTargetResolutionStatus } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 

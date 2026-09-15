@@ -1,6 +1,6 @@
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidenceFileGlob } from "evidence";
+import { EvidenceFileGlob } from "@wrtnlabs/evidence";
 
 /**
  * Prunes impossible or fully excluded subtrees while preserving later

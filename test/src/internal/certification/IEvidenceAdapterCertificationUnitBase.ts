@@ -2,7 +2,7 @@ import type {
   EvidenceProgrammingSymbol,
   EvidenceDatabaseSymbol,
   IEvidenceWithdrawal,
-} from "evidence";
+} from "@wrtnlabs/evidence";
 import type { IEvidenceAdapterCertificationAddress } from "./IEvidenceAdapterCertificationAddress";
 
 /** Exact semantic identity, ownership, sites, addresses, and withdrawal state. */

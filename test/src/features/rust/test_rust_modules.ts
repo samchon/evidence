@@ -1,4 +1,4 @@
-import { EvidenceAccessor, EvidenceRustAdapter } from "evidence";
+import { EvidenceAccessor, EvidenceRustAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 

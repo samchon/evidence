@@ -1,4 +1,4 @@
-import { EvidenceChecker, EvidenceJavaScriptAdapter } from "evidence";
+import { EvidenceChecker, EvidenceJavaScriptAdapter } from "@wrtnlabs/evidence";
 import type {
   IEvidenceCheckReport,
   IEvidenceDeclaration,
@@ -7,7 +7,7 @@ import type {
   IEvidenceInventory,
   IEvidencePublicAddress,
   IEvidenceUnit,
-} from "evidence";
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";

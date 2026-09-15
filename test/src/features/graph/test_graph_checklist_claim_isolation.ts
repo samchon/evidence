@@ -1,4 +1,4 @@
-import { EvidenceChecker } from "evidence";
+import { EvidenceChecker } from "@wrtnlabs/evidence";
 import type {
   EvidenceCommandExitCode,
   EvidenceProgrammingSymbol,
@@ -6,7 +6,7 @@ import type {
   IEvidenceCheckReport,
   IEvidenceDiagnostic,
   IEvidenceProgrammingClaim,
-} from "evidence";
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";

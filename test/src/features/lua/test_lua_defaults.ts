@@ -1,4 +1,4 @@
-import { EvidenceChecker, EvidenceConfigLoader } from "evidence";
+import { EvidenceChecker, EvidenceConfigLoader } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";

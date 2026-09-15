@@ -3,8 +3,8 @@ import {
   EvidenceConfigDependencyScanner,
   EvidenceConfigLoader,
   EvidenceCommand,
-} from "evidence";
-import type { IEvidenceConfig } from "evidence";
+} from "@wrtnlabs/evidence";
+import type { IEvidenceConfig } from "@wrtnlabs/evidence";
 import assert from "node:assert/strict";
 import { join } from "node:path";
 

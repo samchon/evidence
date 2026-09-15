@@ -1,5 +1,5 @@
-import { EvidenceParserError } from "evidence";
-import type { EvidenceParserErrorCode } from "evidence";
+import { EvidenceParserError } from "@wrtnlabs/evidence";
+import type { EvidenceParserErrorCode } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
 /**

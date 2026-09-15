@@ -1,4 +1,4 @@
-import { EvidenceSqlAdapter } from "evidence";
+import { EvidenceSqlAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";

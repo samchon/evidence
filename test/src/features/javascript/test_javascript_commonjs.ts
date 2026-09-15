@@ -1,4 +1,4 @@
-import { EvidenceJavaScriptAdapter } from "evidence";
+import { EvidenceJavaScriptAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 

@@ -2,8 +2,8 @@ import {
   EvidenceChecker,
   EvidenceWatchReporter,
   EvidenceWatcher,
-} from "evidence";
-import type { EvidenceWatchCycle } from "evidence";
+} from "@wrtnlabs/evidence";
+import type { EvidenceWatchCycle } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
@@ -109,7 +109,7 @@ export async function test_watch_topology(): Promise<void> {
 
 function config(): string {
   return dedent`
-    import type { IEvidenceConfig } from "evidence";
+    import type { IEvidenceConfig } from "@wrtnlabs/evidence";
 
     export default {
       claims: [

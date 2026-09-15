@@ -1,4 +1,7 @@
-import type { EvidenceDatabaseType, EvidenceDatabaseSymbol } from "evidence";
+import type {
+  EvidenceDatabaseType,
+  EvidenceDatabaseSymbol,
+} from "@wrtnlabs/evidence";
 import type { IEvidenceAdapterCertificationBase } from "./IEvidenceAdapterCertificationBase";
 
 /**

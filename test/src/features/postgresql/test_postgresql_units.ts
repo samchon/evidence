@@ -1,4 +1,7 @@
-import { EvidenceInventory, EvidencePostgresqlAdapter } from "evidence";
+import {
+  EvidenceInventory,
+  EvidencePostgresqlAdapter,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 

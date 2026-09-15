@@ -1,5 +1,8 @@
-import { EvidenceAccessor, EvidenceSqlAdapter } from "evidence";
-import type { EvidenceDatabaseSymbol, IEvidenceWithdrawal } from "evidence";
+import { EvidenceAccessor, EvidenceSqlAdapter } from "@wrtnlabs/evidence";
+import type {
+  EvidenceDatabaseSymbol,
+  IEvidenceWithdrawal,
+} from "@wrtnlabs/evidence";
 import { dedent } from "@typia/utils";
 import type { IEvidenceDatabaseAdapterCertification } from "../../internal/certification/IEvidenceDatabaseAdapterCertification";
 import type { IEvidenceDatabaseAdapterCertificationUnit } from "../../internal/certification/IEvidenceDatabaseAdapterCertificationUnit";

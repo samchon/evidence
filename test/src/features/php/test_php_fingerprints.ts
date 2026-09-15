@@ -1,5 +1,5 @@
-import { EvidenceFingerprint, EvidencePhpAdapter } from "evidence";
-import type { IEvidenceInventory } from "evidence";
+import { EvidenceFingerprint, EvidencePhpAdapter } from "@wrtnlabs/evidence";
+import type { IEvidenceInventory } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 

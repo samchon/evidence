@@ -1,7 +1,7 @@
-import type { IEvidenceConfig } from "evidence";
+import type { IEvidenceConfig } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { validateEvidenceConfig } from "evidence";
+import { validateEvidenceConfig } from "@wrtnlabs/evidence";
 
 /**
  * Validates malformed population declarations before inactive entries are

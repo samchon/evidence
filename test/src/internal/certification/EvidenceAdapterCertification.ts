@@ -4,7 +4,7 @@ import {
   EvidenceGraph,
   EvidenceInventory,
   EvidenceMarkdownAdapter,
-} from "evidence";
+} from "@wrtnlabs/evidence";
 import type {
   EvidenceProgrammingSymbol,
   EvidenceDatabaseSymbol,
@@ -13,7 +13,7 @@ import type {
   IEvidenceSourceFile,
   IEvidenceSourceSnapshot,
   IEvidenceUnit,
-} from "evidence";
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
 import { EvidenceTestGraph } from "../EvidenceTestGraph";

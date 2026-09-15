@@ -1,4 +1,7 @@
-import { EvidencePostgresqlAdapter, EvidenceSqlAdapter } from "evidence";
+import {
+  EvidencePostgresqlAdapter,
+  EvidenceSqlAdapter,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
 import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";

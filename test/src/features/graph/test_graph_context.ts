@@ -1,5 +1,5 @@
-import { EvidenceGraph } from "evidence";
-import type { IEvidenceGraphInput } from "evidence";
+import { EvidenceGraph } from "@wrtnlabs/evidence";
+import type { IEvidenceGraphInput } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
 import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";

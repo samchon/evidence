@@ -1,5 +1,5 @@
-import { EvidenceDocumentation, EvidenceSourceText } from "evidence";
-import type { IEvidenceCommentSyntax, IEvidenceHost } from "evidence";
+import { EvidenceDocumentation, EvidenceSourceText } from "@wrtnlabs/evidence";
+import type { IEvidenceCommentSyntax, IEvidenceHost } from "@wrtnlabs/evidence";
 import type { IEvidenceTestDocumentation } from "./IEvidenceTestDocumentation";
 
 /**

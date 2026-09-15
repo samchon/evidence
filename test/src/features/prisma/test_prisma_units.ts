@@ -1,9 +1,9 @@
-import { EvidenceFingerprint, EvidencePrismaAdapter } from "evidence";
+import { EvidenceFingerprint, EvidencePrismaAdapter } from "@wrtnlabs/evidence";
 import type {
   IEvidenceInventory,
   IEvidenceSourceFile,
   IEvidenceUnit,
-} from "evidence";
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 

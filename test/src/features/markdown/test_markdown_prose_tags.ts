@@ -1,5 +1,5 @@
-import { EvidenceMarkdownAdapter } from "evidence";
-import type { IEvidenceDiagnostic } from "evidence";
+import { EvidenceMarkdownAdapter } from "@wrtnlabs/evidence";
+import type { IEvidenceDiagnostic } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 

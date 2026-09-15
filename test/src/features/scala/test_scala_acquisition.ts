@@ -2,7 +2,7 @@ import {
   EvidenceScalaAdapter,
   EvidenceTreeSitterAssetScope,
   EvidenceTreeSitterAssets,
-} from "evidence";
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { EvidenceTestParserAssets } from "../../internal/EvidenceTestParserAssets";
 import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";

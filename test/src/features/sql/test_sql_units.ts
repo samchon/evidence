@@ -2,7 +2,7 @@ import {
   EvidenceAccessor,
   EvidenceInventory,
   EvidenceSqlAdapter,
-} from "evidence";
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";

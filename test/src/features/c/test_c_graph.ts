@@ -3,8 +3,8 @@ import {
   EvidenceFingerprint,
   EvidenceGraph,
   EvidenceMarkdownAdapter,
-} from "evidence";
-import type { IEvidenceInventory, IEvidenceUnit } from "evidence";
+} from "@wrtnlabs/evidence";
+import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 

@@ -1,4 +1,4 @@
-import { EvidenceParser } from "evidence";
+import { EvidenceParser } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 

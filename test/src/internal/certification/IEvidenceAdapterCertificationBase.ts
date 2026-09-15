@@ -4,7 +4,7 @@ import type {
   EvidenceProgrammingSymbol,
   EvidenceDatabaseSymbol,
   IEvidenceAdapter,
-} from "evidence";
+} from "@wrtnlabs/evidence";
 import type { IEvidenceAdapterCertificationFailure } from "./IEvidenceAdapterCertificationFailure";
 import type { IEvidenceAdapterCertificationFalsePositive } from "./IEvidenceAdapterCertificationFalsePositive";
 import type { IEvidenceAdapterCertificationHost } from "./IEvidenceAdapterCertificationHost";

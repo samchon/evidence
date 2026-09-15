@@ -2,8 +2,8 @@ import {
   EvidenceDocumentation,
   EvidenceParser,
   EvidenceTagParser,
-} from "evidence";
-import type { IEvidenceHost } from "evidence";
+} from "@wrtnlabs/evidence";
+import type { IEvidenceHost } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 

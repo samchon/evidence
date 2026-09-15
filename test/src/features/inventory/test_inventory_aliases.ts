@@ -1,4 +1,4 @@
-import { EvidenceInventory } from "evidence";
+import { EvidenceInventory } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
 import { EvidenceTestInventory } from "../../internal/EvidenceTestInventory";
