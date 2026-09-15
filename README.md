@@ -1,13 +1,18 @@
 # @wrtnlabs/evidence
 
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/wrtnlabs/evidence/blob/master/LICENSE) [![npm version](https://img.shields.io/npm/v/@wrtnlabs/evidence.svg)](https://www.npmjs.com/package/@wrtnlabs/evidence) [![npm downloads](https://img.shields.io/npm/dm/@wrtnlabs/evidence.svg)](https://www.npmjs.com/package/@wrtnlabs/evidence) [![build](https://github.com/wrtnlabs/evidence/actions/workflows/build.yml/badge.svg)](https://github.com/wrtnlabs/evidence/actions/workflows/build.yml) [![test](https://github.com/wrtnlabs/evidence/actions/workflows/test.yml/badge.svg)](https://github.com/wrtnlabs/evidence/actions/workflows/test.yml)
-
 ![Evidence Graph: make every SKILL instruction 100% enforced](https://raw.githubusercontent.com/wrtnlabs/evidence/master/assets/og.jpg)
+
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/wrtnlabs/evidence/blob/master/LICENSE) [![npm version](https://img.shields.io/npm/v/@wrtnlabs/evidence.svg)](https://www.npmjs.com/package/@wrtnlabs/evidence) [![npm downloads](https://img.shields.io/npm/dm/@wrtnlabs/evidence.svg)](https://www.npmjs.com/package/@wrtnlabs/evidence) [![build](https://github.com/wrtnlabs/evidence/actions/workflows/build.yml/badge.svg)](https://github.com/wrtnlabs/evidence/actions/workflows/build.yml) [![test](https://github.com/wrtnlabs/evidence/actions/workflows/test.yml/badge.svg)](https://github.com/wrtnlabs/evidence/actions/workflows/test.yml)
 
 Every rule, requirement, schema, and API becomes an obligation the check enforces.
 
 - **100% coverage** of every requirement.
 - **100% compliance** with every principle.
+- **20+ languages**, plus Markdown and Swagger.
+
+Modern AI already writes code, documents, and fiction well. The remaining bottleneck is not creation but adherence: an agent can understand a specification, ignore one constraint, and still declare the work complete ([_The Compliance Gap_](https://arxiv.org/abs/2605.01771)).
+
+Evidence makes the agent account for every instruction where the work is done, stating how the output satisfies it or why it does not apply. That single obligation turns compliance from a promise into a complete, reviewable graph.
 
 ```tsx
 /**
@@ -22,8 +27,6 @@ export function CouponStackingNotice(props: IProps): JSX.Element;
 
 `@evidence <target> <reason>` says that the declaration covers the target and explains why. `@evidenceExclude <target> <reason>` records why the target does not apply.
 
-Targets span 19 programming languages, 7 database schema languages, Markdown, and Swagger.
-
 Leave one obligation unanswered and the check stops:
 
 ```bash
@@ -35,7 +38,7 @@ Missing acknowledgement:
   src/hooks/useCouponStacking.ts#useCouponStacking
 ```
 
-The error list is the task list.
+The error list is the task list. The checker verifies that every required connection has an answer; reviewers judge whether each reason is true.
 
 ## 1. Spec-driven development
 
@@ -47,31 +50,17 @@ npx evidence init
 npx evidence
 ```
 
-`typescript` and [`ttsc`](https://github.com/samchon/ttsc) are peer dependencies. `ttsc` supplies `ttsx`, which evaluates `evidence.config.ts` without a project `tsconfig.json`. Grammars download on first use. The first example below replaces the starter configuration.
+`typescript` and [`ttsc`](https://github.com/samchon/ttsc) are peer dependencies. `ttsc` supplies `ttsx`, which evaluates `evidence.config.ts` without a project `tsconfig.json`. Grammars download on first use. Replace the generated configuration as shown next.
 
-### 1.2. Why a graph
+### 1.2. Start with principles
 
-You wrote the rules down. `AGENTS.md`, `CLAUDE.md`, a skill file; the name does not matter.
+Start with the rules already written in `AGENTS.md`, `CLAUDE.md`, or a skill file:
 
 ```markdown
 ## No hard coding {#no-hard-coding}
 ## Fix causes, not symptoms {#fix-root-causes}
 ## Do not build it before you need it {#yagni}
 ```
-
-The agent reads them. Later, this lands in the commit:
-
-```ts
-if (file === "wide-chars.ts") return WIDE_CHARS_EXPECTED;
-```
-
-That breaks the first rule, and the build still passes. The type checker sees types, the tests see results, and the linter sees syntax. None of them connects the rule to the code.
-
-Evidence makes that connection a graph. Every selected declaration cites every applicable rule and says why. Leave an edge unanswered and the check fails. If an honest reason would expose a violation, the agent fixes the code before writing the reason.
-
-The checker proves that the graph is complete. The reviewer judges whether each reason is true. Because both the checklist and the answers live in the repository, they survive the session and run in CI.
-
-### 1.3. Start with principles
 
 Replace the starter `evidence.config.ts` with one claim:
 
@@ -117,9 +106,9 @@ Evidence check complete.
 Coverage: 3/3 units covered, 0 missing.
 ```
 
-Run the same command in CI and keep its exit code: 1 is a violation, 2 is incomplete analysis.
+Run the same command in CI; exit 1 means a violation, and exit 2 means incomplete analysis.
 
-### 1.4. Ground code in requirements
+### 1.3. Ground code in requirements
 
 Evidence links addresses across artifact types, so anything with an address can join the graph.
 
@@ -132,7 +121,7 @@ Each arrow is one claim. Requirements cite idea notes, so a dropped idea is caug
 
 Whichever layer a human reviews last is the source of truth. The agent writes everything below it.
 
-In a separate requirements-driven project, two claims draw the bottom of the picture:
+Two claims draw the bottom of the graph:
 
 ```ts
 import type { IEvidenceConfig } from "@wrtnlabs/evidence";
@@ -170,7 +159,7 @@ Every requirement must be cited by a function under `src`. Every function under 
 Add prices without intermediate rounding.
 ```
 
-With `add` and `test_add` still untagged, the first check reports two missing edges: requirement to implementation, then implementation to test.
+With `add` and `test_add` still untagged, the first check reports two missing citations: `add` must cite the requirement, and `test_add` must cite `add`.
 
 Add the reasons where the work is done. Markdown targets resolve from the reference root, which defaults to the config directory; programming targets resolve from the citing file:
 
@@ -204,7 +193,7 @@ One layer up, Markdown cites Markdown in HTML comments, so the rendered document
 A buyer may apply at most one coupon per issuer to one order.
 ```
 
-### 1.5. Backend
+### 1.4. Backend
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://ttsc.dev/evidence/backend-dark.svg">
@@ -219,7 +208,7 @@ The schema, API, and tests form one graph:
 
 The citations stay native to each artifact: a Prisma `///` comment cites Markdown, a Swagger `description` cites `prisma:Order`, and a test cites `POST:/orders/{orderId}/coupons`.
 
-### 1.6. Frontend
+### 1.5. Frontend
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://ttsc.dev/evidence/frontend-dark.svg">
@@ -234,7 +223,7 @@ A frontend graph can begin with a Swagger document published by another project:
 
 "The API is wired up but there is no screen yet" stops being a green check.
 
-### 1.7. Novels
+### 1.6. Novels
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://ttsc.dev/evidence/novel-dark.svg">
@@ -310,7 +299,7 @@ Incomplete analysis never passes as an empty population.
 
 ## 4. Configuration
 
-`evidence.config.ts` exports one `IEvidenceConfig`: `claims` and an optional root `severity`. Severity defaults to `error`; claims inherit the root, and references inherit their claim. The config is evaluated through the consumer's `ttsx` and validated with `typia` before any source is read.
+`evidence.config.ts` exports one `IEvidenceConfig` with a `claims` array and an optional top-level `severity`. Severity defaults to `error`; claims inherit the top-level value, and references inherit their claim. The config is evaluated through the consumer's `ttsx` and validated with `typia` before any source is read.
 
 ### 4.1. Claim
 
@@ -490,9 +479,16 @@ Exit 0 is a complete analysis without errors, 1 is a complete analysis with viol
 
 ## 8. References
 
-For projects that use only TypeScript, Prisma, Swagger, and Markdown, use [`@ttsc/evidence`](https://github.com/samchon/ttsc/tree/master/packages/evidence). Its dedicated compiler integration is slightly more efficient for that scope than the Tree-sitter implementation.
+### 8.1. Implementations
 
-For any other language, use `@wrtnlabs/evidence`, which uses Tree-sitter to support a much broader range of languages.
+For projects whose graph uses only TypeScript, Prisma, Swagger, and Markdown, use [`@ttsc/evidence`](https://github.com/samchon/ttsc/tree/master/packages/evidence). Its dedicated compiler integration is slightly more efficient for that scope than the Tree-sitter implementation.
 
-- [Evidence Graph: Make Every SKILL Instruction 100% Enforced](https://ttsc.dev/blog/evidence-graph-make-every-skill-instruction-100-percent-enforced/) introduces the graph model and the workflow adapted by this project.
-- [The `@ttsc/evidence` README](https://github.com/samchon/ttsc/blob/master/packages/evidence/README.md) documents the compiler-integrated implementation, its four artifact types, and its native TypeScript symbol targets.
+For graphs that include any other supported language, use `@wrtnlabs/evidence`; its Tree-sitter adapters cover the broader set listed above.
+
+### 8.2. Background
+
+[Evidence Graph: Make Every SKILL Instruction 100% Enforced](https://ttsc.dev/blog/evidence-graph-make-every-skill-instruction-100-percent-enforced/) introduces the method. [The `@ttsc/evidence` README](https://github.com/samchon/ttsc/blob/master/packages/evidence/README.md) documents its original implementation.
+
+Written instructions alone are not enforcement. [_The Compliance Gap_](https://arxiv.org/abs/2605.01771) examined the tool logs of six frontier models. Across 60 runs, none followed the written instruction, yet more than 90% reported compliance. [Cheating Agents](https://debugml.github.io/cheating-agents) shows the underlying incentive: when a cheaper path passes the available check, agents take it.
+
+Evidence leaves creation to the model and makes adherence executable.
