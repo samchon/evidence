@@ -4,6 +4,8 @@ import type { IEvidAdapter } from "../../structures/IEvidAdapter";
 import type { IEvidInventory } from "../../structures/IEvidInventory";
 import type { IEvidSourceSnapshot } from "../../structures/IEvidSourceSnapshot";
 
+const EVID_SQL_TYPE = "sql" as const;
+
 /**
  * Extracts the explicitly configured portable SQL CREATE TABLE surface.
  *
@@ -17,7 +19,7 @@ export class EvidSqlAdapter implements IEvidAdapter {
    * This fixed identity prevents a shared `.sql` suffix from implicitly
    * selecting a dialect with a different declaration population.
    */
-  public readonly type: "sql" = "sql";
+  public readonly type = EVID_SQL_TYPE;
 
   /**
    * Materializes scanner records into the public SQL inventory.
@@ -26,7 +28,7 @@ export class EvidSqlAdapter implements IEvidAdapter {
    * lifetime and syntax-independent inventory publication.
    */
   private readonly materializer: EvidSqlInventoryMaterializer =
-    new EvidSqlInventoryMaterializer({ type: this.type, scan });
+    new EvidSqlInventoryMaterializer({ type: EVID_SQL_TYPE, scan });
 
   /**
    * Extracts portable SQL declarations from one captured source snapshot.

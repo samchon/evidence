@@ -4,6 +4,8 @@ import type { IEvidAdapter } from "../../structures/IEvidAdapter";
 import type { IEvidInventory } from "../../structures/IEvidInventory";
 import type { IEvidSourceSnapshot } from "../../structures/IEvidSourceSnapshot";
 
+const EVID_MYSQL_TYPE = "mysql" as const;
+
 /**
  * Extracts explicitly configured MySQL schema declarations with static
  * ownership.
@@ -20,7 +22,7 @@ export class EvidMysqlAdapter implements IEvidAdapter {
    * This identity prevents a shared `.sql` extension from changing the
    * declaration surface through dialect probing.
    */
-  public readonly type: "mysql" = "mysql";
+  public readonly type = EVID_MYSQL_TYPE;
 
   /**
    * Materializes MySQL scanner records into graph-facing inventory records.
@@ -30,7 +32,7 @@ export class EvidMysqlAdapter implements IEvidAdapter {
    */
   private readonly materializer: EvidSqlInventoryMaterializer =
     new EvidSqlInventoryMaterializer({
-      type: this.type,
+      type: EVID_MYSQL_TYPE,
       scan: EvidMysqlFileScanner.scan,
     });
 

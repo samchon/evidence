@@ -6,6 +6,8 @@ import type { IEvidAdapter } from "../../structures/IEvidAdapter";
 import type { IEvidInventory } from "../../structures/IEvidInventory";
 import type { IEvidSourceSnapshot } from "../../structures/IEvidSourceSnapshot";
 
+const EVID_POSTGRESQL_TYPE = "postgresql" as const;
+
 /**
  * Extracts PostgreSQL table schemas with cross-file DDL and COMMENT ownership.
  *
@@ -21,7 +23,7 @@ export class EvidPostgresqlAdapter implements IEvidAdapter {
    * The explicit dialect keeps PostgreSQL DDL and COMMENT semantics stable for
    * source files that share the `.sql` extension with other databases.
    */
-  public readonly type: "postgresql" = "postgresql";
+  public readonly type = EVID_POSTGRESQL_TYPE;
 
   /**
    * Materializes PostgreSQL scanner records before fingerprint adjustment.
@@ -31,7 +33,7 @@ export class EvidPostgresqlAdapter implements IEvidAdapter {
    */
   private readonly materializer: EvidSqlInventoryMaterializer =
     new EvidSqlInventoryMaterializer({
-      type: this.type,
+      type: EVID_POSTGRESQL_TYPE,
       scan: (session, source) =>
         new EvidPostgresqlFileScanner(session, source).scan(),
       resolve: EvidPostgresqlOwnership.resolve,

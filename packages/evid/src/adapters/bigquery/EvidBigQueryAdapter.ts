@@ -4,6 +4,8 @@ import type { IEvidAdapter } from "../../structures/IEvidAdapter";
 import type { IEvidInventory } from "../../structures/IEvidInventory";
 import type { IEvidSourceSnapshot } from "../../structures/IEvidSourceSnapshot";
 
+const EVID_BIGQUERY_TYPE = "bigquery" as const;
+
 /**
  * Extracts declared GoogleSQL tables, fields, and key relations for BigQuery
  * populations.
@@ -20,7 +22,7 @@ export class EvidBigQueryAdapter implements IEvidAdapter {
    * The explicit discriminator preserves BigQuery's declaration semantics for
    * files that otherwise share the `.sql` extension with other dialects.
    */
-  public readonly type: "bigquery" = "bigquery";
+  public readonly type = EVID_BIGQUERY_TYPE;
 
   /**
    * Materializes BigQuery scanner records into graph-facing inventory records.
@@ -30,7 +32,7 @@ export class EvidBigQueryAdapter implements IEvidAdapter {
    */
   private readonly materializer: EvidSqlInventoryMaterializer =
     new EvidSqlInventoryMaterializer({
-      type: this.type,
+      type: EVID_BIGQUERY_TYPE,
       scan: (session, source) =>
         new EvidBigQueryFileScanner(session, source).scan(),
     });

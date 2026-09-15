@@ -4,6 +4,8 @@ import type { IEvidAdapter } from "../../structures/IEvidAdapter";
 import type { IEvidInventory } from "../../structures/IEvidInventory";
 import type { IEvidSourceSnapshot } from "../../structures/IEvidSourceSnapshot";
 
+const EVID_SQLITE_TYPE = "sqlite" as const;
+
 /**
  * Extracts SQLite's explicitly declared tables, columns, and foreign keys.
  *
@@ -18,7 +20,7 @@ export class EvidSqliteAdapter implements IEvidAdapter {
    * The explicit dialect keeps SQLite's ownership and identifier rules stable
    * for source files with a shared `.sql` extension.
    */
-  public readonly type: "sqlite" = "sqlite";
+  public readonly type = EVID_SQLITE_TYPE;
 
   /**
    * Materializes SQLite scanner records into graph-facing inventory records.
@@ -28,7 +30,7 @@ export class EvidSqliteAdapter implements IEvidAdapter {
    */
   private readonly materializer: EvidSqlInventoryMaterializer =
     new EvidSqlInventoryMaterializer({
-      type: this.type,
+      type: EVID_SQLITE_TYPE,
       scan: (session, source) =>
         new EvidSqliteFileScanner(session, source).scan(),
     });
