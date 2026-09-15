@@ -6,7 +6,7 @@ import type { IEvidCppFileAnalysis } from "./IEvidCppFileAnalysis";
  * Binds one public C++ alias to the selected semantic unit it uniquely resolves
  * to.
  *
- * `EvidCppAdapterBase.resolveAliases` creates this intermediate result after
+ * `EvidCppAdapter.resolveAliases` creates this intermediate result after
  * declaration families are materialized. The adapter then publishes addresses
  * for `target` and its nested units while retaining `analysis` to report
  * address conflicts against the originating source file.

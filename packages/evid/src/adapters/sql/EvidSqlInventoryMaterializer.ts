@@ -4,7 +4,6 @@ import { EvidInventory } from "../../graph/EvidInventory";
 import { EvidParser } from "../../parsers/EvidParser";
 import { EvidParserError } from "../../parsers/EvidParserError";
 import { EvidTagParser } from "../../parsers/EvidTagParser";
-import type { IEvidAdapter } from "../../structures/IEvidAdapter";
 import type { IEvidHost } from "../../structures/IEvidHost";
 import type { IEvidInventory } from "../../structures/IEvidInventory";
 import type { IEvidPublicAddress } from "../../structures/IEvidPublicAddress";
@@ -27,15 +26,7 @@ import type { IEvidSqlAdapterOptions } from "./IEvidSqlAdapterOptions";
  * public addresses, and documentation materialization. It analyzes source
  * declarations without connecting to a database or executing the supplied SQL.
  */
-export class EvidSqlAdapterBase implements IEvidAdapter {
-  /**
-   * Database family selected by the supplied dialect options.
-   *
-   * The parser uses it for grammar selection; a shared SQL extension does not
-   * override the configured dialect.
-   */
-  public readonly type;
-
+export class EvidSqlInventoryMaterializer {
   /**
    * Selects a dialect scanner and its optional cross-file ownership resolver.
    *
@@ -50,9 +41,7 @@ export class EvidSqlAdapterBase implements IEvidAdapter {
      * publication.
      */
     private readonly options: IEvidSqlAdapterOptions,
-  ) {
-    this.type = options.type;
-  }
+  ) {}
 
   /**
    * Builds an owned SQL inventory through dialect scanning and shared
@@ -118,7 +107,7 @@ export class EvidSqlAdapterBase implements IEvidAdapter {
     const file = source.addresses[0]?.relative ?? source.physicalPath;
     try {
       return await parser.parse(
-        { type: this.type, file, content: source.content },
+        { type: this.options.type, file, content: source.content },
         (session) => this.options.scan(session, source),
       );
     } catch (cause) {
@@ -129,7 +118,7 @@ export class EvidSqlAdapterBase implements IEvidAdapter {
         documentation: [],
         diagnostics: [
           {
-            code: `${this.type}-${parserError?.code ?? "parse-failed"}`,
+            code: `${this.options.type}-${parserError?.code ?? "parse-failed"}`,
             severity: "error",
             message:
               parserError?.message ??
@@ -190,7 +179,7 @@ export class EvidSqlAdapterBase implements IEvidAdapter {
           this.problem(
             inventory,
             analysis,
-            `${this.type}-declaration-conflict`,
+            `${this.options.type}-declaration-conflict`,
             `Database identity '${declaration.identity.join(".")}' has more than one selected declaration.`,
             "Select one source declaration for this schema identity before checking coverage.",
           );
@@ -202,7 +191,7 @@ export class EvidSqlAdapterBase implements IEvidAdapter {
         if (unit === undefined) {
           unit = {
             id,
-            type: this.type,
+            type: this.options.type,
             symbol: declaration.symbol,
             identity: declaration.identity,
             name: declaration.name,
@@ -523,7 +512,7 @@ export class EvidSqlAdapterBase implements IEvidAdapter {
    * selector.
    */
   private unitId(declaration: IEvidSqlDeclaration): string {
-    return `${this.type}:${declaration.symbol}:${JSON.stringify(declaration.identity)}`;
+    return `${this.options.type}:${declaration.symbol}:${JSON.stringify(declaration.identity)}`;
   }
 
   /**

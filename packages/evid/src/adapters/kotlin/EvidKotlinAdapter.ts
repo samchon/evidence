@@ -30,7 +30,7 @@ import { EvidKotlinReceivers } from "./EvidKotlinReceivers";
  * preserving the distinction between a receiver-qualified public path and its
  * original source.
  */
-export class EvidKotlinAdapterBase implements IEvidAdapter {
+export class EvidKotlinAdapter implements IEvidAdapter {
   /**
    * Kotlin discriminator selecting KDoc and receiver-aware declaration rules.
    *

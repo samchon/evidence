@@ -1,5 +1,8 @@
-import { EvidSqlAdapterBase } from "./EvidSqlAdapterBase";
+import { EvidSqlInventoryMaterializer } from "./EvidSqlInventoryMaterializer";
 import { EvidSqlFileScanner } from "./EvidSqlFileScanner";
+import type { IEvidAdapter } from "../../structures/IEvidAdapter";
+import type { IEvidInventory } from "../../structures/IEvidInventory";
+import type { IEvidSourceSnapshot } from "../../structures/IEvidSourceSnapshot";
 
 /**
  * Extracts the explicitly configured portable SQL CREATE TABLE surface.
@@ -7,15 +10,32 @@ import { EvidSqlFileScanner } from "./EvidSqlFileScanner";
  * This entry fixes interpretation to the portable grammar; shared `.sql` files
  * never trigger dialect probing that could change the selected population.
  */
-export class EvidSqlAdapter extends EvidSqlAdapterBase {
+export class EvidSqlAdapter implements IEvidAdapter {
   /**
-   * Selects the portable grammar policy without probing another dialect.
+   * Portable SQL grammar selected for this adapter.
    *
-   * Parser lifetime and inventory materialization remain owned by
-   * `EvidSqlAdapterBase`.
+   * This fixed identity prevents a shared `.sql` suffix from implicitly
+   * selecting a dialect with a different declaration population.
    */
-  public constructor() {
-    super({ type: "sql", scan: scan });
+  public readonly type: "sql" = "sql";
+
+  /**
+   * Materializes scanner records into the public SQL inventory.
+   *
+   * The adapter owns portable SQL policy; the materializer owns only the parser
+   * lifetime and syntax-independent inventory publication.
+   */
+  private readonly materializer: EvidSqlInventoryMaterializer =
+    new EvidSqlInventoryMaterializer({ type: this.type, scan });
+
+  /**
+   * Extracts portable SQL declarations from one captured source snapshot.
+   *
+   * No dialect probing occurs: the fixed portable scanner remains responsible
+   * for syntax interpretation while the shared materializer publishes records.
+   */
+  public analyze(snapshot: IEvidSourceSnapshot): Promise<IEvidInventory> {
+    return this.materializer.analyze(snapshot);
   }
 }
 

@@ -21,8 +21,8 @@ import { EvidSourceText } from "../../internal/EvidSourceText";
 /**
  * Extracts explicit C declarations and Doxygen without preprocessing source.
  *
- * It records physical declaration and attachment facts for `EvidCAdapterBase`
- * to reconcile; it never infers declarations from included or expanded source.
+ * It records physical declaration and attachment facts for `EvidCAdapter` to
+ * reconcile; it never infers declarations from included or expanded source.
  */
 export class EvidCFileScanner {
   private readonly declarations: IEvidCDeclaration[] = [];

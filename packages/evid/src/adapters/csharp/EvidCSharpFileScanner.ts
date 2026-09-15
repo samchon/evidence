@@ -22,8 +22,7 @@ import { EvidSourceText } from "../../internal/EvidSourceText";
  * Extracts C# namespaces, declarations, and XML documentation.
  *
  * It preserves declaration ownership and physical attachment decisions for
- * `EvidCSharpAdapterBase`, which reconciles partial families after parsing
- * closes.
+ * `EvidCSharpAdapter`, which reconciles partial families after parsing closes.
  */
 export class EvidCSharpFileScanner {
   private readonly declarations: IEvidCSharpDeclaration[] = [];

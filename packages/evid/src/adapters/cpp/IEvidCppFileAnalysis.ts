@@ -8,7 +8,7 @@ import type { IEvidCppDocumentation } from "./IEvidCppDocumentation";
  * Holds the complete node-free extraction for one scanned C++ source file.
  *
  * `EvidCppFileScanner` returns this boundary after its parse session closes.
- * `EvidCppAdapterBase` consumes the records to reconcile declaration families,
+ * `EvidCppAdapter` consumes the records to reconcile declaration families,
  * resolve aliases, and materialize documentation without retaining Tree-sitter
  * nodes.
  */
@@ -16,8 +16,8 @@ export interface IEvidCppFileAnalysis {
   /**
    * Captured source file that owns every record in this analysis.
    *
-   * `EvidCppAdapterBase` uses its physical path and configured addresses while
-   * it materializes units and documentation hosts.
+   * `EvidCppAdapter` uses its physical path and configured addresses while it
+   * materializes units and documentation hosts.
    */
   source: IEvidSourceFile;
 
@@ -32,7 +32,7 @@ export interface IEvidCppFileAnalysis {
   /**
    * Supported namespace and using aliases found in this physical file.
    *
-   * `EvidCppAdapterBase` resolves them only after materializing selected units,
+   * `EvidCppAdapter` resolves them only after materializing selected units,
    * because an alias must identify exactly one target unit.
    */
   aliases: IEvidCppAlias[];

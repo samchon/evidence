@@ -6,10 +6,10 @@ import type { IEvidCppDocumentationAttachment } from "./IEvidCppDocumentationAtt
  * Captures one C++ documentation carrier that may contain Evid tags.
  *
  * EvidCppFileScanner collects supported Doxygen and tag-bearing unsupported
- * carriers, then records their physical attachments. EvidCppAdapterBase later
- * reads the carrier with its syntax, maps attachments through materialized
- * units, and emits attached or unsupported Evid hosts without treating a
- * comment as a declaration itself.
+ * carriers, then records their physical attachments. EvidCppAdapter later reads
+ * the carrier with its syntax, maps attachments through materialized units, and
+ * emits attached or unsupported Evid hosts without treating a comment as a
+ * declaration itself.
  */
 export interface IEvidCppDocumentation {
   /**

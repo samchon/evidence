@@ -7,11 +7,11 @@ import type { EvidCppVisibility } from "./EvidCppVisibility";
  * Captures one supported C++ declaration before semantic units are
  * materialized.
  *
- * EvidCppFileScanner records source occurrences in this form;
- * EvidCppAdapterBase groups compatible occurrences by identity, validates their
- * declaration family, and publishes the resulting unit's addresses and sites.
- * The record therefore keeps physical source facts separate from the semantic
- * identity shared by declarations, definitions, and overloads.
+ * EvidCppFileScanner records source occurrences in this form; EvidCppAdapter
+ * groups compatible occurrences by identity, validates their declaration
+ * family, and publishes the resulting unit's addresses and sites. The record
+ * therefore keeps physical source facts separate from the semantic identity
+ * shared by declarations, definitions, and overloads.
  */
 export interface IEvidCppDeclaration {
   /**

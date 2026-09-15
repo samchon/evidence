@@ -1,7 +1,8 @@
-import { EvidSqlAdapterBase } from "../sql/EvidSqlAdapterBase";
+import { EvidSqlInventoryMaterializer } from "../sql/EvidSqlInventoryMaterializer";
 import { EvidPostgresqlFileScanner } from "./EvidPostgresqlFileScanner";
 import { EvidPostgresqlOwnership } from "./EvidPostgresqlOwnership";
 import { EvidPostgresqlFingerprint } from "./EvidPostgresqlFingerprint";
+import type { IEvidAdapter } from "../../structures/IEvidAdapter";
 import type { IEvidInventory } from "../../structures/IEvidInventory";
 import type { IEvidSourceSnapshot } from "../../structures/IEvidSourceSnapshot";
 
@@ -13,34 +14,38 @@ import type { IEvidSourceSnapshot } from "../../structures/IEvidSourceSnapshot";
  * when annotation-only COMMENT statements add eligible documentation
  * positions.
  */
-export class EvidPostgresqlAdapter extends EvidSqlAdapterBase {
+export class EvidPostgresqlAdapter implements IEvidAdapter {
   /**
-   * Selects PostgreSQL identity rules, scanning, and ownership resolution.
+   * PostgreSQL grammar selected for this adapter.
    *
-   * These hooks interpret captured DDL through the pinned SQL grammar without
-   * executing statements against a database.
+   * The explicit dialect keeps PostgreSQL DDL and COMMENT semantics stable for
+   * source files that share the `.sql` extension with other databases.
    */
-  public constructor() {
-    super({
-      type: "postgresql",
+  public readonly type: "postgresql" = "postgresql";
+
+  /**
+   * Materializes PostgreSQL scanner records before fingerprint adjustment.
+   *
+   * PostgreSQL scanning and ownership stay owned by this adapter's policy;
+   * shared parser lifetime and syntax-independent publication stay separate.
+   */
+  private readonly materializer: EvidSqlInventoryMaterializer =
+    new EvidSqlInventoryMaterializer({
+      type: this.type,
       scan: (session, source) =>
         new EvidPostgresqlFileScanner(session, source).scan(),
       resolve: EvidPostgresqlOwnership.resolve,
     });
-  }
 
   /**
-   * Applies PostgreSQL COMMENT fingerprint policy after shared inventory
-   * extraction.
+   * Extracts PostgreSQL declarations and applies COMMENT fingerprint policy.
    *
    * Annotation-only COMMENT additions remain eligible hosts while the
    * fingerprint layer avoids making review metadata invalidate the declaration
    * it reviews.
    */
-  public override async analyze(
-    snapshot: IEvidSourceSnapshot,
-  ): Promise<IEvidInventory> {
-    const inventory = await super.analyze(snapshot);
+  public async analyze(snapshot: IEvidSourceSnapshot): Promise<IEvidInventory> {
+    const inventory: IEvidInventory = await this.materializer.analyze(snapshot);
     EvidPostgresqlFingerprint.apply(inventory);
     return inventory;
   }

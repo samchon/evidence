@@ -21,8 +21,8 @@ import { EvidSourceText } from "../../internal/EvidSourceText";
  * materialization.
  *
  * Ownership and visibility are recorded from selected source only;
- * `EvidJavaAdapterBase` later reconciles compatible declaration families into
- * graph units.
+ * `EvidJavaAdapter` later reconciles compatible declaration families into graph
+ * units.
  */
 export class EvidJavaFileScanner {
   private readonly declarations: IEvidJavaDeclaration[] = [];

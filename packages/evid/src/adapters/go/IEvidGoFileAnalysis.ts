@@ -6,9 +6,8 @@ import type { IEvidGoDocumentation } from "./IEvidGoDocumentation";
 /**
  * Stores a node-free extraction of one Go source file after parsing closes.
  *
- * EvidGoAdapterBase collects these file fragments, while EvidGoPackageResolver
- * uses their directory and package context to publish package-wide evidence
- * units.
+ * EvidGoAdapter collects these file fragments, while EvidGoPackageResolver uses
+ * their directory and package context to publish package-wide evidence units.
  */
 export interface IEvidGoFileAnalysis {
   /**

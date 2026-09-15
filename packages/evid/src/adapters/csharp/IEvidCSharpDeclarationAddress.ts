@@ -2,7 +2,7 @@
  * Describes one public-address candidate for a C# declaration.
  *
  * The scanner derives candidates from namespace, type, and member containment,
- * including aliases introduced by C# syntax. `EvidCSharpAdapterBase` uses their
+ * including aliases introduced by C# syntax. `EvidCSharpAdapter` uses their
  * canonical and alias-prefix provenance when publishing public addresses,
  * preserving the declaration's semantic identity independently from its
  * accessible spellings.

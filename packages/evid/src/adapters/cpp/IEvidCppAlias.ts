@@ -5,8 +5,8 @@ import type { EvidCppAliasKind } from "./EvidCppAliasKind";
  * Records one statically readable C++ namespace alias or using declaration.
  *
  * EvidCppFileScanner emits this physical record alongside declarations, and
- * EvidCppAdapterBase resolves public aliases after it materializes semantic
- * units. Its scoped target and site let that later pass publish alias-derived
+ * EvidCppAdapter resolves public aliases after it materializes semantic units.
+ * Its scoped target and site let that later pass publish alias-derived
  * addresses without confusing the alias with the selected target unit.
  */
 export interface IEvidCppAlias {

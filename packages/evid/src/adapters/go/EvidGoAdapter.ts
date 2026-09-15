@@ -31,7 +31,7 @@ import type { IEvidGoFileAnalysis } from "./IEvidGoFileAnalysis";
  * validation. It never treats an unresolved receiver as permission to omit a
  * method and report complete coverage over the remaining units.
  */
-export class EvidGoAdapterBase implements IEvidAdapter {
+export class EvidGoAdapter implements IEvidAdapter {
   /**
    * Go artifact discriminator for the package extraction pipeline.
    *

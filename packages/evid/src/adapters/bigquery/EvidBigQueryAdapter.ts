@@ -1,5 +1,8 @@
 import { EvidBigQueryFileScanner } from "./EvidBigQueryFileScanner";
-import { EvidSqlAdapterBase } from "../sql/EvidSqlAdapterBase";
+import { EvidSqlInventoryMaterializer } from "../sql/EvidSqlInventoryMaterializer";
+import type { IEvidAdapter } from "../../structures/IEvidAdapter";
+import type { IEvidInventory } from "../../structures/IEvidInventory";
+import type { IEvidSourceSnapshot } from "../../structures/IEvidSourceSnapshot";
 
 /**
  * Extracts declared GoogleSQL tables, fields, and key relations for BigQuery
@@ -10,18 +13,35 @@ import { EvidSqlAdapterBase } from "../sql/EvidSqlAdapterBase";
  * Analysis operates on source snapshots without querying a service or executing
  * SQL.
  */
-export class EvidBigQueryAdapter extends EvidSqlAdapterBase {
+export class EvidBigQueryAdapter implements IEvidAdapter {
   /**
-   * Selects the GoogleSQL grammar and BigQuery declaration scanner.
+   * GoogleSQL grammar selected for this adapter.
    *
-   * The configured dialect controls interpretation even when input shares the
-   * .sql suffix with other database families.
+   * The explicit discriminator preserves BigQuery's declaration semantics for
+   * files that otherwise share the `.sql` extension with other dialects.
    */
-  public constructor() {
-    super({
-      type: "bigquery",
+  public readonly type: "bigquery" = "bigquery";
+
+  /**
+   * Materializes BigQuery scanner records into graph-facing inventory records.
+   *
+   * BigQuery-specific parsing remains in its scanner; this collaborator owns
+   * only parser lifetime and syntax-independent SQL publication.
+   */
+  private readonly materializer: EvidSqlInventoryMaterializer =
+    new EvidSqlInventoryMaterializer({
+      type: this.type,
       scan: (session, source) =>
         new EvidBigQueryFileScanner(session, source).scan(),
     });
+
+  /**
+   * Extracts BigQuery declarations from one captured source snapshot.
+   *
+   * The configured grammar controls interpretation even when input shares the
+   * `.sql` suffix with other database families.
+   */
+  public analyze(snapshot: IEvidSourceSnapshot): Promise<IEvidInventory> {
+    return this.materializer.analyze(snapshot);
   }
 }

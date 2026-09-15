@@ -28,7 +28,7 @@ import { EvidScalaExports } from "./EvidScalaExports";
  * published, ensuring public aliases and documentation refer to the same
  * underlying identity rather than creating independent coverage units.
  */
-export class EvidScalaAdapterBase implements IEvidAdapter {
+export class EvidScalaAdapter implements IEvidAdapter {
   /**
    * Artifact discriminator selecting Scala grammar and extraction rules.
    *

@@ -3,8 +3,8 @@ import type { IEvidCppDeclaration } from "./IEvidCppDeclaration";
 /**
  * Collects C++ declaration occurrences that materialize one semantic unit.
  *
- * EvidCppAdapterBase builds these groups from scanner records using `id`, then
- * uses their declarations to determine public ownership, validate compatible
+ * EvidCppAdapter builds these groups from scanner records using `id`, then uses
+ * their declarations to determine public ownership, validate compatible
  * declaration and definition families, and construct the unit's sites. It
  * bridges physical IEvidCppDeclaration records and the final Evid inventory.
  */
@@ -12,7 +12,7 @@ export interface IEvidCppDeclarationGroup {
   /**
    * Semantic unit ID shared by every declaration in this group.
    *
-   * EvidCppAdapterBase derives it from the declarations' symbol and qualified
+   * EvidCppAdapter derives it from the declarations' symbol and qualified
    * identity before using it as the unit ID and as the key for public-group
    * selection.
    */

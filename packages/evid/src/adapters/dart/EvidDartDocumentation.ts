@@ -8,7 +8,7 @@ import type { IEvidDartDocumentation } from "./IEvidDartDocumentation";
  * Reads Dart documentation while preserving source mappings and masking code
  * examples.
  *
- * EvidDartAdapterBase uses the mapped text before Evid tags are parsed for each
+ * EvidDartAdapter uses the mapped text before Evid tags are parsed for each
  * host.
  */
 export namespace EvidDartDocumentation {

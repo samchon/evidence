@@ -8,9 +8,9 @@ import type { IEvidGoMaterializedDeclaration } from "./IEvidGoMaterializedDeclar
 /**
  * Reconciles selected Go files into package-wide Evid units and addresses.
  *
- * EvidGoAdapterBase supplies one analysis per source file because receiver
- * methods may depend on types in another file; this resolver restores Go's
- * package boundary before the shared inventory is published.
+ * EvidGoAdapter supplies one analysis per source file because receiver methods
+ * may depend on types in another file; this resolver restores Go's package
+ * boundary before the shared inventory is published.
  */
 export class EvidGoPackageResolver {
   /**
@@ -72,8 +72,8 @@ export class EvidGoPackageResolver {
   /**
    * Resolves all selected declarations and publishes their package-wide units.
    *
-   * The returned map lets EvidGoAdapterBase associate scanner-local
-   * documentation with the unit ID that survived receiver and package-boundary
+   * The returned map lets EvidGoAdapter associate scanner-local documentation
+   * with the unit ID that survived receiver and package-boundary
    * reconciliation.
    *
    * @returns Scanner-local declaration IDs mapped to their published unit IDs.

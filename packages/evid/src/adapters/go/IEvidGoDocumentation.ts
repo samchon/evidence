@@ -5,7 +5,7 @@ import type { IEvidGoDocumentationAttachment } from "./IEvidGoDocumentationAttac
 /**
  * Retains a Go documentation carrier and its scanner-established attachments.
  *
- * EvidGoAdapterBase reads these records after parsing closes to create
+ * EvidGoAdapter reads these records after parsing closes to create
  * documentation hosts and report unsupported annotations without reinterpreting
  * the source.
  */

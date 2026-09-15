@@ -22,7 +22,7 @@ export interface IEvidKotlinFileAnalysis {
    * Lists extracted declarations, including non-public lookup boundaries.
    *
    * `EvidKotlinReceivers` consumes the records across the snapshot before
-   * `EvidKotlinAdapterBase` selects public units.
+   * `EvidKotlinAdapter` selects public units.
    */
   declarations: IEvidKotlinDeclaration[];
 

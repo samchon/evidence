@@ -22,8 +22,8 @@ export interface IEvidLuaFileAnalysis {
    * Lists declarations and alias projections established by supported static
    * initialization.
    *
-   * `EvidLuaAdapterBase` reconciles these node-free records into public units
-   * after scanning ends.
+   * `EvidLuaAdapter` reconciles these node-free records into public units after
+   * scanning ends.
    */
   declarations: IEvidLuaDeclaration[];
 

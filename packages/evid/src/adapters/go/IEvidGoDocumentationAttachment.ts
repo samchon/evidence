@@ -1,8 +1,8 @@
 /**
  * Connects a Go documentation carrier to one physical declaration site.
  *
- * EvidGoFileScanner establishes this adjacency, and EvidGoAdapterBase later
- * maps the local declaration to its package-wide unit without transferring the
+ * EvidGoFileScanner establishes this adjacency, and EvidGoAdapter later maps
+ * the local declaration to its package-wide unit without transferring the
  * comment.
  */
 export interface IEvidGoDocumentationAttachment {

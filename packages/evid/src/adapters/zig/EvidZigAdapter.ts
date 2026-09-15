@@ -29,7 +29,7 @@ import { EvidZigFileScanner } from "./EvidZigFileScanner";
  * as incomplete findings rather than evaluating comptime code to guess a public
  * surface.
  */
-export class EvidZigAdapterBase implements IEvidAdapter {
+export class EvidZigAdapter implements IEvidAdapter {
   /**
    * Zig discriminator for the pinned declared-source extraction rules.
    *

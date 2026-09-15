@@ -24,7 +24,7 @@ import { EvidSourceText } from "../../internal/EvidSourceText";
  * Extracts explicit C++ declarations and Doxygen without semantic lookup.
  *
  * The scanner retains only source-established scopes, aliases, and attachment
- * facts; `EvidCppAdapterBase` later resolves publication among those bounded
+ * facts; `EvidCppAdapter` later resolves publication among those bounded
  * records.
  */
 export class EvidCppFileScanner {

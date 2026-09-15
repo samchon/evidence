@@ -8,9 +8,8 @@ import type { IEvidZigDocumentation } from "./IEvidZigDocumentation";
  * Reads Zig documentation while preserving source mappings and masking
  * examples.
  *
- * EvidZigAdapterBase uses this wrapper around the shared reader so annotations
- * in HTML or indented code examples cannot become claims at the original source
- * host.
+ * EvidZigAdapter uses this reader so annotations in HTML or indented code
+ * examples cannot become claims at the original source host.
  */
 export namespace EvidZigDocumentation {
   /**

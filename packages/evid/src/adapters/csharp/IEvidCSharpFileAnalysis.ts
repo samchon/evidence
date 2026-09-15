@@ -8,7 +8,7 @@ import type { IEvidCSharpDocumentation } from "./IEvidCSharpDocumentation";
  * close.
  *
  * EvidCSharpFileScanner produces this node-free boundary between syntax
- * traversal and EvidCSharpAdapterBase materialization. The adapter reconciles
+ * traversal and EvidCSharpAdapter materialization. The adapter reconciles
  * declarations across files, maps documentation to hosts, and propagates
  * incomplete extraction to the final inventory without retaining parser nodes.
  */
@@ -16,8 +16,8 @@ export interface IEvidCSharpFileAnalysis {
   /**
    * Identifies the source snapshot from which this extraction was produced.
    *
-   * EvidCSharpAdapterBase uses its physical path for diagnostics and hosts and
-   * its configured addresses when publishing declaration accessors.
+   * EvidCSharpAdapter uses its physical path for diagnostics and hosts and its
+   * configured addresses when publishing declaration accessors.
    */
   source: IEvidSourceFile;
 

@@ -4,10 +4,10 @@ import type { EvidDatabaseType } from "../../typings/EvidDatabaseType";
 import type { IEvidSqlFileAnalysis } from "./IEvidSqlFileAnalysis";
 
 /**
- * Dialect-specific hooks consumed by the shared SQL inventory adapter.
+ * Dialect-specific hooks consumed by the shared SQL inventory materializer.
  *
  * Scanning owns syntax and declaration interpretation; an optional resolver can
- * connect ownership across files. The shared adapter runs these phases before
+ * connect ownership across files. The materializer runs these phases before
  * materializing units and documentation under a single parser lifecycle.
  */
 export interface IEvidSqlAdapterOptions {

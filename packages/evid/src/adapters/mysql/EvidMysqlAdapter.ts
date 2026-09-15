@@ -1,5 +1,8 @@
 import { EvidMysqlFileScanner } from "./EvidMysqlFileScanner";
-import { EvidSqlAdapterBase } from "../sql/EvidSqlAdapterBase";
+import { EvidSqlInventoryMaterializer } from "../sql/EvidSqlInventoryMaterializer";
+import type { IEvidAdapter } from "../../structures/IEvidAdapter";
+import type { IEvidInventory } from "../../structures/IEvidInventory";
+import type { IEvidSourceSnapshot } from "../../structures/IEvidSourceSnapshot";
 
 /**
  * Extracts explicitly configured MySQL schema declarations with static
@@ -10,14 +13,34 @@ import { EvidSqlAdapterBase } from "../sql/EvidSqlAdapterBase";
  * statements; the adapter neither connects to a server nor executes
  * migrations.
  */
-export class EvidMysqlAdapter extends EvidSqlAdapterBase {
+export class EvidMysqlAdapter implements IEvidAdapter {
   /**
-   * Selects MySQL scanning within the shared parser and inventory lifecycle.
+   * MySQL grammar selected for this adapter.
    *
-   * Construction is inert; analyze later owns the parser runtime for its
-   * snapshot.
+   * This identity prevents a shared `.sql` extension from changing the
+   * declaration surface through dialect probing.
    */
-  public constructor() {
-    super({ type: "mysql", scan: EvidMysqlFileScanner.scan });
+  public readonly type: "mysql" = "mysql";
+
+  /**
+   * Materializes MySQL scanner records into graph-facing inventory records.
+   *
+   * The scanner owns MySQL syntax while this collaborator owns parser lifetime
+   * and syntax-independent SQL publication.
+   */
+  private readonly materializer: EvidSqlInventoryMaterializer =
+    new EvidSqlInventoryMaterializer({
+      type: this.type,
+      scan: EvidMysqlFileScanner.scan,
+    });
+
+  /**
+   * Extracts MySQL declarations from one captured source snapshot.
+   *
+   * The adapter fixes dialect policy before analysis; parser allocation waits
+   * until this method receives a snapshot.
+   */
+  public analyze(snapshot: IEvidSourceSnapshot): Promise<IEvidInventory> {
+    return this.materializer.analyze(snapshot);
   }
 }

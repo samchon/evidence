@@ -22,7 +22,7 @@ import { EvidSourceText } from "../../internal/EvidSourceText";
  * resolution.
  *
  * It keeps physical sites and comment adjacency local to the file while
- * `EvidGoAdapterBase` assigns receiver members to their package-wide semantic
+ * `EvidGoAdapter` assigns receiver members to their package-wide semantic
  * owners.
  */
 export class EvidGoFileScanner {

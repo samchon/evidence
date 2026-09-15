@@ -6,7 +6,7 @@ import type { IEvidJavaDocumentation } from "./IEvidJavaDocumentation";
 /**
  * Stores a node-free extraction of one Java source file after parsing closes.
  *
- * EvidJavaAdapterBase aggregates these records to reconcile overload families,
+ * EvidJavaAdapter aggregates these records to reconcile overload families,
  * attach Javadoc hosts, and preserve extraction failures in the final
  * inventory.
  */

@@ -10,8 +10,8 @@ import type { IEvidCSharpDeclarationAddress } from "./IEvidCSharpDeclarationAddr
  *
  * `EvidCSharpFileScanner` creates this record with the declaration's
  * syntax-derived identity, addresses, visibility inputs, and documentation
- * site. `EvidCSharpAdapterBase` groups compatible records into semantic units,
- * so partial declarations and overloads can retain their distinct source
+ * site. `EvidCSharpAdapter` groups compatible records into semantic units, so
+ * partial declarations and overloads can retain their distinct source
  * attachments while sharing one unit.
  */
 export interface IEvidCSharpDeclaration {

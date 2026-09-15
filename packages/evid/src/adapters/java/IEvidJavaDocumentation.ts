@@ -6,7 +6,7 @@ import type { IEvidJavaDocumentationAttachment } from "./IEvidJavaDocumentationA
  * Retains a Javadoc carrier and its scanner-established declaration
  * attachments.
  *
- * EvidJavaAdapterBase consumes these physical records after scanning to create
+ * EvidJavaAdapter consumes these physical records after scanning to create
  * evidence hosts and diagnose unsupported annotations without reparsing
  * comments.
  */

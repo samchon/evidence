@@ -3,17 +3,17 @@
  * declaration site.
  *
  * `EvidCppFileScanner` creates these records while source adjacency is
- * available. `EvidCppAdapterBase` uses the declaration ID to find the selected
- * unit and the site ID to create the physical documentation host, preserving
+ * available. `EvidCppAdapter` uses the declaration ID to find the selected unit
+ * and the site ID to create the physical documentation host, preserving
  * distinct overload and alias locations.
  */
 export interface IEvidCppDocumentationAttachment {
   /**
    * Scanner-local declaration or alias record that receives the documentation.
    *
-   * `EvidCppAdapterBase` resolves this ID to a selected semantic unit only
-   * after family and alias reconciliation, so it is not itself a public address
-   * or unit identity.
+   * `EvidCppAdapter` resolves this ID to a selected semantic unit only after
+   * family and alias reconciliation, so it is not itself a public address or
+   * unit identity.
    */
   declarationId: string;
 

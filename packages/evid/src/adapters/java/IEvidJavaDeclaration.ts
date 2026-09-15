@@ -6,7 +6,7 @@ import type { EvidJavaDeclarationForm } from "./EvidJavaDeclarationForm";
  * Records one Java declaration before its public unit and overload family are
  * materialized.
  *
- * EvidJavaFileScanner creates these physical records, and EvidJavaAdapterBase
+ * EvidJavaFileScanner creates these physical records, and EvidJavaAdapter
  * reconciles compatible records into the language-independent Evid inventory.
  */
 export interface IEvidJavaDeclaration {

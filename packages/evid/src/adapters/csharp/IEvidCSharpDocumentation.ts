@@ -8,7 +8,7 @@ import type { IEvidCSharpDocumentationAttachment } from "./IEvidCSharpDocumentat
  *
  * EvidCSharpFileScanner records its physical range, comment syntax, and
  * accepted declaration sites without binding it to a semantic unit.
- * EvidCSharpAdapterBase later groups its attachments against published
+ * EvidCSharpAdapter later groups its attachments against published
  * declarations, then parses the same carrier either as attached documentation
  * or as an unsupported annotation.
  */

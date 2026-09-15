@@ -1,5 +1,8 @@
-import { EvidSqlAdapterBase } from "../sql/EvidSqlAdapterBase";
+import { EvidSqlInventoryMaterializer } from "../sql/EvidSqlInventoryMaterializer";
 import { EvidSqliteFileScanner } from "./EvidSqliteFileScanner";
+import type { IEvidAdapter } from "../../structures/IEvidAdapter";
+import type { IEvidInventory } from "../../structures/IEvidInventory";
+import type { IEvidSourceSnapshot } from "../../structures/IEvidSourceSnapshot";
 
 /**
  * Extracts SQLite's explicitly declared tables, columns, and foreign keys.
@@ -8,19 +11,35 @@ import { EvidSqliteFileScanner } from "./EvidSqliteFileScanner";
  * the shared SQL materializer. Analysis uses captured DDL source and does not
  * open a database or infer schema by executing statements.
  */
-export class EvidSqliteAdapter extends EvidSqlAdapterBase {
+export class EvidSqliteAdapter implements IEvidAdapter {
   /**
-   * Selects SQLite grammar and declaration scanning for the shared adapter
-   * lifecycle.
+   * SQLite grammar selected for this adapter.
    *
-   * Parser allocation and source analysis wait until analyze receives a
-   * snapshot.
+   * The explicit dialect keeps SQLite's ownership and identifier rules stable
+   * for source files with a shared `.sql` extension.
    */
-  public constructor() {
-    super({
-      type: "sqlite",
+  public readonly type: "sqlite" = "sqlite";
+
+  /**
+   * Materializes SQLite scanner records into graph-facing inventory records.
+   *
+   * SQLite syntax stays with the scanner; this collaborator owns only parser
+   * lifetime and syntax-independent SQL record publication.
+   */
+  private readonly materializer: EvidSqlInventoryMaterializer =
+    new EvidSqlInventoryMaterializer({
+      type: this.type,
       scan: (session, source) =>
         new EvidSqliteFileScanner(session, source).scan(),
     });
+
+  /**
+   * Extracts SQLite declarations from one captured source snapshot.
+   *
+   * Parser allocation and source analysis wait until this method receives the
+   * snapshot.
+   */
+  public analyze(snapshot: IEvidSourceSnapshot): Promise<IEvidInventory> {
+    return this.materializer.analyze(snapshot);
   }
 }
