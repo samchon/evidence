@@ -3,7 +3,7 @@ import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Partitions Markdown content among file and heading units at real section boundaries.
@@ -32,15 +32,15 @@ export async function test_markdown_content(): Promise<void> {
     ~~~~text
     code change
     ~~~~
-    <!-- @evid docs/spec.md#leaf Supplies the leaf. -->
-    Inline <!-- @evid docs/spec.md#inline Supplies adjacent prose. --> prose.
+    <!-- @evidence docs/spec.md#leaf Supplies the leaf. -->
+    Inline <!-- @evidence docs/spec.md#inline Supplies adjacent prose. --> prose.
     ##
     Unanchored body.
     ### Nested after missing
     Nested body.
   `;
   const inventory = await new EvidMarkdownAdapter().analyze(
-    TestSourceSnapshot.create("guide.md", content),
+    EvidTestSourceSnapshot.create("guide.md", content),
   );
   const file = requireUnit(inventory, "file", "guide.md");
   const parent = requireUnit(inventory, "h1", "Parent");
@@ -72,7 +72,7 @@ export async function test_markdown_content(): Promise<void> {
       "~~~~text",
       "code change",
       "~~~~",
-      "Inline <!-- @evid docs/spec.md#inline Supplies adjacent prose. --> prose.",
+      "Inline <!-- @evidence docs/spec.md#inline Supplies adjacent prose. --> prose.",
     ],
   );
   TestValidator.equals(
@@ -83,7 +83,7 @@ export async function test_markdown_content(): Promise<void> {
   TestValidator.equals(
     "comment-only lines leave owned content",
     lines(content, leaf).includes(
-      "<!-- @evid docs/spec.md#leaf Supplies the leaf. -->",
+      "<!-- @evidence docs/spec.md#leaf Supplies the leaf. -->",
     ),
     false,
   );

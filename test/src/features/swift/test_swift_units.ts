@@ -6,7 +6,7 @@ import {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Extracts Swift public units with exact ownership.
  *
@@ -16,8 +16,8 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 2. Verify units, ownership, and target resolution.
  */
 export async function test_swift_units(): Promise<void> {
-  const snapshot = TestSourceSnapshot.combine([
-    TestSourceSnapshot.create(
+  const snapshot = EvidTestSourceSnapshot.combine([
+    EvidTestSourceSnapshot.create(
       "src/Contract.swift",
       dedent`
       /// Public contract.
@@ -51,7 +51,7 @@ export async function test_swift_units(): Promise<void> {
     `,
       ["src/Contract.swift", "alias/Contract.swift"],
     ),
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Additional.swift",
       dedent`
       public extension Alias {

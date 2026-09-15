@@ -1,13 +1,10 @@
 import { EvidChecker, EvidWatcher } from "evid";
-import type {
-  EvidWatchCycle,
-  IEvidSourceDependency,
-} from "evid";
+import type { EvidWatchCycle, IEvidSourceDependency } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
  * Publishes fresh results as an ESM package entry changes, fails, and recovers.
@@ -18,8 +15,8 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  * through both content and topology changes.
  *
  * 1. Start an ESM config through a dual-export package whose import entry selects
- *    a covered source root; require a successful report and only the import entry
- *    in the active dependency set.
+ *    a covered source root; require a successful report and only the import
+ *    entry in the active dependency set.
  * 2. Edit that entry in place to select an uncovered root; require the next
  *    published report to fail coverage and equal a fresh one-shot check.
  * 3. Repoint the package export map to a replacement entry selecting the covered
@@ -34,11 +31,11 @@ export async function test_watch_package_conditions(): Promise<void> {
     __dirname,
     `watch package conditions ${randomUUID()}`,
   );
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     {
       "package.json": JSON.stringify({ type: "module" }),
-      "evid.config.ts": `import settings from "fixture-settings";\nexport default settings;\n`,
+      "evidence.config.ts": `import settings from "fixture-settings";\nexport default settings;\n`,
       "docs/requirements.md": `## Package entry {#package-entry}\n\nThe selected implementation must acknowledge this requirement.\n`,
       "src-covered/implementation.ts": implementation(true),
       "src-uncovered/implementation.ts": implementation(false),
@@ -51,7 +48,7 @@ export async function test_watch_package_conditions(): Promise<void> {
       "node_modules/fixture-settings/unused.cjs": `module.exports = ${settingsObject("src-uncovered")};\n`,
     },
     async (directory: string): Promise<void> => {
-      const configFile: string = join(directory, "evid.config.ts");
+      const configFile: string = join(directory, "evidence.config.ts");
       const entry: string = join(
         directory,
         "node_modules/fixture-settings/entry.js",
@@ -86,7 +83,7 @@ export async function test_watch_package_conditions(): Promise<void> {
             "initial import entry observed",
             dependencies.includes(entry) && !dependencies.includes(unused),
           );
-          await TestFileSystem.save(directory, {
+          await EvidTestFileSystem.save(directory, {
             "node_modules/fixture-settings/entry.js": settings("src-uncovered"),
           });
           return;
@@ -103,7 +100,7 @@ export async function test_watch_package_conditions(): Promise<void> {
             "edited entry expires success",
             !cycle.success,
           );
-          await TestFileSystem.save(directory, {
+          await EvidTestFileSystem.save(directory, {
             "node_modules/fixture-settings/package.json":
               exportManifest("./replacement.js"),
           });
@@ -125,7 +122,7 @@ export async function test_watch_package_conditions(): Promise<void> {
             "active dependency replaced",
             dependencies.includes(replacement) && !dependencies.includes(entry),
           );
-          await TestFileSystem.erase(
+          await EvidTestFileSystem.erase(
             join(directory, "node_modules/fixture-settings/replacement.js"),
           );
           return;
@@ -135,7 +132,7 @@ export async function test_watch_package_conditions(): Promise<void> {
             "missing selected entry fails config",
             !("report" in cycle),
           );
-          await TestFileSystem.save(directory, {
+          await EvidTestFileSystem.save(directory, {
             "node_modules/fixture-settings/replacement.js":
               settings("src-covered"),
           });
@@ -166,8 +163,8 @@ export async function test_watch_package_conditions(): Promise<void> {
 /**
  * Builds the conditional package export used by the watch fixture.
  *
- * The import target is mutable while the unused require target remains a control
- * that must stay outside the active dependency set.
+ * The import target is mutable while the unused require target remains a
+ * control that must stay outside the active dependency set.
  */
 function exportManifest(entry: string): string {
   return JSON.stringify({
@@ -188,7 +185,7 @@ function settings(root: string): string {
 }
 
 /**
- * Serializes the Evid configuration selected by the package entry.
+ * Serializes the Evidence Graph configuration selected by the package entry.
  *
  * The root identifies which fixture source the programming claim observes while
  * all other policy remains fixed.
@@ -229,7 +226,7 @@ function declaration(): string {
  */
 function implementation(covered: boolean): string {
   const documentation: string = covered
-    ? `/** @evid docs/requirements.md#package-entry Implements the selected package contract. */\n`
+    ? `/** @evidence docs/requirements.md#package-entry Implements the selected package contract. */\n`
     : "";
   return `${documentation}export function selected(): number { return 1; }\n`;
 }

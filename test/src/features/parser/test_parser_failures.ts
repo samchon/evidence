@@ -1,16 +1,18 @@
 import { EvidParser } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestParserError } from "../../internal/TestParserError";
+import { EvidTestParserError } from "../../internal/EvidTestParserError";
 
 /**
- * Rejects partial syntax and unsupported queries without losing parser recoverability.
+ * Rejects partial syntax and unsupported queries without losing parser
+ * recoverability.
  *
  * Extraction must not treat a repaired syntax tree or an unevaluated query
  * predicate as a complete public population. A one-slot parser makes leaked
  * capacity observable while later valid requests verify recovery.
  *
  * 1. Parse malformed declarations and a function missing its closing brace:
+ *
  *    - Both reject as parse-incomplete before any extraction callback runs.
  *    - Active capacity returns to zero after the failures.
  * 2. Reject an unknown node query, an external predicate, and a property predicate
@@ -27,7 +29,7 @@ export async function test_parser_failures(): Promise<void> {
   try {
     // Both explicit ERROR nodes and a parser-inserted closing brace must fail extraction.
     for (const content of ["export const = ;", "export function compute() {"])
-      await TestParserError.expect("parse-incomplete", () =>
+      await EvidTestParserError.expect("parse-incomplete", () =>
         parser.parse(
           { type: "typescript", file: "broken.ts", content },
           () => ++callbacks,
@@ -46,7 +48,7 @@ export async function test_parser_failures(): Promise<void> {
       "((identifier) @name (#external? @name))",
       "((identifier) @name (#is? public))",
     ])
-      await TestParserError.expect("query-invalid", () =>
+      await EvidTestParserError.expect("query-invalid", () =>
         parser.parse(
           {
             type: "typescript",

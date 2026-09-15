@@ -1,5 +1,5 @@
 /**
- * Decoded dependency-bearing content of one EvidNode data URL module.
+ * Decoded dependency-bearing content of one Node data URL module.
  *
  * JavaScript modules expose source for recursive static scanning. JSON and Wasm
  * modules are immutable leaves and therefore omit content.

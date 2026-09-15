@@ -1,8 +1,8 @@
 import { EvidGraph } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestInventory } from "../../internal/TestInventory";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestInventory } from "../../internal/EvidTestInventory";
 
 /**
  * Distinguishes inactive claims from claims whose discovery could not complete.
@@ -22,16 +22,16 @@ import { TestInventory } from "../../internal/TestInventory";
  *    proving claim completeness does not depend on an obligation carrying the error.
  */
 export async function test_graph_activation(): Promise<void> {
-  const claim = TestInventory.create();
-  const claimUnit = TestInventory.unit(
+  const claim = EvidTestInventory.create();
+  const claimUnit = EvidTestInventory.unit(
     claim,
     "claim",
     ["Claim"],
     "type",
     "export class Box { value = 1; }",
   );
-  const reference = TestInventory.create();
-  const referenceUnit = TestInventory.unit(
+  const reference = EvidTestInventory.create();
+  const referenceUnit = EvidTestInventory.unit(
     reference,
     "reference",
     ["Reference"],
@@ -69,7 +69,7 @@ export async function test_graph_activation(): Promise<void> {
   TestValidator.equals("disabled claim", disabled.claims[0]?.active, false);
   TestValidator.equals(
     "disabled obligation",
-    TestGraph.obligation(disabled, 0, 0).active,
+    EvidTestGraph.obligation(disabled, 0, 0).active,
     false,
   );
   TestValidator.equals("disabled diagnostics", disabled.diagnostics, []);
@@ -97,7 +97,7 @@ export async function test_graph_activation(): Promise<void> {
   TestValidator.equals("empty claim", empty.claims[0]?.active, false);
   TestValidator.equals(
     "empty obligation",
-    TestGraph.obligation(empty, 0, 0).active,
+    EvidTestGraph.obligation(empty, 0, 0).active,
     false,
   );
   TestValidator.equals("empty diagnostics", empty.diagnostics, []);
@@ -136,7 +136,7 @@ export async function test_graph_activation(): Promise<void> {
   );
   TestValidator.equals(
     "failed claim leaves obligation incomplete",
-    TestGraph.obligation(incomplete, 0, 0).complete,
+    EvidTestGraph.obligation(incomplete, 0, 0).complete,
     false,
   );
   TestValidator.equals(

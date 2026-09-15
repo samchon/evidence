@@ -5,7 +5,7 @@ import {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Classifies Java public types, overloads, fields, records, enums, and annotations.
  *
@@ -37,8 +37,8 @@ export async function test_java_units(): Promise<void> {
 
   // Separate source files share a package identity without importing or executing Java.
   const inventory = await new EvidJavaAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/com/example/Sale.java",
         dedent`
           package com.example /* package comments do not erase identity */;
@@ -66,7 +66,7 @@ export async function test_java_units(): Promise<void> {
           }
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/com/example/Service.java",
         dedent`
           package com.example;
@@ -88,7 +88,7 @@ export async function test_java_units(): Promise<void> {
           }
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/com/example/State.java",
         dedent`
           package com.example;
@@ -104,7 +104,7 @@ export async function test_java_units(): Promise<void> {
           }
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/com/example/Point.java",
         dedent`
           package com.example;
@@ -114,7 +114,7 @@ export async function test_java_units(): Promise<void> {
           }
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/com/example/Label.java",
         dedent`
           package com.example;
@@ -129,7 +129,7 @@ export async function test_java_units(): Promise<void> {
           }
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/com/example/PackageType.java",
         dedent`
           package com.example;

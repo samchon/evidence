@@ -75,7 +75,7 @@ export namespace EvidGraphReporter {
   /**
    * Emits a DOT directed graph with clusters for configuration boundaries.
    *
-   * Evid exclusion and review relations use distinct line styles so their
+   * Evidence Graph exclusion and review relations use distinct line styles so their
    * meaning remains visible when a viewer does not expose edge metadata.
    */
   export function dot(report: IEvidGraphReport): string {
@@ -190,8 +190,8 @@ function edgeLabel(edge: IEvidGraphExportEdge): string {
 function reviewLabel(review: IEvidGraphExportReview): string {
   const marker =
     review.reviews === "evidence"
-      ? "@evidReview"
-      : "@evidExcludeReview";
+      ? "@evidenceReview"
+      : "@evidenceExcludeReview";
   return `${marker}${review.review.fingerprint === undefined ? "" : ` #${review.review.fingerprint}`}`;
 }
 

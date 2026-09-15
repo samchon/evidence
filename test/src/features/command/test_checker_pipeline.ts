@@ -5,10 +5,11 @@ import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
- * Runs a complete two-reference check through discovery, adapters, graph evaluation, and rendering.
+ * Runs a complete two-reference check through discovery, adapters, graph
+ * evaluation, and rendering.
  *
  * One TypeScript function acknowledges both a Markdown requirement and a public
  * TypeScript contract. The report must retain their independently configured
@@ -16,6 +17,7 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  * stable representation that command callers can consume.
  *
  * 1. Evaluate the fully annotated fixture and require:
+ *
  *    - A successful zero exit with two covered units and no diagnostics.
  *    - The authored claim index 2 and reference indexes 3 and 5 in the report.
  * 2. Render that report as text and JSON; require coverage text, schema version,
@@ -30,10 +32,10 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  */
 export async function test_checker_pipeline(): Promise<void> {
   const location = join(__dirname, `checker ${randomUUID()}`);
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     {
-      "evid.config.ts": "export default {};\n",
+      "evidence.config.ts": "export default {};\n",
       "docs/requirements.md": dedent`
         ## Pricing {#pricing}
 
@@ -46,8 +48,8 @@ export async function test_checker_pipeline(): Promise<void> {
       `,
       "src/implementation.ts": dedent`
         /**
-         * @evid docs/requirements.md#pricing Implements the pricing requirement.
-         * @evid ../contracts/reference.ts#Contract Implements the public contract.
+         * @evidence docs/requirements.md#pricing Implements the pricing requirement.
+         * @evidence ../contracts/reference.ts#Contract Implements the public contract.
          */
         export function calculate(): number {
           return 1;
@@ -99,7 +101,7 @@ export async function test_checker_pipeline(): Promise<void> {
       );
 
       // Removing both acknowledgements leaves complete analysis with violations.
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "src/implementation.ts": dedent`
           export function calculate(): number {
             return 1;
@@ -178,7 +180,7 @@ function createPlan(
   severity: "error" | "warning",
 ): IEvidConfigPlan {
   return {
-    configFile: join(directory, "evid.config.ts"),
+    configFile: join(directory, "evidence.config.ts"),
     claims: [
       {
         index: 2,

@@ -6,7 +6,7 @@ import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Classifies the public C++ surface across namespaces, types, callables, and properties.
  *
@@ -35,7 +35,7 @@ export async function test_cpp_units(): Promise<void> {
   );
 
   const inventory = await new EvidCppAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "include/shop.hpp",
       dedent`
         namespace shop::models {

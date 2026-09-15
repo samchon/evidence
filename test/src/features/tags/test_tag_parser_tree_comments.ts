@@ -18,9 +18,9 @@ import { dedent } from "@typia/utils";
  */
 export async function test_tag_parser_tree_comments(): Promise<void> {
   const content = dedent`
-    const example = "/** @evid ../fake.ts#name Not a comment. */";
-    const expression = /@evid/;
-    /** @evid ../real.ts#run Verifies the function. */
+    const example = "/** @evidence ../fake.ts#name Not a comment. */";
+    const expression = /@evidence/;
+    /** @evidence ../real.ts#run Verifies the function. */
     export function test_run() {}
   `;
   const parser = new EvidParser();

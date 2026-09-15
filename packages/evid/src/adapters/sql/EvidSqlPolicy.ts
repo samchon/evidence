@@ -1,4 +1,4 @@
-import type { EvidNode } from "web-tree-sitter";
+import type { Node as EvidNode } from "web-tree-sitter";
 
 /**
  * Defines the portable subset independently of the broad SQL parser grammar.

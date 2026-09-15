@@ -1,7 +1,7 @@
 import { EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestInventory } from "../../internal/TestInventory";
+import { EvidTestInventory } from "../../internal/EvidTestInventory";
 
 /**
  * Counts aliases once while preserving exact public addresses and distinct identities.
@@ -20,15 +20,15 @@ import { TestInventory } from "../../internal/TestInventory";
  *    the previously constructed index must still select the original class.
  */
 export async function test_inventory_aliases(): Promise<void> {
-  const input = TestInventory.create();
-  TestInventory.unit(
+  const input = EvidTestInventory.create();
+  EvidTestInventory.unit(
     input,
     "box",
     ["Box"],
     "type",
     "export class Box { value = 1; }",
   );
-  TestInventory.unit(
+  EvidTestInventory.unit(
     input,
     "other",
     ["Other"],

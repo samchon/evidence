@@ -2,7 +2,7 @@ import { EvidTypeScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Binds TypeScript JSDoc only to supported declaration hosts.
  *
@@ -13,37 +13,37 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_typescript_hosts(): Promise<void> {
   const content = dedent`
-    /** @evid docs/spec.md#mixed Supplies both exported bindings. */
+    /** @evidence docs/spec.md#mixed Supplies both exported bindings. */
     export const callable = (): void => {}, data = 1;
 
     export class Service {
-      /** @evid docs/spec.md#run Supplies the public method. */
+      /** @evidence docs/spec.md#run Supplies the public method. */
       run(): void {}
     }
 
     export const first = 1,
-      /** @evid docs/spec.md#declarator Documents only the second binding. */
+      /** @evidence docs/spec.md#declarator Documents only the second binding. */
       second = 2;
 
     /** @internal This API is intentionally hidden. */
     export function hidden(): void {}
 
-    /** @evid docs/spec.md#local This local declaration is not a host. */
+    /** @evidence docs/spec.md#local This local declaration is not a host. */
     function local(): void {}
 
-    /** This detached prose only mentions @evid as a word. */
+    /** This detached prose only mentions @evidence as a word. */
     function localProse(): void {}
 
-    // @evid docs/spec.md#line A line comment cannot host evidence.
-    /* @evid docs/spec.md#block A non-JSDoc block cannot host evidence. */
-    // @evidReview docs/spec.md#review #abcdef0 A review cannot use a line comment.
-    /* @evidExclude docs/spec.md#exclude A withdrawal cannot use a block comment. */
-    /** @evidExcludeReview docs/spec.md#exclude #abcdef0 A local review is not a host. */
+    // @evidence docs/spec.md#line A line comment cannot host evidence.
+    /* @evidence docs/spec.md#block A non-JSDoc block cannot host evidence. */
+    // @evidenceReview docs/spec.md#review #abcdef0 A review cannot use a line comment.
+    /* @evidenceExclude docs/spec.md#exclude A withdrawal cannot use a block comment. */
+    /** @evidenceExcludeReview docs/spec.md#exclude #abcdef0 A local review is not a host. */
     function reviewedLocally(): void {}
-    export const text = "@evid docs/spec.md#string This is a string.";
+    export const text = "@evidence docs/spec.md#string This is a string.";
   `;
   const inventory = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create("src/hosts.ts", content),
+    EvidTestSourceSnapshot.create("src/hosts.ts", content),
   );
 
   TestValidator.equals(

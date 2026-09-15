@@ -5,7 +5,7 @@ import {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Classifies Rust's public declaration and member matrix.
  *
@@ -31,7 +31,7 @@ export async function test_rust_units(): Promise<void> {
 
   // Public source forms cover every shared symbol kind and explicit associated policy.
   const inventory = await new EvidRustAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/lib.rs",
       dedent`
         pub struct Sale<T> {

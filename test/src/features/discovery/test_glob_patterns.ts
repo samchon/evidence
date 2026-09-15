@@ -1,6 +1,6 @@
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidFileGlob } from "../../../../packages/evidence/src/internal/EvidFileGlob";
+import { EvidFileGlob } from "evid";
 
 /**
  * Preserves upstream wildcard boundaries, Unicode characters, and ordered exclusions.

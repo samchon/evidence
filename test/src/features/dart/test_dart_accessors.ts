@@ -2,7 +2,7 @@ import { EvidDartAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Classifies Dart accessor families without reclassifying a function named set.
  *
@@ -14,7 +14,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_dart_accessors(): Promise<void> {
   const inventory = await new EvidDartAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/accessors.dart",
       dedent`
     int get value => 1;

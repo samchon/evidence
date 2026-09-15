@@ -1,5 +1,7 @@
 import {
+  EvidConfigDependencyScanner,
   EvidConfigLoader,
+  EvidWatchDependencySnapshot,
   type IEvidConfig,
   type IEvidSourceDependency,
 } from "evid";
@@ -10,21 +12,20 @@ import { randomUUID } from "node:crypto";
 import { createRequire } from "node:module";
 import { join } from "node:path";
 
-import { EvidConfigDependencyScanner } from "../../../../packages/evidence/src/internal/EvidConfigDependencyScanner";
-import { EvidWatchDependencySnapshot } from "../../../../packages/evidence/src/internal/EvidWatchDependencySnapshot";
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
  * Follows runtime JavaScript files selected by legacy package resolution.
  *
  * TypeScript may use a same-stem `.ts` file while resolving types for a `.js`
- * package entry, but EvidNode executes the manifest or subpath's JavaScript file.
+ * package entry, but Node executes the manifest or subpath's JavaScript file.
  * Watch must observe the executed source rather than the compiler substitute.
  *
- * 1. Create a legacy package whose `main` names `entry.js`, plus a direct
- *    `sub.js` request, and place same-stem TypeScript files beside both.
+ * 1. Create a legacy package whose `main` names `entry.js`, plus a direct `sub.js`
+ *    request, and place same-stem TypeScript files beside both.
  * 2. Give the JavaScript pair one configuration value and the TypeScript pair a
- *    different value, then require normal configuration loading to use JavaScript.
+ *    different value, then require normal configuration loading to use
+ *    JavaScript.
  * 3. Require dependency scanning to retain both JavaScript files and omit both
  *    same-stem TypeScript files.
  * 4. Edit an inactive TypeScript substitute and an active JavaScript entry,
@@ -34,11 +35,12 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  * 6. Put a package manifest under the terminal `index` directory and add a bare
  *    extensionless `index`; require both invalid forms to remain unselected.
  * 7. Evaluate and scan ESM configs with extensionless and explicit package
- *    subpaths; require only the exact `.js` request to succeed and be observed.
- * 8. Compare EvidNode and scanning for CommonJS package files, empty nearer package
+ *    subpaths; require only the exact `.js` request to succeed and be
+ *    observed.
+ * 8. Compare Node and scanning for CommonJS package files, empty nearer package
  *    directories, and normalized legacy requests, then require direct ESM to
  *    reject a scoped name with no package segment.
- * 9. Treat BOM-prefixed manifests and non-string `main` values like EvidNode, then
+ * 9. Treat BOM-prefixed manifests and non-string `main` values like Node, then
  *    allow same-directory `main` targets to reach their terminal index files.
  */
 export async function test_watch_package_runtime_entries(): Promise<void> {
@@ -46,11 +48,11 @@ export async function test_watch_package_runtime_entries(): Promise<void> {
     __dirname,
     `watch package runtime entries ${randomUUID()}`,
   );
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     {
       "package.json": JSON.stringify({ type: "commonjs" }),
-      "evid.config.ts": dedent`
+      "evidence.config.ts": dedent`
         import root from "legacy-settings";
         import subpath from "legacy-settings/sub.js";
 
@@ -133,9 +135,8 @@ export async function test_watch_package_runtime_entries(): Promise<void> {
       "node_modules/dot-main/nested/index.js": `module.exports = "dot index";\n`,
     },
     async (directory: string): Promise<void> => {
-      const configFile: string = join(directory, "evid.config.ts");
-      const config: IEvidConfig =
-        await EvidConfigLoader.load(configFile);
+      const configFile: string = join(directory, "evidence.config.ts");
+      const config: IEvidConfig = await EvidConfigLoader.load(configFile);
       TestValidator.equals(
         "legacy runtime severity",
         config.severity,
@@ -177,7 +178,7 @@ export async function test_watch_package_runtime_entries(): Promise<void> {
 
       const baseline: EvidWatchDependencySnapshot =
         await EvidWatchDependencySnapshot.capture(dependencies);
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "node_modules/legacy-settings/entry.ts": `export default ("error" as "error" | "off");\n`,
       });
       const inactiveEdit: EvidWatchDependencySnapshot =
@@ -186,7 +187,7 @@ export async function test_watch_package_runtime_entries(): Promise<void> {
         "compiler substitute edit remains stable",
         baseline.equals(inactiveEdit),
       );
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "node_modules/legacy-settings/entry.js": `module.exports = "warning"; // active edit\n`,
       });
       const activeEdit: EvidWatchDependencySnapshot =
@@ -196,7 +197,7 @@ export async function test_watch_package_runtime_entries(): Promise<void> {
         !baseline.equals(activeEdit),
       );
 
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "node_modules/legacy-settings/package.json": JSON.stringify({
           main: "entry",
           types: "entry.ts",
@@ -221,7 +222,7 @@ export async function test_watch_package_runtime_entries(): Promise<void> {
         ),
       );
 
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "node_modules/legacy-settings/package.json": JSON.stringify({
           main: "nested",
           types: "entry.ts",
@@ -283,7 +284,7 @@ export async function test_watch_package_runtime_entries(): Promise<void> {
 
       const bareIndexFile: string = join(directory, "extensionless-index.cjs");
       TestValidator.error(
-        "EvidNode rejects extensionless terminal index",
+        "Node rejects extensionless terminal index",
         (): unknown => createRequire(bareIndexFile)("extensionless-index"),
       );
       const bareIndexScanner: EvidConfigDependencyScanner =
@@ -364,7 +365,7 @@ export async function test_watch_package_runtime_entries(): Promise<void> {
       for (const [owner, expectedOutput, selectedFile] of commonJsCases) {
         const ownerFile: string = join(directory, owner);
         TestValidator.equals(
-          `${owner} EvidNode selection`,
+          `${owner} Node selection`,
           execFileSync(process.execPath, [ownerFile], {
             encoding: "utf8",
           }).trim(),
@@ -390,7 +391,7 @@ export async function test_watch_package_runtime_entries(): Promise<void> {
         nodeRejectedScope = true;
       }
       TestValidator.predicate(
-        "EvidNode rejects incomplete ESM scope",
+        "Node rejects incomplete ESM scope",
         nodeRejectedScope,
       );
       const invalidScopeScanner: EvidConfigDependencyScanner =
@@ -427,11 +428,11 @@ export async function test_watch_package_runtime_entries(): Promise<void> {
         ["object", {}],
       ];
       for (const [label, main] of legacyMainCases) {
-        await TestFileSystem.save(directory, {
+        await EvidTestFileSystem.save(directory, {
           "node_modules/coerced-main/package.json": JSON.stringify({ main }),
         });
         TestValidator.equals(
-          `${label} main EvidNode selection`,
+          `${label} main Node selection`,
           createRequire(coercedOwner)
             .resolve("coerced-main")
             .replaceAll("\\", "/"),
@@ -444,11 +445,11 @@ export async function test_watch_package_runtime_entries(): Promise<void> {
           dependencyPaths(selected).includes(coercedIndex),
         );
       }
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "node_modules/coerced-main/package.json": `\uFEFF${JSON.stringify({ main: null })}`,
       });
       TestValidator.equals(
-        "BOM manifest EvidNode selection",
+        "BOM manifest Node selection",
         createRequire(coercedOwner)
           .resolve("coerced-main")
           .replaceAll("\\", "/"),
@@ -462,7 +463,7 @@ export async function test_watch_package_runtime_entries(): Promise<void> {
       );
       const bomSnapshot: EvidWatchDependencySnapshot =
         await EvidWatchDependencySnapshot.capture(bomDependencies);
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "node_modules/coerced-main/index.js": `module.exports = "edited";\n`,
       });
       const editedIndex: EvidWatchDependencySnapshot =
@@ -479,11 +480,11 @@ export async function test_watch_package_runtime_entries(): Promise<void> {
       ).replaceAll("\\", "/");
       const dotMains: string[] = [".", "./", "./child/.."];
       for (const main of dotMains) {
-        await TestFileSystem.save(directory, {
+        await EvidTestFileSystem.save(directory, {
           "node_modules/dot-main/nested/package.json": JSON.stringify({ main }),
         });
         TestValidator.equals(
-          `${main} main EvidNode output`,
+          `${main} main Node output`,
           execFileSync(process.execPath, [dotOwner], {
             encoding: "utf8",
           }).trim(),

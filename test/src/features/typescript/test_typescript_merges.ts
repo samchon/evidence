@@ -7,7 +7,7 @@ import type {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Reconciles TypeScript merged declarations into stable units.
@@ -63,7 +63,7 @@ export async function test_typescript_merges(): Promise<void> {
     }
   `;
   const inventory = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create("src/merged.ts", content),
+    EvidTestSourceSnapshot.create("src/merged.ts", content),
   );
 
   const overload = requireUnit(inventory, "function", "format");

@@ -1,7 +1,7 @@
 import { EvidPostgresqlAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Rejects PostgreSQL schemas whose selected population depends on unresolved context.
  *
@@ -40,7 +40,7 @@ export async function test_postgresql_boundaries(): Promise<void> {
     "CREATE TABLE app.Item (id integer",
   ]) {
     const inventory = await adapter.analyze(
-      TestSourceSnapshot.create("schema.sql", source),
+      EvidTestSourceSnapshot.create("schema.sql", source),
     );
     TestValidator.equals(`incomplete: ${source}`, inventory.complete, false);
     TestValidator.predicate(
@@ -52,7 +52,7 @@ export async function test_postgresql_boundaries(): Promise<void> {
     );
   }
   const wrongExtension = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "schema.ts",
       "CREATE TABLE app.Item (id integer);",
     ),
@@ -68,11 +68,11 @@ export async function test_postgresql_boundaries(): Promise<void> {
   ])
     TestValidator.equals(
       "quoted keyword and maximum-length identifier remain declarations",
-      (await adapter.analyze(TestSourceSnapshot.create("valid.sql", source)))
+      (await adapter.analyze(EvidTestSourceSnapshot.create("valid.sql", source)))
         .diagnostics,
       [],
     );
-  const failed = TestSourceSnapshot.create(
+  const failed = EvidTestSourceSnapshot.create(
     "schema.sql",
     "CREATE TABLE app.Item (id integer);",
   );

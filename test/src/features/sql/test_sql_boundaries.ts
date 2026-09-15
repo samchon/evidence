@@ -1,6 +1,6 @@
 import { EvidSqlAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Rejects portable SQL constructs that could change the selected schema.
  *
@@ -32,7 +32,7 @@ export async function test_sql_boundaries(): Promise<void> {
     "CREATE TABLE account (id INTEGER, ID INTEGER);",
   ]) {
     const result = await adapter.analyze(
-      TestSourceSnapshot.create("schema.sql", content),
+      EvidTestSourceSnapshot.create("schema.sql", content),
     );
     TestValidator.equals(`incomplete: ${content}`, result.complete, false);
     TestValidator.predicate(
@@ -44,7 +44,7 @@ export async function test_sql_boundaries(): Promise<void> {
     );
   }
   const defaults = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "defaults.sql",
       "CREATE TABLE defaults (negative INTEGER DEFAULT -1, enabled BOOLEAN DEFAULT TRUE, label VARCHAR(10) DEFAULT 'ok', created TIMESTAMP DEFAULT CURRENT_TIMESTAMP);",
     ),
@@ -63,7 +63,7 @@ export async function test_sql_boundaries(): Promise<void> {
     ["CREATED", "ENABLED", "LABEL", "NEGATIVE"],
   );
   const empty = await adapter.analyze(
-    TestSourceSnapshot.create("empty.sql", "-- An explicitly empty schema.\n"),
+    EvidTestSourceSnapshot.create("empty.sql", "-- An explicitly empty schema.\n"),
   );
   TestValidator.equals("empty understood schema", empty.complete, true);
   TestValidator.equals("no fabricated units", empty.units, []);

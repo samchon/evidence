@@ -6,7 +6,8 @@
  */
 export interface IEvidPendingEvidTag {
   /**
-   * Annotation spelling, including link and review variants with distinct later rules.
+   * Annotation spelling, including link and review variants with distinct later
+   * rules.
    *
    * Attachment dispatch uses this value to choose target parsing and graph
    * handling without re-reading the normalized documentation text.

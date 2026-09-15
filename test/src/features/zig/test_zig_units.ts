@@ -5,7 +5,7 @@ import {
 } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Extracts Zig units with independent public, alias, and file ownership.
  *
@@ -16,8 +16,8 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_zig_units(): Promise<void> {
   const inventory = await new EvidZigAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/Contract.zig",
         dedent`
       const @"Internal" = struct {
@@ -41,7 +41,7 @@ export async function test_zig_units(): Promise<void> {
     `,
         ["src/Contract.zig", "alias/Contract.zig"],
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "other/Contract.zig",
         "pub const State = enum { other };",
       ),

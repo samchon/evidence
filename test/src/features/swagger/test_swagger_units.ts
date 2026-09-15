@@ -5,7 +5,7 @@ import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /** Normalizes Swagger 2.0 and OpenAPI 3.x documents into operations.
  *
@@ -17,7 +17,7 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  */
 export async function test_swagger_units(): Promise<void> {
   const location = join(__dirname, "units-" + randomUUID());
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     {
       "swagger.json": dedent`
@@ -100,7 +100,7 @@ export async function test_swagger_units(): Promise<void> {
       `,
     },
     async (directory) => {
-      const config = join(directory, "evid.config.ts");
+      const config = join(directory, "evidence.config.ts");
       const adapter = new EvidSwaggerAdapter();
       const swagger = await adapter.load(config, "swagger.json");
       const openapi = await adapter.load(config, "openapi.yaml");

@@ -1,4 +1,4 @@
-﻿import {
+import {
   EvidDbmlAdapter,
   EvidInventory,
   EvidFingerprint,
@@ -6,7 +6,7 @@
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Classifies DBML aliases, relation cardinalities, composites, and Unicode source positions.
  *
@@ -30,7 +30,7 @@ export async function test_dbml_schema_surface(): Promise<void> {
       user_id int [ref: > U.id]
       tenant int
       state state
-      "display.name😀" varchar(120) [note: '😀\\n@evid ../spec.md#display Preserves a literal column name.']
+      "display.name😀" varchar(120) [note: '😀\\n@evidence ../spec.md#display Preserves a literal column name.']
       Note: 'Post storage.'
     }
     Table profiles {
@@ -44,7 +44,7 @@ export async function test_dbml_schema_surface(): Promise<void> {
     Ref network: U.id <> posts.user_id
   `.replace(/\n/gu, "\r\n");
   const inventory = await new EvidDbmlAdapter().analyze(
-    TestSourceSnapshot.create("schema/main.dbml", source),
+    EvidTestSourceSnapshot.create("schema/main.dbml", source),
   );
 
   TestValidator.equals("complete DBML schema", inventory.diagnostics, []);
@@ -191,7 +191,7 @@ export async function test_dbml_schema_surface(): Promise<void> {
   TestValidator.equals(
     "Unicode UTF16 annotation start",
     annotation.location.range.start.offset,
-    source.indexOf("@evid"),
+    source.indexOf("@evidence"),
   );
   const literal = inventory.units.find(
     (unit) => unit.identity.at(-1) === "display.name😀",
@@ -216,11 +216,11 @@ export async function test_dbml_schema_surface(): Promise<void> {
   );
 
   const revised = await new EvidDbmlAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "schema/main.dbml",
       source.replace(
         "Post storage.",
-        "Post storage.\\n@evidReview ../spec.md#display Reviewed storage semantics.",
+        "Post storage.\\n@evidenceReview ../spec.md#display Reviewed storage semantics.",
       ),
     ),
   );

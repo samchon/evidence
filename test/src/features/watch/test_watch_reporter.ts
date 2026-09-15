@@ -1,21 +1,20 @@
 import { EvidWatchReporter } from "evid";
-import type {
-  EvidWatchCycle,
-  IEvidWatchFailureCycle,
-} from "evid";
+import type { EvidWatchCycle, IEvidWatchFailureCycle } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import typia from "typia";
 
 /**
- * Keeps operational failures persistent and machine output framed as one NDJSON record.
+ * Keeps operational failures persistent and machine output framed as one NDJSON
+ * record.
  *
- * A watch reporter must serialize each cycle independently for machine consumers
- * while retaining the current operational message and repair guidance in text.
+ * A watch reporter must serialize each cycle independently for machine
+ * consumers while retaining the current operational message and repair guidance
+ * in text.
  *
  * 1. Construct a failed check cycle with a fixed schema version, cycle number,
  *    configuration path, failure message, and repair instruction.
- * 2. Render JSON and require one compact line that type-validates as a watch
- *    cycle with the same identifier.
+ * 2. Render JSON and require one compact line that type-validates as a watch cycle
+ *    with the same identifier.
  * 3. Render text and require its cycle status, failure message, and repair
  *    instruction to remain visible.
  */
@@ -28,7 +27,7 @@ export function test_watch_reporter(): void {
     status: "failed",
     success: false,
     exitCode: 2,
-    configFile: "/project/evid.config.ts",
+    configFile: "/project/evidence.config.ts",
     message: "Imported settings are invalid.",
     repair: "Correct the imported settings.",
   };
@@ -46,7 +45,7 @@ export function test_watch_reporter(): void {
   const text = EvidWatchReporter.text(failure);
   TestValidator.predicate(
     "text cycle status",
-    text.includes("Evid watch cycle 7 (failed)."),
+    text.includes("Evidence Graph watch cycle 7 (failed)."),
   );
   TestValidator.predicate(
     "text failure",

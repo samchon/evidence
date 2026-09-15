@@ -2,7 +2,7 @@ import { EvidPhpAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Attaches PHPDoc annotations to exact declaration hosts.
  *
@@ -19,36 +19,36 @@ export async function test_php_hosts(): Promise<void> {
     /**
      * Public contract.
      * <code>
-     * @evid ignored.md#html Example.
+     * @evidence ignored.md#html Example.
      * </code>
      * \`\`\`php
-     * @evid ignored.md#fence Fenced example.
+     * @evidence ignored.md#fence Fenced example.
      * \`\`\`
      *
-     *     @evid ignored.md#indent Indented example.
+     *     @evidence ignored.md#indent Indented example.
      *
-     * @evid requirement.md#contract Actual acknowledgement.
+     * @evidence requirement.md#contract Actual acknowledgement.
      */
     #[Deprecated]
     class Contract {
-      /** @evid requirement.md#values Shared property documentation. */
+      /** @evidence requirement.md#values Shared property documentation. */
       public int $first = 1, $second = 2;
       /** @internal Retired subtree. */
       public function legacy() {}
-      /** @evid requirement.md#private Private annotation cannot attach. */
+      /** @evidence requirement.md#private Private annotation cannot attach. */
       private function hidden() {}
       public function ordinary() {
-        // @evid ignored.md#line Ordinary comment.
-        return '@evid ignored.md#string Inert literal.';
+        // @evidence ignored.md#line Ordinary comment.
+        return '@evidence ignored.md#string Inert literal.';
       }
     }
-    /** @evid requirement.md#detached Detached PHPDoc. */
+    /** @evidence requirement.md#detached Detached PHPDoc. */
     $local = 1;
     /** @hidden Hidden type subtree. */
     class Hidden { public function child() {} }
   `.replaceAll("\n", "\r\n");
   const inventory = await new EvidPhpAdapter().analyze(
-    TestSourceSnapshot.create("src/hosts.php", content),
+    EvidTestSourceSnapshot.create("src/hosts.php", content),
   );
 
   TestValidator.equals(

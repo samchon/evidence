@@ -2,8 +2,8 @@ import { EvidGraph } from "evid";
 import type { IEvidGraphClaim } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestInventory } from "../../internal/TestInventory";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestInventory } from "../../internal/EvidTestInventory";
 
 /**
  * Keeps overlapping claims and repeated references as independent coverage obligations.
@@ -23,8 +23,8 @@ import { TestInventory } from "../../internal/TestInventory";
  *    - Exactly one forbidden-exclusion finding identifies claim 0, reference 1.
  */
 export async function test_graph_independent_obligations(): Promise<void> {
-  const reference = TestInventory.create();
-  const target = TestInventory.unit(
+  const reference = EvidTestInventory.create();
+  const target = EvidTestInventory.unit(
     reference,
     "target",
     ["Target"],
@@ -32,22 +32,22 @@ export async function test_graph_independent_obligations(): Promise<void> {
     "export class Box { value = 1; }",
   );
 
-  const firstClaim = TestInventory.create();
-  const firstUnit = TestInventory.unit(
+  const firstClaim = EvidTestInventory.create();
+  const firstUnit = EvidTestInventory.unit(
     firstClaim,
     "first-claim",
     ["FirstClaim"],
     "type",
     "export const first = 1, second = 2;",
   );
-  const firstHost = TestInventory.host(
+  const firstHost = EvidTestInventory.host(
     firstClaim,
     "first-host",
     firstUnit.sites[0]?.id ?? "",
     [firstUnit.id],
     "/** Shared documentation. */",
   );
-  const firstEvid = TestGraph.declaration(
+  const firstEvid = EvidTestGraph.declaration(
     firstClaim,
     "first-evidence",
     firstHost,
@@ -74,7 +74,7 @@ export async function test_graph_independent_obligations(): Promise<void> {
           severity: "error",
           inventory: reference,
           unitIds: [target.id],
-          resolutions: [TestGraph.resolved(firstEvid, target)],
+          resolutions: [EvidTestGraph.resolved(firstEvid, target)],
         },
       ]),
       uncoveredClaim,
@@ -83,12 +83,12 @@ export async function test_graph_independent_obligations(): Promise<void> {
 
   TestValidator.equals(
     "first claim covered",
-    TestGraph.obligation(independent, 0, 0).missingUnitIds,
+    EvidTestGraph.obligation(independent, 0, 0).missingUnitIds,
     [],
   );
   TestValidator.equals(
     "second claim remains missing",
-    TestGraph.obligation(independent, 1, 0).missingUnitIds,
+    EvidTestGraph.obligation(independent, 1, 0).missingUnitIds,
     [target.id],
   );
   TestValidator.equals(
@@ -114,22 +114,22 @@ export async function test_graph_independent_obligations(): Promise<void> {
   );
 
   // Identical reference populations retain their own exclusion policies.
-  const exclusionClaim = TestInventory.create();
-  const exclusionUnit = TestInventory.unit(
+  const exclusionClaim = EvidTestInventory.create();
+  const exclusionUnit = EvidTestInventory.unit(
     exclusionClaim,
     "exclusion-claim",
     ["ExclusionClaim"],
     "type",
     "export const first = 1, second = 2;",
   );
-  const exclusionHost = TestInventory.host(
+  const exclusionHost = EvidTestInventory.host(
     exclusionClaim,
     "exclusion-host",
     exclusionUnit.sites[0]?.id ?? "",
     [exclusionUnit.id],
     "/** Shared documentation. */",
   );
-  const exclusion = TestGraph.declaration(
+  const exclusion = EvidTestGraph.declaration(
     exclusionClaim,
     "exclusion",
     exclusionHost,
@@ -143,13 +143,13 @@ export async function test_graph_independent_obligations(): Promise<void> {
           severity: "error",
           inventory: reference,
           unitIds: [target.id],
-          resolutions: [TestGraph.resolved(exclusion, target)],
+          resolutions: [EvidTestGraph.resolved(exclusion, target)],
         },
         {
           severity: "error",
           inventory: reference,
           unitIds: [target.id],
-          resolutions: [TestGraph.resolved(exclusion, target)],
+          resolutions: [EvidTestGraph.resolved(exclusion, target)],
           noEvidExclude: true,
         },
       ]),
@@ -158,12 +158,12 @@ export async function test_graph_independent_obligations(): Promise<void> {
 
   TestValidator.equals(
     "permitted exclusion covers first reference",
-    TestGraph.obligation(repeated, 0, 0).coveredUnitIds,
+    EvidTestGraph.obligation(repeated, 0, 0).coveredUnitIds,
     [target.id],
   );
   TestValidator.equals(
     "forbidden exclusion leaves second reference missing",
-    TestGraph.obligation(repeated, 0, 1).missingUnitIds,
+    EvidTestGraph.obligation(repeated, 0, 1).missingUnitIds,
     [target.id],
   );
   TestValidator.equals(

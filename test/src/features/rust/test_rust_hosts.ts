@@ -2,7 +2,7 @@ import { EvidInventory, EvidRustAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Attaches Rust doc comments and doc attributes to eligible hosts.
  *
@@ -16,22 +16,22 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_rust_hosts(): Promise<void> {
   const inventory = await new EvidRustAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create("src/lib.rs", "pub mod api;\n"),
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create("src/lib.rs", "pub mod api;\n"),
+      EvidTestSourceSnapshot.create(
         "src/api.rs",
         dedent`
-          //! @evid docs/requirements.md#module Implements the module.
+          //! @evidence docs/requirements.md#module Implements the module.
 
           /**
-           * @evid docs/requirements.md#record Implements the record.
+           * @evidence docs/requirements.md#record Implements the record.
            */
           pub struct Record {
-              /// @evid docs/requirements.md#field Implements the field.
+              /// @evidence docs/requirements.md#field Implements the field.
               pub value: i32,
           }
 
-          #[doc = "@evid docs/requirements.md#alias Implements the alias."]
+          #[doc = "@evidence docs/requirements.md#alias Implements the alias."]
           pub type Alias = Record;
 
           #[doc(hidden)]
@@ -39,28 +39,28 @@ export async function test_rust_hosts(): Promise<void> {
           pub struct RustdocMetadata;
 
           pub trait Service {
-              /// @evid docs/requirements.md#trait-method Implements the trait method.
+              /// @evidence docs/requirements.md#trait-method Implements the trait method.
               fn run(&self);
           }
 
           impl Record {
-              /// @evid docs/requirements.md#method Implements the method.
+              /// @evidence docs/requirements.md#method Implements the method.
               pub fn calculate(&self) {}
           }
 
-          // @evid docs/requirements.md#ordinary Ordinary comments are unsupported.
+          // @evidence docs/requirements.md#ordinary Ordinary comments are unsupported.
           pub fn Ordinary() {}
 
-          //// @evid docs/requirements.md#four-slashes Four slashes are not Rust documentation.
+          //// @evidence docs/requirements.md#four-slashes Four slashes are not Rust documentation.
           pub fn FourSlashes() {}
 
           pub fn Unsupported() {
-              // @evid docs/requirements.md#body Body comments are unsupported.
-              let interpreted = "@evid docs/requirements.md#string Interpreted strings are unsupported.";
-              let raw = r#"@evid docs/requirements.md#raw Raw strings are unsupported."#;
+              // @evidence docs/requirements.md#body Body comments are unsupported.
+              let interpreted = "@evidence docs/requirements.md#string Interpreted strings are unsupported.";
+              let raw = r#"@evidence docs/requirements.md#raw Raw strings are unsupported."#;
           }
 
-          // @evid docs/requirements.md#commented Commented declarations are unsupported.
+          // @evidence docs/requirements.md#commented Commented declarations are unsupported.
           // pub fn Commented() {}
         `,
       ),
@@ -100,9 +100,9 @@ export async function test_rust_hosts(): Promise<void> {
   );
 
   const withdrawn = await new EvidRustAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create("src/lib.rs", "pub mod hidden;\n"),
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create("src/lib.rs", "pub mod hidden;\n"),
+      EvidTestSourceSnapshot.create(
         "src/hidden.rs",
         dedent`
           //! @internal This module and its public descendants are internal.

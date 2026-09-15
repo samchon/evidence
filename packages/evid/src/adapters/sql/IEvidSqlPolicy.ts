@@ -1,4 +1,4 @@
-import type { EvidNode } from "web-tree-sitter";
+import type { Node as EvidNode } from "web-tree-sitter";
 import type { EvidDatabaseSymbol } from "../../typings/EvidDatabaseSymbol";
 
 /** Defines dialect-specific decisions for the shared SQL table scanner.

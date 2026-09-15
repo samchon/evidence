@@ -3,7 +3,7 @@ import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /** Rebuilds Kotlin populations after source, discovery, syntax, and configuration changes.
  *
@@ -12,20 +12,20 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  * 1. Mutate selected source and add a file. 2. Introduce malformed source. 3. Repair it and verify recovery after configuration change.
  */
 export async function test_kotlin_watch(): Promise<void> {
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "kotlin-watch",
     {
-      "evid.config.ts": dedent`
+      "evidence.config.ts": dedent`
       export default { claims: [{ type: "typescript", files: ["claims.ts"], reference: { type: "kotlin", files: ["contracts/*.kt"], symbol: "property" } }] };
     `,
       "claims.ts": dedent`
-      /** @evid ./contracts/Contract.kt#Contract Implements the contract. */
+      /** @evidence ./contracts/Contract.kt#Contract Implements the contract. */
       export function claim() {}
     `,
       "contracts/Contract.kt": "class Contract { val value = 1; }\n",
     },
     async (directory) => {
-      const file = join(directory, "evid.config.ts");
+      const file = join(directory, "evidence.config.ts");
       const watcher = new EvidWatcher(file, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
@@ -44,7 +44,7 @@ export async function test_kotlin_watch(): Promise<void> {
               cycle.success,
               true,
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "contracts/Extra.kt": "val extra = 2\n",
             });
           } else if (cycle.cycle === 2) {
@@ -53,7 +53,7 @@ export async function test_kotlin_watch(): Promise<void> {
               cycle.success,
               false,
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "contracts/Extra.kt": "class Broken {\n",
             });
           } else if (cycle.cycle === 3) {
@@ -62,7 +62,7 @@ export async function test_kotlin_watch(): Promise<void> {
               cycle.status,
               "incomplete",
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "contracts/Extra.kt": "private val extra = 2\n",
             });
           } else if (cycle.cycle === 4) {
@@ -71,8 +71,8 @@ export async function test_kotlin_watch(): Promise<void> {
               cycle.success,
               true,
             );
-            await TestFileSystem.save(directory, {
-              "evid.config.ts": dedent`
+            await EvidTestFileSystem.save(directory, {
+              "evidence.config.ts": dedent`
             export default { claims: [{ type: "typescript", files: ["claims.ts"], reference: { type: "kotlin", files: ["contracts/*.kt"], symbol: "type" } }] };
           `,
             });

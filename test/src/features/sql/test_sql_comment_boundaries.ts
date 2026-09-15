@@ -1,7 +1,7 @@
 import { EvidSqlAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Distinguishes leading SQL documentation from trailing and detached comments.
  *
@@ -14,14 +14,14 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_sql_comment_boundaries(): Promise<void> {
   const adapter = new EvidSqlAdapter();
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "comments.sql",
       dedent`
     CREATE TABLE account (
-      first INTEGER, -- @evid docs/spec.md#trailing A trailing comment.
-      -- @evid docs/spec.md#leading A separate leading comment.
+      first INTEGER, -- @evidence docs/spec.md#trailing A trailing comment.
+      -- @evidence docs/spec.md#leading A separate leading comment.
       second INTEGER,
-      -- @evid docs/spec.md#detached A detached comment.
+      -- @evidence docs/spec.md#detached A detached comment.
 
       third INTEGER
     );

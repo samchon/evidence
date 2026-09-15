@@ -6,7 +6,7 @@ import {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Classifies public Kotlin declarations across owners, overloads, and file aliases.
  *
@@ -15,8 +15,8 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 1. Analyze public Kotlin forms. 2. Compare unit identities and symbols. 3. Verify overload and alias ownership.
  */
 export async function test_kotlin_units(): Promise<void> {
-  const snapshot = TestSourceSnapshot.combine([
-    TestSourceSnapshot.create(
+  const snapshot = EvidTestSourceSnapshot.combine([
+    EvidTestSourceSnapshot.create(
       "src/Contract.kt",
       dedent`
       package example
@@ -49,7 +49,7 @@ export async function test_kotlin_units(): Promise<void> {
     `,
       ["src/Contract.kt", "alias/Contract.kt"],
     ),
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Additional.kt",
       dedent`
       package example

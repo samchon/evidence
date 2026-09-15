@@ -5,8 +5,8 @@ import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Keeps Swagger source, parse, validation, and identity failures visible.
  *
@@ -19,10 +19,10 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_swagger_failures(): Promise<void> {
   const adapter = new EvidSwaggerAdapter();
   const malformed = await adapter.analyze(
-    TestSourceSnapshot.create("malformed.yaml", "openapi: ["),
+    EvidTestSourceSnapshot.create("malformed.yaml", "openapi: ["),
   );
   const unsupported = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "unsupported.yaml",
       dedent`
         openapi: 9.0.0
@@ -34,10 +34,10 @@ export async function test_swagger_failures(): Promise<void> {
     ),
   );
   const whitespace = await adapter.analyze(
-    TestSourceSnapshot.create("whitespace.yaml", document("/bad path", "get")),
+    EvidTestSourceSnapshot.create("whitespace.yaml", document("/bad path", "get")),
   );
   const duplicate = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "duplicate.yaml",
       dedent`
         openapi: 3.1.0
@@ -66,9 +66,9 @@ export async function test_swagger_failures(): Promise<void> {
 
   // One rejected document does not erase valid operations from another source.
   const partial = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create("valid.yaml", document("/health", "get")),
-      TestSourceSnapshot.create("invalid.yaml", "openapi: ["),
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create("valid.yaml", document("/health", "get")),
+      EvidTestSourceSnapshot.create("invalid.yaml", "openapi: ["),
     ]),
   );
   TestValidator.equals(
@@ -106,7 +106,7 @@ export async function test_swagger_failures(): Promise<void> {
 
   // A corrected document with a new digest succeeds after a cached rejection.
   const repaired = await adapter.analyze(
-    TestSourceSnapshot.create("malformed.yaml", document("/health", "get")),
+    EvidTestSourceSnapshot.create("malformed.yaml", document("/health", "get")),
   );
   TestValidator.equals(
     "repaired document is complete",
@@ -120,8 +120,8 @@ export async function test_swagger_failures(): Promise<void> {
   );
 
   const location = join(__dirname, "failures-" + randomUUID());
-  await TestFileSystem.experiment(location, {}, async (directory) => {
-    const config = join(directory, "evid.config.ts");
+  await EvidTestFileSystem.experiment(location, {}, async (directory) => {
+    const config = join(directory, "evidence.config.ts");
     const failures: IEvidInventory[] = await Promise.all([
       adapter.load(config, "missing.yaml"),
       adapter.load(config, "C:drive-relative.yaml"),

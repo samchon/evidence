@@ -3,7 +3,7 @@ import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /** Rebuilds PostgreSQL cross-file ownership during watch cycles.
  *
@@ -14,18 +14,18 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  * 3. Repair it and require coverage recovery.
  */
 export async function test_postgresql_watch(): Promise<void> {
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "postgresql-watch",
     {
-      "evid.config.ts": dedent`
+      "evidence.config.ts": dedent`
       export default { claims: [{ type: "typescript", files: ["claim.ts"], reference: { type: "postgresql", files: ["schema/*.sql"], symbol: "column" } }] };
     `,
       "claim.ts":
-        "/** @evid ./schema/base.sql#app.item Covers the table. */\nexport function claim() {}\n",
+        "/** @evidence ./schema/base.sql#app.item Covers the table. */\nexport function claim() {}\n",
       "schema/base.sql": "CREATE TABLE app.Item (id integer);\n",
     },
     async (directory) => {
-      const file = join(directory, "evid.config.ts");
+      const file = join(directory, "evidence.config.ts");
       const watcher = new EvidWatcher(file, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
@@ -40,7 +40,7 @@ export async function test_postgresql_watch(): Promise<void> {
           );
           if (cycle.cycle === 1) {
             TestValidator.equals("initial coverage", cycle.success, true);
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "schema/add.sql": "ALTER TABLE app.Item ADD COLUMN value text;\n",
             });
           } else if (cycle.cycle === 2) {
@@ -49,7 +49,7 @@ export async function test_postgresql_watch(): Promise<void> {
               cycle.success,
               true,
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "schema/add.sql": "ALTER TABLE app.Item ADD COLUMN value (\n",
             });
           } else if (cycle.cycle === 3) {
@@ -58,7 +58,7 @@ export async function test_postgresql_watch(): Promise<void> {
               cycle.status,
               "incomplete",
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "schema/add.sql":
                 "ALTER TABLE app.Item ADD COLUMN value text;\nCREATE TABLE app.Other (extra integer);\n",
             });
@@ -68,7 +68,7 @@ export async function test_postgresql_watch(): Promise<void> {
               cycle.success,
               false,
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "schema/add.sql": "ALTER TABLE app.Item ADD COLUMN value text;\n",
             });
           } else {

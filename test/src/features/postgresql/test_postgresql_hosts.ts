@@ -6,7 +6,7 @@ import {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Maps PostgreSQL documentation strings to their schema hosts.
  *
@@ -19,27 +19,27 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_postgresql_hosts(): Promise<void> {
   const source = dedent`
     -- Documentation 🐘
-    -- @evid spec.md#table Describes the table.
+    -- @evidence spec.md#table Describes the table.
     CREATE TABLE app.Item (
-      /* @evid spec.md#id Describes the identifier. */
+      /* @evidence spec.md#id Describes the identifier. */
       id integer PRIMARY KEY,
-      value text DEFAULT '@evid spec.md#string Inert value.'
+      value text DEFAULT '@evidence spec.md#string Inert value.'
     );
     COMMENT ON COLUMN app.Item.value IS 'Unicode 🐘 and it''s mapped.
-    @evid spec.md#value Describes the value.';
+    @evidence spec.md#value Describes the value.';
     -- @internal Hidden schema table.
     CREATE TABLE app.Hidden (secret integer);
     /*
      * Examples:
      * ~~~sql
-     * @evid spec.md#example Inert example.
+     * @evidence spec.md#example Inert example.
      * ~~~
      */
     CREATE TABLE app.Example (id integer);
   `.replaceAll("\n", "\r\n");
   const adapter = new EvidPostgresqlAdapter();
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.create("schema.sql", source),
+    EvidTestSourceSnapshot.create("schema.sql", source),
   );
 
   TestValidator.equals(
@@ -60,7 +60,7 @@ export async function test_postgresql_hosts(): Promise<void> {
     TestValidator.equals(
       "original UTF-16 annotation position",
       range.start.offset,
-      source.indexOf(`@evid ${declaration.target}`),
+      source.indexOf(`@evidence ${declaration.target}`),
     );
   }
   TestValidator.equals(
@@ -76,7 +76,7 @@ export async function test_postgresql_hosts(): Promise<void> {
   );
   if (table === undefined) throw new Error("Missing table.");
   const rewritten = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "schema.sql",
       source.replace("Describes the value.", "Explains the same value."),
     ),
@@ -87,7 +87,7 @@ export async function test_postgresql_hosts(): Promise<void> {
     EvidFingerprint.inspect(rewritten, table.id).fingerprint,
   );
   const changed = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "schema.sql",
       source.replace("id integer", "id bigint"),
     ),
@@ -99,12 +99,12 @@ export async function test_postgresql_hosts(): Promise<void> {
   );
   const plain = "CREATE TABLE app.Item (id integer);";
   const withoutComment = await adapter.analyze(
-    TestSourceSnapshot.create("comment.sql", plain),
+    EvidTestSourceSnapshot.create("comment.sql", plain),
   );
   const withComment = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "comment.sql",
-      `${plain}\nCOMMENT ON TABLE app.Item IS '@evidReview spec.md#table Review metadata only.';`,
+      `${plain}\nCOMMENT ON TABLE app.Item IS '@evidenceReview spec.md#table Review metadata only.';`,
     ),
   );
   TestValidator.equals(
@@ -123,9 +123,9 @@ export async function test_postgresql_hosts(): Promise<void> {
     1,
   );
   const trailing = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "trailing.sql",
-      "CREATE TABLE app.Item (id integer); -- @evid spec.md#trailing No next owner.\nCREATE TABLE app.Other (id integer);",
+      "CREATE TABLE app.Item (id integer); -- @evidence spec.md#trailing No next owner.\nCREATE TABLE app.Other (id integer);",
     ),
   );
   TestValidator.equals(
@@ -134,9 +134,9 @@ export async function test_postgresql_hosts(): Promise<void> {
     [],
   );
   const leading = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "leading.sql",
-      "CREATE TABLE app.Item (id integer); -- A trailing comment.\n-- @evid spec.md#leading Documents the next table.\nCREATE TABLE app.Other (id integer);",
+      "CREATE TABLE app.Item (id integer); -- A trailing comment.\n-- @evidence spec.md#leading Documents the next table.\nCREATE TABLE app.Other (id integer);",
     ),
   );
   TestValidator.equals(
@@ -145,9 +145,9 @@ export async function test_postgresql_hosts(): Promise<void> {
     ["spec.md#leading"],
   );
   const separated = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "separated.sql",
-      "-- @evid spec.md#separated No adjacent owner.\n\nCREATE TABLE app.Item (id integer);",
+      "-- @evidence spec.md#separated No adjacent owner.\n\nCREATE TABLE app.Item (id integer);",
     ),
   );
   TestValidator.equals(
@@ -156,9 +156,9 @@ export async function test_postgresql_hosts(): Promise<void> {
     [],
   );
   const unattached = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "schema.sql",
-      "CREATE TABLE app.Item (id integer);\n-- @evid spec.md#lost No owner.\n",
+      "CREATE TABLE app.Item (id integer);\n-- @evidence spec.md#lost No owner.\n",
     ),
   );
   TestValidator.equals(

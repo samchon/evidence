@@ -7,7 +7,7 @@ import type {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Parses annotation tags from supported Swagger operation descriptions.
  *
@@ -18,7 +18,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_swagger_hosts(): Promise<void> {
   const inventory = await new EvidSwaggerAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "openapi.yaml",
       dedent`
         openapi: 3.1.0
@@ -32,16 +32,16 @@ export async function test_swagger_hosts(): Promise<void> {
                 Creates a member.
 
                 \`\`\`
-                @evid docs/spec.md#fenced This is an example.
+                @evidence docs/spec.md#fenced This is an example.
                 \`\`\`
 
-                @evid docs/spec.md#members Implements member creation.
-                @evidReview docs/spec.md#members #abcdef0 Read the requirement.
-                @evidExclude docs/spec.md#legacy The legacy route is intentionally absent.
-                @evidExcludeReview docs/spec.md#legacy #1234567 Checked the removal.
+                @evidence docs/spec.md#members Implements member creation.
+                @evidenceReview docs/spec.md#members #abcdef0 Read the requirement.
+                @evidenceExclude docs/spec.md#legacy The legacy route is intentionally absent.
+                @evidenceExcludeReview docs/spec.md#legacy #1234567 Checked the removal.
               responses:
                 "200":
-                  description: "@evid docs/spec.md#response This is not an operation host."
+                  description: "@evidence docs/spec.md#response This is not an operation host."
           /health:
             get:
               responses:
@@ -50,7 +50,7 @@ export async function test_swagger_hosts(): Promise<void> {
         components:
           schemas:
             Member:
-              description: "@evid docs/spec.md#component This is not an operation host."
+              description: "@evidence docs/spec.md#component This is not an operation host."
               type: object
       `.replaceAll("\n", "\r\n"),
     ),
@@ -99,7 +99,7 @@ export async function test_swagger_hosts(): Promise<void> {
 
   // YAML aliases retain the physical anchor location that owns their decoded text.
   const aliased = await new EvidSwaggerAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "aliased.yaml",
       dedent`
         openapi: 3.1.0
@@ -109,7 +109,7 @@ export async function test_swagger_hosts(): Promise<void> {
         x-operation: &operation
           description: |-
             Shared operation prose.
-            @evid docs/spec.md#alias Applies the shared contract.
+            @evidence docs/spec.md#alias Applies the shared contract.
           responses:
             "200":
               description: OK
@@ -123,13 +123,13 @@ export async function test_swagger_hosts(): Promise<void> {
   TestValidator.equals("aliased description source line", line(alias), 8);
   TestValidator.equals(
     "aliased declaration source text",
-    declarationText(aliased, alias).startsWith("@evid"),
+    declarationText(aliased, alias).startsWith("@evidence"),
     true,
   );
 
   // One Unicode escape may decode to two UTF-16 units before a later annotation.
   const escaped = await new EvidSwaggerAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "escaped.yaml",
       dedent`
         openapi: 3.1.0
@@ -139,7 +139,7 @@ export async function test_swagger_hosts(): Promise<void> {
         paths:
           /escaped:
             get:
-              description: "\\U0001F600\\n@evid docs/spec.md#escaped Maps the source token."
+              description: "\\U0001F600\\n@evidence docs/spec.md#escaped Maps the source token."
               responses:
                 "200":
                   description: OK
@@ -149,7 +149,7 @@ export async function test_swagger_hosts(): Promise<void> {
   const unicode = requireDeclaration(escaped, "docs/spec.md#escaped");
   TestValidator.equals(
     "escaped declaration source text",
-    declarationText(escaped, unicode).startsWith("@evid"),
+    declarationText(escaped, unicode).startsWith("@evidence"),
     true,
   );
 }

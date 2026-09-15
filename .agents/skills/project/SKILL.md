@@ -1,6 +1,6 @@
 ---
 name: project
-description: Defines the Evid workspace, current implementation status, product boundaries, dependencies, and canonical commands. Use when starting repository work or changing package architecture.
+description: Defines the evid workspace, current implementation status, product boundaries, dependencies, and canonical commands. Use when starting repository work or changing package architecture.
 ---
 
 # Project
@@ -17,21 +17,21 @@ The [roadmap](https://github.com/wrtnlabs/evid/issues/31) owns execution order. 
 
 | Path | Owner |
 | --- | --- |
-| `packages/evidence/src` | Public API entry point and configuration-to-graph checker orchestration |
-| `packages/evidence/src/adapters/<artifact>` | Public adapter, extraction helpers, and private types for each language or artifact; shared JavaScript/TypeScript extraction lives in `ecmascript` |
-| `packages/evidence/src/commands` | Reusable CLI command handling and watch execution |
-| `packages/evidence/src/contexts` | Execution state and indexes owned by facade/controller instances |
-| `packages/evidence/src/graph` | Semantic inventory, graph evaluation, fingerprints, and queries |
-| `packages/evidence/src/loaders` | Configuration and local source loading |
-| `packages/evidence/src/parsers` | Parser sessions, language registry, documentation mapping, and evidence tags |
-| `packages/evidence/src/programmers` | Namespace algorithms operating on explicit execution contexts |
-| `packages/evidence/src/reporters` | Check, query, graph, and watch output rendering |
-| `packages/evidence/src/targets` | Accessor parsing, file-qualified targets, and target resolution |
-| `packages/evidence/src/internal` | Private implementation helpers and records |
-| `packages/evidence/src/structures` | Shared adapter contract, configuration, parser, source, and semantic inventory interfaces |
-| `packages/evidence/src/typings` | Language identifiers, symbol selectors, and diagnostic severity |
-| `packages/evidence/src/executable` | Small Node CLI bootstraps |
-| `packages/evidence/src/internal/parser-grammars.json` | Pinned grammar download metadata imported by the runtime asset reader |
+| `packages/evid/src` | Public API entry point and configuration-to-graph checker orchestration |
+| `packages/evid/src/adapters/<artifact>` | Public adapter, extraction helpers, and private types for each language or artifact; shared JavaScript/TypeScript extraction lives in `ecmascript` |
+| `packages/evid/src/commands` | Reusable CLI command handling and watch execution |
+| `packages/evid/src/contexts` | Execution state and indexes owned by facade/controller instances |
+| `packages/evid/src/graph` | Semantic inventory, graph evaluation, fingerprints, and queries |
+| `packages/evid/src/loaders` | Configuration and local source loading |
+| `packages/evid/src/parsers` | Parser sessions, language registry, documentation mapping, and evidence tags |
+| `packages/evid/src/programmers` | Namespace algorithms operating on explicit execution contexts |
+| `packages/evid/src/reporters` | Check, query, graph, and watch output rendering |
+| `packages/evid/src/targets` | Accessor parsing, file-qualified targets, and target resolution |
+| `packages/evid/src/internal` | Private implementation helpers and records |
+| `packages/evid/src/structures` | Shared adapter contract, configuration, parser, source, and semantic inventory interfaces |
+| `packages/evid/src/typings` | Language identifiers, symbol selectors, and diagnostic severity |
+| `packages/evid/src/executable` | Small Node CLI bootstraps |
+| `packages/evid/src/internal/parser-grammars.json` | Pinned grammar download metadata imported by the runtime asset reader |
 | `test/src/index.ts` | DynamicExecutor unit-test entry point |
 | `test/src/features/<category>` | Exported logic unit-test functions |
 | `config/package.json` | Private workspace with dependencies for shared configuration |

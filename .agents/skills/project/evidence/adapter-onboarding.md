@@ -1,6 +1,6 @@
 # Programming adapter onboarding
 
-A programming language becomes supported only when its adapter can establish a complete declared public surface. A grammar proves that Evid can parse syntax. Certification additionally proves semantic unit identity, visibility, ownership, target spelling, documentation attachment, graph coverage, and conservative failure behavior.
+A programming language becomes supported only when its adapter can establish a complete declared public surface. A grammar proves that Evidence Graph can parse syntax. Certification additionally proves semantic unit identity, visibility, ownership, target spelling, documentation attachment, graph coverage, and conservative failure behavior.
 
 The common graph consumes `IEvidInventory` and does not contain language-specific rules. Add support through the language registry, the pinned grammar manifest, one `IEvidAdapter`, and the shared certification fixtures. Do not change coverage policy to compensate for missing extraction.
 
@@ -8,11 +8,11 @@ The common graph consumes `IEvidInventory` and does not contain language-specifi
 
 Choose an upstream Tree-sitter grammar that is maintained, has a usable license, and can produce WebAssembly compatible with the pinned `web-tree-sitter` runtime.
 
-- Record the repository, release or commit, WASM URL, SHA-256 digest, byte size, license URL, license digest, and license size in `packages/evidence/src/internal/parser-grammars.json`.
+- Record the repository, release or commit, WASM URL, SHA-256 digest, byte size, license URL, license digest, and license size in `packages/evid/src/internal/parser-grammars.json`.
 - Prefer an upstream release asset. If upstream does not publish WASM, add a recipe to `scripts/parser-builds.json` and publish the reproducibly built artifact through the `parser-wasm` workflow.
 - Do not commit WASM or license bytes; the runtime downloads and verifies them on first use.
 - Add the grammar ID and its exact extensions or special filenames to `EvidLanguageRegistry`.
-- Keep multiple syntax variants, such as TypeScript and TSX, under one programming-language entry when they share one Evid surface contract.
+- Keep multiple syntax variants, such as TypeScript and TSX, under one programming-language entry when they share one Evidence Graph surface contract.
 
 Follow [parser assets](#parser-assets) below for acquisition, checksum, and build rules. A normal `evid` package update ships new certified grammar support; consumers do not install a separate grammar package or language plugin.
 
@@ -87,7 +87,7 @@ The distribution certification checks that:
 
 - every supported registry entry has one adapter certification;
 - every grammar selected by those entries exists in the pinned manifest;
-- every manifest record passes `TreeSitterAssets` validation of its provenance paths and HTTPS asset URLs;
+- every manifest record passes `EvidTreeSitterAssets` validation of its provenance paths and HTTPS asset URLs;
 - every pinned grammar is acquired at its declared size and digest into the test fixture cache;
 - every pinned grammar parses a real declaration through `EvidParser` in `test_parser_grammars`.
 
@@ -107,23 +107,23 @@ pnpm check:format
 
 Count each concept separately:
 
-- **Programming languages:** entries returned by `EvidLanguageRegistry.list()` that have certified adapters; `evidence languages` renders the current set.
+- **Programming languages:** entries returned by `EvidLanguageRegistry.list()` that have certified adapters; `evid languages` renders the current set.
 - **Pinned grammar variants:** unique grammar IDs across the registry entries. TypeScript and TSX use separate grammars; JSX shares the JavaScript grammar.
 - **Database schema languages:** entries returned by `EvidLanguageRegistry.databases()` plus the Prisma parser. They share the `model`, `column`, and `relation` symbols and are counted separately from programming languages.
-- **Artifact formats:** Markdown and Swagger/OpenAPI are two additional non-programming Evid families. They are not included in either language count.
+- **Artifact formats:** Markdown and Swagger/OpenAPI are two additional non-programming Evidence Graph families. They are not included in either language count.
 - **Candidates:** researched entries returned by `EvidLanguageRegistry.candidates()`. They are excluded from supported counts until their adapters pass this process. The registry record is the checked candidate matrix; a candidate is not supported because a grammar exists or parses a fixture.
 
 ## Parser assets
 
 The runtime uses the official CommonJS entry of `web-tree-sitter`, pinned in the `tree-sitter` family catalog. The binding's core WASM comes from that npm dependency and is resolved through `require.resolve`, independent of the caller's working directory.
 
-Language grammars are not packaged. The grammar manifest at `packages/evidence/src/internal/parser-grammars.json` pins every grammar the runtime may acquire: upstream repository, release or reproducible build identifier, full source commit, WASM download URL, SHA-256 digest, byte length, and the license asset with its own digest and length. `TreeSitterAssets` imports the manifest directly, validates every record with `typia`, rejects duplicate identifiers, and refuses non-HTTPS or credential-bearing URLs before any record can choose a cache key or download destination. The package emits the manifest into `lib` during the build; there is no generated catalog to regenerate. TypeScript and TSX share an upstream repository and license but use separate grammars.
+Language grammars are not packaged. The grammar manifest at `packages/evid/src/internal/parser-grammars.json` pins every grammar the runtime may acquire: upstream repository, release or reproducible build identifier, full source commit, WASM download URL, SHA-256 digest, byte length, and the license asset with its own digest and length. `EvidTreeSitterAssets` imports the manifest directly, validates every record with `typia`, rejects duplicate identifiers, and refuses non-HTTPS or credential-bearing URLs before any record can choose a cache key or download destination. The package emits the manifest into `lib` during the build; there is no generated catalog to regenerate. TypeScript and TSX share an upstream repository and license but use separate grammars.
 
 ### Acquisition at runtime
 
 `TreeSitterAssetCache` downloads a pinned grammar the first time a selected source needs it, verifies the byte length and SHA-256 against the manifest, and publishes the file atomically under `grammars-v1/<sha256>.wasm` in the project cache. Every later read verifies size and digest again, so a damaged entry is downloaded afresh instead of being trusted. Concurrent callers in one process share a transfer and receive independent byte arrays; a cross-process lock prevents two processes from publishing the same entry at once, and stale locks from dead processes are recovered.
 
-An explicit `ITreeSitterAssetOptions.cacheDirectory` wins. Without one, the cache root is `EVIDENCE_CACHE_DIR` when set, then `node_modules/.cache/evidence` under the current working directory. The same options let an embedding caller override fetch transport, per-attempt timeout, attempt count, cancellation signal, and progress sink; `TreeSitterAssetScope` carries those controls through one asynchronous execution chain so nested checker and adapter instances inherit them. Imports, configuration loading, help, version, init, and `evidence languages` never download a grammar.
+An explicit `IEvidTreeSitterAssetOptions.cacheDirectory` wins. Without one, the cache root is `EVID_CACHE_DIR` when set, then `node_modules/.cache/evid` under the current working directory. The same options let an embedding caller override fetch transport, per-attempt timeout, attempt count, cancellation signal, and progress sink; `EvidTreeSitterAssetScope` carries those controls through one asynchronous execution chain so nested checker and adapter instances inherit them. Imports, configuration loading, help, version, init, and `evid languages` never download a grammar.
 
 ### Tests and CI
 
@@ -143,4 +143,4 @@ The runtime releases parsers, trees, cursors, and per-session queries; immutable
 
 Add a recipe to `scripts/parser-builds.json` with its full source commit, grammar subdirectory, license path, ABI, and a real declaration/query probe. The manifest pins the Tree-sitter CLI and WASI SDK versions and download digests. Run `node scripts/build-parser-wasm.js <recipe>` on Linux or Windows x64. It builds two independent checkouts, compares their WASM bytes, and verifies parsing and capture through the installed `web-tree-sitter`. Outputs under `test/.tmp/parser-builds` include the grammar record and source/scanner/toolchain provenance. A recipe may pin a patch file under `scripts/parser-patches` with its SHA-256; the builder verifies and applies it to both checkouts, and provenance retains the exact patch bytes as base64. Upstream repositories may omit `tree-sitter.json`; when present, it participates in the input hashes. These are maintainer operations; checking a consumer project never builds a parser.
 
-The `parser-wasm` workflow validates recipes on pull requests. To publish a verified artifact, dispatch it on `master` with the recipe identifier and `publish: true`. Its release tag includes the complete WASM digest, and publication never replaces existing assets. The publication job verifies a cold download through `TreeSitterAssets` and then reads the same cache with network access disabled. Register the resulting grammar record in the manifest only alongside its implemented, certified adapter.
+The `parser-wasm` workflow validates recipes on pull requests. To publish a verified artifact, dispatch it on `master` with the recipe identifier and `publish: true`. Its release tag includes the complete WASM digest, and publication never replaces existing assets. The publication job verifies a cold download through `EvidTreeSitterAssets` and then reads the same cache with network access disabled. Register the resulting grammar record in the manifest only alongside its implemented, certified adapter.

@@ -1,8 +1,8 @@
-﻿import { EvidDbmlAdapter, EvidInventory } from "evid";
+import { EvidDbmlAdapter, EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Attaches DBML notes and comments only when their schema ownership is direct.
  *
@@ -15,25 +15,25 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_dbml_hosts(): Promise<void> {
   const source = dedent`
     Table users {
-      id int [note: '@evid ./spec.md#column Owns the identifier column.']
-      value text [default: '@evid ./spec.md#literal Inert value.'] // @evid ./spec.md#trailing Does not document the next column.
+      id int [note: '@evidence ./spec.md#column Owns the identifier column.']
+      value text [default: '@evidence ./spec.md#literal Inert value.'] // @evidence ./spec.md#trailing Does not document the next column.
       next int
       Note: '''
-      @evid ./spec.md#model Owns the table note.
+      @evidence ./spec.md#model Owns the table note.
       \`\`\`
-      @evid ./spec.md#example Inert example.
+      @evidence ./spec.md#example Inert example.
       \`\`\`
       '''
       indexes {
-        id [note: '@evid ./spec.md#index Unsupported index carrier.']
+        id [note: '@evidence ./spec.md#index Unsupported index carrier.']
       }
     }
     Enum state {
-      active [note: '@evid ./spec.md#enum Unsupported enum carrier.']
+      active [note: '@evidence ./spec.md#enum Unsupported enum carrier.']
     }
   `;
   const inventory = await new EvidDbmlAdapter().analyze(
-    TestSourceSnapshot.create("schema.dbml", source),
+    EvidTestSourceSnapshot.create("schema.dbml", source),
   );
   TestValidator.equals(
     "only eligible documentation creates evidence",
@@ -61,23 +61,23 @@ export async function test_dbml_hosts(): Promise<void> {
     "trailing tag never attaches to following member",
     inventory.hosts.every(
       (host) =>
-        host.range.start.offset !== source.indexOf("// @evid") ||
+        host.range.start.offset !== source.indexOf("// @evidence") ||
         !host.unitIds.includes(second?.id ?? ""),
     ),
   );
 
-  const first = TestSourceSnapshot.create(
+  const first = EvidTestSourceSnapshot.create(
     "schema.dbml",
     "Table users { id int }",
     ["schema.dbml"],
   );
-  const aliased = TestSourceSnapshot.create(
+  const aliased = EvidTestSourceSnapshot.create(
     "schema.dbml",
     "Table users { id int }",
     ["linked/schema.dbml"],
   );
   const merged = await new EvidDbmlAdapter().analyze(
-    TestSourceSnapshot.combine([first, aliased]),
+    EvidTestSourceSnapshot.combine([first, aliased]),
   );
   TestValidator.equals("one physical table inventory", merged.units.length, 2);
   const resolver = new EvidInventory([merged]);

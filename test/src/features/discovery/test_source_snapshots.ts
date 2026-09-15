@@ -4,8 +4,8 @@ import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidSourcePath } from "../../../../packages/evidence/src/internal/EvidSourcePath";
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidSourcePath } from "evid";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
  * Anchors roots to the config, preserves raw source, and returns deterministic snapshots.
@@ -32,10 +32,10 @@ export async function test_source_snapshots(): Promise<void> {
     Preserve this source.
   `.replaceAll("\n", "\r\n");
 
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     {
-      "project/evid.config.ts": "export default {};",
+      "project/evidence.config.ts": "export default {};",
       "shared/z-document.md": content,
       "shared/a.md": "# A",
       "shared/private/hidden.md": "# Hidden",
@@ -44,7 +44,7 @@ export async function test_source_snapshots(): Promise<void> {
     },
     async (directory) => {
       // Relative and absolute population roots select the same files from a nested config.
-      const config = join(directory, "project/evid.config.ts");
+      const config = join(directory, "project/evidence.config.ts");
       const files = ["**/*.md", "!private/**", "private/public.md"];
 
       const relative = await EvidSourceLoader.glob(config, {
@@ -92,7 +92,7 @@ export async function test_source_snapshots(): Promise<void> {
       const previous = relative.files.find((file) =>
         file.addresses.some((address) => address.relative === "a.md"),
       );
-      await TestFileSystem.save(directory, { "shared/a.md": "# Changed" });
+      await EvidTestFileSystem.save(directory, { "shared/a.md": "# Changed" });
 
       const changed = await EvidSourceLoader.file(config, "../shared/a.md");
 

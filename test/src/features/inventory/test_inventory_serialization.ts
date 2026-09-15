@@ -1,7 +1,7 @@
 import { EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestInventory } from "../../internal/TestInventory";
+import { EvidTestInventory } from "../../internal/EvidTestInventory";
 
 /**
  * Normalizes duplicate inventory inputs without losing selection or annotation meaning.
@@ -21,15 +21,15 @@ import { TestInventory } from "../../internal/TestInventory";
  *    offset and require incomplete analysis rather than deduplicating away the conflict.
  */
 export async function test_inventory_serialization(): Promise<void> {
-  const input = TestInventory.create();
-  TestInventory.unit(
+  const input = EvidTestInventory.create();
+  EvidTestInventory.unit(
     input,
     "box",
     ["Box"],
     "type",
     "export class Box { value = 1; }",
   );
-  const host = TestInventory.host(
+  const host = EvidTestInventory.host(
     input,
     "box-doc",
     "box-site",
@@ -73,7 +73,7 @@ export async function test_inventory_serialization(): Promise<void> {
   const repeatedSite = repeatedUnit.sites[0];
   if (originalSite === undefined || repeatedSite === undefined)
     throw new Error("Missing fixture declaration site.");
-  const body = TestInventory.range(input, "value = 1");
+  const body = EvidTestInventory.range(input, "value = 1");
   originalSite.content.push(body);
   repeatedSite.content = [body, ...repeatedSite.content, body];
 

@@ -8,7 +8,7 @@ import type { IEvidPrismaLocatedDeclaration } from "./IEvidPrismaLocatedDeclarat
 import type { IEvidPrismaModel } from "./IEvidPrismaModel";
 import type { IEvidPrismaOwnedUnit } from "./IEvidPrismaOwnedUnit";
 import type { IEvidPrismaSchemaFile } from "./IEvidPrismaSchemaFile";
-import { IEvidnventoryMerge } from "../../internal/IEvidnventoryMerge";
+import { EvidInventoryMerge } from "../../internal/EvidInventoryMerge";
 import { EvidPrismaFileScanner } from "./EvidPrismaFileScanner";
 import { EvidPrismaModelLoader } from "./EvidPrismaModelLoader";
 import { EvidSourceText } from "../../internal/EvidSourceText";
@@ -131,17 +131,17 @@ export class EvidPrismaAdapter implements IEvidAdapter {
     }
     return Array.from(records.values())
       .map((source) => {
-        source.addresses = IEvidnventoryMerge.sourceAddresses(source.addresses);
+        source.addresses = EvidInventoryMerge.sourceAddresses(source.addresses);
         return {
           name:
             source.addresses
               .filter((address) => address.selected !== false)
               .map((address) => address.relative)
-              .sort(IEvidnventoryMerge.compare)[0] ?? source.physicalPath,
+              .sort(EvidInventoryMerge.compare)[0] ?? source.physicalPath,
           source,
         };
       })
-      .sort((x, y) => IEvidnventoryMerge.compare(x.name, y.name));
+      .sort((x, y) => EvidInventoryMerge.compare(x.name, y.name));
   }
 
   private units(
@@ -373,7 +373,7 @@ export class EvidPrismaAdapter implements IEvidAdapter {
           message:
             "Positive evidence cannot be attached to a file-level Prisma exclusion carrier.",
           repair:
-            "Move @evid directly above the model, column, or relation it describes.",
+            "Move @evidence directly above the model, column, or relation it describes.",
           location: declaration.location,
           hostId: declaration.hostId,
           target: declaration.target,

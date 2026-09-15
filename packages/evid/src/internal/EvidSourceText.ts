@@ -22,10 +22,11 @@ export class EvidSourceText {
   }
 
   /**
-   * Resolves one bounded UTF-16 offset to one-based line and column coordinates.
+   * Resolves one bounded UTF-16 offset to one-based line and column
+   * coordinates.
    *
-   * Parser and documentation mapping consumers use this conversion when emitting
-   * source ranges with human-readable positions.
+   * Parser and documentation mapping consumers use this conversion when
+   * emitting source ranges with human-readable positions.
    */
   public position(offset: number): IEvidSourcePosition {
     if (
@@ -49,7 +50,8 @@ export class EvidSourceText {
   }
 
   /**
-   * Builds a validated half-open range from offsets in this exact source string.
+   * Builds a validated half-open range from offsets in this exact source
+   * string.
    *
    * The result includes positions derived from the same immutable content, so
    * adapters cannot pair offsets from one source snapshot with another.

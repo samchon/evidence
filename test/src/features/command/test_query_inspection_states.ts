@@ -4,18 +4,21 @@ import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
-import { TestQueryAnalysis } from "../../internal/TestQueryAnalysis";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidTestQueryAnalysis } from "../../internal/EvidTestQueryAnalysis";
 
 /**
- * Distinguishes stale reviews, ambiguous identities, withdrawals, and incomplete inventories during inspection.
+ * Distinguishes stale reviews, ambiguous identities, withdrawals, and
+ * incomplete inventories during inspection.
  *
  * Inspection must show the provenance needed to repair a target while giving
- * state failures precedence over apparent address shape. The fixture begins with
- * a reviewed TypeScript property whose authored fingerprint is deliberately stale.
+ * state failures precedence over apparent address shape. The fixture begins
+ * with a reviewed TypeScript property whose authored fingerprint is
+ * deliberately stale.
  *
  * 1. Inspect that target and require its host, acknowledgement provenance, stale
- *    authored fingerprint, and a current-fingerprint repair in the graph diagnostic.
+ *    authored fingerprint, and a current-fingerprint repair in the graph
+ *    diagnostic.
  * 2. Clone the target under the same address, add it to the configured reference,
  *    and require inspection to classify the collision as ambiguous.
  * 3. Mark the original site withdrawn and require hidden status with exit 1.
@@ -24,19 +27,15 @@ import { TestQueryAnalysis } from "../../internal/TestQueryAnalysis";
  */
 export async function test_query_inspection_states(): Promise<void> {
   const location = join(__dirname, `query states ${randomUUID()}`);
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
-    TestQueryAnalysis.records(),
+    EvidTestQueryAnalysis.records(),
     async (directory) => {
-      const analysis = await TestQueryAnalysis.analyze(directory);
+      const analysis = await EvidTestQueryAnalysis.analyze(directory);
       const target = requireReviewedTarget(analysis, directory);
 
       // The inspection pairs the authored stale hash with the current requested hash.
-      const inspected = await EvidQuery.inspect(
-        analysis,
-        directory,
-        target,
-      );
+      const inspected = await EvidQuery.inspect(analysis, directory, target);
       const resolved = inspected.inspections[0];
       if (resolved === undefined) throw new Error("Missing inspection result.");
       const unit = resolved.units[0];
@@ -93,11 +92,7 @@ export async function test_query_inspection_states(): Promise<void> {
           .map((address) => ({ ...address, unitId: duplicate.id })),
       );
       requireReference(ambiguous).unitIds.push(duplicate.id);
-      const collision = await EvidQuery.inspect(
-        ambiguous,
-        directory,
-        target,
-      );
+      const collision = await EvidQuery.inspect(ambiguous, directory, target);
       TestValidator.equals(
         "ambiguous status",
         collision.inspections[0]?.status,

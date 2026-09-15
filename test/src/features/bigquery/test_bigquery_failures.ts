@@ -2,7 +2,7 @@ import { EvidBigQueryAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Keeps unsupported and malformed GoogleSQL from producing a smaller passing population.
  *
@@ -37,7 +37,7 @@ export async function test_bigquery_failures(): Promise<void> {
     "CREATE TABLE ds.orders (id INT64); CREATE TABLE ds.orders (id STRING);",
   ]) {
     const inventory = await adapter.analyze(
-      TestSourceSnapshot.create("schema.sql", content),
+      EvidTestSourceSnapshot.create("schema.sql", content),
     );
     TestValidator.equals(
       `incomplete source: ${content}`,
@@ -53,8 +53,8 @@ export async function test_bigquery_failures(): Promise<void> {
     );
   }
   const failed = await adapter.analyze(
-    TestSourceSnapshot.fail(
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.fail(
+      EvidTestSourceSnapshot.create(
         "schema.sql",
         "CREATE TABLE ds.orders (id INT64);",
       ),
@@ -78,7 +78,7 @@ export async function test_bigquery_failures(): Promise<void> {
   );
 
   const temporary = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "schema.sql",
       dedent`
     CREATE TEMP TABLE scratch (id INT64);

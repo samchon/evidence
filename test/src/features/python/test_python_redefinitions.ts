@@ -12,8 +12,8 @@ import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Isolates surviving Python bindings from metadata on replaced definitions.
@@ -44,17 +44,17 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_python_redefinitions(): Promise<void> {
   const repeated: IEvidInventory =
     await new EvidPythonAdapter().analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "contract.py",
         [
-          "# @evid rules.md#rule Replaced function.",
+          "# @evidence rules.md#rule Replaced function.",
           "def run():",
           "    return 1",
           "",
           "def run():",
           "    return 2",
           "",
-          "# @evid rules.md#rule Replaced async function.",
+          "# @evidence rules.md#rule Replaced async function.",
           "async def fetch():",
           "    return 1",
           "",
@@ -62,14 +62,14 @@ export async function test_python_redefinitions(): Promise<void> {
           "    return 2",
           "",
           "class Service:",
-          "    # @evid rules.md#rule Replaced method.",
+          "    # @evidence rules.md#rule Replaced method.",
           "    def call(self):",
           "        return 1",
           "",
           "    def call(self):",
           "        return 2",
           "",
-          "    # @evid rules.md#rule Replaced property.",
+          "    # @evidence rules.md#rule Replaced property.",
           "    @property",
           "    def value(self):",
           "        return 1",
@@ -141,7 +141,7 @@ export async function test_python_redefinitions(): Promise<void> {
 
   const replacedClass: IEvidInventory =
     await new EvidPythonAdapter().analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "classes.py",
         [
           "# @internal Replaced class.",
@@ -176,12 +176,12 @@ export async function test_python_redefinitions(): Promise<void> {
 
   const reexported: IEvidInventory =
     await new EvidPythonAdapter().analyze(
-      TestSourceSnapshot.combine([
-        TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.combine([
+        EvidTestSourceSnapshot.create(
           "package/contract.py",
           `def run():\n    return 1\n\ndef run():\n    return 2\n`,
         ),
-        TestSourceSnapshot.create(
+        EvidTestSourceSnapshot.create(
           "package/api.py",
           `from .contract import run as public\n\n__all__ = ["public"]\n`,
         ),
@@ -205,27 +205,27 @@ export async function test_python_redefinitions(): Promise<void> {
 
   const crossKind: IEvidInventory =
     await new EvidPythonAdapter().analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "cross-kind.py",
         [
-          "# @evid rules.md#rule Replaced module function.",
+          "# @evidence rules.md#rule Replaced module function.",
           "def top():",
           "    return 'function'",
           "top = 'property'",
           "",
-          "# @evid rules.md#rule Replaced augmented module function.",
+          "# @evidence rules.md#rule Replaced augmented module function.",
           "@runtime_value",
           "def module_augmented():",
           "    return 'function'",
           "module_augmented += 1",
           "",
           "class Service:",
-          "    # @evid rules.md#rule Replaced method.",
+          "    # @evidence rules.md#rule Replaced method.",
           "    def convert(self):",
           "        return 'method'",
           "    convert = 'property'",
           "",
-          "    # @evid rules.md#rule Replaced property.",
+          "    # @evidence rules.md#rule Replaced property.",
           "    operate = 'property'",
           "    def operate(self):",
           "        return 'method'",
@@ -247,7 +247,7 @@ export async function test_python_redefinitions(): Promise<void> {
           "        pass",
           "",
           "class ReboundAccess:",
-          "    # @evid rules.md#rule Replaced getter.",
+          "    # @evidence rules.md#rule Replaced getter.",
           "    @property",
           "    def value(self):",
           "        return 1",
@@ -261,7 +261,7 @@ export async function test_python_redefinitions(): Promise<void> {
           "        pass",
           "",
           "class Augmented:",
-          "    # @evid rules.md#rule Replaced decorated method.",
+          "    # @evidence rules.md#rule Replaced decorated method.",
           "    @runtime_value",
           "    def changed(self):",
           "        return 1",
@@ -343,7 +343,7 @@ export async function test_python_redefinitions(): Promise<void> {
     `python redefinitions ${randomUUID()}`,
   );
   const survivor: string = `def run():\n    return 2\n`;
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     {
       "evid.json": JSON.stringify({
@@ -360,7 +360,7 @@ export async function test_python_redefinitions(): Promise<void> {
           },
         ],
       }),
-      "contract.py": `# @evid rules.md#rule Replaced implementation.\ndef run():\n    return 1\n\n${survivor}`,
+      "contract.py": `# @evidence rules.md#rule Replaced implementation.\ndef run():\n    return 1\n\n${survivor}`,
       "rules.md": `# Rule {#rule}\n\nDo the work.\n`,
     },
     async (directory: string): Promise<void> => {
@@ -378,7 +378,7 @@ export async function test_python_redefinitions(): Promise<void> {
         1,
       );
 
-      await TestFileSystem.save(directory, { "contract.py": survivor });
+      await EvidTestFileSystem.save(directory, { "contract.py": survivor });
       const withoutHistory: IEvidCheckReport =
         await EvidChecker.check(config);
       TestValidator.equals(
@@ -392,8 +392,8 @@ export async function test_python_redefinitions(): Promise<void> {
         1,
       );
 
-      await TestFileSystem.save(directory, {
-        "contract.py": `# @evid rules.md#rule Current implementation.\n${survivor}`,
+      await EvidTestFileSystem.save(directory, {
+        "contract.py": `# @evidence rules.md#rule Current implementation.\n${survivor}`,
       });
       const recovered: IEvidCheckReport =
         await EvidChecker.check(config);

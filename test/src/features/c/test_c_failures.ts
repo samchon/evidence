@@ -3,7 +3,7 @@ import type { IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Reports C preprocessing, declaration conflicts, and malformed syntax as incomplete.
  *
@@ -18,7 +18,7 @@ export async function test_c_failures(): Promise<void> {
 
   // Conditional branches are not treated as simultaneous declarations.
   const conditional = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "include/conditional.h",
       dedent`
         #if DEBUG
@@ -39,7 +39,7 @@ export async function test_c_failures(): Promise<void> {
 
   // Declaration-position calls may be macros that generate any public form.
   const macro = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "include/macro.h",
       dedent`
         #define DECLARE_API(TYPE, NAME) TYPE NAME(void)
@@ -56,7 +56,7 @@ export async function test_c_failures(): Promise<void> {
 
   // ABI-changing pragmas cannot disappear from a healthy declared surface.
   const pragma = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "include/packed.h",
       dedent`
         #pragma pack(push, 1)
@@ -74,7 +74,7 @@ export async function test_c_failures(): Promise<void> {
 
   // Multiple definitions cannot form one function or tag family.
   const definitions = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/duplicates.c",
       dedent`
         int run(void) { return 1; }
@@ -94,7 +94,7 @@ export async function test_c_failures(): Promise<void> {
 
   // C tag kinds share one namespace and ordinary names cannot change entity kind.
   const names = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "include/names.h",
       dedent`
         struct Shared;
@@ -119,7 +119,7 @@ export async function test_c_failures(): Promise<void> {
 
   // Macro definitions alone do not imply generated declarations.
   const definitionOnly = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "include/definitions.h",
       dedent`
         #define VALUE 1
@@ -140,7 +140,7 @@ export async function test_c_failures(): Promise<void> {
 
   // Tree-sitter syntax errors never become a healthy partial inventory.
   const malformed = await adapter.analyze(
-    TestSourceSnapshot.create("src/broken.c", "int broken( { return 0; }\n"),
+    EvidTestSourceSnapshot.create("src/broken.c", "int broken( { return 0; }\n"),
   );
   TestValidator.equals("malformed C source", malformed.complete, false);
   TestValidator.equals(

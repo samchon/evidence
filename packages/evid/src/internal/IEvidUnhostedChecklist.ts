@@ -9,7 +9,8 @@ import type { EvidSeverity } from "../typings/EvidSeverity";
  */
 export interface IEvidUnhostedChecklist {
   /**
-   * Authored checklist declaration retained for later attachment or diagnostics.
+   * Authored checklist declaration retained for later attachment or
+   * diagnostics.
    *
    * The graph holds this source record until structural ownership establishes
    * which selected claim units its host can affect.

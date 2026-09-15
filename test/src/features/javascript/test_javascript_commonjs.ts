@@ -2,7 +2,7 @@ import { EvidJavaScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Publishes the bounded CommonJS surface with replacement and alias semantics.
  *
@@ -14,10 +14,10 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_javascript_commonjs(): Promise<void> {
   const inventory = await new EvidJavaScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/contracts.cjs",
       dedent`
-        /** @evid docs/spec.md#run Implements the CommonJS function. */
+        /** @evidence docs/spec.md#run Implements the CommonJS function. */
         function run() {}
         class Service { execute() {} }
         const value = 1;
@@ -63,7 +63,7 @@ export async function test_javascript_commonjs(): Promise<void> {
 
   // Replacing the module with one local declaration exposes that declaration as default.
   const replaced = await new EvidJavaScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/default.cjs",
       dedent`
         class Contract { value = 1; }
@@ -85,7 +85,7 @@ export async function test_javascript_commonjs(): Promise<void> {
   );
 
   const noOp = await new EvidJavaScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/no-op.cjs",
       dedent`
         function run() {}

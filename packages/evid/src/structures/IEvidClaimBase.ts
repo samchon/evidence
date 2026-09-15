@@ -69,7 +69,7 @@ export interface IEvidClaimBase<
   /**
    * Base directory for file globs.
    *
-   * - Defaults to the directory containing evid.config.ts; relative roots
+   * - Defaults to the directory containing evidence.config.ts; relative roots
    *   resolve from that directory.
    * - Accepts absolute paths, directory symlinks, and Windows junctions.
    * - Names one directory, not a glob. Windows drive-relative paths are invalid.

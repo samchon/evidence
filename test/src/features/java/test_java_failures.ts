@@ -3,7 +3,7 @@ import type { IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Reports Java parse and identity uncertainty without publishing a partial surface.
  *
@@ -18,12 +18,12 @@ export async function test_java_failures(): Promise<void> {
 
   // Two selected sources cannot own the same package declaration identity.
   const duplicateType = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/first/Sale.java",
         "package com.example; public class Sale {}\n",
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/second/Sale.java",
         "package com.example; public class Sale {}\n",
       ),
@@ -38,7 +38,7 @@ export async function test_java_failures(): Promise<void> {
 
   // Java's field and method namespaces can legally share one accessor spelling.
   const disjointNamespaces = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Conflict.java",
       dedent`
         public class Conflict {
@@ -64,7 +64,7 @@ export async function test_java_failures(): Promise<void> {
 
   // JPMS descriptors do not restrict the source-public contract.
   const moduleDescriptor = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/module-info.java",
       dedent`
         module com.example.application {
@@ -92,7 +92,7 @@ export async function test_java_failures(): Promise<void> {
 
   // An annotation processor is never executed; only explicit selected source is inventoried.
   const generatedBoundary = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Model.java",
       dedent`
         @GenerateBuilder
@@ -117,7 +117,7 @@ export async function test_java_failures(): Promise<void> {
 
   // Tree-sitter syntax errors never become a healthy partial inventory.
   const malformed = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Broken.java",
       "public class Broken { public void run( { }\n",
     ),

@@ -2,7 +2,7 @@ import { EvidJavaScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Binds JavaScript evidence to JSDoc without reading JSX or literal examples.
  *
@@ -14,28 +14,28 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_javascript_hosts(): Promise<void> {
   const content = dedent`
-    /** @evid docs/spec.md#service Implements the service contract. */
+    /** @evidence docs/spec.md#service Implements the service contract. */
     export class Service {
-      /** @evid docs/spec.md#run Implements the operation. */
+      /** @evidence docs/spec.md#run Implements the operation. */
       run() {}
     }
 
-    /** @evid docs/spec.md#view Implements the view. */
+    /** @evidence docs/spec.md#view Implements the view. */
     export const View = () => (
       <section>
-        @evid docs/spec.md#jsx This JSX text is not documentation.
+        @evidence docs/spec.md#jsx This JSX text is not documentation.
       </section>
     );
 
-    export const template = \`@evid docs/spec.md#template Not documentation.\`;
-    export const expression = /@evid[^#]+#regex/;
-    export const text = "@evid docs/spec.md#string Not documentation.";
+    export const template = \`@evidence docs/spec.md#template Not documentation.\`;
+    export const expression = /@evidence[^#]+#regex/;
+    export const text = "@evidence docs/spec.md#string Not documentation.";
 
-    // @evid docs/spec.md#line A line comment is not JSDoc.
+    // @evidence docs/spec.md#line A line comment is not JSDoc.
     export const unsupported = 1;
   `;
   const inventory = await new EvidJavaScriptAdapter().analyze(
-    TestSourceSnapshot.create("src/view.mjs", content),
+    EvidTestSourceSnapshot.create("src/view.mjs", content),
   );
 
   TestValidator.equals(

@@ -1,30 +1,31 @@
 /**
  * Execution-local controls for immutable grammar acquisition.
  *
- * These options influence one caller's cache and transfer lifetime; they do
- * not alter catalog provenance or the bytes accepted into the shared cache.
+ * These options influence one caller's cache and transfer lifetime; they do not
+ * alter catalog provenance or the bytes accepted into the shared cache.
  */
-export interface ITreeSitterAssetOptions {
+export interface IEvidTreeSitterAssetOptions {
   /**
    * Writable root for the immutable grammar cache.
    *
-   * Omission first uses `EVIDENCE_CACHE_DIR`, then
-   * `node_modules/.cache/evidence` under the current working directory.
-   * `TreeSitterAssetCache` places verified grammar bytes below this root and
-   * never treats it as catalog provenance.
+   * Omission first uses `EVID_CACHE_DIR`, then `node_modules/.cache/evid` under
+   * the current working directory. `EvidTreeSitterAssetCache` places verified
+   * grammar bytes below this root and never treats it as catalog provenance.
    */
   cacheDirectory?: string;
 
   /**
    * HTTP transport used to fetch a missing grammar asset.
    *
-   * Omission uses the platform fetch implementation. Tests and embedding callers
-   * can supply a transport without changing checksum verification or cache keys.
+   * Omission uses the platform fetch implementation. Tests and embedding
+   * callers can supply a transport without changing checksum verification or
+   * cache keys.
    */
   fetch?: typeof globalThis.fetch;
 
   /**
-   * Maximum duration of one transfer, including its response body, in milliseconds.
+   * Maximum duration of one transfer, including its response body, in
+   * milliseconds.
    *
    * Omission defaults to 30 seconds. The limit applies to each attempt rather
    * than the caller's complete retry lifetime.
@@ -35,7 +36,8 @@ export interface ITreeSitterAssetOptions {
    * Maximum transfer attempts allowed for transient acquisition failures.
    *
    * Omission defaults to three. Shared callers join one immutable transfer, so
-   * this bound controls its retries instead of multiplying requests per caller.
+   * this bound controls its retries instead of multiplying requests per
+   * caller.
    */
   attempts?: number;
 
@@ -50,8 +52,9 @@ export interface ITreeSitterAssetOptions {
   /**
    * Caller-owned sink for grammar acquisition progress messages.
    *
-   * Omission keeps library acquisition silent. The cache reports progress through
-   * this callback without writing to process output or changing transfer results.
+   * Omission keeps library acquisition silent. The cache reports progress
+   * through this callback without writing to process output or changing
+   * transfer results.
    */
   progress?: ((message: string) => void) | undefined;
 }

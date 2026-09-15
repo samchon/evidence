@@ -1,11 +1,13 @@
-import { EvidSqliteAdapter } from "evid";
+import {
+  EvidSqliteAdapter,
+  EvidTreeSitterAssetScope,
+  EvidTreeSitterAssets,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTreeSitterAssets } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssets";
-import { EvidTreeSitterAssetScope } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssetScope";
-import { TestFileSystem } from "../../internal/TestFileSystem";
-import { TestParserAssets } from "../../internal/TestParserAssets";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Acquires SQLite's configured WASM parser and reuses it offline.
  *
@@ -17,13 +19,13 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_sqlite_acquisition(): Promise<void> {
   const grammar = await new EvidTreeSitterAssets().grammar("sqlite");
-  const bytes = Uint8Array.from(await TestParserAssets.bytes(grammar));
-  const source = TestSourceSnapshot.create(
+  const bytes = Uint8Array.from(await EvidTestParserAssets.bytes(grammar));
+  const source = EvidTestSourceSnapshot.create(
     "schema.sql",
     'CREATE TABLE "Cold.Cache" ([id] INTEGER PRIMARY KEY) STRICT;',
   );
 
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "sqlite-acquisition",
     {},
     async (cacheDirectory) => {

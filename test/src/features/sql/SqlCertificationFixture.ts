@@ -4,8 +4,8 @@ import type {
   IEvidWithdrawal,
 } from "evid";
 import { dedent } from "@typia/utils";
-import type { IDatabaseAdapterCertification } from "../../internal/certification/IDatabaseAdapterCertification";
-import type { IDatabaseAdapterCertificationUnit } from "../../internal/certification/IDatabaseAdapterCertificationUnit";
+import type { IEvidDatabaseAdapterCertification } from "../../internal/certification/IEvidDatabaseAdapterCertification";
+import type { IEvidDatabaseAdapterCertificationUnit } from "../../internal/certification/IEvidDatabaseAdapterCertificationUnit";
 
 /** Defines the portable SQL contract for shared database certification.
  *
@@ -18,7 +18,7 @@ export namespace SqlCertificationFixture {
    * Shared certification uses its model, column, relation, withdrawal, failure,
    * and fingerprint expectations to verify common database behavior.
    */
-  export function create(): IDatabaseAdapterCertification {
+  export function create(): IEvidDatabaseAdapterCertification {
     const file = "src/certification.sql";
     const relation = 'foreign-key:["ID"]->["PARENT"](["ID"])';
     const units = [
@@ -35,15 +35,15 @@ export namespace SqlCertificationFixture {
           file,
           content: dedent`
         -- 검증 🧪
-        -- @evid docs/requirements.md#model Implements the certified model.
+        -- @evidence docs/requirements.md#model Implements the certified model.
         CREATE TABLE child (
           -- 값 🧪
-          -- @evid docs/requirements.md#column Implements the certified column.
+          -- @evidence docs/requirements.md#column Implements the certified column.
           id INTEGER,
           -- @internal Retired column.
           legacy INTEGER,
           -- 검증 🧪
-          -- @evid docs/requirements.md#relation Implements the certified relation.
+          -- @evidence docs/requirements.md#relation Implements the certified relation.
           FOREIGN KEY (id) REFERENCES parent(id)
         );
       `,
@@ -77,11 +77,11 @@ export namespace SqlCertificationFixture {
         source: {
           file,
           content: dedent`
-        -- @evid docs/requirements.md#attached Attached table documentation.
+        -- @evidence docs/requirements.md#attached Attached table documentation.
         CREATE TABLE example (
-          value VARCHAR(100) DEFAULT '@evid docs/requirements.md#literal Inert SQL literal.'
+          value VARCHAR(100) DEFAULT '@evidence docs/requirements.md#literal Inert SQL literal.'
         );
-        -- @evid docs/requirements.md#orphan Detached comment.
+        -- @evidence docs/requirements.md#orphan Detached comment.
       `,
         },
         attachedTarget: "docs/requirements.md#attached",
@@ -106,7 +106,7 @@ export namespace SqlCertificationFixture {
       identity: string[],
       parent?: string[],
       withdrawals: IEvidWithdrawal["tag"][] = [],
-    ): IDatabaseAdapterCertificationUnit {
+    ): IEvidDatabaseAdapterCertificationUnit {
       return {
         key: `${symbol}:${EvidAccessor.format(identity)}`,
         symbol,

@@ -6,7 +6,7 @@ import {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Classifies Lua module ownership, literal aliases, colon methods, scalar copies, and file isolation.
  *
@@ -15,7 +15,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 1. Analyze module tables and members. 2. Compare symbols and identities. 3. Verify method, alias, copy, and file-isolation behavior.
  */
 export async function test_lua_units(): Promise<void> {
-  const snapshot = TestSourceSnapshot.create(
+  const snapshot = EvidTestSourceSnapshot.create(
     "src/contract.lua",
     dedent`
     local hidden = 0
@@ -85,9 +85,9 @@ export async function test_lua_units(): Promise<void> {
     "missing",
   );
   const files = await new EvidLuaAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create("first.lua", "function run() end"),
-      TestSourceSnapshot.create("second.lua", "function run() end"),
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create("first.lua", "function run() end"),
+      EvidTestSourceSnapshot.create("second.lua", "function run() end"),
     ]),
   );
   TestValidator.equals(
@@ -96,7 +96,7 @@ export async function test_lua_units(): Promise<void> {
     2,
   );
   const longKey = await new EvidLuaAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "long.lua",
       "return { [ [=[\rname\n\rpart]=] ] = 1 }",
     ),

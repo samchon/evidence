@@ -7,9 +7,9 @@ import {
   isNode,
   isScalar,
   parseDocument,
-  type EvidDocument,
-  type EvidNode,
-  type EvidParsedNode,
+  type Document as EvidYamlDocument,
+  type Node as EvidYamlNode,
+  type ParsedNode as EvidYamlParsedNode,
 } from "yaml";
 
 import type { IEvidSourceFile } from "../../structures/IEvidSourceFile";
@@ -94,7 +94,7 @@ export namespace EvidSwaggerDocumentLoader {
  */
 function operations(
   content: string,
-  yaml: EvidDocument.Parsed<EvidParsedNode>,
+  yaml: EvidYamlDocument.Parsed<EvidYamlParsedNode>,
   document: OpenApi.IDocument,
 ): IEvidSwaggerOperation[] {
   const output: IEvidSwaggerOperation[] = [];
@@ -159,7 +159,7 @@ function operations(
  */
 function operationOf(
   content: string,
-  yaml: EvidDocument.Parsed<EvidParsedNode>,
+  yaml: EvidYamlDocument.Parsed<EvidYamlParsedNode>,
   method: string,
   operationPath: string,
   operation: OpenApi.IOperation,
@@ -283,7 +283,7 @@ function normalizedSecurity(
  */
 function location(
   content: string,
-  yaml: EvidDocument.Parsed<EvidParsedNode>,
+  yaml: EvidYamlDocument.Parsed<EvidYamlParsedNode>,
   operationPath: string,
   method: string,
   description: string | undefined,
@@ -317,9 +317,9 @@ function location(
  * supplies the scalar whose source token still belongs to the original document.
  */
 function descriptionSource(
-  yaml: EvidDocument.Parsed<EvidParsedNode>,
+  yaml: EvidYamlDocument.Parsed<EvidYamlParsedNode>,
   paths: unknown[][],
-): EvidNode | undefined {
+): EvidYamlNode | undefined {
   const direct = firstNode(
     yaml,
     paths.map((segments) => [...segments, "description"]),
@@ -361,9 +361,9 @@ function operationPaths(operationPath: string, method: string): unknown[][] {
  * accepted because operation descriptions can be direct nodes.
  */
 function firstNode(
-  yaml: EvidDocument.Parsed<EvidParsedNode>,
+  yaml: EvidYamlDocument.Parsed<EvidYamlParsedNode>,
   paths: unknown[][],
-): EvidNode | undefined {
+): EvidYamlNode | undefined {
   for (const path of paths) {
     const value: unknown = yaml.getIn(path, true);
     if (isNode(value)) return value;
@@ -481,7 +481,7 @@ function remember(key: string, entry: IEvidSwaggerCacheEntry): void {
  * Orders operation targets by their exact portable spelling.
  *
  * Locale-independent comparison keeps duplicate detection deterministic across
- * machines and EvidNode locales.
+ * machines and Node locales.
  */
 function compare(x: string, y: string): number {
   return x < y ? -1 : x > y ? 1 : 0;

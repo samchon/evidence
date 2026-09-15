@@ -6,7 +6,7 @@ import {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Attaches MySQL COMMENT annotations to their owning schema units.
  *
@@ -21,24 +21,24 @@ export async function test_mysql_hosts(): Promise<void> {
   const source = dedent`
     /* Unicode 계약 😀 */
     CREATE TABLE Contract (
-      id INT COMMENT '@evid ./spec.md#column Verifies the column.',
-      note TEXT DEFAULT '@evid ./spec.md#string Inert default value.',
+      id INT COMMENT '@evidence ./spec.md#column Verifies the column.',
+      note TEXT DEFAULT '@evidence ./spec.md#string Inert default value.',
       /** @internal Retired field. */
       retired INT,
-      /** @evidReview ./spec.md#relation Reviewed without evidence. */
+      /** @evidenceReview ./spec.md#relation Reviewed without evidence. */
       FOREIGN KEY parent_fk (id) REFERENCES Parent (id)
-    ) COMMENT='@evid ./spec.md#model Verifies the model.';
+    ) COMMENT='@evidence ./spec.md#model Verifies the model.';
     /**
      * Examples:
      * ~~~sql
-     * @evid ./spec.md#example Inert fenced example.
+     * @evidence ./spec.md#example Inert fenced example.
      * ~~~
      */
     CREATE TABLE Example (id INT);
   `.replaceAll("\n", "\r\n");
   const adapter = new EvidMysqlAdapter();
   const original = await adapter.analyze(
-    TestSourceSnapshot.create("schema.sql", source),
+    EvidTestSourceSnapshot.create("schema.sql", source),
   );
 
   TestValidator.equals(
@@ -62,7 +62,7 @@ export async function test_mysql_hosts(): Promise<void> {
   TestValidator.equals(
     "UTF-16 offsets after astral Unicode",
     tag.location.range.start.offset,
-    source.indexOf("@evid ./spec.md#column"),
+    source.indexOf("@evidence ./spec.md#column"),
   );
   TestValidator.equals("CRLF line mapping", tag.location.range.start.line, 3);
   const selected = original.units.map((unit) => unit.id);
@@ -77,7 +77,7 @@ export async function test_mysql_hosts(): Promise<void> {
   const model = original.units.find((unit) => unit.name === "Contract");
   if (model === undefined) throw new Error("Missing Contract model.");
   const annotated = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "schema.sql",
       source.replace(
         "Verifies the column.",
@@ -91,7 +91,7 @@ export async function test_mysql_hosts(): Promise<void> {
     EvidFingerprint.inspect(annotated, model.id).fingerprint,
   );
   const changed = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "schema.sql",
       source.replace("id INT COMMENT", "id BIGINT COMMENT"),
     ),
@@ -102,9 +102,9 @@ export async function test_mysql_hosts(): Promise<void> {
     EvidFingerprint.inspect(changed, model.id).fingerprint,
   );
   const escaped = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "escaped.sql",
-      "CREATE TABLE Escaped (id INT COMMENT 'Owner''s note.\n@evid ./spec.md#escaped Verifies escaped prose.');",
+      "CREATE TABLE Escaped (id INT COMMENT 'Owner''s note.\n@evidence ./spec.md#escaped Verifies escaped prose.');",
     ),
   );
   TestValidator.equals(
@@ -113,9 +113,9 @@ export async function test_mysql_hosts(): Promise<void> {
     ["./spec.md#escaped"],
   );
   const ambiguous = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create("one.sql", "CREATE TABLE Same (id INT);"),
-      TestSourceSnapshot.create("two.sql", "CREATE TABLE Same (other INT);"),
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create("one.sql", "CREATE TABLE Same (id INT);"),
+      EvidTestSourceSnapshot.create("two.sql", "CREATE TABLE Same (other INT);"),
     ]),
   );
   TestValidator.equals(

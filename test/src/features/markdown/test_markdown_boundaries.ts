@@ -7,7 +7,7 @@ import type {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Excludes Markdown syntax examples from heading and annotation discovery.
@@ -48,19 +48,19 @@ export async function test_markdown_boundaries(): Promise<void> {
 
     ~~~~markdown
     ## Fenced heading
-    <!-- @evid docs/fake.md#fenced This is an example. -->
+    <!-- @evidence docs/fake.md#fenced This is an example. -->
     ~~~~
 
-    \`<!-- @evid docs/fake.md#inline This is inline code. -->\`
+    \`<!-- @evidence docs/fake.md#inline This is inline code. -->\`
 
     <pre>
     ## Rendered heading
-    @evid docs/fake.md#pre This is rendered code.
+    @evidence docs/fake.md#pre This is rendered code.
     </pre>
 
     const example={\`
     ## MDX heading
-    @evid docs/fake.md#mdx This is rendered code.
+    @evidence docs/fake.md#mdx This is rendered code.
     \`}
 
     Literal \`<pre>\`, \`</pre>\`, paired \`<pre></pre>\`, longer \`\`<pre>\`\`, escaped \\<pre>, and <prefix> prose.
@@ -125,14 +125,14 @@ export async function test_markdown_boundaries(): Promise<void> {
 
     <!--
       ## Comment heading
-      @evid docs/spec.md#rule Implements the visible <pre> section.
+      @evidence docs/spec.md#rule Implements the visible <pre> section.
     -->
 
     <!--
     Comment before rendered code.
     --> <pre>
     ## Rendered after comment close and pre open
-    @evid docs/fake.md#comment-pre This remains rendered.
+    @evidence docs/fake.md#comment-pre This remains rendered.
     </pre>
 
     ## After comment close and pre open
@@ -140,7 +140,7 @@ export async function test_markdown_boundaries(): Promise<void> {
     <pre>
     </pre><!--
     ## Commented after pre close and comment open
-    This comment mentions @evid without declaring it.
+    This comment mentions @evidence without declaring it.
     -->
 
     ## After pre close and comment open
@@ -165,13 +165,13 @@ export async function test_markdown_boundaries(): Promise<void> {
 
     ## After template ignores pre close
 
-    <div title="<!-- @evid docs/fake.md#attribute Fabricated. -->"><span title="<pre>">Visible attributes.</span></div>
+    <div title="<!-- @evidence docs/fake.md#attribute Fabricated. -->"><span title="<pre>">Visible attributes.</span></div>
 
     ## Generated <!-- hidden heading text --> name
 
     ## Explicit <!-- hidden heading text --> name {#explicit-comment}
 
-    ## Tagged <!-- @evid docs/spec.md#heading Implements the heading. --> name {#tagged-comment}
+    ## Tagged <!-- @evidence docs/spec.md#heading Implements the heading. --> name {#tagged-comment}
 
     ## Deliberately  <!-- invisible --> spaced {#spaced-comment}
 
@@ -180,7 +180,7 @@ export async function test_markdown_boundaries(): Promise<void> {
     ## Real child
   `;
   const inventory = await new EvidMarkdownAdapter().analyze(
-    TestSourceSnapshot.create("guide.md", content),
+    EvidTestSourceSnapshot.create("guide.md", content),
   );
 
   TestValidator.equals(

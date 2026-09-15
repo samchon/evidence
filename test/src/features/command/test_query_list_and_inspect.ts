@@ -1,22 +1,20 @@
 import { EvidCommand, EvidQuery } from "evid";
-import type {
-  IEvidInspectReport,
-  IEvidListReport,
-} from "evid";
+import type { IEvidInspectReport, IEvidListReport } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 import typia from "typia";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
-import { TestQueryAnalysis } from "../../internal/TestQueryAnalysis";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidTestQueryAnalysis } from "../../internal/EvidTestQueryAnalysis";
 
 /**
- * Lists canonical aliases and round-trips each reference target through scoped inspection.
+ * Lists canonical aliases and round-trips each reference target through scoped
+ * inspection.
  *
- * Query consumers need selected and structural rows without mutating evaluation,
- * plus a stable target spelling that resolves the same semantic identity through
- * both the API and command facade.
+ * Query consumers need selected and structural rows without mutating
+ * evaluation, plus a stable target spelling that resolves the same semantic
+ * identity through both the API and command facade.
  *
  * 1. List the fixture and require the selected dotted property plus its ancestor
  *    contract type.
@@ -30,11 +28,11 @@ import { TestQueryAnalysis } from "../../internal/TestQueryAnalysis";
  */
 export async function test_query_list_and_inspect(): Promise<void> {
   const location = join(__dirname, `query list ${randomUUID()}`);
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
-    TestQueryAnalysis.records(),
+    EvidTestQueryAnalysis.records(),
     async (directory) => {
-      const analysis = await TestQueryAnalysis.analyze(directory);
+      const analysis = await EvidTestQueryAnalysis.analyze(directory);
       const baseline = structuredClone(analysis.report);
 
       // Property selection exposes each selected property and its aggregate type.

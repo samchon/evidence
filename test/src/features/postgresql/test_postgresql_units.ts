@@ -5,7 +5,7 @@ import {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Extracts PostgreSQL schema units with exact quoted and folded identities.
  *
@@ -16,8 +16,8 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Require exact address behavior for quoted segments.
  */
 export async function test_postgresql_units(): Promise<void> {
-  const snapshot = TestSourceSnapshot.combine([
-    TestSourceSnapshot.create(
+  const snapshot = EvidTestSourceSnapshot.combine([
+    EvidTestSourceSnapshot.create(
       "schema.sql",
       dedent`
       CREATE SCHEMA app;
@@ -32,12 +32,12 @@ export async function test_postgresql_units(): Promise<void> {
     `,
       ["schema.sql", "alias.sql"],
     ),
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "extend.sql",
       dedent`
       ALTER TABLE app.Account ADD COLUMN label text;
       ALTER TABLE app.Account ADD CONSTRAINT region_fk FOREIGN KEY (ID, region) REFERENCES app.Account (ID, region);
-      COMMENT ON COLUMN app.Account.label IS '@evid spec.md#label Describes the label.';
+      COMMENT ON COLUMN app.Account.label IS '@evidence spec.md#label Describes the label.';
     `,
     ),
   ]);

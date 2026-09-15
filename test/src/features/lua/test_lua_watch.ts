@@ -3,7 +3,7 @@ import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /** Rebuilds Lua populations after source, discovery, syntax, and configuration changes.
  *
@@ -12,20 +12,20 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  * 1. Mutate source and add a selected file. 2. Introduce malformed input. 3. Repair it and verify recovered configuration output.
  */
 export async function test_lua_watch(): Promise<void> {
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "lua-watch",
     {
-      "evid.config.ts": dedent`
+      "evidence.config.ts": dedent`
       export default { claims: [{ type: "typescript", files: ["claims.ts"], reference: { type: "lua", files: ["contracts/*.lua"], symbol: "property" } }] };
     `,
       "claims.ts": dedent`
-      /** @evid ./contracts/Contract.lua#module Implements the contract. */
+      /** @evidence ./contracts/Contract.lua#module Implements the contract. */
       export function claim() {}
     `,
       "contracts/Contract.lua": "return { value = 1, run = function() end }\n",
     },
     async (directory) => {
-      const file = join(directory, "evid.config.ts");
+      const file = join(directory, "evidence.config.ts");
       const watcher = new EvidWatcher(file, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
@@ -40,7 +40,7 @@ export async function test_lua_watch(): Promise<void> {
           );
           if (cycle.cycle === 1) {
             TestValidator.equals("initial Lua coverage", cycle.success, true);
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "contracts/Extra.lua": "extra = 2\n",
             });
           } else if (cycle.cycle === 2) {
@@ -49,7 +49,7 @@ export async function test_lua_watch(): Promise<void> {
               cycle.success,
               false,
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "contracts/Extra.lua": "function broken(\n",
             });
           } else if (cycle.cycle === 3) {
@@ -58,7 +58,7 @@ export async function test_lua_watch(): Promise<void> {
               cycle.status,
               "incomplete",
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "contracts/Extra.lua": "local extra = 2\n",
             });
           } else if (cycle.cycle === 4) {
@@ -67,8 +67,8 @@ export async function test_lua_watch(): Promise<void> {
               cycle.success,
               true,
             );
-            await TestFileSystem.save(directory, {
-              "evid.config.ts": dedent`
+            await EvidTestFileSystem.save(directory, {
+              "evidence.config.ts": dedent`
             export default { claims: [{ type: "typescript", files: ["claims.ts"], reference: { type: "lua", files: ["contracts/*.lua"], symbol: "function" } }] };
           `,
             });

@@ -8,8 +8,8 @@ import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Evaluates C type, function, and property evidence with semantic fingerprints.
  *
@@ -21,7 +21,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_c_graph(): Promise<void> {
   const requirements = await new EvidMarkdownAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "docs/requirements.md",
       dedent`
         ## Record {#record}
@@ -39,16 +39,16 @@ export async function test_c_graph(): Promise<void> {
     ),
   );
   const implementation = await new EvidCAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/contracts.c",
       dedent`
-        /** @evid docs/requirements.md#record Implements the record. */
+        /** @evidence docs/requirements.md#record Implements the record. */
         struct Record {
-            /** @evid docs/requirements.md#value Implements the value. */
+            /** @evidence docs/requirements.md#value Implements the value. */
             int value;
         };
 
-        /** @evid docs/requirements.md#run Implements the operation. */
+        /** @evidence docs/requirements.md#run Implements the operation. */
         int run(void) { return 1; }
       `,
     ),
@@ -75,7 +75,7 @@ export async function test_c_graph(): Promise<void> {
             severity: "error",
             inventory: requirements,
             unitIds: requirementUnits.map((unit) => unit.id),
-            resolutions: await TestGraph.resolveDeclarations(
+            resolutions: await EvidTestGraph.resolveDeclarations(
               implementation,
               requirements,
               requirementUnits.map((unit) => unit.id),
@@ -105,7 +105,7 @@ export async function test_c_graph(): Promise<void> {
               severity: "error",
               inventory: requirements,
               unitIds: requirementUnits.map((unit) => unit.id),
-              resolutions: await TestGraph.resolveDeclarations(
+              resolutions: await EvidTestGraph.resolveDeclarations(
                 missing,
                 requirements,
                 requirementUnits.map((unit) => unit.id),
@@ -117,7 +117,7 @@ export async function test_c_graph(): Promise<void> {
     });
     TestValidator.equals(
       `missing C ${anchor} acknowledgement`,
-      TestGraph.obligation(partial, 0, 0).missingUnitIds,
+      EvidTestGraph.obligation(partial, 0, 0).missingUnitIds,
       [required.id],
     );
   }
@@ -165,10 +165,10 @@ async function fingerprintInventory(
   statement: string,
 ): Promise<IEvidInventory> {
   return new EvidCAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/fingerprint.c",
       dedent`
-        /** @evid docs/requirements.md#run ${reason} */
+        /** @evidence docs/requirements.md#run ${reason} */
         int run(void) { ${statement} }
       `,
     ),
@@ -177,7 +177,7 @@ async function fingerprintInventory(
 
 async function objectInventory(second: string): Promise<IEvidInventory> {
   return new EvidCAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/objects.c",
       dedent`
         int first = 1, second = ${second};

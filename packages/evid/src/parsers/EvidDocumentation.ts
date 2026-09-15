@@ -6,17 +6,19 @@ import type { IEvidSourceRange } from "../structures/IEvidSourceRange";
 /**
  * Normalizes adapter-identified comments without losing source coordinates.
  *
- * The adapter owns comment classification and attachment. This helper only removes
- * the supplied delimiters and line prefixes, retaining mappings that let the tag
- * parser report exact spans and exclude accepted annotations from fingerprints.
+ * The adapter owns comment classification and attachment. This helper only
+ * removes the supplied delimiters and line prefixes, retaining mappings that
+ * let the tag parser report exact spans and exclude accepted annotations from
+ * fingerprints.
  */
 export namespace EvidDocumentation {
   /**
    * Reads a validated comment span into mapped annotation text.
    *
-   * The range must belong to the supplied content and match the declared opening
-   * and closing delimiters. Invalid spans throw instead of mapping unrelated text.
-   * Adapters must establish comment identity and declaration ownership beforehand.
+   * The range must belong to the supplied content and match the declared
+   * opening and closing delimiters. Invalid spans throw instead of mapping
+   * unrelated text. Adapters must establish comment identity and declaration
+   * ownership beforehand.
    */
   export function read(
     content: string,

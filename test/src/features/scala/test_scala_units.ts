@@ -1,4 +1,4 @@
-﻿import typia from "typia";
+import typia from "typia";
 import type { IEvidInventory } from "evid";
 import {
   EvidAccessor,
@@ -7,7 +7,7 @@ import {
 } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Extracts independent public Scala 2 and Scala 3 units.
@@ -20,8 +20,8 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_scala_units(): Promise<void> {
   const inventory = await new EvidScalaAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/Scala2.scala",
         dedent`
       package demo
@@ -46,7 +46,7 @@ export async function test_scala_units(): Promise<void> {
     `,
         ["src/Scala2.scala", "alias/Scala2.scala"],
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/Scala3.scala",
         dedent`
       package demo

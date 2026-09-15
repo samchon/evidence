@@ -5,7 +5,7 @@ import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 import typia from "typia";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
  * Reports certified language support without requiring a project configuration.
@@ -22,7 +22,7 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  */
 export async function test_query_languages(): Promise<void> {
   const location = join(__dirname, `query languages ${randomUUID()}`);
-  await TestFileSystem.experiment(location, {}, async (directory) => {
+  await EvidTestFileSystem.experiment(location, {}, async (directory) => {
     // An empty directory is sufficient because language support is package metadata.
     const result = await EvidCommand.run(
       ["languages", "--format", "json"],

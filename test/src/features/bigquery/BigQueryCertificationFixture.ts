@@ -5,8 +5,8 @@ import type {
 } from "evid";
 import { dedent } from "@typia/utils";
 
-import type { IDatabaseAdapterCertification } from "../../internal/certification/IDatabaseAdapterCertification";
-import type { IDatabaseAdapterCertificationUnit } from "../../internal/certification/IDatabaseAdapterCertificationUnit";
+import type { IEvidDatabaseAdapterCertification } from "../../internal/certification/IEvidDatabaseAdapterCertification";
+import type { IEvidDatabaseAdapterCertificationUnit } from "../../internal/certification/IEvidDatabaseAdapterCertificationUnit";
 
 /** Defines independent GoogleSQL expectations for shared database certification.
  *
@@ -20,7 +20,7 @@ export namespace BigQueryCertificationFixture {
    * Shared certification consumes its selectors, documentation hosts,
    * withdrawals, failure controls, and semantic mutation expectations.
    */
-  export function create(): IDatabaseAdapterCertification {
+  export function create(): IEvidDatabaseAdapterCertification {
     const file = "src/certification.bqsql";
     const units = [
       unit("model", ["project", "dataset", "child"]),
@@ -36,15 +36,15 @@ export namespace BigQueryCertificationFixture {
           file,
           content: dedent`
         -- 😀 Schema
-        -- @evid docs/requirements.md#model Implements the certified model.
+        -- @evidence docs/requirements.md#model Implements the certified model.
         CREATE TABLE \`project.dataset.child\` (
           -- 😀 Identity
-          -- @evid docs/requirements.md#column Implements the certified column.
+          -- @evidence docs/requirements.md#column Implements the certified column.
           id INT64,
           -- @internal Retired field.
           legacy STRING,
           -- 😀 Relationship
-          -- @evid docs/requirements.md#relation Implements the certified relation.
+          -- @evidence docs/requirements.md#relation Implements the certified relation.
           CONSTRAINT parent_key FOREIGN KEY (id) REFERENCES project.dataset.parent (id) NOT ENFORCED
         );
       `,
@@ -84,9 +84,9 @@ export namespace BigQueryCertificationFixture {
         source: {
           file,
           content: dedent`
-        -- @evid docs/requirements.md#attached Attached table documentation.
-        CREATE TABLE ds.example (value STRING DEFAULT '@evid docs/requirements.md#literal Inert SQL literal.');
-        -- @evid docs/requirements.md#orphan Detached comment.
+        -- @evidence docs/requirements.md#attached Attached table documentation.
+        CREATE TABLE ds.example (value STRING DEFAULT '@evidence docs/requirements.md#literal Inert SQL literal.');
+        -- @evidence docs/requirements.md#orphan Detached comment.
       `,
         },
         attachedTarget: "docs/requirements.md#attached",
@@ -110,7 +110,7 @@ export namespace BigQueryCertificationFixture {
       symbol: EvidDatabaseSymbol,
       identity: string[],
       withdrawals?: IEvidWithdrawal["tag"][],
-    ): IDatabaseAdapterCertificationUnit {
+    ): IEvidDatabaseAdapterCertificationUnit {
       return {
         key: `${symbol}:${EvidAccessor.format(identity)}`,
         symbol,

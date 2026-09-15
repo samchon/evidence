@@ -2,8 +2,8 @@ import { EvidPythonAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Resolves canonical file-qualified targets for Python declarations.
@@ -17,8 +17,8 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_python_targets(): Promise<void> {
   const adapter = new EvidPythonAdapter();
   const reference = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/sale.py",
         dedent`
           class Sale:
@@ -28,7 +28,7 @@ export async function test_python_targets(): Promise<void> {
                   return 0
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/calculator.py",
         dedent`
           def add(left, right):
@@ -38,21 +38,21 @@ export async function test_python_targets(): Promise<void> {
     ]),
   );
   const claim = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "test/test_sale.py",
       dedent`
         def verify():
             """
-            @evid ../src/sale.py#Sale Verifies the type.
-            @evid ../src/sale.py#Sale.currency Verifies the class attribute.
-            @evid ../src/sale.py#Sale.prototype.total Verifies the instance method.
-            @evid ../src/calculator.py#add Verifies the function.
+            @evidence ../src/sale.py#Sale Verifies the type.
+            @evidence ../src/sale.py#Sale.currency Verifies the class attribute.
+            @evidence ../src/sale.py#Sale.prototype.total Verifies the instance method.
+            @evidence ../src/calculator.py#add Verifies the function.
             """
             return None
       `,
     ),
   );
-  const resolutions = await TestGraph.resolveDeclarations(
+  const resolutions = await EvidTestGraph.resolveDeclarations(
     claim,
     reference,
     reference.units.map((unit) => unit.id),

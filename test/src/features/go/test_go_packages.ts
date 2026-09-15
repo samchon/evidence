@@ -2,7 +2,7 @@ import { EvidGoAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Keeps ordinary and test-package Go identities separate.
  *
@@ -14,8 +14,8 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_go_packages(): Promise<void> {
   const inventory = await new EvidGoAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "shop/api.go",
         dedent`
           package shop
@@ -24,7 +24,7 @@ export async function test_go_packages(): Promise<void> {
           func Shared() {}
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "shop/api_test.go",
         dedent`
           package shop
@@ -33,7 +33,7 @@ export async function test_go_packages(): Promise<void> {
           func (Record) Verify() {}
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "shop/external_test.go",
         dedent`
           package shop_test

@@ -3,7 +3,7 @@ import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /** Evaluates MySQL selectors in both claim and reference graph roles.
  *
@@ -16,28 +16,28 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
 export async function test_mysql_graph(): Promise<void> {
   for (const symbol of ["model", "column", "relation"] as const)
     for (const mysqlClaims of [true, false])
-      await TestFileSystem.experiment(
+      await EvidTestFileSystem.experiment(
         `mysql-graph-${symbol}-${mysqlClaims}`,
         {
-          "evid.config.ts": mysqlClaims
+          "evidence.config.ts": mysqlClaims
             ? `export default { claims: [{ type: "mysql", files: ["schema.sql"], symbol: "${symbol}", reference: { type: "typescript", files: ["contract.ts"], symbol: "function" } }] };`
             : `export default { claims: [{ type: "typescript", files: ["contract.ts"], symbol: "function", reference: { type: "mysql", files: ["schema.sql"], symbol: "${symbol}" } }] };`,
           "schema.sql": dedent`
-            ${mysqlClaims && symbol === "model" ? "/** @evid ./contract.ts#run Verifies the model. */" : ""}
+            ${mysqlClaims && symbol === "model" ? "/** @evidence ./contract.ts#run Verifies the model. */" : ""}
             CREATE TABLE Child (
-              ${mysqlClaims && symbol === "column" ? "/** @evid ./contract.ts#run Verifies the column. */" : ""}
+              ${mysqlClaims && symbol === "column" ? "/** @evidence ./contract.ts#run Verifies the column. */" : ""}
               parent_id INT,
-              ${mysqlClaims && symbol === "relation" ? "/** @evid ./contract.ts#run Verifies the relation. */" : ""}
+              ${mysqlClaims && symbol === "relation" ? "/** @evidence ./contract.ts#run Verifies the relation. */" : ""}
               FOREIGN KEY parent_fk (parent_id) REFERENCES Parent (id)
             );
           `,
           "contract.ts": dedent`
-            /** @evid ./schema.sql#Child Verifies the schema. */
+            /** @evidence ./schema.sql#Child Verifies the schema. */
             export function run() {}
           `,
         },
         async (directory) => {
-          const config = join(directory, "evid.config.ts");
+          const config = join(directory, "evidence.config.ts");
           const complete = await EvidChecker.check(config);
 
           TestValidator.equals(
@@ -45,7 +45,7 @@ export async function test_mysql_graph(): Promise<void> {
             complete.success,
             true,
           );
-          await TestFileSystem.save(
+          await EvidTestFileSystem.save(
             directory,
             mysqlClaims
               ? {

@@ -1,4 +1,4 @@
-import type { EvidNode } from "web-tree-sitter";
+import type { Node as EvidNode } from "web-tree-sitter";
 
 import { EvidMysqlDocumentation } from "./EvidMysqlDocumentation";
 import { EvidMysqlPolicy } from "./EvidMysqlPolicy";

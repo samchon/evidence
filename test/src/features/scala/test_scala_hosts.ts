@@ -6,7 +6,7 @@ import {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Extracts Scala evidence from supported Scaladoc hosts with stable coordinates.
@@ -22,31 +22,31 @@ export async function test_scala_hosts(): Promise<void> {
   const source = dedent`
     /**
      * 계약 😀
-     * @evid docs/spec.md#contract Implements the contract.
+     * @evidence docs/spec.md#contract Implements the contract.
      */
     @deprecated("legacy", "1.0")
     class Contract {
       /** @internal Withdraws the nested type. */
       class Retired { val child = 1; }
-      /** @evid docs/spec.md#value Implements the value. */
+      /** @evidence docs/spec.md#value Implements the value. */
       val \`value.part\` = 1
     }
     /**
      * {{{
-     * @evid docs/spec.md#scaladoc Inert Scaladoc example.
+     * @evidence docs/spec.md#scaladoc Inert Scaladoc example.
      * }}}
      * Examples:
      * ~~~scala
-     * @evid docs/spec.md#example Inert example.
+     * @evidence docs/spec.md#example Inert example.
      * ~~~
      *
-     *     @evid docs/spec.md#indented Inert indented example.
+     *     @evidence docs/spec.md#indented Inert indented example.
      */
     def sample() = 1
   `.replaceAll("\n", "\r\n");
   const adapter = new EvidScalaAdapter();
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.create("src/Contract.scala", source),
+    EvidTestSourceSnapshot.create("src/Contract.scala", source),
   );
 
   TestValidator.equals(
@@ -65,7 +65,7 @@ export async function test_scala_hosts(): Promise<void> {
   TestValidator.equals(
     "UTF-16 offset after astral text",
     declaration.location.range.start.offset,
-    source.indexOf("@evid"),
+    source.indexOf("@evidence"),
   );
   TestValidator.equals(
     "CRLF source line",
@@ -110,7 +110,7 @@ export async function test_scala_hosts(): Promise<void> {
   const contract = inventory.units.find((unit) => unit.name === "Contract");
   if (contract === undefined) throw new Error("Missing contract unit.");
   const rewritten = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Contract.scala",
       source.replace(
         "Implements the value.",
@@ -124,7 +124,7 @@ export async function test_scala_hosts(): Promise<void> {
     EvidFingerprint.inspect(rewritten, contract.id).fingerprint,
   );
   const changed = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Contract.scala",
       source.replace("= 1", "= 2"),
     ),
@@ -144,7 +144,7 @@ export async function test_scala_hosts(): Promise<void> {
     "link",
   ]) {
     const unsupported = await adapter.analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/Unsupported.scala",
         `// @${tag} docs/spec.md#contract Unsupported carrier.\ndef run() = 1\n`,
       ),

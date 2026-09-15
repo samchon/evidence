@@ -2,7 +2,7 @@ import { EvidInventory, EvidPythonAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Applies Python visibility rules to declarations and reexports.
@@ -15,15 +15,15 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_python_visibility(): Promise<void> {
   const inventory = await new EvidPythonAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "pkg/dep.py",
         dedent`
           class Source:
               pass
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "pkg/api.py",
         dedent`
           from .dep import Source as Alias

@@ -1,5 +1,5 @@
 import { TestValidator } from "@nestia/e2e";
-import { DatabaseAdapterCertification } from "../../internal/certification/DatabaseAdapterCertification";
+import { EvidDatabaseAdapterCertification } from "../../internal/certification/EvidDatabaseAdapterCertification";
 import { SqlCertificationFixture } from "./SqlCertificationFixture";
 
 /** Certifies SQL inventory against exact database adapter expectations.
@@ -12,12 +12,12 @@ import { SqlCertificationFixture } from "./SqlCertificationFixture";
  */
 export async function test_sql_certification(): Promise<void> {
   const fixture = SqlCertificationFixture.create();
-  const inventory = await DatabaseAdapterCertification.analyze(fixture);
-  DatabaseAdapterCertification.assertInventory(fixture, inventory);
-  await DatabaseAdapterCertification.assertGraph(fixture);
-  await DatabaseAdapterCertification.assertFailures(fixture);
-  await DatabaseAdapterCertification.assertFingerprint(fixture);
-  await DatabaseAdapterCertification.assertAmbiguity(fixture);
+  const inventory = await EvidDatabaseAdapterCertification.analyze(fixture);
+  EvidDatabaseAdapterCertification.assertInventory(fixture, inventory);
+  await EvidDatabaseAdapterCertification.assertGraph(fixture);
+  await EvidDatabaseAdapterCertification.assertFailures(fixture);
+  await EvidDatabaseAdapterCertification.assertFingerprint(fixture);
+  await EvidDatabaseAdapterCertification.assertAmbiguity(fixture);
   for (const mutation of ["unit", "kind", "host", "address"]) {
     const broken = structuredClone(inventory);
     if (mutation === "unit") broken.units.pop();
@@ -30,7 +30,7 @@ export async function test_sql_certification(): Promise<void> {
       if (address !== undefined) address.segments = ["WRONG"];
     }
     TestValidator.error(`reject ${mutation} mutation`, () =>
-      DatabaseAdapterCertification.assertInventory(fixture, broken),
+      EvidDatabaseAdapterCertification.assertInventory(fixture, broken),
     );
   }
 }

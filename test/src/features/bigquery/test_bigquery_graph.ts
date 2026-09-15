@@ -6,8 +6,8 @@ import {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Evaluates acknowledgement coverage for each BigQuery model, column, and relation selector.
  *
@@ -28,10 +28,10 @@ export async function test_bigquery_graph(): Promise<void> {
           : "ds.orders.parent_key";
     for (const acknowledged of [true, false]) {
       const annotation = acknowledged
-        ? "@evid ./contract.ts#contract Matches the declared contract."
+        ? "@evidence ./contract.ts#contract Matches the declared contract."
         : "No acknowledgement.";
       const inventory = await adapter.analyze(
-        TestSourceSnapshot.create(
+        EvidTestSourceSnapshot.create(
           "schema.sql",
           dedent`
         /* ${symbol === "model" ? annotation : "Orders"} */
@@ -45,10 +45,10 @@ export async function test_bigquery_graph(): Promise<void> {
         ),
       );
       const contract = await new EvidTypeScriptAdapter().analyze(
-        TestSourceSnapshot.create(
+        EvidTestSourceSnapshot.create(
           "contract.ts",
           dedent`
-        /** ${acknowledged ? `@evid ./schema.sql#${target} Implements the schema declaration.` : "No acknowledgement."} */
+        /** ${acknowledged ? `@evidence ./schema.sql#${target} Implements the schema declaration.` : "No acknowledgement."} */
         export function contract() {}
       `,
         ),
@@ -79,7 +79,7 @@ export async function test_bigquery_graph(): Promise<void> {
                   severity: "error",
                   inventory: reference,
                   unitIds: referenceIds,
-                  resolutions: await TestGraph.resolveDeclarations(
+                  resolutions: await EvidTestGraph.resolveDeclarations(
                     claim,
                     reference,
                     referenceIds,
@@ -96,7 +96,7 @@ export async function test_bigquery_graph(): Promise<void> {
         );
         TestValidator.equals(
           "missing population remains exact",
-          TestGraph.obligation(graph, 0, 0).missingUnitIds,
+          EvidTestGraph.obligation(graph, 0, 0).missingUnitIds,
           acknowledged ? [] : referenceIds,
         );
       }

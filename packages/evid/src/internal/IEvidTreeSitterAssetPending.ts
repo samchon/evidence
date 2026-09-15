@@ -1,8 +1,10 @@
 /**
- * One process-wide transfer shared by callers targeting the same immutable cache entry.
+ * One process-wide transfer shared by callers targeting the same immutable
+ * cache entry.
  *
  * Consumer accounting lets an individual cancellation return promptly while
- * transfer work continues for peers, then aborts only after the final waiter leaves.
+ * transfer work continues for peers, then aborts only after the final waiter
+ * leaves.
  */
 export interface IEvidTreeSitterAssetPending {
   /**

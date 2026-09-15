@@ -6,7 +6,7 @@ import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Classifies exported Go declarations, embedded fields, interfaces, and receivers.
  *
@@ -28,8 +28,8 @@ export async function test_go_units(): Promise<void> {
   );
 
   const inventory = await new EvidGoAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "shop/sale.go",
         dedent`
           package shop
@@ -86,7 +86,7 @@ export async function test_go_units(): Promise<void> {
           )
         ` + "\n",
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "shop/methods.go",
         dedent`
           package shop

@@ -1,9 +1,8 @@
-import { EvidParser, EvidZigAdapter } from "evid";
+import { EvidParser, EvidTreeSitterAssetScope, EvidZigAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
-import { EvidTreeSitterAssetScope } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssetScope";
-import { TestFileSystem } from "../../internal/TestFileSystem";
-import { TestParserAssets } from "../../internal/TestParserAssets";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Acquires Zig's pinned grammar and reuses it offline.
  *
@@ -19,7 +18,7 @@ export async function test_zig_acquisition(): Promise<void> {
   await parser.close();
   const grammar = grammars.find((item) => item.id === "zig");
   if (grammar === undefined) throw new Error("Missing pinned Zig grammar.");
-  const bytes = await TestParserAssets.bytes(grammar);
+  const bytes = await EvidTestParserAssets.bytes(grammar);
   const requests: string[] = [];
   async function fetchGrammar(
     input: string | URL | Request,
@@ -31,11 +30,11 @@ export async function test_zig_acquisition(): Promise<void> {
   async function offline(): Promise<Response> {
     throw new Error("The warm Zig analysis must use its verified cache.");
   }
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "zig-acquisition",
     {},
     async (cacheDirectory) => {
-      const snapshot = TestSourceSnapshot.create(
+      const snapshot = EvidTestSourceSnapshot.create(
         "src/Contract.zig",
         "pub const Contract = struct { value: i32, }; ",
       );

@@ -1,9 +1,10 @@
 /**
  * Marks one invalid package-map target that an array alternative may skip.
  *
- * EvidNode permits array fallbacks after target-validation failures but still
- * rejects malformed condition objects. EvidConfigDependencyScanner uses this error
- * boundary to preserve that distinction without matching diagnostic text.
+ * Node permits array fallbacks after target-validation failures but still
+ * rejects malformed condition objects. EvidConfigDependencyScanner uses this
+ * error boundary to preserve that distinction without matching diagnostic
+ * text.
  */
 export class EvidConfigPackageTargetError extends Error {
   /**

@@ -3,7 +3,7 @@ import { stat } from "node:fs/promises";
 import { EvidAccessor } from "./EvidAccessor";
 import { EvidFileTarget } from "./EvidFileTarget";
 import { EvidInventory } from "../graph/EvidInventory";
-import { IEvidnventoryMerge } from "../internal/IEvidnventoryMerge";
+import { EvidInventoryMerge } from "../internal/EvidInventoryMerge";
 import { EvidMarkdownTarget } from "../adapters/markdown/EvidMarkdownTarget";
 import { EvidPrismaTarget } from "../adapters/prisma/EvidPrismaTarget";
 import { EvidSwaggerTarget } from "../adapters/swagger/EvidSwaggerTarget";
@@ -224,7 +224,7 @@ export class EvidTargetResolver {
       } else {
         // A host can represent merged documentation origins. Retain every unique
         // lexical origin until candidate resolution exposes a genuine ambiguity.
-        const origins = IEvidnventoryMerge.unique(
+        const origins = EvidInventoryMerge.unique(
           host.origins ?? [host.file],
           (origin) => EvidFileTarget.normalize(origin),
         );
@@ -247,7 +247,7 @@ export class EvidTargetResolver {
         ),
       );
     }
-    const uniqueAddresses = IEvidnventoryMerge.unique(addresses, (address) =>
+    const uniqueAddresses = EvidInventoryMerge.unique(addresses, (address) =>
       JSON.stringify([address.file, address.segments]),
     );
     // Completeness precedes any negative conclusion: a failed scan may have
@@ -295,7 +295,7 @@ export class EvidTargetResolver {
           statement,
           "target-file-access",
           "The target file could not be inspected while resolving the citation.",
-          "Restore access to the target path and retry the Evid check.",
+          "Restore access to the target path and retry the Evidence Graph check.",
         ),
       );
     const known = uniqueAddresses.some((address, index) => {
@@ -536,7 +536,7 @@ export class EvidTargetResolver {
    * designates the same unit.
    */
   private uniqueUnits(units: IEvidUnit[]): IEvidUnit[] {
-    return IEvidnventoryMerge.unique(units, (unit) => unit.id);
+    return EvidInventoryMerge.unique(units, (unit) => unit.id);
   }
 
   /**
@@ -548,7 +548,7 @@ export class EvidTargetResolver {
   private uniqueWithdrawals(
     withdrawals: IEvidWithdrawal[],
   ): IEvidWithdrawal[] {
-    return IEvidnventoryMerge.unique(withdrawals, (withdrawal) =>
+    return EvidInventoryMerge.unique(withdrawals, (withdrawal) =>
       JSON.stringify(withdrawal),
     );
   }
@@ -561,7 +561,7 @@ export class EvidTargetResolver {
   private files(addresses: IEvidAddress[]): string {
     return addresses
       .map((address) => address.file)
-      .sort(IEvidnventoryMerge.compare)
+      .sort(EvidInventoryMerge.compare)
       .join("', '");
   }
 

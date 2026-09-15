@@ -14,8 +14,8 @@ import type {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
-import { TestGraph } from "../../internal/TestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
 
 /**
  * Tracks Swagger operation fingerprints through normalized content edits.
@@ -65,8 +65,8 @@ export async function test_swagger_fingerprints(): Promise<void> {
       dedent`
         Creates a member.
 
-        @evid docs/requirements.md#members Implements member creation.
-        @evidReview docs/requirements.md#members #abcdef0 Read the requirement.
+        @evidence docs/requirements.md#members Implements member creation.
+        @evidenceReview docs/requirements.md#members #abcdef0 Read the requirement.
       `,
       "string",
     ),
@@ -310,12 +310,12 @@ export async function test_swagger_fingerprints(): Promise<void> {
 
   const reviewedClaim: IEvidInventory =
     await new EvidTypeScriptAdapter().analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/client.ts",
         dedent`
           /**
-           * @evid GET:/inherited Calls the inherited endpoint.
-           * @evidReview GET:/inherited #${inherited} Reviewed its effective server.
+           * @evidence GET:/inherited Calls the inherited endpoint.
+           * @evidenceReview GET:/inherited #${inherited} Reviewed its effective server.
            */
           export function request(): void {}
         `,
@@ -329,12 +329,12 @@ export async function test_swagger_fingerprints(): Promise<void> {
     severity: "error",
     inventory: changedServer,
     unitIds: [changedOperation.id],
-    resolutions: await TestGraph.resolveDeclarations(
+    resolutions: await EvidTestGraph.resolveDeclarations(
       reviewedClaim,
       changedServer,
       [changedOperation.id],
     ),
-    reviewResolutions: await TestGraph.resolveReviews(
+    reviewResolutions: await EvidTestGraph.resolveReviews(
       reviewedClaim,
       changedServer,
       [changedOperation.id],
@@ -374,7 +374,7 @@ export async function test_swagger_fingerprints(): Promise<void> {
  */
 async function analyze(content: string): Promise<IEvidInventory> {
   return new EvidSwaggerAdapter().analyze(
-    TestSourceSnapshot.create("openapi.yaml", content),
+    EvidTestSourceSnapshot.create("openapi.yaml", content),
   );
 }
 

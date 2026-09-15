@@ -6,7 +6,7 @@ import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Classifies Ruby public units across reopenings and member forms.
  *
@@ -36,7 +36,7 @@ export async function test_ruby_units(): Promise<void> {
   );
 
   const inventory = await new EvidRubyAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "lib/shop.rb",
       dedent`
         module Shop

@@ -1,5 +1,5 @@
-import { AdapterCertification } from "../../internal/certification/AdapterCertification";
-import { AdapterCertificationFixtures } from "../../internal/certification/AdapterCertificationFixtures";
+import { EvidAdapterCertification } from "../../internal/certification/EvidAdapterCertification";
+import { EvidAdapterCertificationFixtures } from "../../internal/certification/EvidAdapterCertificationFixtures";
 
 /** Certifies passing and missing-evidence graphs for every common adapter fixture.
  *
@@ -10,6 +10,6 @@ import { AdapterCertificationFixtures } from "../../internal/certification/Adapt
  * 3. Require the uncovered graph to identify the expected missing units.
  */
 export async function test_adapter_certification_graphs(): Promise<void> {
-  for (const certification of AdapterCertificationFixtures.all())
-    await AdapterCertification.assertGraph(certification);
+  for (const certification of EvidAdapterCertificationFixtures.all())
+    await EvidAdapterCertification.assertGraph(certification);
 }

@@ -6,7 +6,7 @@ import {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Attaches SQLite documentation with stable Unicode source coordinates.
  *
@@ -19,27 +19,27 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_sqlite_hosts(): Promise<void> {
   const source = dedent`
     -- 계약 😀
-    -- @evid docs.md#table Implements the table.
+    -- @evidence docs.md#table Implements the table.
     CREATE TABLE "주문" (
-      /** @evid docs.md#amount Records the amount. */
+      /** @evidence docs.md#amount Records the amount. */
       amount INTEGER DEFAULT 1,
-      text_value TEXT DEFAULT '@evid docs.md#literal Inert string.'
+      text_value TEXT DEFAULT '@evidence docs.md#literal Inert string.'
     );
     /* @internal Withdraws the complete table. */
     CREATE TABLE Retired (child INTEGER);
     /**
      * Examples:
      * ~~~sql
-     * @evid docs.md#example Inert code.
+     * @evidence docs.md#example Inert code.
      * ~~~
      *
-     *     @evid docs.md#indented Inert indented code.
+     *     @evidence docs.md#indented Inert indented code.
      */
     CREATE TABLE Example (id INTEGER);
   `.replaceAll("\n", "\r\n");
   const adapter = new EvidSqliteAdapter();
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.create("schema.sql", source),
+    EvidTestSourceSnapshot.create("schema.sql", source),
   );
 
   TestValidator.equals(
@@ -58,7 +58,7 @@ export async function test_sqlite_hosts(): Promise<void> {
   TestValidator.equals(
     "UTF-16 offset after astral comment",
     annotation.location.range.start.offset,
-    source.indexOf("@evid"),
+    source.indexOf("@evidence"),
   );
   TestValidator.equals(
     "CRLF line preserved",
@@ -77,13 +77,13 @@ export async function test_sqlite_hosts(): Promise<void> {
   const table = inventory.units.find((unit) => unit.name === "주문");
   if (table === undefined) throw new Error("Missing Unicode table.");
   const annotationEdit = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "schema.sql",
       source.replace("Records the amount.", "Explains the same amount."),
     ),
   );
   const semanticEdit = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "schema.sql",
       source.replace("DEFAULT 1", "DEFAULT 2"),
     ),
@@ -100,11 +100,11 @@ export async function test_sqlite_hosts(): Promise<void> {
   );
 
   for (const comment of [
-    "-- @evid docs.md#detached Detached comment.\n\nCREATE TABLE Fresh (id INTEGER);",
-    "CREATE TABLE Fresh (id INTEGER); -- @evid docs.md#trailing Trailing comment.",
+    "-- @evidence docs.md#detached Detached comment.\n\nCREATE TABLE Fresh (id INTEGER);",
+    "CREATE TABLE Fresh (id INTEGER); -- @evidence docs.md#trailing Trailing comment.",
   ]) {
     const detached = await adapter.analyze(
-      TestSourceSnapshot.create("detached.sql", comment),
+      EvidTestSourceSnapshot.create("detached.sql", comment),
     );
     TestValidator.equals(
       "detached comment has no acknowledgement",
@@ -119,12 +119,12 @@ export async function test_sqlite_hosts(): Promise<void> {
   }
 
   const adjacent = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "adjacent.sql",
       dedent`
     CREATE TABLE Fresh (
       id INTEGER, -- ordinary trailing prose
-      -- @evid docs.md#next Documents the next column.
+      -- @evidence docs.md#next Documents the next column.
       documented TEXT
     );
   `,

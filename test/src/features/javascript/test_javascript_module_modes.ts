@@ -8,9 +8,9 @@ import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidSourcePath } from "../../../../packages/evidence/src/internal/EvidSourcePath";
-import { TestFileSystem } from "../../internal/TestFileSystem";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidSourcePath } from "evid";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Selects JavaScript module semantics from extensions and nearest package metadata.
  *
@@ -32,7 +32,7 @@ export async function test_javascript_module_modes(): Promise<void> {
 
   const location = join(__dirname, "modules " + randomUUID());
 
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     {
       "package.json": '{"type":"module"}',
@@ -51,7 +51,7 @@ export async function test_javascript_module_modes(): Promise<void> {
     },
     async (directory) => {
       const snapshot = await EvidSourceLoader.glob(
-        join(directory, "evid.config.ts"),
+        join(directory, "evidence.config.ts"),
         {
           files: [
             "src/**/*.js",
@@ -87,7 +87,7 @@ export async function test_javascript_module_modes(): Promise<void> {
   );
 
   const conflicting = await new EvidJavaScriptAdapter().analyze(
-    TestSourceSnapshot.create("src/alias.mjs", "export const value = 1;", [
+    EvidTestSourceSnapshot.create("src/alias.mjs", "export const value = 1;", [
       "src/alias.mjs",
       "src/alias.cjs",
     ]),
@@ -99,7 +99,7 @@ export async function test_javascript_module_modes(): Promise<void> {
     ),
   );
 
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     join(__dirname, "invalid package " + randomUUID()),
     {
       "package.json": "{ invalid",
@@ -107,7 +107,7 @@ export async function test_javascript_module_modes(): Promise<void> {
     },
     async (directory) => {
       const snapshot = await EvidSourceLoader.glob(
-        join(directory, "evid.config.ts"),
+        join(directory, "evidence.config.ts"),
         { files: ["src/**/*.js"] },
       );
       const inventory = await new EvidJavaScriptAdapter().analyze(snapshot);

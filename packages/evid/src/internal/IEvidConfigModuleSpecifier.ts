@@ -1,7 +1,8 @@
 import type { EvidConfigModuleMode } from "./EvidConfigModuleMode";
 
 /**
- * Statically discoverable configuration dependency before filesystem resolution.
+ * Statically discoverable configuration dependency before filesystem
+ * resolution.
  *
  * EvidConfigDependencyScanner retains the loading mechanism beside the authored
  * specifier because conditional package exports can map the same text to

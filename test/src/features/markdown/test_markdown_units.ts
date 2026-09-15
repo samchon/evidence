@@ -3,7 +3,7 @@ import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Materializes the Markdown file and supported ATX heading identities.
@@ -37,7 +37,7 @@ export async function test_markdown_units(): Promise<void> {
   `;
   const adapter = new EvidMarkdownAdapter();
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.create("docs/guide.custom", content),
+    EvidTestSourceSnapshot.create("docs/guide.custom", content),
   );
   const file = requireUnit(inventory, "file", "docs/guide.custom");
   const first = requireUnit(inventory, "h1", "계약 명세");

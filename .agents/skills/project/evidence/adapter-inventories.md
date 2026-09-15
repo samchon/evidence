@@ -1,6 +1,6 @@
 # Adapter inventories
 
-Implement `IEvidAdapter.analyze(snapshot)` to translate source snapshots into serializable graph data. The adapter owns declaration classification, public visibility, structural ownership, export resolution, documentation attachment, and unsupported-construct detection. A successful syntax parse alone does not establish a complete Evid inventory.
+Implement `IEvidAdapter.analyze(snapshot)` to translate source snapshots into serializable graph data. The adapter owns declaration classification, public visibility, structural ownership, export resolution, documentation attachment, and unsupported-construct detection. A successful syntax parse alone does not establish a complete Evidence Graph inventory.
 
 This guide gives implementation-level inventories for Markdown, TypeScript, JavaScript, Python, Go, Rust, Java, C#, C, C++, Ruby, and Prisma. The root README's [Languages](../../../../README.md#languages) section is the authoritative current boundary for all 28 supported artifact types, including the adapters whose implementation chapters have not yet been expanded here:
 
@@ -10,7 +10,7 @@ This guide gives implementation-level inventories for Markdown, TypeScript, Java
 | Database | Portable SQL, PostgreSQL, MySQL, SQLite, BigQuery, and DBML |
 | Document/API | Swagger/OpenAPI, plus the Markdown summary used by public configuration |
 
-`EvidLanguageRegistry.list()`, `EvidLanguageRegistry.databases()`, and `evidence languages` provide the machine-readable certification set. Prose does not make a candidate or grammar-only entry selectable.
+`EvidLanguageRegistry.list()`, `EvidLanguageRegistry.databases()`, and `evid languages` provide the machine-readable certification set. Prose does not make a candidate or grammar-only entry selectable.
 
 ## Identities and locations
 
@@ -88,11 +88,11 @@ For decoded text such as Swagger operation descriptions, an adapter may supply `
 `EvidTagParser.parse(content, host, documentation)` recognizes:
 
 ```text
-@evid <target> <reason>
+@evidence <target> <reason>
 @link <file>#<Accessor> <reason>
-@evidExclude <target> <reason>
-@evidReview <target> [#<fingerprint>] <description>
-@evidExcludeReview <target> [#<fingerprint>] <description>
+@evidenceExclude <target> <reason>
+@evidenceReview <target> [#<fingerprint>] <description>
+@evidenceExcludeReview <target> [#<fingerprint>] <description>
 ```
 
 Markers begin a documentation line and end at a space, tab, or line boundary. Reasons and review descriptions can continue across lines. Fenced examples produce no tags. `tagBoundaries` controls whether another tool's line-start tag ends an acknowledgement; reviews always end at another tag. `allowWithdrawal` enables line-start `@internal`, `@hidden`, and `@ignore` in documentation positions where withdrawal is meaningful. Prose mentions do not withdraw declarations.
@@ -107,7 +107,7 @@ Accessor examples include `Class.prototype.member`, `Namespace["member.with.dots
 
 Prefer a valid trailing `{#anchor}`; otherwise derive the anchor from the heading by retaining Unicode letters, numbers, and underscores, removing punctuation, and collapsing whitespace or hyphens. Keep duplicate anchors as distinct identities with the same public address so resolution reports ambiguity. Every selected logical file alias contributes an address, but an alias containing whitespace contributes a diagnostic because the authored target grammar cannot represent it as one token.
 
-HTML comments are the only Markdown documentation hosts. Register a real comment even when it has no Evid tag, attach it to the unit active on its opening line, and parse it with `tagBoundaries: false` and `allowWithdrawal: false`. Report a line-start tag rendered as ordinary prose, including list and quote forms. Ignore tag-shaped examples in fences, indented code, `<pre>` blocks, and MDX template code.
+HTML comments are the only Markdown documentation hosts. Register a real comment even when it has no Evidence Graph tag, attach it to the unit active on its opening line, and parse it with `tagBoundaries: false` and `allowWithdrawal: false`. Report a line-start tag rendered as ordinary prose, including list and quote forms. Ignore tag-shaped examples in fences, indented code, `<pre>` blocks, and MDX template code.
 
 Partition a section's own content into original source ranges. Include heading lines, ordinary body text, deeper unsupported headings, and fenced examples. Exclude full HTML-comment lines; retain surrounding prose when a comment appears mid-line so later fingerprinting can remove only the registered comment span. Preserve the source snapshot's completeness and diagnostics before normalizing the inventory.
 
@@ -117,7 +117,7 @@ Partition a section's own content into original source ranges. Include heading l
 
 Public class methods and directly written function fields are functions. Other public fields are properties. Static members use `Class.member`; instance members and parameter properties use `Class.prototype.member`. Interface members and object-type members use their containing type directly, except when an interface merges with a class and therefore joins the class instance side. Constructors, get/set and auto-accessors, private/protected members, computed names, index signatures, static blocks, and enums do not form units.
 
-Compatible interface, class, and namespace declarations with the same TypeScript identity share one `type` unit. Exported namespace declarations contribute their own site and nested public declarations, so an interface `IShoppingSale` beside `namespace IShoppingSale { export interface ICreate { title: string } }` exposes `IShoppingSale`, `IShoppingSale.ICreate`, and `IShoppingSale.ICreate.title`. A function and namespace may merge in TypeScript, but Evid keeps the callable function unit and excludes that companion namespace's static body from the declared target grammar.
+Compatible interface, class, and namespace declarations with the same TypeScript identity share one `type` unit. Exported namespace declarations contribute their own site and nested public declarations, so an interface `IShoppingSale` beside `namespace IShoppingSale { export interface ICreate { title: string } }` exposes `IShoppingSale`, `IShoppingSale.ICreate`, and `IShoppingSale.ICreate.title`. A function and namespace may merge in TypeScript, but Evidence Graph keeps the callable function unit and excludes that companion namespace's static body from the declared target grammar.
 
 Local declaration identity remains separate from each exported address. The adapter follows direct exports, local aliases, defaults, imported bindings that are re-exported, named and star reexports, and namespace exports through relative source-snapshot paths. It recognizes `.js` to `.ts`/`.tsx`, `.mjs` to `.mts`, `.cjs` to `.cts`, and declaration-file substitutions. Explicit exports shadow star candidates; competing star candidates remain distinct so resolution can report ambiguity. Traversal terminates finite cycles, and a named export cycle that never reaches a declaration marks the inventory incomplete.
 
@@ -165,7 +165,7 @@ Without `__all__`, publish supported module declarations and statically resolved
 
 Resolve relative imports from the importing file's package directory. Resolve absolute dotted imports from the configured population root. Recognize `.py`, `.pyi`, and `__init__.py`/`__init__.pyi` candidates already present in the snapshot, retain reexport identity, and terminate finite cycles. Missing, outside-root, ambiguous, declaration-free cyclic, and unresolved explicit exports make analysis incomplete. This bounded resolver does not model environment-dependent `sys.path`, installed packages, or `from . import submodule` fallback loading.
 
-An actual class or function docstring is an eligible documentation carrier. A consecutive same-indent run of standalone `#` comments attaches only when it immediately precedes a supported declaration without a blank line; a run before a decorated definition attaches across the decorators. Property assignments can use the same adjacent-comment form, including the first class member and a directly declared constructor field. Determine adjacency from original source lines even when the grammar places a leading comment outside the declaration's body block. Module docstrings, assigned strings, other arbitrary string expressions, detached comments, trailing code comments, and comments on unpublished declarations remain unsupported annotation hosts. Register all parsed tag-bearing comments as annotation ranges, including unsupported carriers, so Evid metadata does not move semantic fingerprints or disappear without a finding.
+An actual class or function docstring is an eligible documentation carrier. A consecutive same-indent run of standalone `#` comments attaches only when it immediately precedes a supported declaration without a blank line; a run before a decorated definition attaches across the decorators. Property assignments can use the same adjacent-comment form, including the first class member and a directly declared constructor field. Determine adjacency from original source lines even when the grammar places a leading comment outside the declaration's body block. Module docstrings, assigned strings, other arbitrary string expressions, detached comments, trailing code comments, and comments on unpublished declarations remain unsupported annotation hosts. Register all parsed tag-bearing comments as annotation ranges, including unsupported carriers, so Evidence Graph metadata does not move semantic fingerprints or disappear without a finding.
 
 Conditional module declarations/imports, conditional class declarations, dynamic `__all__`, and unresolved local imports are explicit incomplete-analysis boundaries. Dynamic module attributes, `globals()`, `getattr`, module `__getattr__`, decorators, and application initialization are never executed or used to fabricate units.
 
@@ -189,7 +189,7 @@ Resolve a receiver against a selected local defined type in the same directory a
 
 Treat the configured files as the exact source set. Do not evaluate `//go:build`, legacy build tags, `GOOS`, `GOARCH`, or filename platform suffixes. If selected alternatives declare the same identity, retain their sites and mark the inventory incomplete. Include selected `_test.go` files; keep an ordinary package, its same-package tests, and the matching external `_test` package under their distinct package identities. Incompatible package clauses in one directory are incomplete.
 
-Attach consecutive same-column standalone `//` comments and block comments only when they immediately precede a supported declaration without a blank line. A trailing code comment never joins a following standalone run or documents the next declaration. A comment before a grouped declaration attaches to every supported specification in that group; a specification or member comment attaches only to that declaration. Detached comments, function-body comments, interpreted and raw strings, and commented-out declarations are unsupported annotation hosts. Register accepted documentation and tag-bearing unsupported carriers as annotation ranges so Evid metadata does not move semantic fingerprints.
+Attach consecutive same-column standalone `//` comments and block comments only when they immediately precede a supported declaration without a blank line. A trailing code comment never joins a following standalone run or documents the next declaration. A comment before a grouped declaration attaches to every supported specification in that group; a specification or member comment attaches only to that declaration. Detached comments, function-body comments, interpreted and raw strings, and commented-out declarations are unsupported annotation hosts. Register accepted documentation and tag-bearing unsupported carriers as annotation ranges so Evidence Graph metadata does not move semantic fingerprints.
 
 Do not run generators or import external package declarations. Generated declarations participate only when their `.go` source is already present in the selected snapshot. Unreadable ownership, duplicate selected declarations, incompatible packages, and parser failures must leave the inventory incomplete instead of reducing its public population.
 
@@ -246,7 +246,7 @@ Group methods by package, owner, and method name. Every overload contributes a d
 
 Attach only a Javadoc block immediately preceding a supported declaration. Modifiers and annotations belong to the declaration and do not break attachment. One Javadoc block on a multi-variable field declaration hosts every public variable from that source site; Javadoc on each overload hosts the shared overload family at that declaration site. Withdrawal on any overload hides the merged family, and withdrawal on a type hides its descendants.
 
-Mask `{@code ...}`, `{@literal ...}`, `{@snippet ...}`, `<code>...</code>`, and `<pre>...</pre>` regions before parsing tags so documentation examples cannot create graph statements. Retain tag-bearing ordinary comments, strings, text blocks, and Javadoc attached only to unpublished declarations as unsupported hosts. Register every recognized carrier range so Evid metadata does not move semantic fingerprints.
+Mask `{@code ...}`, `{@literal ...}`, `{@snippet ...}`, `<code>...</code>`, and `<pre>...</pre>` regions before parsing tags so documentation examples cannot create graph statements. Retain tag-bearing ordinary comments, strings, text blocks, and Javadoc attached only to unpublished declarations as unsupported hosts. Register every recognized carrier range so Evidence Graph metadata does not move semantic fingerprints.
 
 Apply source visibility independently of Java Platform Module System exports. A selected `module-info.java` contributes no units and does not restrict public packages. Do not execute annotation processors; a generated declaration participates only when its `.java` file is selected explicitly. Syntax errors, unreadable selected sources, and conflicting identities leave the inventory incomplete rather than reducing the public denominator.
 

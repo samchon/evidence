@@ -1,13 +1,18 @@
 import { extname } from "node:path";
 
-/** Selects the evaluator supported by a configuration filename's explicit extension.
+/**
+ * Selects the evaluator supported by a configuration filename's explicit
+ * extension.
  *
- * Config loading calls this boundary before parsing so file content never changes the evaluator selected for a path.
+ * Config loading calls this boundary before parsing so file content never
+ * changes the evaluator selected for a path.
  */
 export namespace EvidConfigFormat {
-  /** Returns the evaluator selected by an explicit supported filename extension.
+  /**
+   * Returns the evaluator selected by an explicit supported filename extension.
    *
-   * Unsupported spellings fail here instead of causing configuration loading to guess a parser from file content.
+   * Unsupported spellings fail here instead of causing configuration loading to
+   * guess a parser from file content.
    */
   export function get(file: string): "json" | "typescript" {
     const extension = extname(file);

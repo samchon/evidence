@@ -2,7 +2,7 @@ import { EvidTagParser } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestDocumentation } from "../../internal/TestDocumentation";
+import { EvidTestDocumentation } from "../../internal/EvidTestDocumentation";
 
 /** Tokenizes source, Markdown, schema, and operation targets without changing their spelling.
  *
@@ -12,20 +12,20 @@ import { TestDocumentation } from "../../internal/TestDocumentation";
  * 1. Parse TypeScript declaration and member paths, a C++ quoted-member path,
  *    Markdown, Prisma, and HTTP targets.
  * 2. Verify all eight target strings and the literal-member reason remain exact.
- * 3. Require every valid `@evid` and `@link` entry to be positive evidence
+ * 3. Require every valid `@evidence` and `@link` entry to be positive evidence
  *    with no diagnostics.
  */
 export async function test_tag_targets(): Promise<void> {
-  const fixture = TestDocumentation.create(dedent`
+  const fixture = EvidTestDocumentation.create(dedent`
     /**
-     * @evid ../calculator.ts#add Checks arithmetic.
-     * @evid ../SomeClass.ts#SomeClass.member Checks the member.
-     * @evid ../SomeClass.ts#SomeClass Checks the class.
-     * @evid ../SomeNamespace.ts#SomeNamespace.property Checks the namespace.
+     * @evidence ../calculator.ts#add Checks arithmetic.
+     * @evidence ../SomeClass.ts#SomeClass.member Checks the member.
+     * @evidence ../SomeClass.ts#SomeClass Checks the class.
+     * @evidence ../SomeNamespace.ts#SomeNamespace.property Checks the namespace.
      * @link ../some%20file.cpp#SomeClass["field name"] Checks the literal member.
-     * @evid docs/spec.md#pricing Follows the requirement.
-     * @evid prisma:Sale.price Follows the data definition.
-     * @evid POST:/sales Follows the operation.
+     * @evidence docs/spec.md#pricing Follows the requirement.
+     * @evidence prisma:Sale.price Follows the data definition.
+     * @evidence POST:/sales Follows the operation.
      */
   `);
   const result = EvidTagParser.parse(

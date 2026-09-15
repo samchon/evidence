@@ -2,7 +2,7 @@ import { EvidBigQueryAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Preserves BigQuery ownership for literal paths, endpoint keys, and nested withdrawals.
  *
@@ -27,7 +27,7 @@ export async function test_bigquery_ownership(): Promise<void> {
     );
   `;
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.create("schema.sql", source),
+    EvidTestSourceSnapshot.create("schema.sql", source),
   );
   TestValidator.equals(
     "valid ownership declarations",
@@ -70,7 +70,7 @@ export async function test_bigquery_ownership(): Promise<void> {
     source,
   );
   const reordered = await adapter.analyze(
-    TestSourceSnapshot.create("schema.sql", reorderedSource),
+    EvidTestSourceSnapshot.create("schema.sql", reorderedSource),
   );
   TestValidator.equals(
     "anonymous key identities ignore declaration order",
@@ -84,11 +84,11 @@ export async function test_bigquery_ownership(): Promise<void> {
   );
 
   const inline = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "inline.sql",
       dedent`
     CREATE TABLE ds.inline_key (
-      /* @evid ./spec.ts#contract Documents the field and its declared key. */
+      /* @evidence ./spec.ts#contract Documents the field and its declared key. */
       id INT64 REFERENCES ds.parent (id) NOT ENFORCED
     );
   `,

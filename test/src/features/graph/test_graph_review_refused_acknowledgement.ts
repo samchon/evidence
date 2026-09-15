@@ -7,8 +7,8 @@ import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Retains a review's pairing when checklist policy refuses its aggregate acknowledgement.
@@ -24,7 +24,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_graph_review_refused_acknowledgement(): Promise<void> {
   const requirements = await new EvidMarkdownAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "docs/rules.md",
       dedent`
         # Rules
@@ -37,12 +37,12 @@ export async function test_graph_review_refused_acknowledgement(): Promise<void>
   );
   const price = requireUnit(requirements, "price");
   const claims = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/pricing.ts",
       dedent`
         /**
-         * @evid docs/rules.md Implements all rules.
-         * @evidReview docs/rules.md Reviewed the aggregate statement.
+         * @evidence docs/rules.md Implements all rules.
+         * @evidenceReview docs/rules.md Reviewed the aggregate statement.
          */
         export function priceSale(): void {}
       `,
@@ -60,12 +60,12 @@ export async function test_graph_review_refused_acknowledgement(): Promise<void>
             severity: "error",
             inventory: requirements,
             unitIds: [price.id],
-            resolutions: await TestGraph.resolveDeclarations(
+            resolutions: await EvidTestGraph.resolveDeclarations(
               claims,
               requirements,
               [price.id],
             ),
-            reviewResolutions: await TestGraph.resolveReviews(
+            reviewResolutions: await EvidTestGraph.resolveReviews(
               claims,
               requirements,
               [price.id],

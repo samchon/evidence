@@ -20,7 +20,8 @@ export namespace EvidLanguageRegistry {
    *
    * Callers may present this metadata or inspect its grammar provenance without
    * mutating the registry. A listed grammar has an Evid adapter, but its
-   * presence does not mean its WASM asset has been acquired by a parser runtime.
+   * presence does not mean its WASM asset has been acquired by a parser
+   * runtime.
    */
   export function list(): IEvidLanguage[] {
     return structuredClone(LANGUAGES);
@@ -29,9 +30,10 @@ export namespace EvidLanguageRegistry {
   /**
    * Returns a copy of the certified database-language catalog.
    *
-   * Database types remain separate from programming types because their adapters
-   * expose model, column, and relation semantics rather than lexical declarations.
-   * The copy preserves the registry as the authoritative certification boundary.
+   * Database types remain separate from programming types because their
+   * adapters expose model, column, and relation semantics rather than lexical
+   * declarations. The copy preserves the registry as the authoritative
+   * certification boundary.
    */
   export function databases(): IEvidDatabaseLanguage[] {
     return structuredClone(DATABASES);
@@ -41,20 +43,22 @@ export namespace EvidLanguageRegistry {
    * Returns investigated language candidates that are not yet supported.
    *
    * Candidate records communicate grammar and adapter blockers to maintainers.
-   * They intentionally cannot be selected: publishing an unimplemented candidate
-   * as a language would imply an extraction boundary Evid cannot enforce.
+   * They intentionally cannot be selected: publishing an unimplemented
+   * candidate as a language would imply an extraction boundary Evid cannot
+   * enforce.
    */
   export function candidates(): IEvidLanguageCandidate[] {
     return structuredClone(CANDIDATES);
   }
 
   /**
-   * Selects the grammar registered for one configured type and logical filename.
+   * Selects the grammar registered for one configured type and logical
+   * filename.
    *
-   * Filenames are matched after separator normalization and basename extraction;
-   * a grammar is returned as a copy so parser acquisition cannot alter catalog
-   * metadata. Unsupported types and extensions throw typed parser errors instead
-   * of guessing from a shared extension such as `.sql` or `.h`.
+   * Filenames are matched after separator normalization and basename
+   * extraction; a grammar is returned as a copy so parser acquisition cannot
+   * alter catalog metadata. Unsupported types and extensions throw typed parser
+   * errors instead of guessing from a shared extension such as `.sql` or `.h`.
    */
   export function select(
     type: EvidProgrammingType | EvidDatabaseType,

@@ -9,17 +9,21 @@ import type { EvidArtifactType } from "../typings/EvidArtifactType";
  * extraction and target behavior are complete.
  */
 export namespace EvidArtifactTypes {
-  /** Narrows a configuration discriminator to a certified artifact type.
+  /**
+   * Narrows a configuration discriminator to a certified artifact type.
    *
-   * Configuration validation uses this guard before adapter construction, keeping grammar-only candidates outside the supported product surface.
+   * Configuration validation uses this guard before adapter construction,
+   * keeping grammar-only candidates outside the supported product surface.
    */
   export function isSupported(type: string): type is EvidArtifactType {
     return SUPPORTED.some((supported) => supported === type);
   }
 
-  /** Returns the certified artifact types in a defensive copy.
+  /**
+   * Returns the certified artifact types in a defensive copy.
    *
-   * Callers can inspect or sort their result without mutating the module-level support baseline used by validation.
+   * Callers can inspect or sort their result without mutating the module-level
+   * support baseline used by validation.
    */
   export function supported(): EvidArtifactType[] {
     return [...SUPPORTED];
@@ -30,10 +34,7 @@ const SUPPORTED: EvidArtifactType[] = [
   "markdown",
   "prisma",
   "swagger",
-  ...[
-    ...EvidLanguageRegistry.list(),
-    ...EvidLanguageRegistry.databases(),
-  ]
+  ...[...EvidLanguageRegistry.list(), ...EvidLanguageRegistry.databases()]
     .filter((language) => language.adapter !== undefined)
     .map((language) => language.type),
 ];

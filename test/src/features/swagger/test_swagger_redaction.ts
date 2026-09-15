@@ -13,7 +13,7 @@ import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
  * Credential sentinel that must never survive a public Swagger diagnostic.
@@ -53,7 +53,7 @@ const TOKEN: string = "fixture-token";
  */
 export async function test_swagger_redaction(): Promise<void> {
   const adapter: EvidSwaggerAdapter = new EvidSwaggerAdapter();
-  const config: string = join(__dirname, "evid.config.ts");
+  const config: string = join(__dirname, "evidence.config.ts");
   const secretSources: string[] = [
     `https://user:${PASSWORD}@example.invalid/schema?token=${TOKEN}`,
     `https://user:${PASSWORD}@example.invalid/schema?token=${TOKEN}#fragment`,
@@ -93,7 +93,7 @@ export async function test_swagger_redaction(): Promise<void> {
 
   const location: string = join(__dirname, `swagger redaction ${randomUUID()}`);
   const publicSource: string = secretSources[0] ?? "";
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     {
       "evid.json": JSON.stringify({

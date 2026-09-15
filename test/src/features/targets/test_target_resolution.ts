@@ -9,7 +9,7 @@ import type {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Resolves public files, ancestors, aliases, and literal members.
  *
@@ -21,12 +21,12 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_target_resolution(): Promise<void> {
   const inventory = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/calculator.ts",
         "export function add(x: number, y: number): number { return x + y; }",
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/SomeClass.ts",
         dedent`
           export class SomeClass {
@@ -37,7 +37,7 @@ export async function test_target_resolution(): Promise<void> {
           }
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/SomeNamespace.ts",
         dedent`
           export namespace SomeNamespace {
@@ -45,15 +45,15 @@ export async function test_target_resolution(): Promise<void> {
           }
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/barrel.ts",
         dedent`
           export { SomeClass as PublicClass } from "./SomeClass";
           export type { SomeClass as ClassType } from "./SomeClass";
         `,
       ),
-      TestSourceSnapshot.create("src/a # b.ts", "export const encoded = 1;"),
-      TestSourceSnapshot.create("src/wrong.ts", "export const different = 1;"),
+      EvidTestSourceSnapshot.create("src/a # b.ts", "export const encoded = 1;"),
+      EvidTestSourceSnapshot.create("src/wrong.ts", "export const different = 1;"),
     ]),
   );
   const resolver = new EvidTargetResolver([inventory]);
@@ -180,7 +180,7 @@ export async function test_target_resolution(): Promise<void> {
   TestValidator.equals("encoded file path", encoded.status, "resolved");
 
   // A dependency loaded for a barrel remains addressable only through selected entries.
-  const dependencySnapshot = TestSourceSnapshot.create(
+  const dependencySnapshot = EvidTestSourceSnapshot.create(
     "src/dependency.ts",
     "export interface Dependency { value: string; }",
   );
@@ -192,9 +192,9 @@ export async function test_target_resolution(): Promise<void> {
     throw new Error("Missing dependency address fixture.");
   dependencyAddress.selected = false;
   const dependencyInventory = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.combine([
+    EvidTestSourceSnapshot.combine([
       dependencySnapshot,
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/entry.ts",
         'export { Dependency as PublicDependency } from "./dependency";',
       ),

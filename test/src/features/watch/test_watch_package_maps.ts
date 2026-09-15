@@ -1,5 +1,7 @@
 import {
+  EvidConfigDependencyScanner,
   EvidConfigLoader,
+  EvidWatchDependencySnapshot,
   type IEvidConfig,
   type IEvidSourceDependency,
 } from "evid";
@@ -9,19 +11,17 @@ import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidConfigDependencyScanner } from "../../../../packages/evidence/src/internal/EvidConfigDependencyScanner";
-import { EvidWatchDependencySnapshot } from "../../../../packages/evidence/src/internal/EvidWatchDependencySnapshot";
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
  * Resolves package imports and self-references used by a TypeScript config.
  *
- * EvidNode resolves both forms through the nearest package manifest rather than a
+ * Node resolves both forms through the nearest package manifest rather than a
  * `node_modules` lookup. Watch must select the same conditional targets as the
  * evaluator and exclude entries from the inactive condition.
  *
- * 1. Create a CommonJS package scope with a conditional `#settings` import map,
- *    an external-package redirect, and a conditional export for its own name.
+ * 1. Create a CommonJS package scope with a conditional `#settings` import map, an
+ *    external-package redirect, and a conditional export for its own name.
  * 2. Load a config that imports both forms and require their runtime values to
  *    reach the validated configuration.
  * 3. Scan the same config and require both CommonJS targets and the governing
@@ -31,18 +31,20 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  * 5. Repoint one map to a missing file, retain that target through failure, and
  *    require file creation to invalidate the failed dependency snapshot.
  * 6. Require arrays to skip invalid, primitive, and null targets before selecting
- *    their next valid entries, while an exhausted nested array remains blocked.
- * 7. Reject malformed and package-escaping maps while retaining the manifest,
- *    then reject an integer condition key that EvidNode cannot order as authored.
+ *    their next valid entries, while an exhausted nested array remains
+ *    blocked.
+ * 7. Reject malformed and package-escaping maps while retaining the manifest, then
+ *    reject an integer condition key that Node cannot order as authored.
  * 8. Reject an external map target whose scoped package name is incomplete,
- *    matching EvidNode even when a loadable scope-directory index exists.
- * 9. Ignore malformed unrelated import-map keys while resolving a valid key,
- *    but reject internal and strict bare-package requests ending in `/` like EvidNode.
+ *    matching Node even when a loadable scope-directory index exists.
+ * 9. Ignore malformed unrelated import-map keys while resolving a valid key, but
+ *    reject internal and strict bare-package requests ending in `/` like Node.
  * 10. Normalize dot segments in direct ESM subpaths and external-package wildcard
- *     redirects, then require the executed targets to enter watch dependencies.
+ *     redirects, then require the executed targets to enter watch
+ *     dependencies.
  * 11. Restore the map and require scanning to recover in the same process.
  * 12. Redirect CJS and ESM owners from a root import map while a nested package
- *     shadows the same name; require EvidNode and watch to select the root entries,
+ *     shadows the same name; require Node and watch to select the root entries,
  *     with only edits to those executed entries invalidating their snapshots.
  */
 export async function test_watch_package_maps(): Promise<void> {
@@ -50,11 +52,11 @@ export async function test_watch_package_maps(): Promise<void> {
     __dirname,
     `watch package maps ${randomUUID()}`,
   );
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     {
       "package.json": packageManifest("commonjs"),
-      "evid.config.ts": dedent`
+      "evidence.config.ts": dedent`
         import internal from "#settings";
         import external from "#external";
         import self from "fixture-config";
@@ -122,9 +124,8 @@ export async function test_watch_package_maps(): Promise<void> {
       "node_modules/trailing-package/unreachable.mjs": `export default "unreachable";\n`,
     },
     async (directory: string): Promise<void> => {
-      const configFile: string = join(directory, "evid.config.ts");
-      const config: IEvidConfig =
-        await EvidConfigLoader.load(configFile);
+      const configFile: string = join(directory, "evidence.config.ts");
+      const config: IEvidConfig = await EvidConfigLoader.load(configFile);
       TestValidator.equals(
         "package-map config severity",
         config.severity,
@@ -165,7 +166,7 @@ export async function test_watch_package_maps(): Promise<void> {
 
       const commonSnapshot: EvidWatchDependencySnapshot =
         await EvidWatchDependencySnapshot.capture(dependencies);
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "package.json": packageManifest("module"),
       });
       const changedScope: EvidWatchDependencySnapshot =
@@ -174,8 +175,7 @@ export async function test_watch_package_maps(): Promise<void> {
         "package-map mode invalidates snapshot",
         !commonSnapshot.equals(changedScope),
       );
-      const esmConfig: IEvidConfig =
-        await EvidConfigLoader.load(configFile);
+      const esmConfig: IEvidConfig = await EvidConfigLoader.load(configFile);
       TestValidator.equals(
         "ESM package-map severity",
         esmConfig.severity,
@@ -207,7 +207,7 @@ export async function test_watch_package_maps(): Promise<void> {
         [],
       );
 
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "package.json": packageManifest("module", "./missing.mjs"),
       });
       const missingScanner: EvidConfigDependencyScanner =
@@ -217,8 +217,7 @@ export async function test_watch_package_maps(): Promise<void> {
         "missing package-map target fails",
         missingFailure.includes("#settings"),
       );
-      const failedDependencies: IEvidSourceDependency[] =
-        missingScanner.list();
+      const failedDependencies: IEvidSourceDependency[] = missingScanner.list();
       const missingFile: string = join(directory, "missing.mjs").replaceAll(
         "\\",
         "/",
@@ -229,7 +228,7 @@ export async function test_watch_package_maps(): Promise<void> {
       );
       const missingSnapshot: EvidWatchDependencySnapshot =
         await EvidWatchDependencySnapshot.capture(failedDependencies);
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "missing.mjs": `export default "off";\n`,
       });
       const repairedSnapshot: EvidWatchDependencySnapshot =
@@ -240,15 +239,14 @@ export async function test_watch_package_maps(): Promise<void> {
       );
       await new EvidConfigDependencyScanner(configFile).scan();
 
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "package.json": packageManifest("module", [
           "../invalid.mjs",
           42,
           "./unused-internal.mjs",
         ]),
       });
-      const arrayConfig: IEvidConfig =
-        await EvidConfigLoader.load(configFile);
+      const arrayConfig: IEvidConfig = await EvidConfigLoader.load(configFile);
       TestValidator.equals(
         "package-map array severity",
         arrayConfig.severity,
@@ -263,12 +261,12 @@ export async function test_watch_package_maps(): Promise<void> {
         ),
       );
 
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "package.json": nullableFallbackManifest(),
       });
       const nullableFile: string = join(directory, "nullable-map.mjs");
       TestValidator.equals(
-        "EvidNode selects nullable package-map fallbacks",
+        "Node selects nullable package-map fallbacks",
         execFileSync(process.execPath, [nullableFile], {
           encoding: "utf8",
         }).trim(),
@@ -290,7 +288,7 @@ export async function test_watch_package_maps(): Promise<void> {
 
       const blockedTargets: unknown[] = [null, [null]];
       for (const blockedTarget of blockedTargets) {
-        await TestFileSystem.save(directory, {
+        await EvidTestFileSystem.save(directory, {
           "package.json": packageManifest("module", blockedTarget),
         });
         const blockedScanner: EvidConfigDependencyScanner =
@@ -311,7 +309,7 @@ export async function test_watch_package_maps(): Promise<void> {
         [[null, 42], true],
       ];
       for (const [target, invalid] of blockedArrays) {
-        await TestFileSystem.save(directory, {
+        await EvidTestFileSystem.save(directory, {
           "package.json": packageManifest("module", {
             import: target,
             default: "./unused-internal.mjs",
@@ -326,7 +324,7 @@ export async function test_watch_package_maps(): Promise<void> {
           nodeRejectedNestedArray = true;
         }
         TestValidator.predicate(
-          "EvidNode keeps an exhausted nested array blocked",
+          "Node keeps an exhausted nested array blocked",
           nodeRejectedNestedArray,
         );
         const nestedScanner: EvidConfigDependencyScanner =
@@ -347,14 +345,14 @@ export async function test_watch_package_maps(): Promise<void> {
         );
       }
 
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "package.json": packageManifest("module", {
           import: [{ browser: "./missing.mjs" }],
           default: "./unused-internal.mjs",
         }),
       });
       TestValidator.equals(
-        "EvidNode skips an unresolved nested array",
+        "Node skips an unresolved nested array",
         execFileSync(process.execPath, [nullableFile], {
           encoding: "utf8",
         }).trim(),
@@ -369,7 +367,7 @@ export async function test_watch_package_maps(): Promise<void> {
         ),
       );
 
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "package.json": JSON.stringify({
           name: "fixture-config",
           type: "module",
@@ -387,7 +385,7 @@ export async function test_watch_package_maps(): Promise<void> {
         ),
       );
 
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "package.json": packageManifest("module", "./%2e%2e/outside.mjs"),
       });
       const escapingScanner: EvidConfigDependencyScanner =
@@ -398,7 +396,7 @@ export async function test_watch_package_maps(): Promise<void> {
         escapingFailure.includes("#settings"),
       );
 
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "package.json": JSON.stringify({
           name: "fixture-config",
           type: "module",
@@ -429,7 +427,7 @@ export async function test_watch_package_maps(): Promise<void> {
         ),
       );
 
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "package.json": JSON.stringify({
           type: "module",
           imports: {
@@ -443,7 +441,7 @@ export async function test_watch_package_maps(): Promise<void> {
       });
       const validKeyFile: string = join(directory, "valid-key.mjs");
       TestValidator.equals(
-        "EvidNode ignores unrelated invalid import keys",
+        "Node ignores unrelated invalid import keys",
         execFileSync(process.execPath, [validKeyFile], {
           encoding: "utf8",
         }).trim(),
@@ -468,7 +466,7 @@ export async function test_watch_package_maps(): Promise<void> {
         nodeRejectedTrailingKey = true;
       }
       TestValidator.predicate(
-        "EvidNode rejects trailing-slash import name",
+        "Node rejects trailing-slash import name",
         nodeRejectedTrailingKey,
       );
       const trailingKeyScanner: EvidConfigDependencyScanner =
@@ -492,7 +490,7 @@ export async function test_watch_package_maps(): Promise<void> {
         nodeRejectedTrailingPackage = true;
       }
       TestValidator.predicate(
-        "EvidNode rejects trailing-slash package request",
+        "Node rejects trailing-slash package request",
         nodeRejectedTrailingPackage,
       );
       const trailingPackageScanner: EvidConfigDependencyScanner =
@@ -514,7 +512,7 @@ export async function test_watch_package_maps(): Promise<void> {
         ),
       );
 
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "package.json": JSON.stringify({
           imports: { "#invalid-scope": "@invalid-scope" },
         }),
@@ -529,7 +527,7 @@ export async function test_watch_package_maps(): Promise<void> {
         nodeRejectedScope = true;
       }
       TestValidator.predicate(
-        "EvidNode rejects mapped incomplete scope",
+        "Node rejects mapped incomplete scope",
         nodeRejectedScope,
       );
       const invalidScopeScanner: EvidConfigDependencyScanner =
@@ -550,14 +548,14 @@ export async function test_watch_package_maps(): Promise<void> {
         ),
       );
 
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "package.json": JSON.stringify({
           imports: { "#wild/*": "traversal-anchor/*" },
         }),
       });
       const directFile: string = join(directory, "direct-normalized.mjs");
       TestValidator.equals(
-        "EvidNode normalizes direct ESM package subpaths",
+        "Node normalizes direct ESM package subpaths",
         execFileSync(process.execPath, [directFile], {
           encoding: "utf8",
         }).trim(),
@@ -586,7 +584,7 @@ export async function test_watch_package_maps(): Promise<void> {
 
       const wildcardFile: string = join(directory, "escape.mjs");
       TestValidator.equals(
-        "EvidNode normalizes an external package-map redirect",
+        "Node normalizes an external package-map redirect",
         execFileSync(process.execPath, [wildcardFile], {
           encoding: "utf8",
         }).trim(),
@@ -606,7 +604,7 @@ export async function test_watch_package_maps(): Promise<void> {
       );
       const wildcardSnapshot: EvidWatchDependencySnapshot =
         await EvidWatchDependencySnapshot.capture(wildcardDependencies);
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "victim.mjs": `export default "edited mapped";\n`,
       });
       const wildcardAfterEdit: EvidWatchDependencySnapshot =
@@ -616,7 +614,7 @@ export async function test_watch_package_maps(): Promise<void> {
         !wildcardSnapshot.equals(wildcardAfterEdit),
       );
 
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "package.json": packageManifest("module"),
       });
       const restored: IEvidSourceDependency[] =
@@ -629,7 +627,7 @@ export async function test_watch_package_maps(): Promise<void> {
       );
     },
   );
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     join(location, "redirect scope"),
     {
       "package.json": JSON.stringify({
@@ -662,14 +660,14 @@ export async function test_watch_package_maps(): Promise<void> {
       const commonFile: string = join(directory, "src/common.cjs");
       const moduleFile: string = join(directory, "src/module.mjs");
       TestValidator.equals(
-        "EvidNode CommonJS import-map scope",
+        "Node CommonJS import-map scope",
         execFileSync(process.execPath, [commonFile], {
           encoding: "utf8",
         }).trim(),
         "root require",
       );
       TestValidator.equals(
-        "EvidNode ESM import-map scope",
+        "Node ESM import-map scope",
         execFileSync(process.execPath, [moduleFile], {
           encoding: "utf8",
         }).trim(),
@@ -717,7 +715,7 @@ export async function test_watch_package_maps(): Promise<void> {
         await EvidWatchDependencySnapshot.capture(commonDependencies);
       const moduleSnapshot: EvidWatchDependencySnapshot =
         await EvidWatchDependencySnapshot.capture(moduleDependencies);
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "src/node_modules/redirected-package/shadow.cjs": `module.exports = "edited shadow require";\n`,
         "src/node_modules/redirected-package/shadow.mjs": `export default "edited shadow import";\n`,
       });
@@ -733,7 +731,7 @@ export async function test_watch_package_maps(): Promise<void> {
         "ESM shadow edit remains stable",
         moduleSnapshot.equals(moduleAfterShadow),
       );
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "node_modules/redirected-package/root.cjs": `module.exports = "edited root require";\n`,
         "node_modules/redirected-package/root.mjs": `export default "edited root import";\n`,
       });
@@ -784,7 +782,8 @@ function packageManifest(
  * Gives each active package-map form a null entry before its valid fallback.
  *
  * One configuration load then verifies the shared target-array rule for an
- * internal local mapping, an external redirect, and the package self-reference.
+ * internal local mapping, an external redirect, and the package
+ * self-reference.
  */
 function nullableFallbackManifest(): string {
   return JSON.stringify({
@@ -820,9 +819,12 @@ function dependencyPaths(dependencies: IEvidSourceDependency[]): string[] {
  * Captures a scanner rejection together with its nested resolution causes.
  *
  * Public context names the authored specifier while the cause chain identifies
- * the package-map rule that failed, allowing one scenario to assert both layers.
+ * the package-map rule that failed, allowing one scenario to assert both
+ * layers.
  */
-async function scanFailure(scanner: EvidConfigDependencyScanner): Promise<string> {
+async function scanFailure(
+  scanner: EvidConfigDependencyScanner,
+): Promise<string> {
   try {
     await scanner.scan();
   } catch (cause) {

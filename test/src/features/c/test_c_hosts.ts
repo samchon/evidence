@@ -2,7 +2,7 @@ import { EvidCAdapter, EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Attaches C Doxygen evidence and rejects annotations in inert source carriers.
  *
@@ -14,51 +14,51 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_c_hosts(): Promise<void> {
   const inventory = await new EvidCAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/contracts.c",
       dedent`
         /**
-         * @evid docs/requirements.md#type Implements the aggregate.
+         * @evidence docs/requirements.md#type Implements the aggregate.
          * @code
-         * @evid docs/requirements.md#code Doxygen source is inert.
+         * @evidence docs/requirements.md#code Doxygen source is inert.
          * @endcode
-         * <pre>@evid docs/requirements.md#pre Preformatted text is inert.</pre>
+         * <pre>@evidence docs/requirements.md#pre Preformatted text is inert.</pre>
          */
         struct Contracts {
-            /// @evid docs/requirements.md#field Implements the field.
+            /// @evidence docs/requirements.md#field Implements the field.
             int value;
         };
 
-        /// @evid docs/requirements.md#function Implements the function.
+        /// @evidence docs/requirements.md#function Implements the function.
         int run(void) {
-            /** @evid docs/requirements.md#body Body documentation is unsupported. */
-            const char *text = "@evid docs/requirements.md#string Strings are unsupported.";
+            /** @evidence docs/requirements.md#body Body documentation is unsupported. */
+            const char *text = "@evidence docs/requirements.md#string Strings are unsupported.";
             return text[0];
         }
 
-        int first, second; ///< @evid docs/requirements.md#trailing Implements both objects.
+        int first, second; ///< @evidence docs/requirements.md#trailing Implements both objects.
 
         enum Result {
-            SUCCESS, /**< @evid docs/requirements.md#enumerator Implements the enumerator. */
+            SUCCESS, /**< @evidence docs/requirements.md#enumerator Implements the enumerator. */
             FAILURE,
         };
 
-        // @evid docs/requirements.md#ordinary Ordinary comments are unsupported.
+        // @evidence docs/requirements.md#ordinary Ordinary comments are unsupported.
         int ordinary;
 
         /*
-         * @evid docs/requirements.md#ordinary-block Ordinary block comments are unsupported.
+         * @evidence docs/requirements.md#ordinary-block Ordinary block comments are unsupported.
          */
         int ordinary_block;
 
-        /** @evid docs/requirements.md#static Static declarations are unsupported. */
+        /** @evidence docs/requirements.md#static Static declarations are unsupported. */
         static int hidden;
 
-        /** @evid docs/requirements.md#detached Detached Doxygen is unsupported. */
+        /** @evidence docs/requirements.md#detached Detached Doxygen is unsupported. */
 
         int detached;
 
-        /** @evid docs/requirements.md#directive A directive breaks attachment. */
+        /** @evidence docs/requirements.md#directive A directive breaks attachment. */
         #define CONTRACT_VALUE 1
         int after_directive;
       `,
@@ -102,7 +102,7 @@ export async function test_c_hosts(): Promise<void> {
   );
 
   const withdrawn = await new EvidCAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "include/hidden.h",
       dedent`
         /** @internal This forward declaration withdraws the merged type. */

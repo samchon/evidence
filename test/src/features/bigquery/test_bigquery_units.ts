@@ -5,7 +5,7 @@ import {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Classifies BigQuery tables, fields, and declared keys with their full ownership paths.
  *
@@ -28,7 +28,7 @@ export async function test_bigquery_units(): Promise<void> {
   `;
   const adapter = new EvidBigQueryAdapter();
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.create("schema.sql", content, [
+    EvidTestSourceSnapshot.create("schema.sql", content, [
       "schema.sql",
       "alias.sql",
     ]),
@@ -86,7 +86,7 @@ export async function test_bigquery_units(): Promise<void> {
   );
 
   const moved = await adapter.analyze(
-    TestSourceSnapshot.create("moved.sql", content),
+    EvidTestSourceSnapshot.create("moved.sql", content),
   );
   TestValidator.equals(
     "schema identity independent of file",
@@ -99,7 +99,7 @@ export async function test_bigquery_units(): Promise<void> {
     EvidFingerprint.inspect(inventory, model.id).fingerprint,
   );
   const changed = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "schema.sql",
       content.replace("quantity INT64", "quantity NUMERIC"),
     ),

@@ -6,7 +6,7 @@ import {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Attaches Dart documentation at source coordinates without accepting inert examples.
  *
@@ -19,10 +19,10 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_dart_hosts(): Promise<void> {
   const content = dedent`
     /// Contract 한글 😀
-    /// @evid docs/spec.md#type Implements the contract.
+    /// @evidence docs/spec.md#type Implements the contract.
     @Deprecated('legacy')
     class Contract {
-      /** @evid docs/spec.md#property Implements the value. */
+      /** @evidence docs/spec.md#property Implements the value. */
       int value = 1;
       /// @internal Retired operation.
       int retired() => 0;
@@ -31,16 +31,16 @@ export async function test_dart_hosts(): Promise<void> {
     class Retired { int child = 1; }
     /// Examples:
     /// ~~~dart
-    /// @evid docs/spec.md#fence Inert example.
+    /// @evidence docs/spec.md#fence Inert example.
     /// ~~~
     ///
-    ///     @evid docs/spec.md#indent Inert example.
-    /// <code>@evid docs/spec.md#html Inert example.</code>
+    ///     @evidence docs/spec.md#indent Inert example.
+    /// <code>@evidence docs/spec.md#html Inert example.</code>
     int sample() => 1;
   `.replaceAll("\n", "\r\n");
   const adapter = new EvidDartAdapter();
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.create("src/contract.dart", content),
+    EvidTestSourceSnapshot.create("src/contract.dart", content),
   );
 
   TestValidator.equals(
@@ -56,7 +56,7 @@ export async function test_dart_hosts(): Promise<void> {
   TestValidator.equals(
     "UTF-16 offset after astral text",
     inventory.declarations[0]?.location?.range?.start?.offset,
-    content.indexOf("@evid"),
+    content.indexOf("@evidence"),
   );
   TestValidator.equals(
     "CRLF line mapping",
@@ -75,7 +75,7 @@ export async function test_dart_hosts(): Promise<void> {
   const contract = inventory.units.find((unit) => unit.name === "Contract");
   if (contract === undefined) throw new Error("Missing contract.");
   const annotation = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/contract.dart",
       content.replace(
         "Implements the value.",
@@ -84,7 +84,7 @@ export async function test_dart_hosts(): Promise<void> {
     ),
   );
   const changed = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/contract.dart",
       content.replace("value = 1", "value = 2"),
     ),
@@ -107,7 +107,7 @@ export async function test_dart_hosts(): Promise<void> {
     "link",
   ]) {
     const unsupported = await adapter.analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/unsupported.dart",
         `// @${tag} docs/spec.md#type Unsupported comment.\nint run() => 1;`,
       ),
@@ -136,9 +136,9 @@ export async function test_dart_hosts(): Promise<void> {
   ]) {
     const closing = delimiter.replace(/^r/u, "");
     const unsupported = await adapter.analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/literal.dart",
-        `final text = ${delimiter}@evid docs/spec.md#type Inert literal.${closing};`,
+        `final text = ${delimiter}@evidence docs/spec.md#type Inert literal.${closing};`,
       ),
     );
     TestValidator.equals(

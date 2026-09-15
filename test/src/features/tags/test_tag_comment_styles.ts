@@ -2,7 +2,7 @@ import { EvidTagParser } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestDocumentation } from "../../internal/TestDocumentation";
+import { EvidTestDocumentation } from "../../internal/EvidTestDocumentation";
 
 /** Parses supported comment styles with exact CRLF source locations.
  *
@@ -16,13 +16,13 @@ import { TestDocumentation } from "../../internal/TestDocumentation";
  *    retains its original line and column.
  */
 export async function test_tag_comment_styles(): Promise<void> {
-  const html = TestDocumentation.create(
+  const html = EvidTestDocumentation.create(
     dedent`
     <!--
-      @evid docs/spec.md#rule Implements the rule.
+      @evidence docs/spec.md#rule Implements the rule.
       @architecture approved this wording.
       @internal is prose in this host grammar.
-      @evidReview docs/spec.md#rule Reviewed the claim.
+      @evidenceReview docs/spec.md#rule Reviewed the claim.
     -->
   `,
     {
@@ -55,9 +55,9 @@ export async function test_tag_comment_styles(): Promise<void> {
     1,
   );
 
-  const prisma = TestDocumentation.create(
+  const prisma = EvidTestDocumentation.create(
     dedent`
-    /// @evid prisma:Sale.price Implements the column.
+    /// @evidence prisma:Sale.price Implements the column.
     /// @namespace Shop
     /// @internal Implementation detail.
   `.replaceAll("\n", "\r\n"),
@@ -89,7 +89,7 @@ export async function test_tag_comment_styles(): Promise<void> {
   if (entry === undefined || entry.location.range === undefined)
     throw new Error("Missing annotation range.");
   const range = entry.location.range;
-  const expected = "@evid prisma:Sale.price Implements the column.";
+  const expected = "@evidence prisma:Sale.price Implements the column.";
   TestValidator.equals(
     "exact source span excludes CR and comment prefix",
     prisma.content.slice(range.start.offset, range.end.offset),

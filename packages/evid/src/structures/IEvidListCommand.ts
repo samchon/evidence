@@ -28,7 +28,7 @@ export interface IEvidListCommand {
   /**
    * Configuration path relative to the resolved command directory.
    *
-   * Parsing uses evid.config.ts when the caller does not supply an override.
+   * Parsing uses evidence.config.ts when the caller does not supply an override.
    */
   config: string;
 

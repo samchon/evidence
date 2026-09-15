@@ -5,8 +5,8 @@ import {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { DatabaseAdapterCertification } from "../../internal/certification/DatabaseAdapterCertification";
-import type { IDatabaseAdapterCertification } from "../../internal/certification/IDatabaseAdapterCertification";
+import { EvidDatabaseAdapterCertification } from "../../internal/certification/EvidDatabaseAdapterCertification";
+import type { IEvidDatabaseAdapterCertification } from "../../internal/certification/IEvidDatabaseAdapterCertification";
 
 /** Applies the shared database certification contract to PostgreSQL.
  *
@@ -19,7 +19,7 @@ import type { IDatabaseAdapterCertification } from "../../internal/certification
 export async function test_postgresql_certification(): Promise<void> {
   const relation = 'foreign key ["id"] references ["app","parent","id"]';
   const relationAccessor = EvidAccessor.format(["app", "item", relation]);
-  const fixture: IDatabaseAdapterCertification = {
+  const fixture: IEvidDatabaseAdapterCertification = {
     type: "postgresql",
     adapter: new EvidPostgresqlAdapter(),
     sources: [
@@ -27,11 +27,11 @@ export async function test_postgresql_certification(): Promise<void> {
         file: "schema.sql",
         content: dedent`
       -- PostgreSQL 🐘
-      -- @evid docs/requirements.md#model Describes the table.
+      -- @evidence docs/requirements.md#model Describes the table.
       CREATE TABLE app.Item (
-        -- @evid docs/requirements.md#column Describes the identifier.
+        -- @evidence docs/requirements.md#column Describes the identifier.
         id integer,
-        -- @evid docs/requirements.md#relation Describes the foreign key.
+        -- @evidence docs/requirements.md#relation Describes the foreign key.
         FOREIGN KEY (id) REFERENCES app.Parent (id)
       );
     `,
@@ -97,9 +97,9 @@ export async function test_postgresql_certification(): Promise<void> {
         file: "schema.sql",
         content: dedent`
         -- PostgreSQL 🐘
-        -- @evid docs/requirements.md#attached Describes the table.
-        CREATE TABLE app.Item (value text DEFAULT '@evid docs/requirements.md#string Inert literal.');
-        -- @evid docs/requirements.md#unattached No following declaration.
+        -- @evidence docs/requirements.md#attached Describes the table.
+        CREATE TABLE app.Item (value text DEFAULT '@evidence docs/requirements.md#string Inert literal.');
+        -- @evidence docs/requirements.md#unattached No following declaration.
       `,
       },
       attachedTarget: "docs/requirements.md#attached",
@@ -114,12 +114,12 @@ export async function test_postgresql_certification(): Promise<void> {
     },
   };
 
-  const inventory = await DatabaseAdapterCertification.analyze(fixture);
-  DatabaseAdapterCertification.assertInventory(fixture, inventory);
-  await DatabaseAdapterCertification.assertGraph(fixture);
-  await DatabaseAdapterCertification.assertFailures(fixture);
-  await DatabaseAdapterCertification.assertFingerprint(fixture);
-  await DatabaseAdapterCertification.assertAmbiguity(fixture);
+  const inventory = await EvidDatabaseAdapterCertification.analyze(fixture);
+  EvidDatabaseAdapterCertification.assertInventory(fixture, inventory);
+  await EvidDatabaseAdapterCertification.assertGraph(fixture);
+  await EvidDatabaseAdapterCertification.assertFailures(fixture);
+  await EvidDatabaseAdapterCertification.assertFingerprint(fixture);
+  await EvidDatabaseAdapterCertification.assertAmbiguity(fixture);
   for (const mutation of ["unit", "kind", "host", "alias"]) {
     const mutated = structuredClone(inventory);
     if (mutation === "unit") mutated.units.pop();
@@ -136,7 +136,7 @@ export async function test_postgresql_certification(): Promise<void> {
     }
     let rejected = false;
     try {
-      DatabaseAdapterCertification.assertInventory(fixture, mutated);
+      EvidDatabaseAdapterCertification.assertInventory(fixture, mutated);
     } catch {
       rejected = true;
     }

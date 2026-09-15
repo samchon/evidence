@@ -2,7 +2,7 @@ import { EvidCAdapter, EvidLanguageRegistry } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Classifies the public C surface across tags, aliases, callables, objects, and members.
  *
@@ -32,7 +32,7 @@ export async function test_c_units(): Promise<void> {
   );
 
   const inventory = await new EvidCAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "include/shop.h",
       dedent`
         typedef struct Sale {

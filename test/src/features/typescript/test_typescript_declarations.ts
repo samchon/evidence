@@ -3,7 +3,7 @@ import type { IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Extracts TypeScript declarations across ambient and structural forms.
  *
@@ -49,7 +49,7 @@ export async function test_typescript_declarations(): Promise<void> {
     }
   `;
   const inventory = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create("src/declarations.d.ts", content),
+    EvidTestSourceSnapshot.create("src/declarations.d.ts", content),
   );
 
   TestValidator.equals(
@@ -116,12 +116,12 @@ export async function test_typescript_declarations(): Promise<void> {
 
   // Every TypeScript declaration-file extension makes namespace members ambient.
   const extensions = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/module.d.mts",
         "export namespace Mts { function run(): void; }",
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/common.d.cts",
         "export namespace Cts { function run(): void; }",
       ),

@@ -4,16 +4,18 @@ import { TestValidator } from "@nestia/e2e";
 import assert from "node:assert/strict";
 
 /**
- * Parses supported command forms while rejecting ambiguous and incompatible arguments.
+ * Parses supported command forms while rejecting ambiguous and incompatible
+ * arguments.
  *
  * The parser is the contract between CLI spelling and typed operations. It must
- * retain authored paths until execution, assign operation-specific defaults, and
- * stop invalid combinations before they can choose an unintended action.
+ * retain authored paths until execution, assign operation-specific defaults,
+ * and stop invalid combinations before they can choose an unintended action.
  *
  * 1. Require bare and explicit check forms to produce the same defaults, and
  *    require both watch aliases to enable watch on that command.
  * 2. Parse check, init, list, inspect, graph, and languages forms; verify their
- *    operation-specific options, defaults, and supported language or kind filters.
+ *    operation-specific options, defaults, and supported language or kind
+ *    filters.
  * 3. Require help and version flags to short-circuit project-option processing.
  * 4. Reject unknown commands and options, missing values, duplicate settings,
  *    unsupported formats, unsupported command-option pairs, malformed inspect
@@ -24,7 +26,7 @@ export function test_command_parse(): void {
   const defaults: IEvidCheckCommand = {
     operation: "check",
     cwd: ".",
-    config: "evid.config.ts",
+    config: "evidence.config.ts",
     format: "text",
   };
   TestValidator.equals("bare check", EvidCommand.parse([]), defaults);
@@ -35,10 +37,7 @@ export function test_command_parse(): void {
   );
   TestValidator.equals(
     "watch aliases",
-    [
-      EvidCommand.parse(["--watch"]),
-      EvidCommand.parse(["check", "-w"]),
-    ],
+    [EvidCommand.parse(["--watch"]), EvidCommand.parse(["check", "-w"])],
     [
       { ...defaults, watch: true },
       { ...defaults, watch: true },
@@ -53,7 +52,7 @@ export function test_command_parse(): void {
       "--cwd",
       "nested",
       "-c",
-      "config/evid.config.ts",
+      "config/evidence.config.ts",
       "--format",
       "json",
       "-o",
@@ -62,7 +61,7 @@ export function test_command_parse(): void {
     {
       operation: "check",
       cwd: "nested",
-      config: "config/evid.config.ts",
+      config: "config/evidence.config.ts",
       format: "json",
       output: "reports/evid.json",
     },
@@ -96,7 +95,7 @@ export function test_command_parse(): void {
     {
       operation: "list",
       cwd: ".",
-      config: "evid.config.ts",
+      config: "evidence.config.ts",
       format: "json",
       language: "typescript",
       kind: "property",
@@ -108,7 +107,7 @@ export function test_command_parse(): void {
     {
       operation: "list",
       cwd: ".",
-      config: "evid.config.ts",
+      config: "evidence.config.ts",
       format: "text",
       language: "kotlin",
     },
@@ -125,7 +124,7 @@ export function test_command_parse(): void {
       operation: "inspect",
       target: "src/contract.ts#Contract.member",
       cwd: "project",
-      config: "evid.config.ts",
+      config: "evidence.config.ts",
       format: "text",
     },
   );
@@ -135,7 +134,7 @@ export function test_command_parse(): void {
     {
       operation: "graph",
       cwd: ".",
-      config: "evid.config.ts",
+      config: "evidence.config.ts",
       format: "dot",
     },
   );
@@ -162,11 +161,9 @@ export function test_command_parse(): void {
       { operation: "help" },
     );
   for (const flag of ["--version", "-v"])
-    TestValidator.equals(
-      `version flag: ${flag}`,
-      EvidCommand.parse([flag]),
-      { operation: "version" },
-    );
+    TestValidator.equals(`version flag: ${flag}`, EvidCommand.parse([flag]), {
+      operation: "version",
+    });
 
   // Typos, duplicates, bad formats, and incompatible flags all fail loudly.
   for (const args of [
@@ -178,7 +175,7 @@ export function test_command_parse(): void {
     ["--format", "yaml"],
     ["init", "--format", "json"],
     ["init", "--output", "report.txt"],
-    ["languages", "--config", "evid.config.ts"],
+    ["languages", "--config", "evidence.config.ts"],
     ["graph", "--format", "text"],
     ["inspect"],
     ["inspect", "one.ts#A", "two.ts#B"],

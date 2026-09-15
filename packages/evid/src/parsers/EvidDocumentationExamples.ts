@@ -44,20 +44,21 @@ interface IEvidHtmlMarkupTag {
 }
 
 /**
- * Coordinates example masking shared by programming-language documentation readers.
+ * Coordinates example masking shared by programming-language documentation
+ * readers.
  *
  * Several documentation syntaxes permit both Markdown code and HTML example
  * elements. Their precedence must be decided across the whole comment before an
- * adapter looks for Evid tags; otherwise a literal `<pre>` in one fence can
- * consume real prose and annotations after that fence.
+ * adapter looks for Evidence Graph tags; otherwise a literal `<pre>` in one
+ * fence can consume real prose and annotations after that fence.
  */
 export namespace EvidDocumentationExamples {
   /**
    * Finds the least indentation shared by nonempty documentation lines.
    *
    * Comment-prefix removal can leave one ordinary padding column. Fence and
-   * indented-code decisions must measure from that baseline rather than from the
-   * physical source column or fully trimmed text.
+   * indented-code decisions must measure from that baseline rather than from
+   * the physical source column or fully trimmed text.
    */
   export function baseline(input: string): number {
     const values: number[] = input
@@ -105,9 +106,9 @@ export namespace EvidDocumentationExamples {
    * Tags inside Markdown fences or closed inline-code spans are literals and do
    * not participate in pairing. In the default HTML mode, slash syntax does not
    * self-close supported non-void elements; C# selects XML mode so its true
-   * self-closing elements mask only their tag. Matched regions and openings that
-   * remain active through the host end become spaces while CR/LF bytes remain
-   * intact, preserving the source map already owned by the adapter.
+   * self-closing elements mask only their tag. Matched regions and openings
+   * that remain active through the host end become spaces while CR/LF bytes
+   * remain intact, preserving the source map already owned by the adapter.
    */
   export function maskHtml(
     characters: string[],
@@ -149,7 +150,7 @@ export namespace EvidDocumentationExamples {
   }
 
   /**
-   * Masks HTML comments before Evid tag lines are classified.
+   * Masks HTML comments before Evidence Graph tag lines are classified.
    *
    * Comment delimiters inside Markdown code remain literal. Closed and unclosed
    * real comments retain their newline bytes and source length so every visible
@@ -174,9 +175,10 @@ export namespace EvidDocumentationExamples {
 /**
  * Adds adapter-native example ranges to the shared precedence map.
  *
- * Doxygen, Javadoc, and Scaladoc mask their own code syntax before HTML pairing.
- * Comparing the coordinate-preserving character buffer with the original input
- * prevents literal tags in those regions from crossing into ordinary prose.
+ * Doxygen, Javadoc, and Scaladoc mask their own code syntax before HTML
+ * pairing. Comparing the coordinate-preserving character buffer with the
+ * original input prevents literal tags in those regions from crossing into
+ * ordinary prose.
  */
 function markExistingMasks(
   inert: boolean[],
@@ -226,7 +228,8 @@ function hideHtmlComments(
  *
  * Fence closing rules retain marker kind and minimum delimiter length. Prose
  * lines are then scanned for closed inline-code spans, leaving unmatched
- * backticks available as ordinary text instead of hiding the rest of a comment.
+ * backticks available as ordinary text instead of hiding the rest of a
+ * comment.
  */
 function mapMarkdownCode(input: string): boolean[] {
   const output: boolean[] = new Array<boolean>(input.length).fill(false);
@@ -350,9 +353,9 @@ function mark(output: boolean[], start: number, end: number): void {
 /**
  * Replaces a half-open example range while retaining newline bytes and length.
  *
- * EvidDocumentation has already mapped this text to physical source
- * offsets, so deleting content or normalizing line endings would corrupt every
- * subsequent diagnostic range.
+ * EvidDocumentation has already mapped this text to physical source offsets, so
+ * deleting content or normalizing line endings would corrupt every subsequent
+ * diagnostic range.
  */
 function hide(characters: string[], start: number, end: number): void {
   for (let index: number = start; index < end; ++index)

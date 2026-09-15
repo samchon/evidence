@@ -1,8 +1,8 @@
 import { EvidSqliteAdapter } from "evid";
 import { dedent } from "@typia/utils";
 
-import { DatabaseAdapterCertification } from "../../internal/certification/DatabaseAdapterCertification";
-import type { IDatabaseAdapterCertification } from "../../internal/certification/IDatabaseAdapterCertification";
+import { EvidDatabaseAdapterCertification } from "../../internal/certification/EvidDatabaseAdapterCertification";
+import type { IEvidDatabaseAdapterCertification } from "../../internal/certification/IEvidDatabaseAdapterCertification";
 
 /** Applies shared database certification to independently specified SQLite behavior.
  *
@@ -13,7 +13,7 @@ import type { IDatabaseAdapterCertification } from "../../internal/certification
  * 3. Require every declared gate to pass.
  */
 export async function test_sqlite_certification(): Promise<void> {
-  const fixture: IDatabaseAdapterCertification = {
+  const fixture: IEvidDatabaseAdapterCertification = {
     type: "sqlite",
     adapter: new EvidSqliteAdapter(),
     sources: [
@@ -21,11 +21,11 @@ export async function test_sqlite_certification(): Promise<void> {
         file: "schema.sql",
         content: dedent`
       -- SQLite 계약 😀
-      -- @evid docs/requirements.md#model Describes the table.
+      -- @evidence docs/requirements.md#model Describes the table.
       CREATE TABLE Account (
-        -- @evid docs/requirements.md#column Describes the owner.
+        -- @evidence docs/requirements.md#column Describes the owner.
         owner INTEGER DEFAULT 1,
-        -- @evid docs/requirements.md#relation Describes the foreign key.
+        -- @evidence docs/requirements.md#relation Describes the foreign key.
         CONSTRAINT owner_link FOREIGN KEY (owner) REFERENCES Owners(id)
       );
     `,
@@ -111,9 +111,9 @@ export async function test_sqlite_certification(): Promise<void> {
       source: {
         file: "schema.sql",
         content: dedent`
-      -- @evid docs/requirements.md#attached Real documentation.
-      CREATE TABLE Plain (text_value TEXT DEFAULT '@evid docs/requirements.md#literal Inert text.');
-      -- @evid docs/requirements.md#detached Detached comment.
+      -- @evidence docs/requirements.md#attached Real documentation.
+      CREATE TABLE Plain (text_value TEXT DEFAULT '@evidence docs/requirements.md#literal Inert text.');
+      -- @evidence docs/requirements.md#detached Detached comment.
     `,
       },
       attachedTarget: "docs/requirements.md#attached",
@@ -128,12 +128,12 @@ export async function test_sqlite_certification(): Promise<void> {
     },
   };
 
-  DatabaseAdapterCertification.assertInventory(
+  EvidDatabaseAdapterCertification.assertInventory(
     fixture,
-    await DatabaseAdapterCertification.analyze(fixture),
+    await EvidDatabaseAdapterCertification.analyze(fixture),
   );
-  await DatabaseAdapterCertification.assertGraph(fixture);
-  await DatabaseAdapterCertification.assertFailures(fixture);
-  await DatabaseAdapterCertification.assertFingerprint(fixture);
-  await DatabaseAdapterCertification.assertAmbiguity(fixture);
+  await EvidDatabaseAdapterCertification.assertGraph(fixture);
+  await EvidDatabaseAdapterCertification.assertFailures(fixture);
+  await EvidDatabaseAdapterCertification.assertFingerprint(fixture);
+  await EvidDatabaseAdapterCertification.assertAmbiguity(fixture);
 }

@@ -1,7 +1,7 @@
 import { EvidDartAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Rejects contradictory Dart library topology and ambiguous exports.
  *
@@ -46,9 +46,9 @@ export async function test_dart_library_failures(): Promise<void> {
     ],
   ])) {
     const inventory = await adapter.analyze(
-      TestSourceSnapshot.combine(
+      EvidTestSourceSnapshot.combine(
         sources.map((content, index) =>
-          TestSourceSnapshot.create(
+          EvidTestSourceSnapshot.create(
             index === 0 ? "src/api.dart" : "src/part.dart",
             content,
           ),
@@ -67,16 +67,16 @@ export async function test_dart_library_failures(): Promise<void> {
   }
   for (const local of [false, true]) {
     const inventory = await adapter.analyze(
-      TestSourceSnapshot.combine([
-        TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.combine([
+        EvidTestSourceSnapshot.create(
           "src/api.dart",
           `export 'a.dart'; export 'b.dart'; ${local ? "class Shared {}" : ""}`,
         ),
-        TestSourceSnapshot.create(
+        EvidTestSourceSnapshot.create(
           "src/a.dart",
           "export 'api.dart'; class Shared {}",
         ),
-        TestSourceSnapshot.create("src/b.dart", "class Shared {}"),
+        EvidTestSourceSnapshot.create("src/b.dart", "class Shared {}"),
       ]),
     );
     TestValidator.equals(

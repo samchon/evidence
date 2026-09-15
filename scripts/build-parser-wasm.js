@@ -69,7 +69,7 @@ async function main() {
   const digest = sha256(first.bytes);
   const tag = `grammar-${id}-${digest}`;
   const wasmName = `tree-sitter-${id}.wasm`;
-  const repository = process.env.GITHUB_REPOSITORY || "wrtnlabs/evidence";
+  const repository = process.env.GITHUB_REPOSITORY || "wrtnlabs/evid";
   const record = {
     id,
     repository: recipe.repository,
@@ -114,7 +114,7 @@ async function main() {
             path.join(
               path.dirname(
                 createRequire(
-                  path.join(root, "packages/evidence/package.json"),
+                  path.join(root, "packages/evid/package.json"),
                 ).resolve("web-tree-sitter"),
               ),
               "package.json",
@@ -227,7 +227,7 @@ async function build(recipe, base, name, cli, env) {
 /** Parses a real declaration and queries its name with the installed engine/grammar pair. */
 async function verify(recipe, bytes) {
   const requireEvid = createRequire(
-    path.join(root, "packages/evidence/package.json"),
+    path.join(root, "packages/evid/package.json"),
   );
   const { Parser, Language, Query } = requireEvid("web-tree-sitter");
   await Parser.init({

@@ -1,17 +1,22 @@
 import type { IEvidFileGlobPattern } from "./IEvidFileGlobPattern";
 
 /**
- * Matches the restricted Evid glob language: `*`, `**`, `?`, and ordered negation.
+ * Matches the restricted Evid glob language: `*`, `**`, `?`, and ordered
+ * negation.
  *
  * The matcher operates on portable path segments, keeping selection independent
- * of host separator conventions and refusing patterns that escape a population root.
+ * of host separator conventions and refusing patterns that escape a population
+ * root.
  */
 export class EvidFileGlob {
   private readonly patterns: IEvidFileGlobPattern[];
 
-  /** Compiles ordered patterns and requires at least one positive selection baseline.
+  /**
+   * Compiles ordered patterns and requires at least one positive selection
+   * baseline.
    *
-   * A population with only exclusions would have no defined initial set, so configuration validation rejects it at construction.
+   * A population with only exclusions would have no defined initial set, so
+   * configuration validation rejects it at construction.
    */
   public constructor(patterns: readonly string[]) {
     this.patterns = patterns.map(compile);
@@ -21,9 +26,11 @@ export class EvidFileGlob {
       );
   }
 
-  /** Applies every matching pattern in declaration order.
+  /**
+   * Applies every matching pattern in declaration order.
    *
-   * Later matching positives or exclusions replace the inclusion decision made by earlier patterns.
+   * Later matching positives or exclusions replace the inclusion decision made
+   * by earlier patterns.
    */
   public matches(location: string): boolean {
     const segments = split(location);
@@ -33,9 +40,11 @@ export class EvidFileGlob {
     return included;
   }
 
-  /** Determines whether a directory can contain a selected descendant.
+  /**
+   * Determines whether a directory can contain a selected descendant.
    *
-   * Discovery uses this conservative result to prune traversal without excluding descendants restored by a later positive pattern.
+   * Discovery uses this conservative result to prune traversal without
+   * excluding descendants restored by a later positive pattern.
    */
   public couldMatchDescendant(directory: string): boolean {
     const prefix = split(directory);
@@ -52,9 +61,12 @@ export class EvidFileGlob {
   }
 }
 
-/** Parses one authored glob into normalized segments while rejecting ambiguous root escapes.
+/**
+ * Parses one authored glob into normalized segments while rejecting ambiguous
+ * root escapes.
  *
- * `EvidFileGlob` uses the result for portable matching relative to one selected population root.
+ * `EvidFileGlob` uses the result for portable matching relative to one selected
+ * population root.
  */
 function compile(raw: string): IEvidFileGlobPattern {
   if (raw.trim() === "") throw new Error("Glob strings must not be empty.");
@@ -74,9 +86,12 @@ function compile(raw: string): IEvidFileGlobPattern {
   return { segments, exclude };
 }
 
-/** Splits a candidate path into portable relative segments without filesystem resolution.
+/**
+ * Splits a candidate path into portable relative segments without filesystem
+ * resolution.
  *
- * Matching operates on these normalized segments so Windows and POSIX separators have identical selection semantics.
+ * Matching operates on these normalized segments so Windows and POSIX
+ * separators have identical selection semantics.
  */
 function split(value: string): string[] {
   let normalized = value.replaceAll("\\", "/");
@@ -85,9 +100,12 @@ function split(value: string): string[] {
   return normalized === "" || normalized === "." ? [] : normalized.split("/");
 }
 
-/** Matches a pattern with memoized globstar branches bounded by the pattern and path grid.
+/**
+ * Matches a pattern with memoized globstar branches bounded by the pattern and
+ * path grid.
  *
- * Memoization prevents repeated `**` branches from causing exponential discovery work for long paths.
+ * Memoization prevents repeated `**` branches from causing exponential
+ * discovery work for long paths.
  */
 function match(
   pattern: readonly string[],
@@ -122,7 +140,8 @@ function match(
 }
 
 /**
- * Matches one segment where star and question mark never cross a separator boundary.
+ * Matches one segment where star and question mark never cross a separator
+ * boundary.
  *
  * A question mark consumes one Unicode code point, as in the Go matcher.
  */

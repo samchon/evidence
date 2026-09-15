@@ -2,7 +2,7 @@ import { EvidJavaScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Classifies JavaScript declarations, public members, and literal names.
  *
@@ -14,7 +14,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_javascript_units(): Promise<void> {
   const inventory = await new EvidJavaScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/contracts.mjs",
       dedent`
         export class Service {
@@ -83,12 +83,12 @@ export async function test_javascript_units(): Promise<void> {
   );
 
   const defaults = await new EvidJavaScriptAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/default-arrow.mjs",
         "export default async () => 1;",
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/default-value.mjs",
         "export default { enabled: true };",
       ),

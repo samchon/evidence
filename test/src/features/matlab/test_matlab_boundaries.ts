@@ -4,7 +4,7 @@ import {
 } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Rejects MATLAB inputs whose public surface cannot be determined safely.
  *
@@ -33,7 +33,7 @@ export async function test_matlab_boundaries(): Promise<void> {
     "@interface Dynamic\n@end\n",
   ]) {
     const inventory = await adapter.analyze(
-      TestSourceSnapshot.create("src/Dynamic.m", content),
+      EvidTestSourceSnapshot.create("src/Dynamic.m", content),
     );
     TestValidator.equals(`incomplete ${content}`, inventory.complete, false);
     TestValidator.predicate(
@@ -48,7 +48,7 @@ export async function test_matlab_boundaries(): Promise<void> {
     "class closing semicolon is a supported delimiter",
     (
       await adapter.analyze(
-        TestSourceSnapshot.create("src/Dynamic.m", "classdef Dynamic\nend;"),
+        EvidTestSourceSnapshot.create("src/Dynamic.m", "classdef Dynamic\nend;"),
       )
     ).complete,
     true,
@@ -57,7 +57,7 @@ export async function test_matlab_boundaries(): Promise<void> {
     "class introspection does not create a legacy declaration",
     (
       await adapter.analyze(
-        TestSourceSnapshot.create(
+        EvidTestSourceSnapshot.create(
           "src/Dynamic.m",
           "function value=Dynamic(input)\nvalue=class(input);\nend\n",
         ),
@@ -70,7 +70,7 @@ export async function test_matlab_boundaries(): Promise<void> {
       `reject nontext source ${extension}`,
       (
         await adapter.analyze(
-          TestSourceSnapshot.create(
+          EvidTestSourceSnapshot.create(
             `src/Dynamic${extension}`,
             "function Dynamic()\nend\n",
           ),
@@ -83,7 +83,7 @@ export async function test_matlab_boundaries(): Promise<void> {
     EvidLanguageRegistry.select("matlab", "Shared.m").id,
     "matlab",
   );
-  const unavailable = TestSourceSnapshot.create("src/missing.m", "");
+  const unavailable = EvidTestSourceSnapshot.create("src/missing.m", "");
   unavailable.complete = false;
   unavailable.diagnostics.push({
     code: "path-unreadable",

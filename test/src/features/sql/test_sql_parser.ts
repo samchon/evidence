@@ -1,10 +1,13 @@
-import { EvidParser, EvidSqlAdapter } from "evid";
+import {
+  EvidParser,
+  EvidSqlAdapter,
+  EvidTreeSitterAssetScope,
+  EvidTreeSitterAssets,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
-import { EvidTreeSitterAssetScope } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssetScope";
-import { EvidTreeSitterAssets } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssets";
-import { TestFileSystem } from "../../internal/TestFileSystem";
-import { TestParserAssets } from "../../internal/TestParserAssets";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Loads the configured SQL grammar and preserves offline adapter analysis.
  *
@@ -16,12 +19,12 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_sql_parser(): Promise<void> {
   const grammar = await new EvidTreeSitterAssets().grammar("sql");
-  const bytes = await TestParserAssets.bytes(grammar);
-  const snapshot = TestSourceSnapshot.create(
+  const bytes = await EvidTestParserAssets.bytes(grammar);
+  const snapshot = EvidTestSourceSnapshot.create(
     "schema.sql",
     "CREATE TABLE account (id INTEGER);",
   );
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "sql-parser-cache",
     {},
     async (cacheDirectory) => {

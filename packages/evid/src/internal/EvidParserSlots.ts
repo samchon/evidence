@@ -9,14 +9,16 @@ export class EvidParserSlots {
   /**
    * Number of reserved slots, including slots transferred to queued requests.
    *
-   * A transfer keeps this count unchanged until the receiving request releases it.
+   * A transfer keeps this count unchanged until the receiving request releases
+   * it.
    */
   public active = 0;
 
   /**
    * Whether admission has closed to new requests.
    *
-   * Accepted requests may still be active or queued while close waits for drainage.
+   * Accepted requests may still be active or queued while close waits for
+   * drainage.
    */
   public closed = false;
 
@@ -30,12 +32,14 @@ export class EvidParserSlots {
   /**
    * Close callers waiting for the final reserved slot to be released.
    *
-   * Retaining all resolvers makes repeated concurrent close calls await one drain.
+   * Retaining all resolvers makes repeated concurrent close calls await one
+   * drain.
    */
   private readonly drains: (() => void)[] = [];
 
   /**
-   * Creates an empty queue with the parser runtime's validated concurrency limit.
+   * Creates an empty queue with the parser runtime's validated concurrency
+   * limit.
    *
    * Validation belongs to the public parser options boundary; this queue only
    * manages ownership and assumes a positive integer limit.
@@ -44,7 +48,8 @@ export class EvidParserSlots {
     /**
      * Maximum simultaneously reserved slots.
      *
-     * Requests beyond this bound wait until an existing owner releases its slot.
+     * Requests beyond this bound wait until an existing owner releases its
+     * slot.
      */
     private readonly limit: number,
   ) {}
@@ -52,7 +57,8 @@ export class EvidParserSlots {
   /**
    * Counts accepted requests that do not yet own a slot.
    *
-   * Runtime state inspection uses this separately from the active reservation count.
+   * Runtime state inspection uses this separately from the active reservation
+   * count.
    */
   public get waiting(): number {
     return this.queue.length;
@@ -94,7 +100,8 @@ export class EvidParserSlots {
   }
 
   /**
-   * Stops new admission and waits for every accepted request to release ownership.
+   * Stops new admission and waits for every accepted request to release
+   * ownership.
    *
    * Call this outside an owned slot; awaiting close while holding a slot would
    * wait for the caller's own release.

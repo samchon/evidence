@@ -15,8 +15,8 @@ import { randomUUID } from "node:crypto";
 import { rename, rm } from "node:fs/promises";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Preserves review fingerprints across real checkout and file-identity changes.
@@ -43,28 +43,28 @@ export async function test_fingerprint_portability(): Promise<void> {
     `fingerprint portability ${randomUUID()}`,
   );
   const content: string = `# Rule {#rule}\n\nDo the work.\n`;
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     {
-      "checkout-a/evid.config.ts": `export default {};\n`,
+      "checkout-a/evidence.config.ts": `export default {};\n`,
       "checkout-a/rules.md": content,
-      "checkout-b/evid.config.ts": `export default {};\n`,
+      "checkout-b/evidence.config.ts": `export default {};\n`,
       "checkout-b/rules.md": content,
-      "checkout-crlf/evid.config.ts": `export default {};\r\n`,
+      "checkout-crlf/evidence.config.ts": `export default {};\r\n`,
       "checkout-crlf/rules.md": content.replaceAll("\n", "\r\n"),
     },
     async (directory: string): Promise<void> => {
       const firstConfig: string = join(
         directory,
-        "checkout-a/evid.config.ts",
+        "checkout-a/evidence.config.ts",
       );
       const secondConfig: string = join(
         directory,
-        "checkout-b/evid.config.ts",
+        "checkout-b/evidence.config.ts",
       );
       const crlfConfig: string = join(
         directory,
-        "checkout-crlf/evid.config.ts",
+        "checkout-crlf/evidence.config.ts",
       );
       const firstSnapshot: IEvidSourceSnapshot =
         await EvidSourceLoader.glob(firstConfig, { files: ["rules.md"] });
@@ -95,7 +95,7 @@ export async function test_fingerprint_portability(): Promise<void> {
       const active: string = join(directory, "checkout-a/rules.md");
       const replacement: string = join(directory, "checkout-a/rules.new.md");
       const retired: string = join(directory, "checkout-a/rules.old.md");
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "checkout-a/rules.new.md": content,
       });
       await rename(active, retired);
@@ -119,7 +119,7 @@ export async function test_fingerprint_portability(): Promise<void> {
         baseline,
       );
 
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "checkout-a/rules.md": content.replace("Do the work.", "Do more work."),
       });
       const changedSnapshot: IEvidSourceSnapshot =
@@ -144,7 +144,7 @@ export async function test_fingerprint_portability(): Promise<void> {
         baseline,
       );
 
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "checkout-b/other.md": content,
       });
       const distinctSnapshot: IEvidSourceSnapshot =
@@ -169,7 +169,7 @@ export async function test_fingerprint_portability(): Promise<void> {
     },
   );
 
-  const targetSnapshot: IEvidSourceSnapshot = TestSourceSnapshot.create(
+  const targetSnapshot: IEvidSourceSnapshot = EvidTestSourceSnapshot.create(
     "target.ts",
     "export interface Rule { value: string; }\n",
   );
@@ -177,7 +177,7 @@ export async function test_fingerprint_portability(): Promise<void> {
   if (targetSource === undefined)
     throw new Error("Target portability snapshot is empty.");
   targetSource.id = "source:ab";
-  const unrelatedSnapshot: IEvidSourceSnapshot = TestSourceSnapshot.create(
+  const unrelatedSnapshot: IEvidSourceSnapshot = EvidTestSourceSnapshot.create(
     "unrelated/with-a-longer-physical-path.ts",
     "export interface Noise { value: string; }\n",
   );
@@ -190,7 +190,7 @@ export async function test_fingerprint_portability(): Promise<void> {
   const adapter: EvidTypeScriptAdapter = new EvidTypeScriptAdapter();
   const isolated: IEvidInventory = await adapter.analyze(targetSnapshot);
   const combined: IEvidInventory = await adapter.analyze(
-    TestSourceSnapshot.combine([unrelatedSnapshot, targetSnapshot]),
+    EvidTestSourceSnapshot.combine([unrelatedSnapshot, targetSnapshot]),
   );
   TestValidator.equals(
     "prefixing source identity does not change fingerprint",

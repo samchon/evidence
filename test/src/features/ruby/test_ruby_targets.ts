@@ -3,8 +3,8 @@ import type { EvidTargetResolutionStatus } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 interface IRubyTargetStatus {
   target: string | undefined;
@@ -23,7 +23,7 @@ interface IRubyTargetStatus {
 export async function test_ruby_targets(): Promise<void> {
   const adapter = new EvidRubyAdapter();
   const reference = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "lib/shop/sale.rb",
       dedent`
         module Shop
@@ -40,17 +40,17 @@ export async function test_ruby_targets(): Promise<void> {
     ),
   );
   const claim = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "test/verify.rb",
       dedent`
         module Verify
-          # @evid ../lib/shop/sale.rb#Shop.Sale Verifies the class.
-          # @evid ../lib/shop/sale.rb#Shop.Sale.total Verifies the instance method.
-          # @evid ../lib/shop/sale.rb#Shop.Sale.self.find Verifies the singleton method.
-          # @evid ../lib/shop/sale.rb#Shop.Sale.status Verifies the attribute.
-          # @evid ../lib/shop/sale.rb#Shop.Sale["price="] Verifies the setter.
-          # @evid ../lib/shop/sale.rb#Shop.Sale["[]"] Verifies the operator.
-          # @evid ../lib/shop/sale.rb#Shop.Sale.find Does not erase the method side.
+          # @evidence ../lib/shop/sale.rb#Shop.Sale Verifies the class.
+          # @evidence ../lib/shop/sale.rb#Shop.Sale.total Verifies the instance method.
+          # @evidence ../lib/shop/sale.rb#Shop.Sale.self.find Verifies the singleton method.
+          # @evidence ../lib/shop/sale.rb#Shop.Sale.status Verifies the attribute.
+          # @evidence ../lib/shop/sale.rb#Shop.Sale["price="] Verifies the setter.
+          # @evidence ../lib/shop/sale.rb#Shop.Sale["[]"] Verifies the operator.
+          # @evidence ../lib/shop/sale.rb#Shop.Sale.find Does not erase the method side.
           def run; end
         end
       `,
@@ -63,7 +63,7 @@ export async function test_ruby_targets(): Promise<void> {
     [],
   );
   TestValidator.equals("complete Ruby target claim", claim.diagnostics, []);
-  const resolutions = await TestGraph.resolveDeclarations(
+  const resolutions = await EvidTestGraph.resolveDeclarations(
     claim,
     reference,
     reference.units.map((unit) => unit.id),

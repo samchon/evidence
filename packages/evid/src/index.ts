@@ -74,12 +74,31 @@ export { EvidConfigLoader } from "./loaders/EvidConfigLoader";
 export { EvidSourceLoader } from "./loaders/EvidSourceLoader";
 
 /**
+ * Exports advanced source, configuration, and parser-cache utilities.
+ *
+ * Test and integration authors use these supported boundaries through the package
+ * entry point rather than reaching into package source paths.
+ */
+export { EvidConfigDependencyScanner } from "./internal/EvidConfigDependencyScanner";
+export { EvidFileGlob } from "./internal/EvidFileGlob";
+export { EvidSourcePath } from "./internal/EvidSourcePath";
+export { EvidSourceText } from "./internal/EvidSourceText";
+export { EvidTreeSitterAssetCache } from "./internal/EvidTreeSitterAssetCache";
+export { EvidTreeSitterAssets } from "./internal/EvidTreeSitterAssets";
+export { EvidTreeSitterAssetScope } from "./internal/EvidTreeSitterAssetScope";
+export { EvidWatchDependencySnapshot } from "./internal/EvidWatchDependencySnapshot";
+export { createEvidConfigPlan } from "./internal/createEvidConfigPlan";
+export { evaluateTypeScriptConfig } from "./internal/evaluateTypeScriptConfig";
+export { validateEvidConfig } from "./internal/validateEvidConfig";
+
+/**
  * Exports parser sessions, documentation tags, and certified language registry access.
  *
  * Adapter implementations use these boundaries to parse supported artifacts and
  * interpret evidence annotations without importing the command execution layer.
  */
 export { EvidDocumentation } from "./parsers/EvidDocumentation";
+export { EvidDocumentationExamples } from "./parsers/EvidDocumentationExamples";
 export { EvidLanguageRegistry } from "./parsers/EvidLanguageRegistry";
 export { EvidParser } from "./parsers/EvidParser";
 export { EvidParserError } from "./parsers/EvidParserError";

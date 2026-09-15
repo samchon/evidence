@@ -36,10 +36,12 @@ export class EvidSourceCollector {
   private readonly diagnostics: IEvidSourceDiagnostic[] = [];
 
   /**
-   * Initializes collection for one declared root relative to its configuration file.
+   * Initializes collection for one declared root relative to its configuration
+   * file.
    *
-   * Construction records lexical and display paths only; scanning later resolves
-   * the filesystem so a caller can configure globs before any access occurs.
+   * Construction records lexical and display paths only; scanning later
+   * resolves the filesystem so a caller can configure globs before any access
+   * occurs.
    */
   public constructor(configFile: string, declared: string) {
     this.directory = path.dirname(path.resolve(configFile));
@@ -52,7 +54,8 @@ export class EvidSourceCollector {
   }
 
   /**
-   * Recursively discovers files selected by ordered globs and records root failures.
+   * Recursively discovers files selected by ordered globs and records root
+   * failures.
    *
    * The collector retains failed root paths as dependencies so watch mode can
    * observe the repair instead of requiring a configuration edit.
@@ -73,7 +76,8 @@ export class EvidSourceCollector {
   }
 
   /**
-   * Loads one exact local source path and retains failures as watch dependencies.
+   * Loads one exact local source path and retains failures as watch
+   * dependencies.
    *
    * Exact selection rejects remote URLs and reports filesystem errors without
    * aborting sibling source collection work.
@@ -117,7 +121,8 @@ export class EvidSourceCollector {
   }
 
   /**
-   * Returns collected files, dependencies, and diagnostics for one analysis pass.
+   * Returns collected files, dependencies, and diagnostics for one analysis
+   * pass.
    *
    * Addresses, files, and dependencies are sorted with bytewise comparisons so
    * equivalent source snapshots do not vary with filesystem traversal order.
@@ -149,7 +154,8 @@ export class EvidSourceCollector {
   }
 
   /**
-   * Walks a physical directory through its logical address while preventing symlink cycles.
+   * Walks a physical directory through its logical address while preventing
+   * symlink cycles.
    *
    * The traversal retains both spellings: logical paths form public addresses,
    * while physical identity detects recursive links and duplicate files.
@@ -217,7 +223,8 @@ export class EvidSourceCollector {
   }
 
   /**
-   * Reads one stable physical file after validating metadata before and after I/O.
+   * Reads one stable physical file after validating metadata before and after
+   * I/O.
    *
    * Alias addresses coalesce only when their device and inode version remains
    * stable, preventing a changing file from yielding an incoherent snapshot.
@@ -297,10 +304,11 @@ export class EvidSourceCollector {
   }
 
   /**
-   * Resolves each symlink component while tracking links and configured path casing.
+   * Resolves each symlink component while tracking links and configured path
+   * casing.
    *
-   * Exact-case validation protects portable source identities, and link tracking
-   * reports cycles before recursive filesystem resolution can loop.
+   * Exact-case validation protects portable source identities, and link
+   * tracking reports cycles before recursive filesystem resolution can loop.
    */
   private async resolvePhysical(
     absolute: string,
@@ -350,10 +358,12 @@ export class EvidSourceCollector {
   }
 
   /**
-   * Merges a dependency observation and retains recursive monitoring when required.
+   * Merges a dependency observation and retains recursive monitoring when
+   * required.
    *
-   * Multiple reads of one path share a dependency record; any directory consumer
-   * can promote it to recursive watching without losing earlier observations.
+   * Multiple reads of one path share a dependency record; any directory
+   * consumer can promote it to recursive watching without losing earlier
+   * observations.
    */
   private watch(location: string, recursive: boolean): void {
     const existing = this.dependencies.get(location);
@@ -366,8 +376,9 @@ export class EvidSourceCollector {
   /**
    * Converts an expected collection failure into a retained diagnostic.
    *
-   * Sibling paths continue scanning, while `EvidSourceFailure` preserves its specific
-   * diagnostic code instead of becoming the caller-supplied fallback category.
+   * Sibling paths continue scanning, while `EvidSourceFailure` preserves its
+   * specific diagnostic code instead of becoming the caller-supplied fallback
+   * category.
    */
   private report(
     fallback: IEvidSourceDiagnostic["code"],

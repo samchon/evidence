@@ -1,24 +1,25 @@
 import { EvidParser } from "evid";
-import type {
-  EvidParseSession,
-  IEvidParserInput,
-} from "evid";
+import type { EvidParseSession, IEvidParserInput } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestParserError } from "../../internal/TestParserError";
-import { TestSignal } from "../../internal/TestSignal";
+import { EvidTestParserError } from "../../internal/EvidTestParserError";
+import { EvidTestSignal } from "../../internal/EvidTestSignal";
 
 /**
- * Bounds parser sessions and drains accepted work after callback failure and close.
+ * Bounds parser sessions and drains accepted work after callback failure and
+ * close.
  *
- * A one-slot parser holds its first callback behind a signal while another request
- * queues. Shutdown and callback rejection must release resources without losing
- * already accepted work or allowing callers to reuse borrowed sessions.
+ * A one-slot parser holds its first callback behind a signal while another
+ * request queues. Shutdown and callback rejection must release resources
+ * without losing already accepted work or allowing callers to reuse borrowed
+ * sessions.
  *
  * 1. Hold the first callback, queue a second parse, and require one active and one
- *    waiting request. Mutate the shared request object after submitting the second.
+ *    waiting request. Mutate the shared request object after submitting the
+ *    second.
  * 2. Begin close and require a newly submitted parse to reject as session-closed.
  * 3. Release the first callback and verify that:
+ *
  *    - Its original error object propagates unchanged.
  *    - The queued parse drains using the original identifier `answer`.
  *    - Closing finishes with no active or waiting requests.
@@ -27,8 +28,8 @@ import { TestSignal } from "../../internal/TestSignal";
  */
 export async function test_parser_lifetime(): Promise<void> {
   const parser = new EvidParser({ concurrency: 1 });
-  const entered = new TestSignal();
-  const release = new TestSignal();
+  const entered = new EvidTestSignal();
+  const release = new EvidTestSignal();
   const borrowed: EvidParseSession[] = [];
   const expected = new Error("Adapter callback failed.");
   const input: IEvidParserInput = {
@@ -59,7 +60,7 @@ export async function test_parser_lifetime(): Promise<void> {
     TestValidator.equals("one queued request", parser.state().waiting, 1);
 
     const closing = parser.close();
-    await TestParserError.expect("session-closed", () =>
+    await EvidTestParserError.expect("session-closed", () =>
       parser.parse(input, (session) => session.root.type),
     );
     release.open();
@@ -78,7 +79,7 @@ export async function test_parser_lifetime(): Promise<void> {
   TestValidator.equals("all capacity released", parser.state().active, 0);
   TestValidator.equals("no pending work", parser.state().waiting, 0);
   for (const session of borrowed)
-    await TestParserError.expect("session-closed", () =>
+    await EvidTestParserError.expect("session-closed", () =>
       session.captures("(identifier) @name"),
     );
 

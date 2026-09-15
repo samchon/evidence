@@ -2,7 +2,7 @@ import { EvidCSharpAdapter, EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Attaches C# XML documentation and rejects inert source carriers.
  *
@@ -14,55 +14,55 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_csharp_hosts(): Promise<void> {
   const inventory = await new EvidCSharpAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Contracts.cs",
       dedent`
         /// <summary>
-        /// @evid docs/requirements.md#type Implements the public type.
+        /// @evidence docs/requirements.md#type Implements the public type.
         /// <code>
-        /// @evid docs/requirements.md#code Code examples are inert.
+        /// @evidence docs/requirements.md#code Code examples are inert.
         /// </code>
         /// <example>
-        /// @evid docs/requirements.md#example Examples are inert.
+        /// @evidence docs/requirements.md#example Examples are inert.
         /// </example>
-        /// <c>@evid docs/requirements.md#inline Inline code is inert.</c>
+        /// <c>@evidence docs/requirements.md#inline Inline code is inert.</c>
         /// </summary>
         [Obsolete]
         public class Contracts : IService
         {
-            /// @evid docs/requirements.md#fields Implements both fields.
+            /// @evidence docs/requirements.md#fields Implements both fields.
             public int First = 1, Second = 2;
 
             /**
-             * @evid docs/requirements.md#method Implements the method.
+             * @evidence docs/requirements.md#method Implements the method.
              */
             public void Run() { }
 
-            // @evid docs/requirements.md#ordinary Ordinary comments are unsupported.
+            // @evidence docs/requirements.md#ordinary Ordinary comments are unsupported.
             public void Ordinary() { }
 
-            /// @evid docs/requirements.md#private Private members are unsupported.
+            /// @evidence docs/requirements.md#private Private members are unsupported.
             private void Private() { }
 
-            /// @evid docs/requirements.md#explicit Explicit implementations are unsupported.
+            /// @evidence docs/requirements.md#explicit Explicit implementations are unsupported.
             void IService.Run() { }
 
-            /// @evid docs/requirements.md#directive Preprocessor directives break attachment.
+            /// @evidence docs/requirements.md#directive Preprocessor directives break attachment.
             #nullable enable
             public void DirectiveBoundary() { }
 
-            /// @evid docs/requirements.md#before-directive A directive splits the sequence.
+            /// @evidence docs/requirements.md#before-directive A directive splits the sequence.
             #nullable disable
-            /// @evid docs/requirements.md#after-directive A new sequence can attach.
+            /// @evidence docs/requirements.md#after-directive A new sequence can attach.
             public void AfterDirective() { }
 
             public void Literals()
             {
-                var normal = "@evid docs/requirements.md#string Strings are unsupported.";
-                var verbatim = @"@evid docs/requirements.md#verbatim Verbatim strings are unsupported.";
-                var raw = """@evid docs/requirements.md#raw Raw strings are unsupported.""";
-                var interpolated = $"@evid docs/requirements.md#interpolated {1}";
-                // @evid docs/requirements.md#body Body comments are unsupported.
+                var normal = "@evidence docs/requirements.md#string Strings are unsupported.";
+                var verbatim = @"@evidence docs/requirements.md#verbatim Verbatim strings are unsupported.";
+                var raw = """@evidence docs/requirements.md#raw Raw strings are unsupported.""";
+                var interpolated = $"@evidence docs/requirements.md#interpolated {1}";
+                // @evidence docs/requirements.md#body Body comments are unsupported.
             }
         }
 
@@ -110,8 +110,8 @@ export async function test_csharp_hosts(): Promise<void> {
   );
 
   const withdrawn = await new EvidCSharpAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/Hidden.cs",
         dedent`
           public partial class Hidden
@@ -120,7 +120,7 @@ export async function test_csharp_hosts(): Promise<void> {
           }
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/Hidden.Partial.cs",
         dedent`
           /// @internal Every selected part belongs to one withdrawn type.

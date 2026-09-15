@@ -1,14 +1,16 @@
 import path from "node:path";
 
 /**
- * Performs lexical path normalization without filesystem access or case folding.
+ * Performs lexical path normalization without filesystem access or case
+ * folding.
  *
  * Source discovery owns physical resolution; these helpers preserve authored
  * spelling boundaries so logical addresses remain portable across platforms.
  */
 export namespace EvidSourcePath {
   /**
-   * Resolves a portable absolute or relative path and rejects drive-relative notation.
+   * Resolves a portable absolute or relative path and rejects drive-relative
+   * notation.
    *
    * Source collection uses the result for lexical addressing before physical
    * resolution, preserving platform-independent configured path behavior.
@@ -27,7 +29,8 @@ export namespace EvidSourcePath {
   }
 
   /**
-   * Resolves a configured population root while keeping glob syntax confined to files.
+   * Resolves a configured population root while keeping glob syntax confined to
+   * files.
    *
    * Roots must name concrete directories, so this boundary rejects glob markers
    * before discovery can confuse a pattern with a filesystem location.
@@ -45,7 +48,8 @@ export namespace EvidSourcePath {
   }
 
   /**
-   * Produces a slash-normalized diagnostic path relative to a stable display base.
+   * Produces a slash-normalized diagnostic path relative to a stable display
+   * base.
    *
    * Diagnostic and public source addresses use this display spelling without
    * changing the absolute path used for filesystem operations.

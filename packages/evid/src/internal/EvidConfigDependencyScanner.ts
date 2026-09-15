@@ -3,7 +3,7 @@ import { isBuiltin } from "node:module";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import typia from "typia";
-import type { EvidNode } from "web-tree-sitter";
+import type { Node } from "web-tree-sitter";
 
 import { EvidParser } from "../parsers/EvidParser";
 import type { EvidParseSession } from "../parsers/EvidParseSession";
@@ -21,10 +21,12 @@ import type { IEvidConfigResolutionManifest } from "./IEvidConfigResolutionManif
 import { EvidSourcePath } from "./EvidSourcePath";
 
 /**
- * Finds static local and package-resolution dependencies of one evaluated config.
+ * Finds static local and package-resolution dependencies of one evaluated
+ * config.
  *
  * It records dependencies before reads and resolution complete, allowing watch
- * mode to observe a repaired import rather than remaining stuck on a failed scan.
+ * mode to observe a repaired import rather than remaining stuck on a failed
+ * scan.
  */
 export class EvidConfigDependencyScanner {
   /**
@@ -47,7 +49,8 @@ export class EvidConfigDependencyScanner {
    * Immutable data URL modules already inspected during this scan.
    *
    * Exact URL identity terminates recursive embedded-module traversal without
-   * inventing a filesystem dependency for source already stored in its importer.
+   * inventing a filesystem dependency for source already stored in its
+   * importer.
    */
   private readonly scannedData = new Set<string>();
 
@@ -78,12 +81,15 @@ export class EvidConfigDependencyScanner {
   /**
    * Scans the configuration and every statically reachable local module.
    *
-   * Parser resources close on both success and failure, while already discovered
-   * dependencies remain available through `list` for watch recovery.
+   * Parser resources close on both success and failure, while already
+   * discovered dependencies remain available through `list` for watch
+   * recovery.
    */
   public async scan(): Promise<IEvidSourceDependency[]> {
     try {
-      const logical: string = EvidSourcePath.slash(path.resolve(this.configFile));
+      const logical: string = EvidSourcePath.slash(
+        path.resolve(this.configFile),
+      );
       this.watch(logical, false);
       this.watch(EvidSourcePath.slash(path.dirname(logical)), true);
       const physical: string = EvidSourcePath.slash(await realpath(logical));
@@ -100,8 +106,8 @@ export class EvidConfigDependencyScanner {
   /**
    * Returns ordered dependencies discovered before a failed read or parse.
    *
-   * Watch setup uses this partial result so a repaired module or package boundary
-   * can restart a failed configuration cycle.
+   * Watch setup uses this partial result so a repaired module or package
+   * boundary can restart a failed configuration cycle.
    */
   public list(): IEvidSourceDependency[] {
     return Array.from(this.dependencies.values()).sort((left, right) =>
@@ -110,7 +116,8 @@ export class EvidConfigDependencyScanner {
   }
 
   /**
-   * Watches and parses one physical module once, then follows its static specifiers.
+   * Watches and parses one physical module once, then follows its static
+   * specifiers.
    *
    * Logical and real paths are both retained because symlink changes can alter
    * resolution even when the parsed physical file is unchanged.
@@ -141,9 +148,10 @@ export class EvidConfigDependencyScanner {
   }
 
   /**
-   * Resolves one static specifier while recording paths that can alter its resolution.
+   * Resolves one static specifier while recording paths that can alter its
+   * resolution.
    *
-   * Local, file URL, and package forms use their respective EvidNode-compatible
+   * Local, file URL, and package forms use their respective Node-compatible
    * lookup paths before recursive scanning continues.
    */
   private async resolve(
@@ -192,7 +200,7 @@ export class EvidConfigDependencyScanner {
    * Scans one immutable data URL and returns its reachable file dependencies.
    *
    * JavaScript payloads can import builtins, nested data modules, or absolute
-   * file URLs. EvidNode gives data modules no relative or package-resolution base,
+   * file URLs. Node gives data modules no relative or package-resolution base,
    * so accepting any other request would publish an incomplete watch set.
    */
   private async resolveData(specifier: string): Promise<string[]> {
@@ -296,8 +304,8 @@ export class EvidConfigDependencyScanner {
    * Resolves a bare request through self-reference or ancestor dependencies.
    *
    * A matching nearest package name makes its exports authoritative. Other
-   * requests retain normal `node_modules` lookup, including targets reached from
-   * an internal import map.
+   * requests retain normal `node_modules` lookup, including targets reached
+   * from an internal import map.
    */
   private async resolveBarePackage(
     owner: string,
@@ -388,8 +396,9 @@ export class EvidConfigDependencyScanner {
   /**
    * Finds and validates the nearest package manifest for one module.
    *
-   * Every absent candidate remains watched because creating a closer boundary can
-   * change internal maps, self-reference, and the module kind on the next cycle.
+   * Every absent candidate remains watched because creating a closer boundary
+   * can change internal maps, self-reference, and the module kind on the next
+   * cycle.
    */
   private async packageBoundary(
     owner: string,
@@ -402,9 +411,8 @@ export class EvidConfigDependencyScanner {
       this.watch(manifestFile, false);
       try {
         if ((await stat(manifestFile)).isFile()) {
-          const manifest: IEvidConfigResolutionManifest = parseResolutionManifest(
-            await readFile(manifestFile, "utf8"),
-          );
+          const manifest: IEvidConfigResolutionManifest =
+            parseResolutionManifest(await readFile(manifestFile, "utf8"));
           return { directory: EvidSourcePath.slash(directory), manifest };
         }
       } catch (cause) {
@@ -417,7 +425,8 @@ export class EvidConfigDependencyScanner {
   }
 
   /**
-   * Determines the evaluator's module kind and observes every candidate boundary.
+   * Determines the evaluator's module kind and observes every candidate
+   * boundary.
    *
    * An unqualified TypeScript config follows its nearest package scope. Missing
    * manifests remain dependencies so adding a nearer scope can invalidate a
@@ -452,9 +461,9 @@ export class EvidConfigDependencyScanner {
   /**
    * Chooses the condition used by static syntax in one scanned module.
    *
-   * Explicit MTS/MJS and CTS/CJS extensions fix their EvidNode semantics. JavaScript
-   * follows its nearest watched package scope, while TypeScript source follows
-   * the root temporary compiler mode used by the evaluator.
+   * Explicit MTS/MJS and CTS/CJS extensions fix their Node semantics.
+   * JavaScript follows its nearest watched package scope, while TypeScript
+   * source follows the root temporary compiler mode used by the evaluator.
    */
   private async staticMode(file: string): Promise<EvidConfigModuleMode> {
     const extension: string = path.extname(file).toLowerCase();
@@ -471,11 +480,12 @@ export class EvidConfigDependencyScanner {
   }
 
   /**
-   * Resolves one package request without reusing process-global EvidNode path caches.
+   * Resolves one package request without reusing process-global Node path
+   * caches.
    *
    * Every candidate package boundary is observed before lookup. A new nearer
-   * install, a retargeted package link, or a changed manifest therefore rebuilds
-   * the dependency set from fresh bytes on the next watch attempt.
+   * install, a retargeted package link, or a changed manifest therefore
+   * rebuilds the dependency set from fresh bytes on the next watch attempt.
    */
   private async resolvePackage(
     owner: string,
@@ -566,7 +576,8 @@ export class EvidConfigDependencyScanner {
   }
 
   /**
-   * Validates an exact resolved module and watches its parent for deletion or replacement.
+   * Validates an exact resolved module and watches its parent for deletion or
+   * replacement.
    *
    * The parent dependency lets watch mode notice a module that disappears after
    * resolution has succeeded.
@@ -600,12 +611,12 @@ export class EvidConfigDependencyScanner {
   }
 
   /**
-   * Resolves a legacy package target with EvidNode's runtime candidate order.
+   * Resolves a legacy package target with Node's runtime candidate order.
    *
    * Package `main` and direct subpaths execute their JavaScript spelling even
    * when a same-stem TypeScript source exists. Direct subpath directories can
    * consult their own manifest; a legacy `main` target uses only file and index
-   * fallbacks, matching EvidNode's non-recursive main lookup. Every applicable
+   * fallbacks, matching Node's non-recursive main lookup. Every applicable
    * boundary remains observable for recovery.
    */
   private async resolveRuntimePath(
@@ -632,9 +643,8 @@ export class EvidConfigDependencyScanner {
           );
           this.watch(manifestFile, false);
           try {
-            const manifest: IEvidConfigResolutionManifest = parseResolutionManifest(
-              await readFile(manifestFile, "utf8"),
-            );
+            const manifest: IEvidConfigResolutionManifest =
+              parseResolutionManifest(await readFile(manifestFile, "utf8"));
             if (typeof manifest.main === "string") {
               mainTarget = manifest.main;
               try {
@@ -655,7 +665,11 @@ export class EvidConfigDependencyScanner {
           return await this.resolveRuntimeIndex(location);
         } catch (cause) {
           if (mainTarget !== undefined && resolutionMissing(cause))
-            throw new EvidConfigPackageMainError(location, mainTarget, mainFailure);
+            throw new EvidConfigPackageMainError(
+              location,
+              mainTarget,
+              mainFailure,
+            );
           throw cause;
         }
       }
@@ -669,9 +683,10 @@ export class EvidConfigDependencyScanner {
   /**
    * Probes the terminal index files for one legacy package directory.
    *
-   * EvidNode does not treat an `index` directory as another package boundary after
+   * Node does not treat an `index` directory as another package boundary after
    * `LOAD_AS_DIRECTORY` reaches this phase. Keeping the probe nonrecursive
-   * prevents nested manifests from selecting code the evaluator never executes.
+   * prevents nested manifests from selecting code the evaluator never
+   * executes.
    */
   private async resolveRuntimeIndex(directory: string): Promise<string[]> {
     const base: string = EvidSourcePath.slash(path.join(directory, "index"));
@@ -689,7 +704,8 @@ export class EvidConfigDependencyScanner {
   }
 
   /**
-   * Retains recursive missing package paths so installation or repair restarts the watch cycle.
+   * Retains recursive missing package paths so installation or repair restarts
+   * the watch cycle.
    *
    * Failed package resolution still establishes dependencies on every searched
    * package root instead of becoming a terminal blind spot.
@@ -705,7 +721,10 @@ export class EvidConfigDependencyScanner {
         path.join(directory, "node_modules"),
       );
       this.watch(nodeModules, true);
-      this.watch(EvidSourcePath.slash(path.join(nodeModules, packageName)), true);
+      this.watch(
+        EvidSourcePath.slash(path.join(nodeModules, packageName)),
+        true,
+      );
       const parent: string = path.dirname(directory);
       if (parent === directory) return;
       directory = parent;
@@ -713,7 +732,8 @@ export class EvidConfigDependencyScanner {
   }
 
   /**
-   * Merges duplicate dependencies and upgrades them to recursive observation when needed.
+   * Merges duplicate dependencies and upgrades them to recursive observation
+   * when needed.
    *
    * A path reached through several import routes retains the strongest watch
    * requirement without duplicate entries.
@@ -731,12 +751,14 @@ export class EvidConfigDependencyScanner {
 /**
  * Parses the package fields that can redirect one configuration dependency.
  *
- * EvidNode accepts a leading UTF-8 byte-order mark in package JSON. The scanner
+ * Node accepts a leading UTF-8 byte-order mark in package JSON. The scanner
  * removes that decoded marker before applying the same field-shape validation
  * on every fresh resolution cycle.
  */
 function parseResolutionManifest(input: string): IEvidConfigResolutionManifest {
-  return typia.json.assertParse<IEvidConfigResolutionManifest>(packageJson(input));
+  return typia.json.assertParse<IEvidConfigResolutionManifest>(
+    packageJson(input),
+  );
 }
 
 /**
@@ -750,7 +772,7 @@ function parsePackageScope(input: string): IEvidConfigPackageScope {
 }
 
 /**
- * Removes EvidNode's permitted leading marker without normalizing manifest bytes.
+ * Removes Node's permitted leading marker without normalizing manifest bytes.
  *
  * Other malformed JSON remains visible to the typed parsers and prevents the
  * scanner from publishing a dependency graph for an invalid package config.
@@ -760,7 +782,7 @@ function packageJson(input: string): string {
 }
 
 /**
- * Decodes a EvidNode-supported data module for recursive dependency inspection.
+ * Decodes a Node-supported data module for recursive dependency inspection.
  *
  * JavaScript media types return source text. JSON and Wasm cannot contain
  * module requests and remain leaf records; unsupported media types fail before
@@ -797,7 +819,8 @@ function configDataModule(specifier: string): IEvidConfigDataModule {
 }
 
 /**
- * Extracts statically knowable requests without erasing their loading mechanism.
+ * Extracts statically knowable requests without erasing their loading
+ * mechanism.
  *
  * Static imports and reexports inherit the evaluator's module output. Literal
  * calls keep their explicit `import` or `require` behavior. Computed calls fail
@@ -835,7 +858,7 @@ function collectSpecifiers(
     );
     if (direct !== undefined) add(direct, staticMode);
     else if (statement.type === "import_statement") {
-      const literal: EvidNode | undefined = statement
+      const literal: Node | undefined = statement
         .descendantsOfType("string")
         .at(-1);
       const nested: string | undefined = EvidEcmaScriptSyntax.module(
@@ -845,12 +868,12 @@ function collectSpecifiers(
     }
   }
   for (const call of session.root.descendantsOfType("call_expression")) {
-    const callee: EvidNode | null = call.childForFieldName("function");
+    const callee: Node | null = call.childForFieldName("function");
     const loader: EvidConfigModuleMode | undefined = moduleLoader(callee);
     if (loader === undefined) continue;
     if (loader === "require" && shadowed(call, requireShadows)) continue;
-    const argumentsNode: EvidNode | null = call.childForFieldName("arguments");
-    const argument: EvidNode | undefined =
+    const argumentsNode: Node | null = call.childForFieldName("arguments");
+    const argument: Node | undefined =
       argumentsNode === null ? undefined : argumentsNode.namedChildren[0];
     const specifier: string | undefined = EvidEcmaScriptSyntax.module(
       argument ?? null,
@@ -867,15 +890,13 @@ function collectSpecifiers(
 /**
  * Resolves a direct module-loader callee through runtime-transparent syntax.
  *
- * Parentheses and TypeScript assertions preserve the underlying call at runtime.
- * Other expressions require value flow and remain outside static dependency
- * discovery, while dynamic `import` stays dedicated syntax.
+ * Parentheses and TypeScript assertions preserve the underlying call at
+ * runtime. Other expressions require value flow and remain outside static
+ * dependency discovery, while dynamic `import` stays dedicated syntax.
  */
-function moduleLoader(
-  callee: EvidNode | null,
-): EvidConfigModuleMode | undefined {
+function moduleLoader(callee: Node | null): EvidConfigModuleMode | undefined {
   if (callee?.text === "import") return "import";
-  let expression: EvidNode | undefined = callee ?? undefined;
+  let expression: Node | undefined = callee ?? undefined;
   while (expression !== undefined) {
     if (expression.type === "identifier")
       return expression.text === "require" ? "require" : undefined;
@@ -898,11 +919,11 @@ function moduleLoader(
  *
  * Binding scopes are recorded independently of declaration order because `var`
  * and function declarations hoist, while lexical bindings occupy their complete
- * temporal-dead-zone scope. Type-only and ambient TypeScript declarations do not
- * create runtime bindings and therefore leave the wrapper visible.
+ * temporal-dead-zone scope. Type-only and ambient TypeScript declarations do
+ * not create runtime bindings and therefore leave the wrapper visible.
  */
 function collectRequireShadows(
-  root: EvidNode,
+  root: Node,
   annexB: boolean,
 ): ReadonlySet<number> {
   const output: Set<number> = new Set<number>();
@@ -912,7 +933,7 @@ function collectRequireShadows(
       !bindsRequire(declaration.childForFieldName("name"))
     )
       continue;
-    const parent: EvidNode | null = declaration.parent;
+    const parent: Node | null = declaration.parent;
     if (parent?.type === "variable_declaration")
       addScope(output, functionScope(parent));
     else addScope(output, lexicalDeclarationScope(parent ?? declaration));
@@ -921,13 +942,13 @@ function collectRequireShadows(
     "for_in_statement",
     "for_of_statement",
   ])) {
-    const left: EvidNode | null = loop.childForFieldName("left");
+    const left: Node | null = loop.childForFieldName("left");
     if (!bindsRequire(left)) continue;
-    if (loop.children.some((child: EvidNode): boolean => child.type === "var"))
+    if (loop.children.some((child: Node): boolean => child.type === "var"))
       addScope(output, functionScope(loop));
     else if (
       loop.children.some(
-        (child: EvidNode): boolean =>
+        (child: Node): boolean =>
           child.type === "const" || child.type === "let",
       )
     )
@@ -948,8 +969,8 @@ function collectRequireShadows(
       output.add(clause.id);
   for (const statement of root.descendantsOfType("import_statement")) {
     if (EvidEcmaScriptSyntax.token(statement, "type")) continue;
-    const clause: EvidNode | undefined = statement.namedChildren.find(
-      (child: EvidNode): boolean => child.type === "import_clause",
+    const clause: Node | undefined = statement.namedChildren.find(
+      (child: Node): boolean => child.type === "import_clause",
     );
     if (clause !== undefined && importBindsRequire(clause)) output.add(root.id);
   }
@@ -986,8 +1007,8 @@ function collectRequireShadows(
  * The collector uses this lexical check before applying literal/computed module
  * rules, so calls through user values never become watch dependencies.
  */
-function shadowed(call: EvidNode, scopes: ReadonlySet<number>): boolean {
-  for (let node: EvidNode | null = call.parent; node !== null; node = node.parent)
+function shadowed(call: Node, scopes: ReadonlySet<number>): boolean {
+  for (let node: Node | null = call.parent; node !== null; node = node.parent)
     if (scopes.has(node.id)) return true;
   return false;
 }
@@ -999,7 +1020,7 @@ function shadowed(call: EvidNode, scopes: ReadonlySet<number>): boolean {
  * recursion therefore follows values, aliases, defaults, and rest targets while
  * excluding type annotations and initializer expressions.
  */
-function bindsRequire(pattern: EvidNode | null): boolean {
+function bindsRequire(pattern: Node | null): boolean {
   if (pattern === null) return false;
   if (
     pattern.type === "identifier" ||
@@ -1038,20 +1059,20 @@ function bindsRequire(pattern: EvidNode | null): boolean {
  * Detects a runtime import binding named `require`.
  *
  * Default, namespace, and named imports use different grammar shapes. A named
- * alias supplies the local binding, while type-only specifiers are erased before
- * the configuration runs and cannot hide a CommonJS wrapper.
+ * alias supplies the local binding, while type-only specifiers are erased
+ * before the configuration runs and cannot hide a CommonJS wrapper.
  */
-function importBindsRequire(clause: EvidNode): boolean {
+function importBindsRequire(clause: Node): boolean {
   for (const child of clause.namedChildren) {
     if (child.type === "identifier" && child.text === "require") return true;
     if (
       child.type === "namespace_import" &&
-      child.namedChildren.some((node: EvidNode): boolean => node.text === "require")
+      child.namedChildren.some((node: Node): boolean => node.text === "require")
     )
       return true;
     for (const specifier of child.descendantsOfType("import_specifier")) {
       if (EvidEcmaScriptSyntax.token(specifier, "type")) continue;
-      const binding: EvidNode | null =
+      const binding: Node | null =
         specifier.childForFieldName("alias") ??
         specifier.childForFieldName("name");
       if (binding?.text === "require") return true;
@@ -1066,8 +1087,8 @@ function importBindsRequire(clause: EvidNode): boolean {
  * A `let` or `const` loop initializer belongs to the loop, whereas ordinary
  * lexical declarations belong to the nearest block, switch body, or program.
  */
-function lexicalDeclarationScope(declaration: EvidNode): EvidNode | null {
-  const parent: EvidNode | null = declaration.parent;
+function lexicalDeclarationScope(declaration: Node): Node | null {
+  const parent: Node | null = declaration.parent;
   if (
     parent?.type === "for_statement" ||
     parent?.type === "for_in_statement" ||
@@ -1083,9 +1104,9 @@ function lexicalDeclarationScope(declaration: EvidNode): EvidNode | null {
  * Declaration names are visible throughout this scope for dependency
  * classification, including their temporal-dead-zone interval.
  */
-function lexicalScope(declaration: EvidNode): EvidNode | null {
+function lexicalScope(declaration: Node): Node | null {
   for (
-    let node: EvidNode | null = declaration.parent;
+    let node: Node | null = declaration.parent;
     node !== null;
     node = node.parent
   )
@@ -1099,9 +1120,9 @@ function lexicalScope(declaration: EvidNode): EvidNode | null {
  * Nested blocks do not constrain `var`, so every call in the owning callable or
  * module must see the local binding regardless of declaration order.
  */
-function functionScope(declaration: EvidNode): EvidNode | null {
+function functionScope(declaration: Node): Node | null {
   for (
-    let node: EvidNode | null = declaration.parent;
+    let node: Node | null = declaration.parent;
     node !== null;
     node = node.parent
   )
@@ -1117,21 +1138,22 @@ function functionScope(declaration: EvidNode): EvidNode | null {
 /**
  * Reports whether a declaration executes under JavaScript strict-mode rules.
  *
- * ECMAScript modules are filtered before this helper is used. CommonJS can still
- * enter strict mode through a script or function directive, and every class body
- * is strict regardless of its surrounding source. Annex B block-function
- * hoisting applies only when none of those boundaries is active.
+ * ECMAScript modules are filtered before this helper is used. CommonJS can
+ * still enter strict mode through a script or function directive, and every
+ * class body is strict regardless of its surrounding source. Annex B
+ * block-function hoisting applies only when none of those boundaries is
+ * active.
  */
-function strictContext(declaration: EvidNode): boolean {
+function strictContext(declaration: Node): boolean {
   for (
-    let node: EvidNode | null = declaration.parent;
+    let node: Node | null = declaration.parent;
     node !== null;
     node = node.parent
   ) {
     if (STRICT_CLASS_SCOPES.has(node.type)) return true;
     if (node.type === "program" && strictDirective(node)) return true;
     if (FUNCTION_SCOPE_SET.has(node.type)) {
-      const body: EvidNode | null = node.childForFieldName("body");
+      const body: Node | null = node.childForFieldName("body");
       if (body !== null && strictDirective(body)) return true;
     }
   }
@@ -1144,12 +1166,12 @@ function strictContext(declaration: EvidNode): boolean {
  * Only leading string expression statements participate. A later string after
  * executable code is ordinary data and cannot disable Annex B behavior.
  */
-function strictDirective(scope: EvidNode): boolean {
+function strictDirective(scope: Node): boolean {
   for (const statement of scope.namedChildren) {
     if (statement.type === "comment" || statement.type === "hash_bang_line")
       continue;
     if (statement.type !== "expression_statement") return false;
-    const expression: EvidNode | undefined = statement.namedChildren[0];
+    const expression: Node | undefined = statement.namedChildren[0];
     if (expression?.type !== "string") return false;
     if (EvidEcmaScriptSyntax.module(expression) === "use strict") return true;
   }
@@ -1162,9 +1184,9 @@ function strictDirective(scope: EvidNode): boolean {
  * Ambient declarations describe an existing runtime name but emit no binding;
  * treating them as shadows would omit real CommonJS dependencies.
  */
-function ambient(declaration: EvidNode): boolean {
+function ambient(declaration: Node): boolean {
   for (
-    let node: EvidNode | null = declaration.parent;
+    let node: Node | null = declaration.parent;
     node !== null;
     node = node.parent
   ) {
@@ -1181,7 +1203,7 @@ function ambient(declaration: EvidNode): boolean {
  * Malformed or unsupported trees can lack an enclosing scope; omitting that
  * entry leaves later dependency classification conservative.
  */
-function addScope(scopes: Set<number>, scope: EvidNode | null): void {
+function addScope(scopes: Set<number>, scope: Node | null): void {
   if (scope !== null) scopes.add(scope.id);
 }
 
@@ -1286,8 +1308,8 @@ function packageExport(
 /**
  * Resolves one exact or patterned package-import entry under active conditions.
  *
- * Only valid `#` entries participate, so malformed unrelated keys cannot block a
- * resolvable request. The selected wildcard text is substituted after the
+ * Only valid `#` entries participate, so malformed unrelated keys cannot block
+ * a resolvable request. The selected wildcard text is substituted after the
  * condition branch resolves, matching the package map's authored target shape.
  */
 function packageImport(
@@ -1326,12 +1348,13 @@ function packageImport(
 }
 
 /**
- * Converts a legacy ESM package subpath into the physical pathname EvidNode executes.
+ * Converts a legacy ESM package subpath into the physical pathname Node
+ * executes.
  *
  * Bare-package subpaths use URL normalization after the package directory is
- * located. This permits dot segments and removes query or fragment identity from
- * the watched filesystem path while `fileURLToPath` retains encoded-separator
- * validation.
+ * located. This permits dot segments and removes query or fragment identity
+ * from the watched filesystem path while `fileURLToPath` retains
+ * encoded-separator validation.
  */
 function packageSubpathTarget(
   packageDirectory: string,
@@ -1346,9 +1369,9 @@ function packageSubpathTarget(
 /**
  * Converts a relative package-map target into a confined filesystem path.
  *
- * URL decoding matches EvidNode's file resolution while explicit segment checks
- * prevent encoded traversal and `node_modules` re-entry from escaping the package
- * boundary that authorized the target.
+ * URL decoding matches Node's file resolution while explicit segment checks
+ * prevent encoded traversal and `node_modules` re-entry from escaping the
+ * package boundary that authorized the target.
  */
 function packageTarget(packageDirectory: string, target: string): string {
   if (!target.startsWith("./") || target.includes("\\"))
@@ -1397,7 +1420,7 @@ function packageTarget(packageDirectory: string, target: string): string {
 /**
  * Selects one target while preserving conditional-object declaration order.
  *
- * Only EvidNode's built-in runtime conditions participate. Unknown conditions such
+ * Only Node's built-in runtime conditions participate. Unknown conditions such
  * as `types` are skipped because they can identify declarations that the
  * evaluator never executes. A matched null target remains blocked.
  */
@@ -1473,9 +1496,9 @@ function conditionalTarget(
 /**
  * Validates a mapped string before an array commits to that alternative.
  *
- * Export targets must stay relative to their package. Import targets may redirect
- * to another internal key, builtin, or bare dependency, but path-like escapes are
- * invalid and allow an array to try its next alternative.
+ * Export targets must stay relative to their package. Import targets may
+ * redirect to another internal key, builtin, or bare dependency, but path-like
+ * escapes are invalid and allow an array to try its next alternative.
  */
 function validatePackageMapTarget(
   target: string,
@@ -1513,7 +1536,7 @@ function validatePackageMapTarget(
 /**
  * Identifies manifest keys eligible for internal package-import matching.
  *
- * EvidNode validates the requested `#` name independently and ignores malformed
+ * Node validates the requested `#` name independently and ignores malformed
  * unrelated keys. Filtering candidates here preserves that behavior without
  * allowing an invalid key to act as an exact or wildcard match.
  */
@@ -1529,7 +1552,7 @@ function packageImportKey(key: string): boolean {
 /**
  * Recognizes property names that JavaScript enumerates as integer indices.
  *
- * Condition selection depends on insertion order, so EvidNode rejects this exact
+ * Condition selection depends on insertion order, so Node rejects this exact
  * key class while leaving numeric-looking non-index strings such as `01` as
  * ordinary custom conditions.
  */
@@ -1579,7 +1602,8 @@ function record(value: unknown): value is Record<string, unknown> {
 }
 
 /**
- * Chooses a parser only for JavaScript-family modules relevant to configuration imports.
+ * Chooses a parser only for JavaScript-family modules relevant to configuration
+ * imports.
  *
  * Non-code files can be resolved as dependencies but are not recursively parsed
  * for module specifiers.
@@ -1592,7 +1616,8 @@ function programmingType(file: string): EvidProgrammingType | undefined {
 }
 
 /**
- * Produces the supported local TypeScript and JavaScript extension fallback order.
+ * Produces the supported local TypeScript and JavaScript extension fallback
+ * order.
  *
  * Local import resolution uses this ordered list to match configuration
  * evaluation and register each candidate for watch recovery.
@@ -1631,8 +1656,9 @@ function moduleCandidates(base: string): string[] {
 /**
  * Lists CommonJS legacy file candidates without compiler source substitution.
  *
- * EvidNode checks the authored path before its JavaScript, JSON, and native suffixes.
- * Directory handling follows only after none of these candidates is a file.
+ * Node checks the authored path before its JavaScript, JSON, and native
+ * suffixes. Directory handling follows only after none of these candidates is a
+ * file.
  */
 function runtimeCandidates(base: string): string[] {
   return unique([base, `${base}.js`, `${base}.json`, `${base}.node`]).map(
@@ -1651,17 +1677,19 @@ function replaceExtension(file: string, extension: string): string {
 }
 
 /**
- * Retains each candidate's first occurrence while eliminating fallback duplicates.
+ * Retains each candidate's first occurrence while eliminating fallback
+ * duplicates.
  *
- * This preserves deterministic resolution precedence when extension substitution
- * produces the same path twice.
+ * This preserves deterministic resolution precedence when extension
+ * substitution produces the same path twice.
  */
 function unique(values: string[]): string[] {
   return Array.from(new Set(values));
 }
 
 /**
- * Extracts the package root so subpath resolution watches the owning package boundary.
+ * Extracts the package root so subpath resolution watches the owning package
+ * boundary.
  *
  * Scoped specifiers retain their first two segments; ordinary packages retain
  * only the first segment.
@@ -1676,8 +1704,8 @@ function packageSpecifier(specifier: string): string {
 /**
  * Converts a bare request into the key space used by package export maps.
  *
- * The package root is represented by `.` and authored subpaths keep their slash,
- * matching exact and pattern keys without filesystem normalization.
+ * The package root is represented by `.` and authored subpaths keep their
+ * slash, matching exact and pattern keys without filesystem normalization.
  */
 function packageSubpath(specifier: string, packageName: string): string {
   const remainder: string = specifier.slice(packageName.length);
@@ -1687,10 +1715,11 @@ function packageSubpath(specifier: string, packageName: string): string {
 /**
  * Validates the non-normalizable parts of a strict bare-package request.
  *
- * ESM requests and external package-map redirects reject malformed package names,
- * encoded separators, and terminal directory spellings. Dot segments remain in
- * the request because the evaluator normalizes them while resolving the final
- * module URL, including paths outside the package that supplied the first segment.
+ * ESM requests and external package-map redirects reject malformed package
+ * names, encoded separators, and terminal directory spellings. Dot segments
+ * remain in the request because the evaluator normalizes them while resolving
+ * the final module URL, including paths outside the package that supplied the
+ * first segment.
  */
 function validatePackageRequest(specifier: string, packageName: string): void {
   const nameSegments: string[] = packageName.split("/");
@@ -1746,8 +1775,8 @@ function absent(cause: unknown): boolean {
 /**
  * Distinguishes an exhausted runtime candidate search from invalid metadata.
  *
- * Legacy `main` permits an index fallback only when its selected file is absent;
- * malformed manifests and permission failures must remain visible.
+ * Legacy `main` permits an index fallback only when its selected file is
+ * absent; malformed manifests and permission failures must remain visible.
  */
 function resolutionMissing(cause: unknown): boolean {
   return (

@@ -8,8 +8,8 @@ import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Evaluates Rust type, function, and property evidence.
  *
@@ -22,7 +22,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_rust_graph(): Promise<void> {
   const requirements = await new EvidMarkdownAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "docs/requirements.md",
       dedent`
         ## Service {#service}
@@ -40,16 +40,16 @@ export async function test_rust_graph(): Promise<void> {
     ),
   );
   const implementation = await new EvidRustAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/contracts.rs",
       dedent`
-        /// @evid docs/requirements.md#service Implements the public type.
+        /// @evidence docs/requirements.md#service Implements the public type.
         pub struct Service;
 
-        /// @evid docs/requirements.md#run Implements the operation.
+        /// @evidence docs/requirements.md#run Implements the operation.
         pub fn run() {}
 
-        /// @evid docs/requirements.md#value Implements the public value.
+        /// @evidence docs/requirements.md#value Implements the public value.
         pub static VALUE: i32 = 1;
       ` + "\n",
     ),
@@ -76,7 +76,7 @@ export async function test_rust_graph(): Promise<void> {
             severity: "error",
             inventory: requirements,
             unitIds: requirementUnits.map((unit) => unit.id),
-            resolutions: await TestGraph.resolveDeclarations(
+            resolutions: await EvidTestGraph.resolveDeclarations(
               implementation,
               requirements,
               requirementUnits.map((unit) => unit.id),
@@ -106,7 +106,7 @@ export async function test_rust_graph(): Promise<void> {
               severity: "error",
               inventory: requirements,
               unitIds: requirementUnits.map((unit) => unit.id),
-              resolutions: await TestGraph.resolveDeclarations(
+              resolutions: await EvidTestGraph.resolveDeclarations(
                 missing,
                 requirements,
                 requirementUnits.map((unit) => unit.id),
@@ -118,7 +118,7 @@ export async function test_rust_graph(): Promise<void> {
     });
     TestValidator.equals(
       `missing Rust ${anchor} acknowledgement`,
-      TestGraph.obligation(partial, 0, 0).missingUnitIds,
+      EvidTestGraph.obligation(partial, 0, 0).missingUnitIds,
       [required.id],
     );
   }
@@ -178,10 +178,10 @@ async function fingerprintInventory(
   statement: string,
 ): Promise<IEvidInventory> {
   return new EvidRustAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/fingerprint.rs",
       dedent`
-        /// @evid docs/requirements.md#run ${reason}
+        /// @evidence docs/requirements.md#run ${reason}
         pub fn run() -> i32 {
             ${statement}
         }
@@ -192,7 +192,7 @@ async function fingerprintInventory(
 
 async function fieldInventory(second: string): Promise<IEvidInventory> {
   return new EvidRustAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/fields.rs",
       dedent`
         pub struct Fields {
@@ -208,7 +208,7 @@ async function implementationInventory(
   bound: string,
 ): Promise<IEvidInventory> {
   return new EvidRustAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/implementation.rs",
       dedent`
         pub struct Sale;

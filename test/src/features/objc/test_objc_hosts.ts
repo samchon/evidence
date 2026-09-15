@@ -6,7 +6,7 @@ import {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Attaches Objective-C Doxygen annotations at exact source locations.
  *
@@ -20,11 +20,11 @@ export async function test_objc_hosts(): Promise<void> {
   const source = dedent`
     /**
      * 계약 😀
-     * @evid docs/spec.md#contract Implements the contract.
+     * @evidence docs/spec.md#contract Implements the contract.
      */
     @interface Contract
     /// 값 😀
-    /// @evid docs/spec.md#value Implements the value.
+    /// @evidence docs/spec.md#value Implements the value.
     @property int value;
     /** @internal Withdraws the selector. */
     - (void)retired;
@@ -32,21 +32,21 @@ export async function test_objc_hosts(): Promise<void> {
     /**
      * Examples:
      * ~~~objc
-     * @evid docs/spec.md#fenced Inert example.
+     * @evidence docs/spec.md#fenced Inert example.
      * ~~~
      * @code
-     * @evid docs/spec.md#code Inert example.
+     * @evidence docs/spec.md#code Inert example.
      * @endcode
      * <pre>
-     * @evid docs/spec.md#html Inert example.
+     * @evidence docs/spec.md#html Inert example.
      * </pre>
      */
     int sample(void) { return 1; }
   `.replaceAll("\n", "\r\n");
   const adapter = new EvidObjcAdapter();
-  const snapshot = TestSourceSnapshot.combine([
-    TestSourceSnapshot.create("src/Contract.h", source),
-    TestSourceSnapshot.create(
+  const snapshot = EvidTestSourceSnapshot.combine([
+    EvidTestSourceSnapshot.create("src/Contract.h", source),
+    EvidTestSourceSnapshot.create(
       "src/Contract.m",
       dedent`
       @implementation Contract
@@ -73,7 +73,7 @@ export async function test_objc_hosts(): Promise<void> {
   TestValidator.equals(
     "original UTF-16 offset",
     tag.location.range.start.offset,
-    source.indexOf("@evid"),
+    source.indexOf("@evidence"),
   );
   TestValidator.equals("CRLF line", tag.location.range.start.line, 3);
   const graph = new EvidInventory([inventory]);
@@ -122,7 +122,7 @@ export async function test_objc_hosts(): Promise<void> {
     "link",
   ]) {
     const unsupported = await adapter.analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/Unsupported.m",
         `// @${tagName} docs/spec.md#contract Unsupported carrier.\nint run(void) { return 1; }\n`,
       ),

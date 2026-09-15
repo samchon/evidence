@@ -6,7 +6,7 @@ import {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Extracts PHP public units with namespace-aware ownership.
  *
@@ -47,7 +47,7 @@ export async function test_php_units(): Promise<void> {
     function afterTemplate() {}
   `;
   const inventory = await new EvidPhpAdapter().analyze(
-    TestSourceSnapshot.create("src/contract.php", source, [
+    EvidTestSourceSnapshot.create("src/contract.php", source, [
       "src/contract.php",
       "alias/contract.php",
     ]),
@@ -120,7 +120,7 @@ export async function test_php_units(): Promise<void> {
   );
 
   const unicode = await new EvidPhpAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "unicode.php",
       "<?php class \u00c0 {} class \u00e0 {}",
     ),
@@ -137,7 +137,7 @@ export async function test_php_units(): Promise<void> {
   );
 
   const brackets = await new EvidPhpAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "brackets.php",
       "<?php namespace One { class Same {} } namespace Two { class Same {} } namespace { function globalRun() {} }",
     ),
@@ -153,7 +153,7 @@ export async function test_php_units(): Promise<void> {
   );
 
   const colliding = await new EvidPhpAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "collision.php",
       "<?php namespace App \\ Domain; class Shared {} function Shared() {} const Value = 1, value = 2;",
     ),

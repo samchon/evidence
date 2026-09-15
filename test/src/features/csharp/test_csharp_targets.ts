@@ -3,8 +3,8 @@ import type { EvidTargetResolutionStatus } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 interface ICSharpTargetStatus {
   target: string | undefined;
@@ -22,7 +22,7 @@ interface ICSharpTargetStatus {
 export async function test_csharp_targets(): Promise<void> {
   const adapter = new EvidCSharpAdapter();
   const reference = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Models.cs",
       dedent`
         namespace Shop;
@@ -54,23 +54,23 @@ export async function test_csharp_targets(): Promise<void> {
     ),
   );
   const claim = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Verify.cs",
       dedent`
         /// <summary>
-        /// @evid Models.cs#Shop.Sale Verifies the public type.
-        /// @evid Models.cs#Shop.Sale.Total Verifies the public property.
-        /// @evid Models.cs#Shop.Sale.Calculate Verifies every overload.
-        /// @evid Models.cs#Shop.Sale["this[]"] Verifies the indexer family.
-        /// @evid Models.cs#Shop.Sale["operator +"] Verifies the addition operator.
-        /// @evid Models.cs#Shop.Sale["operator checked +"] Verifies the checked addition operator.
-        /// @evid Models.cs#Shop.Sale["implicit operator int"] Verifies conversion.
-        /// @evid Models.cs#Shop.Sale["explicit operator checked long"] Verifies checked conversion.
-        /// @evid Models.cs#Shop["Box\`1"] Verifies generic arity one.
-        /// @evid Models.cs#Shop["Box\`1"].Value Verifies its exact member path.
-        /// @evid Models.cs#Shop.Box Verifies the non-generic canonical address.
-        /// @evid Models.cs#Shop.Box.Value Cannot cross into its generic alias subtree.
-        /// @evid Models.cs#Shop.Pair Demonstrates an ambiguous generic short alias.
+        /// @evidence Models.cs#Shop.Sale Verifies the public type.
+        /// @evidence Models.cs#Shop.Sale.Total Verifies the public property.
+        /// @evidence Models.cs#Shop.Sale.Calculate Verifies every overload.
+        /// @evidence Models.cs#Shop.Sale["this[]"] Verifies the indexer family.
+        /// @evidence Models.cs#Shop.Sale["operator +"] Verifies the addition operator.
+        /// @evidence Models.cs#Shop.Sale["operator checked +"] Verifies the checked addition operator.
+        /// @evidence Models.cs#Shop.Sale["implicit operator int"] Verifies conversion.
+        /// @evidence Models.cs#Shop.Sale["explicit operator checked long"] Verifies checked conversion.
+        /// @evidence Models.cs#Shop["Box\`1"] Verifies generic arity one.
+        /// @evidence Models.cs#Shop["Box\`1"].Value Verifies its exact member path.
+        /// @evidence Models.cs#Shop.Box Verifies the non-generic canonical address.
+        /// @evidence Models.cs#Shop.Box.Value Cannot cross into its generic alias subtree.
+        /// @evidence Models.cs#Shop.Pair Demonstrates an ambiguous generic short alias.
         /// </summary>
         public class Verify { }
       `,
@@ -83,7 +83,7 @@ export async function test_csharp_targets(): Promise<void> {
     [],
   );
   TestValidator.equals("complete C# target claim", claim.diagnostics, []);
-  const resolutions = await TestGraph.resolveDeclarations(
+  const resolutions = await EvidTestGraph.resolveDeclarations(
     claim,
     reference,
     reference.units.map((unit) => unit.id),

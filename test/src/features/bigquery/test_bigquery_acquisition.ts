@@ -1,12 +1,15 @@
-import { EvidBigQueryAdapter, EvidParser } from "evid";
+import {
+  EvidBigQueryAdapter,
+  EvidParser,
+  EvidTreeSitterAssetScope,
+  EvidTreeSitterAssets,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTreeSitterAssets } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssets";
-import { EvidTreeSitterAssetScope } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssetScope";
-import { TestFileSystem } from "../../internal/TestFileSystem";
-import { TestParserAssets } from "../../internal/TestParserAssets";
-import { TestParserError } from "../../internal/TestParserError";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
+import { EvidTestParserError } from "../../internal/EvidTestParserError";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Acquires the selected GoogleSQL grammar and reuses its cached inventory offline.
  *
@@ -18,12 +21,12 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_bigquery_acquisition(): Promise<void> {
   const grammar = await new EvidTreeSitterAssets().grammar("bigquery");
-  const bytes = await TestParserAssets.bytes(grammar);
-  const source = TestSourceSnapshot.create(
+  const bytes = await EvidTestParserAssets.bytes(grammar);
+  const source = EvidTestSourceSnapshot.create(
     "schema.bqsql",
     "CREATE TABLE ds.orders (items ARRAY<STRUCT<sku STRING>>);",
   );
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "bigquery-acquisition",
     {},
     async (cacheDirectory) => {
@@ -81,7 +84,7 @@ export async function test_bigquery_acquisition(): Promise<void> {
       parser.state().languages,
       ["bigquery"],
     );
-    await TestParserError.expect("unsupported-extension", () =>
+    await EvidTestParserError.expect("unsupported-extension", () =>
       parser.parse(
         {
           type: "bigquery",
@@ -91,7 +94,7 @@ export async function test_bigquery_acquisition(): Promise<void> {
         () => undefined,
       ),
     );
-    await TestParserError.expect("query-invalid", () =>
+    await EvidTestParserError.expect("query-invalid", () =>
       parser.parse(
         {
           type: "bigquery",

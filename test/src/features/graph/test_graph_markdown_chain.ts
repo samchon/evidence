@@ -8,8 +8,8 @@ import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Carries reviewed evidence through a Markdown-to-Markdown-to-TypeScript chain.
@@ -29,7 +29,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_graph_markdown_chain(): Promise<void> {
   const implementation = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/calculator.ts",
       "export function calculatePrice(): number { return 0; }",
     ),
@@ -42,7 +42,7 @@ export async function test_graph_markdown_chain(): Promise<void> {
 
   // The middle Markdown document claims that one TypeScript export implements its rule.
   const requirements = await new EvidMarkdownAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "docs/requirements.md",
       dedent`
         ## Pricing {#pricing}
@@ -50,8 +50,8 @@ export async function test_graph_markdown_chain(): Promise<void> {
         Calculate the final price.
 
         <!--
-        @evid ../src/calculator.ts#calculatePrice Names the public implementation.
-        @evidReview ../src/calculator.ts#calculatePrice #${implementationFingerprint} Read the function and checked the return contract.
+        @evidence ../src/calculator.ts#calculatePrice Names the public implementation.
+        @evidenceReview ../src/calculator.ts#calculatePrice #${implementationFingerprint} Read the function and checked the return contract.
         -->
       `,
     ),
@@ -64,7 +64,7 @@ export async function test_graph_markdown_chain(): Promise<void> {
 
   // The downstream Markdown guide claims that it explains the middle requirement.
   const guide = await new EvidMarkdownAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "docs/guide.md",
       dedent`
         ## Checkout guide {#checkout}
@@ -72,8 +72,8 @@ export async function test_graph_markdown_chain(): Promise<void> {
         Apply the configured pricing rule.
 
         <!--
-        @evid docs/requirements.md#pricing Explains the pricing requirement.
-        @evidReview docs/requirements.md#pricing #${requirementFingerprint} Read the requirement and checked the guide steps.
+        @evidence docs/requirements.md#pricing Explains the pricing requirement.
+        @evidenceReview docs/requirements.md#pricing #${requirementFingerprint} Read the requirement and checked the guide steps.
         -->
       `,
     ),
@@ -90,12 +90,12 @@ export async function test_graph_markdown_chain(): Promise<void> {
             severity: "error",
             inventory: requirements,
             unitIds: [pricing.id],
-            resolutions: await TestGraph.resolveDeclarations(
+            resolutions: await EvidTestGraph.resolveDeclarations(
               guide,
               requirements,
               [pricing.id],
             ),
-            reviewResolutions: await TestGraph.resolveReviews(
+            reviewResolutions: await EvidTestGraph.resolveReviews(
               guide,
               requirements,
               [pricing.id],
@@ -113,12 +113,12 @@ export async function test_graph_markdown_chain(): Promise<void> {
             severity: "error",
             inventory: implementation,
             unitIds: [calculatePrice.id],
-            resolutions: await TestGraph.resolveDeclarations(
+            resolutions: await EvidTestGraph.resolveDeclarations(
               requirements,
               implementation,
               [calculatePrice.id],
             ),
-            reviewResolutions: await TestGraph.resolveReviews(
+            reviewResolutions: await EvidTestGraph.resolveReviews(
               requirements,
               implementation,
               [calculatePrice.id],
@@ -135,8 +135,8 @@ export async function test_graph_markdown_chain(): Promise<void> {
 
   // Failed claim discovery remains active and cannot become an empty passing host set.
   const failedGuide = await new EvidMarkdownAdapter().analyze(
-    TestSourceSnapshot.fail(
-      TestSourceSnapshot.create("docs/guide.md", "## Checkout {#checkout}"),
+    EvidTestSourceSnapshot.fail(
+      EvidTestSourceSnapshot.create("docs/guide.md", "## Checkout {#checkout}"),
       {
         code: "path-unreadable",
         path: "/project/docs/missing.md",

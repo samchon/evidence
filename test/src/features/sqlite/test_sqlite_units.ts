@@ -7,7 +7,7 @@ import {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Extracts SQLite schema units with exact quoted ownership and relations.
  *
@@ -28,7 +28,7 @@ export async function test_sqlite_units(): Promise<void> {
     ) WITHOUT ROWID, STRICT;
     CREATE TEMP TABLE [Scratch] ('untyped', "quote""name" TEXT, \`back\`\`tick\` INTEGER);
   `;
-  const snapshot = TestSourceSnapshot.create("schema.sql", source, [
+  const snapshot = EvidTestSourceSnapshot.create("schema.sql", source, [
     "schema.sql",
     "alias.sql",
   ]);
@@ -109,7 +109,7 @@ export async function test_sqlite_units(): Promise<void> {
 
   // Schema identity and content survive relocation while file-qualified addresses move.
   const relocated = await new EvidSqliteAdapter().analyze(
-    TestSourceSnapshot.create("moved.sql", source),
+    EvidTestSourceSnapshot.create("moved.sql", source),
   );
   TestValidator.equals(
     "file-independent schema identities",
@@ -125,12 +125,12 @@ export async function test_sqlite_units(): Promise<void> {
 
   // SQLite's main schema is implicit and quoted identifiers remain ASCII-insensitive.
   const duplicate = await new EvidSqliteAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "one.sql",
         'CREATE TABLE "Accounts" (id INTEGER);',
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "two.sql",
         "CREATE TABLE main.accounts (ID INTEGER);",
       ),
@@ -143,7 +143,7 @@ export async function test_sqlite_units(): Promise<void> {
   );
 
   const schemas = await new EvidSqliteAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "two-schemas.sql",
       "CREATE TABLE Item (id INTEGER); CREATE TEMP TABLE Item (id INTEGER);",
     ),

@@ -1,5 +1,5 @@
-import { AdapterCertification } from "../../internal/certification/AdapterCertification";
-import { AdapterCertificationFixtures } from "../../internal/certification/AdapterCertificationFixtures";
+import { EvidAdapterCertification } from "../../internal/certification/EvidAdapterCertification";
+import { EvidAdapterCertificationFixtures } from "../../internal/certification/EvidAdapterCertificationFixtures";
 
 /** Applies shared adapter certification to Swift.
  *
@@ -9,18 +9,18 @@ import { AdapterCertificationFixtures } from "../../internal/certification/Adapt
  * 2. Run every shared certification gate.
  */
 export async function test_swift_certification(): Promise<void> {
-  const fixture = AdapterCertificationFixtures.all().find(
+  const fixture = EvidAdapterCertificationFixtures.all().find(
     (item) => item.type === "swift",
   );
   if (fixture === undefined)
     throw new Error("Swift certification fixture is missing.");
 
-  AdapterCertification.assertInventory(
+  EvidAdapterCertification.assertInventory(
     fixture,
-    await AdapterCertification.analyze(fixture),
+    await EvidAdapterCertification.analyze(fixture),
   );
-  await AdapterCertification.assertGraph(fixture);
-  await AdapterCertification.assertFailures(fixture);
-  await AdapterCertification.assertFingerprint(fixture);
-  await AdapterCertification.assertAmbiguity(fixture);
+  await EvidAdapterCertification.assertGraph(fixture);
+  await EvidAdapterCertification.assertFailures(fixture);
+  await EvidAdapterCertification.assertFingerprint(fixture);
+  await EvidAdapterCertification.assertAmbiguity(fixture);
 }

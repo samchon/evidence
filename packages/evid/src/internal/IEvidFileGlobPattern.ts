@@ -1,8 +1,9 @@
 /**
  * One normalized include or exclusion rule in the ordered Evid glob program.
  *
- * `EvidFileGlob` creates these records while compiling configured file patterns,
- * then applies them in order to determine a path's current inclusion decision.
+ * `EvidFileGlob` creates these records while compiling configured file
+ * patterns, then applies them in order to determine a path's current inclusion
+ * decision.
  */
 export interface IEvidFileGlobPattern {
   /**
@@ -17,7 +18,8 @@ export interface IEvidFileGlobPattern {
    * Whether a matching rule clears the current inclusion decision.
    *
    * This is true for patterns authored with `!`; a later positive rule can
-   * restore a path because `EvidFileGlob` evaluates every rule in declaration order.
+   * restore a path because `EvidFileGlob` evaluates every rule in declaration
+   * order.
    */
   exclude: boolean;
 }

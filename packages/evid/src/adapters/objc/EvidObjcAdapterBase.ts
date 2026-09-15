@@ -15,7 +15,7 @@ import type { IEvidUnit } from "../../structures/IEvidUnit";
 import type { IEvidObjcDeclaration } from "./IEvidObjcDeclaration";
 import type { IEvidObjcDocumentation } from "./IEvidObjcDocumentation";
 import type { IEvidObjcFileAnalysis } from "./IEvidObjcFileAnalysis";
-import { ObjcDocumentation } from "./ObjcDocumentation";
+import { EvidObjcDocumentation } from "./EvidObjcDocumentation";
 import { EvidObjcFileScanner } from "./EvidObjcFileScanner";
 
 /**
@@ -424,7 +424,7 @@ export class EvidObjcAdapterBase implements IEvidAdapter {
     return EvidTagParser.parse(
       source.content,
       host,
-      ObjcDocumentation.read(source, documentation, host.id),
+      EvidObjcDocumentation.read(source, documentation, host.id),
     );
   }
 
@@ -438,7 +438,11 @@ export class EvidObjcAdapterBase implements IEvidAdapter {
     documentation: IEvidObjcDocumentation,
   ): boolean {
     return this.annotationPattern(
-      ObjcDocumentation.read(analysis.source, documentation, documentation.id)
+      EvidObjcDocumentation.read(
+        analysis.source,
+        documentation,
+        documentation.id,
+      )
         .text,
       true,
     );
@@ -454,7 +458,11 @@ export class EvidObjcAdapterBase implements IEvidAdapter {
     documentation: IEvidObjcDocumentation,
   ): boolean {
     return this.annotationPattern(
-      ObjcDocumentation.read(analysis.source, documentation, documentation.id)
+      EvidObjcDocumentation.read(
+        analysis.source,
+        documentation,
+        documentation.id,
+      )
         .text,
       false,
     );

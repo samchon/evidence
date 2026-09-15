@@ -3,7 +3,7 @@ import type { IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Classifies TypeScript's supported public declaration matrix.
  *
@@ -66,7 +66,7 @@ export async function test_typescript_units(): Promise<void> {
     export enum Ignored { A }
   `;
   const inventory = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create("src/contracts.ts", content),
+    EvidTestSourceSnapshot.create("src/contracts.ts", content),
   );
 
   const actual = inventory.units

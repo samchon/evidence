@@ -6,6 +6,6 @@ const repository = resolve(__dirname, "..");
 for (const filename of ["README.md", "LICENSE"]) {
   copyFileSync(
     join(repository, filename),
-    join(repository, "packages/evidence", filename),
+    join(repository, "packages/evid", filename),
   );
 }

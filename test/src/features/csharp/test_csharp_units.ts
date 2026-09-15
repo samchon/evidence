@@ -5,7 +5,7 @@ import {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Classifies C# types, members, visibility defaults, and special members.
  *
@@ -35,8 +35,8 @@ export async function test_csharp_units(): Promise<void> {
   );
 
   const inventory = await new EvidCSharpAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/Sale.cs",
         dedent`
           namespace Shop;
@@ -76,7 +76,7 @@ export async function test_csharp_units(): Promise<void> {
           }
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/Sale.Partial.cs",
         dedent`
           namespace Shop;
@@ -87,7 +87,7 @@ export async function test_csharp_units(): Promise<void> {
           }
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/Contracts.cs",
         dedent`
           namespace Shop.Contracts

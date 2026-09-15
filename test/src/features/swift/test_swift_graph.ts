@@ -6,8 +6,8 @@ import {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Evaluates every selected Swift declaration as a reference.
  *
@@ -18,7 +18,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_swift_graph(): Promise<void> {
   const reference = await new EvidSwiftAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Contract.swift",
       dedent`
     public struct Contract {}
@@ -28,14 +28,14 @@ export async function test_swift_graph(): Promise<void> {
     ),
   );
   const claims = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Claims.ts",
       dedent`
-    /** @evid ./Contract.swift#Contract Verifies the type. */
+    /** @evidence ./Contract.swift#Contract Verifies the type. */
     export class TypeClaim {}
-    /** @evid ./Contract.swift#run Verifies the operation. */
+    /** @evidence ./Contract.swift#run Verifies the operation. */
     export function runClaim() {}
-    /** @evid ./Contract.swift#value Verifies the value. */
+    /** @evidence ./Contract.swift#value Verifies the value. */
     export const valueClaim = 1;
   `,
     ),
@@ -75,7 +75,7 @@ export async function test_swift_graph(): Promise<void> {
                 severity: "error",
                 inventory: reference,
                 unitIds,
-                resolutions: await TestGraph.resolveDeclarations(
+                resolutions: await EvidTestGraph.resolveDeclarations(
                   claim,
                   reference,
                   unitIds,
@@ -92,16 +92,16 @@ export async function test_swift_graph(): Promise<void> {
       );
       TestValidator.equals(
         `${symbol} exact missing population`,
-        TestGraph.obligation(graph, 0, 0).missingUnitIds,
+        EvidTestGraph.obligation(graph, 0, 0).missingUnitIds,
         acknowledged ? [] : unitIds,
       );
     }
   }
   const review = await new EvidSwiftAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Review.swift",
       dedent`
-    /** @evidReview ./Contract.swift#run Reviewed without an acknowledgement. */
+    /** @evidenceReview ./Contract.swift#run Reviewed without an acknowledgement. */
     public func review() -> Int { 1 }
   `,
     ),
@@ -127,7 +127,7 @@ export async function test_swift_graph(): Promise<void> {
             inventory: reference,
             unitIds: functions,
             resolutions: [],
-            reviewResolutions: await TestGraph.resolveReviews(
+            reviewResolutions: await EvidTestGraph.resolveReviews(
               review,
               reference,
               functions,
@@ -139,7 +139,7 @@ export async function test_swift_graph(): Promise<void> {
   });
   TestValidator.equals(
     "review never supplies missing coverage",
-    TestGraph.obligation(graph, 0, 0).missingUnitIds,
+    EvidTestGraph.obligation(graph, 0, 0).missingUnitIds,
     functions,
   );
 }

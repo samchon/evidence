@@ -1,4 +1,4 @@
-﻿import {
+import {
   EvidAccessor,
   EvidDbmlAdapter,
   EvidGraph,
@@ -8,8 +8,8 @@
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Evaluates each DBML model, column, and relation target from a TypeScript claim.
  *
@@ -21,7 +21,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_dbml_reference_graphs(): Promise<void> {
   const reference = await new EvidDbmlAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "schema.dbml",
       dedent`
     Table users { id int }
@@ -56,12 +56,12 @@ export async function test_dbml_reference_graphs(): Promise<void> {
     ]) {
       const reviewed = kind === "reviewed" || kind === "stale";
       const documentation = reviewed
-        ? `@evid ${target} Checks the declared schema contract.\n * @evidReview ${target} #${kind === "stale" ? "0000000" : fingerprint} Reviewed the current schema.`
+        ? `@evidence ${target} Checks the declared schema contract.\n * @evidenceReview ${target} #${kind === "stale" ? "0000000" : fingerprint} Reviewed the current schema.`
         : kind === "absent"
           ? "No acknowledgement."
           : `@${kind} ${target} ${kind === "evidenceReview" ? `#${fingerprint} ` : ""}Checks the declared schema contract.`;
       const claim = await new EvidTypeScriptAdapter().analyze(
-        TestSourceSnapshot.create(
+        EvidTestSourceSnapshot.create(
           "contract.ts",
           dedent`
         /** ${documentation} */
@@ -81,12 +81,12 @@ export async function test_dbml_reference_graphs(): Promise<void> {
                 inventory: reference,
                 requireReview: reviewed,
                 unitIds: [unit.id],
-                resolutions: await TestGraph.resolveDeclarations(
+                resolutions: await EvidTestGraph.resolveDeclarations(
                   claim,
                   reference,
                   [unit.id],
                 ),
-                reviewResolutions: await TestGraph.resolveReviews(
+                reviewResolutions: await EvidTestGraph.resolveReviews(
                   claim,
                   reference,
                   [unit.id],
@@ -104,7 +104,7 @@ export async function test_dbml_reference_graphs(): Promise<void> {
       if (kind === "evidenceReview" || kind === "absent")
         TestValidator.equals(
           `${unit.symbol} missing evidence remains visible`,
-          TestGraph.obligation(result, 0, 0).missingUnitIds,
+          EvidTestGraph.obligation(result, 0, 0).missingUnitIds,
           [unit.id],
         );
     }

@@ -2,7 +2,7 @@ import { EvidPythonAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Attaches evidence from valid Python docstring and comment hosts.
@@ -15,36 +15,36 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_python_hosts(): Promise<void> {
   const inventory = await new EvidPythonAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/hosts.py",
       dedent`
         def documented():
             """
-            @evid docs/requirements.md#documented Implements the documented requirement.
+            @evidence docs/requirements.md#documented Implements the documented requirement.
             """
             return None
 
         def concatenated():
-            """@evid docs/requirements.md#concatenated Implements""" """ the concatenated requirement."""
+            """@evidence docs/requirements.md#concatenated Implements""" """ the concatenated requirement."""
             return None
 
         # Decorator-adjacent documentation remains attached to the definition.
-        # @evid docs/requirements.md#decorated Implements the decorated requirement.
+        # @evidence docs/requirements.md#decorated Implements the decorated requirement.
         @trace
         async def decorated():
             return None
 
         def arbitrary():
             value = """
-            @evid docs/requirements.md#wrong This is only an assigned string.
+            @evidence docs/requirements.md#wrong This is only an assigned string.
             """
             return value
 
         def f_literal():
-            f"""@evid docs/requirements.md#wrong-f An f-string is not a docstring."""
+            f"""@evidence docs/requirements.md#wrong-f An f-string is not a docstring."""
             return None
 
-        # @evid docs/requirements.md#detached This comment is detached.
+        # @evidence docs/requirements.md#detached This comment is detached.
 
         def detached():
             return None

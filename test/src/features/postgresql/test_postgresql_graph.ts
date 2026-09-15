@@ -4,7 +4,7 @@ import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /** Evaluates PostgreSQL selectors as claim and reference populations.
  *
@@ -15,15 +15,15 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  * 3. Verify review-only evidence remains uncovered.
  */
 export async function test_postgresql_graph(): Promise<void> {
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "postgresql-graph",
     {
       "claim.sql": dedent`
-      -- @evid ./reference.ts#contract Covers the model.
+      -- @evidence ./reference.ts#contract Covers the model.
       CREATE TABLE app.Item (
-        -- @evid ./reference.ts#contract Covers the column.
+        -- @evidence ./reference.ts#contract Covers the column.
         id integer,
-        -- @evid ./reference.ts#contract Covers the relation.
+        -- @evidence ./reference.ts#contract Covers the relation.
         FOREIGN KEY (id) REFERENCES app.Other (id)
       );
     `,
@@ -31,7 +31,7 @@ export async function test_postgresql_graph(): Promise<void> {
       "reference.sql":
         "CREATE TABLE app.Other (id integer, FOREIGN KEY (id) REFERENCES app.Parent (id));\n",
       "claim.ts":
-        "/** @evid ./reference.sql#app.other Covers the table subtree. */\nexport function claim() {}\n",
+        "/** @evidence ./reference.sql#app.other Covers the table subtree. */\nexport function claim() {}\n",
     },
     async (directory) => {
       for (const symbol of ["model", "column", "relation"] as const)
@@ -44,21 +44,21 @@ export async function test_postgresql_graph(): Promise<void> {
           const original =
             direction === "claim"
               ? claimSource(symbol)
-              : "/** @evid ./reference.sql#app.other Covers the table subtree. */\nexport function claim() {}\n";
-          await TestFileSystem.save(directory, {
-            "evid.config.ts": configuration,
+              : "/** @evidence ./reference.sql#app.other Covers the table subtree. */\nexport function claim() {}\n";
+          await EvidTestFileSystem.save(directory, {
+            "evidence.config.ts": configuration,
             [filename]: original,
           });
-          const path = join(directory, "evid.config.ts");
+          const path = join(directory, "evidence.config.ts");
           const complete = await EvidChecker.check(path);
           TestValidator.equals(
             `${symbol} ${direction} succeeds`,
             complete.success,
             true,
           );
-          for (const marker of ["Ordinary prose", "@evidReview"]) {
-            await TestFileSystem.save(directory, {
-              [filename]: original.replaceAll("@evid", marker),
+          for (const marker of ["Ordinary prose", "@evidenceReview"]) {
+            await EvidTestFileSystem.save(directory, {
+              [filename]: original.replaceAll("@evidence", marker),
             });
             const missing = await EvidChecker.check(path);
             TestValidator.equals(
@@ -67,7 +67,7 @@ export async function test_postgresql_graph(): Promise<void> {
               false,
             );
           }
-          await TestFileSystem.save(directory, { [filename]: original });
+          await EvidTestFileSystem.save(directory, { [filename]: original });
         }
     },
   );
@@ -80,11 +80,11 @@ export async function test_postgresql_graph(): Promise<void> {
  */
 function claimSource(symbol: EvidDatabaseSymbol): string {
   return dedent`
-    -- ${symbol === "model" ? "@evid ./reference.ts#contract Covers the model." : "Table declaration."}
+    -- ${symbol === "model" ? "@evidence ./reference.ts#contract Covers the model." : "Table declaration."}
     CREATE TABLE app.Item (
-      -- ${symbol === "column" ? "@evid ./reference.ts#contract Covers the column." : "Column declaration."}
+      -- ${symbol === "column" ? "@evidence ./reference.ts#contract Covers the column." : "Column declaration."}
       id integer,
-      -- ${symbol === "relation" ? "@evid ./reference.ts#contract Covers the relation." : "Relation declaration."}
+      -- ${symbol === "relation" ? "@evidence ./reference.ts#contract Covers the relation." : "Relation declaration."}
       FOREIGN KEY (id) REFERENCES app.Other (id)
     );
   `;

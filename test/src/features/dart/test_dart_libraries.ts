@@ -2,7 +2,7 @@ import { EvidDartAdapter, EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Resolves Dart parts and transitive export aliases while preserving defining-library identity.
  *
@@ -14,8 +14,8 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_dart_libraries(): Promise<void> {
   const inventory = await new EvidDartAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/api.dart",
         dedent`
       library app.api;
@@ -25,7 +25,7 @@ export async function test_dart_libraries(): Promise<void> {
       int local() => 1;
     `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/models.dart",
         dedent`
       part of 'api.dart';
@@ -33,16 +33,16 @@ export async function test_dart_libraries(): Promise<void> {
       class _Private { int child = 1; }
     `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/generated.g.dart",
         "part of app.api; final generated = 1;",
       ),
-      TestSourceSnapshot.create("src/bridge.dart", "export 'external.dart';"),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create("src/bridge.dart", "export 'external.dart';"),
+      EvidTestSourceSnapshot.create(
         "src/external.dart",
         "class Exported { int value = 2; } final excluded = 1;",
       ),
-      TestSourceSnapshot.create("other/independent.dart", "class Model {}"),
+      EvidTestSourceSnapshot.create("other/independent.dart", "class Model {}"),
     ]),
   );
 

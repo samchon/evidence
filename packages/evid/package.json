@@ -13,7 +13,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "rimraf lib && ttsc && node ../../scripts/verify-evidence-build-output.js",
+    "build": "rimraf lib && ttsc && node ../../scripts/verify-evid-build-output.js",
     "prepack": "pnpm run build && node ../../scripts/copy-readme-and-license.js"
   },
   "dependencies": {
@@ -49,13 +49,13 @@
       "./package.json": "./package.json"
     },
     "bin": {
-      "evidence": "./lib/executable/evid.js"
+      "evid": "./lib/executable/evid.js"
     }
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wrtnlabs/evid.git",
-    "directory": "packages/evidence"
+    "directory": "packages/evid"
   },
   "bugs": {
     "url": "https://github.com/wrtnlabs/evid/issues"

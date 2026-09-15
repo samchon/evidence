@@ -2,7 +2,7 @@ import { EvidDbmlAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Preserves DBML line-comment continuation and fence state at shared inline hosts.
  *
@@ -15,22 +15,22 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_dbml_line_comments(): Promise<void> {
   const source = dedent`
     // \`\`\`dbml
-    // @evid ./spec.md#example Inert example.
+    // @evidence ./spec.md#example Inert example.
     // @hidden
     // \`\`\`
     // 😀
-    // @evid ./spec.md#table
+    // @evidence ./spec.md#table
     // Persists the user identity.
     Table users { id int }
     Table posts {
-      // @evid ./spec.md#owner
+      // @evidence ./spec.md#owner
       // Connects the post to its owner.
       user_id int [ref: > users.id]
       reviewer_id int [ref: > users.id]
     }
   `.replace(/\n/gu, "\r\n");
   const inventory = await new EvidDbmlAdapter().analyze(
-    TestSourceSnapshot.create("schema.dbml", source),
+    EvidTestSourceSnapshot.create("schema.dbml", source),
   );
 
   TestValidator.equals(
@@ -78,6 +78,6 @@ export async function test_dbml_line_comments(): Promise<void> {
   TestValidator.equals(
     "continued annotation retains original UTF16 start",
     annotation.location.range.start.offset,
-    source.indexOf("@evid ./spec.md#table"),
+    source.indexOf("@evidence ./spec.md#table"),
   );
 }

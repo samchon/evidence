@@ -12,8 +12,8 @@ import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Isolates surviving JavaScript bindings from documentation on replaced definitions.
@@ -44,23 +44,23 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_javascript_redefinitions(): Promise<void> {
   const repeated: IEvidInventory =
     await new EvidJavaScriptAdapter().analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/redefinitions.cjs",
         [
-          "/** @evid rules.md#rule Replaced function. */",
+          "/** @evidence rules.md#rule Replaced function. */",
           "function run() { return 1; }",
           "function run() { return 2; }",
           "",
           "class Service {",
-          "  /** @evid rules.md#rule Replaced method. */",
+          "  /** @evidence rules.md#rule Replaced method. */",
           "  call() { return 1; }",
           "  call() { return 2; }",
           "",
-          "  /** @evid rules.md#rule Replaced field. */",
+          "  /** @evidence rules.md#rule Replaced field. */",
           "  value = 1;",
           "  value = 2;",
           "",
-          "  /** @evid rules.md#rule Replaced static method. */",
+          "  /** @evidence rules.md#rule Replaced static method. */",
           "  static create() { return 1; }",
           "  static create() { return 2; }",
           "}",
@@ -144,15 +144,15 @@ export async function test_javascript_redefinitions(): Promise<void> {
 
   const hoisted: IEvidInventory =
     await new EvidJavaScriptAdapter().analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/hoisting.cjs",
         [
-          "/** @evid rules.md#rule Replaced before initializer. */",
+          "/** @evidence rules.md#rule Replaced before initializer. */",
           "function before() { return 'function'; }",
           "var before = () => 'variable';",
           "",
           "var after = () => 'variable';",
-          "/** @evid rules.md#rule Replaced after initializer. */",
+          "/** @evidence rules.md#rule Replaced after initializer. */",
           "function after() { return 'function'; }",
           "",
           "var retainedBefore;",
@@ -199,14 +199,14 @@ export async function test_javascript_redefinitions(): Promise<void> {
 
   const initialized: IEvidInventory =
     await new EvidJavaScriptAdapter().analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/initialized.cjs",
         [
-          "/** @evid rules.md#rule Replaced initializer. */",
+          "/** @evidence rules.md#rule Replaced initializer. */",
           "var repeated = 1;",
           "var repeated = 2;",
           "var repeated;",
-          "/** @evid rules.md#rule Replaced same-statement initializer. */",
+          "/** @evidence rules.md#rule Replaced same-statement initializer. */",
           "var combined = 1, combined = 2;",
           "module.exports = { repeated, combined };",
           "",
@@ -230,17 +230,17 @@ export async function test_javascript_redefinitions(): Promise<void> {
 
   const crossKindMembers: IEvidInventory =
     await new EvidJavaScriptAdapter().analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/member-kinds.cjs",
         [
           "class Mixed {",
-          "  /** @evid rules.md#rule Replaced static function field. */",
+          "  /** @evidence rules.md#rule Replaced static function field. */",
           "  static value = () => 1;",
           "  static value = 2;",
-          "  /** @evid rules.md#rule Replaced static property field. */",
+          "  /** @evidence rules.md#rule Replaced static property field. */",
           "  static execute = 1;",
           "  static execute() {}",
-          "  /** @evid rules.md#rule Replaced instance function field. */",
+          "  /** @evidence rules.md#rule Replaced instance function field. */",
           "  handler = () => 1;",
           "  handler = 2;",
           "  invoke() {}",
@@ -284,14 +284,14 @@ export async function test_javascript_redefinitions(): Promise<void> {
 
   const accessorSlots: IEvidInventory =
     await new EvidJavaScriptAdapter().analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/accessor-slots.cjs",
         [
           "class Accessors {",
-          "  /** @evid rules.md#rule Replaced static method. */",
+          "  /** @evidence rules.md#rule Replaced static method. */",
           "  static hidden() {}",
           "  static get hidden() { return 1; }",
-          "  /** @evid rules.md#rule Replaced instance method. */",
+          "  /** @evidence rules.md#rule Replaced instance method. */",
           "  visible() {}",
           "  get visible() { return 1; }",
           "  static get restored() { return 1; }",
@@ -328,7 +328,7 @@ export async function test_javascript_redefinitions(): Promise<void> {
   );
   const survivor: string =
     "function run() { return 2; }\nmodule.exports.run = run;\n";
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     {
       "evid.json": JSON.stringify({
@@ -345,7 +345,7 @@ export async function test_javascript_redefinitions(): Promise<void> {
           },
         ],
       }),
-      "contract.cjs": `/** @evid rules.md#rule Replaced implementation. */\nfunction run() { return 1; }\n${survivor}`,
+      "contract.cjs": `/** @evidence rules.md#rule Replaced implementation. */\nfunction run() { return 1; }\n${survivor}`,
       "rules.md": "# Rule {#rule}\n\nDo the work.\n",
     },
     async (directory: string): Promise<void> => {
@@ -363,7 +363,7 @@ export async function test_javascript_redefinitions(): Promise<void> {
         1,
       );
 
-      await TestFileSystem.save(directory, { "contract.cjs": survivor });
+      await EvidTestFileSystem.save(directory, { "contract.cjs": survivor });
       const withoutHistory: IEvidCheckReport =
         await EvidChecker.check(config);
       TestValidator.equals(
@@ -377,8 +377,8 @@ export async function test_javascript_redefinitions(): Promise<void> {
         1,
       );
 
-      await TestFileSystem.save(directory, {
-        "contract.cjs": `/** @evid rules.md#rule Current implementation. */\n${survivor}`,
+      await EvidTestFileSystem.save(directory, {
+        "contract.cjs": `/** @evidence rules.md#rule Current implementation. */\n${survivor}`,
       });
       const recovered: IEvidCheckReport =
         await EvidChecker.check(config);

@@ -2,7 +2,7 @@ import { EvidKotlinAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Prevents local constructor parameters in defaults from becoming owner properties.
  *
@@ -12,7 +12,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_kotlin_local_constructor(): Promise<void> {
   const inventory = await new EvidKotlinAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Container.kt",
       dedent`
     class Container(val value: Int = run {

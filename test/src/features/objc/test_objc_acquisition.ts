@@ -1,12 +1,14 @@
-import { EvidObjcAdapter } from "evid";
+import {
+  EvidObjcAdapter,
+  EvidTreeSitterAssetScope,
+  EvidTreeSitterAssets,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTreeSitterAssets } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssets";
-import { EvidTreeSitterAssetScope } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssetScope";
-import { TestFileSystem } from "../../internal/TestFileSystem";
-import { TestParserAssets } from "../../internal/TestParserAssets";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Acquires pinned Objective-C syntax and reuses it offline.
  *
@@ -18,8 +20,8 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_objc_acquisition(): Promise<void> {
   const grammar = await new EvidTreeSitterAssets().grammar("objc");
-  const bytes = Uint8Array.from(await TestParserAssets.bytes(grammar));
-  const snapshot = TestSourceSnapshot.create(
+  const bytes = Uint8Array.from(await EvidTestParserAssets.bytes(grammar));
+  const snapshot = EvidTestSourceSnapshot.create(
     "src/Contract.h",
     dedent`
     @interface Contract
@@ -29,7 +31,7 @@ export async function test_objc_acquisition(): Promise<void> {
   `,
   );
 
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "objc-acquisition",
     {},
     async (cacheDirectory) => {

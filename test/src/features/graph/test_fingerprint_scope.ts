@@ -14,8 +14,8 @@ import type {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
-import { TestGraph } from "../../internal/TestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
 
 /**
  * Fingerprints complete structural scopes, including identity rebinding and withdrawn descendants.
@@ -84,7 +84,7 @@ export async function test_fingerprint_scope(): Promise<void> {
   const prefix: string = `${dedent`
     Unrelated file introduction.
 
-    <!-- @evid other.md Explains the file aggregate. -->
+    <!-- @evidence other.md Explains the file aggregate. -->
   `}\n\n`;
   const prefixed: IEvidInventory = await markdownInventory(
     prefix + markdown,
@@ -105,12 +105,12 @@ export async function test_fingerprint_scope(): Promise<void> {
   );
   const reviewedClaim: IEvidInventory =
     await new EvidTypeScriptAdapter().analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/review.ts",
         dedent`
           /**
-           * @evid docs/rules.md#pricing Implements pricing.
-           * @evidReview docs/rules.md#pricing #${pricingFingerprint.fingerprint} Rechecked the unchanged rule.
+           * @evidence docs/rules.md#pricing Implements pricing.
+           * @evidenceReview docs/rules.md#pricing #${pricingFingerprint.fingerprint} Rechecked the unchanged rule.
            */
           export function price(): number {
             return 1;
@@ -123,10 +123,10 @@ export async function test_fingerprint_scope(): Promise<void> {
     severity: "error",
     inventory: prefixed,
     unitIds: [prefixedPricing.id],
-    resolutions: await TestGraph.resolveDeclarations(reviewedClaim, prefixed, [
+    resolutions: await EvidTestGraph.resolveDeclarations(reviewedClaim, prefixed, [
       prefixedPricing.id,
     ]),
-    reviewResolutions: await TestGraph.resolveReviews(reviewedClaim, prefixed, [
+    reviewResolutions: await EvidTestGraph.resolveReviews(reviewedClaim, prefixed, [
       prefixedPricing.id,
     ]),
     requireReview: true,
@@ -148,7 +148,7 @@ export async function test_fingerprint_scope(): Promise<void> {
   const commentSuffix: string = dedent`
     ## Pricing {#pricing}
 
-    <!-- @evid other.md Explains the rule. --> First semantic suffix.
+    <!-- @evidence other.md Explains the rule. --> First semantic suffix.
   `;
   const commentSuffixInventory: IEvidInventory =
     await markdownInventory(commentSuffix);
@@ -171,7 +171,7 @@ export async function test_fingerprint_scope(): Promise<void> {
     ## Pricing {#pricing}
 
     <!--
-    @evid other.md Explains the rule.
+    @evidence other.md Explains the rule.
     --> First multiline suffix.
   `;
   const multilineSuffixInventory: IEvidInventory =
@@ -200,7 +200,7 @@ export async function test_fingerprint_scope(): Promise<void> {
   `);
   const annotatedSection: IEvidInventory = await markdownInventory(dedent`
     ## Pricing {#pricing}
-    <!-- @evid other.md Explains the rule. -->
+    <!-- @evidence other.md Explains the rule. -->
     Stable semantic prose.
   `);
   TestValidator.equals(
@@ -216,11 +216,11 @@ export async function test_fingerprint_scope(): Promise<void> {
   );
 
   const inlineHeadingComment: IEvidInventory = await markdownInventory(
-    "# Rule <!-- @evid other.md First explanation. -->\n",
+    "# Rule <!-- @evidence other.md First explanation. -->\n",
   );
   const changedInlineHeadingComment: IEvidInventory =
     await markdownInventory(
-      "# Rule <!-- @evid other.md Second explanation. -->\n",
+      "# Rule <!-- @evidence other.md Second explanation. -->\n",
     );
   const inlineRule: IEvidUnit = requireUnit(inlineHeadingComment, "rule");
   const changedInlineRule: IEvidUnit = requireUnit(
@@ -335,7 +335,7 @@ async function markdownInventory(
   file: string = "docs/rules.md",
 ): Promise<IEvidInventory> {
   return new EvidMarkdownAdapter().analyze(
-    TestSourceSnapshot.create(file, content),
+    EvidTestSourceSnapshot.create(file, content),
   );
 }
 
@@ -349,7 +349,7 @@ async function typescriptInventory(
   content: string,
 ): Promise<IEvidInventory> {
   return new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create("src/contracts.ts", content),
+    EvidTestSourceSnapshot.create("src/contracts.ts", content),
   );
 }
 
@@ -361,16 +361,16 @@ async function typescriptInventory(
  */
 async function reexportedFingerprint(module: string): Promise<string> {
   const inventory = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/first.ts",
         "export interface Contract { value: string; }",
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/second.ts",
         "export interface Contract { value: string; }",
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/index.ts",
         `export { Contract as Public } from "${module}";`,
       ),

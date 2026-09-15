@@ -39,7 +39,7 @@ export namespace EvidWatchReporter {
    * report, so it instead preserves configuration context and repair advice.
    */
   export function text(cycle: EvidWatchCycle): string {
-    const heading = `Evid watch cycle ${cycle.cycle} (${cycle.status}).\n`;
+    const heading = `Evidence Graph watch cycle ${cycle.cycle} (${cycle.status}).\n`;
     if (cycle.status !== "failed")
       return heading + EvidReporter.text(cycle.report);
     return `${heading}Config: ${cycle.configFile}\n${cycle.message}\nRepair: ${cycle.repair}\n`;

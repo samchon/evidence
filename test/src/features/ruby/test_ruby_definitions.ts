@@ -3,7 +3,7 @@ import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Merges compatible Ruby reopenings while retaining replacement conflicts.
  *
@@ -16,8 +16,8 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_ruby_definitions(): Promise<void> {
   const compatible = await new EvidRubyAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "lib/shop/sale.rb",
         dedent`
           module Shop
@@ -27,7 +27,7 @@ export async function test_ruby_definitions(): Promise<void> {
           end
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "lib/shop/sale_extensions.rb",
         dedent`
           module Shop
@@ -52,7 +52,7 @@ export async function test_ruby_definitions(): Promise<void> {
   );
 
   const conflicting = await new EvidRubyAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "lib/conflicts.rb",
       dedent`
         module Conflict

@@ -1,39 +1,44 @@
-import { EvidWatcher } from "evid";
-import type { EvidWatchCycle } from "evid";
-import { TestParserAssets } from "../../internal/TestParserAssets";
+import {
+  EvidTreeSitterAssetScope,
+  EvidTreeSitterAssets,
+  EvidWatcher,
+  type EvidWatchCycle,
+} from "evid";
+import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { EvidTreeSitterAssets } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssets";
-import { EvidTreeSitterAssetScope } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssetScope";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
- * Publishes an incomplete parser-download cycle and recovers without a source edit.
+ * Publishes an incomplete parser-download cycle and recovers without a source
+ * edit.
  *
  * A transient grammar acquisition failure must replace the watch result with an
- * operational failure and retry from the retained inputs once the asset is available.
+ * operational failure and retry from the retained inputs once the asset is
+ * available.
  *
  * 1. Run a Python claim watcher with a pinned TypeScript configuration grammar and
  *    a Python grammar fetch that first fails as offline.
  * 2. Require the first published cycle to be incomplete with operational exit 2.
- * 3. Make the Python grammar fetch available without editing the config or sources.
+ * 3. Make the Python grammar fetch available without editing the config or
+ *    sources.
  * 4. Require the next cycle to succeed and verify exactly one failed transfer and
  *    one successful retry occurred before the watcher closes.
  */
 export async function test_watch_parser_recovery(): Promise<void> {
   const grammar = await new EvidTreeSitterAssets().grammar("python");
   const configGrammar = await new EvidTreeSitterAssets().grammar("typescript");
-  const pinned = Uint8Array.from(await TestParserAssets.bytes(grammar));
+  const pinned = Uint8Array.from(await EvidTestParserAssets.bytes(grammar));
   const configPinned = Uint8Array.from(
-    await TestParserAssets.bytes(configGrammar),
+    await EvidTestParserAssets.bytes(configGrammar),
   );
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     join(__dirname, `parser-recovery-${randomUUID()}`),
     {
-      "project/evid.config.ts": dedent`
+      "project/evidence.config.ts": dedent`
         export default {
           claims: [{
             type: "python",
@@ -49,7 +54,7 @@ export async function test_watch_parser_recovery(): Promise<void> {
       `,
       "project/api.py": dedent`
       def run():
-          """@evid requirements.md#execute Execute the requirement."""
+          """@evidence requirements.md#execute Execute the requirement."""
           return 1
     `,
       "project/requirements.md": "## Execute\nRun the operation.\n",
@@ -59,7 +64,7 @@ export async function test_watch_parser_recovery(): Promise<void> {
       let available = false;
       let requests = 0;
       const watcher = new EvidWatcher(
-        join(directory, "project", "evid.config.ts"),
+        join(directory, "project", "evidence.config.ts"),
         {
           pollIntervalMilliseconds: 10,
           debounceMilliseconds: 0,

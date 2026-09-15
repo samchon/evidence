@@ -7,8 +7,8 @@ import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Accepts a Markdown section's current review of its own evidence target.
@@ -40,8 +40,8 @@ export async function test_graph_review_self_reference(): Promise<void> {
       Re-read a cited rule when its content changes.
 
       <!--
-      @evid ./rules.md#review-discipline Enforces this rule on its own section.
-      @evidReview ./rules.md#review-discipline #${expected} Read the section and checked the self-reference.
+      @evidence ./rules.md#review-discipline Enforces this rule on its own section.
+      @evidenceReview ./rules.md#review-discipline #${expected} Read the section and checked the self-reference.
       -->
     `,
   );
@@ -64,12 +64,12 @@ export async function test_graph_review_self_reference(): Promise<void> {
             severity: "error",
             inventory: reviewed,
             unitIds: [reviewedRule.id],
-            resolutions: await TestGraph.resolveDeclarations(
+            resolutions: await EvidTestGraph.resolveDeclarations(
               reviewed,
               reviewed,
               [reviewedRule.id],
             ),
-            reviewResolutions: await TestGraph.resolveReviews(
+            reviewResolutions: await EvidTestGraph.resolveReviews(
               reviewed,
               reviewed,
               [reviewedRule.id],
@@ -93,7 +93,7 @@ export async function test_graph_review_self_reference(): Promise<void> {
  */
 async function analyze(content: string): Promise<IEvidInventory> {
   return new EvidMarkdownAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "rules.md",
       content,
       ["rules.md"],

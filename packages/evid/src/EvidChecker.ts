@@ -19,7 +19,7 @@ import type { IEvidConfigPlan } from "./structures/IEvidConfigPlan";
  * the same operations for callers that do not need to retain a facade.
  *
  * @example
- * const checker: EvidChecker = new EvidChecker("evid.config.ts");
+ * const checker: EvidChecker = new EvidChecker("evidence.config.ts");
  * const report: IEvidCheckReport = await checker.check();
  * // A subsequent call reloads the configuration and selected source files.
  * const updated: IEvidCheckReport = await checker.check();
@@ -37,9 +37,9 @@ export class EvidChecker {
    * Selects the configuration file for subsequent checks.
    *
    * Construction performs no file access or parser initialization. Omission uses
-   * `evid.config.ts`; the loader resolves the supplied path when work begins.
+   * `evidence.config.ts`; the loader resolves the supplied path when work begins.
    */
-  public constructor(configFile: string = "evid.config.ts") {
+  public constructor(configFile: string = "evidence.config.ts") {
     this.configFile = configFile;
   }
 
@@ -62,7 +62,7 @@ export class EvidChecker {
    * subsequent list, inspection, or graph export without another source load.
    */
   public static async analyze(
-    configFile: string = "evid.config.ts",
+    configFile: string = "evidence.config.ts",
   ): Promise<IEvidCheckAnalysis> {
     return new EvidChecker(configFile).analyze();
   }
@@ -85,7 +85,7 @@ export class EvidChecker {
    * instance `check` method.
    */
   public static async check(
-    configFile: string = "evid.config.ts",
+    configFile: string = "evidence.config.ts",
   ): Promise<IEvidCheckReport> {
     return new EvidChecker(configFile).check();
   }

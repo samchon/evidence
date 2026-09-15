@@ -1,4 +1,4 @@
-import type { EvidNode } from "web-tree-sitter";
+import type { Node as EvidNode } from "web-tree-sitter";
 
 import { EvidSourceText } from "../../internal/EvidSourceText";
 import type { EvidParseSession } from "../../parsers/EvidParseSession";

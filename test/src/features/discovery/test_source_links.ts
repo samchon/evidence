@@ -5,8 +5,8 @@ import { randomUUID } from "node:crypto";
 import { link, symlink } from "node:fs/promises";
 import { join } from "node:path";
 
-import { EvidSourcePath } from "../../../../packages/evidence/src/internal/EvidSourcePath";
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidSourcePath } from "evid";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
  * Deduplicates linked files without losing addresses and diagnoses traversed directory cycles.
@@ -29,10 +29,10 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
 export async function test_source_links(): Promise<void> {
   const location: string = join(__dirname, "links-" + randomUUID());
 
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     {
-      "project/evid.config.ts": "export default {};",
+      "project/evidence.config.ts": "export default {};",
       "schema/model.prisma": dedent`
         model Sale {
           id Int @id
@@ -55,7 +55,7 @@ export async function test_source_links(): Promise<void> {
         join(directory, "schema/model.prisma"),
         join(directory, "project/hard.prisma"),
       );
-      const config: string = join(directory, "project/evid.config.ts");
+      const config: string = join(directory, "project/evidence.config.ts");
 
       const snapshot = await EvidSourceLoader.glob(config, {
         files: ["**/*.prisma"],

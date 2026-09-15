@@ -3,7 +3,7 @@ import type { IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Tracks PHP review fingerprints across semantic ownership changes.
  *
@@ -34,7 +34,7 @@ export async function test_php_fingerprints(): Promise<void> {
   const annotation = await analyze(
     content.replace(
       "Shared documentation.",
-      "@evidReview ./requirements.md#value Annotation edit.",
+      "@evidenceReview ./requirements.md#value Annotation edit.",
     ),
   );
 
@@ -82,7 +82,7 @@ export async function test_php_fingerprints(): Promise<void> {
  */
 async function analyze(content: string): Promise<IEvidInventory> {
   return new EvidPhpAdapter().analyze(
-    TestSourceSnapshot.create("src/contract.php", content),
+    EvidTestSourceSnapshot.create("src/contract.php", content),
   );
 }
 

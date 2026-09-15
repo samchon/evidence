@@ -4,8 +4,8 @@ import { randomUUID } from "node:crypto";
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { EvidSourcePath } from "../../../../packages/evidence/src/internal/EvidSourcePath";
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidSourcePath } from "evid";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
  * Distinguishes healthy empty selections from missing roots, files, and invalid UTF-8.
@@ -26,11 +26,11 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
 export async function test_source_failures(): Promise<void> {
   const location = join(__dirname, "failures-" + randomUUID());
 
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     { "docs/valid.md": "# Valid", "root-file": "Not a directory" },
     async (directory) => {
-      const config = join(directory, "evid.config.ts");
+      const config = join(directory, "evidence.config.ts");
 
       // A complete empty glob is different from a root that could not be loaded.
       const empty = await EvidSourceLoader.glob(config, {

@@ -1,7 +1,7 @@
 import { EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestInventory } from "../../internal/TestInventory";
+import { EvidTestInventory } from "../../internal/EvidTestInventory";
 
 /**
  * Separates shared documentation ownership from each declarator's fingerprint content.
@@ -22,15 +22,15 @@ import { TestInventory } from "../../internal/TestInventory";
  *    supply evidence.
  */
 export async function test_inventory_hosts(): Promise<void> {
-  const input = TestInventory.create();
-  const first = TestInventory.unit(
+  const input = EvidTestInventory.create();
+  const first = EvidTestInventory.unit(
     input,
     "first",
     ["first"],
     "property",
     "export const first = 1, second = 2;",
   );
-  const second = TestInventory.unit(
+  const second = EvidTestInventory.unit(
     input,
     "second",
     ["second"],
@@ -39,13 +39,13 @@ export async function test_inventory_hosts(): Promise<void> {
   );
   for (const site of first.sites) {
     site.id = "values-site";
-    site.content = [TestInventory.range(input, "first = 1")];
+    site.content = [EvidTestInventory.range(input, "first = 1")];
   }
   for (const site of second.sites) {
     site.id = "values-site";
-    site.content = [TestInventory.range(input, "second = 2")];
+    site.content = [EvidTestInventory.range(input, "second = 2")];
   }
-  TestInventory.host(
+  EvidTestInventory.host(
     input,
     "values-doc",
     "values-site",

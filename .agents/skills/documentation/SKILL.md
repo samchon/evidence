@@ -1,6 +1,6 @@
 ---
 name: documentation
-description: Defines Evid prose, source JSDoc, implementation comments, test scenario documentation, and agent instructions. Use before writing or modifying documentation, source comments, AGENTS.md, or repository skills.
+description: Defines Evidence Graph prose, source JSDoc, implementation comments, test scenario documentation, and agent instructions. Use before writing or modifying documentation, source comments, AGENTS.md, or repository skills.
 ---
 
 # Documentation
@@ -9,7 +9,7 @@ description: Defines Evid prose, source JSDoc, implementation comments, test sce
 
 Write README as the completed product's user guide: purpose, installation, configuration, and usage. Do not include issue or roadmap links, implementation progress, or milestone commentary. Keep delivery status and validation results in the PR.
 
-Document configuration in README only through `evid.config.ts`. Do not advertise JSON configuration or alternative config file formats there.
+Document configuration in README only through `evidence.config.ts`. Do not advertise JSON configuration or alternative config file formats there.
 
 The root `README.md` is the only editable package README. `scripts/copy-readme-and-license.js` copies it and LICENSE to the package during `prepack`. Keep repository links usable from npm as well as GitHub. Review the copy script when changing documentation preparation; do not introduce package-installation tests.
 

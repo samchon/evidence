@@ -1,7 +1,7 @@
 import type { IEvidConfig } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { validateEvidConfig } from "../../../../packages/evidence/src/internal/validateEvidConfig";
+import { validateEvidConfig } from "evid";
 
 /**
  * Validates malformed population declarations before inactive entries are filtered.

@@ -8,8 +8,8 @@ import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Evaluates Ruby type, function, and property evidence.
  *
@@ -22,7 +22,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_ruby_graph(): Promise<void> {
   const requirements = await new EvidMarkdownAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "docs/requirements.md",
       dedent`
         ## Service {#service}
@@ -40,17 +40,17 @@ export async function test_ruby_graph(): Promise<void> {
     ),
   );
   const implementation = await new EvidRubyAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "lib/contracts.rb",
       dedent`
         module Contracts
-          # @evid docs/requirements.md#service Implements the public type.
+          # @evidence docs/requirements.md#service Implements the public type.
           class Service; end
 
-          # @evid docs/requirements.md#run Implements the operation.
+          # @evidence docs/requirements.md#run Implements the operation.
           def self.run; 1; end
 
-          # @evid docs/requirements.md#value Implements the public value.
+          # @evidence docs/requirements.md#value Implements the public value.
           VALUE = 1
         end
       `,
@@ -78,7 +78,7 @@ export async function test_ruby_graph(): Promise<void> {
             severity: "error",
             inventory: requirements,
             unitIds: requirementUnits.map((unit) => unit.id),
-            resolutions: await TestGraph.resolveDeclarations(
+            resolutions: await EvidTestGraph.resolveDeclarations(
               implementation,
               requirements,
               requirementUnits.map((unit) => unit.id),
@@ -108,7 +108,7 @@ export async function test_ruby_graph(): Promise<void> {
               severity: "error",
               inventory: requirements,
               unitIds: requirementUnits.map((unit) => unit.id),
-              resolutions: await TestGraph.resolveDeclarations(
+              resolutions: await EvidTestGraph.resolveDeclarations(
                 missing,
                 requirements,
                 requirementUnits.map((unit) => unit.id),
@@ -120,7 +120,7 @@ export async function test_ruby_graph(): Promise<void> {
     });
     TestValidator.equals(
       `missing Ruby ${anchor} acknowledgement`,
-      TestGraph.obligation(partial, 0, 0).missingUnitIds,
+      EvidTestGraph.obligation(partial, 0, 0).missingUnitIds,
       [required.id],
     );
   }
@@ -152,11 +152,11 @@ async function fingerprintInventory(
   statement: string,
 ): Promise<IEvidInventory> {
   return new EvidRubyAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "lib/fingerprint.rb",
       dedent`
         class Runner
-          # @evid docs/requirements.md#run ${reason}
+          # @evidence docs/requirements.md#run ${reason}
           def run
             ${statement}
           end

@@ -35,7 +35,7 @@ export async function test_swagger_remote(): Promise<void> {
 
   try {
     const adapter = new EvidSwaggerAdapter();
-    const config = join(__dirname, "evid.config.ts");
+    const config = join(__dirname, "evidence.config.ts");
     const first = await adapter.load(
       config,
       `${origin}/schema?token=secret-token`,

@@ -1,15 +1,15 @@
-﻿import {
+import {
   EvidDbmlAdapter,
   EvidParser,
   EvidParserError,
+  EvidTreeSitterAssetScope,
 } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTreeSitterAssetScope } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssetScope";
-import { TestFileSystem } from "../../internal/TestFileSystem";
-import { TestParserAssets } from "../../internal/TestParserAssets";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Acquires the real DBML grammar lazily and preserves parser behavior from cache.
  *
@@ -26,14 +26,14 @@ export async function test_dbml_parser_acquisition(): Promise<void> {
   );
   await parser.close();
   if (grammar === undefined) throw new Error("The DBML grammar pin is absent.");
-  const source = TestSourceSnapshot.create(
+  const source = EvidTestSourceSnapshot.create(
     "schema.dbml",
     dedent`
     Table users { id int }
     Table posts { user_id int [ref: > users.id] }
   `,
   );
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "dbml-acquisition",
     {},
     async (cacheDirectory) => {
@@ -45,7 +45,7 @@ export async function test_dbml_parser_acquisition(): Promise<void> {
             const url = input instanceof Request ? input.url : String(input);
             requested.push(url);
             return new Response(
-              Uint8Array.from(await TestParserAssets.bytes(grammar)),
+              Uint8Array.from(await EvidTestParserAssets.bytes(grammar)),
             );
           },
         },

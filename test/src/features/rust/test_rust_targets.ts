@@ -2,8 +2,8 @@ import { EvidRustAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Resolves Rust public modules, aliases, fields, and associated items.
  *
@@ -20,8 +20,8 @@ export async function test_rust_targets(): Promise<void> {
 
   // The reference exposes one owner through its module path, declaration file, and alias.
   const reference = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/lib.rs",
         dedent`
           pub mod sale;
@@ -32,7 +32,7 @@ export async function test_rust_targets(): Promise<void> {
           }
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/sale.rs",
         dedent`
           pub struct Sale {
@@ -52,17 +52,17 @@ export async function test_rust_targets(): Promise<void> {
     ]),
   );
   const claim = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "test/sale_test.rs",
       dedent`
-        /// @evid ../src/lib.rs#sale.Sale Verifies the module path.
-        /// @evid ../src/lib.rs#PublicSale Verifies the public alias.
-        /// @evid ../src/sale.rs#Sale Verifies the declaration file.
-        /// @evid ../src/sale.rs#Sale.total Verifies the public field.
-        /// @evid ../src/lib.rs#PublicSale.total Verifies an alias-owned field.
-        /// @evid ../src/lib.rs#sale.Sale.calculate Verifies the inherent method.
-        /// @evid ../src/sale.rs#Sale.run Verifies the colliding inherent method.
-        /// @evid ../src/sale.rs#Sale["impl crate::Service"].run Verifies the trait method.
+        /// @evidence ../src/lib.rs#sale.Sale Verifies the module path.
+        /// @evidence ../src/lib.rs#PublicSale Verifies the public alias.
+        /// @evidence ../src/sale.rs#Sale Verifies the declaration file.
+        /// @evidence ../src/sale.rs#Sale.total Verifies the public field.
+        /// @evidence ../src/lib.rs#PublicSale.total Verifies an alias-owned field.
+        /// @evidence ../src/lib.rs#sale.Sale.calculate Verifies the inherent method.
+        /// @evidence ../src/sale.rs#Sale.run Verifies the colliding inherent method.
+        /// @evidence ../src/sale.rs#Sale["impl crate::Service"].run Verifies the trait method.
         pub fn verify() {}
       `,
     ),
@@ -74,7 +74,7 @@ export async function test_rust_targets(): Promise<void> {
     [],
   );
   TestValidator.equals("complete Rust target claim", claim.diagnostics, []);
-  const resolutions = await TestGraph.resolveDeclarations(
+  const resolutions = await EvidTestGraph.resolveDeclarations(
     claim,
     reference,
     reference.units.map((unit) => unit.id),

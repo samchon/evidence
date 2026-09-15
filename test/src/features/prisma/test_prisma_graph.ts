@@ -15,8 +15,8 @@ import type {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Evaluates Prisma as a claim and a reviewed reference.
  *
@@ -28,7 +28,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_prisma_graph(): Promise<void> {
   const specification = await new EvidMarkdownAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "docs/spec.md",
       dedent`
         ## Pricing {#pricing}
@@ -54,16 +54,16 @@ export async function test_prisma_graph(): Promise<void> {
 
   // Prisma claims the persisted model and excludes an external responsibility in a ledger.
   const prisma = await new EvidPrismaAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "prisma/schema.prisma",
         dedent`
           datasource db {
             provider = "postgresql"
           }
 
-          /// @evid docs/spec.md#pricing The model persists the requested price.
-          /// @evidReview docs/spec.md#pricing #${pricingFingerprint} Read the pricing requirement and checked the stored fields.
+          /// @evidence docs/spec.md#pricing The model persists the requested price.
+          /// @evidenceReview docs/spec.md#pricing #${pricingFingerprint} Read the pricing requirement and checked the stored fields.
           model Sale {
             id    String @id
             price Int
@@ -74,11 +74,11 @@ export async function test_prisma_graph(): Promise<void> {
           }
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "prisma/exclusions.schema",
         dedent`
-          /// @evidExclude docs/spec.md#sellers Authentication owns seller identity.
-          /// @evidExcludeReview docs/spec.md#sellers #${sellersFingerprint} Read the ownership boundary and confirmed the exclusion.
+          /// @evidenceExclude docs/spec.md#sellers Authentication owns seller identity.
+          /// @evidenceExcludeReview docs/spec.md#sellers #${sellersFingerprint} Read the ownership boundary and confirmed the exclusion.
         `,
       ),
     ]),
@@ -96,14 +96,14 @@ export async function test_prisma_graph(): Promise<void> {
 
   // TypeScript then cites the file-independent Prisma model targets.
   const contract = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/contracts.ts",
       dedent`
         /**
-         * @evid prisma:Sale Exposes the persisted sale model.
-         * @evidReview prisma:Sale #${saleFingerprint} Read the model and its stored fields.
-         * @evid prisma:Seller Exposes the persisted seller model.
-         * @evidReview prisma:Seller #${sellerFingerprint} Read the seller identity contract.
+         * @evidence prisma:Sale Exposes the persisted sale model.
+         * @evidenceReview prisma:Sale #${saleFingerprint} Read the model and its stored fields.
+         * @evidence prisma:Seller Exposes the persisted seller model.
+         * @evidenceReview prisma:Seller #${sellerFingerprint} Read the seller identity contract.
          */
         export interface ISaleContract {}
       `,
@@ -122,12 +122,12 @@ export async function test_prisma_graph(): Promise<void> {
             severity: "error",
             inventory: specification,
             unitIds: [pricing.id, sellers.id],
-            resolutions: await TestGraph.resolveDeclarations(
+            resolutions: await EvidTestGraph.resolveDeclarations(
               prisma,
               specification,
               [pricing.id, sellers.id],
             ),
-            reviewResolutions: await TestGraph.resolveReviews(
+            reviewResolutions: await EvidTestGraph.resolveReviews(
               prisma,
               specification,
               [pricing.id, sellers.id],
@@ -145,11 +145,11 @@ export async function test_prisma_graph(): Promise<void> {
             severity: "error",
             inventory: prisma,
             unitIds: [sale.id, seller.id],
-            resolutions: await TestGraph.resolveDeclarations(contract, prisma, [
+            resolutions: await EvidTestGraph.resolveDeclarations(contract, prisma, [
               sale.id,
               seller.id,
             ]),
-            reviewResolutions: await TestGraph.resolveReviews(
+            reviewResolutions: await EvidTestGraph.resolveReviews(
               contract,
               prisma,
               [sale.id, seller.id],
@@ -173,13 +173,13 @@ export async function test_prisma_graph(): Promise<void> {
 
   // Prisma target syntax and selected-member lookup remain distinct failures.
   const malformedClaim = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/failures.ts",
       dedent`
-        /** @evid prisma:Sale..price Contains an empty member segment. */
+        /** @evidence prisma:Sale..price Contains an empty member segment. */
         export function malformed(): void {}
 
-        /** @evid prisma:Sale.absent Names no parsed member. */
+        /** @evidence prisma:Sale.absent Names no parsed member. */
         export function missing(): void {}
       `,
     ),

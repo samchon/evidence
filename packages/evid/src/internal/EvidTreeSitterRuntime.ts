@@ -6,14 +6,16 @@ import { EvidParserError } from "../parsers/EvidParserError";
 import type { IEvidGrammar } from "../structures/IEvidGrammar";
 
 /**
- * Initializes the WASM binding once and shares immutable loaded grammar modules.
+ * Initializes the WASM binding once and shares immutable loaded grammar
+ * modules.
  *
- * web-tree-sitter offers no language disposal API, so cache keys use verified
+ * Web-tree-sitter offers no language disposal API, so cache keys use verified
  * byte digests and instances are intentionally process-lifetime resources.
  */
 export namespace EvidTreeSitterRuntime {
   /**
-   * Returns the language module for verified grammar bytes after engine initialization.
+   * Returns the language module for verified grammar bytes after engine
+   * initialization.
    *
    * The runtime key is the grammar digest, so equivalent metadata objects share
    * one process-lifetime Language instance regardless of object identity.

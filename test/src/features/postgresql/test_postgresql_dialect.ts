@@ -4,7 +4,7 @@ import {
 } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Uses configured PostgreSQL naming for a source that portable SQL also accepts.
  *
@@ -15,7 +15,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Require PostgreSQL-specific identities and resolution results.
  */
 export async function test_postgresql_dialect(): Promise<void> {
-  const snapshot = TestSourceSnapshot.create(
+  const snapshot = EvidTestSourceSnapshot.create(
     "schema.sql",
     "CREATE TABLE App.Item (ID INTEGER);",
   );

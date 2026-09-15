@@ -5,7 +5,7 @@ import {
 } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Separates trailing Go comments from leading documentation runs.
  *
@@ -18,17 +18,17 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_go_comment_boundaries(): Promise<void> {
   const source = dedent`
     package sale
-    var Before = 1 // @evid docs/spec.md#trailing Cannot document After.
+    var Before = 1 // @evidence docs/spec.md#trailing Cannot document After.
                    // 한글 🐹
-                   // @evid docs/spec.md#after Documents After itself.
+                   // @evidence docs/spec.md#after Documents After itself.
                    var After = 2
-    var Earlier = 3 /* @evidReview docs/spec.md#review Cannot review Later. */
+    var Earlier = 3 /* @evidenceReview docs/spec.md#review Cannot review Later. */
                     var Later = 4
   `;
   const adapter = new EvidGoAdapter();
   for (const content of [source, source.replaceAll("\n", "\r\n")]) {
     const inventory = await adapter.analyze(
-      TestSourceSnapshot.create("sale/values.go", content),
+      EvidTestSourceSnapshot.create("sale/values.go", content),
     );
     const units = new Map(
       inventory.units.map((unit) => [unit.id, unit.identity.join(".")]),
@@ -61,10 +61,10 @@ export async function test_go_comment_boundaries(): Promise<void> {
     TestValidator.equals(
       "leading tag coordinates",
       inventory.declarations[0]?.location?.range?.start?.offset,
-      content.indexOf("@evid docs/spec.md#after"),
+      content.indexOf("@evidence docs/spec.md#after"),
     );
     const rewritten = await adapter.analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "sale/values.go",
         content.replace(
           "Documents After itself.",
@@ -83,7 +83,7 @@ export async function test_go_comment_boundaries(): Promise<void> {
 
   // A trailing withdrawal must not hide the following public declaration.
   const withdrawal = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "sale/values.go",
       "package sale\nvar Before = 1 // @internal Cannot withdraw After.\n               var After = 2\n",
     ),
@@ -99,9 +99,9 @@ export async function test_go_comment_boundaries(): Promise<void> {
   // Standalone block documentation still attaches, and a blank line still separates a run.
   for (const gap of ["\n", "\n\n"]) {
     const inventory = await adapter.analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "sale/values.go",
-        `package sale\n/* @evid docs/spec.md#block Documents the block. */${gap}var Value = 1\n`,
+        `package sale\n/* @evidence docs/spec.md#block Documents the block. */${gap}var Value = 1\n`,
       ),
     );
     TestValidator.equals(

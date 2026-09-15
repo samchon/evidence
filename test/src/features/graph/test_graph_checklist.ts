@@ -13,8 +13,8 @@ import type {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Evaluates checklist coverage separately for every selected TypeScript host.
@@ -49,7 +49,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_graph_checklist(): Promise<void> {
   const requirements = await new EvidMarkdownAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "docs/rules.md",
       dedent`
         # Engineering rules
@@ -70,16 +70,16 @@ export async function test_graph_checklist(): Promise<void> {
 
   // One complete host cannot discharge a partial or undocumented host's checklist.
   const claims = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/checks.ts",
       dedent`
         /**
-         * @evid docs/rules.md#no-hardcoding Uses injected policy.
-         * @evid docs/rules.md#no-whack-a-mole Repairs the shared cause.
+         * @evidence docs/rules.md#no-hardcoding Uses injected policy.
+         * @evidence docs/rules.md#no-whack-a-mole Repairs the shared cause.
          */
         export function thorough(): void {}
 
-        /** @evid docs/rules.md#no-hardcoding Uses injected policy. */
+        /** @evidence docs/rules.md#no-hardcoding Uses injected policy. */
         export function partial(): void {}
 
         export function empty(): void {}
@@ -119,17 +119,17 @@ export async function test_graph_checklist(): Promise<void> {
 
   TestValidator.equals(
     "complete host",
-    TestGraph.hostCoverage(checklist, 0, 0, thorough.id).missingUnitIds,
+    EvidTestGraph.hostCoverage(checklist, 0, 0, thorough.id).missingUnitIds,
     [],
   );
   TestValidator.equals(
     "partial host",
-    TestGraph.hostCoverage(checklist, 0, 0, partial.id).missingUnitIds,
+    EvidTestGraph.hostCoverage(checklist, 0, 0, partial.id).missingUnitIds,
     [whackAMole.id],
   );
   TestValidator.equals(
     "undocumented host",
-    TestGraph.hostCoverage(checklist, 0, 0, empty.id).missingUnitIds,
+    EvidTestGraph.hostCoverage(checklist, 0, 0, empty.id).missingUnitIds,
     [hardcoding.id, whackAMole.id],
   );
   TestValidator.equals(
@@ -140,10 +140,10 @@ export async function test_graph_checklist(): Promise<void> {
 
   // A selected file citation answers only the file item and does not cascade into headings.
   const fileClaim = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/file-check.ts",
       dedent`
-        /** @evid docs/rules.md Answers only the document item. */
+        /** @evidence docs/rules.md Answers only the document item. */
         export function checksFile(): void {}
       `,
     ),
@@ -174,12 +174,12 @@ export async function test_graph_checklist(): Promise<void> {
 
   TestValidator.equals(
     "file citation covers only itself",
-    TestGraph.hostCoverage(fileChecklist, 0, 0, checksFile.id).coveredUnitIds,
+    EvidTestGraph.hostCoverage(fileChecklist, 0, 0, checksFile.id).coveredUnitIds,
     [file.id],
   );
   TestValidator.equals(
     "headings remain owed",
-    TestGraph.hostCoverage(fileChecklist, 0, 0, checksFile.id).missingUnitIds,
+    EvidTestGraph.hostCoverage(fileChecklist, 0, 0, checksFile.id).missingUnitIds,
     [hardcoding.id, whackAMole.id],
   );
 
@@ -219,20 +219,20 @@ export async function test_graph_checklist(): Promise<void> {
   );
   TestValidator.equals(
     "aggregate explains both missing items",
-    TestGraph.hostCoverage(aggregate, 0, 0, checksFile.id).explainedUnitIds,
+    EvidTestGraph.hostCoverage(aggregate, 0, 0, checksFile.id).explainedUnitIds,
     [hardcoding.id, whackAMole.id],
   );
 
   // An exclusion keeps its subtree cascade on its own host without conflicting
   // with another host's evidence.
   const exclusions = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/exclusions.ts",
       dedent`
-        /** @evidExclude docs/rules.md No checklist rule applies here. */
+        /** @evidenceExclude docs/rules.md No checklist rule applies here. */
         export function excluded(): void {}
 
-        /** @evid docs/rules.md#no-hardcoding Uses injected policy. */
+        /** @evidence docs/rules.md#no-hardcoding Uses injected policy. */
         export function localEvid(): void {}
       `,
     ),
@@ -263,12 +263,12 @@ export async function test_graph_checklist(): Promise<void> {
 
   TestValidator.equals(
     "exclusion cascades on its host",
-    TestGraph.hostCoverage(excludedChecklist, 0, 0, excluded.id).coveredUnitIds,
+    EvidTestGraph.hostCoverage(excludedChecklist, 0, 0, excluded.id).coveredUnitIds,
     [hardcoding.id, whackAMole.id],
   );
   TestValidator.equals(
     "other host remains independent",
-    TestGraph.hostCoverage(excludedChecklist, 0, 0, localEvid.id)
+    EvidTestGraph.hostCoverage(excludedChecklist, 0, 0, localEvid.id)
       .missingUnitIds,
     [whackAMole.id],
   );
@@ -280,18 +280,18 @@ export async function test_graph_checklist(): Promise<void> {
 
   // Conflicts and overlapping exclusions are keyed to one semantic checklist host.
   const localRules = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/local-rules.ts",
       dedent`
         /**
-         * @evid docs/rules.md#no-hardcoding Applies here.
-         * @evidExclude docs/rules.md#no-hardcoding Does not apply here.
+         * @evidence docs/rules.md#no-hardcoding Applies here.
+         * @evidenceExclude docs/rules.md#no-hardcoding Does not apply here.
          */
         export function conflict(): void {}
 
         /**
-         * @evidExclude docs/rules.md No rules apply here.
-         * @evidExclude docs/rules.md#no-hardcoding This rule also does not apply.
+         * @evidenceExclude docs/rules.md No rules apply here.
+         * @evidenceExclude docs/rules.md#no-hardcoding This rule also does not apply.
          */
         export function duplicate(): void {}
       `,
@@ -357,7 +357,7 @@ export async function test_graph_checklist(): Promise<void> {
 
   TestValidator.equals(
     "strict checklist refuses exclusion coverage",
-    TestGraph.hostCoverage(strictChecklist, 0, 0, excluded.id).missingUnitIds,
+    EvidTestGraph.hostCoverage(strictChecklist, 0, 0, excluded.id).missingUnitIds,
     [hardcoding.id, whackAMole.id],
   );
   TestValidator.equals(
@@ -369,12 +369,12 @@ export async function test_graph_checklist(): Promise<void> {
   // An unselected carrier can answer an ordinary sibling reference but cannot
   // clear any host's checklist.
   const carrierClaim = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/carrier.ts",
       dedent`
         export function owing(): void {}
 
-        /** @evidExclude docs/rules.md#no-hardcoding Shared exclusion. */
+        /** @evidenceExclude docs/rules.md#no-hardcoding Shared exclusion. */
         export const carrier = true;
       `,
     ),
@@ -435,12 +435,12 @@ export async function test_graph_checklist(): Promise<void> {
 
   TestValidator.equals(
     "shared carrier does not answer checklist host",
-    TestGraph.hostCoverage(sharedCarrier, 0, 0, owing.id).missingUnitIds,
+    EvidTestGraph.hostCoverage(sharedCarrier, 0, 0, owing.id).missingUnitIds,
     [hardcoding.id],
   );
   TestValidator.equals(
     "shared carrier answers ordinary reference",
-    TestGraph.obligation(sharedCarrier, 0, 1).missingUnitIds,
+    EvidTestGraph.obligation(sharedCarrier, 0, 1).missingUnitIds,
     [],
   );
   TestValidator.equals(
@@ -527,12 +527,12 @@ export async function test_graph_checklist(): Promise<void> {
 
   // A refused aggregate in another claim cannot consume the original claim's deferred report.
   const aggregateCarrierClaim = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/aggregate-carrier.ts",
       dedent`
         export function owesAggregate(): void {}
 
-        /** @evid docs/rules.md Answers every rule at once. */
+        /** @evidence docs/rules.md Answers every rule at once. */
         export const aggregateCarrier = true;
       `,
     ),
@@ -621,7 +621,7 @@ export async function test_graph_checklist(): Promise<void> {
 
   TestValidator.equals(
     "failed checklist remains incomplete",
-    TestGraph.obligation(failedChecklist, 0, 0).complete,
+    EvidTestGraph.obligation(failedChecklist, 0, 0).complete,
     false,
   );
   TestValidator.equals(
@@ -661,7 +661,7 @@ export async function test_graph_checklist(): Promise<void> {
   );
   TestValidator.equals(
     "empty checklist has no host ledger",
-    TestGraph.obligation(emptyChecklist, 0, 0).hostCoverage,
+    EvidTestGraph.obligation(emptyChecklist, 0, 0).hostCoverage,
     [],
   );
 }

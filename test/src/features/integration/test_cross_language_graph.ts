@@ -8,8 +8,8 @@ import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { createEvidConfigPlan } from "../../../../packages/evidence/src/internal/createEvidConfigPlan";
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { createEvidConfigPlan } from "evid";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
  * Runs one graph through Markdown, Prisma, Swagger, implementation, and test declarations.
@@ -36,7 +36,7 @@ export async function test_cross_language_graph(): Promise<void> {
   const location = join(__dirname, `cross-language-${randomUUID()}`);
   const records = fixtureRecords();
 
-  await TestFileSystem.experiment(location, records, async (directory) => {
+  await EvidTestFileSystem.experiment(location, records, async (directory) => {
     const plan = createPlan(directory);
 
     // The baseline has six independent obligations spanning every artifact family.
@@ -73,7 +73,7 @@ export async function test_cross_language_graph(): Promise<void> {
     );
 
     // Removing one implementation citation breaks only its Markdown obligation.
-    await TestFileSystem.save(directory, {
+    await EvidTestFileSystem.save(directory, {
       "src/sale.ts": implementationSource(false),
     });
     const removedCitation = await EvidChecker.evaluate(plan);
@@ -95,7 +95,7 @@ export async function test_cross_language_graph(): Promise<void> {
     assertDiagnostic(removedCitation, "graph-missing-acknowledgement", 0, 0);
 
     // Adding one requirement expands the denominator instead of passing silently.
-    await TestFileSystem.save(directory, {
+    await EvidTestFileSystem.save(directory, {
       "src/sale.ts": requireRecord(records, "src/sale.ts"),
       "docs/implementation.md": dedent`
         ## Implementation {#implementation}
@@ -126,7 +126,7 @@ export async function test_cross_language_graph(): Promise<void> {
     assertDiagnostic(addedRequirement, "graph-missing-acknowledgement", 0, 0);
 
     // Renaming a barrel export invalidates the test's file-qualified public target.
-    await TestFileSystem.save(directory, {
+    await EvidTestFileSystem.save(directory, {
       "docs/implementation.md": requireRecord(
         records,
         "docs/implementation.md",
@@ -154,7 +154,7 @@ export async function test_cross_language_graph(): Promise<void> {
     assertDiagnostic(renamedExport, "graph-missing-acknowledgement", 1, 0);
 
     // A malformed Swagger document interrupts both directions that depend on it.
-    await TestFileSystem.save(directory, {
+    await EvidTestFileSystem.save(directory, {
       "src/index.ts": requireRecord(records, "src/index.ts"),
       "openapi.yaml": "openapi: [",
     });
@@ -197,7 +197,7 @@ export async function test_cross_language_graph(): Promise<void> {
     );
 
     // Repairing every mutation restores the exact complete graph in the same process.
-    await TestFileSystem.save(directory, {
+    await EvidTestFileSystem.save(directory, {
       "openapi.yaml": requireRecord(records, "openapi.yaml"),
     });
     const repaired = await EvidChecker.evaluate(plan);
@@ -207,7 +207,7 @@ export async function test_cross_language_graph(): Promise<void> {
 
 function fixtureRecords(): Record<string, string> {
   return {
-    "evid.config.ts": "export default {};\n",
+    "evidence.config.ts": "export default {};\n",
     "docs/implementation.md": dedent`
       ## Implementation {#implementation}
 
@@ -228,14 +228,14 @@ function fixtureRecords(): Record<string, string> {
 
       Call the public operation.
 
-      <!-- @evid POST:/sales Documents the public sale workflow. -->
+      <!-- @evidence POST:/sales Documents the public sale workflow. -->
     `,
     "prisma/schema.prisma": dedent`
       datasource db {
         provider = "postgresql"
       }
 
-      /// @evid docs/persistence.md#persistence Persists the required sale identity.
+      /// @evidence docs/persistence.md#persistence Persists the required sale identity.
       model Sale {
         id String @id
       }
@@ -244,7 +244,7 @@ function fixtureRecords(): Record<string, string> {
     "src/sale.ts": implementationSource(true),
     "src/index.ts": 'export { createSale } from "./sale";\n',
     "test/sale.test.ts": dedent`
-      /** @evid ../src/index.ts#createSale Verifies the public sale function. */
+      /** @evidence ../src/index.ts#createSale Verifies the public sale function. */
       export function test_create_sale(): void {}
     `,
   };
@@ -255,9 +255,9 @@ function implementationSource(includeRequirement: boolean): string {
     /**
      *${
        includeRequirement
-         ? " @evid docs/implementation.md#implementation Implements the documented service entry.\n     *"
+         ? " @evidence docs/implementation.md#implementation Implements the documented service entry.\n     *"
          : ""
-     } @evid prisma:Sale Creates the persisted sale model.
+     } @evidence prisma:Sale Creates the persisted sale model.
      */
     export function createSale(): string {
       return "sale";
@@ -276,7 +276,7 @@ function swaggerSource(): string {
         post:
           description: |-
             Creates a sale.
-            @evid docs/api.md#sales-api Exposes the documented sale operation.
+            @evidence docs/api.md#sales-api Exposes the documented sale operation.
           responses:
             "201":
               description: Created
@@ -352,7 +352,7 @@ function createPlan(directory: string): IEvidConfigPlan {
         },
       ],
     },
-    join(directory, "evid.config.ts"),
+    join(directory, "evidence.config.ts"),
   );
 }
 

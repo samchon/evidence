@@ -1,5 +1,7 @@
 import {
+  EvidConfigDependencyScanner,
   EvidConfigLoader,
+  EvidWatchDependencySnapshot,
   type IEvidConfig,
   type IEvidSourceDependency,
 } from "evid";
@@ -7,26 +9,25 @@ import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidConfigDependencyScanner } from "../../../../packages/evidence/src/internal/EvidConfigDependencyScanner";
-import { EvidWatchDependencySnapshot } from "../../../../packages/evidence/src/internal/EvidWatchDependencySnapshot";
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
  * Rebuilds package dependencies after manifest changes in one parent process.
  *
- * EvidNode's path resolver can retain an earlier `main` result after package metadata
- * changes. Watch must instead agree with each fresh config evaluation and retain
- * enough failed-state dependencies for repair to trigger another attempt.
+ * Node's path resolver can retain an earlier `main` result after package
+ * metadata changes. Watch must instead agree with each fresh config evaluation
+ * and retain enough failed-state dependencies for repair to trigger another
+ * attempt.
  *
  * 1. Load and scan a CommonJS config whose package initially selects `first.cjs`.
- * 2. Repoint `main` to `second.cjs` and require both the fresh evaluator and a
- *    new scanner in the same process to select the second entry.
+ * 2. Repoint `main` to `second.cjs` and require both the fresh evaluator and a new
+ *    scanner in the same process to select the second entry.
  * 3. Capture the rebuilt dependency set, edit only `second.cjs`, and require its
  *    snapshot to change while an unchanged positive control remains equal.
  * 4. Switch back to the first entry and require resolution to follow again.
  * 5. Select a missing entry, require a visible scan failure, then create that
- *    exact file and require the retained failed snapshot to invalidate and a new
- *    scan to recover.
+ *    exact file and require the retained failed snapshot to invalidate and a
+ *    new scan to recover.
  * 6. Corrupt and restore the manifest, requiring the manifest dependency to
  *    survive the failure and normal package resolution to resume after repair.
  */
@@ -35,11 +36,11 @@ export async function test_watch_package_entry_recovery(): Promise<void> {
     __dirname,
     `package entry recovery ${randomUUID()}`,
   );
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     {
       "package.json": JSON.stringify({ type: "commonjs" }),
-      "evid.config.ts": `import settings from "fixture-settings";\nexport default settings;\n`,
+      "evidence.config.ts": `import settings from "fixture-settings";\nexport default settings;\n`,
       "rules.md": `# Package settings\n`,
       "node_modules/fixture-settings/package.json":
         packageManifest("first.cjs"),
@@ -49,7 +50,7 @@ export async function test_watch_package_entry_recovery(): Promise<void> {
       "node_modules/fixture-settings/second.d.cts": declaration(),
     },
     async (directory: string): Promise<void> => {
-      const configFile: string = join(directory, "evid.config.ts");
+      const configFile: string = join(directory, "evidence.config.ts");
       const manifestFile: string = join(
         directory,
         "node_modules/fixture-settings/package.json",
@@ -69,8 +70,7 @@ export async function test_watch_package_entry_recovery(): Promise<void> {
       const normalized: (file: string) => string = (file: string): string =>
         file.replaceAll("\\", "/");
 
-      const firstConfig: IEvidConfig =
-        await EvidConfigLoader.load(configFile);
+      const firstConfig: IEvidConfig = await EvidConfigLoader.load(configFile);
       const firstDependencies: IEvidSourceDependency[] =
         await new EvidConfigDependencyScanner(configFile).scan();
       TestValidator.equals(
@@ -83,12 +83,11 @@ export async function test_watch_package_entry_recovery(): Promise<void> {
         paths(firstDependencies).includes(normalized(firstFile)),
       );
 
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "node_modules/fixture-settings/package.json":
           packageManifest("second.cjs"),
       });
-      const secondConfig: IEvidConfig =
-        await EvidConfigLoader.load(configFile);
+      const secondConfig: IEvidConfig = await EvidConfigLoader.load(configFile);
       const secondDependencies: IEvidSourceDependency[] =
         await new EvidConfigDependencyScanner(configFile).scan();
       TestValidator.equals(
@@ -113,7 +112,7 @@ export async function test_watch_package_entry_recovery(): Promise<void> {
         "unchanged package snapshot",
         stable.equals(repeated),
       );
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "node_modules/fixture-settings/second.cjs": settings("off"),
       });
       const edited: EvidWatchDependencySnapshot =
@@ -123,7 +122,7 @@ export async function test_watch_package_entry_recovery(): Promise<void> {
         !stable.equals(edited),
       );
 
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "node_modules/fixture-settings/package.json":
           packageManifest("first.cjs"),
       });
@@ -134,7 +133,7 @@ export async function test_watch_package_entry_recovery(): Promise<void> {
         paths(returned).includes(normalized(firstFile)),
       );
 
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "node_modules/fixture-settings/package.json":
           packageManifest("missing.cjs"),
       });
@@ -155,7 +154,7 @@ export async function test_watch_package_entry_recovery(): Promise<void> {
       );
       const absent: EvidWatchDependencySnapshot =
         await EvidWatchDependencySnapshot.capture(missingDependencies);
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "node_modules/fixture-settings/missing.cjs": settings("warning"),
       });
       const repaired: EvidWatchDependencySnapshot =
@@ -171,7 +170,7 @@ export async function test_watch_package_entry_recovery(): Promise<void> {
         paths(recovered).includes(normalized(missingFile)),
       );
 
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "node_modules/fixture-settings/package.json": `{"name": 1}`,
       });
       let malformedEvaluationFailed: boolean = false;
@@ -200,7 +199,7 @@ export async function test_watch_package_entry_recovery(): Promise<void> {
         "malformed manifest retained",
         paths(malformedScanner.list()).includes(normalized(manifestFile)),
       );
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "node_modules/fixture-settings/package.json":
           packageManifest("first.cjs"),
       });
@@ -225,7 +224,7 @@ function packageManifest(main: string): string {
 }
 
 /**
- * Builds the CommonJS Evid configuration exported by a package entry.
+ * Builds the CommonJS Evidence Graph configuration exported by a package entry.
  *
  * Severity identifies which runtime file won while the claim body remains a
  * stable valid configuration.

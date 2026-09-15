@@ -6,8 +6,8 @@ import {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Evaluates Dart type, function, and property coverage across a TypeScript claim.
  *
@@ -19,7 +19,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_dart_graph(): Promise<void> {
   const reference = await new EvidDartAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Contract.dart",
       dedent`
     class Contract {}
@@ -29,14 +29,14 @@ export async function test_dart_graph(): Promise<void> {
     ),
   );
   const claims = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Claims.ts",
       dedent`
-    /** @evid ./Contract.dart#Contract Verifies the type. */
+    /** @evidence ./Contract.dart#Contract Verifies the type. */
     export class TypeClaim {}
-    /** @evid ./Contract.dart#run Verifies the operation. */
+    /** @evidence ./Contract.dart#run Verifies the operation. */
     export function runClaim() {}
-    /** @evid ./Contract.dart#value Verifies the value. */
+    /** @evidence ./Contract.dart#value Verifies the value. */
     export const valueClaim = 1;
   `,
     ),
@@ -76,7 +76,7 @@ export async function test_dart_graph(): Promise<void> {
                 severity: "error",
                 inventory: reference,
                 unitIds,
-                resolutions: await TestGraph.resolveDeclarations(
+                resolutions: await EvidTestGraph.resolveDeclarations(
                   claim,
                   reference,
                   unitIds,
@@ -93,16 +93,16 @@ export async function test_dart_graph(): Promise<void> {
       );
       TestValidator.equals(
         `${symbol} exact missing population`,
-        TestGraph.obligation(graph, 0, 0).missingUnitIds,
+        EvidTestGraph.obligation(graph, 0, 0).missingUnitIds,
         acknowledged ? [] : unitIds,
       );
     }
   }
   const review = await new EvidDartAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Review.dart",
       dedent`
-    /** @evidReview ./Contract.dart#run Reviewed without an acknowledgement. */
+    /** @evidenceReview ./Contract.dart#run Reviewed without an acknowledgement. */
     int review() => 1;
   `,
     ),
@@ -128,7 +128,7 @@ export async function test_dart_graph(): Promise<void> {
             inventory: reference,
             unitIds: functions,
             resolutions: [],
-            reviewResolutions: await TestGraph.resolveReviews(
+            reviewResolutions: await EvidTestGraph.resolveReviews(
               review,
               reference,
               functions,
@@ -140,7 +140,7 @@ export async function test_dart_graph(): Promise<void> {
   });
   TestValidator.equals(
     "review never supplies missing coverage",
-    TestGraph.obligation(graph, 0, 0).missingUnitIds,
+    EvidTestGraph.obligation(graph, 0, 0).missingUnitIds,
     functions,
   );
 }

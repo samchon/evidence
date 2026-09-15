@@ -36,9 +36,11 @@ import type { EvidArtifactType } from "../typings/EvidArtifactType";
  * additions fail here instead of producing a partial inventory downstream.
  */
 export namespace EvidAdapterFactory {
-  /** Creates the dedicated adapter for a validated artifact discriminator.
+  /**
+   * Creates the dedicated adapter for a validated artifact discriminator.
    *
-   * Each call returns a fresh instance so parser and scan state cannot cross an inventory boundary.
+   * Each call returns a fresh instance so parser and scan state cannot cross an
+   * inventory boundary.
    */
   export function create(type: EvidArtifactType): IEvidAdapter {
     if (type === "objc") return new EvidObjcAdapter();
@@ -69,8 +71,6 @@ export namespace EvidAdapterFactory {
     if (type === "swagger") return new EvidSwaggerAdapter();
     if (type === "typescript") return new EvidTypeScriptAdapter();
     if (type === "zig") return new EvidZigAdapter();
-    throw new Error(
-      `Artifact type '${type}' has no certified Evid adapter.`,
-    );
+    throw new Error(`Artifact type '${type}' has no certified Evid adapter.`);
   }
 }

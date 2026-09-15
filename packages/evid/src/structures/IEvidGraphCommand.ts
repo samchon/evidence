@@ -25,7 +25,7 @@ export interface IEvidGraphCommand {
   /**
    * Configuration path used to build the exported graph.
    *
-   * Relative paths resolve from command cwd; parsing defaults to evid.config.ts.
+   * Relative paths resolve from command cwd; parsing defaults to evidence.config.ts.
    */
   config: string;
 

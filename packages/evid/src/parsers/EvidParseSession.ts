@@ -1,27 +1,28 @@
 import { Query } from "web-tree-sitter";
-import type { EvidNode, QueryCapture, QueryMatch, Tree } from "web-tree-sitter";
+import type { Node, QueryCapture, QueryMatch, Tree } from "web-tree-sitter";
 
 import { EvidParserError } from "./EvidParserError";
 import { EvidTreeSitterRange } from "../internal/EvidTreeSitterRange";
 import type { IEvidSourceRange } from "../structures/IEvidSourceRange";
 
 /**
- * Borrows one syntax tree and owns its query cache during an extraction callback.
+ * Borrows one syntax tree and owns its query cache during an extraction
+ * callback.
  *
  * `EvidParser.parse` creates the session after verifying syntax completeness
- * and disposes it before releasing the tree. Adapters can traverse `root`, query
- * captures or matches, and convert nodes into serializable ranges. Nodes and
- * query results remain borrowed; only copied names, ranges, and relationships
- * may survive the callback.
+ * and disposes it before releasing the tree. Adapters can traverse `root`,
+ * query captures or matches, and convert nodes into serializable ranges. Nodes
+ * and query results remain borrowed; only copied names, ranges, and
+ * relationships may survive the callback.
  *
  * Every operation checks lifetime and node ownership. A query that cannot be
  * compiled, needs unsupported external predicates, or exceeds its match limit
  * rejects extraction rather than supplying an apparently complete subset.
  *
  * @example
- * // Inside EvidParser.parse's callback:
- * const range: IEvidSourceRange = session.range(session.root);
- * // Return range, not session.root: the range is data, while the node is borrowed.
+ *   // Inside EvidParser.parse's callback:
+ *   const range: IEvidSourceRange = session.range(session.root);
+ *   // Return range, not session.root: the range is data, while the node is borrowed.
  */
 export class EvidParseSession {
   /**
@@ -35,8 +36,9 @@ export class EvidParseSession {
   /**
    * Compiled queries owned by this session, keyed by exact query source.
    *
-   * Repeated extraction queries reuse their compiled form. The cache is released
-   * before the runtime deletes the tree and cannot be shared across sessions.
+   * Repeated extraction queries reuse their compiled form. The cache is
+   * released before the runtime deletes the tree and cannot be shared across
+   * sessions.
    */
   private readonly queries = new Map<string, Query>();
 
@@ -70,9 +72,10 @@ export class EvidParseSession {
    * Returns the borrowed root node while the session remains open.
    *
    * Traversal is valid only within the parse callback. Access after disposal
-   * throws a session-closed error instead of exposing an already released tree.
+   * throws a session-closed error instead of exposing an already released
+   * tree.
    */
-  public get root(): EvidNode {
+  public get root(): Node {
     this.assertOpen();
     return this.tree.rootNode;
   }
@@ -80,10 +83,11 @@ export class EvidParseSession {
   /**
    * Copies a session-owned node's source coordinates into a serializable range.
    *
-   * The range can safely escape the callback. Foreign-tree nodes and calls after
-   * disposal reject before coordinate conversion, preserving source ownership.
+   * The range can safely escape the callback. Foreign-tree nodes and calls
+   * after disposal reject before coordinate conversion, preserving source
+   * ownership.
    */
-  public range(node: EvidNode): IEvidSourceRange {
+  public range(node: Node): IEvidSourceRange {
     this.assertNode(node);
     return EvidTreeSitterRange.from(node);
   }
@@ -91,11 +95,12 @@ export class EvidParseSession {
   /**
    * Runs a query and returns its flattened borrowed captures.
    *
-   * Omit `node` to query the full root. A supplied node must belong to this tree.
-   * Compilation failures, unsupported predicates, and match-limit truncation
-   * throw, since incomplete captures cannot establish a public population.
+   * Omit `node` to query the full root. A supplied node must belong to this
+   * tree. Compilation failures, unsupported predicates, and match-limit
+   * truncation throw, since incomplete captures cannot establish a public
+   * population.
    */
-  public captures(source: string, node?: EvidNode): QueryCapture[] {
+  public captures(source: string, node?: Node): QueryCapture[] {
     const target = node ?? this.root;
     this.assertNode(target);
     const query = this.query(source);
@@ -108,10 +113,11 @@ export class EvidParseSession {
    * Runs a query while retaining captures grouped by their matching pattern.
    *
    * Use matches when ownership depends on captures belonging to the same syntax
-   * occurrence. The default target is the root; ownership and completeness checks
-   * are the same as for `captures`, and returned nodes remain callback-scoped.
+   * occurrence. The default target is the root; ownership and completeness
+   * checks are the same as for `captures`, and returned nodes remain
+   * callback-scoped.
    */
-  public matches(source: string, node?: EvidNode): QueryMatch[] {
+  public matches(source: string, node?: Node): QueryMatch[] {
     const target = node ?? this.root;
     this.assertNode(target);
     const query = this.query(source);
@@ -123,8 +129,9 @@ export class EvidParseSession {
   /**
    * Closes the session and releases its compiled queries once.
    *
-   * The runtime calls this before deleting the separately owned tree. Marking the
-   * session closed first prevents later API calls from accessing borrowed nodes.
+   * The runtime calls this before deleting the separately owned tree. Marking
+   * the session closed first prevents later API calls from accessing borrowed
+   * nodes.
    *
    * @internal
    */
@@ -139,8 +146,9 @@ export class EvidParseSession {
    * Compiles or reuses a query whose semantics the binding can fully evaluate.
    *
    * External and property predicates are refused before caching. Treating them
-   * as ignored filters would return incorrect captures while claiming a complete
-   * inventory; failed queries are deleted and reported against the source file.
+   * as ignored filters would return incorrect captures while claiming a
+   * complete inventory; failed queries are deleted and reported against the
+   * source file.
    */
   private query(source: string): Query {
     let query = this.queries.get(source);
@@ -211,7 +219,7 @@ export class EvidParseSession {
    * A node from another callback may still be live but has a different source
    * and lifetime. Reject it instead of reporting coordinates under this file.
    */
-  private assertNode(node: EvidNode): void {
+  private assertNode(node: Node): void {
     this.assertOpen();
     if (node.tree !== this.tree)
       throw new EvidParserError(

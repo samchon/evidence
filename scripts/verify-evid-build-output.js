@@ -42,7 +42,7 @@ async function findMissingFiles(locations) {
 }
 
 async function main() {
-  const packageRoot = path.resolve(__dirname, "../packages/evidence");
+  const packageRoot = path.resolve(__dirname, "../packages/evid");
   const sourceRoot = path.join(packageRoot, "src");
   const outputRoot = path.join(packageRoot, "lib");
   const manifest = JSON.parse(

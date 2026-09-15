@@ -1,4 +1,4 @@
-import type { EvidNode } from "web-tree-sitter";
+import type { Node as EvidNode } from "web-tree-sitter";
 
 /**
  * Decodes PostgreSQL identifiers without relying on the session search path.

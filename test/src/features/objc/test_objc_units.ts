@@ -6,7 +6,7 @@ import {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Reconciles Objective-C headers and implementations into owned public units.
  *
@@ -18,8 +18,8 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_objc_units(): Promise<void> {
   const inventory = await new EvidObjcAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/Widget.h",
         dedent`
       @class NSObject;
@@ -49,7 +49,7 @@ export async function test_objc_units(): Promise<void> {
     `,
         ["src/Widget.h", "alias/Widget.h"],
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/Widget.m",
         dedent`
       #import "Widget.h"

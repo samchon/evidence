@@ -2,7 +2,7 @@ import { EvidFingerprint, EvidMatlabAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Scopes MATLAB member fingerprints to their own content and relevant metadata.
  *
@@ -23,16 +23,16 @@ export async function test_matlab_fingerprints(): Promise<void> {
   `.concat("\n");
   const adapter = new EvidMatlabAdapter();
   const original = await adapter.analyze(
-    TestSourceSnapshot.create("src/Contract.m", content),
+    EvidTestSourceSnapshot.create("src/Contract.m", content),
   );
   const sibling = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Contract.m",
       content.replace("first = 1", "first = 7"),
     ),
   );
   const metadata = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Contract.m",
       content.replace("SetAccess=private", "SetAccess=public"),
     ),

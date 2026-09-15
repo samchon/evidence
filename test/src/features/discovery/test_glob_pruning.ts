@@ -1,6 +1,6 @@
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidFileGlob } from "../../../../packages/evidence/src/internal/EvidFileGlob";
+import { EvidFileGlob } from "evid";
 
 /**
  * Prunes impossible or fully excluded subtrees while preserving later reinclusion.

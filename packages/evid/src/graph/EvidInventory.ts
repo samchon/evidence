@@ -1,6 +1,6 @@
 import typia from "typia";
 
-import { IEvidnventoryMerge } from "../internal/IEvidnventoryMerge";
+import { EvidInventoryMerge } from "../internal/EvidInventoryMerge";
 import { EvidSourceText } from "../internal/EvidSourceText";
 import type { IEvidAddress } from "../structures/IEvidAddress";
 import type { IEvidDiagnostic } from "../structures/IEvidDiagnostic";
@@ -71,7 +71,7 @@ export class EvidInventory {
    * incomplete status rather than receiving an apparently healthy subset.
    */
   public constructor(inventories: IEvidInventory[]) {
-    this.data = IEvidnventoryMerge.combine(
+    this.data = EvidInventoryMerge.combine(
       structuredClone(typia.assert(inventories)),
     );
     for (const unit of this.data.units) this.units.set(unit.id, unit);
@@ -198,7 +198,7 @@ export class EvidInventory {
               ? "hidden"
               : "missing",
       units: found.length === 0 ? withdrawn : found,
-      withdrawals: IEvidnventoryMerge.unique(
+      withdrawals: EvidInventoryMerge.unique(
         withdrawn.flatMap((unit) => this.withdrawals.get(unit.id) ?? []),
         (value) => typia.json.stringify(value),
       ),
@@ -279,10 +279,10 @@ export class EvidInventory {
         const ownPrevious = ownSites.get(site.id);
         if (
           ownPrevious !== undefined &&
-          (IEvidnventoryMerge.siteKey(ownPrevious) !==
-            IEvidnventoryMerge.siteKey(site) ||
-            IEvidnventoryMerge.contentKey(ownPrevious) !==
-              IEvidnventoryMerge.contentKey(site))
+          (EvidInventoryMerge.siteKey(ownPrevious) !==
+            EvidInventoryMerge.siteKey(site) ||
+            EvidInventoryMerge.contentKey(ownPrevious) !==
+              EvidInventoryMerge.contentKey(site))
         )
           this.problem(
             "inventory-content",
@@ -293,7 +293,7 @@ export class EvidInventory {
         const previous = sites.get(site.id);
         if (
           previous !== undefined &&
-          IEvidnventoryMerge.siteKey(previous) !== IEvidnventoryMerge.siteKey(site)
+          EvidInventoryMerge.siteKey(previous) !== EvidInventoryMerge.siteKey(site)
         )
           this.problem(
             "inventory-site",
@@ -488,39 +488,39 @@ export class EvidInventory {
    * when equivalent adapter records arrived from independent scan inputs.
    */
   private normalize(): void {
-    this.data.sources = IEvidnventoryMerge.unique(
+    this.data.sources = EvidInventoryMerge.unique(
       this.data.sources,
       (source) => source.id,
     );
     for (const source of this.data.sources)
-      source.addresses = IEvidnventoryMerge.sourceAddresses(source.addresses);
-    this.data.annotationRanges = IEvidnventoryMerge.unique(
+      source.addresses = EvidInventoryMerge.sourceAddresses(source.addresses);
+    this.data.annotationRanges = EvidInventoryMerge.unique(
       this.data.annotationRanges,
       (location) => typia.json.stringify(location),
     );
-    this.data.units = IEvidnventoryMerge.unique(this.data.units, (unit) => unit.id);
+    this.data.units = EvidInventoryMerge.unique(this.data.units, (unit) => unit.id);
     for (const unit of this.data.units) {
-      unit.sites = IEvidnventoryMerge.unique(unit.sites, (site) => site.id);
+      unit.sites = EvidInventoryMerge.unique(unit.sites, (site) => site.id);
       for (const site of unit.sites)
-        site.content = IEvidnventoryMerge.unique(site.content, (range) =>
+        site.content = EvidInventoryMerge.unique(site.content, (range) =>
           JSON.stringify([range.start.offset, range.end.offset]),
         ).sort((x, y) => {
           const start = x.start.offset - y.start.offset;
           return start !== 0 ? start : x.end.offset - y.end.offset;
         });
-      unit.withdrawals = IEvidnventoryMerge.unique(unit.withdrawals, (withdrawal) =>
+      unit.withdrawals = EvidInventoryMerge.unique(unit.withdrawals, (withdrawal) =>
         typia.json.stringify(withdrawal),
       );
     }
-    this.data.addresses = IEvidnventoryMerge.unique(
+    this.data.addresses = EvidInventoryMerge.unique(
       this.data.addresses,
       (address) =>
         JSON.stringify([address.file, address.segments, address.unitId]),
     );
-    this.data.hosts = IEvidnventoryMerge.unique(this.data.hosts, (host) => host.id);
+    this.data.hosts = EvidInventoryMerge.unique(this.data.hosts, (host) => host.id);
     for (const host of this.data.hosts) {
-      host.unitIds = IEvidnventoryMerge.unique(host.unitIds, (id) => id);
-      host.origins = IEvidnventoryMerge.unique(
+      host.unitIds = EvidInventoryMerge.unique(host.unitIds, (id) => id);
+      host.origins = EvidInventoryMerge.unique(
         host.origins ?? [host.file],
         (file) => file,
       );
@@ -533,19 +533,19 @@ export class EvidInventory {
           host,
         );
     }
-    this.data.declarations = IEvidnventoryMerge.unique(
+    this.data.declarations = EvidInventoryMerge.unique(
       this.data.declarations,
       (entry) => entry.id,
     );
-    this.data.reviews = IEvidnventoryMerge.unique(
+    this.data.reviews = EvidInventoryMerge.unique(
       this.data.reviews,
       (entry) => entry.id,
     );
-    this.data.dependencies = IEvidnventoryMerge.unique(
+    this.data.dependencies = EvidInventoryMerge.unique(
       this.data.dependencies,
       (dependency) => JSON.stringify([dependency.path, dependency.recursive]),
     );
-    this.data.diagnostics = IEvidnventoryMerge.unique(
+    this.data.diagnostics = EvidInventoryMerge.unique(
       this.data.diagnostics,
       (diagnostic: IEvidDiagnostic) => typia.json.stringify(diagnostic),
     );

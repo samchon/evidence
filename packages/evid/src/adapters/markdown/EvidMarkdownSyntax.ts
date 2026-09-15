@@ -12,10 +12,10 @@ export namespace EvidMarkdownSyntax {
   const explicitAnchor = /\s*\{#([A-Za-z0-9][A-Za-z0-9._:-]*)\}\s*$/;
   const letterOrNumber = /^(?:\p{L}|\p{N})$/u;
   const markers = [
-    "@evidExcludeReview",
-    "@evidReview",
-    "@evidExclude",
-    "@evid",
+    "@evidenceExcludeReview",
+    "@evidenceReview",
+    "@evidenceExclude",
+    "@evidence",
     "@link",
   ];
 

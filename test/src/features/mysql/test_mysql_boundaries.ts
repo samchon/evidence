@@ -1,7 +1,7 @@
 import { EvidMysqlAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Rejects MySQL inputs that could hide part of the selected schema.
  *
@@ -51,7 +51,7 @@ export async function test_mysql_boundaries(): Promise<void> {
     "CREATE VIEW projected AS SELECT 1 AS id;",
   ]) {
     const inventory = await adapter.analyze(
-      TestSourceSnapshot.create("schema.sql", source),
+      EvidTestSourceSnapshot.create("schema.sql", source),
     );
 
     TestValidator.equals(`incomplete: ${source}`, inventory.complete, false);
@@ -61,7 +61,7 @@ export async function test_mysql_boundaries(): Promise<void> {
     );
   }
   const failed = await adapter.analyze(
-    TestSourceSnapshot.fail(TestSourceSnapshot.create("unreadable.sql", ""), {
+    EvidTestSourceSnapshot.fail(EvidTestSourceSnapshot.create("unreadable.sql", ""), {
       code: "path-unreadable",
       path: "/project/unreadable.sql",
       message: "Unavailable schema source.",
@@ -69,7 +69,7 @@ export async function test_mysql_boundaries(): Promise<void> {
   );
   TestValidator.equals("source failure is retained", failed.complete, false);
   const extension = await adapter.analyze(
-    TestSourceSnapshot.create("schema.pgsql", "CREATE TABLE t (id INT);"),
+    EvidTestSourceSnapshot.create("schema.pgsql", "CREATE TABLE t (id INT);"),
   );
   TestValidator.equals(
     "configured dialect owns selection",

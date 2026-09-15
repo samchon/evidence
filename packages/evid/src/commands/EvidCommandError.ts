@@ -1,9 +1,9 @@
 /**
  * Invalid CLI syntax detected before configuration or source loading.
  *
- * The command parser uses this error for unknown, repeated, missing, or incompatible
- * arguments. Buffered execution turns it into actionable failure output so malformed
- * commands cannot trigger an unrelated project analysis.
+ * The command parser uses this error for unknown, repeated, missing, or
+ * incompatible arguments. Buffered execution turns it into actionable failure
+ * output so malformed commands cannot trigger an unrelated project analysis.
  */
 export class EvidCommandError extends Error {
   /**

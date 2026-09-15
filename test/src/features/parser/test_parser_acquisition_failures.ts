@@ -1,23 +1,26 @@
-import { TestParserAssets } from "../../internal/TestParserAssets";
+import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
 import { TestValidator } from "@nestia/e2e";
-import { EvidTreeSitterAssets } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssets";
+import { EvidTreeSitterAssets } from "evid";
 import { randomUUID } from "node:crypto";
 import { readdir } from "node:fs/promises";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
-import { TestParserError } from "../../internal/TestParserError";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidTestParserError } from "../../internal/EvidTestParserError";
 
 /**
- * Rejects unverified grammar downloads and permits recovery on the same provider.
+ * Rejects unverified grammar downloads and permits recovery on the same
+ * provider.
  *
- * Retry policy must distinguish transient transport failures from permanent HTTP
- * and content-integrity failures. Rejected work must leave neither a published
- * cache entry nor a retained promise that prevents a later healthy acquisition.
+ * Retry policy must distinguish transient transport failures from permanent
+ * HTTP and content-integrity failures. Rejected work must leave neither a
+ * published cache entry nor a retained promise that prevents a later healthy
+ * acquisition.
  *
  * 1. Return HTTP 503 and require asset-download failure after the configured two
  *    attempts; switch to HTTP 404 and require only one additional request.
  * 2. Supply truncated, oversized, and same-sized modified bytes separately:
+ *
  *    - Each attempt fails with asset-corrupt.
  *    - No bytes are published in the cache directory.
  *    - Integrity failures are not retried.
@@ -26,8 +29,8 @@ import { TestParserError } from "../../internal/TestParserError";
  */
 export async function test_parser_acquisition_failures(): Promise<void> {
   const grammar = await new EvidTreeSitterAssets().grammar("python");
-  const pinned = Uint8Array.from(await TestParserAssets.bytes(grammar));
-  await TestFileSystem.experiment(
+  const pinned = Uint8Array.from(await EvidTestParserAssets.bytes(grammar));
+  await EvidTestFileSystem.experiment(
     join(__dirname, `acquisition-${randomUUID()}`),
     {},
     async (cacheDirectory) => {
@@ -52,19 +55,19 @@ export async function test_parser_acquisition_failures(): Promise<void> {
         },
       });
 
-      await TestParserError.expect("asset-download", () =>
+      await EvidTestParserError.expect("asset-download", () =>
         assets.bytes(grammar),
       );
       TestValidator.equals("bounded transient attempts", requests, 2);
       mode = "missing";
-      await TestParserError.expect("asset-download", () =>
+      await EvidTestParserError.expect("asset-download", () =>
         assets.bytes(grammar),
       );
       TestValidator.equals("permanent HTTP error is not retried", requests, 3);
 
       for (const invalid of ["truncated", "oversized", "modified"]) {
         mode = invalid;
-        await TestParserError.expect("asset-corrupt", () =>
+        await EvidTestParserError.expect("asset-corrupt", () =>
           assets.bytes(grammar),
         );
         TestValidator.equals(

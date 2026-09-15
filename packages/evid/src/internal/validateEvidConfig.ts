@@ -13,11 +13,12 @@ import { EvidSwaggerRemoteReader } from "../adapters/swagger/EvidSwaggerRemoteRe
  * Collects all configuration contract violations before plan construction.
  *
  * Validation does not stop at the first error so users can repair related
- * population policy mistakes together, including entries later disabled by severity.
+ * population policy mistakes together, including entries later disabled by
+ * severity.
  */
 export function validateEvidConfig(
   config: IEvidConfig,
-  configFile: string = resolve("evid.config.ts"),
+  configFile: string = resolve("evidence.config.ts"),
 ): void {
   const problems: string[] = [];
   if (config.claims.length === 0)
@@ -85,7 +86,7 @@ export function validateEvidConfig(
   if (problems.length !== 0)
     throw new Error(
       [
-        "Invalid Evid configuration:",
+        "Invalid Evidence Graph configuration:",
         ...problems.map((item) => `- ${item}`),
       ].join("\n"),
     );
@@ -111,8 +112,9 @@ function validateArtifactType(
 /**
  * Validates file selection through the restricted matcher used by discovery.
  *
- * Constructing EvidFileGlob checks every configured pattern before plan construction,
- * and this helper accumulates its message with the owning configuration path.
+ * Constructing EvidFileGlob checks every configured pattern before plan
+ * construction, and this helper accumulates its message with the owning
+ * configuration path.
  */
 function validateGlobs(
   problems: string[],
@@ -129,8 +131,9 @@ function validateGlobs(
 /**
  * Validates configured root spelling without requiring the directory to exist.
  *
- * EvidSourcePath.root performs the same lexical resolution used by loading, allowing
- * a valid future directory while rejecting unsafe or invalid root expressions.
+ * EvidSourcePath.root performs the same lexical resolution used by loading,
+ * allowing a valid future directory while rejecting unsafe or invalid root
+ * expressions.
  */
 function validateRoot(
   problems: string[],
@@ -147,10 +150,12 @@ function validateRoot(
 }
 
 /**
- * Checks explicit symbol selections when a language adapter supplies a supported set.
+ * Checks explicit symbol selections when a language adapter supplies a
+ * supported set.
  *
  * Empty arrays select no units, while named selections must match the adapter's
- * published symbols; artifact types without symbol metadata remain unrestricted.
+ * published symbols; artifact types without symbol metadata remain
+ * unrestricted.
  */
 function validateSymbols(
   problems: string[],
@@ -176,8 +181,9 @@ function validateSymbols(
 /**
  * Requires one exact local or supported remote Swagger document source.
  *
- * Remote URLs are accepted only through EvidSwaggerRemoteReader; local spellings are
- * resolved and rejected when they name a directory-like location rather than a file.
+ * Remote URLs are accepted only through EvidSwaggerRemoteReader; local
+ * spellings are resolved and rejected when they name a directory-like location
+ * rather than a file.
  */
 function validateSwaggerSource(
   problems: string[],
@@ -210,7 +216,8 @@ function validateSwaggerSource(
  * Converts validation helper failures into stable user-facing problem text.
  *
  * Each validator appends this normalized message to the aggregate error so one
- * malformed value does not prevent reporting the remaining configuration issues.
+ * malformed value does not prevent reporting the remaining configuration
+ * issues.
  */
 function message(cause: unknown): string {
   return cause instanceof Error ? cause.message : String(cause);

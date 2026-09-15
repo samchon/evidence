@@ -12,8 +12,8 @@ import type {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Classifies required evidence reviews by the presence and freshness of fingerprints.
@@ -37,7 +37,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_graph_review_policy(): Promise<void> {
   const requirements = await new EvidMarkdownAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "docs/spec.md",
       dedent`
         ## Pricing {#pricing}
@@ -52,27 +52,27 @@ export async function test_graph_review_policy(): Promise<void> {
     pricing.id,
   ).fingerprint;
   const claims = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/reviews.ts",
       dedent`
-        /** @evid docs/spec.md#pricing Implements the pricing rule. */
+        /** @evidence docs/spec.md#pricing Implements the pricing rule. */
         export function missing(): void {}
 
         /**
-         * @evid docs/spec.md#pricing Implements the pricing rule.
-         * @evidReview docs/spec.md#pricing Checked the cap.
+         * @evidence docs/spec.md#pricing Implements the pricing rule.
+         * @evidenceReview docs/spec.md#pricing Checked the cap.
          */
         export function unfingerprinted(): void {}
 
         /**
-         * @evid docs/spec.md#pricing Implements the pricing rule.
-         * @evidReview docs/spec.md#pricing #0000000 Checked the old cap.
+         * @evidence docs/spec.md#pricing Implements the pricing rule.
+         * @evidenceReview docs/spec.md#pricing #0000000 Checked the old cap.
          */
         export function stale(): void {}
 
         /**
-         * @evid docs/spec.md#pricing Implements the pricing rule.
-         * @evidReview docs/spec.md#pricing #${expected} Read the cap and exercised the clamp.
+         * @evidence docs/spec.md#pricing Implements the pricing rule.
+         * @evidenceReview docs/spec.md#pricing #${expected} Read the cap and exercised the clamp.
          */
         export function current(): void {}
       `,
@@ -85,10 +85,10 @@ export async function test_graph_review_policy(): Promise<void> {
     severity: "error",
     inventory: requirements,
     unitIds: [pricing.id],
-    resolutions: await TestGraph.resolveDeclarations(claims, requirements, [
+    resolutions: await EvidTestGraph.resolveDeclarations(claims, requirements, [
       pricing.id,
     ]),
-    reviewResolutions: await TestGraph.resolveReviews(claims, requirements, [
+    reviewResolutions: await EvidTestGraph.resolveReviews(claims, requirements, [
       pricing.id,
     ]),
     requireReview: true,
@@ -131,7 +131,7 @@ export async function test_graph_review_policy(): Promise<void> {
   );
   TestValidator.predicate(
     "inspection and graph edges agree",
-    TestGraph.obligation(result, 0, 0).edges.every(
+    EvidTestGraph.obligation(result, 0, 0).edges.every(
       (edge) => edge.fingerprint === expected,
     ),
   );
@@ -199,7 +199,7 @@ export async function test_graph_review_policy(): Promise<void> {
   );
   TestValidator.equals(
     "incomplete review lookup keeps obligation incomplete",
-    TestGraph.obligation(interrupted, 0, 0).complete,
+    EvidTestGraph.obligation(interrupted, 0, 0).complete,
     false,
   );
 }

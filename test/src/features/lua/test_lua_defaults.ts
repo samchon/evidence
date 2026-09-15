@@ -3,7 +3,7 @@ import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /** Prevents Lua from passing through an empty default type selector.
  *
@@ -12,17 +12,17 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  * 1. Configure a default type reference for Lua. 2. Run graph evaluation. 3. Require the empty selection to fail visibly.
  */
 export async function test_lua_defaults(): Promise<void> {
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "lua-defaults",
     {
-      "evid.config.ts": dedent`
+      "evidence.config.ts": dedent`
       export default { claims: [{ type: "typescript", files: ["claim.ts"], reference: { type: "lua", files: ["contract.lua"] } }] };
     `,
       "claim.ts": "export function claim() {}",
       "contract.lua": "function run() end\nvalue = 1",
     },
     async (directory) => {
-      const file = join(directory, "evid.config.ts");
+      const file = join(directory, "evidence.config.ts");
       const missing = await EvidChecker.check(file);
 
       TestValidator.equals(
@@ -30,11 +30,11 @@ export async function test_lua_defaults(): Promise<void> {
         missing.success,
         false,
       );
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "claim.ts": dedent`
       /**
-       * @evid ./contract.lua#run Covers the function.
-       * @evid ./contract.lua#value Covers the property.
+       * @evidence ./contract.lua#run Covers the function.
+       * @evidence ./contract.lua#value Covers the property.
        */
       export function claim() {}
     `,
@@ -45,8 +45,8 @@ export async function test_lua_defaults(): Promise<void> {
         true,
       );
       for (const role of ["claim", "reference"] as const) {
-        await TestFileSystem.save(directory, {
-          "evid.config.ts":
+        await EvidTestFileSystem.save(directory, {
+          "evidence.config.ts":
             role === "claim"
               ? dedent`
         export default { claims: [{ type: "lua", files: ["contract.lua"], symbol: "type", reference: {type: "typescript", files: ["claim.ts"]} }] };

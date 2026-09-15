@@ -11,8 +11,8 @@ import type {
 } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Rejects evidence tags that a language adapter cannot attach to the selected declaration.
@@ -33,12 +33,12 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_graph_adapter_comment_boundaries(): Promise<void> {
   const reference = await new EvidMarkdownAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "docs/spec.md",
       "## Value {#value}\n\nRequires a value.\n",
     ),
   );
-  const tag = "@evid docs/spec.md#value Implements the value.";
+  const tag = "@evidence docs/spec.md#value Implements the value.";
   const cases = [
     {
       adapter: new EvidRubyAdapter(),
@@ -66,10 +66,10 @@ export async function test_graph_adapter_comment_boundaries(): Promise<void> {
   ];
   for (const scenario of cases) {
     const claim = await scenario.adapter.analyze(
-      TestSourceSnapshot.create(scenario.file, scenario.content),
+      EvidTestSourceSnapshot.create(scenario.file, scenario.content),
     );
     const removed = await scenario.adapter.analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         scenario.file,
         scenario.content.replace(
           tag,
@@ -91,7 +91,7 @@ export async function test_graph_adapter_comment_boundaries(): Promise<void> {
     );
     TestValidator.equals(
       "the selected requirement remains missing",
-      TestGraph.obligation(missing, 0, 0).missingUnitIds,
+      EvidTestGraph.obligation(missing, 0, 0).missingUnitIds,
       reference.units
         .filter((unit) => unit.symbol === "h2")
         .map((unit) => unit.id),
@@ -101,13 +101,13 @@ export async function test_graph_adapter_comment_boundaries(): Promise<void> {
   // Aligned Go trailing comments previously supplied false coverage from the next declaration.
   const go = new EvidGoAdapter();
   const invalid = await go.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/value.go",
       `package value\nvar Before = 1 // ${tag}\n               var Value = 2\n`,
     ),
   );
   const fixed = await go.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/value.go",
       `package value\nvar Before = 1\n               // ${tag}\n               var Value = 2\n`,
     ),
@@ -154,7 +154,7 @@ async function evaluate(
             inventory: reference,
             unitIds: selected,
             singleEvidPerSymbol: true,
-            resolutions: await TestGraph.resolveDeclarations(
+            resolutions: await EvidTestGraph.resolveDeclarations(
               claim,
               reference,
               selected,

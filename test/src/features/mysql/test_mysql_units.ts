@@ -6,7 +6,7 @@ import {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Extracts MySQL schema units with database-qualified ownership.
  *
@@ -18,7 +18,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_mysql_units(): Promise<void> {
   const inventory = await new EvidMysqlAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "schema.sql",
       dedent`
       CREATE TABLE \`Store\`.\`Parent\` (id INT PRIMARY KEY, code INT);
@@ -86,7 +86,7 @@ export async function test_mysql_units(): Promise<void> {
   );
 
   const literal = await new EvidMysqlAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "literal.sql",
       "CREATE TABLE `Order Detail` (`value.part` INT, `상품 이름` TEXT);",
     ),
@@ -130,13 +130,13 @@ export async function test_mysql_units(): Promise<void> {
   );
 
   const localReference = await new EvidMysqlAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "qualified.sql",
       "CREATE TABLE Store.Child (parent_id INT, FOREIGN KEY (parent_id) REFERENCES Parent (id));",
     ),
   );
   const explicitReference = await new EvidMysqlAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "qualified.sql",
       "CREATE TABLE Store.Child (parent_id INT, FOREIGN KEY (parent_id) REFERENCES Store.Parent (id));",
     ),

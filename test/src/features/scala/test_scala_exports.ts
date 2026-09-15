@@ -1,11 +1,11 @@
-﻿import {
+import {
   EvidFingerprint,
   EvidInventory,
   EvidScalaAdapter,
 } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Resolves Scala exports while preserving source declaration ownership.
@@ -17,18 +17,18 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Withdraw the source method and verify the exported alias resolves as hidden.
  */
 export async function test_scala_exports(): Promise<void> {
-  const sources = TestSourceSnapshot.combine([
-    TestSourceSnapshot.create(
+  const sources = EvidTestSourceSnapshot.combine([
+    EvidTestSourceSnapshot.create(
       "src/Forward.scala",
       dedent`
       package demo
       object Forward {
-        /** @evid docs/spec.md#run Publishes the operation. */
+        /** @evidence docs/spec.md#run Publishes the operation. */
         export Origin.{run as call, value, Alias}
       }
     `,
     ),
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Origin.scala",
       dedent`
       package demo

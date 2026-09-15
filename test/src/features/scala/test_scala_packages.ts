@@ -1,7 +1,7 @@
-﻿import { EvidAccessor, EvidScalaAdapter } from "evid";
+import { EvidAccessor, EvidScalaAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Builds Scala identities across packages, companion namespaces, and literal names.
@@ -14,7 +14,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_scala_packages(): Promise<void> {
   const inventory = await new EvidScalaAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Packages.scala",
       dedent`
     package outer

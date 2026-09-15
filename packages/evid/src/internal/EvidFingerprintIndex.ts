@@ -6,7 +6,7 @@ import type { IEvidSourceFile } from "../structures/IEvidSourceFile";
 import type { IEvidSourceRange } from "../structures/IEvidSourceRange";
 import type { IEvidUnit } from "../structures/IEvidUnit";
 import type { IEvidUnitSite } from "../structures/IEvidUnitSite";
-import { IEvidnventoryMerge } from "./IEvidnventoryMerge";
+import { EvidInventoryMerge } from "./EvidInventoryMerge";
 
 const VERSION: number = 2;
 const PRESENTED_LENGTH: number = 7;
@@ -20,7 +20,8 @@ const PRESENTED_LENGTH: number = 7;
 type EvidPortableReplacement = readonly [token: string, value: string];
 
 /**
- * Computes and memoizes stable fingerprints for inventory units and descendants.
+ * Computes and memoizes stable fingerprints for inventory units and
+ * descendants.
  *
  * Fingerprints exclude annotation text and presentation-only whitespace so an
  * acknowledgement edit does not look like a specification change. The index
@@ -74,7 +75,8 @@ export class EvidFingerprintIndex {
   private readonly units = new Map<string, IEvidUnit>();
 
   /**
-   * Builds source, annotation, and parent indexes once for one inventory snapshot.
+   * Builds source, annotation, and parent indexes once for one inventory
+   * snapshot.
    *
    * Fingerprint generation reuses these indexes to connect units to their
    * physical content without repeatedly scanning inventory collections.
@@ -100,7 +102,8 @@ export class EvidFingerprintIndex {
   }
 
   /**
-   * Returns the root content digest and subtree scope digest for one semantic identity.
+   * Returns the root content digest and subtree scope digest for one semantic
+   * identity.
    *
    * Unknown identities fail rather than producing an empty fingerprint, because
    * absence would make a stale graph appear unchanged.
@@ -115,15 +118,15 @@ export class EvidFingerprintIndex {
       );
     const scope: IEvidUnit[] = this.collect(root).sort(
       (x: IEvidUnit, y: IEvidUnit): number => {
-        const identity: number = IEvidnventoryMerge.compare(
+        const identity: number = EvidInventoryMerge.compare(
           this.identity(x),
           this.identity(y),
         );
         if (identity !== 0) return identity;
-        const symbol: number = IEvidnventoryMerge.compare(x.symbol, y.symbol);
+        const symbol: number = EvidInventoryMerge.compare(x.symbol, y.symbol);
         return symbol !== 0
           ? symbol
-          : IEvidnventoryMerge.compare(
+          : EvidInventoryMerge.compare(
               this.contentDigest(x),
               this.contentDigest(y),
             );
@@ -179,11 +182,9 @@ export class EvidFingerprintIndex {
    * in separate files.
    */
   private declaringPaths(unit: IEvidUnit): string[] {
-    return IEvidnventoryMerge.unique(
+    return EvidInventoryMerge.unique(
       unit.sites.map((site: IEvidUnitSite): string => {
-        const source: IEvidSourceFile | undefined = this.sources.get(
-          site.file,
-        );
+        const source: IEvidSourceFile | undefined = this.sources.get(site.file);
         if (source === undefined)
           throw new Error(
             `Cannot fingerprint missing source snapshot: ${site.file}`,
@@ -191,16 +192,16 @@ export class EvidFingerprintIndex {
         return source.fingerprintPath;
       }),
       (value: string): string => value,
-    ).sort(IEvidnventoryMerge.compare);
+    ).sort(EvidInventoryMerge.compare);
   }
 
   /**
    * Rewrites one adapter-owned unit ID into checkout-stable source coordinates.
    *
    * Source IDs may contain inode data, and several language resolvers retain an
-   * absolute source or module root in their semantic key. One longest-token pass
-   * keeps overlapping identities independent and prevents generated markers from
-   * participating in later replacements.
+   * absolute source or module root in their semantic key. One longest-token
+   * pass keeps overlapping identities independent and prevents generated
+   * markers from participating in later replacements.
    */
   private portableUnitId(unit: IEvidUnit): string {
     const sources: IEvidSourceFile[] = Array.from(this.sources.values());
@@ -218,7 +219,7 @@ export class EvidFingerprintIndex {
           `@root:${JSON.stringify(source.fingerprintRoot.fingerprintPath)}`,
         ]);
     }
-    const roots: string[] = IEvidnventoryMerge.unique(
+    const roots: string[] = EvidInventoryMerge.unique(
       sources.flatMap((source: IEvidSourceFile): string[] => {
         if (source.fingerprintRoot !== undefined) return [];
         const suffix: string = `/${source.fingerprintPath}`;
@@ -254,13 +255,14 @@ export class EvidFingerprintIndex {
   }
 
   /**
-   * Adds withdrawal tags to the content contribution because they alter effective scope.
+   * Adds withdrawal tags to the content contribution because they alter
+   * effective scope.
    *
-   * A unit's fingerprint must change when a withdrawal changes which declarations
-   * remain active, even if its source range is unchanged.
+   * A unit's fingerprint must change when a withdrawal changes which
+   * declarations remain active, even if its source range is unchanged.
    */
   private contribution(unit: IEvidUnit): string {
-    const withdrawals = IEvidnventoryMerge.unique(
+    const withdrawals = EvidInventoryMerge.unique(
       unit.withdrawals.map((withdrawal) => withdrawal.tag),
       (tag) => tag,
     );
@@ -270,7 +272,8 @@ export class EvidFingerprintIndex {
   }
 
   /**
-   * Hashes source sites after stripping annotations and presentation differences.
+   * Hashes source sites after stripping annotations and presentation
+   * differences.
    *
    * Annotation edits are tracked separately, while substantive source changes
    * remain stable across line-ending and trailing-space differences.
@@ -284,7 +287,7 @@ export class EvidFingerprintIndex {
       (x: IEvidUnitSite, y: IEvidUnitSite): number => {
         const left: IEvidSourceFile | undefined = this.sources.get(x.file);
         const right: IEvidSourceFile | undefined = this.sources.get(y.file);
-        const identity: number = IEvidnventoryMerge.compare(
+        const identity: number = EvidInventoryMerge.compare(
           left?.fingerprintPath ?? x.file,
           right?.fingerprintPath ?? y.file,
         );
@@ -366,7 +369,7 @@ function replacePortableTokens(
       const lengthDifference: number = right[0].length - left[0].length;
       return lengthDifference !== 0
         ? lengthDifference
-        : IEvidnventoryMerge.compare(left[0], right[0]);
+        : EvidInventoryMerge.compare(left[0], right[0]);
     },
   );
   if (ordered.length === 0) return input;
@@ -404,18 +407,17 @@ function replacePortableTokens(
  * Stable ordering makes a fingerprint independent of adapter collection order
  * for sites in the same file.
  */
-function compareRanges(
-  x: IEvidSourceRange,
-  y: IEvidSourceRange,
-): number {
+function compareRanges(x: IEvidSourceRange, y: IEvidSourceRange): number {
   const start = x.start.offset - y.start.offset;
   return start !== 0 ? start : x.end.offset - y.end.offset;
 }
 
 /**
- * Normalizes line endings and trailing whitespace without changing interior source content.
+ * Normalizes line endings and trailing whitespace without changing interior
+ * source content.
  *
- * Fingerprints ignore presentation differences that do not affect the authored declaration body.
+ * Fingerprints ignore presentation differences that do not affect the authored
+ * declaration body.
  */
 function normalize(text: string): string {
   const lines = text

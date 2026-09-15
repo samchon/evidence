@@ -2,7 +2,7 @@ import { EvidDartAdapter, EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Parses Dart directives by their URI fields despite annotations and trivia.
  *
@@ -14,8 +14,8 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_dart_directive_syntax(): Promise<void> {
   const inventory = await new EvidDartAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/api.dart",
         dedent`
       library app . api;
@@ -23,14 +23,14 @@ export async function test_dart_directive_syntax(): Promise<void> {
       @Deprecated('not-a-part.dart') part 'part.dart';
     `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/part.dart",
         dedent`
       part of app.api;
       int first = 1, /* declaration trivia */ second = 2;
     `,
       ),
-      TestSourceSnapshot.create("src/external.dart", "class Exported {}"),
+      EvidTestSourceSnapshot.create("src/external.dart", "class Exported {}"),
     ]),
   );
 

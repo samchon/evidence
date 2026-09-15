@@ -11,10 +11,12 @@ import { EvidSourcePath } from "./EvidSourcePath";
  */
 export namespace EvidWatchDependencySet {
   /**
-   * Combines configuration dependencies with every loaded claim and reference inventory.
+   * Combines configuration dependencies with every loaded claim and reference
+   * inventory.
    *
-   * Watch setup uses the merged result so edits to configuration, selected claims,
-   * or selected reference sources can invalidate the published analysis.
+   * Watch setup uses the merged result so edits to configuration, selected
+   * claims, or selected reference sources can invalidate the published
+   * analysis.
    */
   export function analysis(
     value: IEvidCheckAnalysis,
@@ -55,10 +57,12 @@ export namespace EvidWatchDependencySet {
   }
 
   /**
-   * Checks whether available dependencies cover every required path at equal or broader recursion.
+   * Checks whether available dependencies cover every required path at equal or
+   * broader recursion.
    *
    * A recursive requirement cannot be satisfied by an exact watch, while a
-   * recursive available dependency can satisfy an exact requirement for its path.
+   * recursive available dependency can satisfy an exact requirement for its
+   * path.
    */
   export function contains(
     available: IEvidSourceDependency[],

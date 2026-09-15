@@ -3,7 +3,7 @@ import type { IEvidDiagnostic } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestDocumentation } from "../../internal/TestDocumentation";
+import { EvidTestDocumentation } from "../../internal/EvidTestDocumentation";
 
 /**
  * Keeps reviews, fenced examples, and prose separate from acknowledgements.
@@ -24,35 +24,35 @@ import { TestDocumentation } from "../../internal/TestDocumentation";
  *    is consumed, and review description prose remains intact.
  */
 export async function test_tag_reviews_and_fences(): Promise<void> {
-  const fixture = TestDocumentation.create(dedent`
+  const fixture = EvidTestDocumentation.create(dedent`
     /**
      * A sentence mentioning @internal is ordinary prose.
      * ~~~~typescript
-     * @evid ../fake.ts#fake This is only an example.
+     * @evidence ../fake.ts#fake This is only an example.
      * @hidden
      * ~~~
-     * @evid ../still-fenced.ts#fake The short delimiter did not close the fence.
+     * @evidence ../still-fenced.ts#fake The short delimiter did not close the fence.
      * ~~~~
      *    \`\`\`typescript
-     * @evid ../three-column.ts#fake This is another example.
+     * @evidence ../three-column.ts#fake This is another example.
      *    \`\`\`
      *     \`\`\` literal indented delimiter
-     * @evid ../real.ts#run Implements the requirement.
+     * @evidence ../real.ts#run Implements the requirement.
      * Continues on the next line.
-     * @evidReview ../real.ts#run #a3f9c1d Verified the implementation.
-     * @evidExclude docs/spec.md#unused This part does not apply.
-     * @evidExcludeReview docs/spec.md#unused #req-scope describes the reviewed boundary.
-     * @evidReviewed ../fake.ts#fake This is another tag.
-     * @evid ../before-fence.ts#run Keeps only this prose.
+     * @evidenceReview ../real.ts#run #a3f9c1d Verified the implementation.
+     * @evidenceExclude docs/spec.md#unused This part does not apply.
+     * @evidenceExcludeReview docs/spec.md#unused #req-scope describes the reviewed boundary.
+     * @evidenceReviewed ../fake.ts#fake This is another tag.
+     * @evidence ../before-fence.ts#run Keeps only this prose.
      * ~~~text
      * This fenced example is not part of the reason.
      * ~~~
-     * @evid ../missing-reason.ts#run
+     * @evidence ../missing-reason.ts#run
      * ~~~text
      * This fenced example cannot supply a reason.
      * ~~~
      * \`\`\`typescript
-     * @evid ../unclosed.ts#fake This remains fenced through the host end.
+     * @evidence ../unclosed.ts#fake This remains fenced through the host end.
      */
   `);
   const result = EvidTagParser.parse(

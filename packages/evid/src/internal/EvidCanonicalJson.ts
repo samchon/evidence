@@ -7,9 +7,12 @@ import { createHash } from "node:crypto";
  * extracted structures have stable hashes across process runs.
  */
 export namespace EvidCanonicalJson {
-  /** Hashes a canonical representation with SHA-256 for persisted semantic comparison.
+  /**
+   * Hashes a canonical representation with SHA-256 for persisted semantic
+   * comparison.
    *
-   * Fingerprint consumers use the digest to compare semantic records whose ordinary object enumeration order may differ.
+   * Fingerprint consumers use the digest to compare semantic records whose
+   * ordinary object enumeration order may differ.
    */
   export function digest(value: unknown): string {
     return createHash("sha256").update(render(value, new Set())).digest("hex");
@@ -31,9 +34,12 @@ export namespace EvidCanonicalJson {
     );
   }
 
-  /** Serializes values recursively while replacing an active cycle with a stable sentinel.
+  /**
+   * Serializes values recursively while replacing an active cycle with a stable
+   * sentinel.
    *
-   * Tracking only the active ancestry permits shared acyclic values while preventing recursive structures from making fingerprint rendering diverge.
+   * Tracking only the active ancestry permits shared acyclic values while
+   * preventing recursive structures from making fingerprint rendering diverge.
    */
   function render(value: unknown, seen: Set<object>): string {
     if (value === null || typeof value !== "object") return stringify(value);
@@ -59,9 +65,11 @@ export namespace EvidCanonicalJson {
     }
   }
 
-  /** Serializes JSON primitives while representing unsupported values as `null`.
+  /**
+   * Serializes JSON primitives while representing unsupported values as `null`.
    *
-   * This follows `JSON.stringify` for representable primitives and keeps the canonical renderer total for arbitrary input.
+   * This follows `JSON.stringify` for representable primitives and keeps the
+   * canonical renderer total for arbitrary input.
    */
   function stringify(value: unknown): string {
     return JSON.stringify(value) ?? "null";

@@ -5,7 +5,7 @@ import {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Rejects Objective-C inputs with unsupported public surfaces.
  *
@@ -39,7 +39,7 @@ export async function test_objc_boundaries(): Promise<void> {
     "@interface Contract\n#if FEATURE\n@property int conditional;\n#endif\n@end\n",
   ]) {
     const inventory = await adapter.analyze(
-      TestSourceSnapshot.create("src/Unsupported.h", content),
+      EvidTestSourceSnapshot.create("src/Unsupported.h", content),
     );
     TestValidator.equals(
       `surface is incomplete: ${content}`,
@@ -55,7 +55,7 @@ export async function test_objc_boundaries(): Promise<void> {
   }
   for (const file of ["src/Contract.m", "src/Contract.h"]) {
     const inventory = await adapter.analyze(
-      TestSourceSnapshot.create(file, "@interface Contract\n@end\n"),
+      EvidTestSourceSnapshot.create(file, "@interface Contract\n@end\n"),
     );
     TestValidator.equals(
       `configured Objective-C source ${file}`,
@@ -69,7 +69,7 @@ export async function test_objc_boundaries(): Promise<void> {
     );
   }
   const overlap = await adapter.analyze(
-    TestSourceSnapshot.create("src/Contract.mm", "@interface Contract\n@end\n"),
+    EvidTestSourceSnapshot.create("src/Contract.mm", "@interface Contract\n@end\n"),
   );
   TestValidator.equals(
     "Objective-C++ explicitly unsupported",
@@ -78,7 +78,7 @@ export async function test_objc_boundaries(): Promise<void> {
   );
 
   const guards = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Guarded.h",
       dedent`
     #ifndef GUARDED_H
@@ -101,9 +101,9 @@ export async function test_objc_boundaries(): Promise<void> {
     ["Guarded"],
   );
   const conflicting = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create("src/First.h", "@interface Conflict\n@end\n"),
-      TestSourceSnapshot.create("src/Second.h", "@interface Conflict\n@end\n"),
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create("src/First.h", "@interface Conflict\n@end\n"),
+      EvidTestSourceSnapshot.create("src/Second.h", "@interface Conflict\n@end\n"),
     ]),
   );
   TestValidator.equals(
@@ -113,9 +113,9 @@ export async function test_objc_boundaries(): Promise<void> {
   );
 
   const privacy = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create("src/Public.h", "int run(void);\n"),
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create("src/Public.h", "int run(void);\n"),
+      EvidTestSourceSnapshot.create(
         "src/Private.m",
         "static int run(void) { return 0; }\n@implementation Private\n- (void)hidden {}\n@end\n",
       ),
@@ -127,7 +127,7 @@ export async function test_objc_boundaries(): Promise<void> {
     [["run", 1]],
   );
 
-  const failed = TestSourceSnapshot.create(
+  const failed = EvidTestSourceSnapshot.create(
     "src/Failure.m",
     "@interface Contract\n@end\n",
   );

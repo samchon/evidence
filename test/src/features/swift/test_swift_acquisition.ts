@@ -1,11 +1,13 @@
-import { EvidSwiftAdapter } from "evid";
+import {
+  EvidSwiftAdapter,
+  EvidTreeSitterAssetScope,
+  EvidTreeSitterAssets,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTreeSitterAssets } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssets";
-import { EvidTreeSitterAssetScope } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssetScope";
-import { TestFileSystem } from "../../internal/TestFileSystem";
-import { TestParserAssets } from "../../internal/TestParserAssets";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Acquires the pinned Swift parser and reuses it offline.
  *
@@ -16,13 +18,13 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_swift_acquisition(): Promise<void> {
   const grammar = await new EvidTreeSitterAssets().grammar("swift");
-  const bytes = Uint8Array.from(await TestParserAssets.bytes(grammar));
-  const source = TestSourceSnapshot.create(
+  const bytes = Uint8Array.from(await EvidTestParserAssets.bytes(grammar));
+  const source = EvidTestSourceSnapshot.create(
     "src/Contract.swift",
     "public struct Contract { public var value = 1 }",
   );
 
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "swift-acquisition",
     {},
     async (directory) => {

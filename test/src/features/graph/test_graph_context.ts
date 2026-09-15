@@ -2,8 +2,8 @@ import { EvidGraph } from "evid";
 import type { IEvidGraphInput } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestInventory } from "../../internal/TestInventory";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestInventory } from "../../internal/EvidTestInventory";
 
 /**
  * Keeps graph state isolated across repeated evaluations and reference policies.
@@ -22,30 +22,30 @@ import { TestInventory } from "../../internal/TestInventory";
  *    successful graph, proving that each facade captures its own input.
  */
 export async function test_graph_context(): Promise<void> {
-  const inventory = TestInventory.create();
-  const unit = TestInventory.unit(
+  const inventory = EvidTestInventory.create();
+  const unit = EvidTestInventory.unit(
     inventory,
     "claim",
     ["Claim"],
     "type",
     "export const first = 1, second = 2;",
   );
-  const host = TestInventory.host(
+  const host = EvidTestInventory.host(
     inventory,
     "host",
     unit.sites[0]?.id ?? "",
     [unit.id],
     "/** Shared documentation. */",
   );
-  const exclusion = TestGraph.declaration(
+  const exclusion = EvidTestGraph.declaration(
     inventory,
     "exclude",
     host,
     "evidenceExclude",
     "target",
   );
-  const reference = TestInventory.create();
-  const target = TestInventory.unit(
+  const reference = EvidTestInventory.create();
+  const target = EvidTestInventory.unit(
     reference,
     "target",
     ["Target"],
@@ -62,7 +62,7 @@ export async function test_graph_context(): Promise<void> {
           severity: "error",
           inventory: reference,
           unitIds: [target.id],
-          resolutions: [TestGraph.resolved(exclusion, target)],
+          resolutions: [EvidTestGraph.resolved(exclusion, target)],
           noEvidExclude,
         })),
       },
@@ -74,12 +74,12 @@ export async function test_graph_context(): Promise<void> {
 
   TestValidator.equals(
     "permitted exclusion",
-    TestGraph.obligation(first, 0, 0).coveredUnitIds,
+    EvidTestGraph.obligation(first, 0, 0).coveredUnitIds,
     [target.id],
   );
   TestValidator.equals(
     "independent prohibition",
-    TestGraph.obligation(first, 0, 1).missingUnitIds,
+    EvidTestGraph.obligation(first, 0, 1).missingUnitIds,
     [target.id],
   );
   TestValidator.equals(

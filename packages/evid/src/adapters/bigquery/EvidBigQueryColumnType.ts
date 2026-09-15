@@ -1,4 +1,4 @@
-import type { EvidNode } from "web-tree-sitter";
+import type { Node as EvidNode } from "web-tree-sitter";
 
 /** Bounds the grammar's permissive type names to declared GoogleSQL schema types.
  *

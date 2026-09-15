@@ -4,7 +4,8 @@ import type { IEvidConfigResolutionManifest } from "./IEvidConfigResolutionManif
  * Nearest package scope governing one configuration module request.
  *
  * Package imports and self-references both need the manifest together with its
- * directory so relative map targets cannot escape the scope that declared them.
+ * directory so relative map targets cannot escape the scope that declared
+ * them.
  */
 export interface IEvidConfigPackageBoundary {
   /**

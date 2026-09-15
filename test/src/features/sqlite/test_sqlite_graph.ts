@@ -8,8 +8,8 @@ import {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Evaluates SQLite selectors as claim and reference populations.
  *
@@ -21,21 +21,21 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_sqlite_graph(): Promise<void> {
   const schema = await new EvidSqliteAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "schema.sql",
       dedent`
-    -- @evid docs.md#model Implements the model.
+    -- @evidence docs.md#model Implements the model.
     CREATE TABLE Account (
-      -- @evid docs.md#column Implements the column.
+      -- @evidence docs.md#column Implements the column.
       owner INTEGER,
-      -- @evid docs.md#relation Implements the relation.
+      -- @evidence docs.md#relation Implements the relation.
       CONSTRAINT owner_link FOREIGN KEY (owner) REFERENCES Owners(id)
     );
   `,
     ),
   );
   const markdown = await new EvidMarkdownAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "docs.md",
       "## model\n\n## column\n\n## relation\n",
     ),
@@ -50,9 +50,9 @@ export async function test_sqlite_graph(): Promise<void> {
     );
     if (target === undefined) throw new Error(`Missing ${symbol} address.`);
     const claim = await new EvidTypeScriptAdapter().analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "claim.ts",
-        `/** @evid ./schema.sql#${EvidAccessor.format(target.segments)} Verifies this database declaration. */\nexport function verify() {}\n`,
+        `/** @evidence ./schema.sql#${EvidAccessor.format(target.segments)} Verifies this database declaration. */\nexport function verify() {}\n`,
       ),
     );
 
@@ -71,7 +71,7 @@ export async function test_sqlite_graph(): Promise<void> {
                 severity: "error",
                 inventory: schema,
                 unitIds,
-                resolutions: await TestGraph.resolveDeclarations(
+                resolutions: await EvidTestGraph.resolveDeclarations(
                   source,
                   schema,
                   unitIds,
@@ -88,7 +88,7 @@ export async function test_sqlite_graph(): Promise<void> {
       );
       TestValidator.equals(
         `${symbol} exact reference denominator`,
-        TestGraph.obligation(graph, 0, 0).missingUnitIds,
+        EvidTestGraph.obligation(graph, 0, 0).missingUnitIds,
         positive ? [] : unitIds,
       );
 
@@ -113,7 +113,7 @@ export async function test_sqlite_graph(): Promise<void> {
                 severity: "error",
                 inventory: markdown,
                 unitIds: referenceIds,
-                resolutions: await TestGraph.resolveDeclarations(
+                resolutions: await EvidTestGraph.resolveDeclarations(
                   database,
                   markdown,
                   referenceIds,
@@ -130,16 +130,16 @@ export async function test_sqlite_graph(): Promise<void> {
       );
       TestValidator.equals(
         `${symbol} exact claim denominator`,
-        TestGraph.obligation(reverse, 0, 0).missingUnitIds,
+        EvidTestGraph.obligation(reverse, 0, 0).missingUnitIds,
         positive ? [] : referenceIds,
       );
     }
   }
 
   const review = await new EvidSqliteAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "review.sql",
-      "-- @evidReview ./schema.sql#Account Reviewed without evidence.\nCREATE TABLE Reviewed (id INTEGER);",
+      "-- @evidenceReview ./schema.sql#Account Reviewed without evidence.\nCREATE TABLE Reviewed (id INTEGER);",
     ),
   );
   TestValidator.equals(
@@ -167,7 +167,7 @@ export async function test_sqlite_graph(): Promise<void> {
             inventory: schema,
             unitIds: selected,
             resolutions: [],
-            reviewResolutions: await TestGraph.resolveReviews(
+            reviewResolutions: await EvidTestGraph.resolveReviews(
               review,
               schema,
               selected,
@@ -179,7 +179,7 @@ export async function test_sqlite_graph(): Promise<void> {
   });
   TestValidator.equals(
     "review leaves ordinary coverage missing",
-    TestGraph.obligation(graph, 0, 0).missingUnitIds,
+    EvidTestGraph.obligation(graph, 0, 0).missingUnitIds,
     selected,
   );
 }

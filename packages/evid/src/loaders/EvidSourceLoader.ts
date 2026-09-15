@@ -13,7 +13,7 @@ import type { IEvidSourceSnapshot } from "../structures/IEvidSourceSnapshot";
  *
  * @example
  * const snapshot: IEvidSourceSnapshot = await EvidSourceLoader.glob(
- *   "evid.config.ts",
+ *   "evidence.config.ts",
  *   { files: ["src/*.ts"] },
  * );
  */

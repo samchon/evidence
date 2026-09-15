@@ -4,7 +4,7 @@ import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
  * Recovers from imported configuration failures and missing active roots.
@@ -13,9 +13,10 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  * roots while omitting disabled populations from its runtime dependency set.
  *
  * 1. Start with an imported active root, a disabled claim, and a covered Markdown
- *    requirement; require success, the helper dependency, and no disabled-root dependency.
- * 2. Introduce a type error in the imported helper and require a failed cycle
- *    that replaces the earlier success.
+ *    requirement; require success, the helper dependency, and no disabled-root
+ *    dependency.
+ * 2. Introduce a type error in the imported helper and require a failed cycle that
+ *    replaces the earlier success.
  * 3. Repair the helper to select a missing active root; require an incomplete
  *    cycle whose report equals a fresh checker result.
  * 4. Create the missing root and covered implementation, then require recovery
@@ -23,16 +24,16 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  */
 export async function test_watch_config_recovery(): Promise<void> {
   const location = join(__dirname, `config recovery ${randomUUID()}`);
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     {
-      "evid.config.ts": config(),
+      "evidence.config.ts": config(),
       "helpers/settings.ts": settings("src"),
       "docs/requirements.md": requirement(),
       "src/implementation.ts": implementation(),
     },
     async (directory) => {
-      const configFile = join(directory, "evid.config.ts");
+      const configFile = join(directory, "evidence.config.ts");
       const helper = join(directory, "helpers", "settings.ts");
       const watcher = new EvidWatcher(configFile, {
         pollIntervalMilliseconds: 20,
@@ -58,7 +59,7 @@ export async function test_watch_config_recovery(): Promise<void> {
               (dependency) => !dependency.includes("disabled-source"),
             ),
           );
-          await TestFileSystem.save(directory, {
+          await EvidTestFileSystem.save(directory, {
             "helpers/settings.ts": `export const root: string = 123;\nexport const files = ["**/*.ts"];\n`,
           });
           return;
@@ -67,7 +68,7 @@ export async function test_watch_config_recovery(): Promise<void> {
         // The current imported type error replaces the old success with a failure cycle.
         if (cycle.cycle === 2) {
           TestValidator.equals("config failure status", cycle.status, "failed");
-          await TestFileSystem.save(directory, {
+          await EvidTestFileSystem.save(directory, {
             "helpers/settings.ts": settings("missing-source"),
           });
           return;
@@ -89,7 +90,7 @@ export async function test_watch_config_recovery(): Promise<void> {
             cycle.status,
             "incomplete",
           );
-          await TestFileSystem.save(directory, {
+          await EvidTestFileSystem.save(directory, {
             "missing-source/implementation.ts": implementation(),
           });
           return;
@@ -155,7 +156,7 @@ function requirement(): string {
 
 function implementation(): string {
   return dedent`
-    /** @evid docs/requirements.md#pricing Implements pricing. */
+    /** @evidence docs/requirements.md#pricing Implements pricing. */
     export function calculate(): number {
       return 1;
     }

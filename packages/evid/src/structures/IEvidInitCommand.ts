@@ -8,7 +8,7 @@ export interface IEvidInitCommand {
   /**
    * Discriminator selecting configuration creation.
    *
-   * Initialization writes a starter contract without running an Evid check.
+   * Initialization writes a starter contract without running an Evidence Graph check.
    */
   operation: "init";
 
@@ -20,7 +20,7 @@ export interface IEvidInitCommand {
   cwd: string;
 
   /**
-   * New configuration path, defaulting to evid.config.ts during parsing.
+   * New configuration path, defaulting to evidence.config.ts during parsing.
    *
    * Execution validates the supported file format and rejects an existing destination.
    */

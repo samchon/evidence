@@ -1,9 +1,9 @@
 ---
 name: evidence-graph
-description: Defines Evid units, target grammar, coverage, exclusions, reviews, and language-adapter completeness. Use before changing graph semantics, public configuration, artifact adapters, or diagnostics; distinguish the compatibility baseline from implemented features.
+description: Defines Evidence Graph units, target grammar, coverage, exclusions, reviews, and language-adapter completeness. Use before changing graph semantics, public configuration, artifact adapters, or diagnostics; distinguish the compatibility baseline from implemented features.
 ---
 
-# Evid Graph
+# Evidence Graph
 
 ## Baseline And Scope
 
@@ -22,11 +22,11 @@ Every artifact family supports both Claim and Reference roles, and every claim c
 ## Tags And Hosts
 
 ```text
-@evid <target> <reason>
+@evidence <target> <reason>
 @link <file>#<Accessor> <reason>
-@evidExclude <target> <reason>
-@evidReview <target> [#<fingerprint>] <description>
-@evidExcludeReview <target> [#<fingerprint>] <description>
+@evidenceExclude <target> <reason>
+@evidenceReview <target> [#<fingerprint>] <description>
+@evidenceExcludeReview <target> [#<fingerprint>] <description>
 ```
 
 Require a target and nonempty prose. Parse supported documentation spans attached to eligible hosts, not arbitrary source text. Swagger operation descriptions are eligible documentation; other strings and fenced examples create no acknowledgements. Unsupported or unattached declarations inside configured populations need actionable findings.
@@ -37,7 +37,7 @@ Code paths resolve from the citing file, such as `../calculator.ts#add`. Keep se
 
 ## Coverage And Policies
 
-Ordinary evidence and permitted exclusions cover a selected target and its selected descendants. Evid and exclusion scopes cannot overlap in one obligation; overlapping exclusions conflict. An exclusion belongs to one claim and an eligible carrier in that claim's files.
+Ordinary evidence and permitted exclusions cover a selected target and its selected descendants. Evidence and exclusion scopes cannot overlap in one obligation; overlapping exclusions conflict. An exclusion belongs to one claim and an eligible carrier in that claim's files.
 
 - `noEvidExclude` refuses exclusions for its own reference and leaves missing positive coverage visible.
 - `uniqueEvid` counts distinct positive semantic hosts per selected target, not tags or overload locations.

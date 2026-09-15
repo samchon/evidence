@@ -1,9 +1,9 @@
-﻿import { EvidChecker, EvidWatcher } from "evid";
+import { EvidChecker, EvidWatcher } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /** Rebuilds cross-file DBML relations as endpoints are discovered, broken, and repaired.
  *
@@ -14,21 +14,21 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  * 3. Repair the users source and require the fourth cycle to recover.
  */
 export async function test_dbml_watch(): Promise<void> {
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "dbml-watch",
     {
-      "evid.config.ts": dedent`
+      "evidence.config.ts": dedent`
       export default { claims: [{ type: "typescript", files: ["claims.ts"], reference: { type: "dbml", files: ["schema/*.dbml"], symbol: "relation" } }] };
     `,
       "claims.ts": dedent`
-      /** @evid ./schema/posts.dbml#posts Covers declared post relations. */
+      /** @evidence ./schema/posts.dbml#posts Covers declared post relations. */
       export function verify() {}
     `,
       "schema/posts.dbml":
         "Table posts { user_id int }\nRef owner: posts.user_id > users.id",
     },
     async (directory) => {
-      const file = join(directory, "evid.config.ts");
+      const file = join(directory, "evidence.config.ts");
       const watcher = new EvidWatcher(file, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
@@ -47,7 +47,7 @@ export async function test_dbml_watch(): Promise<void> {
               cycle.status,
               "incomplete",
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "schema/users.dbml": "Table users { id int }",
             });
           } else if (cycle.cycle === 2) {
@@ -56,7 +56,7 @@ export async function test_dbml_watch(): Promise<void> {
               cycle.success,
               true,
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "schema/users.dbml": "Table users { id int",
             });
           } else if (cycle.cycle === 3) {
@@ -65,7 +65,7 @@ export async function test_dbml_watch(): Promise<void> {
               cycle.status,
               "incomplete",
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "schema/users.dbml": "Table users { id bigint }",
             });
           } else {

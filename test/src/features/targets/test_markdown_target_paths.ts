@@ -13,7 +13,7 @@ import type {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Resolves root-relative Markdown paths and literal anchors.
  *
@@ -29,20 +29,20 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_markdown_target_paths(): Promise<void> {
   const reference = await new EvidMarkdownAdapter().analyze(
-    TestSourceSnapshot.create("docs/spec%value.md", "## Pricing {#price.v2}"),
+    EvidTestSourceSnapshot.create("docs/spec%value.md", "## Pricing {#price.v2}"),
   );
   const pricing = requireUnit(reference, "price.v2");
   const claim = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/claim.ts",
       dedent`
-        /** @evid .\\docs\\spec%value.md#price.v2 Uses the portable Markdown target. */
+        /** @evidence .\\docs\\spec%value.md#price.v2 Uses the portable Markdown target. */
         export function portable(): void {}
 
-        /** @evid docs/spec%25value.md#price.v2 Must not decode the percent sign. */
+        /** @evidence docs/spec%25value.md#price.v2 Must not decode the percent sign. */
         export function encoded(): void {}
 
-        /** @evid docs/Spec%value.md#price.v2 Must preserve path case. */
+        /** @evidence docs/Spec%value.md#price.v2 Must preserve path case. */
         export function wrongCase(): void {}
       `,
     ),

@@ -1,7 +1,7 @@
 import { EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestInventory } from "../../internal/TestInventory";
+import { EvidTestInventory } from "../../internal/EvidTestInventory";
 
 /**
  * Preserves incomplete analysis when inventory ownership or identity is inconsistent.
@@ -20,7 +20,7 @@ import { TestInventory } from "../../internal/TestInventory";
  *    to the same ID; the contradictory identity must remain incomplete.
  */
 export async function test_inventory_failures(): Promise<void> {
-  const empty = TestInventory.create();
+  const empty = EvidTestInventory.create();
   TestValidator.predicate(
     "healthy empty population",
     new EvidInventory([empty]).select([]).complete,
@@ -40,8 +40,8 @@ export async function test_inventory_failures(): Promise<void> {
     "incomplete",
   );
 
-  const input = TestInventory.create();
-  const box = TestInventory.unit(
+  const input = EvidTestInventory.create();
+  const box = EvidTestInventory.unit(
     input,
     "box",
     ["Box"],

@@ -13,34 +13,41 @@ import type { IEvidTreeSitterAssetOptions } from "./IEvidTreeSitterAssetOptions"
 import type { IEvidTreeSitterAssetPending } from "./IEvidTreeSitterAssetPending";
 
 /**
- * Acquires immutable upstream grammars and validates every cache read before loading WASM.
+ * Acquires immutable upstream grammars and validates every cache read before
+ * loading WASM.
  *
  * Concurrent callers share transfer work by destination but receive independent
- * byte arrays. Atomic publication and lock recovery prevent partial or abandoned
- * downloads from becoming trusted cache entries across processes.
+ * byte arrays. Atomic publication and lock recovery prevent partial or
+ * abandoned downloads from becoming trusted cache entries across processes.
  */
 export class EvidTreeSitterAssetCache {
   /**
    * Tracks process-local transfers by immutable cache destination.
    *
-   * Concurrent bytes calls share this pending record so they do not download the
-   * same pinned grammar independently, while consumer counts govern cancellation.
+   * Concurrent bytes calls share this pending record so they do not download
+   * the same pinned grammar independently, while consumer counts govern
+   * cancellation.
    */
-  private static readonly pending = new Map<string, IEvidTreeSitterAssetPending>();
+  private static readonly pending = new Map<
+    string,
+    IEvidTreeSitterAssetPending
+  >();
 
   /**
-   * Captures asset-acquisition controls without performing filesystem or network work.
+   * Captures asset-acquisition controls without performing filesystem or
+   * network work.
    *
-   * bytes applies these controls when it resolves the cache location, downloads a
-   * grammar, and reports progress for this cache instance.
+   * Bytes applies these controls when it resolves the cache location, downloads
+   * a grammar, and reports progress for this cache instance.
    */
   public constructor(private readonly options: IEvidTreeSitterAssetOptions) {}
 
   /**
-   * Returns verified caller-owned grammar bytes, repairing missing or damaged cache entries.
+   * Returns verified caller-owned grammar bytes, repairing missing or damaged
+   * cache entries.
    *
-   * The method shares a transfer with concurrent callers but slices its result so
-   * no caller can mutate another caller's buffer.
+   * The method shares a transfer with concurrent callers but slices its result
+   * so no caller can mutate another caller's buffer.
    */
   public async bytes(grammar: IEvidGrammar): Promise<Uint8Array> {
     const destination = path.join(
@@ -93,7 +100,7 @@ export class EvidTreeSitterAssetCache {
       throw new EvidParserError(
         "asset-cache",
         destination,
-        "Cannot prepare the parser cache. Restore write access or set EVIDENCE_CACHE_DIR to an absolute writable directory.",
+        "Cannot prepare the parser cache. Restore write access or set EVID_CACHE_DIR to an absolute writable directory.",
         undefined,
         { cause },
       );
@@ -101,7 +108,8 @@ export class EvidTreeSitterAssetCache {
   }
 
   /**
-   * Acquires a cross-process cache lock, verifies downloaded bytes, and atomically publishes one entry.
+   * Acquires a cross-process cache lock, verifies downloaded bytes, and
+   * atomically publishes one entry.
    *
    * The finally block removes only files owned by this acquisition, preserving
    * another process's active lock and completed cache entry.
@@ -172,7 +180,8 @@ export class EvidTreeSitterAssetCache {
   }
 
   /**
-   * Downloads one pinned grammar with bounded retries, response size, and cancellation.
+   * Downloads one pinned grammar with bounded retries, response size, and
+   * cancellation.
    *
    * Hash verification remains in the caller so every cache and fresh-download
    * path shares the same immutable-asset check.
@@ -244,30 +253,31 @@ export class EvidTreeSitterAssetCache {
 }
 
 /**
- * Selects the explicit, environment, or project-local cache root without creating it.
+ * Selects the explicit, environment, or project-local cache root without
+ * creating it.
  *
  * Acquisition owns directory creation so resolving a location never changes the
  * project cache as a side effect.
  */
 function cacheDirectory(override: string | undefined): string {
-  const configured = override ?? process.env["EVIDENCE_CACHE_DIR"];
+  const configured = override ?? process.env["EVID_CACHE_DIR"];
   if (configured !== undefined) {
     if (!path.isAbsolute(configured))
       throw new EvidParserError(
         "asset-cache",
         configured,
-        "EVIDENCE_CACHE_DIR must be an absolute writable directory.",
+        "EVID_CACHE_DIR must be an absolute writable directory.",
       );
     return path.normalize(configured);
   }
-  return path.join(process.cwd(), "node_modules", ".cache", "evidence");
+  return path.join(process.cwd(), "node_modules", ".cache", "evid");
 }
 
 /**
  * Reads a cache file only when its size and SHA-256 match pinned provenance.
  *
- * Checking metadata first avoids loading a corrupted or unexpectedly large
- * file before immutable-asset validation.
+ * Checking metadata first avoids loading a corrupted or unexpectedly large file
+ * before immutable-asset validation.
  */
 async function verified(
   file: string,
@@ -297,7 +307,8 @@ function matches(bytes: Uint8Array, asset: IEvidGrammarAsset): boolean {
 }
 
 /**
- * Streams a response with a byte cap so a bad server cannot exhaust the process before validation.
+ * Streams a response with a byte cap so a bad server cannot exhaust the process
+ * before validation.
  *
  * The reader is always released, including when the advertised asset is too
  * large or the stream ends unexpectedly.
@@ -333,7 +344,8 @@ async function boundedBody(
 }
 
 /**
- * Races a shared transfer against one caller's cancellation without cancelling peers.
+ * Races a shared transfer against one caller's cancellation without cancelling
+ * peers.
  *
  * Other parser sessions may still consume the same destination promise, so a
  * single abort cannot own the shared controller.
@@ -370,7 +382,8 @@ function fileError(cause: unknown, code: string): boolean {
 }
 
 /**
- * Reads and validates lock ownership, treating malformed locks as recoverable stale state.
+ * Reads and validates lock ownership, treating malformed locks as recoverable
+ * stale state.
  *
  * Incomplete writes flow into age-based recovery instead of being trusted as a
  * live owner.
@@ -390,7 +403,8 @@ async function readLock(
 }
 
 /**
- * Removes only stale lock files after checking owner liveness and acquisition age.
+ * Removes only stale lock files after checking owner liveness and acquisition
+ * age.
  *
  * A live process keeps its lock regardless of age, preventing one slow download
  * from being replaced by a competing acquisition.

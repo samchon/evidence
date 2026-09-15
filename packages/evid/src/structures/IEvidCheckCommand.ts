@@ -25,7 +25,7 @@ export interface IEvidCheckCommand {
   /**
    * Configuration path resolved from the command's working directory.
    *
-   * Parsing supplies evid.config.ts when no configuration option is present.
+   * Parsing supplies evidence.config.ts when no configuration option is present.
    */
   config: string;
 

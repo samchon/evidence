@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import typia from "typia";
 
-import { IEvidnventoryMerge } from "../../internal/IEvidnventoryMerge";
+import { EvidInventoryMerge } from "../../internal/EvidInventoryMerge";
 import { EvidInventory } from "../../graph/EvidInventory";
 import { EvidDbmlDocumentation } from "./EvidDbmlDocumentation";
 import { EvidParser } from "../../parsers/EvidParser";
@@ -72,7 +72,7 @@ export class EvidDbmlAdapter implements IEvidAdapter {
         const previous = records.get(source.id);
         if (previous === undefined) records.set(source.id, source);
         else
-          previous.addresses = IEvidnventoryMerge.sourceAddresses([
+          previous.addresses = EvidInventoryMerge.sourceAddresses([
             ...previous.addresses,
             ...source.addresses,
           ]);
@@ -309,7 +309,7 @@ export class EvidDbmlAdapter implements IEvidAdapter {
       .flatMap((analysis) =>
         analysis.enums.map((enumeration) => enumeration.content),
       )
-      .sort(IEvidnventoryMerge.compare)
+      .sort(EvidInventoryMerge.compare)
       .join("\n");
     for (const analysis of analyses)
       for (const declaration of analysis.declarations) {

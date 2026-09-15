@@ -11,7 +11,7 @@ import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
  * Keeps deferred checklist findings inside their authored claim boundary.
@@ -35,13 +35,13 @@ export async function test_graph_checklist_claim_isolation(): Promise<void> {
     __dirname,
     `checklist claim isolation ${randomUUID()}`,
   );
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     {
       "claims.ts": [
-        "/** @evid rules.md#rule Implements the rule. */",
+        "/** @evidence rules.md#rule Implements the rule. */",
         "export function run(): void {}",
-        "/** @evid rules.md#rule Defines the rule. */",
+        "/** @evidence rules.md#rule Defines the rule. */",
         "export interface Shape {}",
         "",
       ].join("\n"),
@@ -126,7 +126,7 @@ async function check(
   expectedClaim: number,
   exitCode: EvidCommandExitCode,
 ): Promise<void> {
-  await TestFileSystem.save(directory, {
+  await EvidTestFileSystem.save(directory, {
     "evid.json": JSON.stringify({ claims }),
   });
   const report: IEvidCheckReport = await EvidChecker.check(config);

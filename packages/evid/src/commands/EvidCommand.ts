@@ -31,34 +31,35 @@ import type { EvidReportFormat } from "../typings/EvidReportFormat";
 import type { EvidSymbol } from "../typings/EvidSymbol";
 
 /**
- * Parses and executes the standalone Evid command contract.
+ * Parses and executes the standalone Evidence Graph command contract.
  *
- * The executable delegates its argument handling here, while integrations can use
- * `parse` to inspect a command or `run` to capture a finite command's output.
- * This boundary validates syntax before configuration loading so malformed input
- * cannot accidentally scan the caller's project.
+ * The executable delegates its argument handling here, while integrations can
+ * use `parse` to inspect a command or `run` to capture a finite command's
+ * output. This boundary validates syntax before configuration loading so
+ * malformed input cannot accidentally scan the caller's project.
  *
  * @example
- * const command: IEvidCommand = EvidCommand.parse([
- *   "list",
- *   "--format",
- *   "json",
- * ]);
- * // command.operation is "list" and its default cwd is ".".
+ *   const command: IEvidCommand = EvidCommand.parse([
+ *     "list",
+ *     "--format",
+ *     "json",
+ *   ]);
+ *   // command.operation is "list" and its default cwd is ".".
  */
 export namespace EvidCommand {
   /**
    * Converts a complete argument vector into one validated command object.
    *
-   * Parsing assigns operation-specific defaults and rejects unknown, duplicate, or
-   * incompatible options before any filesystem access. `check` is implicit when
-   * the first token is absent or an option; `inspect` alone accepts one positional
-   * target. Callers receive an {@link EvidCommandError} for repairable syntax
-   * mistakes rather than a configuration or source diagnostic.
+   * Parsing assigns operation-specific defaults and rejects unknown, duplicate,
+   * or incompatible options before any filesystem access. `check` is implicit
+   * when the first token is absent or an option; `inspect` alone accepts one
+   * positional target. Callers receive an {@link EvidCommandError} for
+   * repairable syntax mistakes rather than a configuration or source
+   * diagnostic.
    *
    * @example
-   * EvidCommand.parse(["graph", "--format", "dot"]);
-   * // { operation: "graph", cwd: ".", config: "evid.config.ts", format: "dot" }
+   *   EvidCommand.parse(["graph", "--format", "dot"]);
+   *   // { operation: "graph", cwd: ".", config: "evidence.config.ts", format: "dot" }
    */
   export function parse(args: readonly string[]): IEvidCommand {
     if (args.length === 1 && (args[0] === "-v" || args[0] === "--version"))
@@ -87,13 +88,11 @@ export namespace EvidCommand {
     for (let index = 0; index < tokens.length; index++) {
       const token = tokens[index];
       if (token === undefined)
-        throw new EvidCommandError(
-          "The argument list changed while parsing.",
-        );
+        throw new EvidCommandError("The argument list changed while parsing.");
       if (token === "-w" || token === "--watch") {
         if (operation !== "check")
           throw new EvidCommandError(
-            `${token} is available only to evidence check.`,
+            `${token} is available only to evid check.`,
           );
         if (watch)
           throw new EvidCommandError("The watch flag was provided twice.");
@@ -103,7 +102,7 @@ export namespace EvidCommand {
       if (!token.startsWith("-")) {
         if (operation !== "inspect")
           throw new EvidCommandError(
-            `Unexpected argument '${token}' for evidence ${operation}.`,
+            `Unexpected argument '${token}' for evid ${operation}.`,
           );
         if (target !== undefined)
           throw new EvidCommandError(
@@ -120,7 +119,7 @@ export namespace EvidCommand {
         throw new EvidCommandError(`Unknown Evid argument '${token}'.`);
       if (!optionAllowed(operation, key))
         throw new EvidCommandError(
-          `${token} is not available to evidence ${operation}.`,
+          `${token} is not available to evid ${operation}.`,
         );
       if (values.has(key))
         throw new EvidCommandError(`Option '${token}' was provided twice.`);
@@ -137,7 +136,7 @@ export namespace EvidCommand {
       return {
         operation,
         cwd,
-        config: values.get("config") ?? "evid.config.ts",
+        config: values.get("config") ?? "evidence.config.ts",
       };
     if (operation === "languages")
       return {
@@ -147,7 +146,7 @@ export namespace EvidCommand {
         ...optionalOutput(values),
       };
 
-    const config = values.get("config") ?? "evid.config.ts";
+    const config = values.get("config") ?? "evidence.config.ts";
     if (operation === "graph")
       return {
         operation,
@@ -158,9 +157,7 @@ export namespace EvidCommand {
       };
     if (operation === "inspect") {
       if (target === undefined)
-        throw new EvidCommandError(
-          "Evid inspect requires exactly one target.",
-        );
+        throw new EvidCommandError("Evid inspect requires exactly one target.");
       return {
         operation,
         target,
@@ -172,18 +169,13 @@ export namespace EvidCommand {
     }
     if (operation === "list") {
       const language = values.get("language");
-      if (
-        language !== undefined &&
-        !EvidArtifactTypes.isSupported(language)
-      )
+      if (language !== undefined && !EvidArtifactTypes.isSupported(language))
         throw new EvidCommandError(
-          `Unknown Evid artifact type '${language}'. Use a type backed by a shipped adapter.`,
+          `Unknown evid artifact type '${language}'. Use a type backed by a shipped adapter.`,
         );
       const kind = values.get("kind");
       if (kind !== undefined && !typia.is<EvidSymbol>(kind))
-        throw new EvidCommandError(
-          `Unknown Evid symbol kind '${kind}'.`,
-        );
+        throw new EvidCommandError(`Unknown Evid symbol kind '${kind}'.`);
       return {
         operation,
         cwd,
@@ -209,13 +201,14 @@ export namespace EvidCommand {
    *
    * This is the embedding and logic-test entry point: it does not write process
    * streams and returns parse or operational failures with exit code 2. Text
-   * failures use stderr, while JSON operational failures use stdout to preserve a
-   * parseable report. Watch mode is deliberately excluded because its unbounded
-   * publication lifecycle belongs to {@link EvidWatcher} or {@link main}.
+   * failures use stderr, while JSON operational failures use stdout to preserve
+   * a parseable report. Watch mode is deliberately excluded because its
+   * unbounded publication lifecycle belongs to {@link EvidWatcher} or
+   * {@link main}.
    *
    * @example
-   * const result: IEvidCommandResult = await EvidCommand.run(["--help"]);
-   * // result.exitCode === 0 and result.stdout contains the command reference.
+   *   const result: IEvidCommandResult = await EvidCommand.run(["--help"]);
+   *   // result.exitCode === 0 and result.stdout contains the command reference.
    */
   export async function run(
     args: readonly string[],
@@ -225,7 +218,7 @@ export namespace EvidCommand {
     try {
       parsed = parse(args);
     } catch (cause) {
-      return failureResult(cause, "Run 'evidence --help' for valid syntax.");
+      return failureResult(cause, "Run 'evid --help' for valid syntax.");
     }
 
     if (parsed.operation === "help")
@@ -245,18 +238,19 @@ export namespace EvidCommand {
     if (parsed.operation === "check" && parsed.watch === true)
       return failureResult(
         new Error("Buffered EvidCommand.run cannot execute watch mode."),
-        "Use EvidWatcher for embedding or the evidence executable for streamed watch output.",
+        "Use EvidWatcher for embedding or the evid executable for streamed watch output.",
       );
     return runAnalysis(parsed, baseCwd);
   }
 
   /**
-   * Streams a command result through EvidNode's standard output and error channels.
+   * Streams a command result through Node's standard output and error channels.
    *
-   * The packaged executable calls this method. It reuses the buffered command path
-   * for finite operations, but keeps watch open and sends parser-asset progress to
-   * stderr unless a report file was requested. Repeated progress is deduplicated
-   * because retries can report the same acquisition state more than once.
+   * The packaged executable calls this method. It reuses the buffered command
+   * path for finite operations, but keeps watch open and sends parser-asset
+   * progress to stderr unless a report file was requested. Repeated progress is
+   * deduplicated because retries can report the same acquisition state more
+   * than once.
    */
   export async function main(
     args: readonly string[],
@@ -299,12 +293,12 @@ export namespace EvidCommand {
    * Creates a starter configuration in the format implied by its filename.
    *
    * JSON receives literal data and TypeScript receives an `IEvidConfig`
-   * `satisfies` template with identical defaults. Exclusive creation preserves an
-   * existing author-owned configuration; its collision is rethrown with a focused
-   * repair message instead of being overwritten.
+   * `satisfies` template with identical defaults. Exclusive creation preserves
+   * an existing author-owned configuration; its collision is rethrown with a
+   * focused repair message instead of being overwritten.
    *
    * @example
-   * await EvidCommand.initialize("evid.config.ts");
+   *   await EvidCommand.initialize("evidence.config.ts");
    */
   export async function initialize(file: string): Promise<void> {
     const format = EvidConfigFormat.get(file);
@@ -322,7 +316,7 @@ export namespace EvidCommand {
     } catch (cause) {
       if (errorCode(cause) === "EEXIST")
         throw new Error(
-          `Refusing to overwrite the existing Evid configuration: ${file}`,
+          `Refusing to overwrite the existing Evidence Graph configuration: ${file}`,
         );
       throw cause;
     }
@@ -332,9 +326,10 @@ export namespace EvidCommand {
 /**
  * Opens the process-owned watch lifecycle and routes each published cycle.
  *
- * Watch output is either appended to the requested destination or written through
- * stdout's completion callback so I/O failures become command failures. The SIGINT
- * handler only requests shutdown; `finally` removes it and joins watcher cleanup.
+ * Watch output is either appended to the requested destination or written
+ * through stdout's completion callback so I/O failures become command failures.
+ * The SIGINT handler only requests shutdown; `finally` removes it and joins
+ * watcher cleanup.
  */
 async function runWatch(
   command: IEvidCheckCommand,
@@ -351,7 +346,7 @@ async function runWatch(
   } catch (cause) {
     return failureResult(
       new Error(
-        `Could not initialize Evid watch output '${String(destination)}': ${errorMessage(cause)}`,
+        `Could not initialize Evidence Graph watch output '${String(destination)}': ${errorMessage(cause)}`,
       ),
       "Correct the output path or its permissions and run the command again.",
     );
@@ -381,10 +376,11 @@ async function runWatch(
 }
 
 /**
- * Waits for EvidNode to accept a complete watch block on standard output.
+ * Waits for Node to accept a complete watch block on standard output.
  *
  * Watch publication must apply backpressure. Resolving after `write`'s callback
- * prevents a rapid filesystem change from reordering or losing rendered cycles.
+ * prevents a rapid filesystem change from reordering or losing rendered
+ * cycles.
  */
 async function writeStandardOutput(content: string): Promise<void> {
   await new Promise<undefined>((resolve, reject) => {
@@ -398,10 +394,10 @@ async function writeStandardOutput(content: string): Promise<void> {
 /**
  * Runs one analysis and projects it into check, query, or graph output.
  *
- * Every operation shares one checker result so list, inspect, and graph describe
- * the same configuration and source snapshot as the underlying check. A thrown
- * loading or analysis failure is serialized in the selected report format before
- * the optional output-file path is attempted.
+ * Every operation shares one checker result so list, inspect, and graph
+ * describe the same configuration and source snapshot as the underlying check.
+ * A thrown loading or analysis failure is serialized in the selected report
+ * format before the optional output-file path is attempted.
  */
 async function runAnalysis(
   command:
@@ -488,8 +484,9 @@ async function runAnalysis(
 /**
  * Renders shipped adapter capabilities without loading project configuration.
  *
- * `languages` remains useful in a broken project because its data comes from the
- * package registry, while output handling follows the same contract as analysis.
+ * `languages` remains useful in a broken project because its data comes from
+ * the package registry, while output handling follows the same contract as
+ * analysis.
  */
 async function runLanguages(
   command: IEvidLanguagesCommand,
@@ -511,7 +508,8 @@ async function runLanguages(
  *
  * Text failures use stderr when no file is requested; JSON is kept on stdout so
  * machine consumers receive a valid structured failure document. File-write
- * errors replace the original result because no requested report was delivered.
+ * errors replace the original result because no requested report was
+ * delivered.
  */
 async function writeReport(
   output: string | undefined,
@@ -533,7 +531,7 @@ async function writeReport(
   } catch (cause) {
     return failureResult(
       new Error(
-        `Could not write Evid report '${destination}': ${errorMessage(cause)}`,
+        `Could not write Evidence Graph report '${destination}': ${errorMessage(cause)}`,
       ),
       "Correct the output path or its permissions and run the command again.",
     );
@@ -543,9 +541,9 @@ async function writeReport(
 /**
  * Resolves and creates an initialization target for buffered command execution.
  *
- * Initializing is intentionally separate from analysis: it needs only its working
- * directory and configuration path, and reports existing-file conflicts as a
- * command result instead of loading an unrelated current configuration.
+ * Initializing is intentionally separate from analysis: it needs only its
+ * working directory and configuration path, and reports existing-file conflicts
+ * as a command result instead of loading an unrelated current configuration.
  */
 async function runInit(
   command: IEvidInitCommand,
@@ -583,16 +581,16 @@ function command(
     case "list":
       return token;
     default:
-      throw new EvidCommandError(`Unknown Evid command '${token}'.`);
+      throw new EvidCommandError(`Unknown evid command '${token}'.`);
   }
 }
 
 /**
  * Normalizes supported short and long option spellings to parser map keys.
  *
- * The normalized key lets the parser reject duplicate aliases and apply operation
- * rules once, while an undefined result preserves the user's original token in the
- * unknown-argument diagnostic.
+ * The normalized key lets the parser reject duplicate aliases and apply
+ * operation rules once, while an undefined result preserves the user's original
+ * token in the unknown-argument diagnostic.
  */
 function optionKey(token: string): string | undefined {
   switch (token) {
@@ -635,8 +633,9 @@ function optionAllowed(operation: string, option: string): boolean {
 /**
  * Adds a report destination only when the user supplied one.
  *
- * Omission remains distinct from an empty string, which parse has already rejected;
- * renderers then choose buffered stdout or stderr behavior from property presence.
+ * Omission remains distinct from an empty string, which parse has already
+ * rejected; renderers then choose buffered stdout or stderr behavior from
+ * property presence.
  */
 function optionalOutput(
   values: Map<string, string>,
@@ -648,8 +647,9 @@ function optionalOutput(
 /**
  * Validates the text-or-JSON format shared by report-producing commands.
  *
- * Text is the interactive default. Rejecting unknown values before loading keeps a
- * misspelled formatter from paying the cost of analysis or changing source state.
+ * Text is the interactive default. Rejecting unknown values before loading
+ * keeps a misspelled formatter from paying the cost of analysis or changing
+ * source state.
  */
 function reportFormat(value: string | undefined): EvidReportFormat {
   const format = value ?? "text";
@@ -664,7 +664,8 @@ function reportFormat(value: string | undefined): EvidReportFormat {
  * Validates the graph-specific output family and supplies its JSON default.
  *
  * Graph visualization formats are not general report formats, so this separate
- * gate keeps `mermaid` and `dot` unavailable to commands that cannot render them.
+ * gate keeps `mermaid` and `dot` unavailable to commands that cannot render
+ * them.
  */
 function graphFormat(value: string | undefined): EvidGraphFormat {
   const format = value ?? "json";
@@ -678,8 +679,8 @@ function graphFormat(value: string | undefined): EvidGraphFormat {
 /**
  * Reads the installed package version without loading project configuration.
  *
- * The manifest is shape-checked because executable packaging determines its path;
- * a broken installation becomes an actionable version-command failure.
+ * The manifest is shape-checked because executable packaging determines its
+ * path; a broken installation becomes an actionable version-command failure.
  */
 async function version(): Promise<string> {
   const manifest = typia.json.assertParse<IEvidPackageManifest>(
@@ -692,22 +693,24 @@ async function version(): Promise<string> {
  * Converts an unexpected command-boundary failure into the stable result shape.
  *
  * Exit code 2 distinguishes unavailable or invalid execution from a completed
- * Evid violation. Keeping this mapping centralized makes parse, manifest, and
- * I/O failures present the same repair-oriented terminal contract.
+ * Evidence Graph violation. Keeping this mapping centralized makes parse,
+ * manifest, and I/O failures present the same repair-oriented terminal
+ * contract.
  */
 function failureResult(cause: unknown, repair: string): IEvidCommandResult {
   return {
     exitCode: 2,
     stdout: "",
-    stderr: `Evid command failed: ${errorMessage(cause)}\nRepair: ${repair}\n`,
+    stderr: `evid command failed: ${errorMessage(cause)}\nRepair: ${repair}\n`,
   };
 }
 
 /**
- * Extracts a EvidNode-style error code without trusting arbitrary thrown values.
+ * Extracts a Node-style error code without trusting arbitrary thrown values.
  *
  * Filesystem APIs may throw non-Error values in embedding environments. The
- * initializer uses this narrow probe only to recognize exclusive-create conflicts.
+ * initializer uses this narrow probe only to recognize exclusive-create
+ * conflicts.
  */
 function errorCode(cause: unknown): string | undefined {
   if (!(cause instanceof Error) || !("code" in cause)) return undefined;
@@ -718,8 +721,8 @@ function errorCode(cause: unknown): string | undefined {
 /**
  * Produces a printable failure message while preserving native Error text.
  *
- * String conversion gives command rendering a deterministic fallback for rejected
- * promises that throw primitives or foreign error-like objects.
+ * String conversion gives command rendering a deterministic fallback for
+ * rejected promises that throw primitives or foreign error-like objects.
  */
 function errorMessage(cause: unknown): string {
   return cause instanceof Error ? cause.message : String(cause);
@@ -729,21 +732,22 @@ function errorMessage(cause: unknown): string {
  * Terminal reference returned before configuration loading for explicit help.
  *
  * Keep options, defaults, formats, and exit semantics aligned with `parse` and
- * command execution so the repair path remains trustworthy after syntax failure.
+ * command execution so the repair path remains trustworthy after syntax
+ * failure.
  */
 const HELP = dedent`
-  Usage: evidence [check] [options]
-         evidence list [options]
-         evidence inspect <target> [options]
-         evidence graph [options]
-         evidence languages [options]
-         evidence init [options]
-         evidence --help
-         evidence --version
+  Usage: evid [check] [options]
+         evid list [options]
+         evid inspect <target> [options]
+         evid graph [options]
+         evid languages [options]
+         evid init [options]
+         evid --help
+         evid --version
 
   Commands:
     check                 Evaluate every enabled claim and reference (default).
-    list                  List configured public Evid targets.
+    list                  List configured public Evidence Graph targets.
     inspect               Resolve and explain one target in every applicable scope.
     graph                 Export the configured graph as json, mermaid, or dot.
     languages             Report adapters shipped with this package.
@@ -754,8 +758,8 @@ const HELP = dedent`
         --cwd <path>      Resolve CLI paths from this directory.
         --format <value>  Select the command's output format.
     -o, --output <path>   Write command output to a file.
-        --language <type> Filter evidence list by artifact type.
-        --kind <symbol>   Filter evidence list by symbol kind.
+        --language <type> Filter the Evidence Graph list by artifact type.
+        --kind <symbol>   Filter the Evidence Graph list by symbol kind.
     -w, --watch           Recheck whenever an active dependency changes.
     -h, --help            Show this help without loading configuration.
     -v, --version         Show the package version without loading configuration.
@@ -767,7 +771,7 @@ const HELP = dedent`
 
   Exit codes:
     0  Complete analysis without error-severity findings.
-    1  Complete analysis with Evid violations or an unresolved inspection.
+    1  Complete analysis with Evidence Graph violations or an unresolved inspection.
     2  Invalid command/configuration or incomplete analysis.
 
   Watch stays active across cycle exit codes. Ctrl+C cleans up and exits 0.
@@ -794,7 +798,7 @@ const INITIAL_DATA: IEvidConfig = {
  * TypeScript source template preserving the same data as {@link INITIAL_DATA}.
  *
  * `satisfies IEvidConfig` gives authors editor validation while leaving the
- * starter object readable and directly editable after `evidence init`.
+ * starter object readable and directly editable after `evid init`.
  */
 const INITIAL_CONFIG = dedent`
   import type { IEvidConfig } from "evid";

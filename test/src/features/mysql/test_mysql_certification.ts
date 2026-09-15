@@ -2,9 +2,9 @@ import { EvidAccessor, EvidMysqlAdapter } from "evid";
 import type { EvidDatabaseSymbol } from "evid";
 import { dedent } from "@typia/utils";
 
-import { DatabaseAdapterCertification } from "../../internal/certification/DatabaseAdapterCertification";
-import type { IDatabaseAdapterCertification } from "../../internal/certification/IDatabaseAdapterCertification";
-import type { IDatabaseAdapterCertificationUnit } from "../../internal/certification/IDatabaseAdapterCertificationUnit";
+import { EvidDatabaseAdapterCertification } from "../../internal/certification/EvidDatabaseAdapterCertification";
+import type { IEvidDatabaseAdapterCertification } from "../../internal/certification/IEvidDatabaseAdapterCertification";
+import type { IEvidDatabaseAdapterCertificationUnit } from "../../internal/certification/IEvidDatabaseAdapterCertificationUnit";
 
 /** Applies the shared database certification contract to MySQL.
  *
@@ -16,7 +16,7 @@ import type { IDatabaseAdapterCertificationUnit } from "../../internal/certifica
  */
 export async function test_mysql_certification(): Promise<void> {
   const relation = 'foreign-key:["parent_id"]->["Parent"](["id"])';
-  const fixture: IDatabaseAdapterCertification = {
+  const fixture: IEvidDatabaseAdapterCertification = {
     type: "mysql",
     adapter: new EvidMysqlAdapter(),
     sources: [
@@ -26,11 +26,11 @@ export async function test_mysql_certification(): Promise<void> {
       /* 계약 😀 */
 
       CREATE TABLE Parent (id INT PRIMARY KEY);
-      /** @evid ./docs/requirements.md#model Verifies the child model. */
+      /** @evidence ./docs/requirements.md#model Verifies the child model. */
       CREATE TABLE Child (
-        /** @evid ./docs/requirements.md#column Verifies the parent identifier. */
+        /** @evidence ./docs/requirements.md#column Verifies the parent identifier. */
         parent_id INT,
-        /** @evid ./docs/requirements.md#relation Verifies the foreign key. */
+        /** @evidence ./docs/requirements.md#relation Verifies the foreign key. */
         FOREIGN KEY (parent_id) REFERENCES Parent (id)
       );
     `,
@@ -84,8 +84,8 @@ export async function test_mysql_certification(): Promise<void> {
       source: {
         file: "schema.sql",
         content: dedent`
-      /** @evid ./docs/requirements.md#attached Verifies the table. */
-      CREATE TABLE Source (value TEXT DEFAULT '@evid ./docs/requirements.md#inert Inert SQL string.');
+      /** @evidence ./docs/requirements.md#attached Verifies the table. */
+      CREATE TABLE Source (value TEXT DEFAULT '@evidence ./docs/requirements.md#inert Inert SQL string.');
     `,
       },
       attachedTarget: "./docs/requirements.md#attached",
@@ -100,14 +100,14 @@ export async function test_mysql_certification(): Promise<void> {
     },
   };
 
-  DatabaseAdapterCertification.assertInventory(
+  EvidDatabaseAdapterCertification.assertInventory(
     fixture,
-    await DatabaseAdapterCertification.analyze(fixture),
+    await EvidDatabaseAdapterCertification.analyze(fixture),
   );
-  await DatabaseAdapterCertification.assertGraph(fixture);
-  await DatabaseAdapterCertification.assertFailures(fixture);
-  await DatabaseAdapterCertification.assertFingerprint(fixture);
-  await DatabaseAdapterCertification.assertAmbiguity(fixture);
+  await EvidDatabaseAdapterCertification.assertGraph(fixture);
+  await EvidDatabaseAdapterCertification.assertFailures(fixture);
+  await EvidDatabaseAdapterCertification.assertFingerprint(fixture);
+  await EvidDatabaseAdapterCertification.assertAmbiguity(fixture);
 }
 
 /** Creates one MySQL unit expectation independently of parser output.
@@ -119,7 +119,7 @@ function unit(
   symbol: EvidDatabaseSymbol,
   identity: string[],
   parent?: string,
-): IDatabaseAdapterCertificationUnit {
+): IEvidDatabaseAdapterCertificationUnit {
   const accessor = EvidAccessor.format(identity);
   return {
     key: `${symbol}:${accessor}`,

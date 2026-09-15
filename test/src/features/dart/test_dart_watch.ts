@@ -3,7 +3,7 @@ import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /** Rebuilds Dart populations after source, discovery, syntax, and configuration changes.
  *
@@ -14,20 +14,20 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  * 3. Repair source and change configuration, requiring the corresponding recovered populations.
  */
 export async function test_dart_watch(): Promise<void> {
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "dart-watch",
     {
-      "evid.config.ts": dedent`
+      "evidence.config.ts": dedent`
       export default { claims: [{ type: "typescript", files: ["claims.ts"], reference: { type: "dart", files: ["contracts/*.dart"], symbol: "property" } }] };
     `,
       "claims.ts": dedent`
-      /** @evid ./contracts/Contract.dart#Contract Implements the contract. */
+      /** @evidence ./contracts/Contract.dart#Contract Implements the contract. */
       export function claim() {}
     `,
       "contracts/Contract.dart": "class Contract { final value = 1; }\n",
     },
     async (directory) => {
-      const file = join(directory, "evid.config.ts");
+      const file = join(directory, "evidence.config.ts");
       const watcher = new EvidWatcher(file, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
@@ -42,7 +42,7 @@ export async function test_dart_watch(): Promise<void> {
           );
           if (cycle.cycle === 1) {
             TestValidator.equals("initial Dart coverage", cycle.success, true);
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "contracts/Extra.dart": "final extra = 2;\n",
             });
           } else if (cycle.cycle === 2) {
@@ -51,7 +51,7 @@ export async function test_dart_watch(): Promise<void> {
               cycle.success,
               false,
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "contracts/Extra.dart": "class Broken {\n",
             });
           } else if (cycle.cycle === 3) {
@@ -60,7 +60,7 @@ export async function test_dart_watch(): Promise<void> {
               cycle.status,
               "incomplete",
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "contracts/Extra.dart": "final _extra = 2;\n",
             });
           } else if (cycle.cycle === 4) {
@@ -69,8 +69,8 @@ export async function test_dart_watch(): Promise<void> {
               cycle.success,
               true,
             );
-            await TestFileSystem.save(directory, {
-              "evid.config.ts": dedent`
+            await EvidTestFileSystem.save(directory, {
+              "evidence.config.ts": dedent`
             export default { claims: [{ type: "typescript", files: ["claims.ts"], reference: { type: "dart", files: ["contracts/*.dart"], symbol: "type" } }] };
           `,
             });

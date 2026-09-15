@@ -3,7 +3,7 @@ import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /** Rebuilds Swift coverage through watch changes.
  *
@@ -13,21 +13,21 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  * 2. Verify failure, incompleteness, and recovery transitions.
  */
 export async function test_swift_watch(): Promise<void> {
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "swift-watch",
     {
-      "evid.config.ts": dedent`
+      "evidence.config.ts": dedent`
       export default { claims: [{ type: "typescript", files: ["claims.ts"], reference: { type: "swift", files: ["contracts/*.swift"], symbol: "property" } }] };
     `,
       "claims.ts": dedent`
-      /** @evid ./contracts/Contract.swift#Contract Implements the contract. */
+      /** @evidence ./contracts/Contract.swift#Contract Implements the contract. */
       export function claim() {}
     `,
       "contracts/Contract.swift":
         "public struct Contract { public let value = 1 }\n",
     },
     async (directory) => {
-      const file = join(directory, "evid.config.ts");
+      const file = join(directory, "evidence.config.ts");
       const watcher = new EvidWatcher(file, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
@@ -42,7 +42,7 @@ export async function test_swift_watch(): Promise<void> {
           );
           if (cycle.cycle === 1) {
             TestValidator.equals("initial Swift coverage", cycle.success, true);
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "contracts/Extra.swift": "public let extra = 2\n",
             });
           } else if (cycle.cycle === 2) {
@@ -51,7 +51,7 @@ export async function test_swift_watch(): Promise<void> {
               cycle.success,
               false,
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "contracts/Extra.swift": "public struct Broken {\n",
             });
           } else if (cycle.cycle === 3) {
@@ -60,7 +60,7 @@ export async function test_swift_watch(): Promise<void> {
               cycle.status,
               "incomplete",
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "contracts/Extra.swift": "private let extra = 2\n",
             });
           } else if (cycle.cycle === 4) {
@@ -69,8 +69,8 @@ export async function test_swift_watch(): Promise<void> {
               cycle.success,
               true,
             );
-            await TestFileSystem.save(directory, {
-              "evid.config.ts": dedent`
+            await EvidTestFileSystem.save(directory, {
+              "evidence.config.ts": dedent`
             export default { claims: [{ type: "typescript", files: ["claims.ts"], reference: { type: "swift", files: ["contracts/*.swift"], symbol: "type" } }] };
           `,
             });

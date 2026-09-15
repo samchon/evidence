@@ -1,8 +1,8 @@
-﻿import { EvidChecker, EvidWatcher } from "evid";
+import { EvidChecker, EvidWatcher } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
  * Recomputes Scala export coverage when a source declaration changes visibility.
@@ -14,21 +14,21 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  * 3. Add an uncovered property, remove it, and verify the watcher returns to complete coverage after recovery.
  */
 export async function test_scala_export_watch(): Promise<void> {
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "scala-export-watch",
     {
-      "evid.config.ts": dedent`
+      "evidence.config.ts": dedent`
       export default { claims: [{ type: "typescript", files: ["claims.ts"], reference: { type: "scala", files: ["contracts/*.scala"], symbol: "property" } }] };
     `,
       "claims.ts": dedent`
-      /** @evid ./contracts/Forward.scala#["object Forward"].value Verifies the exported property. */
+      /** @evidence ./contracts/Forward.scala#["object Forward"].value Verifies the exported property. */
       export function claim() {}
     `,
       "contracts/Forward.scala": "object Forward { export Origin.value }",
       "contracts/Origin.scala": "object Origin { val value = 1 }",
     },
     async (directory) => {
-      const file = join(directory, "evid.config.ts");
+      const file = join(directory, "evidence.config.ts");
       const watcher = new EvidWatcher(file, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
@@ -47,7 +47,7 @@ export async function test_scala_export_watch(): Promise<void> {
               cycle.success,
               true,
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "contracts/Origin.scala":
                 "object Origin { private val value = 1 }",
             });
@@ -57,7 +57,7 @@ export async function test_scala_export_watch(): Promise<void> {
               cycle.status,
               "incomplete",
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "contracts/Origin.scala":
                 "object Origin { val value = 2; val extra = 1 }",
             });
@@ -67,7 +67,7 @@ export async function test_scala_export_watch(): Promise<void> {
               cycle.success,
               false,
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "contracts/Origin.scala": "object Origin { val value = 2 }",
             });
           } else {

@@ -3,7 +3,7 @@ import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
  * Rebuilds selected Scala populations across watcher cycles.
@@ -15,20 +15,20 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  * 3. Repair the source and change the configuration selector, verifying recovery and the final type-selection cycle.
  */
 export async function test_scala_watch(): Promise<void> {
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "scala-watch",
     {
-      "evid.config.ts": dedent`
+      "evidence.config.ts": dedent`
       export default { claims: [{ type: "typescript", files: ["claims.ts"], reference: { type: "scala", files: ["contracts/*.scala"], symbol: "property" } }] };
     `,
       "claims.ts": dedent`
-      /** @evid ./contracts/Contract.scala#Contract Implements the contract. */
+      /** @evidence ./contracts/Contract.scala#Contract Implements the contract. */
       export function claim() {}
     `,
       "contracts/Contract.scala": "class Contract { val value = 1; }\n",
     },
     async (directory) => {
-      const file = join(directory, "evid.config.ts");
+      const file = join(directory, "evidence.config.ts");
       const watcher = new EvidWatcher(file, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
@@ -43,7 +43,7 @@ export async function test_scala_watch(): Promise<void> {
           );
           if (cycle.cycle === 1) {
             TestValidator.equals("initial Scala coverage", cycle.success, true);
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "contracts/Extra.scala": "val extra = 2\n",
             });
           } else if (cycle.cycle === 2) {
@@ -52,7 +52,7 @@ export async function test_scala_watch(): Promise<void> {
               cycle.success,
               false,
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "contracts/Extra.scala": "class Broken {\n",
             });
           } else if (cycle.cycle === 3) {
@@ -61,7 +61,7 @@ export async function test_scala_watch(): Promise<void> {
               cycle.status,
               "incomplete",
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "contracts/Extra.scala": "private val extra = 2\n",
             });
           } else if (cycle.cycle === 4) {
@@ -70,8 +70,8 @@ export async function test_scala_watch(): Promise<void> {
               cycle.success,
               true,
             );
-            await TestFileSystem.save(directory, {
-              "evid.config.ts": dedent`
+            await EvidTestFileSystem.save(directory, {
+              "evidence.config.ts": dedent`
             export default { claims: [{ type: "typescript", files: ["claims.ts"], reference: { type: "scala", files: ["contracts/*.scala"], symbol: "type" } }] };
           `,
             });

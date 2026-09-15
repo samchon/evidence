@@ -1,7 +1,7 @@
 import type { IEvidCheckReport } from "./IEvidCheckReport";
 
 /**
- * Published watch cycle containing a fresh, stable Evid check report.
+ * Published watch cycle containing a fresh, stable Evidence Graph check report.
  *
  * The envelope identifies its place in the watch stream while mirroring the
  * report's completeness, success, and exit status. A stable incomplete analysis

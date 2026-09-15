@@ -2,7 +2,7 @@
  * Marks an explicit CommonJS package main that exhausted its runtime fallbacks.
  *
  * A missing default index permits CommonJS lookup to try the next
- * `node_modules` root. Once a manifest explicitly selects `main`, EvidNode instead
+ * `node_modules` root. Once a manifest explicitly selects `main`, Node instead
  * reports that package as broken after its own index fallback also fails.
  */
 export class EvidConfigPackageMainError extends Error {

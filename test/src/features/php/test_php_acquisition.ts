@@ -2,13 +2,13 @@ import {
   EvidLanguageRegistry,
   EvidParser,
   EvidPhpAdapter,
+  EvidTreeSitterAssets,
 } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTreeSitterAssets } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssets";
-import { TestFileSystem } from "../../internal/TestFileSystem";
-import { TestParserAssets } from "../../internal/TestParserAssets";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Acquires the selected PHP grammar and preserves warm analysis.
  *
@@ -21,8 +21,8 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_php_acquisition(): Promise<void> {
   const selected = EvidLanguageRegistry.select("php", "contract.php");
   const grammar = await new EvidTreeSitterAssets().grammar(selected.id);
-  const pinned = Uint8Array.from(await TestParserAssets.bytes(grammar));
-  await TestFileSystem.experiment("php-acquisition", {}, async (directory) => {
+  const pinned = Uint8Array.from(await EvidTestParserAssets.bytes(grammar));
+  await EvidTestFileSystem.experiment("php-acquisition", {}, async (directory) => {
     const requests: string[] = [];
     const cold = new EvidTreeSitterAssets({
       cacheDirectory: directory,
@@ -50,7 +50,7 @@ export async function test_php_acquisition(): Promise<void> {
     );
   });
 
-  const source = TestSourceSnapshot.create(
+  const source = EvidTestSourceSnapshot.create(
     "contract.php",
     "<?php class Contract { public int $value = 1; }",
   );

@@ -1,7 +1,7 @@
 import { EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestInventory } from "../../internal/TestInventory";
+import { EvidTestInventory } from "../../internal/EvidTestInventory";
 
 /**
  * Propagates withdrawal from a merged declaration to its descendants and hosts.
@@ -19,15 +19,15 @@ import { TestInventory } from "../../internal/TestInventory";
  *    inherited internal directive, preserving the cause instead of reporting missing.
  */
 export async function test_inventory_withdrawal(): Promise<void> {
-  const first = TestInventory.create();
-  TestInventory.unit(
+  const first = EvidTestInventory.create();
+  EvidTestInventory.unit(
     first,
     "box",
     ["Box"],
     "type",
     "export class Box { value = 1; }",
   );
-  TestInventory.unit(
+  EvidTestInventory.unit(
     first,
     "value",
     ["Box", "value"],
@@ -35,15 +35,15 @@ export async function test_inventory_withdrawal(): Promise<void> {
     "value = 1",
     "box",
   );
-  TestInventory.host(
+  EvidTestInventory.host(
     first,
     "box-doc",
     "box-site",
     ["box"],
     "/** Class documentation. */",
   );
-  const second = TestInventory.create();
-  const merged = TestInventory.unit(
+  const second = EvidTestInventory.create();
+  const merged = EvidTestInventory.unit(
     second,
     "box",
     ["Box"],
@@ -55,7 +55,7 @@ export async function test_inventory_withdrawal(): Promise<void> {
     tag: "internal",
     location: {
       file: "/project/source.ts",
-      range: TestInventory.range(second, "/** Class documentation. */"),
+      range: EvidTestInventory.range(second, "/** Class documentation. */"),
     },
   });
 

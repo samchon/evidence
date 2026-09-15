@@ -21,7 +21,7 @@ import type { IEvidConfigPlan } from "../structures/IEvidConfigPlan";
  *
  * @example
  * const plan: IEvidConfigPlan = await EvidConfigLoader.plan(
- *   "./config/evid.config.ts",
+ *   "./config/evidence.config.ts",
  * );
  * // Population roots are anchored to the resolved configuration file.
  */
@@ -36,7 +36,7 @@ export namespace EvidConfigLoader {
    * @param file Configuration path, relative to the current working directory.
    */
   export async function load(
-    file: string = "evid.config.ts",
+    file: string = "evidence.config.ts",
   ): Promise<IEvidConfig> {
     const filename = await resolveConfigFile(file);
     const config = await evaluateResolvedConfig(filename);
@@ -52,7 +52,7 @@ export namespace EvidConfigLoader {
    * entries retain their authored indices and configuration-relative roots.
    */
   export async function plan(
-    file: string = "evid.config.ts",
+    file: string = "evidence.config.ts",
   ): Promise<IEvidConfigPlan> {
     const filename = await resolveConfigFile(file);
     return createEvidConfigPlan(

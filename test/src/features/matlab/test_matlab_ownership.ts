@@ -2,7 +2,7 @@ import { EvidInventory, EvidMatlabAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Assigns external MATLAB methods to their selected package class.
  *
@@ -14,12 +14,12 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 4. Require missing class or implementation inputs to remain incomplete.
  */
 export async function test_matlab_ownership(): Promise<void> {
-  const cls = TestSourceSnapshot.create(
+  const cls = EvidTestSourceSnapshot.create(
     "src/+pkg/@Widget/Widget.m",
     dedent`
     classdef Widget
       methods
-        % @evid doc.md#prototype Documents the external method contract.
+        % @evidence doc.md#prototype Documents the external method contract.
         run(obj)
       end
       methods (Access=private)
@@ -28,20 +28,20 @@ export async function test_matlab_ownership(): Promise<void> {
     end
   `.concat("\n"),
   );
-  const run = TestSourceSnapshot.create(
+  const run = EvidTestSourceSnapshot.create(
     "src/+pkg/@Widget/run.m",
     "function run(obj)\n% Method help.\nend\n",
   );
-  const secret = TestSourceSnapshot.create(
+  const secret = EvidTestSourceSnapshot.create(
     "src/+pkg/@Widget/secret.m",
     "function secret(obj)\nend\n",
   );
-  const additional = TestSourceSnapshot.create(
+  const additional = EvidTestSourceSnapshot.create(
     "src/+pkg/@Widget/extra.m",
     "function extra(obj)\nend\n",
   );
   const inventory = await new EvidMatlabAdapter().analyze(
-    TestSourceSnapshot.combine([cls, run, secret, additional]),
+    EvidTestSourceSnapshot.combine([cls, run, secret, additional]),
   );
 
   TestValidator.equals(
@@ -116,7 +116,7 @@ export async function test_matlab_ownership(): Promise<void> {
     ),
   );
   const reversed = await new EvidMatlabAdapter().analyze(
-    TestSourceSnapshot.combine([additional, secret, run, cls]),
+    EvidTestSourceSnapshot.combine([additional, secret, run, cls]),
   );
   TestValidator.equals(
     "snapshot order does not alter ownership",

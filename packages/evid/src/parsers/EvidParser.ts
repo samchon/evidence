@@ -15,12 +15,13 @@ import type { IEvidParserOptions } from "../structures/IEvidParserOptions";
 import type { IEvidParserState } from "../structures/IEvidParserState";
 
 /**
- * Owns bounded Tree-sitter parse sessions with lazy, verified grammar acquisition.
+ * Owns bounded Tree-sitter parse sessions with lazy, verified grammar
+ * acquisition.
  *
- * Create a parser for a group of source extractions, call `parse` for each file,
- * then await `close`. Grammar selection uses the configured artifact and filename;
- * acquisition starts only when that grammar is needed. Construction and metadata
- * inspection do not initialize a language or parse source.
+ * Create a parser for a group of source extractions, call `parse` for each
+ * file, then await `close`. Grammar selection uses the configured artifact and
+ * filename; acquisition starts only when that grammar is needed. Construction
+ * and metadata inspection do not initialize a language or parse source.
  *
  * Each request owns a native parser and tree. Its callback receives a borrowed
  * session only after syntax completeness is established, and must return data
@@ -28,21 +29,25 @@ import type { IEvidParserState } from "../structures/IEvidParserState";
  * during asynchronous callback work, so a callback must not await another parse
  * or close on the same pool: that work can wait for the callback's own slot.
  *
- * Cleanup runs for successful extraction and every failure path. Closing rejects
- * new requests and waits for accepted callbacks; immutable process-wide grammar
- * data can remain cached for later runtimes.
+ * Cleanup runs for successful extraction and every failure path. Closing
+ * rejects new requests and waits for accepted callbacks; immutable process-wide
+ * grammar data can remain cached for later runtimes.
  *
  * @example
- * const parser: EvidParser = new EvidParser({ concurrency: 2 });
- * try {
- *   const range: IEvidSourceRange = await parser.parse(
- *     { type: "typescript", file: "api.ts", content: "export const value = 1;" },
- *     (session: EvidParseSession): IEvidSourceRange =>
- *       session.range(session.root),
- *   );
- * } finally {
- *   await parser.close();
- * }
+ *   const parser: EvidParser = new EvidParser({ concurrency: 2 });
+ *   try {
+ *     const range: IEvidSourceRange = await parser.parse(
+ *       {
+ *         type: "typescript",
+ *         file: "api.ts",
+ *         content: "export const value = 1;",
+ *       },
+ *       (session: EvidParseSession): IEvidSourceRange =>
+ *         session.range(session.root),
+ *     );
+ *   } finally {
+ *     await parser.close();
+ *   }
  */
 export class EvidParser {
   /**
@@ -56,8 +61,9 @@ export class EvidParser {
   /**
    * Admission queue and lifecycle boundary for parse callbacks.
    *
-   * A slot covers acquisition, parsing, and the callback's asynchronous lifetime.
-   * Closing this queue prevents new work before native resources are discarded.
+   * A slot covers acquisition, parsing, and the callback's asynchronous
+   * lifetime. Closing this queue prevents new work before native resources are
+   * discarded.
    */
   private readonly slots: EvidParserSlots;
 
@@ -80,8 +86,9 @@ export class EvidParser {
   /**
    * Creates a lazy parser pool with a bounded callback count.
    *
-   * The default permits four active requests. Options are validated immediately,
-   * but grammar acquisition and native parser allocation wait for `parse`.
+   * The default permits four active requests. Options are validated
+   * immediately, but grammar acquisition and native parser allocation wait for
+   * `parse`.
    */
   public constructor(options: IEvidParserOptions = {}) {
     this.slots = new EvidParserSlots(typia.assert(options).concurrency ?? 4);
@@ -101,8 +108,9 @@ export class EvidParser {
   /**
    * Reports admission state and successfully loaded grammar IDs.
    *
-   * Reading state does not acquire assets or wait for pending parses. The returned
-   * counts describe this pool; the language list records its successful loads.
+   * Reading state does not acquire assets or wait for pending parses. The
+   * returned counts describe this pool; the language list records its
+   * successful loads.
    */
   public state(): IEvidParserState {
     return {
@@ -116,7 +124,8 @@ export class EvidParser {
   }
 
   /**
-   * Extracts data from a complete syntax tree within a borrowed callback session.
+   * Extracts data from a complete syntax tree within a borrowed callback
+   * session.
    *
    * Syntax errors, missing nodes, and incompatible grammars reject before the
    * callback can treat a partial tree as a complete declaration inventory.
@@ -124,7 +133,8 @@ export class EvidParser {
    *
    * Callbacks may await work, but must not await another parse or close on this
    * same pool. Copy names, ranges, and relationships into serializable values;
-   * returning a node, tree, or session would retain already released resources.
+   * returning a node, tree, or session would retain already released
+   * resources.
    */
   public async parse<T>(
     input: IEvidParserInput,
@@ -234,8 +244,8 @@ export class EvidParser {
    *
    * Sharing the pending promise prevents concurrent parses from downloading and
    * initializing the same language repeatedly. A failed promise is removed only
-   * when it is still current, allowing a later request to retry without deleting
-   * a newer load that has replaced it.
+   * when it is still current, allowing a later request to retry without
+   * deleting a newer load that has replaced it.
    */
   private async language(id: string): Promise<Language> {
     let pending = this.languages.get(id);

@@ -10,8 +10,8 @@ import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Distinguishes every unresolved target state.
  *
@@ -30,14 +30,14 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_target_failures(): Promise<void> {
   const location = join(__dirname, "failures-" + randomUUID());
 
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     { "src/outside.ts": "export const value = 1;" },
     async (directory) => {
       const root = directory.replaceAll("\\", "/");
       const host = createHost(root + "/docs/review.md");
       const selected = await new EvidTypeScriptAdapter().analyze(
-        TestSourceSnapshot.create(
+        EvidTestSourceSnapshot.create(
           "src/selected.ts",
           "export const value = 1;",
           undefined,
@@ -115,7 +115,7 @@ export async function test_target_failures(): Promise<void> {
 
   // Withdrawn declarations retain their identity and withdrawal cause.
   const hiddenInventory = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/hidden.ts",
       "/** @internal */\nexport function hidden(): void {}",
     ),
@@ -136,10 +136,10 @@ export async function test_target_failures(): Promise<void> {
 
   // Competing star exports remain ambiguous instead of choosing scan order.
   const ambiguousInventory = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create("src/a.ts", "export const value = 1;"),
-      TestSourceSnapshot.create("src/b.ts", "export const value = 2;"),
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create("src/a.ts", "export const value = 1;"),
+      EvidTestSourceSnapshot.create("src/b.ts", "export const value = 2;"),
+      EvidTestSourceSnapshot.create(
         "src/index.ts",
         'export * from "./a"; export * from "./b";',
       ),
@@ -157,9 +157,9 @@ export async function test_target_failures(): Promise<void> {
 
   // Any export-analysis failure prevents an otherwise valid address from covering.
   const incompleteInventory = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create("src/value.ts", "export const value = 1;"),
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create("src/value.ts", "export const value = 1;"),
+      EvidTestSourceSnapshot.create(
         "src/index.ts",
         'export { value, missing } from "./value";',
       ),

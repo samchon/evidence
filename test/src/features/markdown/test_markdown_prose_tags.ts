@@ -3,7 +3,7 @@ import type { IEvidDiagnostic } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Reports annotation-looking lines rendered as prose while preserving HTML annotations.
@@ -20,25 +20,25 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_markdown_prose_tags(): Promise<void> {
   const content = dedent`
     # Guide
-    @evid docs/spec.md#plain Rendered prose.
-    - @evidExclude docs/spec.md#bullet Rendered list prose.
-    > @evidReview docs/spec.md#quote Rendered quote prose.
+    @evidence docs/spec.md#plain Rendered prose.
+    - @evidenceExclude docs/spec.md#bullet Rendered list prose.
+    > @evidenceReview docs/spec.md#quote Rendered quote prose.
     1. @link ../source.ts#run Rendered numbered prose.
-    This sentence mentions @evid without starting an annotation.
-        @evid docs/fake.md#indent This is indented code.
+    This sentence mentions @evidence without starting an annotation.
+        @evidence docs/fake.md#indent This is indented code.
     ~~~markdown
-    @evid docs/fake.md#fence This is fenced code.
+    @evidence docs/fake.md#fence This is fenced code.
     ~~~
     <pre>
-    @evid docs/fake.md#pre This is rendered code.
+    @evidence docs/fake.md#pre This is rendered code.
     </pre>
     const example={\`
-    @evid docs/fake.md#mdx This is rendered code.
+    @evidence docs/fake.md#mdx This is rendered code.
     \`}
-    <!-- @evid docs/spec.md#real Supplies real evidence. -->
+    <!-- @evidence docs/spec.md#real Supplies real evidence. -->
   `;
   const inventory = await new EvidMarkdownAdapter().analyze(
-    TestSourceSnapshot.create("guide.md", content),
+    EvidTestSourceSnapshot.create("guide.md", content),
   );
 
   TestValidator.equals(

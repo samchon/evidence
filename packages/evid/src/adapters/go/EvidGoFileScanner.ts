@@ -1,6 +1,6 @@
 import path from "node:path";
 
-import type { EvidNode } from "web-tree-sitter";
+import type { Node as EvidNode } from "web-tree-sitter";
 
 import type { EvidParseSession } from "../../parsers/EvidParseSession";
 import type { IEvidCommentSyntax } from "../../structures/IEvidCommentSyntax";

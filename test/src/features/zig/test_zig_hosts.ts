@@ -6,7 +6,7 @@ import {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Attaches Zig documentation with exact coordinates and withdrawal semantics.
  *
@@ -19,27 +19,27 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_zig_hosts(): Promise<void> {
   const source = dedent`
     /// 계약 🔎
-    /// @evid docs/spec.md#contract Implements the contract.
+    /// @evidence docs/spec.md#contract Implements the contract.
     pub const Contract = struct {
       /// @internal Withdraws the nested type.
       pub const Retired = struct { pub const child = 1; };
-      /// @evid docs/spec.md#value Implements the value.
+      /// @evidence docs/spec.md#value Implements the value.
       pub const @"value.part" = 1;
     };
     /// Examples:
     /// ~~~zig
-    /// @evid docs/spec.md#example Inert example.
+    /// @evidence docs/spec.md#example Inert example.
     /// ~~~
     ///
-    ///     @evid docs/spec.md#indented Inert indented example.
+    ///     @evidence docs/spec.md#indented Inert indented example.
     /// <pre>
-    /// @evid docs/spec.md#html Inert HTML example.
+    /// @evidence docs/spec.md#html Inert HTML example.
     /// </pre>
     pub fn sample() i32 { return 1; }
   `.replaceAll("\n", "\r\n");
   const adapter = new EvidZigAdapter();
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.create("src/Contract.zig", source),
+    EvidTestSourceSnapshot.create("src/Contract.zig", source),
   );
 
   TestValidator.equals(
@@ -58,7 +58,7 @@ export async function test_zig_hosts(): Promise<void> {
   TestValidator.equals(
     "UTF-16 offset after astral text",
     declaration.location.range.start.offset,
-    source.indexOf("@evid"),
+    source.indexOf("@evidence"),
   );
   TestValidator.equals(
     "CRLF source line",
@@ -103,7 +103,7 @@ export async function test_zig_hosts(): Promise<void> {
   const contract = inventory.units.find((unit) => unit.name === "Contract");
   if (contract === undefined) throw new Error("Missing contract unit.");
   const rewritten = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Contract.zig",
       source.replace(
         "Implements the value.",
@@ -117,7 +117,7 @@ export async function test_zig_hosts(): Promise<void> {
     EvidFingerprint.inspect(rewritten, contract.id).fingerprint,
   );
   const changed = await adapter.analyze(
-    TestSourceSnapshot.create("src/Contract.zig", source.replace("= 1", "= 2")),
+    EvidTestSourceSnapshot.create("src/Contract.zig", source.replace("= 1", "= 2")),
   );
   TestValidator.notEquals(
     "semantic subtree edit changes fingerprint",
@@ -134,7 +134,7 @@ export async function test_zig_hosts(): Promise<void> {
     "link",
   ]) {
     const unsupported = await adapter.analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/Unsupported.zig",
         `// @${tag} docs/spec.md#contract Unsupported carrier.\npub fn run() i32 { return 1; }\n`,
       ),
@@ -156,12 +156,12 @@ export async function test_zig_hosts(): Promise<void> {
     );
   }
   for (const content of [
-    "//! @evid docs/spec.md#contract Container documentation has no declaration host.\npub const value = 1;",
-    "/// @evid docs/spec.md#contract Private declaration is not a public carrier.\nconst value = 1;",
-    "pub fn run() void {\n/// @evid docs/spec.md#contract Function-body documentation is not public.\nconst local = 1;\n}",
+    "//! @evidence docs/spec.md#contract Container documentation has no declaration host.\npub const value = 1;",
+    "/// @evidence docs/spec.md#contract Private declaration is not a public carrier.\nconst value = 1;",
+    "pub fn run() void {\n/// @evidence docs/spec.md#contract Function-body documentation is not public.\nconst local = 1;\n}",
   ]) {
     const unsupported = await adapter.analyze(
-      TestSourceSnapshot.create("src/Unsupported.zig", content),
+      EvidTestSourceSnapshot.create("src/Unsupported.zig", content),
     );
     TestValidator.equals(
       "nonpublic documentation never acknowledges",

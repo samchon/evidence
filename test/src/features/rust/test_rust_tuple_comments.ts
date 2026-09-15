@@ -5,7 +5,7 @@ import {
 } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Preserves Rust tuple-field identity across interleaved comments.
  *
@@ -22,20 +22,20 @@ export async function test_rust_tuple_comments(): Promise<void> {
   const content = dedent`
     pub struct Sale(
       // An ordinary comment is not a field.
-      /// @evid docs/spec.md#first Documents the first field.
-      /// @evidReview docs/spec.md#first #abcdef0 Reviewed the first field.
+      /// @evidence docs/spec.md#first Documents the first field.
+      /// @evidenceReview docs/spec.md#first #abcdef0 Reviewed the first field.
       #[deprecated]
       /* Whitespace between attributes and visibility. */
       pub /* Whitespace between visibility and type. */ i32,
       // Private fields still occupy their actual numeric position.
       i16,
-      /** @evid docs/spec.md#last Documents the last field. */
+      /** @evidence docs/spec.md#last Documents the last field. */
       pub i64,
     );
   `;
   const adapter = new EvidRustAdapter();
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.create("src/lib.rs", content),
+    EvidTestSourceSnapshot.create("src/lib.rs", content),
   );
   const units = new Map(
     inventory.units.map((unit) => [unit.id, unit.identity.join(".")]),
@@ -90,7 +90,7 @@ export async function test_rust_tuple_comments(): Promise<void> {
     );
 
   const edited = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/lib.rs",
       content.replace(
         "Reviewed the first field.",
@@ -99,7 +99,7 @@ export async function test_rust_tuple_comments(): Promise<void> {
     ),
   );
   const changed = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/lib.rs",
       content.replace("*/ i32", "*/ u32"),
     ),

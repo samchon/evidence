@@ -1,7 +1,7 @@
 import { EvidGraph, EvidPrismaAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Keeps rejected and unreadable Prisma schemas incomplete until repair.
  *
@@ -14,7 +14,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_prisma_failures(): Promise<void> {
   const adapter = new EvidPrismaAdapter();
   const broken = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "prisma/schema.prisma",
       "model Sale {\n  id String @id\n",
     ),
@@ -57,7 +57,7 @@ export async function test_prisma_failures(): Promise<void> {
 
   // Repairing the same schema produces a complete parser inventory on the next run.
   const repaired = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "prisma/schema.prisma",
       "model Sale {\n  id String @id\n}\n",
     ),
@@ -70,8 +70,8 @@ export async function test_prisma_failures(): Promise<void> {
   );
 
   const unreadable = await adapter.analyze(
-    TestSourceSnapshot.fail(
-      TestSourceSnapshot.create("prisma/available.prisma", ""),
+    EvidTestSourceSnapshot.fail(
+      EvidTestSourceSnapshot.create("prisma/available.prisma", ""),
       {
         code: "path-unreadable",
         path: "/project/prisma/missing.prisma",

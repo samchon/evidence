@@ -1,10 +1,9 @@
-import { EvidMysqlAdapter, EvidParser } from "evid";
+import { EvidMysqlAdapter, EvidParser, EvidTreeSitterAssetScope } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTreeSitterAssetScope } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssetScope";
-import { TestFileSystem } from "../../internal/TestFileSystem";
-import { TestParserAssets } from "../../internal/TestParserAssets";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Acquires the selected MySQL grammar and reuses it offline.
  *
@@ -22,14 +21,14 @@ export async function test_mysql_parser(): Promise<void> {
   await parser.close();
   if (grammar === undefined) throw new Error("Missing pinned MySQL grammar.");
   const downloadUrl = grammar.wasm.url;
-  const bytes = await TestParserAssets.bytes(grammar);
+  const bytes = await EvidTestParserAssets.bytes(grammar);
   const downloads: string[] = [];
-  const snapshot = TestSourceSnapshot.create(
+  const snapshot = EvidTestSourceSnapshot.create(
     "schema.sql",
     "CREATE TABLE Contract (`value.part` INT);",
   );
 
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "mysql-parser-cache",
     {},
     async (directory) => {

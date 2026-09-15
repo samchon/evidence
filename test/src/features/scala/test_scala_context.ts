@@ -1,11 +1,11 @@
-﻿import {
+import {
   EvidFingerprint,
   EvidInventory,
   EvidScalaAdapter,
 } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Preserves Scala extension context while applying lexical export withdrawal.
@@ -19,7 +19,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_scala_context(): Promise<void> {
   const adapter = new EvidScalaAdapter();
   const source = dedent`
-    /** @evid docs/spec.md#extension Supports both extensions. */
+    /** @evidence docs/spec.md#extension Supports both extensions. */
     extension (value: Int) {
       def first = 1
       def second = 2
@@ -29,7 +29,7 @@ export async function test_scala_context(): Promise<void> {
     object Forward { export Source.value }
   `;
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.create("src/Context.scala", source),
+    EvidTestSourceSnapshot.create("src/Context.scala", source),
   );
   TestValidator.equals(
     "extension and lexical withdrawals complete",
@@ -48,7 +48,7 @@ export async function test_scala_context(): Promise<void> {
     first.id,
   ).fingerprint;
   const sibling = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Context.scala",
       source.replace("second = 2", "second = 3"),
     ),
@@ -59,7 +59,7 @@ export async function test_scala_context(): Promise<void> {
     fingerprint,
   );
   const receiver = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Context.scala",
       source.replace("value: Int", "value: String"),
     ),

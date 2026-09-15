@@ -3,7 +3,7 @@ import type { IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Resolves JavaScript aliases, defaults, imports, star exports, shadowing, and cycles.
  *
@@ -16,8 +16,8 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_javascript_exports(): Promise<void> {
   const adapter = new EvidJavaScriptAdapter();
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/dep.mjs",
         dedent`
           export class Service { run() {} }
@@ -25,12 +25,12 @@ export async function test_javascript_exports(): Promise<void> {
           export const value = 1;
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/default.mjs",
         "export default class DefaultService { value = 1; }",
       ),
-      TestSourceSnapshot.create("src/star.mjs", "export const starred = true;"),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create("src/star.mjs", "export const starred = true;"),
+      EvidTestSourceSnapshot.create(
         "src/index.mjs",
         dedent`
           export { Service as Renamed, execute as run } from "./dep.mjs";
@@ -85,15 +85,15 @@ export async function test_javascript_exports(): Promise<void> {
 
   // A barrel cycle terminates after retaining declarations reached before re-entry.
   const cycle = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/a.mjs",
         dedent`
           export const a = 1;
           export * as B from "./b.mjs";
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/b.mjs",
         dedent`
           export const b = 1;

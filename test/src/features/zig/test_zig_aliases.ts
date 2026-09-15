@@ -5,7 +5,7 @@ import {
 } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Preserves Zig aliases, withdrawals, and copied-value independence.
  *
@@ -16,9 +16,9 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_zig_aliases(): Promise<void> {
   const content = dedent`
-    /// @evid docs/spec.md#run Implements the function.
+    /// @evidence docs/spec.md#run Implements the function.
     fn local() i32 { return 1; }
-    /// @evid docs/spec.md#run Exposes the function.
+    /// @evidence docs/spec.md#run Exposes the function.
     pub const run = local;
     pub const renamed = run;
     const scalar = 1;
@@ -27,7 +27,7 @@ export async function test_zig_aliases(): Promise<void> {
   `;
   const adapter = new EvidZigAdapter();
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.create("src/Aliases.zig", content),
+    EvidTestSourceSnapshot.create("src/Aliases.zig", content),
   );
 
   TestValidator.equals("complete alias graph", inventory.diagnostics, []);
@@ -60,13 +60,13 @@ export async function test_zig_aliases(): Promise<void> {
     ["renamed", "run"],
   );
   const annotation = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Aliases.zig",
       content.replace("Exposes the function.", "Explains its public name."),
     ),
   );
   const semantic = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Aliases.zig",
       content.replace("return 1", "return 2"),
     ),
@@ -83,15 +83,15 @@ export async function test_zig_aliases(): Promise<void> {
   );
 
   const withdrawn = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Aliases.zig",
       content
         .replace(
-          "/// @evid docs/spec.md#run Implements the function.\n",
+          "/// @evidence docs/spec.md#run Implements the function.\n",
           "",
         )
         .replace(
-          "/// @evid docs/spec.md#run Exposes the function.",
+          "/// @evidence docs/spec.md#run Exposes the function.",
           "/// @internal Withdraws all public aliases.",
         ),
     ),

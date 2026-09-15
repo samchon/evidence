@@ -4,8 +4,8 @@ import type { IEvidConfig } from "evid";
 import assert from "node:assert/strict";
 import { join } from "node:path";
 
-import { EvidConfigDependencyScanner } from "../../../../packages/evidence/src/internal/EvidConfigDependencyScanner";
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidConfigDependencyScanner } from "evid";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
  * Preserves JSON configuration semantics through loading, dependency scanning, and initialization.
@@ -33,11 +33,11 @@ export async function test_config_json(): Promise<void> {
       },
     ],
   };
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "json-config",
     {
       "evid.json": JSON.stringify(config),
-      "evid.config.ts": `export default ${JSON.stringify(config)};`,
+      "evidence.config.ts": `export default ${JSON.stringify(config)};`,
       "evidence.yaml": JSON.stringify(config),
       "evidence.yml": JSON.stringify(config),
       "broken.json": "{",
@@ -46,7 +46,7 @@ export async function test_config_json(): Promise<void> {
       const json = join(directory, "evid.json");
       const fromJson = await EvidConfigLoader.plan(json);
       const fromTs = await EvidConfigLoader.plan(
-        join(directory, "evid.config.ts"),
+        join(directory, "evidence.config.ts"),
       );
       TestValidator.equals(
         "equivalent active claims",

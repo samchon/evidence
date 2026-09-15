@@ -2,7 +2,7 @@ import { EvidJavaScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Rejects JavaScript export surfaces that static analysis cannot prove complete.
  *
@@ -115,7 +115,7 @@ export async function test_javascript_failures(): Promise<void> {
   );
 
   const mixed = await adapter.analyze(
-    TestSourceSnapshot.create("src/mixed.cjs", "export const value = 1;"),
+    EvidTestSourceSnapshot.create("src/mixed.cjs", "export const value = 1;"),
   );
   TestValidator.predicate(
     "ESM syntax in CommonJS",
@@ -125,7 +125,7 @@ export async function test_javascript_failures(): Promise<void> {
   );
 
   const malformed = await adapter.analyze(
-    TestSourceSnapshot.create("src/broken.mjs", "export class Broken {"),
+    EvidTestSourceSnapshot.create("src/broken.mjs", "export class Broken {"),
   );
   TestValidator.predicate(
     "malformed JavaScript",
@@ -135,7 +135,7 @@ export async function test_javascript_failures(): Promise<void> {
   );
 
   const missing = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/missing.mjs",
       'export { Contract } from "./absent.mjs";',
     ),
@@ -149,7 +149,7 @@ export async function test_javascript_failures(): Promise<void> {
 
   // Dynamic expressions inside a function do not alter the initialization surface.
   const localComputation = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/local.cjs",
       dedent`
         function run(key) {
@@ -173,7 +173,7 @@ async function verify(
   content: string,
 ): Promise<void> {
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.create("src/failure.cjs", content),
+    EvidTestSourceSnapshot.create("src/failure.cjs", content),
   );
 
   TestValidator.equals(`${label} is incomplete`, inventory.complete, false);

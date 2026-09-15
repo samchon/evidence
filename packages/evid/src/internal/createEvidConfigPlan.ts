@@ -24,7 +24,7 @@ export function createEvidConfigPlan(
   config: IEvidConfig,
   configFile?: string,
 ): IEvidConfigPlan {
-  const filename = configFile ?? resolve("evid.config.ts");
+  const filename = configFile ?? resolve("evidence.config.ts");
   validateEvidConfig(config, filename);
   const rootSeverity = config.severity ?? "error";
   const claims: IEvidConfigPlanClaim[] = [];
@@ -60,29 +60,38 @@ export function createEvidConfigPlan(
   return { configFile: filename, claims };
 }
 
-/** Narrows a retained severity and defends the invariant established by plan filtering.
+/**
+ * Narrows a retained severity and defends the invariant established by plan
+ * filtering.
  *
- * Plan construction has already removed unsupported values, so this helper documents and enforces the remaining configuration contract.
+ * Plan construction has already removed unsupported values, so this helper
+ * documents and enforces the remaining configuration contract.
  */
 function active(severity: EvidSeverity): EvidActiveSeverity {
   if (severity === "off")
     throw new Error(
-      "An inactive severity cannot enter the Evid config plan.",
+      "An inactive severity cannot enter the Evidence Graph config plan.",
     );
   return severity;
 }
 
-/** Normalizes singular and plural reference syntax without changing reference order.
+/**
+ * Normalizes singular and plural reference syntax without changing reference
+ * order.
  *
- * Later plan consumers preserve that order when resolving target applicability and reporting configuration results.
+ * Later plan consumers preserve that order when resolving target applicability
+ * and reporting configuration results.
  */
 function referenceList(claim: IEvidClaim): IEvidReference[] {
   return Array.isArray(claim.reference) ? claim.reference : [claim.reference];
 }
 
-/** Applies artifact defaults only when configuration did not explicitly select symbols.
+/**
+ * Applies artifact defaults only when configuration did not explicitly select
+ * symbols.
  *
- * An explicit empty or narrowed symbol selection is never replaced by the artifact's broad default population.
+ * An explicit empty or narrowed symbol selection is never replaced by the
+ * artifact's broad default population.
  */
 function symbols(
   population: IEvidClaim | IEvidReference,

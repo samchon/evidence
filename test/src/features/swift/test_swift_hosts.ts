@@ -6,7 +6,7 @@ import {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Attaches Swift DocC with exact coordinates and withdrawal behavior.
  *
@@ -18,27 +18,27 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_swift_hosts(): Promise<void> {
   const source = dedent`
     /// 계약 😀
-    /// @evid docs/spec.md#contract Implements the contract.
+    /// @evidence docs/spec.md#contract Implements the contract.
     @available(*, deprecated)
     public struct Contract {
       /** @internal Withdraws the nested type. */
       public struct Retired { public let child = 1 }
-      /// @evid docs/spec.md#value Implements the value.
+      /// @evidence docs/spec.md#value Implements the value.
       public let 값 = 1
     }
     /**
      * Examples:
      * ~~~swift
-     * @evid docs/spec.md#example Inert fenced example.
+     * @evidence docs/spec.md#example Inert fenced example.
      * ~~~
      *
-     *     @evid docs/spec.md#indented Inert indented example.
+     *     @evidence docs/spec.md#indented Inert indented example.
      */
     public func sample() {}
   `.replaceAll("\n", "\r\n");
   const adapter = new EvidSwiftAdapter();
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.create("src/Contract.swift", source),
+    EvidTestSourceSnapshot.create("src/Contract.swift", source),
   );
 
   TestValidator.equals(
@@ -51,7 +51,7 @@ export async function test_swift_hosts(): Promise<void> {
   TestValidator.equals(
     "original UTF-16 offset after astral text",
     declaration?.location?.range?.start?.offset,
-    source.indexOf("@evid"),
+    source.indexOf("@evidence"),
   );
   TestValidator.equals(
     "original CRLF line",
@@ -78,7 +78,7 @@ export async function test_swift_hosts(): Promise<void> {
     "hidden",
   );
   const rewritten = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Contract.swift",
       source.replace(
         "Implements the value.",
@@ -92,7 +92,7 @@ export async function test_swift_hosts(): Promise<void> {
     EvidFingerprint.inspect(rewritten, contract.id).fingerprint,
   );
   const changed = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Contract.swift",
       source.replace("let 값 = 1", "let 값 = 2"),
     ),
@@ -105,12 +105,12 @@ export async function test_swift_hosts(): Promise<void> {
 
   // A string that resembles an annotation remains semantic implementation content.
   const literalSource =
-    'public func literal() -> String { "@evid docs/spec.md#value Literal content." }';
+    'public func literal() -> String { "@evidence docs/spec.md#value Literal content." }';
   const literal = await adapter.analyze(
-    TestSourceSnapshot.create("src/Literal.swift", literalSource),
+    EvidTestSourceSnapshot.create("src/Literal.swift", literalSource),
   );
   const literalChanged = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Literal.swift",
       literalSource.replace("Literal content.", "Changed content."),
     ),
@@ -131,7 +131,7 @@ export async function test_swift_hosts(): Promise<void> {
     "link",
   ]) {
     const unsupported = await adapter.analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/Unsupported.swift",
         `// @${tag} docs/spec.md#contract Unsupported carrier.\npublic func run() {}\n`,
       ),

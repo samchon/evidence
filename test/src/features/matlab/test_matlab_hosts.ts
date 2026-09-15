@@ -2,7 +2,7 @@ import { EvidFingerprint, EvidMatlabAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Attaches MATLAB help annotations only at supported declaration sites.
  *
@@ -14,42 +14,42 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_matlab_hosts(): Promise<void> {
   const content = dedent`
-    % @evid doc.md#unattached Unattached file header.
+    % @evidence doc.md#unattached Unattached file header.
     classdef Contract
       % Unicode 한글 😀 help.
-      % @evid doc.md#type Type documentation.
+      % @evidence doc.md#type Type documentation.
       properties
         %{
-        @evid doc.md#precedingBlock Ordinary block does not absorb help.
+        @evidence doc.md#precedingBlock Ordinary block does not absorb help.
         %}
-        % @evid doc.md#property Preferred preceding help.
-        value = 1 % @evid doc.md#ignored Inline loses precedence.
+        % @evidence doc.md#property Preferred preceding help.
+        value = 1 % @evidence doc.md#ignored Inline loses precedence.
         %{
-        @evid doc.md#inlineBlock Ordinary block does not override inline help.
+        @evidence doc.md#inlineBlock Ordinary block does not override inline help.
         %}
-        inline % @evid doc.md#inline Inline documentation.
+        inline % @evidence doc.md#inline Inline documentation.
         % @internal Withdraw this property.
         legacy
-        % @evid doc.md#next Next property help.
+        % @evidence doc.md#next Next property help.
         next
       end
       methods
         function result = run(obj)
-          % @evid doc.md#function Function documentation.
+          % @evidence doc.md#function Function documentation.
           % <pre>
-          % @evid doc.md#html HTML code is inert.
+          % @evidence doc.md#html HTML code is inert.
           % </pre>
           % ${"```"}matlab
-          % @evid doc.md#fenced Fenced code is inert.
+          % @evidence doc.md#fenced Fenced code is inert.
           % ${"```"}
           % Example:
-          %     @evid doc.md#example Example is inert.
-          result = "@evid doc.md#string Strings are inert.";
-          % @evid doc.md#body Executable comments are inert.
+          %     @evidence doc.md#example Example is inert.
+          result = "@evidence doc.md#string Strings are inert.";
+          % @evidence doc.md#body Executable comments are inert.
         end
         function block(obj)
           %{
-          @evid doc.md#block Block help.
+          @evidence doc.md#block Block help.
           %}
         end
       end
@@ -59,7 +59,7 @@ export async function test_matlab_hosts(): Promise<void> {
     .replaceAll("\n", "\r\n");
   const adapter = new EvidMatlabAdapter();
   const inventory = await adapter.analyze(
-    TestSourceSnapshot.create("src/Contract.m", content),
+    EvidTestSourceSnapshot.create("src/Contract.m", content),
   );
 
   TestValidator.equals("complete help extraction", inventory.diagnostics, []);
@@ -80,7 +80,7 @@ export async function test_matlab_hosts(): Promise<void> {
     TestValidator.equals(
       `UTF-16 ${declaration.target}`,
       declaration.location.range?.start?.offset,
-      content.indexOf(`@evid ${declaration.target} `),
+      content.indexOf(`@evidence ${declaration.target} `),
     );
   const legacy = inventory.units.find((unit) => unit.name === "legacy");
   TestValidator.equals(
@@ -98,13 +98,13 @@ export async function test_matlab_hosts(): Promise<void> {
   const unit = inventory.units.find((candidate) => candidate.name === "run");
   if (unit === undefined) throw new Error("Missing function inventory.");
   const annotation = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Contract.m",
       content.replace("Function documentation.", "Updated documentation."),
     ),
   );
   const semantic = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Contract.m",
       content.replace('result = "', 'result = "Changed '),
     ),

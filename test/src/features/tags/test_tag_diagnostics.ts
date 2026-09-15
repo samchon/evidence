@@ -2,7 +2,7 @@ import { EvidTagParser } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestDocumentation } from "../../internal/TestDocumentation";
+import { EvidTestDocumentation } from "../../internal/EvidTestDocumentation";
 
 /** Reports common annotation failures without applying reference-specific syntax rules.
  *
@@ -17,19 +17,19 @@ import { TestDocumentation } from "../../internal/TestDocumentation";
  *    no guessed declaration attachment.
  */
 export async function test_tag_diagnostics(): Promise<void> {
-  const fixture = TestDocumentation.create(dedent`
+  const fixture = EvidTestDocumentation.create(dedent`
     /**
-     * @evid
-     * @evid ../source.ts#value
-     * @evid ../source.ts#A.[0] Invalid accessor.
-     * @evid ../bad%ZZ.ts#value Invalid percent encoding.
-     * @evid ../bad%00.ts#value Invalid NUL path.
-     * @evid ../bad%0D.ts#value Invalid carriage return.
-     * @evid ../bad%0A.ts#value Invalid line feed.
-     * @evid {@link Symbol} Compiler-only lookup.
-     * @evid {@linkplain Symbol} Compiler-only lookup.
-     * @evidReview docs/spec.md#rule #A3F9C1D
-     * @evidReview docs/spec.md#rule #a3f9c1d
+     * @evidence
+     * @evidence ../source.ts#value
+     * @evidence ../source.ts#A.[0] Invalid accessor.
+     * @evidence ../bad%ZZ.ts#value Invalid percent encoding.
+     * @evidence ../bad%00.ts#value Invalid NUL path.
+     * @evidence ../bad%0D.ts#value Invalid carriage return.
+     * @evidence ../bad%0A.ts#value Invalid line feed.
+     * @evidence {@link Symbol} Compiler-only lookup.
+     * @evidence {@linkplain Symbol} Compiler-only lookup.
+     * @evidenceReview docs/spec.md#rule #A3F9C1D
+     * @evidenceReview docs/spec.md#rule #a3f9c1d
      */
   `);
   const result = EvidTagParser.parse(
@@ -64,8 +64,8 @@ export async function test_tag_diagnostics(): Promise<void> {
   TestValidator.equals("invalid reviews add no reviews", result.reviews, []);
 
   for (const attachment of ["unattached", "unsupported"] as const) {
-    const unowned = TestDocumentation.create(
-      "/** @evid ../source.ts#value Supplies evidence. */",
+    const unowned = EvidTestDocumentation.create(
+      "/** @evidence ../source.ts#value Supplies evidence. */",
       undefined,
       attachment,
     );

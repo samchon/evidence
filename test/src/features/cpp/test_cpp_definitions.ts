@@ -3,7 +3,7 @@ import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Merges compatible C++ declarations and definitions into their semantic identities.
  *
@@ -15,8 +15,8 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_cpp_definitions(): Promise<void> {
   const inventory = await new EvidCppAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "include/shop.hpp",
         dedent`
           namespace shop {
@@ -46,7 +46,7 @@ export async function test_cpp_definitions(): Promise<void> {
           }
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/shop.cpp",
         dedent`
           namespace shop {

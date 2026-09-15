@@ -7,7 +7,7 @@ import type {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Attaches Prisma documentation and preserves withdrawal and exclusion semantics.
  *
@@ -23,59 +23,59 @@ export async function test_prisma_hosts(): Promise<void> {
       provider = "postgresql"
     }
 
-    /// @evid docs/spec.md#sale The sale model implements the requirement.
+    /// @evidence docs/spec.md#sale The sale model implements the requirement.
     // Prisma retains the surrounding documentation run.
     model Sale {
       id String @id
       brace String @default("}")
 
-      /** @evid docs/spec.md#price The column stores the required amount. */
+      /** @evidence docs/spec.md#price The column stores the required amount. */
       price Int
 
-      /* @evid docs/spec.md#plain Plain block documentation is supported. */
+      /* @evidence docs/spec.md#plain Plain block documentation is supported. */
       plain String
 
-      /// @evid docs/spec.md#note The note remains documented across a blank line.
+      /// @evidence docs/spec.md#note The note remains documented across a blank line.
 
       note String
 
-      /// @evid docs/spec.md#index This comment documents no field.
+      /// @evidence docs/spec.md#index This comment documents no field.
       @@index([price])
     }
 
     /// @hidden Internal persistence detail.
-    /// @evid docs/spec.md#seller A withdrawn model cannot claim evidence.
+    /// @evidence docs/spec.md#seller A withdrawn model cannot claim evidence.
     model Seller {
       id String @id
     }
 
-    /// @evid docs/spec.md#status Enums are outside the Evid population.
+    /// @evidence docs/spec.md#status Enums are outside the Evid population.
     enum SaleStatus {
       ACTIVE
     }
 
-    // @evid docs/spec.md#line Prisma discards this comment.
+    // @evidence docs/spec.md#line Prisma discards this comment.
     model LineOnly {
       id String @id
     }
 
-    //// @evid docs/spec.md#buried A fourth slash buries this tag.
+    //// @evidence docs/spec.md#buried A fourth slash buries this tag.
     model Buried {
       id String @id
     }
   `;
   const ledger = dedent`
-    /// @evidExclude docs/spec.md#deferred Persistence is intentionally deferred.
-    /// @evidExcludeReview docs/spec.md#deferred Reviewed the deferral.
-    /// @evid docs/spec.md#misplaced Positive evidence needs a declaration host.
+    /// @evidenceExclude docs/spec.md#deferred Persistence is intentionally deferred.
+    /// @evidenceExcludeReview docs/spec.md#deferred Reviewed the deferral.
+    /// @evidence docs/spec.md#misplaced Positive evidence needs a declaration host.
   `;
   const inventory = await new EvidPrismaAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "prisma/schema.prisma",
         schema.replaceAll("\n", "\r\n"),
       ),
-      TestSourceSnapshot.create("prisma/exclusions.schema", ledger),
+      EvidTestSourceSnapshot.create("prisma/exclusions.schema", ledger),
     ]),
   );
 

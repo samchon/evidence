@@ -12,7 +12,8 @@ import {
 import type { IEvidSourceDependency } from "../structures/IEvidSourceDependency";
 
 /**
- * Immutable filesystem versions used to validate a watch attempt before publication.
+ * Immutable filesystem versions used to validate a watch attempt before
+ * publication.
  *
  * Versions include symlink and directory-entry state because either can change
  * which source is read; a content-only check would miss resolution changes.
@@ -21,13 +22,14 @@ export class EvidWatchDependencySnapshot {
   /**
    * Creates a snapshot from already captured dependency version strings.
    *
-   * capture and select are the only constructors because callers must not invent
-   * values that would falsely validate a watch attempt.
+   * Capture and select are the only constructors because callers must not
+   * invent values that would falsely validate a watch attempt.
    */
   private constructor(private readonly versions: ReadonlyMap<string, string>) {}
 
   /**
-   * Captures every dependency asynchronously, encoding inaccessible paths as observable failures.
+   * Captures every dependency asynchronously, encoding inaccessible paths as
+   * observable failures.
    *
    * Watch publication compares this baseline with a later capture so deletion,
    * permission failure, and repair all count as distinct filesystem states.
@@ -42,10 +44,11 @@ export class EvidWatchDependencySnapshot {
   }
 
   /**
-   * States whether two snapshots cover the same dependencies at the same versions.
+   * States whether two snapshots cover the same dependencies at the same
+   * versions.
    *
-   * Watch attempts publish only when this equality holds, preventing output from
-   * describing a source state that changed during analysis.
+   * Watch attempts publish only when this equality holds, preventing output
+   * from describing a source state that changed during analysis.
    */
   public equals(other: EvidWatchDependencySnapshot): boolean {
     if (this.versions.size !== other.versions.size) return false;
@@ -78,10 +81,11 @@ export class EvidWatchDependencySnapshot {
 }
 
 /**
- * Reads a stable watch version without throwing on ordinary filesystem disappearance.
+ * Reads a stable watch version without throwing on ordinary filesystem
+ * disappearance.
  *
- * capture uses this value for each dependency so failures become comparable state
- * and a repaired path invalidates the prior failed snapshot.
+ * Capture uses this value for each dependency so failures become comparable
+ * state and a repaired path invalidates the prior failed snapshot.
  */
 async function version(dependency: IEvidSourceDependency): Promise<string> {
   let link: BigIntStats;
@@ -125,10 +129,11 @@ async function version(dependency: IEvidSourceDependency): Promise<string> {
 }
 
 /**
- * Serializes metadata fields whose changes can affect filesystem resolution or reads.
+ * Serializes metadata fields whose changes can affect filesystem resolution or
+ * reads.
  *
- * File and link versions include this component before content or directory entries
- * so metadata-only replacement is observable to the watch baseline.
+ * File and link versions include this component before content or directory
+ * entries so metadata-only replacement is observable to the watch baseline.
  */
 function metadata(info: BigIntStats): string {
   return [
@@ -161,8 +166,8 @@ function entryVersion(entry: Dirent): string {
 /**
  * Sorts directory entries before deterministic concatenation.
  *
- * Filesystem enumeration order is not stable, so version derives the same string
- * for an unchanged recursive directory across captures.
+ * Filesystem enumeration order is not stable, so version derives the same
+ * string for an unchanged recursive directory across captures.
  */
 function compareEntries(left: Dirent, right: Dirent): number {
   return left.name < right.name ? -1 : left.name > right.name ? 1 : 0;
@@ -189,9 +194,10 @@ function failure(cause: unknown): string {
 }
 
 /**
- * Extracts a platform error code without assuming every thrown value is an Error.
+ * Extracts a platform error code without assuming every thrown value is an
+ * Error.
  *
- * failure uses UNKNOWN for non-Error values and errors without string codes so
+ * Failure uses UNKNOWN for non-Error values and errors without string codes so
  * opaque exceptions still become stable observable watch state.
  */
 function errorCode(cause: unknown): string {

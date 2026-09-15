@@ -1,8 +1,4 @@
-import {
-  EvidChecker,
-  EvidWatchReporter,
-  EvidWatcher,
-} from "evid";
+import { EvidChecker, EvidWatchReporter, EvidWatcher } from "evid";
 import type { EvidWatchCycle } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
@@ -10,16 +6,18 @@ import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 import typia from "typia";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
- * Publishes created and deleted glob matches as the same reports as fresh checks.
+ * Publishes created and deleted glob matches as the same reports as fresh
+ * checks.
  *
- * A watched glob population must change its denominator when selected files appear
- * or disappear, and each emitted JSON record must be independently consumable.
+ * A watched glob population must change its denominator when selected files
+ * appear or disappear, and each emitted JSON record must be independently
+ * consumable.
  *
- * 1. Start with a covered pricing requirement and require cycle 1 to match a
- *    fresh successful check.
+ * 1. Start with a covered pricing requirement and require cycle 1 to match a fresh
+ *    successful check.
  * 2. Create a refund requirement under the watched glob and require cycle 2 to
  *    fail with one newly missing unit.
  * 3. Add the refund citation to the exact implementation and require cycle 3 to
@@ -29,15 +27,15 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  */
 export async function test_watch_topology(): Promise<void> {
   const location = join(__dirname, `topology ${randomUUID()}`);
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     {
-      "evid.config.ts": config(),
+      "evidence.config.ts": config(),
       "docs/pricing.md": requirement("Pricing", "pricing"),
       "src/calculator.ts": implementation(false),
     },
     async (directory) => {
-      const configFile = join(directory, "evid.config.ts");
+      const configFile = join(directory, "evidence.config.ts");
       const watcher = new EvidWatcher(configFile, {
         pollIntervalMilliseconds: 20,
         debounceMilliseconds: 20,
@@ -58,7 +56,7 @@ export async function test_watch_topology(): Promise<void> {
         // Creating a second requirement under the watched glob adds an obligation.
         if (cycle.cycle === 1) {
           TestValidator.predicate("initial graph succeeds", cycle.success);
-          await TestFileSystem.save(directory, {
+          await EvidTestFileSystem.save(directory, {
             "docs/refund.md": requirement("Refund", "refund"),
           });
           return;
@@ -72,7 +70,7 @@ export async function test_watch_topology(): Promise<void> {
             cycle.report.counts.missingUnits,
             1,
           );
-          await TestFileSystem.save(directory, {
+          await EvidTestFileSystem.save(directory, {
             "src/calculator.ts": implementation(true),
           });
           return;
@@ -81,7 +79,7 @@ export async function test_watch_topology(): Promise<void> {
         // Editing an exact source file restores complete coverage.
         if (cycle.cycle === 3) {
           TestValidator.predicate("edited citation succeeds", cycle.success);
-          await TestFileSystem.erase(join(directory, "docs/refund.md"));
+          await EvidTestFileSystem.erase(join(directory, "docs/refund.md"));
           return;
         }
 
@@ -96,9 +94,7 @@ export async function test_watch_topology(): Promise<void> {
       TestValidator.equals("NDJSON cycle count", lines.length, 4);
       TestValidator.equals(
         "NDJSON cycle identifiers",
-        lines.map(
-          (line) => typia.json.assertParse<EvidWatchCycle>(line).cycle,
-        ),
+        lines.map((line) => typia.json.assertParse<EvidWatchCycle>(line).cycle),
         [1, 2, 3, 4],
       );
     },
@@ -137,8 +133,8 @@ function requirement(title: string, anchor: string): string {
 function implementation(refund: boolean): string {
   return dedent`
     /**
-     * @evid docs/pricing.md#pricing Implements pricing.
-     ${refund ? "* @evid docs/refund.md#refund Implements refunds." : ""}
+     * @evidence docs/pricing.md#pricing Implements pricing.
+     ${refund ? "* @evidence docs/refund.md#refund Implements refunds." : ""}
      */
     export function calculate(): number {
       return 1;

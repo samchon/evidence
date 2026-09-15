@@ -1,5 +1,5 @@
 /**
- * EvidNode condition set used by one configuration module request.
+ * Node condition set used by one configuration module request.
  *
  * The dependency scanner carries this distinction from syntax into package
  * resolution so its watch set names the same entry that the config evaluator

@@ -5,7 +5,7 @@ import {
 } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Attaches embedded Ruby RDoc across nested declaration indentation.
  *
@@ -22,12 +22,12 @@ export async function test_ruby_embedded_comments(): Promise<void> {
     class Sale
     =begin rdoc
     계약 💎
-    @evid docs/spec.md#create Documents creation.
+    @evidence docs/spec.md#create Documents creation.
     =end
       class Create
     =begin
-    @evid docs/spec.md#title Documents the title.
-    @evidReview docs/spec.md#title #abcdef0 Reviewed the title.
+    @evidence docs/spec.md#title Documents the title.
+    @evidenceReview docs/spec.md#title #abcdef0 Reviewed the title.
     =end
         attr_reader :title
       end
@@ -46,7 +46,7 @@ export async function test_ruby_embedded_comments(): Promise<void> {
     source.replaceAll("  ", "\t"),
   ]) {
     const inventory = await adapter.analyze(
-      TestSourceSnapshot.create("lib/sale.rb", content),
+      EvidTestSourceSnapshot.create("lib/sale.rb", content),
     );
     const units = new Map(
       inventory.units.map((unit) => [unit.id, unit.identity.join(".")]),
@@ -95,10 +95,10 @@ export async function test_ruby_embedded_comments(): Promise<void> {
       TestValidator.equals(
         "original tag coordinates",
         item.location.range?.start?.offset,
-        content.indexOf(`@evid ${item.target}`),
+        content.indexOf(`@evidence ${item.target}`),
       );
     const edited = await adapter.analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "lib/sale.rb",
         content.replace(
           "Documents the title.",
@@ -107,7 +107,7 @@ export async function test_ruby_embedded_comments(): Promise<void> {
       ),
     );
     const changed = await adapter.analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "lib/sale.rb",
         content.replace("attr_reader :title", "attr_accessor :title"),
       ),
@@ -128,12 +128,12 @@ export async function test_ruby_embedded_comments(): Promise<void> {
 
   // Blank lines, an intervening end, and mismatched line-comment indentation still break attachment.
   for (const content of [
-    "class Sale\n=begin\n@evid docs/spec.md#detached Detached documentation.\n=end\n\n  class Child; end\nend\n",
-    "class Sale\n=begin\n@evid docs/spec.md#boundary Must not escape the class.\n=end\nend\nclass Other; end\n",
-    "class Sale\n# @evid docs/spec.md#indent A line comment must match indentation.\n  class Child; end\nend\n",
+    "class Sale\n=begin\n@evidence docs/spec.md#detached Detached documentation.\n=end\n\n  class Child; end\nend\n",
+    "class Sale\n=begin\n@evidence docs/spec.md#boundary Must not escape the class.\n=end\nend\nclass Other; end\n",
+    "class Sale\n# @evidence docs/spec.md#indent A line comment must match indentation.\n  class Child; end\nend\n",
   ]) {
     const inventory = await adapter.analyze(
-      TestSourceSnapshot.create("lib/sale.rb", content),
+      EvidTestSourceSnapshot.create("lib/sale.rb", content),
     );
     TestValidator.equals(
       "unsupported comment does not acknowledge",

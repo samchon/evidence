@@ -1,6 +1,6 @@
 import { EvidZigAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Rejects Zig public populations that require compiler evaluation.
  *
@@ -70,7 +70,7 @@ export async function test_zig_boundaries(): Promise<void> {
   ]);
   for (const [content, code] of cases) {
     const inventory = await adapter.analyze(
-      TestSourceSnapshot.create("src/Boundary.zig", content),
+      EvidTestSourceSnapshot.create("src/Boundary.zig", content),
     );
     TestValidator.equals(`incomplete ${content}`, inventory.complete, false);
     TestValidator.predicate(
@@ -90,7 +90,7 @@ export async function test_zig_boundaries(): Promise<void> {
     'test "local" { const ignored = @import("test.zig"); } pub var count: i32 = calculate();',
   ]) {
     const inventory = await adapter.analyze(
-      TestSourceSnapshot.create("src/Accepted.zig", content),
+      EvidTestSourceSnapshot.create("src/Accepted.zig", content),
     );
     TestValidator.equals(
       `accepted boundary ${content}`,
@@ -99,7 +99,7 @@ export async function test_zig_boundaries(): Promise<void> {
     );
   }
   const extension = await adapter.analyze(
-    TestSourceSnapshot.create("src/Wrong.ZIG", "pub const value = 1;"),
+    EvidTestSourceSnapshot.create("src/Wrong.ZIG", "pub const value = 1;"),
   );
   TestValidator.equals(
     "case-sensitive extension failure",
@@ -113,8 +113,8 @@ export async function test_zig_boundaries(): Promise<void> {
     ),
   );
   const failed = await adapter.analyze(
-    TestSourceSnapshot.fail(
-      TestSourceSnapshot.create("src/Unavailable.zig", ""),
+    EvidTestSourceSnapshot.fail(
+      EvidTestSourceSnapshot.create("src/Unavailable.zig", ""),
       {
         code: "path-unreadable",
         path: "/project/src/Unavailable.zig",

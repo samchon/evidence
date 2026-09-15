@@ -2,11 +2,11 @@ import { DynamicExecutor } from "@nestia/e2e";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
 
-import { TestParserAssets } from "./internal/TestParserAssets";
+import { EvidTestParserAssets } from "./internal/EvidTestParserAssets";
 
 /** Executes all logic tests, or file-name filters explicitly supplied by a contributor. */
 async function main(): Promise<void> {
-  await TestParserAssets.run(run);
+  await EvidTestParserAssets.run(run);
 }
 
 /** Discovers tests within an isolated parser acquisition scope. */

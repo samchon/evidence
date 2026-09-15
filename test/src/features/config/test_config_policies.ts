@@ -1,7 +1,7 @@
 import type { IEvidConfig, IEvidReference } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { validateEvidConfig } from "../../../../packages/evidence/src/internal/validateEvidConfig";
+import { validateEvidConfig } from "evid";
 
 /**
  * Rejects checklist policies that contradict per-host Markdown answers.

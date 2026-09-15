@@ -5,7 +5,7 @@ import {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Classifies Python declarations with distinct class and instance ownership.
@@ -29,7 +29,7 @@ export async function test_python_units(): Promise<void> {
   );
 
   const inventory = await new EvidPythonAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/sale.py",
       dedent`
         type JsonValue = dict[str, str]

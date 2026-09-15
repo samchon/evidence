@@ -3,16 +3,20 @@ import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 /**
- * Maps parser ranges to original UTF-16 text across Unicode, BOM, and line endings.
+ * Maps parser ranges to original UTF-16 text across Unicode, BOM, and line
+ * endings.
  *
  * The fixture has two Unicode identifiers and an astral character before the
  * second identifier on the same line. Byte offsets or code-point columns would
  * misplace that identifier even when ASCII-only extraction appears correct.
  *
- * 1. Parse the original LF text and a second version prefixed by a BOM and using CRLF.
+ * 1. Parse the original LF text and a second version prefixed by a BOM and using
+ *    CRLF.
  * 2. Require two declaration captures in both versions and slice their returned
- *    ranges from the original input, recovering both exact identifier spellings.
+ *    ranges from the original input, recovering both exact identifier
+ *    spellings.
  * 3. Check the second identifier's complete range:
+ *
  *    - Start and end offsets follow UTF-16 indexing after the astral character.
  *    - The line remains 2 and columns are relative to the original preceding LF.
  *    - The exclusive end includes exactly the identifier's two code units.

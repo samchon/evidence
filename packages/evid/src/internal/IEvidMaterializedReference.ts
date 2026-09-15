@@ -9,10 +9,12 @@ import type { IEvidInventory } from "../structures/IEvidInventory";
  */
 export interface IEvidMaterializedReference {
   /**
-   * Validated configuration and effective severity for this reference occurrence.
+   * Validated configuration and effective severity for this reference
+   * occurrence.
    *
-   * The graph preserves this plan entry separately when repeated references share
-   * an inventory but have distinct authored positions or inherited policy.
+   * The graph preserves this plan entry separately when repeated references
+   * share an inventory but have distinct authored positions or inherited
+   * policy.
    */
   plan: IEvidConfigPlanReference;
 

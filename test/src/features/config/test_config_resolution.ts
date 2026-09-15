@@ -1,7 +1,7 @@
 import type { IEvidConfig } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { createEvidConfigPlan } from "../../../../packages/evidence/src/internal/createEvidConfigPlan";
+import { createEvidConfigPlan } from "evid";
 
 /**
  * Resolves artifact defaults and severity inheritance without losing authored configuration.
@@ -11,7 +11,7 @@ import { createEvidConfigPlan } from "../../../../packages/evidence/src/internal
  * produce executable selections while preserving diagnostic indices and the
  * caller's original optional settings.
  *
- * 1. Build the plan and require its default anchor to end in evid.config.ts.
+ * 1. Build the plan and require its default anchor to end in evidence.config.ts.
  * 2. Filter disabled, off, and obligation-free claims while retaining authored
  *    claim indices 0, 1, 2 and reference indices 0, 1.
  * 3. Check role-specific selectors:
@@ -96,7 +96,7 @@ export function test_config_resolution(): void {
 
   TestValidator.equals(
     "default configuration anchor",
-    plan.configFile.replaceAll("\\", "/").endsWith("/evid.config.ts"),
+    plan.configFile.replaceAll("\\", "/").endsWith("/evidence.config.ts"),
     true,
   );
 

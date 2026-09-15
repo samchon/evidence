@@ -3,7 +3,7 @@ import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /** Rebuilds SQL coverage as watched sources and selectors change.
  *
@@ -14,20 +14,20 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  * 3. Repair the source and reselect types, requiring recovery in each case.
  */
 export async function test_sql_watch(): Promise<void> {
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "sql-watch",
     {
-      "evid.config.ts": dedent`
+      "evidence.config.ts": dedent`
       export default { claims: [{ type: "typescript", files: ["claims.ts"], reference: { type: "sql", files: ["contracts/*.sql"], symbol: "column" } }] };
     `,
       "claims.ts": dedent`
-      /** @evid ./contracts/Contract.sql#CONTRACT Implements the contract. */
+      /** @evidence ./contracts/Contract.sql#CONTRACT Implements the contract. */
       export function claim() {}
     `,
       "contracts/Contract.sql": "CREATE TABLE contract (value INTEGER);\n",
     },
     async (directory) => {
-      const file = join(directory, "evid.config.ts");
+      const file = join(directory, "evidence.config.ts");
       const watcher = new EvidWatcher(file, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
@@ -42,7 +42,7 @@ export async function test_sql_watch(): Promise<void> {
           );
           if (cycle.cycle === 1) {
             TestValidator.equals("initial SQL coverage", cycle.success, true);
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "contracts/Extra.sql": "CREATE TABLE extra (id INTEGER);\n",
             });
           } else if (cycle.cycle === 2) {
@@ -51,7 +51,7 @@ export async function test_sql_watch(): Promise<void> {
               cycle.success,
               false,
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "contracts/Extra.sql": "CREATE TABLE broken (\n",
             });
           } else if (cycle.cycle === 3) {
@@ -60,7 +60,7 @@ export async function test_sql_watch(): Promise<void> {
               cycle.status,
               "incomplete",
             );
-            await TestFileSystem.save(directory, {
+            await EvidTestFileSystem.save(directory, {
               "contracts/Extra.sql":
                 "-- @internal Retired table.\nCREATE TABLE extra (id INTEGER);\n",
             });
@@ -70,8 +70,8 @@ export async function test_sql_watch(): Promise<void> {
               cycle.success,
               true,
             );
-            await TestFileSystem.save(directory, {
-              "evid.config.ts": dedent`
+            await EvidTestFileSystem.save(directory, {
+              "evidence.config.ts": dedent`
             export default { claims: [{ type: "typescript", files: ["claims.ts"], reference: { type: "sql", files: ["contracts/*.sql"], symbol: "model" } }] };
           `,
             });

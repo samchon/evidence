@@ -11,8 +11,8 @@ import type {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Covers a requirement from evidence before a Python class's first member.
@@ -25,7 +25,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_python_leading_comment_graph(): Promise<void> {
   const reference = await new EvidMarkdownAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "docs/spec.md",
       "## Title {#title}\n\nRequires a title.\n",
     ),
@@ -33,29 +33,29 @@ export async function test_python_leading_comment_graph(): Promise<void> {
   const source = dedent`
     class Sale:
         class Create:
-            # @evid docs/spec.md#title Implements title.
+            # @evidence docs/spec.md#title Implements title.
             title = ""
   `;
   const adapter = new EvidPythonAdapter();
   const baseline = await adapter.analyze(
-    TestSourceSnapshot.create("src/sale.py", source),
+    EvidTestSourceSnapshot.create("src/sale.py", source),
   );
   const edited = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/sale.py",
       source.replace("Implements title.", "Documents the same title contract."),
     ),
   );
   const changed = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/sale.py",
       source.replace('title = ""', 'title = "changed"'),
     ),
   );
   const removed = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/sale.py",
-      source.replace(/^[ \t]*# @evid[^\n]*\n/mu, ""),
+      source.replace(/^[ \t]*# @evidence[^\n]*\n/mu, ""),
     ),
   );
 
@@ -72,7 +72,7 @@ export async function test_python_leading_comment_graph(): Promise<void> {
   );
   TestValidator.equals(
     "the exact requirement becomes missing",
-    TestGraph.obligation(missing, 0, 0).missingUnitIds,
+    EvidTestGraph.obligation(missing, 0, 0).missingUnitIds,
     reference.units
       .filter((unit) => unit.symbol === "h2")
       .map((unit) => unit.id),
@@ -119,7 +119,7 @@ async function evaluate(
             inventory: reference,
             unitIds: selected,
             singleEvidPerSymbol: true,
-            resolutions: await TestGraph.resolveDeclarations(
+            resolutions: await EvidTestGraph.resolveDeclarations(
               claim,
               reference,
               selected,

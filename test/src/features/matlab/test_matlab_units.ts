@@ -2,7 +2,7 @@ import { EvidInventory, EvidMatlabAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Extracts MATLAB's public class and top-level function denominator.
  *
@@ -14,8 +14,8 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_matlab_units(): Promise<void> {
   const inventory = await new EvidMatlabAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/Contract.m",
         dedent`
       classdef (Hidden) Contract < handle
@@ -82,7 +82,7 @@ export async function test_matlab_units(): Promise<void> {
     `.concat("\n"),
         ["src/Contract.m", "alias/Contract.m"],
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/main.m",
         dedent`
       function value = main()
@@ -94,7 +94,7 @@ export async function test_matlab_units(): Promise<void> {
       end
     `.concat("\n"),
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/private/secret.m",
         "function secret()\nend\n",
       ),

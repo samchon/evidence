@@ -2,7 +2,7 @@ import { EvidInventory, EvidPythonAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Attaches leading comments to the first eligible Python class member.
@@ -17,22 +17,22 @@ export async function test_python_leading_comments(): Promise<void> {
   const source = dedent`
     class Sale:
         # 상품 생성 계약.
-        # @evid docs/spec.md#create Defines creation.
+        # @evidence docs/spec.md#create Defines creation.
         class Create:
             # 상품명 계약.
-            # @evid docs/spec.md#title Implements title.
-            # @evidReview docs/spec.md#title #abcdef0 Checked title.
+            # @evidence docs/spec.md#title Implements title.
+            # @evidenceReview docs/spec.md#title #abcdef0 Checked title.
             title = ""
 
     class Methods:
-        # @evid docs/spec.md#method Implements creation.
+        # @evidence docs/spec.md#method Implements creation.
         @staticmethod
         def create():
             return None
 
     class Instance:
         def __init__(self):
-            # @evid docs/spec.md#field Implements the instance field.
+            # @evidence docs/spec.md#field Implements the instance field.
             self.title = ""
 
     class Hidden:
@@ -48,7 +48,7 @@ export async function test_python_leading_comments(): Promise<void> {
     source.replaceAll("    ", "\t"),
   ]) {
     const inventory = await new EvidPythonAdapter().analyze(
-      TestSourceSnapshot.create("src/sale.py", content),
+      EvidTestSourceSnapshot.create("src/sale.py", content),
     );
     const units = new Map(
       inventory.units.map((unit) => [unit.id, unit.identity.join(".")]),
@@ -102,7 +102,7 @@ export async function test_python_leading_comments(): Promise<void> {
       TestValidator.equals(
         "mapped tag offset",
         range === undefined ? undefined : range.start.offset,
-        content.indexOf(`@evid ${declaration.target}`),
+        content.indexOf(`@evidence ${declaration.target}`),
       );
     }
   }

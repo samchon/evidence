@@ -3,7 +3,7 @@ import type { IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Resolves TypeScript public exports through every supported edge.
  *
@@ -13,8 +13,8 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 2. Verify public identities, aliases, and target resolution.
  */
 export async function test_typescript_exports(): Promise<void> {
-  const snapshot = TestSourceSnapshot.combine([
-    TestSourceSnapshot.create(
+  const snapshot = EvidTestSourceSnapshot.combine([
+    EvidTestSourceSnapshot.create(
       "src/dep.ts",
       dedent`
         export interface Shape { side: number; }
@@ -23,12 +23,12 @@ export async function test_typescript_exports(): Promise<void> {
         export enum Ignored { VALUE }
       `,
     ),
-    TestSourceSnapshot.create("src/star.ts", "export const starred = true;"),
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create("src/star.ts", "export const starred = true;"),
+    EvidTestSourceSnapshot.create(
       "src/default-interface.ts",
       "export default interface DefaultContract { value: string; }",
     ),
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/index.ts",
       dedent`
         export { Shape as RenamedShape, run as execute } from "./dep";
@@ -96,14 +96,14 @@ export async function test_typescript_exports(): Promise<void> {
 
   // Drive-letter paths must stay absolute while resolving relative reexports.
   const windows = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/Windows-Dependency.ts",
         "export interface WindowsContract { value: string; }",
         undefined,
         "D:/project",
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/windows-index.ts",
         'export { WindowsContract } from "./windows-dependency";',
         undefined,

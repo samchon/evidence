@@ -15,8 +15,8 @@ import type { IEvidTargetStatement } from "./IEvidTargetStatement";
  * content token; it does not prove the prose true or establish who reviewed it.
  *
  * @example
- * // @evid ../api.ts#send Exercises successful delivery.
- * // @evidReview ../api.ts#send #<current-fingerprint> Checked delivery errors.
+ * // @evidence ../api.ts#send Exercises successful delivery.
+ * // @evidenceReview ../api.ts#send #<current-fingerprint> Checked delivery errors.
  * // The review supplements the evidence statement instead of replacing it.
  */
 export interface IEvidReview extends IEvidTargetStatement {

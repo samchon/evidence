@@ -9,7 +9,7 @@ import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
  * Keeps uncovered requirements visible after literal rendered-tag examples.
@@ -34,7 +34,7 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  */
 export async function test_markdown_literal_pre_graph(): Promise<void> {
   const location: string = join(__dirname, `literal pre graph ${randomUUID()}`);
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     {
       "evid.json": JSON.stringify({
@@ -51,7 +51,7 @@ export async function test_markdown_literal_pre_graph(): Promise<void> {
           },
         ],
       }),
-      "claim.ts": `/** @evid rules.md#first Implements the first rule. */\nexport function run(): void {}\n`,
+      "claim.ts": `/** @evidence rules.md#first Implements the first rule. */\nexport function run(): void {}\n`,
       "rules.md": literalRules(),
     },
     async (directory: string): Promise<void> => {
@@ -59,14 +59,14 @@ export async function test_markdown_literal_pre_graph(): Promise<void> {
       const literal: IEvidCheckReport = await EvidChecker.check(config);
       assertMissingSecond("literal rendered tags", literal);
 
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "rules.md": renderedRules(),
       });
       const rendered: IEvidCheckReport =
         await EvidChecker.check(config);
       assertMissingSecond("genuine rendered block", rendered);
 
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "evid.json": JSON.stringify({
           claims: [
             {
@@ -175,10 +175,10 @@ function orderedClaim(): string {
     "",
     "<pre>",
     "</pre><pre>",
-    "<!-- @evid rules.md#second Fake rendered acknowledgement. -->",
+    "<!-- @evidence rules.md#second Fake rendered acknowledgement. -->",
     "</pre>",
     "",
-    "<!-- @evid rules.md#first Real acknowledgement. -->",
+    "<!-- @evidence rules.md#first Real acknowledgement. -->",
     "",
   ].join("\n");
 }

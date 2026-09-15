@@ -5,7 +5,7 @@ import {
 } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Keeps Rust outer attributes attached across whitespace comments.
  *
@@ -19,13 +19,13 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_rust_comment_prefixes(): Promise<void> {
   const source = dedent`
     /// 계약 🦀
-    /// @evid docs/spec.md#type Implements the type.
+    /// @evidence docs/spec.md#type Implements the type.
     // Ordinary whitespace between the documentation and the declaration.
     #[deprecated]
     /* Another whitespace comment. */
     pub struct Sale {
-      #[doc = "@evid docs/spec.md#field Implements the field."]
-      // @evid docs/spec.md#unsupported This ordinary comment is unsupported.
+      #[doc = "@evidence docs/spec.md#field Implements the field."]
+      // @evidence docs/spec.md#unsupported This ordinary comment is unsupported.
       pub title: i32,
     }
     /// @internal Withdraws the nested owner.
@@ -34,7 +34,7 @@ export async function test_rust_comment_prefixes(): Promise<void> {
       pub struct Child;
     }
     pub mod container {
-      //! @evid docs/spec.md#module Documents the module itself.
+      //! @evidence docs/spec.md#module Documents the module itself.
       // Inner documentation must never move to the following child.
       pub struct Child;
     }
@@ -42,7 +42,7 @@ export async function test_rust_comment_prefixes(): Promise<void> {
   const adapter = new EvidRustAdapter();
   for (const content of [source, source.replaceAll("\n", "\r\n")]) {
     const inventory = await adapter.analyze(
-      TestSourceSnapshot.create("src/lib.rs", content),
+      EvidTestSourceSnapshot.create("src/lib.rs", content),
     );
     const units = new Map(
       inventory.units.map((unit) => [unit.id, unit.identity.join(".")]),
@@ -85,11 +85,11 @@ export async function test_rust_comment_prefixes(): Promise<void> {
       TestValidator.equals(
         "original tag offset",
         item.location.range?.start?.offset,
-        content.indexOf(`@evid ${item.target}`),
+        content.indexOf(`@evidence ${item.target}`),
       );
 
     const edited = await adapter.analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/lib.rs",
         content.replace(
           "Implements the field.",
@@ -98,7 +98,7 @@ export async function test_rust_comment_prefixes(): Promise<void> {
       ),
     );
     const changed = await adapter.analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/lib.rs",
         content.replace("#[deprecated]", "#[must_use]"),
       ),
@@ -124,7 +124,7 @@ export async function test_rust_comment_prefixes(): Promise<void> {
     "custom_macro",
   ]) {
     const inventory = await adapter.analyze(
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/lib.rs",
         `#[${attribute}]\n// whitespace\npub struct Conditional;\n`,
       ),

@@ -2,7 +2,7 @@ import { EvidTypeScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Preserves literal TypeScript member segments and default declaration identity.
  *
@@ -12,8 +12,8 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 2. Verify exact identities and resolution behavior.
  */
 export async function test_typescript_literals(): Promise<void> {
-  const snapshot = TestSourceSnapshot.combine([
-    TestSourceSnapshot.create(
+  const snapshot = EvidTestSourceSnapshot.combine([
+    EvidTestSourceSnapshot.create(
       "src/literals.ts",
       dedent`
         export interface Literal {
@@ -31,11 +31,11 @@ export async function test_typescript_literals(): Promise<void> {
         }
       `,
     ),
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/default-class.ts",
       "export default class { member = 1; }",
     ),
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/default-function.ts",
       "export default function (): void {}",
     ),

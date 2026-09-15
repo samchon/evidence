@@ -1,7 +1,7 @@
 import { EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestInventory } from "../../internal/TestInventory";
+import { EvidTestInventory } from "../../internal/EvidTestInventory";
 
 /**
  * Merges physical aliases while retaining every public address and citation origin.
@@ -20,15 +20,15 @@ import { TestInventory } from "../../internal/TestInventory";
  */
 export async function test_inventory_physical_aliases(): Promise<void> {
   // Two populations can discover the same inode through different hard-link paths.
-  const first = TestInventory.create();
-  TestInventory.unit(
+  const first = EvidTestInventory.create();
+  EvidTestInventory.unit(
     first,
     "box",
     ["Box"],
     "type",
     "export class Box { value = 1; }",
   );
-  TestInventory.host(
+  EvidTestInventory.host(
     first,
     "box-doc",
     "box-site",

@@ -13,8 +13,8 @@ import type {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Evaluates a requirement-to-implementation-to-test chain through real adapters.
@@ -34,7 +34,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_graph_chain(): Promise<void> {
   const requirements = await new EvidMarkdownAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "docs/requirements.md",
       dedent`
         # Pricing
@@ -46,11 +46,11 @@ export async function test_graph_chain(): Promise<void> {
     ),
   );
   const implementation = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/calculator.ts",
       dedent`
         export class Calculator {
-          /** @evid docs/requirements.md#rounding Implements exact addition. */
+          /** @evidence docs/requirements.md#rounding Implements exact addition. */
           public add(x: number, y: number): number {
             return x + y;
           }
@@ -59,10 +59,10 @@ export async function test_graph_chain(): Promise<void> {
     ),
   );
   const tests = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/calculator.test.ts",
       dedent`
-        /** @evid ./calculator.ts#Calculator.prototype.add Verifies exact addition. */
+        /** @evidence ./calculator.ts#Calculator.prototype.add Verifies exact addition. */
         export function test_add(): void {
           if (1 + 2 !== 3) throw new Error("Unexpected sum.");
         }
@@ -175,12 +175,12 @@ export async function test_graph_chain(): Promise<void> {
 
   TestValidator.equals(
     "requirement becomes missing",
-    TestGraph.obligation(missingRequirement, 0, 0).missingUnitIds,
+    EvidTestGraph.obligation(missingRequirement, 0, 0).missingUnitIds,
     [requirementUnit.id],
   );
   TestValidator.equals(
     "test obligation remains covered",
-    TestGraph.obligation(missingRequirement, 1, 0).missingUnitIds,
+    EvidTestGraph.obligation(missingRequirement, 1, 0).missingUnitIds,
     [],
   );
 
@@ -225,12 +225,12 @@ export async function test_graph_chain(): Promise<void> {
 
   TestValidator.equals(
     "implementation obligation remains covered",
-    TestGraph.obligation(missingTest, 0, 0).missingUnitIds,
+    EvidTestGraph.obligation(missingTest, 0, 0).missingUnitIds,
     [],
   );
   TestValidator.equals(
     "test becomes missing",
-    TestGraph.obligation(missingTest, 1, 0).missingUnitIds,
+    EvidTestGraph.obligation(missingTest, 1, 0).missingUnitIds,
     [implementationUnit.id],
   );
 }

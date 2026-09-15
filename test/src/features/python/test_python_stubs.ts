@@ -3,7 +3,7 @@ import type { IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Extracts public Python units from stubs and explicit private exports.
@@ -16,8 +16,8 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_python_stubs(): Promise<void> {
   const inventory = await new EvidPythonAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "types/contracts.pyi",
         dedent`
           from typing import TypeAlias
@@ -37,7 +37,7 @@ export async function test_python_stubs(): Promise<void> {
               def run(self) -> None: ...
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "unicode/contract.py",
         dedent`
           __all__ = ["판매", "_강제"]

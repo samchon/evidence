@@ -1,6 +1,6 @@
 ---
 name: pull-request
-description: Defines Evid branch, commit, PR submission, check monitoring, and merge boundaries. Use when the user authorizes the corresponding delivery action; ordinary local edits do not imply publication or merge.
+description: Defines Evidence Graph branch, commit, PR submission, check monitoring, and merge boundaries. Use when the user authorizes the corresponding delivery action; ordinary local edits do not imply publication or merge.
 ---
 
 # Pull Request Submission

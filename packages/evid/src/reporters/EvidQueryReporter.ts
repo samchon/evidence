@@ -65,7 +65,7 @@ function list(report: IEvidListReport): string {
     report.kind === undefined ? undefined : `kind=${report.kind}`,
   ].filter((value) => value !== undefined);
   const lines: string[] = [
-    `Evid list ${report.status}.`,
+    `evid list ${report.status}.`,
     `Config: ${report.configFile}`,
     `Targets: ${report.total}${filters.length === 0 ? "" : ` (${filters.join(", ")})`}.`,
   ];
@@ -104,7 +104,7 @@ function listItem(item: IEvidListItem): string[] {
  */
 function inspect(report: IEvidInspectReport): string {
   const lines: string[] = [
-    `Evid inspect ${report.status}.`,
+    `evid inspect ${report.status}.`,
     `Config: ${report.configFile}`,
     `Target: ${JSON.stringify(report.target)}`,
     `Populations: ${report.inspections.length}.`,
@@ -166,7 +166,7 @@ function inspectionLines(inspection: IEvidInspection): string[] {
  */
 function languages(report: IEvidLanguagesReport): string {
   const lines: string[] = [
-    "Evid certified languages.",
+    "Evidence Graph certified languages.",
     `Languages: ${report.total}.`,
   ];
   for (const language of report.languages) {

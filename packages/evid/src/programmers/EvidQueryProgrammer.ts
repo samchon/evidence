@@ -4,7 +4,7 @@ import { EvidFileTarget } from "../targets/EvidFileTarget";
 import { EvidFingerprint } from "../graph/EvidFingerprint";
 import { EvidLanguageRegistry } from "../parsers/EvidLanguageRegistry";
 import { EvidTargetResolver } from "../targets/EvidTargetResolver";
-import { IEvidnventoryMerge } from "../internal/IEvidnventoryMerge";
+import { EvidInventoryMerge } from "../internal/EvidInventoryMerge";
 import type { IEvidQueryPopulation } from "../internal/IEvidQueryPopulation";
 import { EvidQueryPopulationContext } from "../contexts/EvidQueryPopulationContext";
 import type { IEvidQueryContext } from "../contexts/IEvidQueryContext";
@@ -509,7 +509,7 @@ export namespace EvidQueryProgrammer {
     return {
       scope: population.scope,
       status: resolution.status,
-      addresses: IEvidnventoryMerge.unique(
+      addresses: EvidInventoryMerge.unique(
         resolution.addresses.flatMap((address) =>
           formatAddress(population, address.file, address.segments, cwd),
         ),
@@ -785,7 +785,7 @@ export namespace EvidQueryProgrammer {
     unitId: string,
     cwd: string,
   ): string[] {
-    return IEvidnventoryMerge.unique(
+    return EvidInventoryMerge.unique(
       (population.addresses.get(unitId) ?? []).flatMap((address) =>
         formatAddress(population, address.file, address.segments, cwd),
       ),
@@ -1112,7 +1112,7 @@ export namespace EvidQueryProgrammer {
   /**
    * Retrieves the evaluated graph claim at a graph-input position.
    *
-   * This preserves the checker’s positional join with its input and report. A
+   * This preserves the checker?셲 positional join with its input and report. A
    * missing result is an internal invariant failure, not an empty claim suitable
    * for graph serialization.
    */
@@ -1219,7 +1219,7 @@ export namespace EvidQueryProgrammer {
   }
 
   /**
-   * Adds the query population’s configured coordinates to a diagnostic.
+   * Adds the query population?셲 configured coordinates to a diagnostic.
    *
    * Resolver diagnostics are inventory-local; query output must identify the
    * independent claim and reference obligation that produced them. Claim scope is
@@ -1246,7 +1246,7 @@ export namespace EvidQueryProgrammer {
   function uniqueDiagnostics(
     diagnostics: IEvidDiagnostic[],
   ): IEvidDiagnostic[] {
-    return IEvidnventoryMerge.unique(diagnostics, (diagnostic) =>
+    return EvidInventoryMerge.unique(diagnostics, (diagnostic) =>
       JSON.stringify(diagnostic),
     );
   }

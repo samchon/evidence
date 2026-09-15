@@ -6,7 +6,7 @@ import { EvidFileTarget } from "../targets/EvidFileTarget";
 import { EvidInventory } from "./EvidInventory";
 import { EvidFingerprintIndex } from "../internal/EvidFingerprintIndex";
 import type { IEvidResolvedAcknowledgement } from "../internal/IEvidResolvedAcknowledgement";
-import { IEvidnventoryMerge } from "../internal/IEvidnventoryMerge";
+import { EvidInventoryMerge } from "../internal/EvidInventoryMerge";
 import type { IEvidResolvedReview } from "../internal/IEvidResolvedReview";
 import type { IEvidUnhostedChecklist } from "../internal/IEvidUnhostedChecklist";
 import type { IEvidDeclaration } from "../structures/IEvidDeclaration";
@@ -173,7 +173,7 @@ class EvidGraphEvaluator {
     // A citation can participate in another reference. Decide deferred checklist
     // findings only after every claim has recorded accepted or uncertain usage.
     this.reportUnhostedChecklists();
-    const diagnostics = IEvidnventoryMerge.unique(this.diagnostics, (diagnostic) =>
+    const diagnostics = EvidInventoryMerge.unique(this.diagnostics, (diagnostic) =>
       typia.json.stringify(diagnostic),
     );
     const complete = claims.every(
@@ -536,8 +536,8 @@ class EvidGraphEvaluator {
           this.problem(
             "graph-forbidden-exclusion",
             reference.severity,
-            `@evidExclude for '${declaration.target}' is forbidden by noEvidExclude.`,
-            "Remove the exclusion and cite the implemented target with positive @evid.",
+            `@evidenceExclude for '${declaration.target}' is forbidden by noEvidExclude.`,
+            "Remove the exclusion and cite the implemented target with positive @evidence.",
             claimIndex,
             referenceIndex,
             declaration,
@@ -625,8 +625,8 @@ class EvidGraphEvaluator {
           reference.severity,
           `Missing acknowledgement for '${this.display(referenceInventory, unit)}'.`,
           reference.noEvidExclude === true
-            ? "Cite the claim artifact that implements this unit with positive @evid."
-            : "Cite the claim artifact that implements this unit with @evid, or exclude it on an eligible carrier when it does not apply.",
+            ? "Cite the claim artifact that implements this unit with positive @evidence."
+            : "Cite the claim artifact that implements this unit with @evidence, or exclude it on an eligible carrier when it does not apply.",
           claimIndex,
           referenceIndex,
           undefined,
@@ -703,7 +703,7 @@ class EvidGraphEvaluator {
                 .map((unit) => `'${this.display(referenceInventory, unit)}'`)
                 .join(", ")}.`,
               reference.noEvidExclude === true
-                ? "Cite every missing checklist item from this host with positive @evid."
+                ? "Cite every missing checklist item from this host with positive @evidence."
                 : "Cite every missing checklist item from this host, or exclude the scope that does not apply.",
               claimIndex,
               referenceIndex,
@@ -775,7 +775,7 @@ class EvidGraphEvaluator {
             "graph-single-evidence-per-symbol",
             reference.severity,
             `Host '${this.display(claimInventory, host)}' cites ${cited.size} distinct selected evidence unit(s); singleEvidPerSymbol requires exactly 1.`,
-            "Keep positive @evid on this semantic host to exactly one selected unit.",
+            "Keep positive @evidence on this semantic host to exactly one selected unit.",
             claimIndex,
             referenceIndex,
             undefined,
@@ -838,7 +838,7 @@ class EvidGraphEvaluator {
           this.problem(
             "graph-duplicate-evidence",
             severity,
-            `The same host repeats @evid for '${declaration.target}'.`,
+            `The same host repeats @evidence for '${declaration.target}'.`,
             "Keep one acknowledgement for this target on the semantic host.",
             claimIndex,
             referenceIndex,
@@ -858,7 +858,7 @@ class EvidGraphEvaluator {
         this.problem(
           "graph-conflicting-acknowledgements",
           severity,
-          `@evid and @evidExclude overlap at '${declaration.target}'.`,
+          `@evidence and @evidenceExclude overlap at '${declaration.target}'.`,
           previous === undefined
             ? "Delete whichever acknowledgement states the wrong intent."
             : `Delete whichever acknowledgement states the wrong intent; the earlier declaration is '${previous.target}'.`,
@@ -880,7 +880,7 @@ class EvidGraphEvaluator {
           this.problem(
             "graph-duplicate-exclusion",
             severity,
-            `@evidExclude for '${declaration.target}' overlaps an earlier exclusion.`,
+            `@evidenceExclude for '${declaration.target}' overlaps an earlier exclusion.`,
             "Keep one exclusion at the widest truthful scope.",
             claimIndex,
             referenceIndex,
@@ -1127,11 +1127,11 @@ class EvidGraphEvaluator {
    * Selects the review marker required by an acknowledgement kind.
    *
    * Keeping this mapping in one place makes diagnostics and repair text agree
-   * about whether a positive citation needs @evidReview or an exclusion
-   * needs @evidExcludeReview.
+   * about whether a positive citation needs @evidenceReview or an exclusion
+   * needs @evidenceExcludeReview.
    */
   private reviewMarker(kind: EvidAcknowledgementKind): string {
-    return kind === "evidence" ? "@evidReview" : "@evidExcludeReview";
+    return kind === "evidence" ? "@evidenceReview" : "@evidenceExcludeReview";
   }
 
   /**
@@ -1271,7 +1271,7 @@ class EvidGraphEvaluator {
       yLocation?.range === undefined ? -1 : yLocation.range.start.offset;
     const xKey = JSON.stringify([xLocation?.file ?? "", xOffset, xId]);
     const yKey = JSON.stringify([yLocation?.file ?? "", yOffset, yId]);
-    return IEvidnventoryMerge.compare(xKey, yKey);
+    return EvidInventoryMerge.compare(xKey, yKey);
   }
 
   /**
@@ -1330,7 +1330,7 @@ class EvidGraphEvaluator {
     const addresses = inventory.addresses
       .filter((address) => address.unitId === unit.id)
       .sort((x, y) =>
-        IEvidnventoryMerge.compare(
+        EvidInventoryMerge.compare(
           JSON.stringify([x.file, x.segments]),
           JSON.stringify([y.file, y.segments]),
         ),

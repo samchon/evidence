@@ -43,7 +43,7 @@ export namespace EvidReporter {
   export function text(report: IEvidCheckReport): string {
     const counts = report.counts;
     const lines: string[] = [
-      `Evid check ${report.status}.`,
+      `Evidence Graph check ${report.status}.`,
       `Config: ${report.configFile}`,
       `Claims: ${counts.activeClaims}/${counts.claims} active.`,
       `Obligations: ${counts.activeObligations}/${counts.obligations} active, ${counts.incompleteObligations} incomplete.`,

@@ -15,7 +15,7 @@ import type { IEvidTagParseResult } from "../structures/IEvidTagParseResult";
  *
  * @example
  *   const result = EvidTagProgrammer.parse(context);
- *   // result.declarations contains valid @evid and @link annotations.
+ *   // result.declarations contains valid @evidence and @link annotations.
  */
 export namespace EvidTagProgrammer {
   /**
@@ -228,7 +228,7 @@ export namespace EvidTagProgrammer {
         context,
         "unsupported-inline-link",
         "Compiler import-scoped inline links are unavailable in standalone Evid.",
-        "Use an explicit target such as @evid ../calculator.ts#add Implements the arithmetic contract.",
+        "Use an explicit target such as @evidence ../calculator.ts#add Implements the arithmetic contract.",
         where,
       );
       return;

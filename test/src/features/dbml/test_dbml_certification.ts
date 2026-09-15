@@ -1,5 +1,5 @@
-﻿import { DbmlCertificationFixture } from "../../internal/DbmlCertificationFixture";
-import { DatabaseAdapterCertification } from "../../internal/certification/DatabaseAdapterCertification";
+import { EvidDbmlCertificationFixture } from "../../internal/EvidDbmlCertificationFixture";
+import { EvidDatabaseAdapterCertification } from "../../internal/certification/EvidDatabaseAdapterCertification";
 
 /** Certifies DBML inventories, selector graphs, failures, fingerprints, and ambiguity.
  *
@@ -10,13 +10,13 @@ import { DatabaseAdapterCertification } from "../../internal/certification/Datab
  * 3. Verify review fingerprints and competing target resolution behavior.
  */
 export async function test_dbml_certification(): Promise<void> {
-  const fixture = DbmlCertificationFixture.create();
-  DatabaseAdapterCertification.assertInventory(
+  const fixture = EvidDbmlCertificationFixture.create();
+  EvidDatabaseAdapterCertification.assertInventory(
     fixture,
-    await DatabaseAdapterCertification.analyze(fixture),
+    await EvidDatabaseAdapterCertification.analyze(fixture),
   );
-  await DatabaseAdapterCertification.assertGraph(fixture);
-  await DatabaseAdapterCertification.assertFailures(fixture);
-  await DatabaseAdapterCertification.assertFingerprint(fixture);
-  await DatabaseAdapterCertification.assertAmbiguity(fixture);
+  await EvidDatabaseAdapterCertification.assertGraph(fixture);
+  await EvidDatabaseAdapterCertification.assertFailures(fixture);
+  await EvidDatabaseAdapterCertification.assertFingerprint(fixture);
+  await EvidDatabaseAdapterCertification.assertAmbiguity(fixture);
 }

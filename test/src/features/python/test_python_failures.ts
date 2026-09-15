@@ -3,7 +3,7 @@ import type { IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Marks unsupported and unresolved Python public surfaces incomplete.
@@ -20,7 +20,7 @@ export async function test_python_failures(): Promise<void> {
 
   // Dynamic __all__ retains ordinary public declarations instead of erasing obligations.
   const dynamic = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/dynamic.py",
       dedent`
         public = 1
@@ -43,7 +43,7 @@ export async function test_python_failures(): Promise<void> {
 
   // An explicit missing name and a missing local import both fail export analysis.
   const unresolved = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/unresolved.py",
       dedent`
         from .missing import Imported
@@ -61,9 +61,9 @@ export async function test_python_failures(): Promise<void> {
   );
 
   const emptyNamespace = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create("pkg/empty.py", "_private = 1\n"),
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create("pkg/empty.py", "_private = 1\n"),
+      EvidTestSourceSnapshot.create(
         "pkg/api.py",
         dedent`
           import pkg.empty as empty
@@ -80,7 +80,7 @@ export async function test_python_failures(): Promise<void> {
 
   // Conditional public bindings and instance fields are outside the static form matrix.
   const conditional = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/conditional.py",
       dedent`
         if enabled:
@@ -112,7 +112,7 @@ export async function test_python_failures(): Promise<void> {
   );
 
   const narrowed = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/narrowed.py",
       dedent`
         __all__ = []
@@ -132,7 +132,7 @@ export async function test_python_failures(): Promise<void> {
 
   // Explicit __all__ selection makes an underscored conditional binding public.
   const explicitPrivate = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/explicit-private.py",
       dedent`
         __all__ = ["_selected"]
@@ -155,7 +155,7 @@ export async function test_python_failures(): Promise<void> {
 
   // Selected destructuring bindings remain visible as unsupported surface changes.
   const unsupportedBindings = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/unsupported-bindings.py",
       dedent`
         __all__ = ["_left", "Record"]
@@ -183,15 +183,15 @@ export async function test_python_failures(): Promise<void> {
 
   // A declaration-free import cycle terminates and reports the unresolved surface.
   const cycle = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "cycle/a.py",
         dedent`
           from .b import value
           __all__ = ["value"]
         `,
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "cycle/b.py",
         dedent`
           from .a import value
@@ -209,7 +209,7 @@ export async function test_python_failures(): Promise<void> {
 
   // Tree-sitter syntax failures never become healthy empty inventories.
   const malformed = await adapter.analyze(
-    TestSourceSnapshot.create("src/broken.py", "def broken(:\n    pass\n"),
+    EvidTestSourceSnapshot.create("src/broken.py", "def broken(:\n    pass\n"),
   );
   TestValidator.equals("malformed Python source", malformed.complete, false);
   TestValidator.equals(

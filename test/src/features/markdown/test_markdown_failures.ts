@@ -1,7 +1,7 @@
 import { EvidMarkdownAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Retains Markdown path and discovery failures without losing independent diagnostics.
@@ -19,7 +19,7 @@ export async function test_markdown_failures(): Promise<void> {
   const adapter = new EvidMarkdownAdapter();
 
   const whitespace = await adapter.analyze(
-    TestSourceSnapshot.create("docs/space name.md", "# Contract"),
+    EvidTestSourceSnapshot.create("docs/space name.md", "# Contract"),
   );
   TestValidator.equals("unaddressable file has no units", whitespace.units, []);
   TestValidator.equals(
@@ -30,7 +30,7 @@ export async function test_markdown_failures(): Promise<void> {
 
   // A valid alias preserves the physical unit while every invalid alias remains visible.
   const aliases = await adapter.analyze(
-    TestSourceSnapshot.create("physical.md", "# Contract", [
+    EvidTestSourceSnapshot.create("physical.md", "# Contract", [
       "docs/space name.md",
       "docs/contract.md",
     ]),
@@ -47,7 +47,7 @@ export async function test_markdown_failures(): Promise<void> {
   );
 
   const incomplete = await adapter.analyze(
-    TestSourceSnapshot.fail(TestSourceSnapshot.create("guide.md", "##"), {
+    EvidTestSourceSnapshot.fail(EvidTestSourceSnapshot.create("guide.md", "##"), {
       code: "path-unreadable",
       path: "/project/missing.md",
       message: "The selected Markdown source could not be read.",

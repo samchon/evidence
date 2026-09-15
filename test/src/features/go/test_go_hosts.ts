@@ -2,7 +2,7 @@ import { EvidGoAdapter, EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Attaches Go group, specification, field, and method documentation.
  *
@@ -14,41 +14,41 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_go_hosts(): Promise<void> {
   const inventory = await new EvidGoAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "shop/hosts.go",
       dedent`
         package shop
 
         // Group values implement one requirement together.
-        // @evid docs/requirements.md#group Implements the grouped values.
+        // @evidence docs/requirements.md#group Implements the grouped values.
         const (
-            // @evid docs/requirements.md#version Implements the version.
+            // @evidence docs/requirements.md#version Implements the version.
             Version = 1
             Name = "shop"
         )
 
         /*
-         * @evid docs/requirements.md#record Implements the record.
+         * @evidence docs/requirements.md#record Implements the record.
          */
         type Record struct {
-            // @evid docs/requirements.md#field Implements the field.
+            // @evidence docs/requirements.md#field Implements the field.
             Value int
         }
 
-        // @evid docs/requirements.md#method Implements the method.
+        // @evidence docs/requirements.md#method Implements the method.
         func (Record) Run() {}
 
-        // @evid docs/requirements.md#detached This is detached.
+        // @evidence docs/requirements.md#detached This is detached.
 
         func Detached() {}
 
         func Unsupported() {
-            // @evid docs/requirements.md#body Function-body comments are unsupported.
-            _ = "@evid docs/requirements.md#string Interpreted strings are unsupported."
-            _ = ${"`"}@evid docs/requirements.md#raw Raw strings are unsupported.${"`"}
+            // @evidence docs/requirements.md#body Function-body comments are unsupported.
+            _ = "@evidence docs/requirements.md#string Interpreted strings are unsupported."
+            _ = ${"`"}@evidence docs/requirements.md#raw Raw strings are unsupported.${"`"}
         }
 
-        // @evid docs/requirements.md#commented Commented declarations are unsupported.
+        // @evidence docs/requirements.md#commented Commented declarations are unsupported.
         // func Commented() {}
       `,
     ),
@@ -101,7 +101,7 @@ export async function test_go_hosts(): Promise<void> {
   );
 
   const withdrawn = await new EvidGoAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "shop/internal.go",
       dedent`
         package shop

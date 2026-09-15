@@ -8,8 +8,8 @@ import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Pairs reviews by semantic host, resolved target, and acknowledgement kind.
@@ -31,7 +31,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_graph_review_pairing(): Promise<void> {
   const requirements = await new EvidMarkdownAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "docs/spec.md",
       dedent`
         ## Pricing {#pricing}
@@ -55,32 +55,32 @@ export async function test_graph_review_pairing(): Promise<void> {
     tax.id,
   ).fingerprint;
   const claims = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/pairing.ts",
       dedent`
-        /** @evid docs/spec.md#pricing Implements the pricing rule. */
+        /** @evidence docs/spec.md#pricing Implements the pricing rule. */
         export interface Merged {
           price: number;
         }
 
-        /** @evidReview docs/spec.md#pricing #${pricingFingerprint} Checked both halves of the merged contract. */
+        /** @evidenceReview docs/spec.md#pricing #${pricingFingerprint} Checked both halves of the merged contract. */
         export namespace Merged {
           export const category = "retail";
         }
 
         /**
-         * @evidExclude docs/spec.md#tax The tax service owns this rule.
-         * @evidReview docs/spec.md#tax #${taxFingerprint} Filed under the wrong question.
+         * @evidenceExclude docs/spec.md#tax The tax service owns this rule.
+         * @evidenceReview docs/spec.md#tax #${taxFingerprint} Filed under the wrong question.
          */
         export function wrongKind(): void {}
 
-        /** @evidReview docs/spec.md#pricing #${pricingFingerprint} Reviewed another host's citation. */
+        /** @evidenceReview docs/spec.md#pricing #${pricingFingerprint} Reviewed another host's citation. */
         export function orphan(): void {}
 
         /**
-         * @evid docs/spec.md#pricing Implements the pricing rule.
-         * @evidReview docs/spec.md#pricing #${pricingFingerprint} Checked the cap once.
-         * @evidReview docs/spec.md#pricing #${pricingFingerprint} Checked the cap twice.
+         * @evidence docs/spec.md#pricing Implements the pricing rule.
+         * @evidenceReview docs/spec.md#pricing #${pricingFingerprint} Checked the cap once.
+         * @evidenceReview docs/spec.md#pricing #${pricingFingerprint} Checked the cap twice.
          */
         export function duplicate(): void {}
       `,
@@ -101,12 +101,12 @@ export async function test_graph_review_pairing(): Promise<void> {
             severity: "error",
             inventory: requirements,
             unitIds: selected,
-            resolutions: await TestGraph.resolveDeclarations(
+            resolutions: await EvidTestGraph.resolveDeclarations(
               claims,
               requirements,
               selected,
             ),
-            reviewResolutions: await TestGraph.resolveReviews(
+            reviewResolutions: await EvidTestGraph.resolveReviews(
               claims,
               requirements,
               selected,

@@ -2,7 +2,7 @@
   "name": "@evid/workspace",
   "version": "0.0.0",
   "private": true,
-  "description": "Standalone cross-language Evid Graph workspace.",
+  "description": "Standalone cross-language Evidence Graph workspace.",
   "packageManager": "pnpm@11.17.0",
   "scripts": {
     "start": "pnpm --filter @evid/test start",
@@ -17,7 +17,9 @@
   },
   "devDependencies": {
     "bumpp": "catalog:utils",
-    "prettier": "catalog:typescript"
+    "prettier": "catalog:typescript",
+    "@trivago/prettier-plugin-sort-imports": "^6.0.2",
+    "prettier-plugin-jsdoc": "^1.8.0"
   },
   "repository": {
     "type": "git",

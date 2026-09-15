@@ -1,5 +1,5 @@
-import { AdapterCertification } from "../../internal/certification/AdapterCertification";
-import { AdapterCertificationFixtures } from "../../internal/certification/AdapterCertificationFixtures";
+import { EvidAdapterCertification } from "../../internal/certification/EvidAdapterCertification";
+import { EvidAdapterCertificationFixtures } from "../../internal/certification/EvidAdapterCertificationFixtures";
 
 /** Certifies exact adapter inventories, ownership, hosts, withdrawals, and source ranges.
  *
@@ -10,8 +10,8 @@ import { AdapterCertificationFixtures } from "../../internal/certification/Adapt
  * 3. Verify Unicode annotation ranges retain the expected source coordinates.
  */
 export async function test_adapter_certification_inventories(): Promise<void> {
-  for (const certification of AdapterCertificationFixtures.all()) {
-    const inventory = await AdapterCertification.analyze(certification);
-    AdapterCertification.assertInventory(certification, inventory);
+  for (const certification of EvidAdapterCertificationFixtures.all()) {
+    const inventory = await EvidAdapterCertification.analyze(certification);
+    EvidAdapterCertification.assertInventory(certification, inventory);
   }
 }

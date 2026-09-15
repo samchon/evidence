@@ -5,8 +5,8 @@ import {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Resolves BigQuery targets with quoted segments and source-file aliases intact.
  *
@@ -18,7 +18,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_bigquery_targets(): Promise<void> {
   const reference = await new EvidBigQueryAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "schema.sql",
       dedent`
     CREATE TABLE \`acme-prod.dataset.orders\` (\`display name\` STRING);
@@ -27,14 +27,14 @@ export async function test_bigquery_targets(): Promise<void> {
     ),
   );
   const claims = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "claims.ts",
       dedent`
-    /** @evid ./schema.sql#["acme-prod"].dataset.orders["display name"] Cites the literal field. */
+    /** @evidence ./schema.sql#["acme-prod"].dataset.orders["display name"] Cites the literal field. */
     export function original() {}
-    /** @evid ./alias.sql#["acme-prod"].dataset.orders["display name"] Cites the file alias. */
+    /** @evidence ./alias.sql#["acme-prod"].dataset.orders["display name"] Cites the file alias. */
     export function alias() {}
-    /** @evid ./schema.sql#["acme-prod"].dataset.orders.missing Names no declared field. */
+    /** @evidence ./schema.sql#["acme-prod"].dataset.orders.missing Names no declared field. */
     export function missing() {}
   `,
     ),
@@ -47,7 +47,7 @@ export async function test_bigquery_targets(): Promise<void> {
   const selected = reference.units
     .filter((unit) => unit.symbol === "column")
     .map((unit) => unit.id);
-  const resolutions = await TestGraph.resolveDeclarations(
+  const resolutions = await EvidTestGraph.resolveDeclarations(
     claims,
     reference,
     selected,

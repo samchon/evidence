@@ -12,22 +12,24 @@ import grammars from "./parser-grammars.json";
  * Reads compiled grammar provenance and lazily acquires verified pinned bytes.
  *
  * Metadata validation occurs before cache-key or URL use so a corrupted package
- * catalog cannot redirect filesystem writes or downloads outside the asset boundary.
+ * catalog cannot redirect filesystem writes or downloads outside the asset
+ * boundary.
  */
 export class EvidTreeSitterAssets {
   /**
-   * Caches grammar bytes under the inherited and constructor-provided acquisition controls.
+   * Caches grammar bytes under the inherited and constructor-provided
+   * acquisition controls.
    *
-   * The constructor creates this instance after merging scope controls with local
-   * overrides, so every bytes request follows the same policy.
+   * The constructor creates this instance after merging scope controls with
+   * local overrides, so every bytes request follows the same policy.
    */
   private readonly cache: EvidTreeSitterAssetCache;
 
   /**
    * Captures optional acquisition overrides without accessing grammar assets.
    *
-   * Scope controls supply defaults, and explicit constructor options take precedence
-   * before a later bytes call resolves a cache entry or download.
+   * Scope controls supply defaults, and explicit constructor options take
+   * precedence before a later bytes call resolves a cache entry or download.
    */
   public constructor(options: IEvidTreeSitterAssetOptions = {}) {
     this.cache = new EvidTreeSitterAssetCache({
@@ -37,10 +39,11 @@ export class EvidTreeSitterAssets {
   }
 
   /**
-   * Returns validated grammar metadata without initializing WASM or acquiring bytes.
+   * Returns validated grammar metadata without initializing WASM or acquiring
+   * bytes.
    *
-   * Consumers can inspect the compiled catalog safely because readManifest rejects
-   * invalid records before they are returned.
+   * Consumers can inspect the compiled catalog safely because readManifest
+   * rejects invalid records before they are returned.
    */
   public async list(): Promise<IEvidGrammar[]> {
     return this.readManifest();
@@ -64,7 +67,8 @@ export class EvidTreeSitterAssets {
   }
 
   /**
-   * Obtains a caller-owned copy of verified grammar bytes from the immutable cache.
+   * Obtains a caller-owned copy of verified grammar bytes from the immutable
+   * cache.
    *
    * Input is cloned and validated before cache acquisition, preventing unsafe
    * metadata from selecting a filesystem key or network destination.
@@ -78,9 +82,10 @@ export class EvidTreeSitterAssets {
   /**
    * Validates the packaged grammar pins and rejects duplicate identifiers.
    *
-   * list delegates here before exposing metadata, ensuring each grammar has safe
-   * provenance paths and credential-free HTTPS asset URLs. The pins are imported
-   * from parser-grammars.json as a plain module; no payload bytes are read here.
+   * List delegates here before exposing metadata, ensuring each grammar has
+   * safe provenance paths and credential-free HTTPS asset URLs. The pins are
+   * imported from parser-grammars.json as a plain module; no payload bytes are
+   * read here.
    */
   private readManifest(): IEvidGrammar[] {
     try {
@@ -107,7 +112,8 @@ export class EvidTreeSitterAssets {
   }
 
   /**
-   * Rejects unsafe asset metadata before it chooses a filesystem key or network destination.
+   * Rejects unsafe asset metadata before it chooses a filesystem key or network
+   * destination.
    *
    * Both grammar WASM and license records require relative provenance paths and
    * credential-free HTTPS URLs to remain within the asset trust boundary.
@@ -132,8 +138,8 @@ export class EvidTreeSitterAssets {
   /**
    * Requires a provenance path to remain relative on every supported platform.
    *
-   * This lexical validation rejects empty, absolute, and parent-traversing paths
-   * without requiring the referenced asset file to exist locally.
+   * This lexical validation rejects empty, absolute, and parent-traversing
+   * paths without requiring the referenced asset file to exist locally.
    */
   private location(file: string): void {
     if (

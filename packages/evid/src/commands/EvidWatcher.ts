@@ -20,38 +20,41 @@ import { EvidChecker } from "../EvidChecker";
 /**
  * Rechecks active dependencies and publishes stable results in sequence.
  *
- * Start one watch loop per instance and supply an awaited publisher. Each attempt
- * reevaluates configuration and source dependencies, then verifies that its input
- * snapshots stayed stable before publishing. Failed attempts retain dependencies
- * needed to observe repairs; parser acquisition also retries without a file edit.
+ * Start one watch loop per instance and supply an awaited publisher. Each
+ * attempt reevaluates configuration and source dependencies, then verifies that
+ * its input snapshots stayed stable before publishing. Failed attempts retain
+ * dependencies needed to observe repairs; parser acquisition also retries
+ * without a file edit.
  *
  * Close stops future publication, interrupts pending delays, and cancels this
  * watcher's asset subscriptions. Await the watch promise to observe completion
  * of any analysis or publisher already in progress.
  *
  * @example
- * const watcher: EvidWatcher = new EvidWatcher("evid.config.ts");
- * const watching: Promise<void> = watcher.watch(
- *   async (cycle: EvidWatchCycle): Promise<void> => {
- *     console.log(cycle.cycle, cycle.status);
- *   },
- * );
- * // When the application shuts down:
- * await watcher.close();
- * await watching;
+ *   const watcher: EvidWatcher = new EvidWatcher("evidence.config.ts");
+ *   const watching: Promise<void> = watcher.watch(
+ *     async (cycle: EvidWatchCycle): Promise<void> => {
+ *       console.log(cycle.cycle, cycle.status);
+ *     },
+ *   );
+ *   // When the application shuts down:
+ *   await watcher.close();
+ *   await watching;
  */
 export class EvidWatcher {
   /**
    * Absolute configuration anchor captured before observation begins.
    *
-   * Later changes to process cwd cannot redirect configuration or dependency scans.
+   * Later changes to process cwd cannot redirect configuration or dependency
+   * scans.
    */
   private readonly configFile: string;
 
   /**
    * Interval between dependency snapshots during idle observation.
    *
-   * Close can interrupt the pending delay rather than waiting out this interval.
+   * Close can interrupt the pending delay rather than waiting out this
+   * interval.
    */
   private readonly pollIntervalMilliseconds: number;
 
@@ -63,10 +66,11 @@ export class EvidWatcher {
   private readonly debounceMilliseconds: number;
 
   /**
-   * Retry interval for parser assets that may recover without a filesystem edit.
+   * Retry interval for parser assets that may recover without a filesystem
+   * edit.
    *
-   * Only acquisition-related failures activate this timer; other stable failures
-   * wait for a dependency change.
+   * Only acquisition-related failures activate this timer; other stable
+   * failures wait for a dependency change.
    */
   private readonly parserRetryMilliseconds: number;
 
@@ -89,14 +93,17 @@ export class EvidWatcher {
   /**
    * Whether the instance has already entered its single allowed watch loop.
    *
-   * The guard prevents concurrent loops from sharing cycle and dependency state.
+   * The guard prevents concurrent loops from sharing cycle and dependency
+   * state.
    */
   private started = false;
 
   /**
-   * Shutdown state checked between asynchronous analysis and publication phases.
+   * Shutdown state checked between asynchronous analysis and publication
+   * phases.
    *
-   * A completed attempt is discarded if shutdown was requested before publication.
+   * A completed attempt is discarded if shutdown was requested before
+   * publication.
    */
   private closed = false;
 
@@ -119,11 +126,12 @@ export class EvidWatcher {
   /**
    * Captures the configuration anchor and validates observation timing.
    *
-   * Construction prepares fallback dependencies but does not evaluate configuration
-   * or start polling. Omitted timing options use the documented watch defaults.
+   * Construction prepares fallback dependencies but does not evaluate
+   * configuration or start polling. Omitted timing options use the documented
+   * watch defaults.
    */
   public constructor(
-    configFile: string = "evid.config.ts",
+    configFile: string = "evidence.config.ts",
     options: IEvidWatchOptions = {},
   ) {
     const checked = typia.assert(options);
@@ -145,7 +153,8 @@ export class EvidWatcher {
   }
 
   /**
-   * Publishes an initial check and subsequent stable reevaluations until shutdown.
+   * Publishes an initial check and subsequent stable reevaluations until
+   * shutdown.
    *
    * The publisher is awaited, preserving cycle order and applying backpressure.
    * Starting twice or after close rejects. Analysis failures become cycle data;
@@ -153,9 +162,9 @@ export class EvidWatcher {
    */
   public async watch(publish: EvidWatchPublisher): Promise<void> {
     if (this.started)
-      throw new Error("An Evid watcher can be started only once.");
+      throw new Error("An Evidence Graph watcher can be started only once.");
     if (this.closed)
-      throw new Error("A closed Evid watcher cannot be started.");
+      throw new Error("A closed Evidence Graph watcher cannot be started.");
     this.started = true;
 
     try {
@@ -198,9 +207,9 @@ export class EvidWatcher {
   /**
    * Requests shutdown and wakes any polling or settling delay immediately.
    *
-   * Asset subscriptions owned by this watcher are cancelled. This method does not
-   * join the active watch loop; await its watch promise to finish outstanding
-   * analysis or publication work.
+   * Asset subscriptions owned by this watcher are cancelled. This method does
+   * not join the active watch loop; await its watch promise to finish
+   * outstanding analysis or publication work.
    */
   public async close(): Promise<void> {
     this.closed = true;
@@ -211,8 +220,9 @@ export class EvidWatcher {
   /**
    * Runs an attempt under this watcher's execution-local asset cancellation.
    *
-   * An inherited caller signal remains effective alongside watcher shutdown, and
-   * the scope reaches parsers created by configuration scanning as well as analysis.
+   * An inherited caller signal remains effective alongside watcher shutdown,
+   * and the scope reaches parsers created by configuration scanning as well as
+   * analysis.
    */
   private async evaluate(): Promise<IEvidWatchAttempt> {
     const inherited = EvidTreeSitterAssetScope.current().signal;
@@ -220,15 +230,18 @@ export class EvidWatcher {
       inherited === undefined
         ? this.cancellation.signal
         : AbortSignal.any([inherited, this.cancellation.signal]);
-    return EvidTreeSitterAssetScope.run({ signal }, () => this.evaluateStable());
+    return EvidTreeSitterAssetScope.run({ signal }, () =>
+      this.evaluateStable(),
+    );
   }
 
   /**
    * Repeats analysis until dependency discovery and source snapshots agree.
    *
-   * Newly discovered paths enlarge the observed boundary before acceptance. Input
-   * changes during evaluation cause another attempt, while stable failures retain
-   * enough dependency state for a later repair to trigger reevaluation.
+   * Newly discovered paths enlarge the observed boundary before acceptance.
+   * Input changes during evaluation cause another attempt, while stable
+   * failures retain enough dependency state for a later repair to trigger
+   * reevaluation.
    */
   private async evaluateStable(): Promise<IEvidWatchAttempt> {
     for (;;) {
@@ -238,7 +251,7 @@ export class EvidWatcher {
           cycle: failureCycle(
             this.cycles + 1,
             this.configFile,
-            new Error("The Evid watcher was closed."),
+            new Error("The Evidence Graph watcher was closed."),
           ),
           dependencies: this.active,
           snapshot,
@@ -268,7 +281,10 @@ export class EvidWatcher {
         analysis === undefined
           ? EvidWatchDependencySet.merge(this.active, afterConfig.dependencies)
           : cause === undefined
-            ? EvidWatchDependencySet.analysis(analysis, afterConfig.dependencies)
+            ? EvidWatchDependencySet.analysis(
+                analysis,
+                afterConfig.dependencies,
+              )
             : EvidWatchDependencySet.merge(
                 this.active,
                 afterConfig.dependencies,
@@ -314,8 +330,9 @@ export class EvidWatcher {
   /**
    * Waits until watched inputs remain unchanged for one quiet interval.
    *
-   * Further edits restart the interval. Shutdown and zero debounce skip additional
-   * waiting so the outer loop can handle cancellation or evaluate immediately.
+   * Further edits restart the interval. Shutdown and zero debounce skip
+   * additional waiting so the outer loop can handle cancellation or evaluate
+   * immediately.
    */
   private async settle(
     initial: EvidWatchDependencySnapshot,
@@ -356,8 +373,9 @@ export class EvidWatcher {
   /**
    * Reads shutdown state after asynchronous boundaries.
    *
-   * The loop checks this before starting another phase or publishing a completed
-   * attempt, since close can run while an awaited operation is pending.
+   * The loop checks this before starting another phase or publishing a
+   * completed attempt, since close can run while an awaited operation is
+   * pending.
    */
   private isClosed(): boolean {
     return this.closed;
@@ -448,9 +466,7 @@ function parserFailure(cause: unknown): boolean {
  * Watching the configuration path and its directory permits recovery when the
  * file or a nearby imported input is initially missing or cannot be evaluated.
  */
-function configurationFallback(
-  configFile: string,
-): IEvidSourceDependency[] {
+function configurationFallback(configFile: string): IEvidSourceDependency[] {
   const normalized = EvidSourcePath.slash(configFile);
   return [
     { path: normalized, recursive: false },

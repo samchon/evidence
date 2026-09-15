@@ -2,7 +2,7 @@ import { EvidKotlinAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Resolves Kotlin extension receivers across nominal names and selected aliases.
  *
@@ -11,8 +11,8 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 1. Analyze qualified receivers and aliases. 2. Resolve their extension targets. 3. Compare the resulting unit identities.
  */
 export async function test_kotlin_receiver_identity(): Promise<void> {
-  const snapshot = TestSourceSnapshot.combine([
-    TestSourceSnapshot.create(
+  const snapshot = EvidTestSourceSnapshot.combine([
+    EvidTestSourceSnapshot.create(
       "src/Receiver.kt",
       dedent`
       package example
@@ -22,7 +22,7 @@ export async function test_kotlin_receiver_identity(): Promise<void> {
       fun String.sizeHint() = 1
     `,
     ),
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Extensions.kt",
       dedent`
       package example
@@ -55,12 +55,12 @@ export async function test_kotlin_receiver_identity(): Promise<void> {
 
   // Same-spelled private aliases belong to their own file even inside one package.
   const privateAliases = await new EvidKotlinAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/Text.kt",
         "package example\nprivate typealias Local = String\nfun Local.run() = 1\n",
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/Number.kt",
         "package example\nprivate typealias Local = Int\nfun Local.run() = 2\n",
       ),
@@ -79,12 +79,12 @@ export async function test_kotlin_receiver_identity(): Promise<void> {
     ["extension(kotlin.Int)", "extension(kotlin.String)"],
   );
   const inaccessible = await new EvidKotlinAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/Private.kt",
         "private typealias Local = String\n",
       ),
-      TestSourceSnapshot.create("src/Use.kt", "fun Local.run() = 1\n"),
+      EvidTestSourceSnapshot.create("src/Use.kt", "fun Local.run() = 1\n"),
     ]),
   );
   TestValidator.equals(

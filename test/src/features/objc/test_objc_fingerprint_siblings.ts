@@ -2,7 +2,7 @@ import { EvidFingerprint, EvidObjcAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Isolates Objective-C review fingerprints between sibling declarators.
  *
@@ -26,10 +26,10 @@ export async function test_objc_fingerprint_siblings(): Promise<void> {
   `;
   const adapter = new EvidObjcAdapter();
   const original = await adapter.analyze(
-    TestSourceSnapshot.create("src/Contract.m", source),
+    EvidTestSourceSnapshot.create("src/Contract.m", source),
   );
   const changed = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/Contract.m",
       source
         .replace("second[1]", "second[2]")

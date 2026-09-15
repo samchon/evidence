@@ -32,7 +32,7 @@ export interface IEvidInspectCommand {
   /**
    * Configuration path interpreted within the command directory.
    *
-   * Parsing defaults to evid.config.ts when no override is supplied.
+   * Parsing defaults to evidence.config.ts when no override is supplied.
    */
   config: string;
 

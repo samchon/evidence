@@ -1,7 +1,7 @@
 import { EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestInventory } from "../../internal/TestInventory";
+import { EvidTestInventory } from "../../internal/EvidTestInventory";
 
 /**
  * Builds structural scope from explicit parents while preserving literal accessor segments.
@@ -19,15 +19,15 @@ import { TestInventory } from "../../internal/TestInventory";
  *    missing from lookup within this selected population.
  */
 export async function test_inventory_scopes(): Promise<void> {
-  const input = TestInventory.create();
-  TestInventory.unit(
+  const input = EvidTestInventory.create();
+  EvidTestInventory.unit(
     input,
     "box",
     ["Box"],
     "type",
     "export class Box { value = 1; }",
   );
-  TestInventory.unit(
+  EvidTestInventory.unit(
     input,
     "member",
     ["Box", "value.part"],
@@ -35,14 +35,14 @@ export async function test_inventory_scopes(): Promise<void> {
     "value = 1",
     "box",
   );
-  TestInventory.unit(
+  EvidTestInventory.unit(
     input,
     "lookalike",
     ["Box", "value"],
     "property",
     "extra: string",
   );
-  TestInventory.unit(
+  EvidTestInventory.unit(
     input,
     "other",
     ["Other"],

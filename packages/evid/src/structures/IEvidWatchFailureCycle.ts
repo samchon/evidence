@@ -16,7 +16,7 @@ export interface IEvidWatchFailureCycle {
   /**
    * Check operation that the watcher attempted.
    *
-   * The failure belongs to reevaluation of the configured Evid check.
+   * The failure belongs to reevaluation of the configured Evidence Graph check.
    */
   command: "check";
 

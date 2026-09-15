@@ -1,7 +1,7 @@
 import { EvidPhpAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Rejects PHP inputs whose declaration population is not statically knowable.
  *
@@ -32,7 +32,7 @@ export async function test_php_boundaries(): Promise<void> {
     "<?php class Emoji { public int $\ud83d\ude00 = 1; }",
   ]) {
     const inventory = await new EvidPhpAdapter().analyze(
-      TestSourceSnapshot.create("src/boundary.php", source),
+      EvidTestSourceSnapshot.create("src/boundary.php", source),
     );
 
     TestValidator.equals(source, inventory.complete, false);
@@ -46,7 +46,7 @@ export async function test_php_boundaries(): Promise<void> {
   }
   for (const file of ["contract.PHP", "contract.phtml", "contract.inc"]) {
     const unsupported = await new EvidPhpAdapter().analyze(
-      TestSourceSnapshot.create(file, "<?php class Contract {}"),
+      EvidTestSourceSnapshot.create(file, "<?php class Contract {}"),
     );
     TestValidator.equals(
       "unadvertised source spelling is rejected",
@@ -61,7 +61,7 @@ export async function test_php_boundaries(): Promise<void> {
     );
   }
   const grouped = await new EvidPhpAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "grouped.php",
       "<?php use Vendor\\{function define as publish}; function run() { publish(); }",
     ),
@@ -72,7 +72,7 @@ export async function test_php_boundaries(): Promise<void> {
     true,
   );
   const declared = await new EvidPhpAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "declared.php",
       "<?php class Explicit { private int $value = 0; function update() { $this->value = 1; } function read() { return $this->external; } }",
     ),
@@ -83,12 +83,12 @@ export async function test_php_boundaries(): Promise<void> {
     true,
   );
   const conflict = await new EvidPhpAdapter().analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/one.php",
         "<?php namespace App; class Contract {}",
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/two.php",
         "<?php namespace app; class contract {}",
       ),
@@ -106,7 +106,7 @@ export async function test_php_boundaries(): Promise<void> {
     ),
   );
 
-  const sourceFailure = TestSourceSnapshot.create(
+  const sourceFailure = EvidTestSourceSnapshot.create(
     "src/missing.php",
     "<?php class Contract {}",
   );

@@ -7,7 +7,7 @@ import type {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Extracts Prisma model, view, column, and relation identities.
  *
@@ -126,17 +126,17 @@ async function analyze(
       sales Sale[]
     }
   `;
-  const core = TestSourceSnapshot.create(
+  const core = EvidTestSourceSnapshot.create(
     "prisma/core.prisma",
     moved ? header : `${header}\n\n${sale}`,
     ["prisma/core.prisma", "schema/core.prisma"],
   );
-  const relations = TestSourceSnapshot.create(
+  const relations = EvidTestSourceSnapshot.create(
     "prisma/relations.schema",
     moved ? `${sale}\n\n${seller}` : seller,
   );
   return new EvidPrismaAdapter().analyze(
-    TestSourceSnapshot.combine([core, relations]),
+    EvidTestSourceSnapshot.combine([core, relations]),
   );
 }
 

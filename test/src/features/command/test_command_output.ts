@@ -3,27 +3,29 @@ import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
- * Separates configuration-free command output from structured operational failures.
+ * Separates configuration-free command output from structured operational
+ * failures.
  *
  * The command facade must make help and version usable in an empty directory,
  * preserve the equivalence of implicit and explicit check, and keep machine
  * output parseable even when configuration or report-file writing fails.
  *
- * 1. Run help and version without a config and require successful usage text and
- *    a semantic-version line.
+ * 1. Run help and version without a config and require successful usage text and a
+ *    semantic-version line.
  * 2. Run implicit and explicit JSON checks against a missing config under --cwd;
  *    require identical exit-2 results with an empty stderr, failed schema,
  *    resolved config location, and operational exit code in stdout.
- * 3. Request buffered watch mode and require guidance to use the streaming watcher API.
+ * 3. Request buffered watch mode and require guidance to use the streaming watcher
+ *    API.
  * 4. Use a directory as the JSON output destination and require an exit-2 write
  *    diagnostic on stderr with no partially emitted stdout report.
  */
 export async function test_command_output(): Promise<void> {
   const location = join(__dirname, `output ${randomUUID()}`);
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     { "nested/.keep": "" },
     async (directory) => {
@@ -33,7 +35,7 @@ export async function test_command_output(): Promise<void> {
       TestValidator.equals("help exit", help.exitCode, 0);
       TestValidator.predicate(
         "help usage",
-        help.stdout.includes("Usage: evidence"),
+        help.stdout.includes("Usage: evid"),
       );
       TestValidator.equals("version exit", version.exitCode, 0);
       TestValidator.predicate(
@@ -103,7 +105,7 @@ export async function test_command_output(): Promise<void> {
       TestValidator.equals("output failure stdout", unwritable.stdout, "");
       TestValidator.predicate(
         "output failure diagnostic",
-        unwritable.stderr.includes("Could not write Evid report"),
+        unwritable.stderr.includes("Could not write Evidence Graph report"),
       );
     },
   );

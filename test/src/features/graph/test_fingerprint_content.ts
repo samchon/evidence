@@ -6,7 +6,7 @@ import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Fingerprints TypeScript declaration content independently of annotations and siblings.
@@ -29,7 +29,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_fingerprint_content(): Promise<void> {
   const baseline = dedent`
     export interface Sale {
-      /** @evidReview docs/rules.md#price #abcdef0 Read the price rule. */
+      /** @evidenceReview docs/rules.md#price #abcdef0 Read the price rule. */
       price: /* Currency amount. */ number;
     }
 
@@ -153,7 +153,7 @@ export async function test_fingerprint_content(): Promise<void> {
  */
 async function analyze(content: string): Promise<IEvidInventory> {
   return new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create("src/contracts.ts", content),
+    EvidTestSourceSnapshot.create("src/contracts.ts", content),
   );
 }
 

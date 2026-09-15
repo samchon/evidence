@@ -1,11 +1,13 @@
-import { EvidPostgresqlAdapter } from "evid";
+import {
+  EvidPostgresqlAdapter,
+  EvidTreeSitterAssetScope,
+  EvidTreeSitterAssets,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTreeSitterAssets } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssets";
-import { EvidTreeSitterAssetScope } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssetScope";
-import { TestFileSystem } from "../../internal/TestFileSystem";
-import { TestParserAssets } from "../../internal/TestParserAssets";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Acquires PostgreSQL's pinned parser variant and reuses it offline.
  *
@@ -17,12 +19,12 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_postgresql_acquisition(): Promise<void> {
   const grammar = await new EvidTreeSitterAssets().grammar("sql");
-  const bytes = await TestParserAssets.bytes(grammar);
-  const source = TestSourceSnapshot.create(
+  const bytes = await EvidTestParserAssets.bytes(grammar);
+  const source = EvidTestSourceSnapshot.create(
     "schema.sql",
     "CREATE TABLE app.Item (id integer);",
   );
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "postgresql-acquisition",
     {},
     async (cacheDirectory) => {

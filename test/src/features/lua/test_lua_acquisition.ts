@@ -1,10 +1,9 @@
-import { EvidLuaAdapter, EvidParser } from "evid";
+import { EvidLuaAdapter, EvidParser, EvidTreeSitterAssetScope } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTreeSitterAssetScope } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssetScope";
-import { TestFileSystem } from "../../internal/TestFileSystem";
-import { TestParserAssets } from "../../internal/TestParserAssets";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Acquires only the selected Lua grammar and reuses its complete inventory offline.
  *
@@ -17,12 +16,12 @@ export async function test_lua_acquisition(): Promise<void> {
   const grammar = (await parser.grammars()).find((item) => item.id === "lua");
   await parser.close();
   if (grammar === undefined) throw new Error("Pinned Lua grammar is missing.");
-  const pinned = Uint8Array.from(await TestParserAssets.bytes(grammar));
-  const snapshot = TestSourceSnapshot.create(
+  const pinned = Uint8Array.from(await EvidTestParserAssets.bytes(grammar));
+  const snapshot = EvidTestSourceSnapshot.create(
     "contract.lua",
     "return { run = function() end, value = 1 }",
   );
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     "lua-acquisition",
     {},
     async (cacheDirectory) => {

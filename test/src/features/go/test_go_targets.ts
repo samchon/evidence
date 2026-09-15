@@ -2,8 +2,8 @@ import { EvidGoAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Resolves Go functions and receiver methods through declaration and owner files.
  *
@@ -16,8 +16,8 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_go_targets(): Promise<void> {
   const adapter = new EvidGoAdapter();
   const reference = await adapter.analyze(
-    TestSourceSnapshot.combine([
-      TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.combine([
+      EvidTestSourceSnapshot.create(
         "src/sale.go",
         dedent`
           package shop
@@ -27,7 +27,7 @@ export async function test_go_targets(): Promise<void> {
           }
         ` + "\n",
       ),
-      TestSourceSnapshot.create(
+      EvidTestSourceSnapshot.create(
         "src/methods.go",
         dedent`
           package shop
@@ -44,23 +44,23 @@ export async function test_go_targets(): Promise<void> {
     ]),
   );
   const claim = await adapter.analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "test/sale_test.go",
       dedent`
         package shop_test
 
-        // @evid ../src/sale.go#Sale Verifies the type.
-        // @evid ../src/sale.go#Sale.Total Verifies the field.
-        // @evid ../src/sale.go#Sale.Calculate Verifies the owner-file method alias.
-        // @evid ../src/methods.go#Sale.Calculate Verifies the declaration-file method.
-        // @evid ../src/methods.go#Add Verifies the function.
+        // @evidence ../src/sale.go#Sale Verifies the type.
+        // @evidence ../src/sale.go#Sale.Total Verifies the field.
+        // @evidence ../src/sale.go#Sale.Calculate Verifies the owner-file method alias.
+        // @evidence ../src/methods.go#Sale.Calculate Verifies the declaration-file method.
+        // @evidence ../src/methods.go#Add Verifies the function.
         func Verify() {}
       `,
     ),
   );
   TestValidator.equals("complete Go reference", reference.diagnostics, []);
   TestValidator.equals("complete Go claim", claim.diagnostics, []);
-  const resolutions = await TestGraph.resolveDeclarations(
+  const resolutions = await EvidTestGraph.resolveDeclarations(
     claim,
     reference,
     reference.units.map((unit) => unit.id),

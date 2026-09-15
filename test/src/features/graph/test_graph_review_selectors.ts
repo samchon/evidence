@@ -12,8 +12,8 @@ import type {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
  * Reuses one current review across selected scopes and public aliases of the same identity.
@@ -32,7 +32,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_graph_review_selectors(): Promise<void> {
   const requirements = await new EvidMarkdownAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "docs/spec.md",
       dedent`
         ## Pricing {#pricing}
@@ -53,12 +53,12 @@ export async function test_graph_review_selectors(): Promise<void> {
     pricing.id,
   ).fingerprint;
   const claim = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/sale.ts",
       dedent`
         /**
-         * @evid docs/spec.md#pricing Implements the whole pricing scope.
-         * @evidReview requirements/spec.md#pricing #${expected} Read the pricing and coupon rules.
+         * @evidence docs/spec.md#pricing Implements the whole pricing scope.
+         * @evidenceReview requirements/spec.md#pricing #${expected} Read the pricing and coupon rules.
          */
         export function price(): void {}
       `,
@@ -71,12 +71,12 @@ export async function test_graph_review_selectors(): Promise<void> {
       severity: "error",
       inventory: requirements,
       unitIds,
-      resolutions: await TestGraph.resolveDeclarations(
+      resolutions: await EvidTestGraph.resolveDeclarations(
         claim,
         requirements,
         unitIds,
       ),
-      reviewResolutions: await TestGraph.resolveReviews(
+      reviewResolutions: await EvidTestGraph.resolveReviews(
         claim,
         requirements,
         unitIds,

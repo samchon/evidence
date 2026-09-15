@@ -4,7 +4,7 @@ import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
  * Gives every invocation of a reusable checker its own execution context.
@@ -16,17 +16,19 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  * 1. Load the passing plan and make a copy whose reference root is missing.
  * 2. Start the valid evaluation, clear its caller-owned plan, and concurrently
  *    evaluate the invalid copy. Verify that:
+ *
  *    - The captured valid plan still passes with one covered reference unit.
  *    - The missing-root plan is incomplete without affecting the valid result.
  * 3. Remove the function's annotation and call `check` on the same facade:
+ *
  *    - The fresh report fails with one missing unit.
  *    - The earlier report remains successful and independently owned.
  */
 export async function test_checker_context(): Promise<void> {
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     join(__dirname, `checker context ${randomUUID()}`),
     {
-      "evid.config.ts": dedent`
+      "evidence.config.ts": dedent`
         export default {
           claims: [{
             type: "typescript", files: ["implementation.ts"], symbol: "function",
@@ -36,12 +38,12 @@ export async function test_checker_context(): Promise<void> {
       `,
       "spec.md": "## Feature {#feature}\n\nRequired behavior.\n",
       "implementation.ts": dedent`
-        /** @evid spec.md#feature Implements the required behavior. */
+        /** @evidence spec.md#feature Implements the required behavior. */
         export function implementation(): void {}
       `,
     },
     async (directory) => {
-      const configFile = join(directory, "evid.config.ts");
+      const configFile = join(directory, "evidence.config.ts");
       const checker = new EvidChecker(configFile);
       const plan = await EvidConfigLoader.plan(configFile);
       const invalid = structuredClone(plan);
@@ -72,7 +74,7 @@ export async function test_checker_context(): Promise<void> {
       );
 
       // The same facade reloads current sources instead of reusing prior coverage.
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "implementation.ts": "export function implementation(): void {}\n",
       });
       const failing = await checker.check();

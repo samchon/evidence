@@ -5,31 +5,33 @@ import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
- * Rejects acknowledgements that lie outside a claim's target and exclusion boundaries.
+ * Rejects acknowledgements that lie outside a claim's target and exclusion
+ * boundaries.
  *
- * A TypeScript-function claim owns Markdown heading targets only. Its graph must
- * expose an annotation for a Prisma target as a configuration-participation
- * error, and must constrain valid Markdown exclusions to declared carrier files.
+ * A TypeScript-function claim owns Markdown heading targets only. Its graph
+ * must expose an annotation for a Prisma target as a
+ * configuration-participation error, and must constrain valid Markdown
+ * exclusions to declared carrier files.
  *
  * 1. Evaluate a function annotated with a Prisma model and require the
  *    check-non-participating-acknowledgement diagnostic.
  * 2. Replace it with an exclusion for the configured Markdown target, then limit
  *    exclusion carriers to a different source file.
- * 3. Require the misplaced source host to report graph-out-of-scope-host with
- *    exit 1 rather than silently accepting or discarding the exclusion.
+ * 3. Require the misplaced source host to report graph-out-of-scope-host with exit
+ *    1 rather than silently accepting or discarding the exclusion.
  */
 export async function test_checker_participation(): Promise<void> {
   const location = join(__dirname, `participation ${randomUUID()}`);
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     {
-      "evid.config.ts": "export default {};\n",
+      "evidence.config.ts": "export default {};\n",
       "docs/spec.md": "## Requirement {#requirement}\n",
       "src/implementation.ts": dedent`
-        /** @evid prisma:Sale Implements a population this claim does not reference. */
+        /** @evidence prisma:Sale Implements a population this claim does not reference. */
         export function implementation(): void {}
       `,
     },
@@ -47,9 +49,9 @@ export async function test_checker_participation(): Promise<void> {
       );
 
       // A matching exclusion remains invalid when its host file misses the carrier globs.
-      await TestFileSystem.save(directory, {
+      await EvidTestFileSystem.save(directory, {
         "src/implementation.ts": dedent`
-          /** @evidExclude docs/spec.md#requirement This requirement does not apply. */
+          /** @evidenceExclude docs/spec.md#requirement This requirement does not apply. */
           export function implementation(): void {}
         `,
       });
@@ -76,7 +78,7 @@ export async function test_checker_participation(): Promise<void> {
 
 function createPlan(directory: string): IEvidConfigPlan {
   return {
-    configFile: join(directory, "evid.config.ts"),
+    configFile: join(directory, "evidence.config.ts"),
     claims: [
       {
         index: 0,

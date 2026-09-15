@@ -15,8 +15,8 @@ import type {
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TestGraph } from "../../internal/TestGraph";
-import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
+import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /** Evaluates Swagger as a claim and cross-artifact reference.
  *
@@ -28,7 +28,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_swagger_graph(): Promise<void> {
   const specification = await new EvidMarkdownAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "docs/spec.md",
       dedent`
         ## Members {#members}
@@ -45,13 +45,13 @@ export async function test_swagger_graph(): Promise<void> {
 
   // The operation description claims the Markdown requirement and records its review.
   const swagger = await new EvidSwaggerAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "openapi.yaml",
       swaggerDocument(dedent`
         Creates a member.
 
-        @evid docs/spec.md#members Implements the member requirement.
-        @evidReview docs/spec.md#members #${specificationFingerprint} Read the requirement and checked the API contract.
+        @evidence docs/spec.md#members Implements the member requirement.
+        @evidenceReview docs/spec.md#members #${specificationFingerprint} Read the requirement and checked the API contract.
       `),
     ),
   );
@@ -63,12 +63,12 @@ export async function test_swagger_graph(): Promise<void> {
 
   // A TypeScript claim can cite the file-independent Swagger operation target.
   const client = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/client.ts",
       dedent`
         /**
-         * @evid POST:/members Calls the documented API operation.
-         * @evidReview POST:/members #${operationFingerprint} Read the normalized operation and request schema.
+         * @evidence POST:/members Calls the documented API operation.
+         * @evidenceReview POST:/members #${operationFingerprint} Read the normalized operation and request schema.
          */
         export function createMember(): void {}
       `,
@@ -86,12 +86,12 @@ export async function test_swagger_graph(): Promise<void> {
             severity: "error",
             inventory: specification,
             unitIds: [members.id],
-            resolutions: await TestGraph.resolveDeclarations(
+            resolutions: await EvidTestGraph.resolveDeclarations(
               swagger,
               specification,
               [members.id],
             ),
-            reviewResolutions: await TestGraph.resolveReviews(
+            reviewResolutions: await EvidTestGraph.resolveReviews(
               swagger,
               specification,
               [members.id],
@@ -109,10 +109,10 @@ export async function test_swagger_graph(): Promise<void> {
             severity: "error",
             inventory: swagger,
             unitIds: [operation.id],
-            resolutions: await TestGraph.resolveDeclarations(client, swagger, [
+            resolutions: await EvidTestGraph.resolveDeclarations(client, swagger, [
               operation.id,
             ]),
-            reviewResolutions: await TestGraph.resolveReviews(client, swagger, [
+            reviewResolutions: await EvidTestGraph.resolveReviews(client, swagger, [
               operation.id,
             ]),
             requireReview: true,
@@ -134,16 +134,16 @@ export async function test_swagger_graph(): Promise<void> {
 
   // Target grammar and exact operation lookup report distinct failures.
   const failures = await new EvidTypeScriptAdapter().analyze(
-    TestSourceSnapshot.create(
+    EvidTestSourceSnapshot.create(
       "src/failures.ts",
       dedent`
-        /** @evid POST /members Contains whitespace instead of a colon. */
+        /** @evidence POST /members Contains whitespace instead of a colon. */
         export function spaced(): void {}
 
-        /** @evid post:/members Uses a lowercase method. */
+        /** @evidence post:/members Uses a lowercase method. */
         export function lowercase(): void {}
 
-        /** @evid POST:/Members Changes the exact path spelling. */
+        /** @evidence POST:/Members Changes the exact path spelling. */
         export function missing(): void {}
       `,
     ),
@@ -186,7 +186,7 @@ export async function test_swagger_graph(): Promise<void> {
 
   // Equal addresses in separate documents become ambiguous when selected together.
   const duplicate = await new EvidSwaggerAdapter().analyze(
-    TestSourceSnapshot.create("duplicate.yaml", swaggerDocument("Duplicate.")),
+    EvidTestSourceSnapshot.create("duplicate.yaml", swaggerDocument("Duplicate.")),
   );
   const duplicateOperation = requireUnit(duplicate, "POST:/members");
   const ambiguous = new EvidTargetResolver([swagger, duplicate]);

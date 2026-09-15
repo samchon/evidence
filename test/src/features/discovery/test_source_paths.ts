@@ -3,8 +3,8 @@ import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidSourcePath } from "../../../../packages/evidence/src/internal/EvidSourcePath";
-import { TestFileSystem } from "../../internal/TestFileSystem";
+import { EvidSourcePath } from "evid";
+import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
  * Keeps path identity case-sensitive and rejects ambiguous root spellings.
@@ -22,11 +22,11 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
 export async function test_source_paths(): Promise<void> {
   const location = join(__dirname, "paths-" + randomUUID());
 
-  await TestFileSystem.experiment(
+  await EvidTestFileSystem.experiment(
     location,
     { "Docs/Spec.md": "# Contract" },
     async (directory) => {
-      const config = join(directory, "evid.config.ts");
+      const config = join(directory, "evidence.config.ts");
 
       // Root and exact-file misspellings are diagnosed consistently on both filesystem kinds.
       const wrongRoot = await EvidSourceLoader.glob(config, {
