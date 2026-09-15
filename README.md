@@ -37,7 +37,9 @@ Claim 1 ('components') reference 3: Missing acknowledgement for '/workspace/app/
 
 The error list is the task list.
 
-## Setup
+## 1. Spec-driven development
+
+### 1.1. Getting started
 
 ```bash
 npm install -D typescript ttsc @wrtnlabs/evidence
@@ -45,9 +47,9 @@ npx evidence init
 npx evidence
 ```
 
-`typescript` and [`ttsc`](https://github.com/samchon/ttsc) are peer dependencies. `ttsc` supplies `ttsx`, which evaluates `evidence.config.ts` without a project `tsconfig.json`. Grammars download on first use. [Start with principles](#start-with-principles) fills the config in.
+`typescript` and [`ttsc`](https://github.com/samchon/ttsc) are peer dependencies. `ttsc` supplies `ttsx`, which evaluates `evidence.config.ts` without a project `tsconfig.json`. Grammars download on first use. The sections below fill the config in.
 
-## Why a graph
+### 1.2. Why a graph
 
 You wrote the rules down. `AGENTS.md`, `CLAUDE.md`, a skill file; the name does not matter.
 
@@ -69,9 +71,7 @@ Evidence makes that connection a graph. Every selected declaration cites every a
 
 The checker proves that the graph is complete. The reviewer judges whether each reason is true. Because both the checklist and the answers live in the repository, they survive the session and run in CI.
 
-## Spec-driven development
-
-### Start with principles
+### 1.3. Start with principles
 
 Replace the starter `evidence.config.ts` with one claim:
 
@@ -119,7 +119,7 @@ Coverage: 3/3 units covered, 0 missing.
 
 Run the same command in CI and keep its exit code: 1 is a violation, 2 is incomplete analysis.
 
-### Ground code in requirements
+### 1.4. Ground code in requirements
 
 Evidence links addresses across artifact types, so anything with an address can join the graph.
 
@@ -204,7 +204,7 @@ One layer up, Markdown cites Markdown in HTML comments, so the rendered document
 A buyer may apply at most one coupon per issuer to one order.
 ```
 
-### Backend
+### 1.5. Backend
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://ttsc.dev/evidence/backend-dark.svg">
@@ -219,7 +219,7 @@ The schema, API, and tests form one graph:
 
 The citations stay native to each artifact: a Prisma `///` comment cites Markdown, a Swagger `description` cites `prisma:Order`, and a test cites `POST:/orders/{orderId}/coupons`.
 
-### Frontend
+### 1.6. Frontend
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://ttsc.dev/evidence/frontend-dark.svg">
@@ -234,7 +234,7 @@ A frontend graph can begin with a Swagger document published by another project:
 
 "The API is wired up but there is no screen yet" stops being a green check.
 
-### Novels
+### 1.7. Novels
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://ttsc.dev/evidence/novel-dark.svg">
@@ -245,7 +245,7 @@ The same graph governs prose. Every layer cites its principles and settings; scr
 
 Editing a setting expires every review on it, so a revision leaves no stale scene behind.
 
-## Benchmark
+## 2. Benchmark
 
 ![Coverage and token spend across all four subjects](https://raw.githubusercontent.com/samchon/ttsc/gh-pages/benchmark/png/evidence-summary.png)
 
@@ -258,13 +258,13 @@ The [benchmark guide](https://ttsc.dev/docs/benchmark/evidence) breaks each run 
 
 The walkthrough above is enough to start. Everything below is the reference.
 
-## Graph rules
+## 3. Graph rules
 
 A **claim** selects the hosts that must cite. Each **reference** selects the units those hosts must cover. Every claim/reference pair is an independent obligation: references never pool coverage, and a claim `name` only labels diagnostics.
 
 A **unit** is one declaration, even when several public addresses expose it. A function exported from its own file and from a barrel remains one unit with two addresses.
 
-### Coverage
+### 3.1. Coverage
 
 - `@evidence` covers its target and the target's selected descendants: a class covers its methods, a file its sections, a model its columns.
 - `@evidenceExclude` covers the same way while recording that the target does not apply. The two cannot overlap in one obligation.
@@ -274,7 +274,7 @@ A **unit** is one declaration, even when several public addresses expose it. A f
 - `evidenceExcludeCarriers` limits which claim files may carry exclusions.
 - `checklist` (Markdown references) requires every host to answer every selected heading; `@evidenceExclude docs/rules.md <reason>` excuses one host from the whole file. It cannot combine with `uniqueEvidence` or `singleEvidencePerSymbol`.
 
-### Reviews
+### 3.2. Reviews
 
 A false tag removes the error, not the problem. `requireReview: true` demands a review of the same kind, on the same host, naming the same target, with the current fingerprint:
 
@@ -296,7 +296,7 @@ Repair: Add '@evidenceReview .agents/skills/principles/SKILL.md#no-hard-coding #
 
 Reviews never provide coverage. `@evidenceReview` pairs with `@evidence`; `@evidenceExcludeReview` pairs with `@evidenceExclude`. A fingerprint version upgrade expires every review once; re-review before updating the value. The checker handles omissions; humans handle falsehoods.
 
-### States
+### 3.3. States
 
 | State | Result |
 | --- | --- |
@@ -308,11 +308,11 @@ Reviews never provide coverage. `@evidenceReview` pairs with `@evidence`; `@evid
 
 Incomplete analysis never passes as an empty population, and a resolved citation is never proof that its reason is true.
 
-## Configuration
+## 4. Configuration
 
 `evidence.config.ts` exports one `IEvidenceConfig`: `claims` and an optional root `severity`. It is evaluated through the consumer's `ttsx` and validated with `typia` before any source is read.
 
-### Claim
+### 4.1. Claim
 
 | Property | Type | Default | Behavior |
 | --- | --- | --- | --- |
@@ -326,7 +326,7 @@ Incomplete analysis never passes as an empty population, and a resolved citation
 | `symbol` | Symbol or nonempty array | family default | Selects claim hosts. |
 | `evidenceExcludeCarriers` | `string[]` | all selected files | Narrows exclusions to matching selected files. |
 
-### Reference
+### 4.2. Reference
 
 | Property | Type | Default | Behavior |
 | --- | --- | --- | --- |
@@ -341,7 +341,7 @@ Incomplete analysis never passes as an empty population, and a resolved citation
 | `requireReview` | `boolean` | `false` | Every acknowledgement needs a current review. |
 | `checklist` | `boolean` | `false` | Markdown only. Every host answers every selected heading. |
 
-### Symbols
+### 4.3. Symbols
 
 | Family | Symbols | Claim default | Reference default |
 | --- | --- | --- | --- |
@@ -352,7 +352,7 @@ Incomplete analysis never passes as an empty population, and a resolved citation
 
 `type` chooses the language before file selection: `.h` follows `c`, `cpp`, or `objc`; `.sql` follows the configured dialect. Roots resolve from the config file; globs are case-sensitive, and a bare `src` selects nothing.
 
-## Tags and targets
+## 5. Tags and targets
 
 ```text
 @evidence <target> <reason>
@@ -385,13 +385,15 @@ Markdown tags go in HTML comments under the heading they belong to. Prisma tags 
 
 The resolver never falls back to a project-wide name.
 
-## Languages
+## 6. Languages
 
 Every family can be a claim and a reference and can cite every other.
 
 Programming languages and SQL dialects parse through upstream Tree-sitter grammars, Prisma through its own parser, and Swagger as JSON or YAML. Adapters run no compiler, preprocessor, macro, or build; a construct that could change the public surface and cannot be resolved makes analysis incomplete.
 
 `evidence languages` prints the shipped registry.
+
+### 6.1. Programming languages
 
 | Type | Files | Public surface | Documentation |
 | --- | --- | --- | --- |
@@ -442,7 +444,7 @@ Every adapter maps its language onto `type`, `function`, and `property`, keeps u
 
 </details>
 
-### Database schema languages
+### 6.2. Database schema languages
 
 Database adapters share `model`, `column`, and `relation`. Selected files are a declared schema snapshot; migrations, views, and executable statements are incomplete, and no adapter runs SQL.
 
@@ -458,13 +460,13 @@ Database adapters share `model`, `column`, and `relation`. Selected files are a 
 
 Addresses are file-qualified except Prisma: `schema.sql#app.item.id`, `schema.sql#Store.Child.parent_id`, `schema.dbml#users.id`. Relation segments are dialect-specific (`["constraint owner_fk"]`, `["foreign-key:...]`, `posts["$ref:owner"]`); `evidence list` prints the escaped form.
 
-### Markdown and Swagger
+### 6.3. Markdown and Swagger
 
 Markdown yields one `file` unit and one per ATX `h1` to `h4`; HTML comments are the only hosts.
 
 Swagger 2.0 and OpenAPI 3.x yield `METHOD:/path` operations whose `description` hosts tags. An operation's fingerprint covers its content, effective servers and security, and referenced local components. A reference by URL is fetched on every load.
 
-## CLI
+## 7. CLI
 
 | Command | Purpose | Formats |
 | --- | --- | --- |
@@ -486,7 +488,7 @@ Swagger 2.0 and OpenAPI 3.x yield `METHOD:/path` operations whose `description` 
 
 Exit 0 is a complete analysis without errors, 1 is a complete analysis with violations, 2 is an invalid command or incomplete analysis. JSON reports carry `schemaVersion: 1`.
 
-## Related
+## 8. Related
 
 - [Evidence Graph: Make Every SKILL Instruction 100% Enforced](https://ttsc.dev/blog/evidence-graph-make-every-skill-instruction-100-percent-enforced/), the article this README follows.
 - [`@ttsc/evidence`](https://github.com/samchon/ttsc/tree/master/packages/evidence), the compiler-integrated variant for TypeScript projects on `ttsc`.
