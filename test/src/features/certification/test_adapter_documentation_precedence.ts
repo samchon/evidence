@@ -115,7 +115,7 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
     EvidenceAdapterCertification.assertInventory(fenced, fencedInventory);
 
     for (const mutation of [
-      htmlCommentedEvid,
+      htmlCommentedEvidence,
       fencedHtmlCommentLiteral,
       quotedHtmlCommentLiteral,
     ]) {
@@ -345,7 +345,7 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
     const commented: IEvidenceInventory = await adapter.analyze(
       EvidenceTestSourceSnapshot.create(
         "schema.sql",
-        htmlCommentedEvid(source),
+        htmlCommentedEvidence(source),
       ),
     );
     const commentedTags: IEvidenceInventory = await adapter.analyze(
@@ -729,7 +729,7 @@ function malformedHtmlClose(content: string): string {
  * The original statement follows the comment and remains the only eligible
  * declaration.
  */
-function htmlCommentedEvid(content: string): string {
+function htmlCommentedEvidence(content: string): string {
   return replaceEvidenceLine(content, (prefix: string, line: string): string =>
     [
       `${prefix}<!--`,

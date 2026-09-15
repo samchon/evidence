@@ -59,7 +59,7 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
     [carrier.id],
     "/** Class documentation. */",
   );
-  const misplacedEvid = EvidenceTestGraph.declaration(
+  const misplacedEvidence = EvidenceTestGraph.declaration(
     claim,
     "misplaced-evidence",
     carrierHost,
@@ -86,7 +86,7 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
             inventory: reference,
             unitIds: [target.id],
             resolutions: [
-              EvidenceTestGraph.resolved(misplacedEvid, target),
+              EvidenceTestGraph.resolved(misplacedEvidence, target),
               EvidenceTestGraph.resolved(acceptedExclusion, target),
             ],
           },
@@ -190,7 +190,7 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
             inventory: failedReference,
             unitIds: [target.id],
             resolutions: [],
-            uniqueEvid: true,
+            uniqueEvidence: true,
             singleEvidencePerSymbol: true,
           },
         ],
@@ -278,7 +278,7 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
             inventory: EvidenceTestInventory.create(),
             unitIds: [],
             resolutions: [],
-            uniqueEvid: true,
+            uniqueEvidence: true,
             singleEvidencePerSymbol: true,
           },
         ],

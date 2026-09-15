@@ -241,18 +241,18 @@ export async function test_graph_checklist(): Promise<void> {
         export function excluded(): void {}
 
         /** @evidence docs/rules.md#no-hardcoding Uses injected policy. */
-        export function localEvid(): void {}
+        export function localEvidence(): void {}
       `,
     ),
   );
   const excluded = requireUnit(exclusions, "excluded");
-  const localEvid = requireUnit(exclusions, "localEvid");
+  const localEvidence = requireUnit(exclusions, "localEvidence");
   const excludedChecklist = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
         inventory: exclusions,
-        unitIds: [excluded.id, localEvid.id],
+        unitIds: [excluded.id, localEvidence.id],
         references: [
           {
             severity: "error",
@@ -277,7 +277,7 @@ export async function test_graph_checklist(): Promise<void> {
   );
   TestValidator.equals(
     "other host remains independent",
-    EvidenceTestGraph.hostCoverage(excludedChecklist, 0, 0, localEvid.id)
+    EvidenceTestGraph.hostCoverage(excludedChecklist, 0, 0, localEvidence.id)
       .missingUnitIds,
     [whackAMole.id],
   );
@@ -346,7 +346,7 @@ export async function test_graph_checklist(): Promise<void> {
       {
         severity: "error",
         inventory: exclusions,
-        unitIds: [excluded.id, localEvid.id],
+        unitIds: [excluded.id, localEvidence.id],
         references: [
           {
             severity: "error",

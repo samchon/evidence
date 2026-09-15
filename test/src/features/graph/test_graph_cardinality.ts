@@ -19,7 +19,7 @@ import { EvidenceTestInventory } from "../../internal/EvidenceTestInventory";
  * 2. Supply only an exclusion and require ordinary coverage to pass, positive
  *    cardinality to remain zero, and no unique-positive-host finding.
  * 3. Have two semantic hosts cite one reference unit, with a repeated fragment on
- *    one host; compare ordinary and uniqueEvid reference entries.
+ *    one host; compare ordinary and uniqueEvidence reference entries.
  * 4. Require exactly one uniqueness finding on the second reference, counting two
  *    semantic hosts rather than three physical citation positions.
  */
@@ -205,7 +205,7 @@ export async function test_graph_cardinality(): Promise<void> {
             inventory: reference,
             unitIds: [first.id],
             resolutions: [EvidenceTestGraph.resolved(exclusion, first)],
-            uniqueEvid: true,
+            uniqueEvidence: true,
             singleEvidencePerSymbol: true,
           },
         ],
@@ -234,7 +234,7 @@ export async function test_graph_cardinality(): Promise<void> {
     [],
   );
 
-  // Two different semantic hosts violate only the reference that enables uniqueEvid.
+  // Two different semantic hosts violate only the reference that enables uniqueEvidence.
   const uniqueClaim = EvidenceTestInventory.create();
   const owner = EvidenceTestInventory.unit(
     uniqueClaim,
@@ -315,7 +315,7 @@ export async function test_graph_cardinality(): Promise<void> {
             inventory: reference,
             unitIds: [first.id],
             resolutions,
-            uniqueEvid: true,
+            uniqueEvidence: true,
           },
         ],
       },

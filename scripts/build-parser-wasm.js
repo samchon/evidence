@@ -232,13 +232,13 @@ async function build(recipe, base, name, cli, env) {
  * engine/grammar pair.
  */
 async function verify(recipe, bytes) {
-  const requireEvid = createRequire(
+  const requireEvidence = createRequire(
     path.join(root, "packages/evidence/package.json"),
   );
-  const { Parser, Language, Query } = requireEvid("web-tree-sitter");
+  const { Parser, Language, Query } = requireEvidence("web-tree-sitter");
   await Parser.init({
     wasmBinary: await readFile(
-      requireEvid.resolve("web-tree-sitter/web-tree-sitter.wasm"),
+      requireEvidence.resolve("web-tree-sitter/web-tree-sitter.wasm"),
     ),
   });
   const language = await Language.load(bytes);

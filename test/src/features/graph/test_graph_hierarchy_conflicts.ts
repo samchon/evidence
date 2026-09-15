@@ -160,7 +160,7 @@ export async function test_graph_hierarchy_conflicts(): Promise<void> {
     "evidence",
     "child",
   );
-  const otherEvid = EvidenceTestGraph.declaration(
+  const otherEvidence = EvidenceTestGraph.declaration(
     conflictClaim,
     "other-evidence",
     otherHost,
@@ -181,7 +181,7 @@ export async function test_graph_hierarchy_conflicts(): Promise<void> {
     "evidenceExclude",
     "parent",
   );
-  const repeatedEvid = EvidenceGraph.evaluate({
+  const repeatedEvidence = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -195,7 +195,7 @@ export async function test_graph_hierarchy_conflicts(): Promise<void> {
             resolutions: [
               EvidenceTestGraph.resolved(first, child),
               EvidenceTestGraph.resolved(repeated, child),
-              EvidenceTestGraph.resolved(otherEvid, child),
+              EvidenceTestGraph.resolved(otherEvidence, child),
             ],
           },
         ],
@@ -205,7 +205,7 @@ export async function test_graph_hierarchy_conflicts(): Promise<void> {
 
   TestValidator.equals(
     "duplicate positive scope",
-    count(repeatedEvid, "graph-duplicate-evidence"),
+    count(repeatedEvidence, "graph-duplicate-evidence"),
     1,
   );
 

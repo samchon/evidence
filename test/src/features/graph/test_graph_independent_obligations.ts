@@ -51,7 +51,7 @@ export async function test_graph_independent_obligations(): Promise<void> {
     [firstUnit.id],
     "/** Shared documentation. */",
   );
-  const firstEvid = EvidenceTestGraph.declaration(
+  const firstEvidence = EvidenceTestGraph.declaration(
     firstClaim,
     "first-evidence",
     firstHost,
@@ -78,7 +78,7 @@ export async function test_graph_independent_obligations(): Promise<void> {
           severity: "error",
           inventory: reference,
           unitIds: [target.id],
-          resolutions: [EvidenceTestGraph.resolved(firstEvid, target)],
+          resolutions: [EvidenceTestGraph.resolved(firstEvidence, target)],
         },
       ]),
       uncoveredClaim,
