@@ -2,6 +2,8 @@
 
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/wrtnlabs/evidence/blob/master/LICENSE) [![npm version](https://img.shields.io/npm/v/@wrtnlabs/evidence.svg)](https://www.npmjs.com/package/@wrtnlabs/evidence) [![npm downloads](https://img.shields.io/npm/dm/@wrtnlabs/evidence.svg)](https://www.npmjs.com/package/@wrtnlabs/evidence) [![build](https://github.com/wrtnlabs/evidence/actions/workflows/build.yml/badge.svg)](https://github.com/wrtnlabs/evidence/actions/workflows/build.yml) [![test](https://github.com/wrtnlabs/evidence/actions/workflows/test.yml/badge.svg)](https://github.com/wrtnlabs/evidence/actions/workflows/test.yml)
 
+![Evidence Graph: make every SKILL instruction 100% enforced](https://ttsc.dev/evidence/og-evidence-skill-instructions.png)
+
 Evidence Graph for 100% coverage and 100% compliance.
 
 > - Writing rules into `AGENTS.md` or a skill file does not make a coding agent follow them. In [one measurement](https://arxiv.org/abs/2605.01771), six frontier models followed a written instruction in 0 of 60 runs and reported compliance in more than 90% of them.
@@ -43,6 +45,17 @@ Repair: Cite the claim artifact that implements this unit with @evidence, or exc
 
 The error list is the task list.
 
+## Setup
+
+```bash
+npm install -D typescript ttsc @wrtnlabs/evidence
+npx evidence init
+npx evidence
+```
+
+`typescript` and `ttsc` are peer dependencies; `ttsc` supplies `ttsx`, which evaluates `evidence.config.ts`. `init` writes a typed starter config and never overwrites one. Grammars download into a per-user cache on first use; install no grammar package and no compiler for the analyzed languages. [Step 1](#step-1-enforce-your-principles) fills the config in.
+
+- [Setup](#setup)
 - [Why a graph](#why-a-graph)
 - [Step 1: Enforce your principles](#step-1-enforce-your-principles)
 - [Step 2: Ground code in requirements](#step-2-ground-code-in-requirements)
@@ -141,21 +154,9 @@ A prompt instruction gets buried as the conversation grows and is gone in the ne
 
 The rule file is already there. It is already Markdown, it already has headings, and it is already the document you wish the agent would follow. Start here.
 
-### Install
-
-```bash
-npm install -D typescript ttsc @wrtnlabs/evidence
-```
-
-`typescript` and `ttsc` are peer dependencies; `ttsc` supplies `ttsx`, which evaluates `evidence.config.ts`. Grammars download into a per-user cache on first use. Install no grammar package and no compiler for the analyzed languages.
-
 ### Point the checker at the rule file
 
-```bash
-npx evidence init
-```
-
-`init` writes a typed starter `evidence.config.ts` and never overwrites one. Replace it with one claim:
+Replace the starter `evidence.config.ts` with one claim:
 
 ```ts
 import type { IEvidenceConfig } from "@wrtnlabs/evidence";
