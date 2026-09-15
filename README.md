@@ -19,7 +19,7 @@ Every rule, requirement, schema, and API becomes an obligation the check enforce
 export function CouponStackingNotice(props: IProps): JSX.Element;
 ```
 
-Four sentences the agent must write before the check passes: what the component takes from the requirement, which hook it renders, how it honors a principle, and why another principle does not apply. Delete one and the check stops:
+Four sentences the agent must write before the check passes: what the component takes from the requirement, which hook it renders, how it honors a principle, and why another principle does not apply. Delete the hook line and the check stops:
 
 ```bash
 $ npx evidence
@@ -32,7 +32,7 @@ Claim 1 ('components') reference 2: Missing acknowledgement for '/workspace/app/
 Repair: Cite the claim artifact that implements this unit with @evidence, or exclude it on an eligible carrier when it does not apply.
 ```
 
-The error list is the task list. Evidence reads 19 programming languages, 7 database schema languages, Markdown, and Swagger through Tree-sitter, with no compiler or build of the checked project.
+The error list is the task list. Evidence reads 19 programming languages, 7 database schema languages, Markdown, and Swagger from source, with no compiler or build of the checked project.
 
 ## Setup
 
@@ -42,7 +42,7 @@ npx evidence init
 npx evidence
 ```
 
-`typescript` and `ttsc` are peer dependencies; `ttsc` supplies `ttsx`, which evaluates `evidence.config.ts`. Grammars download on first use. [Step 1](#step-1-enforce-your-principles) fills the config in.
+`typescript` and [`ttsc`](https://github.com/samchon/ttsc) are peer dependencies; `ttsc` supplies `ttsx`, which evaluates `evidence.config.ts`. Grammars download on first use. [Step 1](#step-1-enforce-your-principles) fills the config in.
 
 ## Why a graph
 
@@ -50,7 +50,6 @@ You wrote the rules down. `AGENTS.md`, `CLAUDE.md`, a skill file; the name does 
 
 ```markdown
 ## No hard coding {#no-hard-coding}
-## Never weaken a test {#never-weaken-the-test}
 ## Fix causes, not symptoms {#fix-root-causes}
 ## Do not build it before you need it {#yagni}
 ```
@@ -180,7 +179,7 @@ export default {
 } satisfies IEvidenceConfig;
 ```
 
-Every requirement must be cited by a function under `src`; every function under `src` must be cited by a test, with no exclusions.
+Every requirement must be cited by a function under `src`; every function under `src` must be cited by a test, with no exclusions. With one requirement, `src/calculator.ts` exporting `add`, and `test/calculator.test.ts` exporting `test_add`, the first check fails twice:
 
 ```md
 ## Exact addition {#exact-addition}
@@ -347,7 +346,7 @@ A **claim** is a population whose hosts must cite; a **reference** is a populati
 
 - `@evidence` covers its target and the target's selected descendants: a class covers its methods, a file its sections, a model its columns.
 - `@evidenceExclude` covers the same way while recording that the target does not apply. The two cannot overlap in one obligation.
-- `noEvidenceExclude` refuses exclusions. `uniqueEvidence` allows one positive host per unit. `singleEvidencePerSymbol` requires every host, tagged or not, to cite exactly one unit. `evidenceExcludeCarriers` limits which claim files may carry exclusions.
+- `noEvidenceExclude` refuses exclusions. `uniqueEvidence` allows at most one positive host per unit. `singleEvidencePerSymbol` requires every host, tagged or not, to cite exactly one unit. `evidenceExcludeCarriers` limits which claim files may carry exclusions.
 - `checklist` (Markdown references) requires every host to answer every selected heading; `@evidenceExclude docs/rules.md <reason>` excuses one host from the whole file. It cannot combine with `uniqueEvidence` or `singleEvidencePerSymbol`.
 
 ### Reviews
@@ -386,7 +385,7 @@ Incomplete analysis never passes as an empty population, and a resolved citation
 
 ## Configuration
 
-`evidence.config.ts` exports one `IEvidenceConfig`, evaluated through the consumer's `ttsx` and validated with `typia` before any source is read.
+`evidence.config.ts` exports one `IEvidenceConfig`: `claims` and an optional root `severity`. It is evaluated through the consumer's `ttsx` and validated with `typia` before any source is read.
 
 ### Claim
 
@@ -463,7 +462,7 @@ The resolver never falls back to a project-wide name.
 
 ## Languages
 
-Every family can be a claim and a reference and can cite every other. Adapters run no compiler, preprocessor, macro, or build; a construct that could change the public surface and cannot be resolved makes analysis incomplete. `evidence languages` prints the shipped registry.
+Every family can be a claim and a reference and can cite every other. Programming languages and SQL dialects parse through upstream Tree-sitter grammars, Prisma through its own parser, and Swagger as JSON or YAML. Adapters run no compiler, preprocessor, macro, or build; a construct that could change the public surface and cannot be resolved makes analysis incomplete. `evidence languages` prints the shipped registry.
 
 | Type | Files | Public surface | Documentation |
 | --- | --- | --- | --- |
