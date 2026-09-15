@@ -138,5 +138,5 @@ function failure(config: IEvidenceConfig): string {
     if (cause instanceof Error) return cause.message;
     throw cause;
   }
-  throw new Error("Expected Evid configuration validation to fail.");
+  throw new Error("Expected Evidence configuration validation to fail.");
 }

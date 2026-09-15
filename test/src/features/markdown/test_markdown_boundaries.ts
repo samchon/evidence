@@ -9,7 +9,7 @@ import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSna
  * Excludes Markdown syntax examples from heading and annotation discovery.
  *
  * Fence, inline-code, rendered-code, MDX-template, indentation, and comment
- * regions may contain realistic Evid syntax without declaring a public unit or
+ * regions may contain realistic Evidence syntax without declaring a public unit or
  * host.
  *
  * 1. Analyze one visible heading plus heading and annotation syntax in each
@@ -38,7 +38,7 @@ import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSna
  * 13. Keep a comment adjacent to an ATX marker from fabricating a heading.
  * 14. Verify only the visible headings and real children materialize as section
  *     units.
- * 15. Verify only real HTML comments declare their Evid targets.
+ * 15. Verify only real HTML comments declare their Evidence targets.
  * 16. Require no diagnostics from the ignored examples.
  */
 export async function test_markdown_boundaries(): Promise<void> {

@@ -9,7 +9,7 @@ import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSna
  * Partitions Markdown content among file and heading units at real section
  * boundaries.
  *
- * Evid needs each unit's owned ranges to exclude nested supported sections
+ * Evidence needs each unit's owned ranges to exclude nested supported sections
  * while retaining deep headings, fenced text, and prose that belongs to the
  * current section.
  *

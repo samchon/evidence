@@ -20,7 +20,7 @@ import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSna
  * Evaluates a requirement-to-implementation-to-test chain through real
  * adapters.
  *
- * Each link is an independent configured claim/reference pair. Evid from the
+ * Each link is an independent configured claim/reference pair. Evidence from the
  * test to the implementation cannot substitute for the implementation's
  * citation to a requirement, and breaking one link must not erase the other
  * link's coverage.

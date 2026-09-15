@@ -6,7 +6,7 @@ import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSna
 /**
  * Separates trailing Go comments from leading documentation runs.
  *
- * Evid attaches only to the declaration-leading run despite matching columns.
+ * Evidence attaches only to the declaration-leading run despite matching columns.
  *
  * 1. Analyze leading and trailing annotated comments.
  * 2. Compare attached declarations.

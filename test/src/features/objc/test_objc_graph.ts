@@ -8,7 +8,7 @@ import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSna
 /**
  * Evaluates every selected Objective-C declaration as a graph reference.
  *
- * Evid covers selected units, whereas reviews remain recorded without
+ * Evidence covers selected units, whereas reviews remain recorded without
  * satisfying missing obligations.
  *
  * 1. Extract Objective-C units and TypeScript claims for each selector.

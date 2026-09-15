@@ -59,7 +59,7 @@ export async function test_swagger_fingerprints(): Promise<void> {
     health,
   );
 
-  // Evid metadata can be added after prose without invalidating its own review.
+  // Evidence metadata can be added after prose without invalidating its own review.
   const annotated = await analyze(
     document(
       dedent`

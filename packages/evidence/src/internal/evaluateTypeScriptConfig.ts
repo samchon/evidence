@@ -263,7 +263,7 @@ async function configModule(
  * Finds the nearest reusable dependency tree so the temporary project resolves
  * the consumer's packages.
  *
- * The evaluator links this tree instead of resolving dependencies from Evid's
+ * The evaluator links this tree instead of resolving dependencies from Evidence's
  * own installation location.
  */
 async function findNodeModules(start: string): Promise<string | undefined> {

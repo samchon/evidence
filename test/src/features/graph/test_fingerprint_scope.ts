@@ -28,7 +28,7 @@ import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
  *
  * 1. Edit a nested Markdown section and require its parent's own content digest to
  *    stay stable while the parent scope fingerprint changes.
- * 2. Insert ordinary prose and accepted Evid metadata before the reviewed heading;
+ * 2. Insert ordinary prose and accepted Evidence metadata before the reviewed heading;
  *    require its fingerprint and exact shifted range to remain stable, then
  *    exercise `requireReview` against the shifted document.
  * 3. Edit prose after single- and multiline HTML comments; require the owning

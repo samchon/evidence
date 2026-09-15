@@ -26,7 +26,7 @@ export async function test_markdown_hosts(): Promise<void> {
     # Parent
     <!-- @evidenceReview docs/spec.md#file #abcdef0 Checked the document. -->
     ## Child
-    <!-- An eligible host without an Evid tag. -->
+    <!-- An eligible host without an Evidence tag. -->
     ##### Unsupported detail
     <!-- @evidence docs/spec.md#detail This host is too deep. -->
     #### Supported again

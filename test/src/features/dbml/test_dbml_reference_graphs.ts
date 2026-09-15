@@ -15,7 +15,7 @@ import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSna
  * Evaluates each DBML model, column, and relation target from a TypeScript
  * claim.
  *
- * Evid and review have distinct graph roles, including when a review
+ * Evidence and review have distinct graph roles, including when a review
  * fingerprint is current or deliberately stale.
  *
  * 1. Select one DBML unit of each reference symbol and calculate its fingerprint.

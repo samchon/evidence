@@ -126,7 +126,7 @@ export async function test_zig_hosts(): Promise<void> {
     EvidenceFingerprint.inspect(changed, contract.id).fingerprint,
   );
 
-  // Every Evid tag kind on an ordinary comment remains an unsupported carrier.
+  // Every Evidence tag kind on an ordinary comment remains an unsupported carrier.
   for (const tag of [
     "evidence",
     "evidenceExclude",

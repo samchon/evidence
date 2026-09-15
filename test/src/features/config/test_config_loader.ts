@@ -138,7 +138,7 @@ export async function test_config_loader(): Promise<void> {
       TestValidator.predicate(
         "unsupported artifact path",
         unsupported.includes(
-          "claims[0].type: artifact type 'graphql' has no certified Evid adapter",
+          "claims[0].type: artifact type 'graphql' has no certified Evidence adapter",
         ),
       );
 
@@ -215,5 +215,5 @@ async function failure(closure: () => Promise<unknown>): Promise<string> {
     if (cause instanceof Error) return cause.message;
     throw cause;
   }
-  throw new Error("Expected Evid configuration loading to fail.");
+  throw new Error("Expected Evidence configuration loading to fail.");
 }

@@ -8,7 +8,7 @@ import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSna
 /**
  * Evaluates every selected Swift declaration as a reference.
  *
- * Evid covers a selector while a review-only target remains missing.
+ * Evidence covers a selector while a review-only target remains missing.
  *
  * 1. Evaluate acknowledged and undocumented selectors.
  * 2. Verify exact missing populations and review behavior.

@@ -17,7 +17,7 @@ import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSna
  * 2. Resolve withdrawn and literal dotted paths and verify hidden, resolved, and
  *    missing outcomes.
  * 3. Compare ancestor fingerprints after metadata and semantic subtree edits.
- * 4. Verify every Evid tag on an ordinary comment is rejected without creating
+ * 4. Verify every Evidence tag on an ordinary comment is rejected without creating
  *    evidence or review records.
  */
 export async function test_scala_hosts(): Promise<void> {
@@ -137,7 +137,7 @@ export async function test_scala_hosts(): Promise<void> {
     EvidenceFingerprint.inspect(changed, contract.id).fingerprint,
   );
 
-  // Every Evid tag kind on an ordinary comment remains an unsupported carrier.
+  // Every Evidence tag kind on an ordinary comment remains an unsupported carrier.
   for (const tag of [
     "evidence",
     "evidenceExclude",

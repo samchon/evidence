@@ -48,7 +48,7 @@ export async function test_prisma_hosts(): Promise<void> {
       id String @id
     }
 
-    /// @evidence docs/spec.md#status Enums are outside the Evid population.
+    /// @evidence docs/spec.md#status Enums are outside the Evidence population.
     enum SaleStatus {
       ACTIVE
     }

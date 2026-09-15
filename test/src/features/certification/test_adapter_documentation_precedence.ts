@@ -101,7 +101,7 @@ const NATIVE_DOCUMENTATION_TYPES: ReadonlySet<string> = new Set<string>([
  *     Doxygen code to keep following fake annotations inert through the host
  *     end.
  * 15. Put native opening and closing delimiters in separate Markdown fences;
- *     require those literals not to span across the real Evid statement.
+ *     require those literals not to span across the real Evidence statement.
  */
 export async function test_adapter_documentation_precedence(): Promise<void> {
   for (const certification of EvidenceAdapterCertificationFixtures.all()) {
@@ -483,7 +483,7 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
 /**
  * Builds the database adapter fixture with its dialect-specific qualified name.
  *
- * Every SQL certification keeps the same Evid carrier while using a table
+ * Every SQL certification keeps the same Evidence carrier while using a table
  * spelling that its adapter recognizes as public.
  */
 function databaseSource(type: string): string {
@@ -505,7 +505,7 @@ function databaseSource(type: string): string {
 }
 
 /**
- * Applies one documentation mutation to a certification's unique Evid host.
+ * Applies one documentation mutation to a certification's unique Evidence host.
  *
  * Copying the source records keeps the canonical certification immutable, and a
  * missing or duplicate carrier fails before it can weaken the comparison.
@@ -557,7 +557,7 @@ function separatedFences(content: string): string {
 }
 
 /**
- * Places one fake Evid statement inside a complete HTML example.
+ * Places one fake Evidence statement inside a complete HTML example.
  *
  * The original statement remains after the closing tag as the only declaration
  * that may survive certification.
@@ -678,7 +678,7 @@ function indentedFenceBeforeHtml(content: string): string {
 /**
  * Inserts an attribute-bearing HTML end tag before the valid close.
  *
- * The malformed tag must not end the example or expose the second fake Evid
+ * The malformed tag must not end the example or expose the second fake Evidence
  * statement.
  */
 function malformedHtmlClose(content: string): string {
@@ -695,7 +695,7 @@ function malformedHtmlClose(content: string): string {
 }
 
 /**
- * Places one fake Evid statement inside a complete HTML comment.
+ * Places one fake Evidence statement inside a complete HTML comment.
  *
  * The original statement follows the comment and remains the only eligible
  * declaration.
@@ -715,7 +715,7 @@ function htmlCommentedEvid(content: string): string {
  * Separates HTML comment delimiters into independent Markdown fences.
  *
  * Literal delimiters inside fenced examples cannot pair across the real
- * statement and suppress its Evid declaration.
+ * statement and suppress its Evidence declaration.
  */
 function fencedHtmlCommentLiteral(content: string): string {
   return replaceEvidenceLine(content, (prefix: string, line: string): string =>
@@ -735,7 +735,7 @@ function fencedHtmlCommentLiteral(content: string): string {
  * Places a comment-looking marker inside a quoted markup attribute.
  *
  * The complete tag token owns the marker, so it cannot open comment state and
- * hide the real Evid statement that follows.
+ * hide the real Evidence statement that follows.
  */
 function quotedHtmlCommentLiteral(content: string): string {
   return replaceEvidenceLine(content, (prefix: string, line: string): string =>
@@ -746,7 +746,7 @@ function quotedHtmlCommentLiteral(content: string): string {
 /**
  * Places literal HTML example boundaries inside separate comments.
  *
- * Comment contents cannot open or close an example around the real Evid
+ * Comment contents cannot open or close an example around the real Evidence
  * statement between them.
  */
 function commentedHtmlTags(content: string): string {
@@ -759,7 +759,7 @@ function commentedHtmlTags(content: string): string {
  * Separates literal HTML tags with one adapter-native code syntax.
  *
  * If HTML pairing ignores the native regions, their opening and closing
- * literals cross the real Evid statement and remove it from the certified
+ * literals cross the real Evidence statement and remove it from the certified
  * inventory.
  */
 function nativeCodePrecedence(type: string, content: string): string {
@@ -789,7 +789,7 @@ function nativeCodePrecedence(type: string, content: string): string {
 /**
  * Separates native documentation delimiters into independent Markdown fences.
  *
- * Literal Doxygen, Javadoc, and Scaladoc openings cannot own the real Evid
+ * Literal Doxygen, Javadoc, and Scaladoc openings cannot own the real Evidence
  * statement before a later fenced closing delimiter.
  */
 function markdownNativeLiteral(type: string, content: string): string {
@@ -823,7 +823,7 @@ function markdownNativeLiteral(type: string, content: string): string {
  * Appends a fake statement after an unclosed Doxygen code boundary.
  *
  * The code region owns the remainder of the documentation host, so the injected
- * statement must not become a second Evid declaration.
+ * statement must not become a second Evidence declaration.
  */
 function unclosedDoxygenCode(content: string): string {
   return replaceEvidenceLine(content, (prefix: string, line: string): string =>
@@ -836,7 +836,7 @@ function unclosedDoxygenCode(content: string): string {
 }
 
 /**
- * Replaces the unique Evid line while retaining its documentation prefix.
+ * Replaces the unique Evidence line while retaining its documentation prefix.
  *
  * Adapter fixtures use different comment delimiters, so mutations receive the
  * exact prefix and complete line rather than assuming one documentation

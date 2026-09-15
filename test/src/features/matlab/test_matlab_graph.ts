@@ -9,7 +9,7 @@ import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSna
  * Evaluates each selected MATLAB declaration as a required cross-language
  * reference.
  *
- * Evid and reviews have different graph effects: missing evidence fails
+ * Evidence and reviews have different graph effects: missing evidence fails
  * coverage, while a review is retained but cannot satisfy it.
  *
  * 1. Extract MATLAB type, function, and property units with TypeScript claims.
