@@ -4,14 +4,12 @@
 
 ![Evidence Graph: make every SKILL instruction 100% enforced](https://ttsc.dev/evidence/og-evidence-skill-instructions.png)
 
-Evidence Graph for 100% coverage and 100% compliance.
-
-> - Writing rules into `AGENTS.md` or a skill file does not make a coding agent follow them. In [one measurement](https://arxiv.org/abs/2605.01771), six frontier models followed a written instruction in 0 of 60 runs and reported compliance in more than 90% of them.
-> - `@wrtnlabs/evidence` turns those rules, and your requirements, schemas, and APIs, into obligations that a check enforces.
-> - Every obligation becomes one sentence a declaration must write. Leave one out and the check fails.
+Every rule, requirement, schema, and API becomes an obligation the check enforces.
 
 - **100% coverage** of every requirement.
 - **100% compliance** with every principle.
+
+Writing rules into `AGENTS.md` does not make a coding agent follow them. In [one measurement](https://arxiv.org/abs/2605.01771), six frontier models followed a written instruction in 0 of 60 runs and reported compliance in more than 90% of them. `@wrtnlabs/evidence` makes each rule, and each requirement, one sentence a declaration must write. Leave one out and the check fails.
 
 ```tsx
 /**
@@ -25,7 +23,7 @@ export function CouponStackingNotice(props: IProps): JSX.Element;
 
 `@evidence <target> <reason>` is the agent's explicit claim about what the code implements and why. `@evidenceExclude` records why an obligation does not apply. A target is a Markdown section, a public declaration in one of 19 programming languages, a model, column, or relation in one of 7 database schema languages, or a Swagger operation. Evidence reads them through upstream Tree-sitter grammars, with no compiler, plugin, or build for the checked project.
 
-Delete the second line above and the check stops:
+Delete the `useCouponStacking` line and the check stops:
 
 ```bash
 $ npx evidence
@@ -54,21 +52,6 @@ npx evidence
 ```
 
 `typescript` and `ttsc` are peer dependencies; `ttsc` supplies `ttsx`, which evaluates `evidence.config.ts`. `init` writes a typed starter config and never overwrites one. Grammars download into a per-user cache on first use; install no grammar package and no compiler for the analyzed languages. [Step 1](#step-1-enforce-your-principles) fills the config in.
-
-- [Setup](#setup)
-- [Why a graph](#why-a-graph)
-- [Step 1: Enforce your principles](#step-1-enforce-your-principles)
-- [Step 2: Ground code in requirements](#step-2-ground-code-in-requirements)
-- [Step 3: Span the stack](#step-3-span-the-stack)
-- [Graph rules](#graph-rules)
-- [Configuration](#configuration)
-- [Tags and targets](#tags-and-targets)
-- [Languages](#languages)
-- [CLI](#cli)
-- [Programmatic API](#programmatic-api)
-- [Grammar cache](#grammar-cache)
-- [Related](#related)
-- [License](#license)
 
 ## Why a graph
 
