@@ -155,7 +155,7 @@ function inspectionLines(inspection: IEvidenceInspection): string[] {
     );
   for (const review of inspection.reviews)
     lines.push(
-      `  Review: @${review.review.reviews === "evidence" ? "EvidenceReview" : "EvidenceExcludeReview"} ${review.review.fingerprint === undefined ? "without fingerprint" : `#${review.review.fingerprint}`} in host ${review.host.file}:${review.host.range.start.line}:${review.host.range.start.column} (${review.status})`,
+      `  Review: @${review.review.reviews === "evidence" ? "evidenceReview" : "EvidenceExcludeReview"} ${review.review.fingerprint === undefined ? "without fingerprint" : `#${review.review.fingerprint}`} in host ${review.host.file}:${review.host.range.start.line}:${review.host.range.start.column} (${review.status})`,
     );
   return lines;
 }

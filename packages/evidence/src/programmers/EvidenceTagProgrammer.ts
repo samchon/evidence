@@ -78,8 +78,8 @@ export namespace EvidenceTagProgrammer {
         const kind = marker[1];
         if (
           kind === "EvidenceExcludeReview" ||
-          kind === "EvidenceReview" ||
-          kind === "EvidenceExclude" ||
+          kind === "evidenceReview" ||
+          kind === "evidenceExclude" ||
           kind === "evidence" ||
           kind === "link"
         )
@@ -108,7 +108,7 @@ export namespace EvidenceTagProgrammer {
       if (
         line.startsWith("@") &&
         (context.documentation.tagBoundaries ||
-          context.pending?.kind === "EvidenceReview" ||
+          context.pending?.kind === "evidenceReview" ||
           context.pending?.kind === "EvidenceExcludeReview")
       ) {
         flush(context);
@@ -261,7 +261,7 @@ export namespace EvidenceTagProgrammer {
       context.documentation.offsets[tag.start],
       tag.kind,
     ]);
-    if (tag.kind === "EvidenceReview" || tag.kind === "EvidenceExcludeReview") {
+    if (tag.kind === "evidenceReview" || tag.kind === "EvidenceExcludeReview") {
       let description = body.remainder;
       let fingerprint: string | undefined;
       if (description.startsWith("#")) {
@@ -296,7 +296,7 @@ export namespace EvidenceTagProgrammer {
       context.result.reviews.push({
         id,
         hostId: context.host.id,
-        reviews: tag.kind === "EvidenceReview" ? "evidence" : "EvidenceExclude",
+        reviews: tag.kind === "evidenceReview" ? "evidence" : "evidenceExclude",
         target: body.target,
         description,
         location: where,
@@ -314,7 +314,7 @@ export namespace EvidenceTagProgrammer {
       context.result.declarations.push({
         id,
         hostId: context.host.id,
-        kind: tag.kind === "EvidenceExclude" ? "EvidenceExclude" : "evidence",
+        kind: tag.kind === "evidenceExclude" ? "evidenceExclude" : "evidence",
         target: body.target,
         reason: body.remainder,
         location: where,

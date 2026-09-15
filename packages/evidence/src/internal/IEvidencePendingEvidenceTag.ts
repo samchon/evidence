@@ -15,8 +15,8 @@ export interface IEvidencePendingEvidenceTag {
   kind:
     | "evidence"
     | "link"
-    | "EvidenceExclude"
-    | "EvidenceReview"
+    | "evidenceExclude"
+    | "evidenceReview"
     | "EvidenceExcludeReview";
   /**
    * Continued body text without the tag marker.

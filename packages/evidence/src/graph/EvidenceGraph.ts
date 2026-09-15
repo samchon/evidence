@@ -520,7 +520,7 @@ class EvidenceGraphEvaluator {
       }
       if (
         (declaration.kind === "evidence" && hostUnitIds.length === 0) ||
-        (declaration.kind === "EvidenceExclude" &&
+        (declaration.kind === "evidenceExclude" &&
           !exclusionHosts.has(declaration.hostId))
       ) {
         this.diagnostics.push(
@@ -539,7 +539,7 @@ class EvidenceGraphEvaluator {
         continue;
       }
       if (
-        declaration.kind === "EvidenceExclude" &&
+        declaration.kind === "evidenceExclude" &&
         reference.noEvidenceExclude === true
       ) {
         this.diagnostics.push(
@@ -880,10 +880,10 @@ class EvidenceGraphEvaluator {
         ),
       );
     }
-    if (declaration.kind === "EvidenceExclude") {
+    if (declaration.kind === "evidenceExclude") {
       const duplicate = edges.find(
         (edge) =>
-          edge.kind === "EvidenceExclude" &&
+          edge.kind === "evidenceExclude" &&
           this.overlaps(edge.unitIds, unitIds) &&
           (!checklist || this.overlaps(edge.hostUnitIds, hostUnitIds)),
       );

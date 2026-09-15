@@ -98,7 +98,7 @@ export namespace EvidenceGraphReporter {
     for (const edge of report.edges)
       for (const source of edge.sourceNodeIds)
         lines.push(
-          `  ${requireNodeName(names, source)} -> ${requireNodeName(names, edge.targetNodeId)} [label="${dotText(edgeLabel(edge))}"${edge.kind === "EvidenceExclude" ? ', style="dashed"' : ""}];`,
+          `  ${requireNodeName(names, source)} -> ${requireNodeName(names, edge.targetNodeId)} [label="${dotText(edgeLabel(edge))}"${edge.kind === "evidenceExclude" ? ', style="dashed"' : ""}];`,
         );
     for (const review of report.reviews)
       for (const source of review.sourceNodeIds)

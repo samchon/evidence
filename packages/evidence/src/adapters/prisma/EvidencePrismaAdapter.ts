@@ -374,7 +374,7 @@ export class EvidencePrismaAdapter implements IEvidenceAdapter<"prisma"> {
     parsed: IEvidenceTagParseResult,
   ): void {
     for (const declaration of parsed.declarations)
-      if (declaration.kind === "EvidenceExclude")
+      if (declaration.kind === "evidenceExclude")
         inventory.declarations.push(declaration);
       else
         inventory.diagnostics.push({
