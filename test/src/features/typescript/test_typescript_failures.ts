@@ -1,8 +1,8 @@
-import { EvidTypeScriptAdapter } from "evid";
+import { EvidenceTypeScriptAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Preserves TypeScript syntax and export failures as incomplete analysis.
@@ -15,10 +15,10 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Require strings containing tags to remain inert.
  */
 export async function test_typescript_failures(): Promise<void> {
-  const adapter = new EvidTypeScriptAdapter();
+  const adapter = new EvidenceTypeScriptAdapter();
 
   const malformed = await adapter.analyze(
-    EvidTestSourceSnapshot.create("src/broken.ts", "export interface Broken {"),
+    EvidenceTestSourceSnapshot.create("src/broken.ts", "export interface Broken {"),
   );
   TestValidator.equals(
     "malformed source is incomplete",
@@ -34,13 +34,13 @@ export async function test_typescript_failures(): Promise<void> {
   // The pinned upstream grammar has not yet accepted TypeScript 5.0 type-only star exports.
   const typeOnlyStars = await Promise.all([
     adapter.analyze(
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/type-star.ts",
         'export type * from "./contract";',
       ),
     ),
     adapter.analyze(
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/type-namespace.ts",
         'export type * as Contract from "./contract";',
       ),
@@ -54,7 +54,7 @@ export async function test_typescript_failures(): Promise<void> {
     );
 
   const missing = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/index.ts",
       'export { Contract } from "./missing";',
     ),
@@ -71,12 +71,12 @@ export async function test_typescript_failures(): Promise<void> {
   );
 
   const missingBinding = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/available.ts",
         "export const other = 1;",
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/reexport.ts",
         'export { Contract } from "./available";',
       ),
@@ -94,7 +94,7 @@ export async function test_typescript_failures(): Promise<void> {
   );
 
   const assignment = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/commonjs.ts",
       "const contract = {}; export = contract;",
     ),
@@ -111,7 +111,7 @@ export async function test_typescript_failures(): Promise<void> {
   );
 
   const ambient = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/ambient.d.ts",
       dedent`
         declare module "external" {
@@ -141,7 +141,7 @@ export async function test_typescript_failures(): Promise<void> {
   );
 
   const tsx = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/view.tsx",
       dedent`
         export const View = () => (

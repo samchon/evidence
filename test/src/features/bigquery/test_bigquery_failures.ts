@@ -1,8 +1,8 @@
-import { EvidBigQueryAdapter } from "evid";
+import { EvidenceBigQueryAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Keeps unsupported and malformed GoogleSQL from producing a smaller passing
@@ -19,7 +19,7 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    retaining the persistent table and column.
  */
 export async function test_bigquery_failures(): Promise<void> {
-  const adapter = new EvidBigQueryAdapter();
+  const adapter = new EvidenceBigQueryAdapter();
   for (const content of [
     "CREATE TABLE ds.result AS SELECT 1 AS id;",
     "CREATE VIEW ds.result AS SELECT 1 AS id;",
@@ -43,7 +43,7 @@ export async function test_bigquery_failures(): Promise<void> {
     "CREATE TABLE ds.orders (id INT64); CREATE TABLE ds.orders (id STRING);",
   ]) {
     const inventory = await adapter.analyze(
-      EvidTestSourceSnapshot.create("schema.sql", content),
+      EvidenceTestSourceSnapshot.create("schema.sql", content),
     );
     TestValidator.equals(
       `incomplete source: ${content}`,
@@ -59,8 +59,8 @@ export async function test_bigquery_failures(): Promise<void> {
     );
   }
   const failed = await adapter.analyze(
-    EvidTestSourceSnapshot.fail(
-      EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.fail(
+      EvidenceTestSourceSnapshot.create(
         "schema.sql",
         "CREATE TABLE ds.orders (id INT64);",
       ),
@@ -84,7 +84,7 @@ export async function test_bigquery_failures(): Promise<void> {
   );
 
   const temporary = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "schema.sql",
       dedent`
     CREATE TEMP TABLE scratch (id INT64);

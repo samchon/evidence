@@ -1,20 +1,20 @@
 import {
-  EvidGraph,
-  EvidMarkdownAdapter,
-  EvidTargetResolver,
-  EvidTypeScriptAdapter,
-} from "evid";
+  EvidenceGraph,
+  EvidenceMarkdownAdapter,
+  EvidenceTargetResolver,
+  EvidenceTypeScriptAdapter,
+} from "@wrtnlabs/evidence";
 import type {
-  IEvidGraphResolution,
-  IEvidHost,
-  IEvidInventory,
-  IEvidUnit,
-} from "evid";
+  IEvidenceGraphResolution,
+  IEvidenceHost,
+  IEvidenceInventory,
+  IEvidenceUnit,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Evaluates checklist coverage separately for every selected TypeScript host.
@@ -53,8 +53,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    - Only the empty-reference finding and no host-coverage ledger.
  */
 export async function test_graph_checklist(): Promise<void> {
-  const requirements = await new EvidMarkdownAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const requirements = await new EvidenceMarkdownAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "docs/rules.md",
       dedent`
         # Engineering rules
@@ -74,8 +74,8 @@ export async function test_graph_checklist(): Promise<void> {
   const whackAMole = requireUnit(requirements, "no-whack-a-mole");
 
   // One complete host cannot discharge a partial or undocumented host's checklist.
-  const claims = await new EvidTypeScriptAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const claims = await new EvidenceTypeScriptAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/checks.ts",
       dedent`
         /**
@@ -103,7 +103,7 @@ export async function test_graph_checklist(): Promise<void> {
     checklistResolutions.map((entry) => entry.resolution.status),
     ["resolved", "resolved", "resolved"],
   );
-  const checklist = EvidGraph.evaluate({
+  const checklist = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -124,17 +124,17 @@ export async function test_graph_checklist(): Promise<void> {
 
   TestValidator.equals(
     "complete host",
-    EvidTestGraph.hostCoverage(checklist, 0, 0, thorough.id).missingUnitIds,
+    EvidenceTestGraph.hostCoverage(checklist, 0, 0, thorough.id).missingUnitIds,
     [],
   );
   TestValidator.equals(
     "partial host",
-    EvidTestGraph.hostCoverage(checklist, 0, 0, partial.id).missingUnitIds,
+    EvidenceTestGraph.hostCoverage(checklist, 0, 0, partial.id).missingUnitIds,
     [whackAMole.id],
   );
   TestValidator.equals(
     "undocumented host",
-    EvidTestGraph.hostCoverage(checklist, 0, 0, empty.id).missingUnitIds,
+    EvidenceTestGraph.hostCoverage(checklist, 0, 0, empty.id).missingUnitIds,
     [hardcoding.id, whackAMole.id],
   );
   TestValidator.equals(
@@ -144,8 +144,8 @@ export async function test_graph_checklist(): Promise<void> {
   );
 
   // A selected file citation answers only the file item and does not cascade into headings.
-  const fileClaim = await new EvidTypeScriptAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const fileClaim = await new EvidenceTypeScriptAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/file-check.ts",
       dedent`
         /** @evidence docs/rules.md Answers only the document item. */
@@ -154,7 +154,7 @@ export async function test_graph_checklist(): Promise<void> {
     ),
   );
   const checksFile = requireUnit(fileClaim, "checksFile");
-  const fileChecklist = EvidGraph.evaluate({
+  const fileChecklist = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -179,20 +179,20 @@ export async function test_graph_checklist(): Promise<void> {
 
   TestValidator.equals(
     "file citation covers only itself",
-    EvidTestGraph.hostCoverage(fileChecklist, 0, 0, checksFile.id)
+    EvidenceTestGraph.hostCoverage(fileChecklist, 0, 0, checksFile.id)
       .coveredUnitIds,
     [file.id],
   );
   TestValidator.equals(
     "headings remain owed",
-    EvidTestGraph.hostCoverage(fileChecklist, 0, 0, checksFile.id)
+    EvidenceTestGraph.hostCoverage(fileChecklist, 0, 0, checksFile.id)
       .missingUnitIds,
     [hardcoding.id, whackAMole.id],
   );
 
   // An unselected positive aggregate is diagnosed once and suppresses duplicate
   // host repair demands.
-  const aggregate = EvidGraph.evaluate({
+  const aggregate = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -226,32 +226,32 @@ export async function test_graph_checklist(): Promise<void> {
   );
   TestValidator.equals(
     "aggregate explains both missing items",
-    EvidTestGraph.hostCoverage(aggregate, 0, 0, checksFile.id).explainedUnitIds,
+    EvidenceTestGraph.hostCoverage(aggregate, 0, 0, checksFile.id).explainedUnitIds,
     [hardcoding.id, whackAMole.id],
   );
 
   // An exclusion keeps its subtree cascade on its own host without conflicting
   // with another host's evidence.
-  const exclusions = await new EvidTypeScriptAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const exclusions = await new EvidenceTypeScriptAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/exclusions.ts",
       dedent`
         /** @evidenceExclude docs/rules.md No checklist rule applies here. */
         export function excluded(): void {}
 
         /** @evidence docs/rules.md#no-hardcoding Uses injected policy. */
-        export function localEvid(): void {}
+        export function localEvidence(): void {}
       `,
     ),
   );
   const excluded = requireUnit(exclusions, "excluded");
-  const localEvid = requireUnit(exclusions, "localEvid");
-  const excludedChecklist = EvidGraph.evaluate({
+  const localEvidence = requireUnit(exclusions, "localEvidence");
+  const excludedChecklist = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
         inventory: exclusions,
-        unitIds: [excluded.id, localEvid.id],
+        unitIds: [excluded.id, localEvidence.id],
         references: [
           {
             severity: "error",
@@ -270,13 +270,13 @@ export async function test_graph_checklist(): Promise<void> {
 
   TestValidator.equals(
     "exclusion cascades on its host",
-    EvidTestGraph.hostCoverage(excludedChecklist, 0, 0, excluded.id)
+    EvidenceTestGraph.hostCoverage(excludedChecklist, 0, 0, excluded.id)
       .coveredUnitIds,
     [hardcoding.id, whackAMole.id],
   );
   TestValidator.equals(
     "other host remains independent",
-    EvidTestGraph.hostCoverage(excludedChecklist, 0, 0, localEvid.id)
+    EvidenceTestGraph.hostCoverage(excludedChecklist, 0, 0, localEvidence.id)
       .missingUnitIds,
     [whackAMole.id],
   );
@@ -287,8 +287,8 @@ export async function test_graph_checklist(): Promise<void> {
   );
 
   // Conflicts and overlapping exclusions are keyed to one semantic checklist host.
-  const localRules = await new EvidTypeScriptAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const localRules = await new EvidenceTypeScriptAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/local-rules.ts",
       dedent`
         /**
@@ -305,7 +305,7 @@ export async function test_graph_checklist(): Promise<void> {
       `,
     ),
   );
-  const localResult = EvidGraph.evaluate({
+  const localResult = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -340,12 +340,12 @@ export async function test_graph_checklist(): Promise<void> {
 
   // Refusing exclusions removes only that answer and leaves each host's positive
   // obligation visible.
-  const strictChecklist = EvidGraph.evaluate({
+  const strictChecklist = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
         inventory: exclusions,
-        unitIds: [excluded.id, localEvid.id],
+        unitIds: [excluded.id, localEvidence.id],
         references: [
           {
             severity: "error",
@@ -356,7 +356,7 @@ export async function test_graph_checklist(): Promise<void> {
               whackAMole.id,
             ]),
             checklist: true,
-            noEvidExclude: true,
+            noEvidenceExclude: true,
           },
         ],
       },
@@ -365,7 +365,7 @@ export async function test_graph_checklist(): Promise<void> {
 
   TestValidator.equals(
     "strict checklist refuses exclusion coverage",
-    EvidTestGraph.hostCoverage(strictChecklist, 0, 0, excluded.id)
+    EvidenceTestGraph.hostCoverage(strictChecklist, 0, 0, excluded.id)
       .missingUnitIds,
     [hardcoding.id, whackAMole.id],
   );
@@ -377,8 +377,8 @@ export async function test_graph_checklist(): Promise<void> {
 
   // An unselected carrier can answer an ordinary sibling reference but cannot
   // clear any host's checklist.
-  const carrierClaim = await new EvidTypeScriptAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const carrierClaim = await new EvidenceTypeScriptAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/carrier.ts",
       dedent`
         export function owing(): void {}
@@ -392,7 +392,7 @@ export async function test_graph_checklist(): Promise<void> {
   const carrierResolutions = await resolveAll(carrierClaim, requirements, [
     hardcoding.id,
   ]);
-  const unhosted = EvidGraph.evaluate({
+  const unhosted = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -417,7 +417,7 @@ export async function test_graph_checklist(): Promise<void> {
     1,
   );
 
-  const sharedCarrier = EvidGraph.evaluate({
+  const sharedCarrier = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -444,12 +444,12 @@ export async function test_graph_checklist(): Promise<void> {
 
   TestValidator.equals(
     "shared carrier does not answer checklist host",
-    EvidTestGraph.hostCoverage(sharedCarrier, 0, 0, owing.id).missingUnitIds,
+    EvidenceTestGraph.hostCoverage(sharedCarrier, 0, 0, owing.id).missingUnitIds,
     [hardcoding.id],
   );
   TestValidator.equals(
     "shared carrier answers ordinary reference",
-    EvidTestGraph.obligation(sharedCarrier, 0, 1).missingUnitIds,
+    EvidenceTestGraph.obligation(sharedCarrier, 0, 1).missingUnitIds,
     [],
   );
   TestValidator.equals(
@@ -467,7 +467,7 @@ export async function test_graph_checklist(): Promise<void> {
     message: "The sibling reference could not be read.",
     repair: "Restore access to the sibling reference.",
   });
-  const uncertainCarrier = EvidGraph.evaluate({
+  const uncertainCarrier = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -498,7 +498,7 @@ export async function test_graph_checklist(): Promise<void> {
     0,
   );
 
-  const emptyCarrier = EvidGraph.evaluate({
+  const emptyCarrier = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -535,8 +535,8 @@ export async function test_graph_checklist(): Promise<void> {
   );
 
   // A refused aggregate in another claim cannot consume the original claim's deferred report.
-  const aggregateCarrierClaim = await new EvidTypeScriptAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const aggregateCarrierClaim = await new EvidenceTypeScriptAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/aggregate-carrier.ts",
       dedent`
         export function owesAggregate(): void {}
@@ -556,7 +556,7 @@ export async function test_graph_checklist(): Promise<void> {
     requirements,
     [hardcoding.id],
   );
-  const answeredAggregate = EvidGraph.evaluate({
+  const answeredAggregate = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -609,7 +609,7 @@ export async function test_graph_checklist(): Promise<void> {
     message: "The Markdown file could not be read.",
     repair: "Restore access to the Markdown file.",
   });
-  const failedChecklist = EvidGraph.evaluate({
+  const failedChecklist = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -630,7 +630,7 @@ export async function test_graph_checklist(): Promise<void> {
 
   TestValidator.equals(
     "failed checklist remains incomplete",
-    EvidTestGraph.obligation(failedChecklist, 0, 0).complete,
+    EvidenceTestGraph.obligation(failedChecklist, 0, 0).complete,
     false,
   );
   TestValidator.equals(
@@ -639,7 +639,7 @@ export async function test_graph_checklist(): Promise<void> {
     0,
   );
 
-  const emptyChecklist = EvidGraph.evaluate({
+  const emptyChecklist = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -670,7 +670,7 @@ export async function test_graph_checklist(): Promise<void> {
   );
   TestValidator.equals(
     "empty checklist has no host ledger",
-    EvidTestGraph.obligation(emptyChecklist, 0, 0).hostCoverage,
+    EvidenceTestGraph.obligation(emptyChecklist, 0, 0).hostCoverage,
     [],
   );
 }
@@ -684,12 +684,12 @@ export async function test_graph_checklist(): Promise<void> {
  * acknowledgements.
  */
 async function resolveAll(
-  claim: IEvidInventory,
-  reference: IEvidInventory,
+  claim: IEvidenceInventory,
+  reference: IEvidenceInventory,
   unitIds: string[],
-): Promise<IEvidGraphResolution[]> {
-  const resolver = new EvidTargetResolver([reference]);
-  const output: IEvidGraphResolution[] = [];
+): Promise<IEvidenceGraphResolution[]> {
+  const resolver = new EvidenceTargetResolver([reference]);
+  const output: IEvidenceGraphResolution[] = [];
   for (const declaration of claim.declarations)
     output.push({
       declarationId: declaration.id,
@@ -708,7 +708,7 @@ async function resolveAll(
  * The fixtures deliberately avoid candidates that collide across symbol, name,
  * and final identity segment, so a miss signals broken test setup.
  */
-function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
+function requireUnit(inventory: IEvidenceInventory, identity: string): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.symbol === identity ||
@@ -726,7 +726,7 @@ function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
  * Resolution cannot substitute another host because attachment is part of the
  * claim-local checklist policy being exercised.
  */
-function requireHost(inventory: IEvidInventory, id: string): IEvidHost {
+function requireHost(inventory: IEvidenceInventory, id: string): IEvidenceHost {
   const host = inventory.hosts.find((candidate) => candidate.id === id);
   if (host === undefined) throw new Error(`Missing checklist host: ${id}`);
   return host;
@@ -739,7 +739,7 @@ function requireHost(inventory: IEvidInventory, id: string): IEvidHost {
  * deduplication cannot silently merge independent obligations.
  */
 function count(
-  result: ReturnType<typeof EvidGraph.evaluate>,
+  result: ReturnType<typeof EvidenceGraph.evaluate>,
   code: string,
 ): number {
   return result.diagnostics.filter((diagnostic) => diagnostic.code === code)

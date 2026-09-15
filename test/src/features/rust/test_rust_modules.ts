@@ -1,8 +1,8 @@
-import { EvidAccessor, EvidRustAdapter } from "evid";
+import { EvidenceAccessor, EvidenceRustAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Resolves Rust inline and file modules through public visibility.
@@ -17,9 +17,9 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  */
 export async function test_rust_modules(): Promise<void> {
   // Inline, conventional, private, and orphan modules share one selected snapshot.
-  const inventory = await new EvidRustAdapter().analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+  const inventory = await new EvidenceRustAdapter().analyze(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/lib.rs",
         dedent`
           pub mod sale;
@@ -40,7 +40,7 @@ export async function test_rust_modules(): Promise<void> {
           }
         `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/sale.rs",
         dedent`
           pub mod details;
@@ -54,21 +54,21 @@ export async function test_rust_modules(): Promise<void> {
           pub(crate) struct CrateOnly;
         `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/sale/details.rs",
         dedent`
           pub struct Detail;
           pub(crate) struct Restricted;
         `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/hidden.rs",
         dedent`
           pub struct Secret;
           pub(crate) struct CrateOnly;
         `,
       ),
-      EvidTestSourceSnapshot.create("tools.rs", "pub struct Tool;\n"),
+      EvidenceTestSourceSnapshot.create("tools.rs", "pub struct Tool;\n"),
     ]),
   );
 
@@ -99,7 +99,7 @@ export async function test_rust_modules(): Promise<void> {
     inventory.addresses
       .filter((address) => address.unitId === sale.id)
       .map(
-        (address) => `${address.file}#${EvidAccessor.format(address.segments)}`,
+        (address) => `${address.file}#${EvidenceAccessor.format(address.segments)}`,
       )
       .sort(compare),
     [
@@ -119,7 +119,7 @@ export async function test_rust_modules(): Promise<void> {
     inventory.addresses
       .filter((address) => address.unitId === secret.id)
       .map(
-        (address) => `${address.file}#${EvidAccessor.format(address.segments)}`,
+        (address) => `${address.file}#${EvidenceAccessor.format(address.segments)}`,
       )
       .sort(compare),
     ["/project/src/hidden.rs#Secret", "/project/src/lib.rs#PublicSecret"],
@@ -135,7 +135,7 @@ export async function test_rust_modules(): Promise<void> {
     inventory.addresses
       .filter((address) => address.unitId === detail.id)
       .map(
-        (address) => `${address.file}#${EvidAccessor.format(address.segments)}`,
+        (address) => `${address.file}#${EvidenceAccessor.format(address.segments)}`,
       )
       .sort(compare),
     [
@@ -147,15 +147,15 @@ export async function test_rust_modules(): Promise<void> {
   );
 
   // Logical source addresses retain module layout when physical files are linked elsewhere.
-  const linked = await new EvidRustAdapter().analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+  const linked = await new EvidenceRustAdapter().analyze(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "physical/crate/lib.rs",
         "pub mod sale;\n",
         ["workspace/src/lib.rs"],
         "/volume",
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "physical/modules/sale.rs",
         "pub struct Sale;\n",
         ["workspace/src/sale.rs"],

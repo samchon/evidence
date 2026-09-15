@@ -1,9 +1,9 @@
-import { EvidChecker, EvidWatcher } from "evid";
+import { EvidenceChecker, EvidenceWatcher } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
 
 /**
  * Recovers a missing generated Dart part and observes its public changes
@@ -19,7 +19,7 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
  *    reflect it.
  */
 export async function test_dart_part_watch(): Promise<void> {
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     "dart-part-watch",
     {
       "evidence.config.ts": dedent`
@@ -33,7 +33,7 @@ export async function test_dart_part_watch(): Promise<void> {
     },
     async (directory) => {
       const config = join(directory, "evidence.config.ts");
-      const watcher = new EvidWatcher(config, {
+      const watcher = new EvidenceWatcher(config, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
       });
@@ -43,7 +43,7 @@ export async function test_dart_part_watch(): Promise<void> {
           TestValidator.equals(
             `fresh part cycle ${cycle.cycle}`,
             cycle.report,
-            await EvidChecker.check(config),
+            await EvidenceChecker.check(config),
           );
           if (cycle.cycle === 1) {
             TestValidator.equals(
@@ -51,7 +51,7 @@ export async function test_dart_part_watch(): Promise<void> {
               cycle.status,
               "incomplete",
             );
-            await EvidTestFileSystem.save(directory, {
+            await EvidenceTestFileSystem.save(directory, {
               "contracts/model.g.dart":
                 "part of 'api.dart'; class Model { int value = 1; }",
             });
@@ -61,7 +61,7 @@ export async function test_dart_part_watch(): Promise<void> {
               cycle.success,
               true,
             );
-            await EvidTestFileSystem.save(directory, {
+            await EvidenceTestFileSystem.save(directory, {
               "contracts/model.g.dart":
                 "part of 'api.dart'; class Model { int value = 1; int extra = 2; }",
             });
@@ -71,7 +71,7 @@ export async function test_dart_part_watch(): Promise<void> {
               cycle.success,
               false,
             );
-            await EvidTestFileSystem.save(directory, {
+            await EvidenceTestFileSystem.save(directory, {
               "contracts/model.g.dart":
                 "part of 'api.dart'; class Model { int value = 1; int _extra = 2; }",
             });

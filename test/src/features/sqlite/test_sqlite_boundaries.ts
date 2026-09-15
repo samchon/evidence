@@ -1,7 +1,7 @@
-import { EvidSqliteAdapter } from "evid";
+import { EvidenceSqliteAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Rejects SQLite input that changes schema interpretation or relation
@@ -31,8 +31,8 @@ export async function test_sqlite_boundaries(): Promise<void> {
     "CREATE TABLE broken (id INTEGER, FOREIGN KEY (id) REFERENCES other(a, b));",
     "CREATE TABLE broken (id INTEGER,",
   ]) {
-    const inventory = await new EvidSqliteAdapter().analyze(
-      EvidTestSourceSnapshot.create(
+    const inventory = await new EvidenceSqliteAdapter().analyze(
+      EvidenceTestSourceSnapshot.create(
         "schema.sql",
         `CREATE TABLE valid (id INTEGER);\n${statement}`,
       ),
@@ -50,8 +50,8 @@ export async function test_sqlite_boundaries(): Promise<void> {
   }
 
   // A declared qualified schema does not require ATTACH execution to inventory its names.
-  const qualified = await new EvidSqliteAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const qualified = await new EvidenceSqliteAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "schema.sql",
       "CREATE TABLE archive.items (id INTEGER PRIMARY KEY, owner INTEGER REFERENCES owners MATCH simple ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED);",
     ),
@@ -67,15 +67,15 @@ export async function test_sqlite_boundaries(): Promise<void> {
     1,
   );
 
-  const failed = EvidTestSourceSnapshot.fail(
-    EvidTestSourceSnapshot.create("schema.sql", ""),
+  const failed = EvidenceTestSourceSnapshot.fail(
+    EvidenceTestSourceSnapshot.create("schema.sql", ""),
     {
       code: "path-unreadable",
       message: "Read denied.",
       path: "/project/schema.sql",
     },
   );
-  const inventory = await new EvidSqliteAdapter().analyze(failed);
+  const inventory = await new EvidenceSqliteAdapter().analyze(failed);
   TestValidator.equals(
     "source failure stays incomplete",
     inventory.complete,

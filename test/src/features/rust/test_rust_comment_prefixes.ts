@@ -1,7 +1,7 @@
-import { EvidFingerprint, EvidInventory, EvidRustAdapter } from "evid";
+import { EvidenceFingerprint, EvidenceInventory, EvidenceRustAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Keeps Rust outer attributes attached across whitespace comments.
@@ -38,10 +38,10 @@ export async function test_rust_comment_prefixes(): Promise<void> {
       pub struct Child;
     }
   `;
-  const adapter = new EvidRustAdapter();
+  const adapter = new EvidenceRustAdapter();
   for (const content of [source, source.replaceAll("\n", "\r\n")]) {
     const inventory = await adapter.analyze(
-      EvidTestSourceSnapshot.create("src/lib.rs", content),
+      EvidenceTestSourceSnapshot.create("src/lib.rs", content),
     );
     const units = new Map(
       inventory.units.map((unit) => [unit.id, unit.identity.join(".")]),
@@ -74,7 +74,7 @@ export async function test_rust_comment_prefixes(): Promise<void> {
     );
     TestValidator.equals(
       "withdrawal crosses ordinary comments",
-      new EvidInventory([inventory])
+      new EvidenceInventory([inventory])
         .select(inventory.units.map((unit) => unit.id))
         .hidden.map((unit) => unit.identity.join("."))
         .sort((a, b) => a.localeCompare(b)),
@@ -88,7 +88,7 @@ export async function test_rust_comment_prefixes(): Promise<void> {
       );
 
     const edited = await adapter.analyze(
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/lib.rs",
         content.replace(
           "Implements the field.",
@@ -97,7 +97,7 @@ export async function test_rust_comment_prefixes(): Promise<void> {
       ),
     );
     const changed = await adapter.analyze(
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/lib.rs",
         content.replace("#[deprecated]", "#[must_use]"),
       ),
@@ -106,13 +106,13 @@ export async function test_rust_comment_prefixes(): Promise<void> {
     if (sale === undefined) throw new Error("Missing Sale.");
     TestValidator.equals(
       "annotation changes preserve ancestor reviews",
-      EvidFingerprint.inspect(inventory, sale.id).fingerprint,
-      EvidFingerprint.inspect(edited, sale.id).fingerprint,
+      EvidenceFingerprint.inspect(inventory, sale.id).fingerprint,
+      EvidenceFingerprint.inspect(edited, sale.id).fingerprint,
     );
     TestValidator.notEquals(
       "attributes remain semantic content",
-      EvidFingerprint.inspect(inventory, sale.id).fingerprint,
-      EvidFingerprint.inspect(changed, sale.id).fingerprint,
+      EvidenceFingerprint.inspect(inventory, sale.id).fingerprint,
+      EvidenceFingerprint.inspect(changed, sale.id).fingerprint,
     );
   }
 
@@ -123,7 +123,7 @@ export async function test_rust_comment_prefixes(): Promise<void> {
     "custom_macro",
   ]) {
     const inventory = await adapter.analyze(
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/lib.rs",
         `#[${attribute}]\n// whitespace\npub struct Conditional;\n`,
       ),

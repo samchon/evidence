@@ -1,5 +1,5 @@
-import { EvidAdapterCertification } from "../../internal/certification/EvidAdapterCertification";
-import { EvidAdapterCertificationFixtures } from "../../internal/certification/EvidAdapterCertificationFixtures";
+import { EvidenceAdapterCertification } from "../../internal/certification/EvidenceAdapterCertification";
+import { EvidenceAdapterCertificationFixtures } from "../../internal/certification/EvidenceAdapterCertificationFixtures";
 
 /**
  * Applies the shared adapter certification contract to MATLAB.
@@ -12,18 +12,18 @@ import { EvidAdapterCertificationFixtures } from "../../internal/certification/E
  * 3. Require every inventory, graph, mutation, and fingerprint gate to pass.
  */
 export async function test_matlab_certification(): Promise<void> {
-  const fixture = EvidAdapterCertificationFixtures.all().find(
+  const fixture = EvidenceAdapterCertificationFixtures.all().find(
     (item) => item.type === "matlab",
   );
   if (fixture === undefined)
     throw new Error("MATLAB certification fixture is missing.");
 
-  EvidAdapterCertification.assertInventory(
+  EvidenceAdapterCertification.assertInventory(
     fixture,
-    await EvidAdapterCertification.analyze(fixture),
+    await EvidenceAdapterCertification.analyze(fixture),
   );
-  await EvidAdapterCertification.assertGraph(fixture);
-  await EvidAdapterCertification.assertFailures(fixture);
-  await EvidAdapterCertification.assertFingerprint(fixture);
-  await EvidAdapterCertification.assertAmbiguity(fixture);
+  await EvidenceAdapterCertification.assertGraph(fixture);
+  await EvidenceAdapterCertification.assertFailures(fixture);
+  await EvidenceAdapterCertification.assertFingerprint(fixture);
+  await EvidenceAdapterCertification.assertAmbiguity(fixture);
 }

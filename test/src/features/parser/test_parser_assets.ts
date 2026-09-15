@@ -1,12 +1,12 @@
-import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
+import { EvidenceTestParserAssets } from "../../internal/EvidenceTestParserAssets";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { readdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { EvidTreeSitterAssetCache, EvidTreeSitterAssets } from "evid";
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
-import { EvidTestParserError } from "../../internal/EvidTestParserError";
+import { EvidenceTreeSitterAssetCache, EvidenceTreeSitterAssets } from "@wrtnlabs/evidence";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
+import { EvidenceTestParserError } from "../../internal/EvidenceTestParserError";
 
 /**
  * Shares verified grammar acquisition and repairs corruption in a reusable
@@ -31,14 +31,14 @@ import { EvidTestParserError } from "../../internal/EvidTestParserError";
  *    below that project's `node_modules/.cache/evid` directory.
  */
 export async function test_parser_assets(): Promise<void> {
-  const original = new EvidTreeSitterAssets();
+  const original = new EvidenceTreeSitterAssets();
   const grammar = await original.grammar("python");
-  const pinned = Uint8Array.from(await EvidTestParserAssets.bytes(grammar));
+  const pinned = Uint8Array.from(await EvidenceTestParserAssets.bytes(grammar));
   const directory = join(__dirname, "assets-" + randomUUID());
 
-  await EvidTestFileSystem.experiment(directory, {}, async (location) => {
+  await EvidenceTestFileSystem.experiment(directory, {}, async (location) => {
     const requests: string[] = [];
-    const assets = new EvidTreeSitterAssets({
+    const assets = new EvidenceTreeSitterAssets({
       cacheDirectory: location,
       fetch: async (input) => {
         requests.push(String(input));
@@ -63,7 +63,7 @@ export async function test_parser_assets(): Promise<void> {
     );
 
     // A separate resolver performs no request with verified cache bytes, including no HEAD.
-    const offline = new EvidTreeSitterAssets({
+    const offline = new EvidenceTreeSitterAssets({
       cacheDirectory: location,
       attempts: 1,
       fetch: async () => {
@@ -83,7 +83,7 @@ export async function test_parser_assets(): Promise<void> {
       `${String(grammar.wasm.sha256)}.wasm`,
     );
     await writeFile(destination, "damaged grammar");
-    await EvidTestParserError.expect("asset-download", () =>
+    await EvidenceTestParserError.expect("asset-download", () =>
       offline.bytes(grammar),
     );
     await assets.bytes(grammar);
@@ -100,13 +100,13 @@ export async function test_parser_assets(): Promise<void> {
     );
 
     const projectDirectory = join(location, "project");
-    await EvidTestFileSystem.save(projectDirectory, {});
+    await EvidenceTestFileSystem.save(projectDirectory, {});
     const previousWorkingDirectory = process.cwd();
     const previousCacheDirectory = process.env["EVID_CACHE_DIR"];
     delete process.env["EVID_CACHE_DIR"];
     try {
       process.chdir(projectDirectory);
-      await new EvidTreeSitterAssetCache({
+      await new EvidenceTreeSitterAssetCache({
         fetch: async (): Promise<Response> => new Response(pinned),
       }).bytes(grammar);
     } finally {
@@ -129,7 +129,7 @@ export async function test_parser_assets(): Promise<void> {
       process.env["EVID_CACHE_DIR"];
     process.env["EVID_CACHE_DIR"] = environmentDirectory;
     try {
-      await new EvidTreeSitterAssetCache({
+      await new EvidenceTreeSitterAssetCache({
         fetch: async (): Promise<Response> => new Response(pinned),
       }).bytes(grammar);
     } finally {

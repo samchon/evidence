@@ -1,8 +1,8 @@
-import { EvidFingerprint, EvidInventory, EvidSwiftAdapter } from "evid";
+import { EvidenceFingerprint, EvidenceInventory, EvidenceSwiftAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Attaches Swift DocC with exact coordinates and withdrawal behavior.
@@ -33,9 +33,9 @@ export async function test_swift_hosts(): Promise<void> {
      */
     public func sample() {}
   `.replaceAll("\n", "\r\n");
-  const adapter = new EvidSwiftAdapter();
+  const adapter = new EvidenceSwiftAdapter();
   const inventory = await adapter.analyze(
-    EvidTestSourceSnapshot.create("src/Contract.swift", source),
+    EvidenceTestSourceSnapshot.create("src/Contract.swift", source),
   );
 
   TestValidator.equals(
@@ -62,7 +62,7 @@ export async function test_swift_hosts(): Promise<void> {
     contract.sites[0]?.range?.start?.offset,
     source.indexOf("@available"),
   );
-  const graph = new EvidInventory([inventory]);
+  const graph = new EvidenceInventory([inventory]);
   TestValidator.equals(
     "withdrawn nested descendants",
     graph.resolve(
@@ -75,7 +75,7 @@ export async function test_swift_hosts(): Promise<void> {
     "hidden",
   );
   const rewritten = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Contract.swift",
       source.replace(
         "Implements the value.",
@@ -85,29 +85,29 @@ export async function test_swift_hosts(): Promise<void> {
   );
   TestValidator.equals(
     "annotation edits preserve ancestor reviews",
-    EvidFingerprint.inspect(inventory, contract.id).fingerprint,
-    EvidFingerprint.inspect(rewritten, contract.id).fingerprint,
+    EvidenceFingerprint.inspect(inventory, contract.id).fingerprint,
+    EvidenceFingerprint.inspect(rewritten, contract.id).fingerprint,
   );
   const changed = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Contract.swift",
       source.replace("let 값 = 1", "let 값 = 2"),
     ),
   );
   TestValidator.notEquals(
     "semantic member edit stales ancestor reviews",
-    EvidFingerprint.inspect(inventory, contract.id).fingerprint,
-    EvidFingerprint.inspect(changed, contract.id).fingerprint,
+    EvidenceFingerprint.inspect(inventory, contract.id).fingerprint,
+    EvidenceFingerprint.inspect(changed, contract.id).fingerprint,
   );
 
   // A string that resembles an annotation remains semantic implementation content.
   const literalSource =
     'public func literal() -> String { "@evidence docs/spec.md#value Literal content." }';
   const literal = await adapter.analyze(
-    EvidTestSourceSnapshot.create("src/Literal.swift", literalSource),
+    EvidenceTestSourceSnapshot.create("src/Literal.swift", literalSource),
   );
   const literalChanged = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Literal.swift",
       literalSource.replace("Literal content.", "Changed content."),
     ),
@@ -116,8 +116,8 @@ export async function test_swift_hosts(): Promise<void> {
   if (literalUnit === undefined) throw new Error("Missing literal function.");
   TestValidator.notEquals(
     "unsupported annotation strings remain fingerprint content",
-    EvidFingerprint.inspect(literal, literalUnit.id).fingerprint,
-    EvidFingerprint.inspect(literalChanged, literalUnit.id).fingerprint,
+    EvidenceFingerprint.inspect(literal, literalUnit.id).fingerprint,
+    EvidenceFingerprint.inspect(literalChanged, literalUnit.id).fingerprint,
   );
 
   for (const tag of [
@@ -128,7 +128,7 @@ export async function test_swift_hosts(): Promise<void> {
     "link",
   ]) {
     const unsupported = await adapter.analyze(
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/Unsupported.swift",
         `// @${tag} docs/spec.md#contract Unsupported carrier.\npublic func run() {}\n`,
       ),

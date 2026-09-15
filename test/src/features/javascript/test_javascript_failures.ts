@@ -1,8 +1,8 @@
-import { EvidJavaScriptAdapter } from "evid";
+import { EvidenceJavaScriptAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Rejects JavaScript export surfaces that static analysis cannot prove
@@ -16,7 +16,7 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Verify no uncertain case passes.
  */
 export async function test_javascript_failures(): Promise<void> {
-  const adapter = new EvidJavaScriptAdapter();
+  const adapter = new EvidenceJavaScriptAdapter();
   await verify(
     adapter,
     "computed CommonJS key",
@@ -118,7 +118,7 @@ export async function test_javascript_failures(): Promise<void> {
   );
 
   const mixed = await adapter.analyze(
-    EvidTestSourceSnapshot.create("src/mixed.cjs", "export const value = 1;"),
+    EvidenceTestSourceSnapshot.create("src/mixed.cjs", "export const value = 1;"),
   );
   TestValidator.predicate(
     "ESM syntax in CommonJS",
@@ -128,7 +128,7 @@ export async function test_javascript_failures(): Promise<void> {
   );
 
   const malformed = await adapter.analyze(
-    EvidTestSourceSnapshot.create("src/broken.mjs", "export class Broken {"),
+    EvidenceTestSourceSnapshot.create("src/broken.mjs", "export class Broken {"),
   );
   TestValidator.predicate(
     "malformed JavaScript",
@@ -138,7 +138,7 @@ export async function test_javascript_failures(): Promise<void> {
   );
 
   const missing = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/missing.mjs",
       'export { Contract } from "./absent.mjs";',
     ),
@@ -152,7 +152,7 @@ export async function test_javascript_failures(): Promise<void> {
 
   // Dynamic expressions inside a function do not alter the initialization surface.
   const localComputation = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/local.cjs",
       dedent`
         function run(key) {
@@ -170,13 +170,13 @@ export async function test_javascript_failures(): Promise<void> {
 }
 
 async function verify(
-  adapter: EvidJavaScriptAdapter,
+  adapter: EvidenceJavaScriptAdapter,
   label: string,
   code: string,
   content: string,
 ): Promise<void> {
   const inventory = await adapter.analyze(
-    EvidTestSourceSnapshot.create("src/failure.cjs", content),
+    EvidenceTestSourceSnapshot.create("src/failure.cjs", content),
   );
 
   TestValidator.equals(`${label} is incomplete`, inventory.complete, false);

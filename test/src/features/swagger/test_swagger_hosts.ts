@@ -1,9 +1,9 @@
-import { EvidSwaggerAdapter } from "evid";
-import type { IEvidDeclaration, IEvidHost, IEvidInventory } from "evid";
+import { EvidenceSwaggerAdapter } from "@wrtnlabs/evidence";
+import type { IEvidenceDeclaration, IEvidenceHost, IEvidenceInventory } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Parses annotation tags from supported Swagger operation descriptions.
@@ -15,8 +15,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 2. Verify extracted targets, coordinates, and host diagnostics.
  */
 export async function test_swagger_hosts(): Promise<void> {
-  const inventory = await new EvidSwaggerAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const inventory = await new EvidenceSwaggerAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "openapi.yaml",
       dedent`
         openapi: 3.1.0
@@ -96,8 +96,8 @@ export async function test_swagger_hosts(): Promise<void> {
   TestValidator.equals("Swagger host diagnostics", inventory.diagnostics, []);
 
   // YAML aliases retain the physical anchor location that owns their decoded text.
-  const aliased = await new EvidSwaggerAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const aliased = await new EvidenceSwaggerAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "aliased.yaml",
       dedent`
         openapi: 3.1.0
@@ -126,8 +126,8 @@ export async function test_swagger_hosts(): Promise<void> {
   );
 
   // One Unicode escape may decode to two UTF-16 units before a later annotation.
-  const escaped = await new EvidSwaggerAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const escaped = await new EvidenceSwaggerAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "escaped.yaml",
       dedent`
         openapi: 3.1.0
@@ -153,9 +153,9 @@ export async function test_swagger_hosts(): Promise<void> {
 }
 
 function requireDeclaration(
-  inventory: IEvidInventory,
+  inventory: IEvidenceInventory,
   target: string,
-): IEvidDeclaration {
+): IEvidenceDeclaration {
   const declaration = inventory.declarations.find(
     (candidate) => candidate.target === target,
   );
@@ -165,9 +165,9 @@ function requireDeclaration(
 }
 
 function requireHost(
-  inventory: IEvidInventory,
-  declaration: IEvidDeclaration,
-): IEvidHost {
+  inventory: IEvidenceInventory,
+  declaration: IEvidenceDeclaration,
+): IEvidenceHost {
   const host = inventory.hosts.find(
     (candidate) => candidate.id === declaration.hostId,
   );
@@ -176,7 +176,7 @@ function requireHost(
   return host;
 }
 
-function line(declaration: IEvidDeclaration): number {
+function line(declaration: IEvidenceDeclaration): number {
   const range = declaration.location.range;
   if (range === undefined)
     throw new Error(`Missing Swagger declaration range: ${declaration.target}`);
@@ -184,8 +184,8 @@ function line(declaration: IEvidDeclaration): number {
 }
 
 function declarationText(
-  inventory: IEvidInventory,
-  declaration: IEvidDeclaration,
+  inventory: IEvidenceInventory,
+  declaration: IEvidenceDeclaration,
 ): string {
   const source = inventory.sources.find(
     (candidate) => candidate.physicalPath === declaration.location.file,

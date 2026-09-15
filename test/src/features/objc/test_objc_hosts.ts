@@ -1,8 +1,8 @@
-import { EvidFingerprint, EvidInventory, EvidObjcAdapter } from "evid";
+import { EvidenceFingerprint, EvidenceInventory, EvidenceObjcAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Attaches Objective-C Doxygen annotations at exact source locations.
@@ -41,10 +41,10 @@ export async function test_objc_hosts(): Promise<void> {
      */
     int sample(void) { return 1; }
   `.replaceAll("\n", "\r\n");
-  const adapter = new EvidObjcAdapter();
-  const snapshot = EvidTestSourceSnapshot.combine([
-    EvidTestSourceSnapshot.create("src/Contract.h", source),
-    EvidTestSourceSnapshot.create(
+  const adapter = new EvidenceObjcAdapter();
+  const snapshot = EvidenceTestSourceSnapshot.combine([
+    EvidenceTestSourceSnapshot.create("src/Contract.h", source),
+    EvidenceTestSourceSnapshot.create(
       "src/Contract.m",
       dedent`
       @implementation Contract
@@ -74,7 +74,7 @@ export async function test_objc_hosts(): Promise<void> {
     source.indexOf("@evidence"),
   );
   TestValidator.equals("CRLF line", tag.location.range.start.line, 3);
-  const graph = new EvidInventory([inventory]);
+  const graph = new EvidenceInventory([inventory]);
   TestValidator.equals(
     "withdrawal propagates to implementation address",
     graph.resolve(
@@ -96,8 +96,8 @@ export async function test_objc_hosts(): Promise<void> {
   const rewritten = await adapter.analyze(annotation);
   TestValidator.equals(
     "annotation edit preserves review",
-    EvidFingerprint.inspect(inventory, contract.id).fingerprint,
-    EvidFingerprint.inspect(rewritten, contract.id).fingerprint,
+    EvidenceFingerprint.inspect(inventory, contract.id).fingerprint,
+    EvidenceFingerprint.inspect(rewritten, contract.id).fingerprint,
   );
   const semantic = structuredClone(snapshot);
   const semanticFile = semantic.files[0];
@@ -109,8 +109,8 @@ export async function test_objc_hosts(): Promise<void> {
   const changed = await adapter.analyze(semantic);
   TestValidator.notEquals(
     "semantic edit invalidates review",
-    EvidFingerprint.inspect(inventory, contract.id).fingerprint,
-    EvidFingerprint.inspect(changed, contract.id).fingerprint,
+    EvidenceFingerprint.inspect(inventory, contract.id).fingerprint,
+    EvidenceFingerprint.inspect(changed, contract.id).fingerprint,
   );
   for (const tagName of [
     "evidence",
@@ -120,7 +120,7 @@ export async function test_objc_hosts(): Promise<void> {
     "link",
   ]) {
     const unsupported = await adapter.analyze(
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/Unsupported.m",
         `// @${tagName} docs/spec.md#contract Unsupported carrier.\nint run(void) { return 1; }\n`,
       ),

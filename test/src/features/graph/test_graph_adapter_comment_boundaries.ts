@@ -1,15 +1,15 @@
 import {
-  EvidGoAdapter,
-  EvidGraph,
-  EvidMarkdownAdapter,
-  EvidRubyAdapter,
-  EvidRustAdapter,
-} from "evid";
-import type { IEvidInventory, IEvidGraphResult } from "evid";
+  EvidenceGoAdapter,
+  EvidenceGraph,
+  EvidenceMarkdownAdapter,
+  EvidenceRubyAdapter,
+  EvidenceRustAdapter,
+} from "@wrtnlabs/evidence";
+import type { IEvidenceInventory, IEvidenceGraphResult } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Rejects evidence tags that a language adapter cannot attach to the selected
@@ -32,8 +32,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    coverage to recover.
  */
 export async function test_graph_adapter_comment_boundaries(): Promise<void> {
-  const reference = await new EvidMarkdownAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const reference = await new EvidenceMarkdownAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "docs/spec.md",
       "## Value {#value}\n\nRequires a value.\n",
     ),
@@ -41,7 +41,7 @@ export async function test_graph_adapter_comment_boundaries(): Promise<void> {
   const tag = "@evidence docs/spec.md#value Implements the value.";
   const cases = [
     {
-      adapter: new EvidRubyAdapter(),
+      adapter: new EvidenceRubyAdapter(),
       file: "src/value.rb",
       content: dedent`
       class Value
@@ -53,7 +53,7 @@ export async function test_graph_adapter_comment_boundaries(): Promise<void> {
     `,
     },
     {
-      adapter: new EvidRustAdapter(),
+      adapter: new EvidenceRustAdapter(),
       file: "src/value.rs",
       content: dedent`
       pub struct Value(
@@ -66,10 +66,10 @@ export async function test_graph_adapter_comment_boundaries(): Promise<void> {
   ];
   for (const scenario of cases) {
     const claim = await scenario.adapter.analyze(
-      EvidTestSourceSnapshot.create(scenario.file, scenario.content),
+      EvidenceTestSourceSnapshot.create(scenario.file, scenario.content),
     );
     const removed = await scenario.adapter.analyze(
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         scenario.file,
         scenario.content.replace(
           tag,
@@ -91,7 +91,7 @@ export async function test_graph_adapter_comment_boundaries(): Promise<void> {
     );
     TestValidator.equals(
       "the selected requirement remains missing",
-      EvidTestGraph.obligation(missing, 0, 0).missingUnitIds,
+      EvidenceTestGraph.obligation(missing, 0, 0).missingUnitIds,
       reference.units
         .filter((unit) => unit.symbol === "h2")
         .map((unit) => unit.id),
@@ -99,15 +99,15 @@ export async function test_graph_adapter_comment_boundaries(): Promise<void> {
   }
 
   // Aligned Go trailing comments previously supplied false coverage from the next declaration.
-  const go = new EvidGoAdapter();
+  const go = new EvidenceGoAdapter();
   const invalid = await go.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/value.go",
       `package value\nvar Before = 1 // ${tag}\n               var Value = 2\n`,
     ),
   );
   const fixed = await go.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/value.go",
       `package value\nvar Before = 1\n               // ${tag}\n               var Value = 2\n`,
     ),
@@ -133,13 +133,13 @@ export async function test_graph_adapter_comment_boundaries(): Promise<void> {
  * focused on whether its comment attaches to the intended property host.
  */
 async function evaluate(
-  claim: IEvidInventory,
-  reference: IEvidInventory,
-): Promise<IEvidGraphResult> {
+  claim: IEvidenceInventory,
+  reference: IEvidenceInventory,
+): Promise<IEvidenceGraphResult> {
   const selected = reference.units
     .filter((unit) => unit.symbol === "h2")
     .map((unit) => unit.id);
-  return EvidGraph.evaluate({
+  return EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -154,8 +154,8 @@ async function evaluate(
             severity: "error",
             inventory: reference,
             unitIds: selected,
-            singleEvidPerSymbol: true,
-            resolutions: await EvidTestGraph.resolveDeclarations(
+            singleEvidencePerSymbol: true,
+            resolutions: await EvidenceTestGraph.resolveDeclarations(
               claim,
               reference,
               selected,

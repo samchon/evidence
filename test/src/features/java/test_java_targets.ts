@@ -1,9 +1,9 @@
-import { EvidJavaAdapter } from "evid";
+import { EvidenceJavaAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Resolves Java owners, nested declarations, properties, and overload families.
@@ -15,12 +15,12 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Require missing or ambiguous paths to retain their statuses.
  */
 export async function test_java_targets(): Promise<void> {
-  const adapter = new EvidJavaAdapter();
+  const adapter = new EvidenceJavaAdapter();
 
   // Package identity stays semantic; file targets begin at the top-level type.
   const reference = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/main/com/example/Sale.java",
         dedent`
           package com.example;
@@ -37,22 +37,22 @@ export async function test_java_targets(): Promise<void> {
           }
         `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/main/com/example/Point.java",
         "package com.example; public record Point(int x) {}\n",
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/main/com/example/State.java",
         "package com.example; public enum State { READY }\n",
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/main/com/example/Label.java",
         "package com.example; public @interface Label { String value(); }\n",
       ),
     ]),
   );
   const claim = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/test/Verify.java",
       dedent`
         public class Verify {
@@ -78,7 +78,7 @@ export async function test_java_targets(): Promise<void> {
     [],
   );
   TestValidator.equals("complete Java target claim", claim.diagnostics, []);
-  const resolutions = await EvidTestGraph.resolveDeclarations(
+  const resolutions = await EvidenceTestGraph.resolveDeclarations(
     claim,
     reference,
     reference.units.map((unit) => unit.id),
@@ -126,7 +126,7 @@ export async function test_java_targets(): Promise<void> {
 
   // Java permits a field and method with one name; the configured symbol population disambiguates them.
   const collisionReference = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/main/Collision.java",
       dedent`
         public class Collision {
@@ -137,7 +137,7 @@ export async function test_java_targets(): Promise<void> {
     ),
   );
   const collisionClaim = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/test/CollisionTest.java",
       dedent`
         public class CollisionTest {
@@ -151,7 +151,7 @@ export async function test_java_targets(): Promise<void> {
     const selected = collisionReference.units.filter(
       (unit) => unit.symbol === symbol,
     );
-    const selectedResolutions = await EvidTestGraph.resolveDeclarations(
+    const selectedResolutions = await EvidenceTestGraph.resolveDeclarations(
       collisionClaim,
       collisionReference,
       selected.map((unit) => unit.id),
@@ -162,7 +162,7 @@ export async function test_java_targets(): Promise<void> {
       ["resolved"],
     );
   }
-  const ambiguous = await EvidTestGraph.resolveDeclarations(
+  const ambiguous = await EvidenceTestGraph.resolveDeclarations(
     collisionClaim,
     collisionReference,
     collisionReference.units.map((unit) => unit.id),

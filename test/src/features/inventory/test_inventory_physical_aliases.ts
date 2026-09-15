@@ -1,7 +1,7 @@
-import { EvidInventory } from "evid";
+import { EvidenceInventory } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestInventory } from "../../internal/EvidTestInventory";
+import { EvidenceTestInventory } from "../../internal/EvidenceTestInventory";
 
 /**
  * Merges physical aliases while retaining every public address and citation
@@ -22,15 +22,15 @@ import { EvidTestInventory } from "../../internal/EvidTestInventory";
  */
 export async function test_inventory_physical_aliases(): Promise<void> {
   // Two populations can discover the same inode through different hard-link paths.
-  const first = EvidTestInventory.create();
-  EvidTestInventory.unit(
+  const first = EvidenceTestInventory.create();
+  EvidenceTestInventory.unit(
     first,
     "box",
     ["Box"],
     "type",
     "export class Box { value = 1; }",
   );
-  EvidTestInventory.host(
+  EvidenceTestInventory.host(
     first,
     "box-doc",
     "box-site",
@@ -50,8 +50,8 @@ export async function test_inventory_physical_aliases(): Promise<void> {
   for (const host of second.hosts) host.file = alias;
   for (const address of second.addresses) address.file = alias;
 
-  const forward = new EvidInventory([first, second]);
-  const reverse = new EvidInventory([second, first]);
+  const forward = new EvidenceInventory([first, second]);
+  const reverse = new EvidenceInventory([second, first]);
 
   TestValidator.predicate(
     "physical aliases remain complete",
@@ -95,6 +95,6 @@ export async function test_inventory_physical_aliases(): Promise<void> {
   for (const source of replaced.sources) source.id = "replacement-inode";
   TestValidator.predicate(
     "conflicting physical identity fails",
-    !new EvidInventory([first, replaced]).snapshot().complete,
+    !new EvidenceInventory([first, replaced]).snapshot().complete,
   );
 }

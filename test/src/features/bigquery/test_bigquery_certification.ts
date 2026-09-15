@@ -1,7 +1,7 @@
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidDatabaseAdapterCertification } from "../../internal/certification/EvidDatabaseAdapterCertification";
-import { EvidBigQueryCertificationFixture } from "./EvidBigQueryCertificationFixture";
+import { EvidenceDatabaseAdapterCertification } from "../../internal/certification/EvidenceDatabaseAdapterCertification";
+import { EvidenceBigQueryCertificationFixture } from "./EvidenceBigQueryCertificationFixture";
 
 /**
  * Certifies BigQuery inventory, graph, failure, fingerprint, and ambiguity
@@ -17,13 +17,13 @@ import { EvidBigQueryCertificationFixture } from "./EvidBigQueryCertificationFix
  * 3. Require inventory validation to reject each mutated report.
  */
 export async function test_bigquery_certification(): Promise<void> {
-  const fixture = EvidBigQueryCertificationFixture.create();
-  const inventory = await EvidDatabaseAdapterCertification.analyze(fixture);
-  EvidDatabaseAdapterCertification.assertInventory(fixture, inventory);
-  await EvidDatabaseAdapterCertification.assertGraph(fixture);
-  await EvidDatabaseAdapterCertification.assertFailures(fixture);
-  await EvidDatabaseAdapterCertification.assertFingerprint(fixture);
-  await EvidDatabaseAdapterCertification.assertAmbiguity(fixture);
+  const fixture = EvidenceBigQueryCertificationFixture.create();
+  const inventory = await EvidenceDatabaseAdapterCertification.analyze(fixture);
+  EvidenceDatabaseAdapterCertification.assertInventory(fixture, inventory);
+  await EvidenceDatabaseAdapterCertification.assertGraph(fixture);
+  await EvidenceDatabaseAdapterCertification.assertFailures(fixture);
+  await EvidenceDatabaseAdapterCertification.assertFingerprint(fixture);
+  await EvidenceDatabaseAdapterCertification.assertAmbiguity(fixture);
   for (const mutation of ["unit", "kind", "host", "address"]) {
     const broken = structuredClone(inventory);
     if (mutation === "unit") broken.units.pop();
@@ -36,7 +36,7 @@ export async function test_bigquery_certification(): Promise<void> {
       if (address !== undefined) address.segments = ["wrong"];
     }
     TestValidator.error(`reject ${mutation} mutation`, () =>
-      EvidDatabaseAdapterCertification.assertInventory(fixture, broken),
+      EvidenceDatabaseAdapterCertification.assertInventory(fixture, broken),
     );
   }
 }

@@ -1,9 +1,9 @@
-import { EvidMarkdownAdapter } from "evid";
-import type { IEvidDiagnostic } from "evid";
+import { EvidenceMarkdownAdapter } from "@wrtnlabs/evidence";
+import type { IEvidenceDiagnostic } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Reports annotation-looking lines rendered as prose while preserving HTML
@@ -11,7 +11,7 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *
  * Markdown comments are the supported annotation host. Rendered text, lists,
  * quotes, code blocks, `<pre>` content, and MDX template text must not silently
- * become Evid declarations.
+ * become Evidence declarations.
  *
  * 1. Analyze a document that places tag syntax in rendered prose and code-like
  *    regions.
@@ -19,7 +19,7 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    source line.
  * 3. Verify that prose mentions and code examples add no declarations or
  *    diagnostics.
- * 4. Verify that the HTML comment still produces its real Evid target.
+ * 4. Verify that the HTML comment still produces its real Evidence target.
  */
 export async function test_markdown_prose_tags(): Promise<void> {
   const content = dedent`
@@ -41,8 +41,8 @@ export async function test_markdown_prose_tags(): Promise<void> {
     \`}
     <!-- @evidence docs/spec.md#real Supplies real evidence. -->
   `;
-  const inventory = await new EvidMarkdownAdapter().analyze(
-    EvidTestSourceSnapshot.create("guide.md", content),
+  const inventory = await new EvidenceMarkdownAdapter().analyze(
+    EvidenceTestSourceSnapshot.create("guide.md", content),
   );
 
   TestValidator.equals(
@@ -67,7 +67,7 @@ export async function test_markdown_prose_tags(): Promise<void> {
   );
 }
 
-function line(diagnostic: IEvidDiagnostic): number {
+function line(diagnostic: IEvidenceDiagnostic): number {
   const location = diagnostic.location;
   if (location === undefined || location.range === undefined)
     throw new Error(`Markdown diagnostic ${diagnostic.code} has no range.`);

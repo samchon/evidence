@@ -1,7 +1,7 @@
-import { EvidMarkdownAdapter } from "evid";
+import { EvidenceMarkdownAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Retains Markdown path and discovery failures without losing independent
@@ -21,10 +21,10 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    incomplete status with both diagnostic classes.
  */
 export async function test_markdown_failures(): Promise<void> {
-  const adapter = new EvidMarkdownAdapter();
+  const adapter = new EvidenceMarkdownAdapter();
 
   const whitespace = await adapter.analyze(
-    EvidTestSourceSnapshot.create("docs/space name.md", "# Contract"),
+    EvidenceTestSourceSnapshot.create("docs/space name.md", "# Contract"),
   );
   TestValidator.equals("unaddressable file has no units", whitespace.units, []);
   TestValidator.equals(
@@ -35,7 +35,7 @@ export async function test_markdown_failures(): Promise<void> {
 
   // A valid alias preserves the physical unit while every invalid alias remains visible.
   const aliases = await adapter.analyze(
-    EvidTestSourceSnapshot.create("physical.md", "# Contract", [
+    EvidenceTestSourceSnapshot.create("physical.md", "# Contract", [
       "docs/space name.md",
       "docs/contract.md",
     ]),
@@ -52,8 +52,8 @@ export async function test_markdown_failures(): Promise<void> {
   );
 
   const incomplete = await adapter.analyze(
-    EvidTestSourceSnapshot.fail(
-      EvidTestSourceSnapshot.create("guide.md", "##"),
+    EvidenceTestSourceSnapshot.fail(
+      EvidenceTestSourceSnapshot.create("guide.md", "##"),
       {
         code: "path-unreadable",
         path: "/project/missing.md",

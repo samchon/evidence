@@ -1,15 +1,15 @@
 import {
-  EvidFingerprint,
-  EvidGraph,
-  EvidMarkdownAdapter,
-  EvidRubyAdapter,
-} from "evid";
-import type { IEvidInventory, IEvidUnit } from "evid";
+  EvidenceFingerprint,
+  EvidenceGraph,
+  EvidenceMarkdownAdapter,
+  EvidenceRubyAdapter,
+} from "@wrtnlabs/evidence";
+import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Evaluates Ruby type, function, and property evidence.
@@ -24,8 +24,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Compare fingerprints after evidence-text and implementation-body edits.
  */
 export async function test_ruby_graph(): Promise<void> {
-  const requirements = await new EvidMarkdownAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const requirements = await new EvidenceMarkdownAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "docs/requirements.md",
       dedent`
         ## Service {#service}
@@ -42,8 +42,8 @@ export async function test_ruby_graph(): Promise<void> {
       `,
     ),
   );
-  const implementation = await new EvidRubyAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const implementation = await new EvidenceRubyAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "lib/contracts.rb",
       dedent`
         module Contracts
@@ -70,7 +70,7 @@ export async function test_ruby_graph(): Promise<void> {
     requireUnit(implementation, "Contracts.VALUE"),
   ];
 
-  const complete = EvidGraph.evaluate({
+  const complete = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -81,7 +81,7 @@ export async function test_ruby_graph(): Promise<void> {
             severity: "error",
             inventory: requirements,
             unitIds: requirementUnits.map((unit) => unit.id),
-            resolutions: await EvidTestGraph.resolveDeclarations(
+            resolutions: await EvidenceTestGraph.resolveDeclarations(
               implementation,
               requirements,
               requirementUnits.map((unit) => unit.id),
@@ -100,7 +100,7 @@ export async function test_ruby_graph(): Promise<void> {
     missing.declarations = missing.declarations.filter(
       (declaration) => !declaration.target.endsWith(`#${anchor}`),
     );
-    const partial = EvidGraph.evaluate({
+    const partial = EvidenceGraph.evaluate({
       claims: [
         {
           severity: "error",
@@ -111,7 +111,7 @@ export async function test_ruby_graph(): Promise<void> {
               severity: "error",
               inventory: requirements,
               unitIds: requirementUnits.map((unit) => unit.id),
-              resolutions: await EvidTestGraph.resolveDeclarations(
+              resolutions: await EvidenceTestGraph.resolveDeclarations(
                 missing,
                 requirements,
                 requirementUnits.map((unit) => unit.id),
@@ -123,7 +123,7 @@ export async function test_ruby_graph(): Promise<void> {
     });
     TestValidator.equals(
       `missing Ruby ${anchor} acknowledgement`,
-      EvidTestGraph.obligation(partial, 0, 0).missingUnitIds,
+      EvidenceTestGraph.obligation(partial, 0, 0).missingUnitIds,
       [required.id],
     );
   }
@@ -140,22 +140,22 @@ export async function test_ruby_graph(): Promise<void> {
 
   TestValidator.equals(
     "Ruby evidence metadata preserves fingerprint",
-    EvidFingerprint.inspect(original, originalUnit.id).fingerprint,
-    EvidFingerprint.inspect(editedReason, reasonUnit.id).fingerprint,
+    EvidenceFingerprint.inspect(original, originalUnit.id).fingerprint,
+    EvidenceFingerprint.inspect(editedReason, reasonUnit.id).fingerprint,
   );
   TestValidator.notEquals(
     "Ruby implementation moves fingerprint",
-    EvidFingerprint.inspect(original, originalUnit.id).fingerprint,
-    EvidFingerprint.inspect(editedBody, bodyUnit.id).fingerprint,
+    EvidenceFingerprint.inspect(original, originalUnit.id).fingerprint,
+    EvidenceFingerprint.inspect(editedBody, bodyUnit.id).fingerprint,
   );
 }
 
 async function fingerprintInventory(
   reason: string,
   statement: string,
-): Promise<IEvidInventory> {
-  return new EvidRubyAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+): Promise<IEvidenceInventory> {
+  return new EvidenceRubyAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "lib/fingerprint.rb",
       dedent`
         class Runner
@@ -169,7 +169,7 @@ async function fingerprintInventory(
   );
 }
 
-function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
+function requireUnit(inventory: IEvidenceInventory, identity: string): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.join(".") === identity,
   );

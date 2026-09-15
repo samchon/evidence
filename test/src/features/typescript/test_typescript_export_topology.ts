@@ -1,9 +1,9 @@
-import { EvidTypeScriptAdapter } from "evid";
-import type { IEvidInventory } from "evid";
+import { EvidenceTypeScriptAdapter } from "@wrtnlabs/evidence";
+import type { IEvidenceInventory } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Evaluates TypeScript export topology across transitive modules.
@@ -15,12 +15,12 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 2. Verify public results and incomplete or ambiguous boundaries.
  */
 export async function test_typescript_export_topology(): Promise<void> {
-  const adapter = new EvidTypeScriptAdapter();
+  const adapter = new EvidenceTypeScriptAdapter();
 
   // A type-only mark must survive every barrel above the edge that introduced it.
   const typeOnly = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/surface.ts",
         dedent`
           export class Sale { amount = 1; }
@@ -28,15 +28,15 @@ export async function test_typescript_export_topology(): Promise<void> {
           export function execute(): void {}
         `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/value-barrel.ts",
         'export * from "./surface.js";',
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/type-barrel.ts",
         'export type { Sale, Input, execute } from "./value-barrel.js";',
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/type-entry.ts",
         'export * from "./type-barrel.js";',
       ),
@@ -55,23 +55,23 @@ export async function test_typescript_export_topology(): Promise<void> {
 
   // An explicit export shadows star candidates, while two star candidates remain ambiguous.
   const competing = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/alpha.ts",
         "export class Contract { alpha = 1; }",
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/beta.ts",
         "export class Contract { beta = 1; }",
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/shadow.ts",
         dedent`
           export * from "./alpha";
           export { Contract } from "./beta";
         `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/ambiguous.ts",
         dedent`
           export * from "./alpha";
@@ -98,15 +98,15 @@ export async function test_typescript_export_topology(): Promise<void> {
 
   // Namespace cycles terminate while retaining declarations reached before re-entry.
   const finiteCycle = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/cycle-a.ts",
         dedent`
           export interface A { value: string; }
           export * as BModule from "./cycle-b";
         `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/cycle-b.ts",
         dedent`
           export interface B { value: string; }
@@ -131,16 +131,16 @@ export async function test_typescript_export_topology(): Promise<void> {
 
   // Emitted JavaScript specifiers resolve to their TypeScript source variants.
   const substitutions = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/module.mts",
         "export interface ModuleContract {}",
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/common.cts",
         "export interface CommonContract {}",
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/extensions.ts",
         dedent`
           export { ModuleContract } from "./module.mjs";
@@ -157,12 +157,12 @@ export async function test_typescript_export_topology(): Promise<void> {
 
   // Mutually advertised names without any declaration cannot become a complete empty surface.
   const emptyCycle = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/empty-a.ts",
         'export { Missing } from "./empty-b";',
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/empty-b.ts",
         'export { Missing } from "./empty-a";',
       ),
@@ -184,7 +184,7 @@ export async function test_typescript_export_topology(): Promise<void> {
   );
 }
 
-function addresses(inventory: IEvidInventory, file: string): string[] {
+function addresses(inventory: IEvidenceInventory, file: string): string[] {
   return inventory.addresses
     .filter((address) => address.file === file)
     .map((address) => address.segments.join("."))

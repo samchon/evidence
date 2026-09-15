@@ -1,7 +1,7 @@
-import type { IEvidConfig } from "evid";
+import type { IEvidenceConfig } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { validateEvidConfig } from "evid";
+import { validateEvidenceConfig } from "@wrtnlabs/evidence";
 
 /**
  * Validates malformed population declarations before inactive entries are
@@ -27,7 +27,7 @@ export function test_config_constraints(): void {
     emptyGraph.includes("at least one claim is required"),
   );
 
-  const invalid: IEvidConfig = {
+  const invalid: IEvidenceConfig = {
     claims: [
       {
         type: "typescript",
@@ -85,7 +85,7 @@ export function test_config_constraints(): void {
       message.includes(expected),
     );
 
-  validateEvidConfig({
+  validateEvidenceConfig({
     claims: [
       {
         type: "kotlin",
@@ -103,12 +103,12 @@ export function test_config_constraints(): void {
  * Unexpected non-Error causes propagate, and successful validation fails the
  * scenario rather than returning text that could satisfy a negative assertion.
  */
-function failure(config: IEvidConfig): string {
+function failure(config: IEvidenceConfig): string {
   try {
-    validateEvidConfig(config);
+    validateEvidenceConfig(config);
   } catch (cause) {
     if (cause instanceof Error) return cause.message;
     throw cause;
   }
-  throw new Error("Expected Evid configuration validation to fail.");
+  throw new Error("Expected Evidence configuration validation to fail.");
 }

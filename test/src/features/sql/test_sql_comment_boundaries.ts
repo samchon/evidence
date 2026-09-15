@@ -1,7 +1,7 @@
-import { EvidSqlAdapter } from "evid";
+import { EvidenceSqlAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Distinguishes leading SQL documentation from trailing and detached comments.
@@ -14,9 +14,9 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Require exact host and declaration outcomes.
  */
 export async function test_sql_comment_boundaries(): Promise<void> {
-  const adapter = new EvidSqlAdapter();
+  const adapter = new EvidenceSqlAdapter();
   const inventory = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "comments.sql",
       dedent`
     CREATE TABLE account (

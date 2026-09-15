@@ -1,9 +1,9 @@
-import { EvidCppAdapter } from "evid";
-import type { IEvidInventory, IEvidUnit } from "evid";
+import { EvidenceCppAdapter } from "@wrtnlabs/evidence";
+import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Merges compatible C++ declarations and definitions into their semantic
@@ -17,9 +17,9 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Require overload families to remain separate from unrelated names.
  */
 export async function test_cpp_definitions(): Promise<void> {
-  const inventory = await new EvidCppAdapter().analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+  const inventory = await new EvidenceCppAdapter().analyze(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "include/shop.hpp",
         dedent`
           namespace shop {
@@ -49,7 +49,7 @@ export async function test_cpp_definitions(): Promise<void> {
           }
         `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/shop.cpp",
         dedent`
           namespace shop {
@@ -121,7 +121,7 @@ export async function test_cpp_definitions(): Promise<void> {
   );
 }
 
-function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
+function requireUnit(inventory: IEvidenceInventory, identity: string): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.join(".") === identity,
   );

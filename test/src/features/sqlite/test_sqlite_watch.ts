@@ -1,9 +1,9 @@
-import { EvidChecker, EvidWatcher } from "evid";
+import { EvidenceChecker, EvidenceWatcher } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
 
 /**
  * Recomputes SQLite populations as selected files appear and recover.
@@ -17,7 +17,7 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
  *    recovery.
  */
 export async function test_sqlite_watch(): Promise<void> {
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     "sqlite-watch",
     {
       "evidence.config.ts": dedent`
@@ -31,7 +31,7 @@ export async function test_sqlite_watch(): Promise<void> {
     },
     async (directory) => {
       const config = join(directory, "evidence.config.ts");
-      const watcher = new EvidWatcher(config, {
+      const watcher = new EvidenceWatcher(config, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
       });
@@ -41,11 +41,11 @@ export async function test_sqlite_watch(): Promise<void> {
           TestValidator.equals(
             `SQLite watch agrees with fresh check ${cycle.cycle}`,
             cycle.report,
-            await EvidChecker.check(config),
+            await EvidenceChecker.check(config),
           );
           if (cycle.cycle === 1) {
             TestValidator.equals("initial schema covered", cycle.success, true);
-            await EvidTestFileSystem.save(directory, {
+            await EvidenceTestFileSystem.save(directory, {
               "schema/new.sql": "CREATE TABLE New (uncovered TEXT);\n",
             });
           } else if (cycle.cycle === 2) {
@@ -54,7 +54,7 @@ export async function test_sqlite_watch(): Promise<void> {
               cycle.success,
               false,
             );
-            await EvidTestFileSystem.save(directory, {
+            await EvidenceTestFileSystem.save(directory, {
               "schema/new.sql": "CREATE TABLE New (\n",
             });
           } else if (cycle.cycle === 3) {
@@ -63,7 +63,7 @@ export async function test_sqlite_watch(): Promise<void> {
               cycle.status,
               "incomplete",
             );
-            await EvidTestFileSystem.save(directory, {
+            await EvidenceTestFileSystem.save(directory, {
               "schema/new.sql":
                 "-- @internal Withdraws this table.\nCREATE TABLE New (uncovered TEXT);\n",
             });

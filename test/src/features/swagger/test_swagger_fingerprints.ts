@@ -1,21 +1,21 @@
 import {
-  EvidFingerprint,
-  EvidGraph,
-  EvidSwaggerAdapter,
-  EvidTypeScriptAdapter,
-} from "evid";
+  EvidenceFingerprint,
+  EvidenceGraph,
+  EvidenceSwaggerAdapter,
+  EvidenceTypeScriptAdapter,
+} from "@wrtnlabs/evidence";
 import type {
-  IEvidGraphReference,
-  IEvidGraphResult,
-  IEvidDiagnostic,
-  IEvidInventory,
-  IEvidUnit,
-} from "evid";
+  IEvidenceGraphReference,
+  IEvidenceGraphResult,
+  IEvidenceDiagnostic,
+  IEvidenceInventory,
+  IEvidenceUnit,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
 
 /**
  * Tracks Swagger operation fingerprints through normalized content edits.
@@ -59,7 +59,7 @@ export async function test_swagger_fingerprints(): Promise<void> {
     health,
   );
 
-  // Evid metadata can be added after prose without invalidating its own review.
+  // Evidence metadata can be added after prose without invalidating its own review.
   const annotated = await analyze(
     document(
       dedent`
@@ -94,10 +94,10 @@ export async function test_swagger_fingerprints(): Promise<void> {
     post,
   );
 
-  const prototypeReference: IEvidInventory = await analyze(
+  const prototypeReference: IEvidenceInventory = await analyze(
     unresolvedReferenceDocument("toString"),
   );
-  const secondPrototypeReference: IEvidInventory = await analyze(
+  const secondPrototypeReference: IEvidenceInventory = await analyze(
     unresolvedReferenceDocument("valueOf"),
   );
   TestValidator.notEquals(
@@ -106,10 +106,10 @@ export async function test_swagger_fingerprints(): Promise<void> {
     fingerprint(secondPrototypeReference, "POST:/members"),
   );
 
-  const implicitDefaults: IEvidInventory = await analyze(
+  const implicitDefaults: IEvidenceInventory = await analyze(
     defaultDocument(false),
   );
-  const explicitDefaults: IEvidInventory = await analyze(defaultDocument(true));
+  const explicitDefaults: IEvidenceInventory = await analyze(defaultDocument(true));
   TestValidator.equals(
     "empty root defaults preserve effective contract",
     fingerprint(explicitDefaults, "GET:/defaults"),
@@ -117,7 +117,7 @@ export async function test_swagger_fingerprints(): Promise<void> {
   );
 
   // Effective root defaults and the definitions they name belong to the using operation.
-  const effective: IEvidInventory = await analyze(
+  const effective: IEvidenceInventory = await analyze(
     effectiveDocument(
       "https://first.example",
       "https://path.example",
@@ -129,7 +129,7 @@ export async function test_swagger_fingerprints(): Promise<void> {
   const inherited: string = fingerprint(effective, "GET:/inherited");
   const pathInherited: string = fingerprint(effective, "GET:/path-server");
   const overridden: string = fingerprint(effective, "GET:/overridden");
-  const changedServer: IEvidInventory = await analyze(
+  const changedServer: IEvidenceInventory = await analyze(
     effectiveDocument(
       "https://second.example",
       "https://path.example",
@@ -138,7 +138,7 @@ export async function test_swagger_fingerprints(): Promise<void> {
       "Unused-First",
     ),
   );
-  const changedPathServer: IEvidInventory = await analyze(
+  const changedPathServer: IEvidenceInventory = await analyze(
     effectiveDocument(
       "https://first.example",
       "https://changed-path.example",
@@ -147,7 +147,7 @@ export async function test_swagger_fingerprints(): Promise<void> {
       "Unused-First",
     ),
   );
-  const changedScheme: IEvidInventory = await analyze(
+  const changedScheme: IEvidenceInventory = await analyze(
     effectiveDocument(
       "https://first.example",
       "https://path.example",
@@ -156,7 +156,7 @@ export async function test_swagger_fingerprints(): Promise<void> {
       "Unused-First",
     ),
   );
-  const changedUnusedScheme: IEvidInventory = await analyze(
+  const changedUnusedScheme: IEvidenceInventory = await analyze(
     effectiveDocument(
       "https://first.example",
       "https://path.example",
@@ -165,7 +165,7 @@ export async function test_swagger_fingerprints(): Promise<void> {
       "Unused-Second",
     ),
   );
-  const changedRequirement: IEvidInventory = await analyze(
+  const changedRequirement: IEvidenceInventory = await analyze(
     effectiveDocument(
       "https://first.example",
       "https://path.example",
@@ -219,10 +219,10 @@ export async function test_swagger_fingerprints(): Promise<void> {
     inherited,
   );
 
-  const oauth: IEvidInventory = await analyze(
+  const oauth: IEvidenceInventory = await analyze(
     oauthDocument("https://identity.example/first"),
   );
-  const changedOauth: IEvidInventory = await analyze(
+  const changedOauth: IEvidenceInventory = await analyze(
     oauthDocument("https://identity.example/second"),
   );
   TestValidator.notEquals(
@@ -231,10 +231,10 @@ export async function test_swagger_fingerprints(): Promise<void> {
     fingerprint(oauth, "GET:/oauth"),
   );
 
-  const prototypeSecurity: IEvidInventory = await analyze(
+  const prototypeSecurity: IEvidenceInventory = await analyze(
     prototypeSecurityDocument("X-First"),
   );
-  const changedPrototypeSecurity: IEvidInventory = await analyze(
+  const changedPrototypeSecurity: IEvidenceInventory = await analyze(
     prototypeSecurityDocument("X-Second"),
   );
   TestValidator.notEquals(
@@ -243,13 +243,13 @@ export async function test_swagger_fingerprints(): Promise<void> {
     fingerprint(prototypeSecurity, "GET:/prototype-security"),
   );
 
-  const orderedSecurity: IEvidInventory = await analyze(
+  const orderedSecurity: IEvidenceInventory = await analyze(
     securityOrderDocument(false, false),
   );
-  const reorderedSecurity: IEvidInventory = await analyze(
+  const reorderedSecurity: IEvidenceInventory = await analyze(
     securityOrderDocument(true, false),
   );
-  const changedSecurityMembership: IEvidInventory = await analyze(
+  const changedSecurityMembership: IEvidenceInventory = await analyze(
     securityOrderDocument(true, true),
   );
   TestValidator.equals(
@@ -263,10 +263,10 @@ export async function test_swagger_fingerprints(): Promise<void> {
     fingerprint(orderedSecurity, "GET:/ordered-security"),
   );
 
-  const orderedServers: IEvidInventory = await analyze(
+  const orderedServers: IEvidenceInventory = await analyze(
     serverOrderDocument(false),
   );
-  const reorderedServers: IEvidInventory = await analyze(
+  const reorderedServers: IEvidenceInventory = await analyze(
     serverOrderDocument(true),
   );
   TestValidator.notEquals(
@@ -275,13 +275,13 @@ export async function test_swagger_fingerprints(): Promise<void> {
     fingerprint(orderedServers, "GET:/ordered-servers"),
   );
 
-  const swaggerTwo: IEvidInventory = await analyze(
+  const swaggerTwo: IEvidenceInventory = await analyze(
     swaggerTwoDocument("first.example", "X-First"),
   );
-  const swaggerTwoServer: IEvidInventory = await analyze(
+  const swaggerTwoServer: IEvidenceInventory = await analyze(
     swaggerTwoDocument("second.example", "X-First"),
   );
-  const swaggerTwoScheme: IEvidInventory = await analyze(
+  const swaggerTwoScheme: IEvidenceInventory = await analyze(
     swaggerTwoDocument("first.example", "X-Second"),
   );
   TestValidator.notEquals(
@@ -294,10 +294,10 @@ export async function test_swagger_fingerprints(): Promise<void> {
     fingerprint(swaggerTwoScheme, "GET:/legacy"),
     fingerprint(swaggerTwo, "GET:/legacy"),
   );
-  const swaggerTwoOrdered: IEvidInventory = await analyze(
+  const swaggerTwoOrdered: IEvidenceInventory = await analyze(
     swaggerTwoSecurityOrderDocument(false),
   );
-  const swaggerTwoReordered: IEvidInventory = await analyze(
+  const swaggerTwoReordered: IEvidenceInventory = await analyze(
     swaggerTwoSecurityOrderDocument(true),
   );
   TestValidator.equals(
@@ -306,9 +306,9 @@ export async function test_swagger_fingerprints(): Promise<void> {
     fingerprint(swaggerTwoOrdered, "GET:/legacy-security"),
   );
 
-  const reviewedClaim: IEvidInventory =
-    await new EvidTypeScriptAdapter().analyze(
-      EvidTestSourceSnapshot.create(
+  const reviewedClaim: IEvidenceInventory =
+    await new EvidenceTypeScriptAdapter().analyze(
+      EvidenceTestSourceSnapshot.create(
         "src/client.ts",
         dedent`
           /**
@@ -319,32 +319,32 @@ export async function test_swagger_fingerprints(): Promise<void> {
         `,
       ),
     );
-  const changedOperation: IEvidUnit = requireUnit(
+  const changedOperation: IEvidenceUnit = requireUnit(
     changedServer,
     "GET:/inherited",
   );
-  const reference: IEvidGraphReference = {
+  const reference: IEvidenceGraphReference = {
     severity: "error",
     inventory: changedServer,
     unitIds: [changedOperation.id],
-    resolutions: await EvidTestGraph.resolveDeclarations(
+    resolutions: await EvidenceTestGraph.resolveDeclarations(
       reviewedClaim,
       changedServer,
       [changedOperation.id],
     ),
-    reviewResolutions: await EvidTestGraph.resolveReviews(
+    reviewResolutions: await EvidenceTestGraph.resolveReviews(
       reviewedClaim,
       changedServer,
       [changedOperation.id],
     ),
     requireReview: true,
   };
-  const reviewedUnit: IEvidUnit | undefined = reviewedClaim.units.find(
-    (unit: IEvidUnit): boolean => unit.name === "request",
+  const reviewedUnit: IEvidenceUnit | undefined = reviewedClaim.units.find(
+    (unit: IEvidenceUnit): boolean => unit.name === "request",
   );
   if (reviewedUnit === undefined)
     throw new Error("Missing Swagger review claim unit.");
-  const reviewResult: IEvidGraphResult = EvidGraph.evaluate({
+  const reviewResult: IEvidenceGraphResult = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -357,7 +357,7 @@ export async function test_swagger_fingerprints(): Promise<void> {
   TestValidator.equals(
     "effective contract change makes old review stale",
     reviewResult.diagnostics.filter(
-      (diagnostic: IEvidDiagnostic): boolean =>
+      (diagnostic: IEvidenceDiagnostic): boolean =>
         diagnostic.code === "graph-stale-review",
     ).length,
     1,
@@ -370,9 +370,9 @@ export async function test_swagger_fingerprints(): Promise<void> {
  * Every fingerprint comparison uses the same logical source path so only the
  * mutated operation contract can change the result.
  */
-async function analyze(content: string): Promise<IEvidInventory> {
-  return new EvidSwaggerAdapter().analyze(
-    EvidTestSourceSnapshot.create("openapi.yaml", content),
+async function analyze(content: string): Promise<IEvidenceInventory> {
+  return new EvidenceSwaggerAdapter().analyze(
+    EvidenceTestSourceSnapshot.create("openapi.yaml", content),
   );
 }
 
@@ -382,9 +382,9 @@ async function analyze(content: string): Promise<IEvidInventory> {
  * The helper fails through {@link requireUnit} when a fixture unexpectedly
  * changes the operation population instead of its semantic digest.
  */
-function fingerprint(inventory: IEvidInventory, target: string): string {
+function fingerprint(inventory: IEvidenceInventory, target: string): string {
   const unit = requireUnit(inventory, target);
-  return EvidFingerprint.inspect(inventory, unit.id).fingerprint;
+  return EvidenceFingerprint.inspect(inventory, unit.id).fingerprint;
 }
 
 /**
@@ -393,7 +393,7 @@ function fingerprint(inventory: IEvidInventory, target: string): string {
  * Fingerprint fixtures use unique METHOD/path names, so absence is an adapter
  * regression rather than an optional scenario outcome.
  */
-function requireUnit(inventory: IEvidInventory, target: string): IEvidUnit {
+function requireUnit(inventory: IEvidenceInventory, target: string): IEvidenceUnit {
   const unit = inventory.units.find((candidate) => candidate.name === target);
   if (unit === undefined)
     throw new Error(`Missing Swagger operation: ${target}`);

@@ -1,5 +1,5 @@
-import { EvidAdapterCertification } from "../../internal/certification/EvidAdapterCertification";
-import { EvidAdapterCertificationFixtures } from "../../internal/certification/EvidAdapterCertificationFixtures";
+import { EvidenceAdapterCertification } from "../../internal/certification/EvidenceAdapterCertification";
+import { EvidenceAdapterCertificationFixtures } from "../../internal/certification/EvidenceAdapterCertificationFixtures";
 
 /**
  * Certifies that common adapters fail safely on incomplete or misleading
@@ -14,6 +14,6 @@ import { EvidAdapterCertificationFixtures } from "../../internal/certification/E
  *    becoming evidence.
  */
 export async function test_adapter_certification_failures(): Promise<void> {
-  for (const certification of EvidAdapterCertificationFixtures.all())
-    await EvidAdapterCertification.assertFailures(certification);
+  for (const certification of EvidenceAdapterCertificationFixtures.all())
+    await EvidenceAdapterCertification.assertFailures(certification);
 }

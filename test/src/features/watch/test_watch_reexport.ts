@@ -1,10 +1,10 @@
-import { EvidChecker, EvidWatcher } from "evid";
+import { EvidenceChecker, EvidenceWatcher } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
 
 /**
  * Invalidates re-export and syntax changes, then recovers the graph in place.
@@ -24,7 +24,7 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
  */
 export async function test_watch_reexport(): Promise<void> {
   const location = join(__dirname, `reexport ${randomUUID()}`);
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     location,
     {
       "evidence.config.ts": dedent`
@@ -53,7 +53,7 @@ export async function test_watch_reexport(): Promise<void> {
     },
     async (directory) => {
       const configFile = join(directory, "evidence.config.ts");
-      const watcher = new EvidWatcher(configFile, {
+      const watcher = new EvidenceWatcher(configFile, {
         pollIntervalMilliseconds: 20,
         debounceMilliseconds: 20,
       });
@@ -64,20 +64,20 @@ export async function test_watch_reexport(): Promise<void> {
         TestValidator.equals(
           `fresh reexport report ${cycle.cycle}`,
           cycle.report,
-          await EvidChecker.check(configFile),
+          await EvidenceChecker.check(configFile),
         );
 
         // The barrel alias changes the public target without changing its source type.
         if (cycle.cycle === 1) {
           TestValidator.predicate("initial reexport succeeds", cycle.success);
-          await EvidTestFileSystem.save(directory, {
+          await EvidenceTestFileSystem.save(directory, {
             "contracts/barrel.ts": `export { Contract as Renamed } from "./contract";\n`,
           });
           return;
         }
         if (cycle.cycle === 2) {
           TestValidator.equals("renamed reexport exit", cycle.exitCode, 1);
-          await EvidTestFileSystem.save(directory, {
+          await EvidenceTestFileSystem.save(directory, {
             "src/implementation.ts": "export function broken( {\n",
           });
           return;
@@ -86,7 +86,7 @@ export async function test_watch_reexport(): Promise<void> {
         // A syntax error publishes incomplete analysis instead of the prior result.
         if (cycle.cycle === 3) {
           TestValidator.equals("syntax status", cycle.status, "incomplete");
-          await EvidTestFileSystem.save(directory, {
+          await EvidenceTestFileSystem.save(directory, {
             "contracts/barrel.ts": `export { Contract } from "./contract";\n`,
             "src/implementation.ts": implementation(),
           });

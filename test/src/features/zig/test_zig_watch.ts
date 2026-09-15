@@ -1,9 +1,9 @@
-import { EvidChecker, EvidWatcher } from "evid";
+import { EvidenceChecker, EvidenceWatcher } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
 
 /**
  * Rebuilds Zig coverage after watched source and selector changes.
@@ -16,7 +16,7 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
  * 3. Repair and reselect coverage, requiring recovery.
  */
 export async function test_zig_watch(): Promise<void> {
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     "zig-watch",
     {
       "evidence.config.ts": dedent`
@@ -31,7 +31,7 @@ export async function test_zig_watch(): Promise<void> {
     },
     async (directory) => {
       const file = join(directory, "evidence.config.ts");
-      const watcher = new EvidWatcher(file, {
+      const watcher = new EvidenceWatcher(file, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
       });
@@ -41,11 +41,11 @@ export async function test_zig_watch(): Promise<void> {
           TestValidator.equals(
             `fresh Zig cycle ${cycle.cycle}`,
             cycle.report,
-            await EvidChecker.check(file),
+            await EvidenceChecker.check(file),
           );
           if (cycle.cycle === 1) {
             TestValidator.equals("initial Zig coverage", cycle.success, true);
-            await EvidTestFileSystem.save(directory, {
+            await EvidenceTestFileSystem.save(directory, {
               "contracts/Extra.zig": "pub const extra = 2;\n",
             });
           } else if (cycle.cycle === 2) {
@@ -54,7 +54,7 @@ export async function test_zig_watch(): Promise<void> {
               cycle.success,
               false,
             );
-            await EvidTestFileSystem.save(directory, {
+            await EvidenceTestFileSystem.save(directory, {
               "contracts/Extra.zig": "pub const Broken = struct {\n",
             });
           } else if (cycle.cycle === 3) {
@@ -63,7 +63,7 @@ export async function test_zig_watch(): Promise<void> {
               cycle.status,
               "incomplete",
             );
-            await EvidTestFileSystem.save(directory, {
+            await EvidenceTestFileSystem.save(directory, {
               "contracts/Extra.zig": "const extra = 2;\n",
             });
           } else if (cycle.cycle === 4) {
@@ -72,7 +72,7 @@ export async function test_zig_watch(): Promise<void> {
               cycle.success,
               true,
             );
-            await EvidTestFileSystem.save(directory, {
+            await EvidenceTestFileSystem.save(directory, {
               "evidence.config.ts": dedent`
             export default { claims: [{ type: "typescript", files: ["claims.ts"], reference: { type: "zig", files: ["contracts/*.zig"], symbol: "type" } }] };
           `,

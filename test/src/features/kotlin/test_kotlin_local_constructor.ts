@@ -1,8 +1,8 @@
-import { EvidKotlinAdapter } from "evid";
+import { EvidenceKotlinAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Prevents local constructor parameters in defaults from becoming owner
@@ -14,8 +14,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    properties. 3. Require local names to stay absent.
  */
 export async function test_kotlin_local_constructor(): Promise<void> {
-  const inventory = await new EvidKotlinAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const inventory = await new EvidenceKotlinAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/Container.kt",
       dedent`
     class Container(val value: Int = run {

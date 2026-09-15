@@ -1,15 +1,15 @@
 import {
-  EvidFingerprint,
-  EvidGraph,
-  EvidJavaAdapter,
-  EvidMarkdownAdapter,
-} from "evid";
-import type { IEvidInventory, IEvidUnit } from "evid";
+  EvidenceFingerprint,
+  EvidenceGraph,
+  EvidenceJavaAdapter,
+  EvidenceMarkdownAdapter,
+} from "@wrtnlabs/evidence";
+import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Evaluates Java type, function, and property evidence with semantic
@@ -23,8 +23,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Verify annotation-only fingerprint stability.
  */
 export async function test_java_graph(): Promise<void> {
-  const requirements = await new EvidMarkdownAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const requirements = await new EvidenceMarkdownAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "docs/requirements.md",
       dedent`
         ## Service {#service}
@@ -41,8 +41,8 @@ export async function test_java_graph(): Promise<void> {
       `,
     ),
   );
-  const implementation = await new EvidJavaAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const implementation = await new EvidenceJavaAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/Contracts.java",
       dedent`
         /** @evidence docs/requirements.md#service Implements the public type. */
@@ -67,7 +67,7 @@ export async function test_java_graph(): Promise<void> {
     requireUnit(implementation, "value"),
   ];
 
-  const complete = EvidGraph.evaluate({
+  const complete = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -78,7 +78,7 @@ export async function test_java_graph(): Promise<void> {
             severity: "error",
             inventory: requirements,
             unitIds: requirementUnits.map((unit) => unit.id),
-            resolutions: await EvidTestGraph.resolveDeclarations(
+            resolutions: await EvidenceTestGraph.resolveDeclarations(
               implementation,
               requirements,
               requirementUnits.map((unit) => unit.id),
@@ -97,7 +97,7 @@ export async function test_java_graph(): Promise<void> {
     missing.declarations = missing.declarations.filter(
       (declaration) => !declaration.target.endsWith(`#${anchor}`),
     );
-    const partial = EvidGraph.evaluate({
+    const partial = EvidenceGraph.evaluate({
       claims: [
         {
           severity: "error",
@@ -108,7 +108,7 @@ export async function test_java_graph(): Promise<void> {
               severity: "error",
               inventory: requirements,
               unitIds: requirementUnits.map((unit) => unit.id),
-              resolutions: await EvidTestGraph.resolveDeclarations(
+              resolutions: await EvidenceTestGraph.resolveDeclarations(
                 missing,
                 requirements,
                 requirementUnits.map((unit) => unit.id),
@@ -120,7 +120,7 @@ export async function test_java_graph(): Promise<void> {
     });
     TestValidator.equals(
       `missing Java ${anchor} acknowledgement`,
-      EvidTestGraph.obligation(partial, 0, 0).missingUnitIds,
+      EvidenceTestGraph.obligation(partial, 0, 0).missingUnitIds,
       [required.id],
     );
   }
@@ -143,13 +143,13 @@ export async function test_java_graph(): Promise<void> {
 
   TestValidator.equals(
     "Java evidence metadata preserves fingerprint",
-    EvidFingerprint.inspect(original, originalUnit.id).fingerprint,
-    EvidFingerprint.inspect(editedReason, reasonUnit.id).fingerprint,
+    EvidenceFingerprint.inspect(original, originalUnit.id).fingerprint,
+    EvidenceFingerprint.inspect(editedReason, reasonUnit.id).fingerprint,
   );
   TestValidator.notEquals(
     "Java implementation moves fingerprint",
-    EvidFingerprint.inspect(original, originalUnit.id).fingerprint,
-    EvidFingerprint.inspect(editedBody, bodyUnit.id).fingerprint,
+    EvidenceFingerprint.inspect(original, originalUnit.id).fingerprint,
+    EvidenceFingerprint.inspect(editedBody, bodyUnit.id).fingerprint,
   );
 
   // One overload family combines every declaration site into one fingerprint.
@@ -164,9 +164,9 @@ export async function test_java_graph(): Promise<void> {
   );
   TestValidator.notEquals(
     "Java overload implementation moves family fingerprint",
-    EvidFingerprint.inspect(overloadOriginal, overloadOriginalUnit.id)
+    EvidenceFingerprint.inspect(overloadOriginal, overloadOriginalUnit.id)
       .fingerprint,
-    EvidFingerprint.inspect(overloadEdited, overloadEditedUnit.id).fingerprint,
+    EvidenceFingerprint.inspect(overloadEdited, overloadEditedUnit.id).fingerprint,
   );
 
   // A sibling variable has its own source content range within a shared declaration.
@@ -176,17 +176,17 @@ export async function test_java_graph(): Promise<void> {
   const firstEdited = requireUnit(fieldsEdited, "first");
   TestValidator.equals(
     "Java sibling field fingerprint isolation",
-    EvidFingerprint.inspect(fieldsOriginal, firstOriginal.id).fingerprint,
-    EvidFingerprint.inspect(fieldsEdited, firstEdited.id).fingerprint,
+    EvidenceFingerprint.inspect(fieldsOriginal, firstOriginal.id).fingerprint,
+    EvidenceFingerprint.inspect(fieldsEdited, firstEdited.id).fingerprint,
   );
 }
 
 async function fingerprintInventory(
   reason: string,
   statement: string,
-): Promise<IEvidInventory> {
-  return new EvidJavaAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+): Promise<IEvidenceInventory> {
+  return new EvidenceJavaAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/Fingerprint.java",
       dedent`
         public class Fingerprint {
@@ -200,9 +200,9 @@ async function fingerprintInventory(
   );
 }
 
-async function overloadInventory(statement: string): Promise<IEvidInventory> {
-  return new EvidJavaAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+async function overloadInventory(statement: string): Promise<IEvidenceInventory> {
+  return new EvidenceJavaAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/Calculator.java",
       dedent`
         public class Calculator {
@@ -214,9 +214,9 @@ async function overloadInventory(statement: string): Promise<IEvidInventory> {
   );
 }
 
-async function fieldInventory(second: string): Promise<IEvidInventory> {
-  return new EvidJavaAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+async function fieldInventory(second: string): Promise<IEvidenceInventory> {
+  return new EvidenceJavaAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/Fields.java",
       dedent`
         public class Fields {
@@ -227,7 +227,7 @@ async function fieldInventory(second: string): Promise<IEvidInventory> {
   );
 }
 
-function requireUnit(inventory: IEvidInventory, name: string): IEvidUnit {
+function requireUnit(inventory: IEvidenceInventory, name: string): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === name || candidate.identity.at(-1) === name,

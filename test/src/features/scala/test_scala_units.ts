@@ -1,9 +1,9 @@
 import typia from "typia";
-import type { IEvidInventory } from "evid";
-import { EvidAccessor, EvidInventory, EvidScalaAdapter } from "evid";
+import type { IEvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidenceAccessor, EvidenceInventory, EvidenceScalaAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Extracts independent public Scala 2 and Scala 3 units.
@@ -20,9 +20,9 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    serialization preserves the inventory.
  */
 export async function test_scala_units(): Promise<void> {
-  const inventory = await new EvidScalaAdapter().analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+  const inventory = await new EvidenceScalaAdapter().analyze(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/Scala2.scala",
         dedent`
       package demo
@@ -47,7 +47,7 @@ export async function test_scala_units(): Promise<void> {
     `,
         ["src/Scala2.scala", "alias/Scala2.scala"],
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/Scala3.scala",
         dedent`
       package demo
@@ -72,7 +72,7 @@ export async function test_scala_units(): Promise<void> {
   TestValidator.equals(
     "exact independent surface",
     inventory.units
-      .map((unit) => `${unit.symbol}:${EvidAccessor.format(unit.identity)}`)
+      .map((unit) => `${unit.symbol}:${EvidenceAccessor.format(unit.identity)}`)
       .sort((a, b) => a.localeCompare(b, "en")),
     [
       "type:demo.Contract",
@@ -114,7 +114,7 @@ export async function test_scala_units(): Promise<void> {
       .map((unit) => unit.sites.length),
     [2, 2],
   );
-  const graph = new EvidInventory([inventory]);
+  const graph = new EvidenceInventory([inventory]);
   TestValidator.equals(
     "logical aliases share identity",
     graph.resolve(
@@ -139,7 +139,7 @@ export async function test_scala_units(): Promise<void> {
   );
   TestValidator.equals(
     "source inventory serializes",
-    typia.json.assertParse<IEvidInventory>(JSON.stringify(inventory)),
+    typia.json.assertParse<IEvidenceInventory>(JSON.stringify(inventory)),
     inventory,
   );
 }

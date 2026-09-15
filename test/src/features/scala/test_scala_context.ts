@@ -1,7 +1,7 @@
-import { EvidFingerprint, EvidInventory, EvidScalaAdapter } from "evid";
+import { EvidenceFingerprint, EvidenceInventory, EvidenceScalaAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Preserves Scala extension context while applying lexical export withdrawal.
@@ -17,7 +17,7 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    removes the exported path while the source member remains selectable.
  */
 export async function test_scala_context(): Promise<void> {
-  const adapter = new EvidScalaAdapter();
+  const adapter = new EvidenceScalaAdapter();
   const source = dedent`
     /** @evidence docs/spec.md#extension Supports both extensions. */
     extension (value: Int) {
@@ -29,7 +29,7 @@ export async function test_scala_context(): Promise<void> {
     object Forward { export Source.value }
   `;
   const inventory = await adapter.analyze(
-    EvidTestSourceSnapshot.create("src/Context.scala", source),
+    EvidenceTestSourceSnapshot.create("src/Context.scala", source),
   );
   TestValidator.equals(
     "extension and lexical withdrawals complete",
@@ -43,30 +43,30 @@ export async function test_scala_context(): Promise<void> {
     inventory.declarations.length,
     2,
   );
-  const fingerprint = EvidFingerprint.inspect(inventory, first.id).fingerprint;
+  const fingerprint = EvidenceFingerprint.inspect(inventory, first.id).fingerprint;
   const sibling = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Context.scala",
       source.replace("second = 2", "second = 3"),
     ),
   );
   TestValidator.equals(
     "sibling body is outside method content",
-    EvidFingerprint.inspect(sibling, first.id).fingerprint,
+    EvidenceFingerprint.inspect(sibling, first.id).fingerprint,
     fingerprint,
   );
   const receiver = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Context.scala",
       source.replace("value: Int", "value: String"),
     ),
   );
   TestValidator.notEquals(
     "receiver change invalidates extension review",
-    EvidFingerprint.inspect(receiver, first.id).fingerprint,
+    EvidenceFingerprint.inspect(receiver, first.id).fingerprint,
     fingerprint,
   );
-  const graph = new EvidInventory([inventory]);
+  const graph = new EvidenceInventory([inventory]);
   const selected = inventory.units.map((unit) => unit.id);
   TestValidator.equals(
     "withdrawn export owner exposes no alias",

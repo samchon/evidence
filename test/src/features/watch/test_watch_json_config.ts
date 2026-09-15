@@ -1,10 +1,10 @@
 import { TestValidator } from "@nestia/e2e";
-import { EvidWatcher } from "evid";
-import type { IEvidConfig } from "evid";
+import { EvidenceWatcher } from "@wrtnlabs/evidence";
+import type { IEvidenceConfig } from "@wrtnlabs/evidence";
 import { unlink } from "node:fs/promises";
 import { join } from "node:path";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
 
 /**
  * Replaces valid JSON results with parse and deletion failures, then recovers
@@ -22,7 +22,7 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
  *    before closing the watcher.
  */
 export async function test_watch_json_config(): Promise<void> {
-  const config: IEvidConfig = {
+  const config: IEvidenceConfig = {
     claims: [
       {
         type: "markdown",
@@ -32,7 +32,7 @@ export async function test_watch_json_config(): Promise<void> {
     ],
   };
   const content = JSON.stringify(config);
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     "json-watch",
     {
       "evid.json": content,
@@ -42,7 +42,7 @@ export async function test_watch_json_config(): Promise<void> {
     },
     async (directory) => {
       const file = join(directory, "evid.json");
-      const watcher = new EvidWatcher(file, {
+      const watcher = new EvidenceWatcher(file, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
       });
@@ -54,7 +54,7 @@ export async function test_watch_json_config(): Promise<void> {
               cycle.status,
               "complete",
             );
-            await EvidTestFileSystem.save(directory, { "evid.json": "{" });
+            await EvidenceTestFileSystem.save(directory, { "evid.json": "{" });
           } else if (cycle.cycle === 2) {
             TestValidator.equals(
               "malformed JSON fails",
@@ -64,7 +64,7 @@ export async function test_watch_json_config(): Promise<void> {
             await unlink(file);
           } else if (cycle.cycle === 3) {
             TestValidator.equals("deleted JSON fails", cycle.status, "failed");
-            await EvidTestFileSystem.save(directory, { "evid.json": content });
+            await EvidenceTestFileSystem.save(directory, { "evid.json": content });
           } else {
             TestValidator.equals(
               "recreated JSON recovers",

@@ -1,8 +1,8 @@
-import { EvidAccessor, EvidChecker } from "evid";
+import { EvidenceAccessor, EvidenceChecker } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
 
 /**
  * Exercises SQL configuration selectors in both database graph roles.
@@ -24,7 +24,7 @@ export async function test_sql_graph(): Promise<void> {
       FOREIGN KEY (id) REFERENCES parent(id)
     );
   `;
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     "sql-graph",
     { "schema.sql": schema, "requirement.ts": "export const requirement = 1;" },
     async (directory) => {
@@ -34,13 +34,13 @@ export async function test_sql_graph(): Promise<void> {
             ? "ACCOUNT"
             : symbol === "column"
               ? "ACCOUNT.ID"
-              : EvidAccessor.format([
+              : EvidenceAccessor.format([
                   "ACCOUNT",
                   'foreign-key:["ID"]->["PARENT"](["ID"])',
                 ]);
         for (const role of ["claim", "reference"] as const) {
           for (const acknowledged of [true, false]) {
-            await EvidTestFileSystem.save(directory, {
+            await EvidenceTestFileSystem.save(directory, {
               "schema.sql":
                 role === "claim" && acknowledged
                   ? schema.replace(/^.*@evidence.*$/gmu, (line) =>
@@ -60,7 +60,7 @@ export async function test_sql_graph(): Promise<void> {
                   ? `export default { claims: [{ type: "sql", files: ["schema.sql"], symbol: "${symbol}", reference: { type: "typescript", files: ["requirement.ts"], symbol: "property" } }] };`
                   : `export default { claims: [{ type: "typescript", files: ["requirement.ts"], symbol: "property", reference: { type: "sql", files: ["schema.sql"], symbol: "${symbol}" } }] };`,
             });
-            const result = await EvidChecker.check(
+            const result = await EvidenceChecker.check(
               join(directory, "evidence.config.ts"),
             );
             TestValidator.equals(

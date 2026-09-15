@@ -1,8 +1,8 @@
-import { EvidFingerprint, EvidInventory, EvidObjcAdapter } from "evid";
+import { EvidenceFingerprint, EvidenceInventory, EvidenceObjcAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Merges Objective-C declaration sites without collapsing distinct members.
@@ -15,8 +15,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Require conflicting duplicate definitions to remain incomplete.
  */
 export async function test_objc_merges(): Promise<void> {
-  const adapter = new EvidObjcAdapter();
-  const header = EvidTestSourceSnapshot.create(
+  const adapter = new EvidenceObjcAdapter();
+  const header = EvidenceTestSourceSnapshot.create(
     "src/Contract.h",
     dedent`
     @interface Contract
@@ -36,9 +36,9 @@ export async function test_objc_merges(): Promise<void> {
     @end
   `;
   const original = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
+    EvidenceTestSourceSnapshot.combine([
       header,
-      EvidTestSourceSnapshot.create("src/Contract.m", implementation),
+      EvidenceTestSourceSnapshot.create("src/Contract.m", implementation),
     ]),
   );
 
@@ -47,7 +47,7 @@ export async function test_objc_merges(): Promise<void> {
     original.diagnostics,
     [],
   );
-  const graph = new EvidInventory([original]);
+  const graph = new EvidenceInventory([original]);
   const ids = original.units.map((unit) => unit.id);
   for (const segment of ["class:value", "+value", "stored", "-:next:"])
     TestValidator.equals(
@@ -66,9 +66,9 @@ export async function test_objc_merges(): Promise<void> {
     2,
   );
   const changed = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
+    EvidenceTestSourceSnapshot.combine([
       header,
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/Contract.m",
         implementation.replace("_stored", "_other"),
       ),
@@ -76,18 +76,18 @@ export async function test_objc_merges(): Promise<void> {
   );
   TestValidator.notEquals(
     "backing implementation changes property fingerprint",
-    EvidFingerprint.inspect(original, stored.id).fingerprint,
-    EvidFingerprint.inspect(changed, stored.id).fingerprint,
+    EvidenceFingerprint.inspect(original, stored.id).fingerprint,
+    EvidenceFingerprint.inspect(changed, stored.id).fingerprint,
   );
 
   const duplicate = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
+    EvidenceTestSourceSnapshot.combine([
       header,
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/First.m",
         "@implementation Contract\n+ (int)value { return 1; }\n@end\n",
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/Second.m",
         "@implementation Contract\n+ (int)value { return 2; }\n@end\n",
       ),
@@ -106,9 +106,9 @@ export async function test_objc_merges(): Promise<void> {
     2,
   );
   const duplicateProperty = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
+    EvidenceTestSourceSnapshot.combine([
       header,
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/Duplicate.m",
         "@implementation Contract\n@synthesize stored = _first;\n@synthesize stored = _second;\n@end\n",
       ),
@@ -128,12 +128,12 @@ export async function test_objc_merges(): Promise<void> {
   );
 
   const escaped = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/Escaped.h",
         "@interface \\u0057idget\n- (void)\\u0072un;\n@end\n",
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/Escaped.m",
         "@implementation Widget\n- (void)run {}\n@end\n",
       ),

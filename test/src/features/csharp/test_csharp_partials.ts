@@ -1,8 +1,8 @@
-import { EvidCSharpAdapter } from "evid";
+import { EvidenceCSharpAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Merges C# partial declarations only inside one configured snapshot root.
@@ -18,12 +18,12 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Analyze Sale.cs under two distinct roots and require distinct unit IDs.
  */
 export async function test_csharp_partials(): Promise<void> {
-  const adapter = new EvidCSharpAdapter();
+  const adapter = new EvidenceCSharpAdapter();
 
   // Accessibility declared on one part applies to members selected from every part.
   const partial = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "Project/Sale.cs",
         dedent`
           namespace Shop
@@ -37,7 +37,7 @@ export async function test_csharp_partials(): Promise<void> {
           }
         `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "Project/Sale.Partial.cs",
         dedent`
           namespace Shop;
@@ -79,7 +79,7 @@ export async function test_csharp_partials(): Promise<void> {
   }
 
   // Relative configured roots are stable compilation-boundary keys.
-  const firstProject = EvidTestSourceSnapshot.create(
+  const firstProject = EvidenceTestSourceSnapshot.create(
     "Sale.cs",
     "public class Sale {}\n",
     ["Sale.cs"],
@@ -87,7 +87,7 @@ export async function test_csharp_partials(): Promise<void> {
   );
   firstProject.root.declared = "First";
   firstProject.root.display = "First";
-  const secondProject = EvidTestSourceSnapshot.create(
+  const secondProject = EvidenceTestSourceSnapshot.create(
     "Sale.cs",
     "public class Sale {}\n",
     ["Sale.cs"],

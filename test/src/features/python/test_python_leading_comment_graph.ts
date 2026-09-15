@@ -1,15 +1,15 @@
 import {
-  EvidFingerprint,
-  EvidGraph,
-  EvidMarkdownAdapter,
-  EvidPythonAdapter,
-} from "evid";
-import type { IEvidInventory, IEvidGraphResult } from "evid";
+  EvidenceFingerprint,
+  EvidenceGraph,
+  EvidenceMarkdownAdapter,
+  EvidencePythonAdapter,
+} from "@wrtnlabs/evidence";
+import type { IEvidenceInventory, IEvidenceGraphResult } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Covers a requirement from evidence before a Python class's first member.
@@ -26,8 +26,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    edits.
  */
 export async function test_python_leading_comment_graph(): Promise<void> {
-  const reference = await new EvidMarkdownAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const reference = await new EvidenceMarkdownAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "docs/spec.md",
       "## Title {#title}\n\nRequires a title.\n",
     ),
@@ -38,24 +38,24 @@ export async function test_python_leading_comment_graph(): Promise<void> {
             # @evidence docs/spec.md#title Implements title.
             title = ""
   `;
-  const adapter = new EvidPythonAdapter();
+  const adapter = new EvidencePythonAdapter();
   const baseline = await adapter.analyze(
-    EvidTestSourceSnapshot.create("src/sale.py", source),
+    EvidenceTestSourceSnapshot.create("src/sale.py", source),
   );
   const edited = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/sale.py",
       source.replace("Implements title.", "Documents the same title contract."),
     ),
   );
   const changed = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/sale.py",
       source.replace('title = ""', 'title = "changed"'),
     ),
   );
   const removed = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/sale.py",
       source.replace(/^[ \t]*# @evidence[^\n]*\n/mu, ""),
     ),
@@ -74,7 +74,7 @@ export async function test_python_leading_comment_graph(): Promise<void> {
   );
   TestValidator.equals(
     "the exact requirement becomes missing",
-    EvidTestGraph.obligation(missing, 0, 0).missingUnitIds,
+    EvidenceTestGraph.obligation(missing, 0, 0).missingUnitIds,
     reference.units
       .filter((unit) => unit.symbol === "h2")
       .map((unit) => unit.id),
@@ -84,13 +84,13 @@ export async function test_python_leading_comment_graph(): Promise<void> {
   for (const unit of baseline.units) {
     TestValidator.equals(
       "annotation edits preserve the subtree fingerprint",
-      EvidFingerprint.inspect(baseline, unit.id).fingerprint,
-      EvidFingerprint.inspect(edited, unit.id).fingerprint,
+      EvidenceFingerprint.inspect(baseline, unit.id).fingerprint,
+      EvidenceFingerprint.inspect(edited, unit.id).fingerprint,
     );
     TestValidator.notEquals(
       "member content changes its ancestors",
-      EvidFingerprint.inspect(baseline, unit.id).fingerprint,
-      EvidFingerprint.inspect(changed, unit.id).fingerprint,
+      EvidenceFingerprint.inspect(baseline, unit.id).fingerprint,
+      EvidenceFingerprint.inspect(changed, unit.id).fingerprint,
     );
   }
 }
@@ -102,13 +102,13 @@ export async function test_python_leading_comment_graph(): Promise<void> {
  * the scenario cannot pass through an unacknowledged Python declaration.
  */
 async function evaluate(
-  claim: IEvidInventory,
-  reference: IEvidInventory,
-): Promise<IEvidGraphResult> {
+  claim: IEvidenceInventory,
+  reference: IEvidenceInventory,
+): Promise<IEvidenceGraphResult> {
   const selected = reference.units
     .filter((unit) => unit.symbol === "h2")
     .map((unit) => unit.id);
-  return EvidGraph.evaluate({
+  return EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -121,8 +121,8 @@ async function evaluate(
             severity: "error",
             inventory: reference,
             unitIds: selected,
-            singleEvidPerSymbol: true,
-            resolutions: await EvidTestGraph.resolveDeclarations(
+            singleEvidencePerSymbol: true,
+            resolutions: await EvidenceTestGraph.resolveDeclarations(
               claim,
               reference,
               selected,

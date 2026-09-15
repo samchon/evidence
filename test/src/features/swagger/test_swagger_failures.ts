@@ -1,12 +1,12 @@
-import { EvidGraph, EvidSwaggerAdapter } from "evid";
-import type { IEvidInventory } from "evid";
+import { EvidenceGraph, EvidenceSwaggerAdapter } from "@wrtnlabs/evidence";
+import type { IEvidenceInventory } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Keeps Swagger source, parse, validation, and identity failures visible.
@@ -19,12 +19,12 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Repair the document and require graph recovery.
  */
 export async function test_swagger_failures(): Promise<void> {
-  const adapter = new EvidSwaggerAdapter();
+  const adapter = new EvidenceSwaggerAdapter();
   const malformed = await adapter.analyze(
-    EvidTestSourceSnapshot.create("malformed.yaml", "openapi: ["),
+    EvidenceTestSourceSnapshot.create("malformed.yaml", "openapi: ["),
   );
   const unsupported = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "unsupported.yaml",
       dedent`
         openapi: 9.0.0
@@ -36,13 +36,13 @@ export async function test_swagger_failures(): Promise<void> {
     ),
   );
   const whitespace = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "whitespace.yaml",
       document("/bad path", "get"),
     ),
   );
   const duplicate = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "duplicate.yaml",
       dedent`
         openapi: 3.1.0
@@ -71,9 +71,9 @@ export async function test_swagger_failures(): Promise<void> {
 
   // One rejected document does not erase valid operations from another source.
   const partial = await adapter.analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create("valid.yaml", document("/health", "get")),
-      EvidTestSourceSnapshot.create("invalid.yaml", "openapi: ["),
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create("valid.yaml", document("/health", "get")),
+      EvidenceTestSourceSnapshot.create("invalid.yaml", "openapi: ["),
     ]),
   );
   TestValidator.equals(
@@ -88,7 +88,7 @@ export async function test_swagger_failures(): Promise<void> {
   );
 
   // An incomplete Swagger claim stays active instead of passing as an empty population.
-  const graph = EvidGraph.evaluate({
+  const graph = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -111,7 +111,7 @@ export async function test_swagger_failures(): Promise<void> {
 
   // A corrected document with a new digest succeeds after a cached rejection.
   const repaired = await adapter.analyze(
-    EvidTestSourceSnapshot.create("malformed.yaml", document("/health", "get")),
+    EvidenceTestSourceSnapshot.create("malformed.yaml", document("/health", "get")),
   );
   TestValidator.equals(
     "repaired document is complete",
@@ -125,9 +125,9 @@ export async function test_swagger_failures(): Promise<void> {
   );
 
   const location = join(__dirname, "failures-" + randomUUID());
-  await EvidTestFileSystem.experiment(location, {}, async (directory) => {
+  await EvidenceTestFileSystem.experiment(location, {}, async (directory) => {
     const config = join(directory, "evidence.config.ts");
-    const failures: IEvidInventory[] = await Promise.all([
+    const failures: IEvidenceInventory[] = await Promise.all([
       adapter.load(config, "missing.yaml"),
       adapter.load(config, "C:drive-relative.yaml"),
       adapter.load(config, "file:///tmp/openapi.yaml"),
@@ -152,7 +152,7 @@ export async function test_swagger_failures(): Promise<void> {
   });
 }
 
-function rejected(name: string, inventory: IEvidInventory): void {
+function rejected(name: string, inventory: IEvidenceInventory): void {
   TestValidator.equals(
     `${name} document is incomplete`,
     inventory.complete,

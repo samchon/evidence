@@ -1,16 +1,16 @@
 import {
-  EvidJavaScriptAdapter,
-  EvidLanguageRegistry,
-  EvidSourceLoader,
-  EvidSourcePath,
-} from "evid";
+  EvidenceJavaScriptAdapter,
+  EvidenceLanguageRegistry,
+  EvidenceSourceLoader,
+  EvidenceSourcePath,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Selects JavaScript module semantics from extensions and nearest package
@@ -24,18 +24,18 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Verify the selected module mode and resulting exports.
  */
 export async function test_javascript_module_modes(): Promise<void> {
-  const language = EvidLanguageRegistry.list().find(
+  const language = EvidenceLanguageRegistry.list().find(
     (entry) => entry.type === "javascript",
   );
   TestValidator.equals(
     "certified JavaScript adapter",
     language?.adapter?.entry,
-    "EvidJavaScriptAdapter",
+    "EvidenceJavaScriptAdapter",
   );
 
   const location = join(__dirname, "modules " + randomUUID());
 
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     location,
     {
       "package.json": '{"type":"module"}',
@@ -53,7 +53,7 @@ export async function test_javascript_module_modes(): Promise<void> {
       `,
     },
     async (directory) => {
-      const snapshot = await EvidSourceLoader.glob(
+      const snapshot = await EvidenceSourceLoader.glob(
         join(directory, "evidence.config.ts"),
         {
           files: [
@@ -64,7 +64,7 @@ export async function test_javascript_module_modes(): Promise<void> {
           ],
         },
       );
-      const inventory = await new EvidJavaScriptAdapter().analyze(snapshot);
+      const inventory = await new EvidenceJavaScriptAdapter().analyze(snapshot);
 
       TestValidator.equals(
         "extension and package module units",
@@ -77,20 +77,20 @@ export async function test_javascript_module_modes(): Promise<void> {
       TestValidator.predicate(
         "root package metadata dependency",
         dependencies.includes(
-          EvidSourcePath.slash(join(directory, "package.json")),
+          EvidenceSourcePath.slash(join(directory, "package.json")),
         ),
       );
       TestValidator.predicate(
         "nearest package metadata dependency",
         dependencies.includes(
-          EvidSourcePath.slash(join(directory, "src/legacy/package.json")),
+          EvidenceSourcePath.slash(join(directory, "src/legacy/package.json")),
         ),
       );
     },
   );
 
-  const conflicting = await new EvidJavaScriptAdapter().analyze(
-    EvidTestSourceSnapshot.create("src/alias.mjs", "export const value = 1;", [
+  const conflicting = await new EvidenceJavaScriptAdapter().analyze(
+    EvidenceTestSourceSnapshot.create("src/alias.mjs", "export const value = 1;", [
       "src/alias.mjs",
       "src/alias.cjs",
     ]),
@@ -102,18 +102,18 @@ export async function test_javascript_module_modes(): Promise<void> {
     ),
   );
 
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     join(__dirname, "invalid package " + randomUUID()),
     {
       "package.json": "{ invalid",
       "src/main.js": "const value = 1; exports.value = value;",
     },
     async (directory) => {
-      const snapshot = await EvidSourceLoader.glob(
+      const snapshot = await EvidenceSourceLoader.glob(
         join(directory, "evidence.config.ts"),
         { files: ["src/**/*.js"] },
       );
-      const inventory = await new EvidJavaScriptAdapter().analyze(snapshot);
+      const inventory = await new EvidenceJavaScriptAdapter().analyze(snapshot);
 
       TestValidator.predicate(
         "invalid package metadata",

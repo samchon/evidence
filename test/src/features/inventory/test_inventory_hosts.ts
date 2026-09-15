@@ -1,7 +1,7 @@
-import { EvidInventory } from "evid";
+import { EvidenceInventory } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestInventory } from "../../internal/EvidTestInventory";
+import { EvidenceTestInventory } from "../../internal/EvidenceTestInventory";
 
 /**
  * Separates shared documentation ownership from each declarator's fingerprint
@@ -23,15 +23,15 @@ import { EvidTestInventory } from "../../internal/EvidTestInventory";
  *    cannot supply evidence.
  */
 export async function test_inventory_hosts(): Promise<void> {
-  const input = EvidTestInventory.create();
-  const first = EvidTestInventory.unit(
+  const input = EvidenceTestInventory.create();
+  const first = EvidenceTestInventory.unit(
     input,
     "first",
     ["first"],
     "property",
     "export const first = 1, second = 2;",
   );
-  const second = EvidTestInventory.unit(
+  const second = EvidenceTestInventory.unit(
     input,
     "second",
     ["second"],
@@ -40,13 +40,13 @@ export async function test_inventory_hosts(): Promise<void> {
   );
   for (const site of first.sites) {
     site.id = "values-site";
-    site.content = [EvidTestInventory.range(input, "first = 1")];
+    site.content = [EvidenceTestInventory.range(input, "first = 1")];
   }
   for (const site of second.sites) {
     site.id = "values-site";
-    site.content = [EvidTestInventory.range(input, "second = 2")];
+    site.content = [EvidenceTestInventory.range(input, "second = 2")];
   }
-  EvidTestInventory.host(
+  EvidenceTestInventory.host(
     input,
     "values-doc",
     "values-site",
@@ -54,7 +54,7 @@ export async function test_inventory_hosts(): Promise<void> {
     "/** Shared documentation. */",
   );
 
-  const population = new EvidInventory([input]).select(["first", "second"]);
+  const population = new EvidenceInventory([input]).select(["first", "second"]);
 
   TestValidator.predicate("shared site is valid", population.complete);
   TestValidator.equals("one physical host", population.hosts.length, 1);
@@ -80,7 +80,7 @@ export async function test_inventory_hosts(): Promise<void> {
   const host = input.hosts[0];
   if (host === undefined) throw new Error("Missing fixture host.");
   host.siteId = "unowned-site";
-  const broken = new EvidInventory([input]).snapshot();
+  const broken = new EvidenceInventory([input]).snapshot();
   TestValidator.predicate("wrong ownership fails analysis", !broken.complete);
   TestValidator.predicate(
     "ownership cause remains visible",
@@ -103,6 +103,6 @@ export async function test_inventory_hosts(): Promise<void> {
   });
   TestValidator.predicate(
     "unsupported host cannot supply evidence",
-    !new EvidInventory([input]).snapshot().complete,
+    !new EvidenceInventory([input]).snapshot().complete,
   );
 }

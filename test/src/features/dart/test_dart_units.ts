@@ -1,8 +1,8 @@
-import { EvidDartAdapter, EvidInventory } from "evid";
+import { EvidenceDartAdapter, EvidenceInventory } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Classifies Dart declarations, complementary accessors, and lexical privacy in
@@ -18,8 +18,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    share a unit.
  */
 export async function test_dart_units(): Promise<void> {
-  const inventory = await new EvidDartAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const inventory = await new EvidenceDartAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/contract.dart",
       dedent`
     class Contract {
@@ -97,7 +97,7 @@ export async function test_dart_units(): Promise<void> {
     inventory.units.find((unit) => unit.name === "top")?.sites?.length,
     2,
   );
-  const graph = new EvidInventory([inventory]);
+  const graph = new EvidenceInventory([inventory]);
   const ids = inventory.units.map((unit) => unit.id);
   TestValidator.equals(
     "logical alias resolves",

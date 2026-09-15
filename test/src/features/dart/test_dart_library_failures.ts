@@ -1,7 +1,7 @@
-import { EvidDartAdapter } from "evid";
+import { EvidenceDartAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Rejects contradictory Dart library topology and ambiguous exports.
@@ -16,7 +16,7 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Verify local export shadowing and supported cycles remain analyzable.
  */
 export async function test_dart_library_failures(): Promise<void> {
-  const adapter = new EvidDartAdapter();
+  const adapter = new EvidenceDartAdapter();
   for (const [sources, code] of new Map<string[], string>([
     [["part 'part.dart';", "class Wrong {}"], "dart-part-owner"],
     [
@@ -50,9 +50,9 @@ export async function test_dart_library_failures(): Promise<void> {
     ],
   ])) {
     const inventory = await adapter.analyze(
-      EvidTestSourceSnapshot.combine(
+      EvidenceTestSourceSnapshot.combine(
         sources.map((content, index) =>
-          EvidTestSourceSnapshot.create(
+          EvidenceTestSourceSnapshot.create(
             index === 0 ? "src/api.dart" : "src/part.dart",
             content,
           ),
@@ -71,16 +71,16 @@ export async function test_dart_library_failures(): Promise<void> {
   }
   for (const local of [false, true]) {
     const inventory = await adapter.analyze(
-      EvidTestSourceSnapshot.combine([
-        EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.combine([
+        EvidenceTestSourceSnapshot.create(
           "src/api.dart",
           `export 'a.dart'; export 'b.dart'; ${local ? "class Shared {}" : ""}`,
         ),
-        EvidTestSourceSnapshot.create(
+        EvidenceTestSourceSnapshot.create(
           "src/a.dart",
           "export 'api.dart'; class Shared {}",
         ),
-        EvidTestSourceSnapshot.create("src/b.dart", "class Shared {}"),
+        EvidenceTestSourceSnapshot.create("src/b.dart", "class Shared {}"),
       ]),
     );
     TestValidator.equals(

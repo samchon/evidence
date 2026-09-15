@@ -1,7 +1,7 @@
-import { EvidAccessor, EvidInventory, EvidZigAdapter } from "evid";
+import { EvidenceAccessor, EvidenceInventory, EvidenceZigAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Extracts Zig units with independent public, alias, and file ownership.
@@ -13,9 +13,9 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 2. Verify exact units, parents, aliases, and addresses.
  */
 export async function test_zig_units(): Promise<void> {
-  const inventory = await new EvidZigAdapter().analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+  const inventory = await new EvidenceZigAdapter().analyze(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/Contract.zig",
         dedent`
       const @"Internal" = struct {
@@ -39,7 +39,7 @@ export async function test_zig_units(): Promise<void> {
     `,
         ["src/Contract.zig", "alias/Contract.zig"],
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "other/Contract.zig",
         "pub const State = enum { other };",
       ),
@@ -54,7 +54,7 @@ export async function test_zig_units(): Promise<void> {
   TestValidator.equals(
     "exact selectors and identities",
     inventory.units
-      .map((unit) => `${unit.symbol}:${EvidAccessor.format(unit.identity)}`)
+      .map((unit) => `${unit.symbol}:${EvidenceAccessor.format(unit.identity)}`)
       .sort((left, right) => left.localeCompare(right)),
     [
       "type:Internal",
@@ -78,7 +78,7 @@ export async function test_zig_units(): Promise<void> {
       "property:State.other",
     ].sort((left, right) => left.localeCompare(right)),
   );
-  const graph = new EvidInventory([inventory]);
+  const graph = new EvidenceInventory([inventory]);
   const selected = inventory.units.map((unit) => unit.id);
   for (const name of ["Contract", "Alias"])
     TestValidator.equals(

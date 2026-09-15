@@ -1,5 +1,5 @@
-import { EvidAdapterCertification } from "../../internal/certification/EvidAdapterCertification";
-import { EvidAdapterCertificationFixtures } from "../../internal/certification/EvidAdapterCertificationFixtures";
+import { EvidenceAdapterCertification } from "../../internal/certification/EvidenceAdapterCertification";
+import { EvidenceAdapterCertificationFixtures } from "../../internal/certification/EvidenceAdapterCertificationFixtures";
 
 /**
  * Certifies Dart inventory, graph, failure, fingerprint, and ambiguity
@@ -13,18 +13,18 @@ import { EvidAdapterCertificationFixtures } from "../../internal/certification/E
  * 3. Run its graph, failure, fingerprint, and ambiguity certifications.
  */
 export async function test_dart_certification(): Promise<void> {
-  const fixture = EvidAdapterCertificationFixtures.all().find(
+  const fixture = EvidenceAdapterCertificationFixtures.all().find(
     (item) => item.type === "dart",
   );
   if (fixture === undefined)
     throw new Error("Dart certification fixture is missing.");
 
-  EvidAdapterCertification.assertInventory(
+  EvidenceAdapterCertification.assertInventory(
     fixture,
-    await EvidAdapterCertification.analyze(fixture),
+    await EvidenceAdapterCertification.analyze(fixture),
   );
-  await EvidAdapterCertification.assertGraph(fixture);
-  await EvidAdapterCertification.assertFailures(fixture);
-  await EvidAdapterCertification.assertFingerprint(fixture);
-  await EvidAdapterCertification.assertAmbiguity(fixture);
+  await EvidenceAdapterCertification.assertGraph(fixture);
+  await EvidenceAdapterCertification.assertFailures(fixture);
+  await EvidenceAdapterCertification.assertFingerprint(fixture);
+  await EvidenceAdapterCertification.assertAmbiguity(fixture);
 }

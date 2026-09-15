@@ -1,9 +1,9 @@
-import { EvidGraph, EvidLuaAdapter, EvidTypeScriptAdapter } from "evid";
+import { EvidenceGraph, EvidenceLuaAdapter, EvidenceTypeScriptAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Evaluates Lua selector coverage for undocumented and review-only claims.
@@ -15,8 +15,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    Require review-only references to remain missing.
  */
 export async function test_lua_graph(): Promise<void> {
-  const reference = await new EvidLuaAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const reference = await new EvidenceLuaAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/Contract.lua",
       dedent`
     function run() return 1 end
@@ -24,8 +24,8 @@ export async function test_lua_graph(): Promise<void> {
   `,
     ),
   );
-  const claims = await new EvidTypeScriptAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const claims = await new EvidenceTypeScriptAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/Claims.ts",
       dedent`
     /** @evidence ./Contract.lua#run Verifies the operation. */
@@ -53,7 +53,7 @@ export async function test_lua_graph(): Promise<void> {
             item.target.endsWith(symbol === "function" ? "#run" : "#value"),
           )
         : [];
-      const graph = EvidGraph.evaluate({
+      const graph = EvidenceGraph.evaluate({
         claims: [
           {
             severity: "error",
@@ -64,7 +64,7 @@ export async function test_lua_graph(): Promise<void> {
                 severity: "error",
                 inventory: reference,
                 unitIds,
-                resolutions: await EvidTestGraph.resolveDeclarations(
+                resolutions: await EvidenceTestGraph.resolveDeclarations(
                   claim,
                   reference,
                   unitIds,
@@ -81,13 +81,13 @@ export async function test_lua_graph(): Promise<void> {
       );
       TestValidator.equals(
         `${symbol} exact missing population`,
-        EvidTestGraph.obligation(graph, 0, 0).missingUnitIds,
+        EvidenceTestGraph.obligation(graph, 0, 0).missingUnitIds,
         acknowledged ? [] : unitIds,
       );
     }
   }
-  const review = await new EvidLuaAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const review = await new EvidenceLuaAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/Review.lua",
       dedent`
     --- @evidenceReview ./Contract.lua#run Reviewed without an acknowledgement.
@@ -104,7 +104,7 @@ export async function test_lua_graph(): Promise<void> {
   const functions = reference.units
     .filter((unit) => unit.symbol === "function")
     .map((unit) => unit.id);
-  const graph = EvidGraph.evaluate({
+  const graph = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -116,7 +116,7 @@ export async function test_lua_graph(): Promise<void> {
             inventory: reference,
             unitIds: functions,
             resolutions: [],
-            reviewResolutions: await EvidTestGraph.resolveReviews(
+            reviewResolutions: await EvidenceTestGraph.resolveReviews(
               review,
               reference,
               functions,
@@ -128,7 +128,7 @@ export async function test_lua_graph(): Promise<void> {
   });
   TestValidator.equals(
     "review never supplies missing coverage",
-    EvidTestGraph.obligation(graph, 0, 0).missingUnitIds,
+    EvidenceTestGraph.obligation(graph, 0, 0).missingUnitIds,
     functions,
   );
 }

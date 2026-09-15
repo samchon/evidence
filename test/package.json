@@ -1,15 +1,15 @@
 {
-  "name": "@evid/test",
+  "name": "@wrtnlabs/evidence-test",
   "version": "0.0.0",
   "private": true,
   "description": "Evid logic unit tests.",
   "main": "src/index.ts",
   "scripts": {
     "build": "ttsc",
-    "start": "ttsx -P tsconfig.json src/index.ts"
+    "start": "ttsx src/index.ts"
   },
   "dependencies": {
-    "evid": "workspace:*",
+    "@wrtnlabs/evidence": "workspace:*",
     "@nestia/e2e": "catalog:samchon"
   },
   "devDependencies": {

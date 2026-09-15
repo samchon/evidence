@@ -1,13 +1,13 @@
 import {
-  EvidSwiftAdapter,
-  EvidTreeSitterAssetScope,
-  EvidTreeSitterAssets,
-} from "evid";
+  EvidenceSwiftAdapter,
+  EvidenceTreeSitterAssetScope,
+  EvidenceTreeSitterAssets,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
-import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
+import { EvidenceTestParserAssets } from "../../internal/EvidenceTestParserAssets";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Acquires the pinned Swift parser and reuses it offline.
@@ -18,19 +18,19 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 2. Verify the selected asset and warm offline equivalence.
  */
 export async function test_swift_acquisition(): Promise<void> {
-  const grammar = await new EvidTreeSitterAssets().grammar("swift");
-  const bytes = Uint8Array.from(await EvidTestParserAssets.bytes(grammar));
-  const source = EvidTestSourceSnapshot.create(
+  const grammar = await new EvidenceTreeSitterAssets().grammar("swift");
+  const bytes = Uint8Array.from(await EvidenceTestParserAssets.bytes(grammar));
+  const source = EvidenceTestSourceSnapshot.create(
     "src/Contract.swift",
     "public struct Contract { public var value = 1 }",
   );
 
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     "swift-acquisition",
     {},
     async (directory) => {
       const requests: string[] = [];
-      const cold = await EvidTreeSitterAssetScope.run(
+      const cold = await EvidenceTreeSitterAssetScope.run(
         {
           cacheDirectory: directory,
           fetch: async (input) => {
@@ -38,9 +38,9 @@ export async function test_swift_acquisition(): Promise<void> {
             return new Response(bytes);
           },
         },
-        () => new EvidSwiftAdapter().analyze(source),
+        () => new EvidenceSwiftAdapter().analyze(source),
       );
-      const warm = await EvidTreeSitterAssetScope.run(
+      const warm = await EvidenceTreeSitterAssetScope.run(
         {
           cacheDirectory: directory,
           attempts: 1,
@@ -48,7 +48,7 @@ export async function test_swift_acquisition(): Promise<void> {
             throw new Error("offline");
           },
         },
-        () => new EvidSwiftAdapter().analyze(source),
+        () => new EvidenceSwiftAdapter().analyze(source),
       );
 
       TestValidator.equals(

@@ -1,7 +1,7 @@
-import { EvidTypeScriptAdapter } from "evid";
+import { EvidenceTypeScriptAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Rejects TypeScript reexports that escape their population root.
@@ -12,7 +12,7 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 2. Require incomplete status and the corresponding diagnostic.
  */
 export async function test_typescript_root_boundary(): Promise<void> {
-  const inside = EvidTestSourceSnapshot.create(
+  const inside = EvidenceTestSourceSnapshot.create(
     "api/index.ts",
     'export { value } from "../outside/value";',
     undefined,
@@ -20,13 +20,13 @@ export async function test_typescript_root_boundary(): Promise<void> {
   );
   inside.root.absolute = "/project/api";
   inside.root.physical = "/project/api";
-  const outside = EvidTestSourceSnapshot.create(
+  const outside = EvidenceTestSourceSnapshot.create(
     "outside/value.ts",
     "export const value = 1;",
   );
 
-  const logical = await new EvidTypeScriptAdapter().analyze(
-    EvidTestSourceSnapshot.combine([inside, outside]),
+  const logical = await new EvidenceTypeScriptAdapter().analyze(
+    EvidenceTestSourceSnapshot.combine([inside, outside]),
   );
 
   TestValidator.equals("logical escape is incomplete", logical.complete, false);
@@ -38,7 +38,7 @@ export async function test_typescript_root_boundary(): Promise<void> {
   );
 
   // A logical alias inside the root cannot hide a physical target outside it.
-  const linkedInside = EvidTestSourceSnapshot.create(
+  const linkedInside = EvidenceTestSourceSnapshot.create(
     "api/index.ts",
     'export { value } from "./linked/value";',
     undefined,
@@ -46,7 +46,7 @@ export async function test_typescript_root_boundary(): Promise<void> {
   );
   linkedInside.root.absolute = "/project/api";
   linkedInside.root.physical = "/project/api";
-  const linkedOutside = EvidTestSourceSnapshot.create(
+  const linkedOutside = EvidenceTestSourceSnapshot.create(
     "api/linked/value.ts",
     "export const value = 1;",
   );
@@ -55,8 +55,8 @@ export async function test_typescript_root_boundary(): Promise<void> {
     throw new Error("Missing linked source fixture.");
   linkedSource.physicalPath = "/outside/value.ts";
 
-  const physical = await new EvidTypeScriptAdapter().analyze(
-    EvidTestSourceSnapshot.combine([linkedInside, linkedOutside]),
+  const physical = await new EvidenceTypeScriptAdapter().analyze(
+    EvidenceTestSourceSnapshot.combine([linkedInside, linkedOutside]),
   );
 
   TestValidator.equals(

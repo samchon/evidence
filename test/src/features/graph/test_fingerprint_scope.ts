@@ -1,21 +1,21 @@
 import {
-  EvidFingerprint,
-  EvidGraph,
-  EvidInventory,
-  EvidMarkdownAdapter,
-  EvidTypeScriptAdapter,
-} from "evid";
+  EvidenceFingerprint,
+  EvidenceGraph,
+  EvidenceInventory,
+  EvidenceMarkdownAdapter,
+  EvidenceTypeScriptAdapter,
+} from "@wrtnlabs/evidence";
 import type {
-  IEvidGraphReference,
-  IEvidInventory,
-  IEvidUnit,
-  IEvidUnitSite,
-} from "evid";
+  IEvidenceGraphReference,
+  IEvidenceInventory,
+  IEvidenceUnit,
+  IEvidenceUnitSite,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
 
 /**
  * Fingerprints complete structural scopes, including identity rebinding and
@@ -28,7 +28,7 @@ import { EvidTestGraph } from "../../internal/EvidTestGraph";
  *
  * 1. Edit a nested Markdown section and require its parent's own content digest to
  *    stay stable while the parent scope fingerprint changes.
- * 2. Insert ordinary prose and accepted Evid metadata before the reviewed heading;
+ * 2. Insert ordinary prose and accepted Evidence metadata before the reviewed heading;
  *    require its fingerprint and exact shifted range to remain stable, then
  *    exercise `requireReview` against the shifted document.
  * 3. Edit prose after single- and multiline HTML comments; require the owning
@@ -61,13 +61,13 @@ export async function test_fingerprint_scope(): Promise<void> {
   `;
   const original = await markdownInventory(markdown);
   const pricing = requireUnit(original, "pricing");
-  const pricingFingerprint = EvidFingerprint.inspect(original, pricing.id);
+  const pricingFingerprint = EvidenceFingerprint.inspect(original, pricing.id);
 
   // An unselected descendant still belongs to the cited scope.
   const changedChild = await markdownInventory(
     markdown.replace("One per issuer.", "Two per issuer."),
   );
-  const changedPricing = EvidFingerprint.inspect(
+  const changedPricing = EvidenceFingerprint.inspect(
     changedChild,
     requireUnit(changedChild, "pricing").id,
   );
@@ -89,14 +89,14 @@ export async function test_fingerprint_scope(): Promise<void> {
 
     <!-- @evidence other.md Explains the file aggregate. -->
   `}\n\n`;
-  const prefixed: IEvidInventory = await markdownInventory(prefix + markdown);
-  const prefixedPricing: IEvidUnit = requireUnit(prefixed, "pricing");
-  const prefixedSite: IEvidUnitSite | undefined = prefixedPricing.sites[0];
+  const prefixed: IEvidenceInventory = await markdownInventory(prefix + markdown);
+  const prefixedPricing: IEvidenceUnit = requireUnit(prefixed, "pricing");
+  const prefixedSite: IEvidenceUnitSite | undefined = prefixedPricing.sites[0];
   if (prefixedSite === undefined)
     throw new Error("Shifted Markdown heading has no declaration site.");
   TestValidator.equals(
     "earlier prose and metadata preserve heading fingerprint",
-    EvidFingerprint.inspect(prefixed, prefixedPricing.id).fingerprint,
+    EvidenceFingerprint.inspect(prefixed, prefixedPricing.id).fingerprint,
     pricingFingerprint.fingerprint,
   );
   TestValidator.equals(
@@ -104,9 +104,9 @@ export async function test_fingerprint_scope(): Promise<void> {
     prefixedSite.range.start.offset,
     (prefix + markdown).indexOf("## Pricing"),
   );
-  const reviewedClaim: IEvidInventory =
-    await new EvidTypeScriptAdapter().analyze(
-      EvidTestSourceSnapshot.create(
+  const reviewedClaim: IEvidenceInventory =
+    await new EvidenceTypeScriptAdapter().analyze(
+      EvidenceTestSourceSnapshot.create(
         "src/review.ts",
         dedent`
           /**
@@ -119,17 +119,17 @@ export async function test_fingerprint_scope(): Promise<void> {
         `,
       ),
     );
-  const reviewedUnit: IEvidUnit = requireUnit(reviewedClaim, "price");
-  const reviewedReference: IEvidGraphReference = {
+  const reviewedUnit: IEvidenceUnit = requireUnit(reviewedClaim, "price");
+  const reviewedReference: IEvidenceGraphReference = {
     severity: "error",
     inventory: prefixed,
     unitIds: [prefixedPricing.id],
-    resolutions: await EvidTestGraph.resolveDeclarations(
+    resolutions: await EvidenceTestGraph.resolveDeclarations(
       reviewedClaim,
       prefixed,
       [prefixedPricing.id],
     ),
-    reviewResolutions: await EvidTestGraph.resolveReviews(
+    reviewResolutions: await EvidenceTestGraph.resolveReviews(
       reviewedClaim,
       prefixed,
       [prefixedPricing.id],
@@ -138,7 +138,7 @@ export async function test_fingerprint_scope(): Promise<void> {
   };
   TestValidator.predicate(
     "shifted heading keeps required review current",
-    EvidGraph.evaluate({
+    EvidenceGraph.evaluate({
       claims: [
         {
           severity: "error",
@@ -155,18 +155,18 @@ export async function test_fingerprint_scope(): Promise<void> {
 
     <!-- @evidence other.md Explains the rule. --> First semantic suffix.
   `;
-  const commentSuffixInventory: IEvidInventory =
+  const commentSuffixInventory: IEvidenceInventory =
     await markdownInventory(commentSuffix);
-  const changedCommentSuffix: IEvidInventory = await markdownInventory(
+  const changedCommentSuffix: IEvidenceInventory = await markdownInventory(
     commentSuffix.replace("First semantic suffix.", "Second semantic suffix."),
   );
   TestValidator.notEquals(
     "prose after one-line comment expires fingerprint",
-    EvidFingerprint.inspect(
+    EvidenceFingerprint.inspect(
       changedCommentSuffix,
       requireUnit(changedCommentSuffix, "pricing").id,
     ).fingerprint,
-    EvidFingerprint.inspect(
+    EvidenceFingerprint.inspect(
       commentSuffixInventory,
       requireUnit(commentSuffixInventory, "pricing").id,
     ).fingerprint,
@@ -179,9 +179,9 @@ export async function test_fingerprint_scope(): Promise<void> {
     @evidence other.md Explains the rule.
     --> First multiline suffix.
   `;
-  const multilineSuffixInventory: IEvidInventory =
+  const multilineSuffixInventory: IEvidenceInventory =
     await markdownInventory(multilineSuffix);
-  const changedMultilineSuffix: IEvidInventory = await markdownInventory(
+  const changedMultilineSuffix: IEvidenceInventory = await markdownInventory(
     multilineSuffix.replace(
       "First multiline suffix.",
       "Second multiline suffix.",
@@ -189,45 +189,45 @@ export async function test_fingerprint_scope(): Promise<void> {
   );
   TestValidator.notEquals(
     "prose after multiline comment expires fingerprint",
-    EvidFingerprint.inspect(
+    EvidenceFingerprint.inspect(
       changedMultilineSuffix,
       requireUnit(changedMultilineSuffix, "pricing").id,
     ).fingerprint,
-    EvidFingerprint.inspect(
+    EvidenceFingerprint.inspect(
       multilineSuffixInventory,
       requireUnit(multilineSuffixInventory, "pricing").id,
     ).fingerprint,
   );
 
-  const plainSection: IEvidInventory = await markdownInventory(dedent`
+  const plainSection: IEvidenceInventory = await markdownInventory(dedent`
     ## Pricing {#pricing}
     Stable semantic prose.
   `);
-  const annotatedSection: IEvidInventory = await markdownInventory(dedent`
+  const annotatedSection: IEvidenceInventory = await markdownInventory(dedent`
     ## Pricing {#pricing}
     <!-- @evidence other.md Explains the rule. -->
     Stable semantic prose.
   `);
   TestValidator.equals(
     "full annotation line preserves fingerprint",
-    EvidFingerprint.inspect(
+    EvidenceFingerprint.inspect(
       annotatedSection,
       requireUnit(annotatedSection, "pricing").id,
     ).fingerprint,
-    EvidFingerprint.inspect(
+    EvidenceFingerprint.inspect(
       plainSection,
       requireUnit(plainSection, "pricing").id,
     ).fingerprint,
   );
 
-  const inlineHeadingComment: IEvidInventory = await markdownInventory(
+  const inlineHeadingComment: IEvidenceInventory = await markdownInventory(
     "# Rule <!-- @evidence other.md First explanation. -->\n",
   );
-  const changedInlineHeadingComment: IEvidInventory = await markdownInventory(
+  const changedInlineHeadingComment: IEvidenceInventory = await markdownInventory(
     "# Rule <!-- @evidence other.md Second explanation. -->\n",
   );
-  const inlineRule: IEvidUnit = requireUnit(inlineHeadingComment, "rule");
-  const changedInlineRule: IEvidUnit = requireUnit(
+  const inlineRule: IEvidenceUnit = requireUnit(inlineHeadingComment, "rule");
+  const changedInlineRule: IEvidenceUnit = requireUnit(
     changedInlineHeadingComment,
     "rule",
   );
@@ -238,9 +238,9 @@ export async function test_fingerprint_scope(): Promise<void> {
   );
   TestValidator.equals(
     "inline heading annotation preserves fingerprint",
-    EvidFingerprint.inspect(changedInlineHeadingComment, changedInlineRule.id)
+    EvidenceFingerprint.inspect(changedInlineHeadingComment, changedInlineRule.id)
       .fingerprint,
-    EvidFingerprint.inspect(inlineHeadingComment, inlineRule.id).fingerprint,
+    EvidenceFingerprint.inspect(inlineHeadingComment, inlineRule.id).fingerprint,
   );
 
   const changedSibling = await markdownInventory(
@@ -249,7 +249,7 @@ export async function test_fingerprint_scope(): Promise<void> {
 
   TestValidator.equals(
     "unrelated section preserves scope",
-    EvidFingerprint.inspect(
+    EvidenceFingerprint.inspect(
       changedSibling,
       requireUnit(changedSibling, "pricing").id,
     ).fingerprint,
@@ -260,7 +260,7 @@ export async function test_fingerprint_scope(): Promise<void> {
 
   TestValidator.equals(
     "rebinding identical content expires declaring identity",
-    EvidFingerprint.inspect(rebound, requireUnit(rebound, "pricing").id)
+    EvidenceFingerprint.inspect(rebound, requireUnit(rebound, "pricing").id)
       .fingerprint === pricingFingerprint.fingerprint,
     false,
   );
@@ -291,11 +291,11 @@ export async function test_fingerprint_scope(): Promise<void> {
   `;
   const publicInventory = await typescriptInventory(publicTypeScript);
   const withdrawnInventory = await typescriptInventory(withdrawnTypeScript);
-  const publicContract = EvidFingerprint.inspect(
+  const publicContract = EvidenceFingerprint.inspect(
     publicInventory,
     requireUnit(publicInventory, "Contract").id,
   );
-  const withdrawnContract = EvidFingerprint.inspect(
+  const withdrawnContract = EvidenceFingerprint.inspect(
     withdrawnInventory,
     requireUnit(withdrawnInventory, "Contract").id,
   );
@@ -317,7 +317,7 @@ export async function test_fingerprint_scope(): Promise<void> {
 
   TestValidator.equals(
     "withdrawn descendant content still expires enclosing scope",
-    EvidFingerprint.inspect(
+    EvidenceFingerprint.inspect(
       changedWithdrawnInventory,
       requireUnit(changedWithdrawnInventory, "Contract").id,
     ).fingerprint === withdrawnContract.fingerprint,
@@ -334,9 +334,9 @@ export async function test_fingerprint_scope(): Promise<void> {
 async function markdownInventory(
   content: string,
   file: string = "docs/rules.md",
-): Promise<IEvidInventory> {
-  return new EvidMarkdownAdapter().analyze(
-    EvidTestSourceSnapshot.create(file, content),
+): Promise<IEvidenceInventory> {
+  return new EvidenceMarkdownAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(file, content),
   );
 }
 
@@ -346,9 +346,9 @@ async function markdownInventory(
  * Shared source identity keeps withdrawal and member-content changes isolated
  * from unrelated rebinding effects.
  */
-async function typescriptInventory(content: string): Promise<IEvidInventory> {
-  return new EvidTypeScriptAdapter().analyze(
-    EvidTestSourceSnapshot.create("src/contracts.ts", content),
+async function typescriptInventory(content: string): Promise<IEvidenceInventory> {
+  return new EvidenceTypeScriptAdapter().analyze(
+    EvidenceTestSourceSnapshot.create("src/contracts.ts", content),
   );
 }
 
@@ -361,23 +361,23 @@ async function typescriptInventory(content: string): Promise<IEvidInventory> {
  * expires the review.
  */
 async function reexportedFingerprint(module: string): Promise<string> {
-  const inventory = await new EvidTypeScriptAdapter().analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+  const inventory = await new EvidenceTypeScriptAdapter().analyze(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/first.ts",
         "export interface Contract { value: string; }",
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/second.ts",
         "export interface Contract { value: string; }",
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/index.ts",
         `export { Contract as Public } from "${module}";`,
       ),
     ]),
   );
-  const resolution = new EvidInventory([inventory]).resolve(
+  const resolution = new EvidenceInventory([inventory]).resolve(
     {
       file: "/project/src/index.ts",
       segments: ["Public"],
@@ -387,7 +387,7 @@ async function reexportedFingerprint(module: string): Promise<string> {
   const unit = resolution.units[0];
   if (resolution.status !== "resolved" || unit === undefined)
     throw new Error("Missing re-exported fingerprint unit.");
-  return EvidFingerprint.inspect(inventory, unit.id).fingerprint;
+  return EvidenceFingerprint.inspect(inventory, unit.id).fingerprint;
 }
 
 /**
@@ -396,7 +396,7 @@ async function reexportedFingerprint(module: string): Promise<string> {
  * Failure to extract the intended unit aborts setup rather than producing a
  * misleading fingerprint comparison against another candidate.
  */
-function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
+function requireUnit(inventory: IEvidenceInventory, identity: string): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === identity || candidate.identity.at(-1) === identity,

@@ -1,8 +1,8 @@
-import { EvidPythonAdapter } from "evid";
+import { EvidencePythonAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Reports only annotations attached to eligible Python declarations.
@@ -54,8 +54,8 @@ export async function test_python_comment_boundaries(): Promise<void> {
         # @evidence docs/spec.md#sibling Documents the dedented sibling.
         sibling = ""
   `;
-  const inventory = await new EvidPythonAdapter().analyze(
-    EvidTestSourceSnapshot.create("src/boundaries.py", content),
+  const inventory = await new EvidencePythonAdapter().analyze(
+    EvidenceTestSourceSnapshot.create("src/boundaries.py", content),
   );
 
   TestValidator.equals(

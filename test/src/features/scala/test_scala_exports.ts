@@ -1,7 +1,7 @@
-import { EvidFingerprint, EvidInventory, EvidScalaAdapter } from "evid";
+import { EvidenceFingerprint, EvidenceInventory, EvidenceScalaAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Resolves Scala exports while preserving source declaration ownership.
@@ -16,8 +16,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 3. Withdraw the source method and verify the exported alias resolves as hidden.
  */
 export async function test_scala_exports(): Promise<void> {
-  const sources = EvidTestSourceSnapshot.combine([
-    EvidTestSourceSnapshot.create(
+  const sources = EvidenceTestSourceSnapshot.combine([
+    EvidenceTestSourceSnapshot.create(
       "src/Forward.scala",
       dedent`
       package demo
@@ -27,7 +27,7 @@ export async function test_scala_exports(): Promise<void> {
       }
     `,
     ),
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Origin.scala",
       dedent`
       package demo
@@ -40,10 +40,10 @@ export async function test_scala_exports(): Promise<void> {
     `,
     ),
   ]);
-  const adapter = new EvidScalaAdapter();
+  const adapter = new EvidenceScalaAdapter();
   const inventory = await adapter.analyze(sources);
   TestValidator.equals("bounded exports complete", inventory.diagnostics, []);
-  const graph = new EvidInventory([inventory]);
+  const graph = new EvidenceInventory([inventory]);
   const selected = inventory.units.map((unit) => unit.id);
   const alias = graph.resolve(
     {
@@ -78,8 +78,8 @@ export async function test_scala_exports(): Promise<void> {
   source.content = source.content.replace("def run = 1", "def run = 2");
   TestValidator.notEquals(
     "target edit invalidates exported fingerprint",
-    EvidFingerprint.inspect(inventory, run.id).fingerprint,
-    EvidFingerprint.inspect(await adapter.analyze(changed), run.id).fingerprint,
+    EvidenceFingerprint.inspect(inventory, run.id).fingerprint,
+    EvidenceFingerprint.inspect(await adapter.analyze(changed), run.id).fingerprint,
   );
   const withdrawn = structuredClone(sources);
   const originalSource = withdrawn.files[1];
@@ -91,7 +91,7 @@ export async function test_scala_exports(): Promise<void> {
   const hidden = await adapter.analyze(withdrawn);
   TestValidator.equals(
     "source withdrawal crosses export aliases",
-    new EvidInventory([hidden]).resolve(
+    new EvidenceInventory([hidden]).resolve(
       {
         file: "/project/src/Forward.scala",
         segments: ["demo", "object Forward", "call"],

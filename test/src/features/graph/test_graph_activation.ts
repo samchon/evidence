@@ -1,8 +1,8 @@
-import { EvidGraph } from "evid";
+import { EvidenceGraph } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestInventory } from "../../internal/EvidTestInventory";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestInventory } from "../../internal/EvidenceTestInventory";
 
 /**
  * Distinguishes inactive claims from claims whose discovery could not complete.
@@ -24,16 +24,16 @@ import { EvidTestInventory } from "../../internal/EvidTestInventory";
  *    error.
  */
 export async function test_graph_activation(): Promise<void> {
-  const claim = EvidTestInventory.create();
-  const claimUnit = EvidTestInventory.unit(
+  const claim = EvidenceTestInventory.create();
+  const claimUnit = EvidenceTestInventory.unit(
     claim,
     "claim",
     ["Claim"],
     "type",
     "export class Box { value = 1; }",
   );
-  const reference = EvidTestInventory.create();
-  const referenceUnit = EvidTestInventory.unit(
+  const reference = EvidenceTestInventory.create();
+  const referenceUnit = EvidenceTestInventory.unit(
     reference,
     "reference",
     ["Reference"],
@@ -50,7 +50,7 @@ export async function test_graph_activation(): Promise<void> {
     message: "The reference file could not be read.",
     repair: "Restore access to the reference file.",
   });
-  const disabled = EvidGraph.evaluate({
+  const disabled = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "off",
@@ -71,14 +71,14 @@ export async function test_graph_activation(): Promise<void> {
   TestValidator.equals("disabled claim", disabled.claims[0]?.active, false);
   TestValidator.equals(
     "disabled obligation",
-    EvidTestGraph.obligation(disabled, 0, 0).active,
+    EvidenceTestGraph.obligation(disabled, 0, 0).active,
     false,
   );
   TestValidator.equals("disabled diagnostics", disabled.diagnostics, []);
   TestValidator.equals("disabled success", disabled.success, true);
 
   // A healthy claim with no selected units is inactive for the same reason.
-  const empty = EvidGraph.evaluate({
+  const empty = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -99,7 +99,7 @@ export async function test_graph_activation(): Promise<void> {
   TestValidator.equals("empty claim", empty.claims[0]?.active, false);
   TestValidator.equals(
     "empty obligation",
-    EvidTestGraph.obligation(empty, 0, 0).active,
+    EvidenceTestGraph.obligation(empty, 0, 0).active,
     false,
   );
   TestValidator.equals("empty diagnostics", empty.diagnostics, []);
@@ -113,7 +113,7 @@ export async function test_graph_activation(): Promise<void> {
     message: "The claim file could not be read.",
     repair: "Restore access to the claim file.",
   });
-  const incomplete = EvidGraph.evaluate({
+  const incomplete = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -138,7 +138,7 @@ export async function test_graph_activation(): Promise<void> {
   );
   TestValidator.equals(
     "failed claim leaves obligation incomplete",
-    EvidTestGraph.obligation(incomplete, 0, 0).complete,
+    EvidenceTestGraph.obligation(incomplete, 0, 0).complete,
     false,
   );
   TestValidator.equals(
@@ -160,7 +160,7 @@ export async function test_graph_activation(): Promise<void> {
   );
 
   // Claim completeness still gates success when there is no reference obligation to carry it.
-  const incompleteWithoutReferences = EvidGraph.evaluate({
+  const incompleteWithoutReferences = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",

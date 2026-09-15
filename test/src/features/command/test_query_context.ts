@@ -1,10 +1,10 @@
-import { EvidQuery } from "evid";
+import { EvidenceQuery } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
-import { EvidTestQueryAnalysis } from "../../internal/EvidTestQueryAnalysis";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
+import { EvidenceTestQueryAnalysis } from "../../internal/EvidenceTestQueryAnalysis";
 
 /**
  * Keeps reusable query contexts independent of caller mutations and concurrent
@@ -27,12 +27,12 @@ import { EvidTestQueryAnalysis } from "../../internal/EvidTestQueryAnalysis";
  *    the unmodified baseline.
  */
 export async function test_query_context(): Promise<void> {
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     join(__dirname, `query context ${randomUUID()}`),
-    EvidTestQueryAnalysis.records(),
+    EvidenceTestQueryAnalysis.records(),
     async (directory) => {
-      const analysis = await EvidTestQueryAnalysis.analyze(directory, 2);
-      const query = new EvidQuery(analysis, directory);
+      const analysis = await EvidenceTestQueryAnalysis.analyze(directory, 2);
+      const query = new EvidenceQuery(analysis, directory);
       const listing = query.list();
       const baseline = structuredClone(listing);
       const target = listing.items.find(

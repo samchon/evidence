@@ -1,8 +1,8 @@
-# evid
+# `@wrtnlabs/evidence`
 
-![Evidence Graph: make every SKILL instruction 100% enforced](https://raw.githubusercontent.com/wrtnlabs/evid/master/assets/og.jpg)
+![Evidence Graph: make every SKILL instruction 100% enforced](https://raw.githubusercontent.com/wrtnlabs/evidence/master/assets/og.jpg)
 
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/wrtnlabs/evid/blob/master/LICENSE) [![npm version](https://img.shields.io/npm/v/evid.svg)](https://www.npmjs.com/package/evid) [![npm downloads](https://img.shields.io/npm/dm/evid.svg)](https://www.npmjs.com/package/evid) [![build](https://github.com/wrtnlabs/evid/actions/workflows/build.yml/badge.svg)](https://github.com/wrtnlabs/evid/actions/workflows/build.yml) [![test](https://github.com/wrtnlabs/evid/actions/workflows/test.yml/badge.svg)](https://github.com/wrtnlabs/evid/actions/workflows/test.yml)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/wrtnlabs/evidence/blob/master/LICENSE) [![npm version](https://img.shields.io/npm/v/@wrtnlabs/evidence.svg)](https://www.npmjs.com/package/@wrtnlabs/evidence) [![npm downloads](https://img.shields.io/npm/dm/@wrtnlabs/evidence.svg)](https://www.npmjs.com/package/@wrtnlabs/evidence) [![build](https://github.com/wrtnlabs/evidence/actions/workflows/build.yml/badge.svg)](https://github.com/wrtnlabs/evidence/actions/workflows/build.yml) [![test](https://github.com/wrtnlabs/evidence/actions/workflows/test.yml/badge.svg)](https://github.com/wrtnlabs/evidence/actions/workflows/test.yml)
 
 Every rule, requirement, schema, and API becomes an obligation the check enforces.
 
@@ -30,7 +30,7 @@ export function CouponStackingNotice(props: IProps): JSX.Element;
 Leave one obligation unanswered and the check stops:
 
 ```bash
-$ npx evid
+$ npx evidence
 Evidence check complete.
 Coverage: 4/5 units covered, 1 missing.
 
@@ -45,9 +45,9 @@ The error list is the task list. The checker verifies that every required connec
 ### 1.1. Getting started
 
 ```bash
-npm install -D typescript ttsc evid
-npx evid init
-npx evid
+npm install -D typescript ttsc @wrtnlabs/evidence
+npx evidence init
+npx evidence
 ```
 
 `typescript` and [`ttsc`](https://github.com/samchon/ttsc) are peer dependencies. `ttsc` supplies `ttsx`, which evaluates `evidence.config.ts` without a project `tsconfig.json`. Grammars download on first use. Replace the generated configuration as shown next.
@@ -65,7 +65,7 @@ Start with the rules already written in `AGENTS.md`, `CLAUDE.md`, or a skill fil
 Replace the starter `evidence.config.ts` with one claim:
 
 ```ts
-import type { IEvidConfig } from "evid";
+import type { IEvidenceConfig } from "@wrtnlabs/evidence";
 
 export default {
   claims: [
@@ -82,7 +82,7 @@ export default {
       },
     },
   ],
-} satisfies IEvidConfig;
+} satisfies IEvidenceConfig;
 ```
 
 A **claim** selects what must cite: every function under `src`. Its **reference** selects what must be cited: every H2 in the skill file. `checklist` makes every selected function answer every selected heading.
@@ -92,16 +92,16 @@ The first run turns every missing function-heading answer into an error. On an e
 ```markdown
 ## Evidence
 
-Run `npx evid` before finishing any task. Every error names an obligation and its repair.
+Run `npx evidence` before finishing any task. Every error names an obligation and its repair.
 Do the work first, then write the `@evidence` line on the declaration that supplies it, stating why in one sentence.
 Never write a tag to silence an error. Never weaken `evidence.config.ts` to pass.
-Use `npx evid list` to find an address and `npx evid inspect '<target>'` to see why one does not resolve.
+Use `npx evidence list` to find an address and `npx evidence inspect '<target>'` to see why one does not resolve.
 ```
 
 The agent works through the list, fixing code wherever an honest answer cannot be written, and the check goes green:
 
 ```bash
-$ npx evid
+$ npx evidence
 Evidence check complete.
 Coverage: 3/3 units covered, 0 missing.
 ```
@@ -124,7 +124,7 @@ Whichever layer a human reviews last is the source of truth. The agent writes ev
 Two claims draw the bottom of the graph:
 
 ```ts
-import type { IEvidConfig } from "evid";
+import type { IEvidenceConfig } from "@wrtnlabs/evidence";
 
 export default {
   claims: [
@@ -148,7 +148,7 @@ export default {
       },
     },
   ],
-} satisfies IEvidConfig;
+} satisfies IEvidenceConfig;
 ```
 
 Every requirement must be cited by a function under `src`. Every function under `src` must be cited by a test, with no exclusions. Start with one requirement:
@@ -178,7 +178,7 @@ export function test_add(): void {
 ```
 
 ```bash
-$ npx evid
+$ npx evidence
 Evidence check complete.
 Coverage: 2/2 units covered, 0 missing.
 ```
@@ -299,7 +299,7 @@ Incomplete analysis never passes as an empty population.
 
 ## 4. Configuration
 
-`evidence.config.ts` exports one `IEvidConfig` with a `claims` array and an optional top-level `severity`. Severity defaults to `error`; claims inherit the top-level value, and references inherit their claim. The config is evaluated through the consumer's `ttsx` and validated with `typia` before any source is read.
+`evidence.config.ts` exports one `IEvidenceConfig` with a `claims` array and an optional top-level `severity`. Severity defaults to `error`; claims inherit the top-level value, and references inherit their claim. The config is evaluated through the consumer's `ttsx` and validated with `typia` before any source is read.
 
 ### 4.1. Claim
 
@@ -307,7 +307,7 @@ Incomplete analysis never passes as an empty population.
 | --- | --- | --- | --- |
 | `type` | Artifact type | required | Selects the adapter: `typescript`, `rust`, `prisma`, `markdown`, `swagger`, and every other certified type. |
 | `files` | `string[]` | required | Ordered globs relative to `root`; `!` excludes, a later pattern reincludes. |
-| `reference` | `IEvidReference \| IEvidReference[]` | required | One reference or an array of independent obligations. |
+| `reference` | `IEvidenceReference \| IEvidenceReference[]` | required | One reference or an array of independent obligations. |
 | `name` | `string` | none | Labels diagnostics without merging claims. |
 | `severity` | `"error" \| "warning" \| "off"` | config, then `error` | `off` removes the claim; `warning` never fails the check. |
 | `disabled` | `boolean` | `false` | Validates the shape but loads nothing. |
@@ -359,7 +359,7 @@ Tags live in documentation attached to selected hosts. A target is one whitespac
 | Literal segment | JSON-string brackets: `Namespace["member.with.dots"]`, ``Shop["Box`1"]``, `Sale["impl Service"].run`, `Widget["-send:to:"]` |
 | Markdown | `docs/requirements.md#anchor` from the reference root; `{#anchor}` wins, otherwise the lowercased heading |
 | Prisma | `prisma:Sale`, `prisma:Sale.price`, no path |
-| SQL and DBML | File-qualified: `schema.sql#app.item.id`; `evid list` prints relation segments |
+| SQL and DBML | File-qualified: `schema.sql#app.item.id`; `evidence list` prints relation segments |
 | Swagger | `POST:/sales`, uppercase method and exact path |
 
 Markdown tags go in HTML comments under the heading they belong to. Prisma tags go in `///` on models and fields. Swagger tags go in each operation's `description`. Aliases such as barrels add addresses without adding obligations.
@@ -380,7 +380,7 @@ Every family can be a claim and a reference and can cite every other.
 
 Programming languages and SQL dialects parse through upstream Tree-sitter grammars, Prisma through its own parser, and Swagger as JSON or YAML. Adapters run no compiler, preprocessor, macro, or build; a construct that could change the public surface and cannot be resolved makes analysis incomplete.
 
-`evid languages` prints the shipped registry.
+`evidence languages` prints the shipped registry.
 
 ### 6.1. Programming languages
 
@@ -447,7 +447,7 @@ Database adapters share `model`, `column`, and `relation`. Selected files are a 
 | `sql` | `.sql` | Portable `CREATE TABLE`, inline `REFERENCES`, anonymous `FOREIGN KEY` | Leading `--` runs or block comments |
 | `dbml` | `.dbml` | Tables, scalar fields, inline or standalone `Ref` relations | Notes or adjacent standalone comments |
 
-Addresses are file-qualified except Prisma: `schema.sql#app.item.id`, `schema.sql#Store.Child.parent_id`, `schema.dbml#users.id`. Relation segments are dialect-specific (`["constraint owner_fk"]`, `["foreign-key:...]`, `posts["$ref:owner"]`); `evid list` prints the escaped form.
+Addresses are file-qualified except Prisma: `schema.sql#app.item.id`, `schema.sql#Store.Child.parent_id`, `schema.dbml#users.id`. Relation segments are dialect-specific (`["constraint owner_fk"]`, `["foreign-key:...]`, `posts["$ref:owner"]`); `evidence list` prints the escaped form.
 
 ### 6.3. Markdown and Swagger
 
@@ -483,7 +483,7 @@ Exit 0 is a complete analysis without errors, 1 is a complete analysis with viol
 
 For projects whose graph uses only TypeScript, Prisma, Swagger, and Markdown, use [`@ttsc/evidence`](https://github.com/samchon/ttsc/tree/master/packages/evidence). Its dedicated compiler integration is slightly more efficient for that scope than the Tree-sitter implementation.
 
-For graphs that include any other supported language, use `evid`; its Tree-sitter adapters cover the broader set listed above.
+For graphs that include any other supported language, use `evidence`; its Tree-sitter adapters cover the broader set listed above.
 
 ### 8.2. Background
 

@@ -1,8 +1,8 @@
-import { EvidJavaAdapter, EvidLanguageRegistry } from "evid";
+import { EvidenceJavaAdapter, EvidenceLanguageRegistry } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Classifies Java public types, overloads, fields, records, enums, and
@@ -17,7 +17,7 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  */
 export async function test_java_units(): Promise<void> {
   // Certified metadata publishes the exact upstream grammar version and source boundary.
-  const language = EvidLanguageRegistry.list().find(
+  const language = EvidenceLanguageRegistry.list().find(
     (entry) => entry.type === "java",
   );
   if (language === undefined)
@@ -27,7 +27,7 @@ export async function test_java_units(): Promise<void> {
   TestValidator.equals(
     "certified Java adapter",
     language.adapter.entry,
-    "EvidJavaAdapter",
+    "EvidenceJavaAdapter",
   );
   TestValidator.equals(
     "published Java grammar version",
@@ -36,9 +36,9 @@ export async function test_java_units(): Promise<void> {
   );
 
   // Separate source files share a package identity without importing or executing Java.
-  const inventory = await new EvidJavaAdapter().analyze(
-    EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create(
+  const inventory = await new EvidenceJavaAdapter().analyze(
+    EvidenceTestSourceSnapshot.combine([
+      EvidenceTestSourceSnapshot.create(
         "src/com/example/Sale.java",
         dedent`
           package com.example /* package comments do not erase identity */;
@@ -66,7 +66,7 @@ export async function test_java_units(): Promise<void> {
           }
         `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/com/example/Service.java",
         dedent`
           package com.example;
@@ -88,7 +88,7 @@ export async function test_java_units(): Promise<void> {
           }
         `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/com/example/State.java",
         dedent`
           package com.example;
@@ -104,7 +104,7 @@ export async function test_java_units(): Promise<void> {
           }
         `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/com/example/Point.java",
         dedent`
           package com.example;
@@ -114,7 +114,7 @@ export async function test_java_units(): Promise<void> {
           }
         `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/com/example/Label.java",
         dedent`
           package com.example;
@@ -129,7 +129,7 @@ export async function test_java_units(): Promise<void> {
           }
         `,
       ),
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/com/example/PackageType.java",
         dedent`
           package com.example;

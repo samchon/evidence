@@ -1,8 +1,8 @@
-import { EvidFingerprint, EvidInventory, EvidScalaAdapter } from "evid";
+import { EvidenceFingerprint, EvidenceInventory, EvidenceScalaAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Extracts Scala evidence from supported Scaladoc hosts with stable
@@ -17,7 +17,7 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 2. Resolve withdrawn and literal dotted paths and verify hidden, resolved, and
  *    missing outcomes.
  * 3. Compare ancestor fingerprints after metadata and semantic subtree edits.
- * 4. Verify every Evid tag on an ordinary comment is rejected without creating
+ * 4. Verify every Evidence tag on an ordinary comment is rejected without creating
  *    evidence or review records.
  */
 export async function test_scala_hosts(): Promise<void> {
@@ -46,9 +46,9 @@ export async function test_scala_hosts(): Promise<void> {
      */
     def sample() = 1
   `.replaceAll("\n", "\r\n");
-  const adapter = new EvidScalaAdapter();
+  const adapter = new EvidenceScalaAdapter();
   const inventory = await adapter.analyze(
-    EvidTestSourceSnapshot.create("src/Contract.scala", source),
+    EvidenceTestSourceSnapshot.create("src/Contract.scala", source),
   );
 
   TestValidator.equals(
@@ -75,7 +75,7 @@ export async function test_scala_hosts(): Promise<void> {
     3,
   );
   const selected = inventory.units.map((unit) => unit.id);
-  const graph = new EvidInventory([inventory]);
+  const graph = new EvidenceInventory([inventory]);
   TestValidator.equals(
     "withdrawn descendant target",
     graph.resolve(
@@ -112,7 +112,7 @@ export async function test_scala_hosts(): Promise<void> {
   const contract = inventory.units.find((unit) => unit.name === "Contract");
   if (contract === undefined) throw new Error("Missing contract unit.");
   const rewritten = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Contract.scala",
       source.replace(
         "Implements the value.",
@@ -122,22 +122,22 @@ export async function test_scala_hosts(): Promise<void> {
   );
   TestValidator.equals(
     "descendant annotation does not stale ancestor review",
-    EvidFingerprint.inspect(inventory, contract.id).fingerprint,
-    EvidFingerprint.inspect(rewritten, contract.id).fingerprint,
+    EvidenceFingerprint.inspect(inventory, contract.id).fingerprint,
+    EvidenceFingerprint.inspect(rewritten, contract.id).fingerprint,
   );
   const changed = await adapter.analyze(
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Contract.scala",
       source.replace("= 1", "= 2"),
     ),
   );
   TestValidator.notEquals(
     "semantic subtree edit changes fingerprint",
-    EvidFingerprint.inspect(inventory, contract.id).fingerprint,
-    EvidFingerprint.inspect(changed, contract.id).fingerprint,
+    EvidenceFingerprint.inspect(inventory, contract.id).fingerprint,
+    EvidenceFingerprint.inspect(changed, contract.id).fingerprint,
   );
 
-  // Every Evid tag kind on an ordinary comment remains an unsupported carrier.
+  // Every Evidence tag kind on an ordinary comment remains an unsupported carrier.
   for (const tag of [
     "evidence",
     "evidenceExclude",
@@ -146,7 +146,7 @@ export async function test_scala_hosts(): Promise<void> {
     "link",
   ]) {
     const unsupported = await adapter.analyze(
-      EvidTestSourceSnapshot.create(
+      EvidenceTestSourceSnapshot.create(
         "src/Unsupported.scala",
         `// @${tag} docs/spec.md#contract Unsupported carrier.\ndef run() = 1\n`,
       ),

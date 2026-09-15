@@ -1,12 +1,12 @@
 import {
-  EvidScalaAdapter,
-  EvidTreeSitterAssetScope,
-  EvidTreeSitterAssets,
-} from "evid";
+  EvidenceScalaAdapter,
+  EvidenceTreeSitterAssetScope,
+  EvidenceTreeSitterAssets,
+} from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
-import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestParserAssets } from "../../internal/EvidenceTestParserAssets";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Acquires the pinned Scala grammar and reuses its warm cache offline.
@@ -22,18 +22,18 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    equals the cold result.
  */
 export async function test_scala_acquisition(): Promise<void> {
-  const grammar = await new EvidTreeSitterAssets().grammar("scala");
-  const pinned = Uint8Array.from(await EvidTestParserAssets.bytes(grammar));
-  const snapshot = EvidTestSourceSnapshot.create(
+  const grammar = await new EvidenceTreeSitterAssets().grammar("scala");
+  const pinned = Uint8Array.from(await EvidenceTestParserAssets.bytes(grammar));
+  const snapshot = EvidenceTestSourceSnapshot.create(
     "src/Contract.scala",
     "class Contract { def run = 1; val value = 1 }",
   );
-  await EvidTestFileSystem.experiment(
+  await EvidenceTestFileSystem.experiment(
     "scala-acquisition",
     {},
     async (cacheDirectory) => {
       const requests: string[] = [];
-      const cold = await EvidTreeSitterAssetScope.run(
+      const cold = await EvidenceTreeSitterAssetScope.run(
         {
           cacheDirectory,
           fetch: async (input) => {
@@ -41,13 +41,13 @@ export async function test_scala_acquisition(): Promise<void> {
             return new Response(pinned);
           },
         },
-        async () => new EvidScalaAdapter().analyze(snapshot),
+        async () => new EvidenceScalaAdapter().analyze(snapshot),
       );
       TestValidator.equals("cold Scala analysis complete", cold.complete, true);
       TestValidator.equals("only selected Scala variant acquired", requests, [
         grammar.wasm.url,
       ]);
-      const warm = await EvidTreeSitterAssetScope.run(
+      const warm = await EvidenceTreeSitterAssetScope.run(
         {
           cacheDirectory,
           attempts: 1,
@@ -55,7 +55,7 @@ export async function test_scala_acquisition(): Promise<void> {
             throw new Error("offline");
           },
         },
-        async () => new EvidScalaAdapter().analyze(snapshot),
+        async () => new EvidenceScalaAdapter().analyze(snapshot),
       );
       TestValidator.equals("warm offline analysis equivalent", warm, cold);
     },

@@ -1,8 +1,8 @@
-import { EvidAccessor, EvidInventory, EvidKotlinAdapter } from "evid";
+import { EvidenceAccessor, EvidenceInventory, EvidenceKotlinAdapter } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Classifies public Kotlin declarations across owners, overloads, and file
@@ -15,8 +15,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    Verify overload and alias ownership.
  */
 export async function test_kotlin_units(): Promise<void> {
-  const snapshot = EvidTestSourceSnapshot.combine([
-    EvidTestSourceSnapshot.create(
+  const snapshot = EvidenceTestSourceSnapshot.combine([
+    EvidenceTestSourceSnapshot.create(
       "src/Contract.kt",
       dedent`
       package example
@@ -49,7 +49,7 @@ export async function test_kotlin_units(): Promise<void> {
     `,
       ["src/Contract.kt", "alias/Contract.kt"],
     ),
-    EvidTestSourceSnapshot.create(
+    EvidenceTestSourceSnapshot.create(
       "src/Additional.kt",
       dedent`
       package example
@@ -61,13 +61,13 @@ export async function test_kotlin_units(): Promise<void> {
     `,
     ),
   ]);
-  const inventory = await new EvidKotlinAdapter().analyze(snapshot);
+  const inventory = await new EvidenceKotlinAdapter().analyze(snapshot);
 
   TestValidator.equals("complete Kotlin surface", inventory.diagnostics, []);
   TestValidator.equals(
     "exact declarations",
     inventory.units
-      .map((unit) => `${unit.symbol}:${EvidAccessor.format(unit.identity)}`)
+      .map((unit) => `${unit.symbol}:${EvidenceAccessor.format(unit.identity)}`)
       .sort((a, b) => a.localeCompare(b)),
     [
       "type:example.Contract",
@@ -114,7 +114,7 @@ export async function test_kotlin_units(): Promise<void> {
     inventory.units.reduce((sum, unit) => sum + unit.sites.length, 0),
   );
   const selected = inventory.units.map((unit) => unit.id);
-  const graph = new EvidInventory([inventory]);
+  const graph = new EvidenceInventory([inventory]);
   TestValidator.equals(
     "logical file alias resolves same unit",
     graph.resolve(

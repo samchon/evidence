@@ -1,9 +1,9 @@
-import { EvidChecker } from "evid";
+import { EvidenceChecker } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
 
-import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
+import { EvidenceTestFileSystem } from "../../internal/EvidenceTestFileSystem";
 
 /**
  * Evaluates MySQL selectors in both claim and reference graph roles.
@@ -18,7 +18,7 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 export async function test_mysql_graph(): Promise<void> {
   for (const symbol of ["model", "column", "relation"] as const)
     for (const mysqlClaims of [true, false])
-      await EvidTestFileSystem.experiment(
+      await EvidenceTestFileSystem.experiment(
         `mysql-graph-${symbol}-${mysqlClaims}`,
         {
           "evidence.config.ts": mysqlClaims
@@ -40,14 +40,14 @@ export async function test_mysql_graph(): Promise<void> {
         },
         async (directory) => {
           const config = join(directory, "evidence.config.ts");
-          const complete = await EvidChecker.check(config);
+          const complete = await EvidenceChecker.check(config);
 
           TestValidator.equals(
             `${symbol} role ${mysqlClaims} passes`,
             complete.success,
             true,
           );
-          await EvidTestFileSystem.save(
+          await EvidenceTestFileSystem.save(
             directory,
             mysqlClaims
               ? {
@@ -56,7 +56,7 @@ export async function test_mysql_graph(): Promise<void> {
                 }
               : { "contract.ts": "export function run() {}" },
           );
-          const missing = await EvidChecker.check(config);
+          const missing = await EvidenceChecker.check(config);
           TestValidator.equals(
             `${symbol} role ${mysqlClaims} missing evidence fails`,
             missing.success,

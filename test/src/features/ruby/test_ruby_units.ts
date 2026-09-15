@@ -1,9 +1,9 @@
-import { EvidLanguageRegistry, EvidRubyAdapter } from "evid";
-import type { IEvidInventory, IEvidUnit } from "evid";
+import { EvidenceLanguageRegistry, EvidenceRubyAdapter } from "@wrtnlabs/evidence";
+import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Classifies Ruby public units across reopenings and member forms.
@@ -18,7 +18,7 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  */
 export async function test_ruby_units(): Promise<void> {
   // Certified metadata identifies the pinned grammar and declared source boundary.
-  const language = EvidLanguageRegistry.list().find(
+  const language = EvidenceLanguageRegistry.list().find(
     (entry) => entry.type === "ruby",
   );
   if (language?.adapter === undefined)
@@ -26,7 +26,7 @@ export async function test_ruby_units(): Promise<void> {
   TestValidator.equals(
     "certified Ruby adapter",
     language.adapter.entry,
-    "EvidRubyAdapter",
+    "EvidenceRubyAdapter",
   );
   TestValidator.equals(
     "published Ruby grammar version",
@@ -34,8 +34,8 @@ export async function test_ruby_units(): Promise<void> {
     true,
   );
 
-  const inventory = await new EvidRubyAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const inventory = await new EvidenceRubyAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "lib/shop.rb",
       dedent`
         module Shop
@@ -151,7 +151,7 @@ export async function test_ruby_units(): Promise<void> {
   TestValidator.equals("Ruby accessor property site", status.sites.length, 1);
 }
 
-function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
+function requireUnit(inventory: IEvidenceInventory, identity: string): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.join(".") === identity,
   );

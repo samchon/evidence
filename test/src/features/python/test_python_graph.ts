@@ -1,15 +1,15 @@
 import {
-  EvidFingerprint,
-  EvidGraph,
-  EvidMarkdownAdapter,
-  EvidPythonAdapter,
-} from "evid";
-import type { IEvidInventory, IEvidUnit } from "evid";
+  EvidenceFingerprint,
+  EvidenceGraph,
+  EvidenceMarkdownAdapter,
+  EvidencePythonAdapter,
+} from "@wrtnlabs/evidence";
+import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { EvidTestGraph } from "../../internal/EvidTestGraph";
-import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
+import { EvidenceTestGraph } from "../../internal/EvidenceTestGraph";
+import { EvidenceTestSourceSnapshot } from "../../internal/EvidenceTestSourceSnapshot";
 
 /**
  * Evaluates Python evidence hosts against Markdown requirements and
@@ -27,8 +27,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    edits, preserving the former and changing the latter.
  */
 export async function test_python_graph(): Promise<void> {
-  const requirements = await new EvidMarkdownAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const requirements = await new EvidenceMarkdownAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "docs/requirements.md",
       dedent`
         ## Service {#service}
@@ -45,8 +45,8 @@ export async function test_python_graph(): Promise<void> {
       `,
     ),
   );
-  const implementation = await new EvidPythonAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+  const implementation = await new EvidencePythonAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/contracts.py",
       dedent`
         # @evidence docs/requirements.md#service Implements the public type.
@@ -73,7 +73,7 @@ export async function test_python_graph(): Promise<void> {
     requireUnit(implementation, "value"),
   ];
 
-  const complete = EvidGraph.evaluate({
+  const complete = EvidenceGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -84,7 +84,7 @@ export async function test_python_graph(): Promise<void> {
             severity: "error",
             inventory: requirements,
             unitIds: requirementUnits.map((unit) => unit.id),
-            resolutions: await EvidTestGraph.resolveDeclarations(
+            resolutions: await EvidenceTestGraph.resolveDeclarations(
               implementation,
               requirements,
               requirementUnits.map((unit) => unit.id),
@@ -103,7 +103,7 @@ export async function test_python_graph(): Promise<void> {
     missing.declarations = missing.declarations.filter(
       (declaration) => !declaration.target.endsWith(`#${anchor}`),
     );
-    const partial = EvidGraph.evaluate({
+    const partial = EvidenceGraph.evaluate({
       claims: [
         {
           severity: "error",
@@ -114,7 +114,7 @@ export async function test_python_graph(): Promise<void> {
               severity: "error",
               inventory: requirements,
               unitIds: requirementUnits.map((unit) => unit.id),
-              resolutions: await EvidTestGraph.resolveDeclarations(
+              resolutions: await EvidenceTestGraph.resolveDeclarations(
                 missing,
                 requirements,
                 requirementUnits.map((unit) => unit.id),
@@ -126,7 +126,7 @@ export async function test_python_graph(): Promise<void> {
     });
     TestValidator.equals(
       `missing Python ${anchor} acknowledgement`,
-      EvidTestGraph.obligation(partial, 0, 0).missingUnitIds,
+      EvidenceTestGraph.obligation(partial, 0, 0).missingUnitIds,
       [required.id],
     );
   }
@@ -149,22 +149,22 @@ export async function test_python_graph(): Promise<void> {
 
   TestValidator.equals(
     "Python evidence metadata preserves fingerprint",
-    EvidFingerprint.inspect(original, originalUnit.id).fingerprint,
-    EvidFingerprint.inspect(editedReason, reasonUnit.id).fingerprint,
+    EvidenceFingerprint.inspect(original, originalUnit.id).fingerprint,
+    EvidenceFingerprint.inspect(editedReason, reasonUnit.id).fingerprint,
   );
   TestValidator.notEquals(
     "Python implementation moves fingerprint",
-    EvidFingerprint.inspect(original, originalUnit.id).fingerprint,
-    EvidFingerprint.inspect(editedBody, bodyUnit.id).fingerprint,
+    EvidenceFingerprint.inspect(original, originalUnit.id).fingerprint,
+    EvidenceFingerprint.inspect(editedBody, bodyUnit.id).fingerprint,
   );
 }
 
 async function fingerprintInventory(
   reason: string,
   statement: string,
-): Promise<IEvidInventory> {
-  return new EvidPythonAdapter().analyze(
-    EvidTestSourceSnapshot.create(
+): Promise<IEvidenceInventory> {
+  return new EvidencePythonAdapter().analyze(
+    EvidenceTestSourceSnapshot.create(
       "src/fingerprint.py",
       dedent`
         def run():
@@ -175,7 +175,7 @@ async function fingerprintInventory(
   );
 }
 
-function requireUnit(inventory: IEvidInventory, name: string): IEvidUnit {
+function requireUnit(inventory: IEvidenceInventory, name: string): IEvidenceUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === name || candidate.identity.at(-1) === name,
