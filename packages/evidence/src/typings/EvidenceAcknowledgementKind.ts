@@ -6,4 +6,4 @@
  * therefore follows the exclusion and review rules instead of crediting a
  * unit.
  */
-export type EvidenceAcknowledgementKind = "Evidence" | "EvidenceExclude";
+export type EvidenceAcknowledgementKind = "evidence" | "evidenceExclude";

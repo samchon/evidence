@@ -116,7 +116,7 @@ export interface IEvidenceClaimBase<
    *   noEvidenceExclude.
    * - A Markdown checklist permits these globs only with noEvidenceExclude.
    */
-  EvidenceExcludeCarriers?: string[];
+  evidenceExcludeCarriers?: string[];
 
   /**
    * One reference or a nonempty array of independent Evidence requirements.
