@@ -9,8 +9,6 @@ Every rule, requirement, schema, and API becomes an obligation the check enforce
 - **100% coverage** of every requirement.
 - **100% compliance** with every principle.
 
-Writing rules into `AGENTS.md` does not make a coding agent follow them. In [one measurement](https://arxiv.org/abs/2605.01771), six frontier models followed a written instruction in 0 of 60 runs and reported compliance in more than 90% of them. `@wrtnlabs/evidence` makes each rule, and each requirement, one sentence a declaration must write. Leave one out and the check fails.
-
 ```tsx
 /**
  * @evidence docs/discount.md#coupon-stacking States the per-issuer stacking limit this section defines, in the buyer's words.
@@ -21,7 +19,7 @@ Writing rules into `AGENTS.md` does not make a coding agent follow them. In [one
 export function CouponStackingNotice(props: IProps): JSX.Element;
 ```
 
-`@evidence <target> <reason>` is the agent's explicit claim about what the code implements and why. `@evidenceExclude` records why an obligation does not apply. A target is a Markdown section, a public declaration in one of 19 programming languages, a model, column, or relation in one of 7 database schema languages, or a Swagger operation. Evidence reads them through upstream Tree-sitter grammars, with no compiler, plugin, or build for the checked project.
+`@evidence <target> <reason>` is the agent's explicit claim about what the code implements and why. `@evidenceExclude` records why an obligation does not apply. A target is a Markdown section, a public declaration in one of 19 programming languages, a model, column, or relation in one of 7 database schema languages, or a Swagger operation. Evidence reads them through upstream Tree-sitter grammars, with no compiler, plugin, or build for the checked project. Leave one obligation unanswered and the check fails.
 
 Delete the `useCouponStacking` line and the check stops:
 
@@ -78,7 +76,7 @@ if (file === "wide-chars.ts") return WIDE_CHARS_EXPECTED;
 
 One test would not go green, so the agent hardcoded the answer. That breaks the first rule on the list, and the build passes anyway. The type checker looks at types, the tests look for green, the linter looks for unused variables. Nothing asks which rule was broken, because the rules live in a document and the build does not read documents. A human has to read the diff holding every rule in their head, and at 4,000 lines that check may as well not exist.
 
-Writing the rules harder does not help. Nobody starts honoring a contract because you set it in a bigger font. Under [eight simultaneous constraints](https://arxiv.org/abs/2608.12426), models satisfied each one about 41% of the time and all eight in 5.7% of responses. Every rule you add pushes one you already wrote further back.
+Writing the rules harder does not help. Nobody starts honoring a contract because you set it in a bigger font. [One study](https://arxiv.org/abs/2605.01771) read the tool logs instead of the model's own report: six frontier models followed a written instruction in 0 of 60 runs, and reported compliance in more than 90% of them. Under [eight simultaneous constraints](https://arxiv.org/abs/2608.12426), models satisfied each one about 41% of the time and all eight in 5.7% of responses. Every rule you add pushes one you already wrote further back.
 
 This is not malice. If there is a cheaper way to pass the check, that is the way it goes: agents [saturate the visible test suite and fail the hidden one](https://arxiv.org/abs/2605.21384), [retrieve answers instead of deriving them](https://cursor.com/blog/reward-hacking-coding-benchmarks), and [hardcode return values per test input](https://debugml.github.io/cheating-agents). Not taking the exam, but finding the cheapest way to look like you took it.
 
