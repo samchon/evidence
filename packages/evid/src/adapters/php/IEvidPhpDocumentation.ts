@@ -3,10 +3,12 @@ import type { IEvidSourceRange } from "../../structures/IEvidSourceRange";
 import type { IEvidPhpDocumentationAttachment } from "./IEvidPhpDocumentationAttachment";
 
 /**
- * Retains one PHPDoc carrier, including a carrier whose placement is unsupported.
+ * Retains one PHPDoc carrier, including a carrier whose placement is
+ * unsupported.
  *
- * The adapter preserves unsupported tagged text as a diagnostic host so directives
- * cannot disappear merely because no eligible declaration receives the comment.
+ * The adapter preserves unsupported tagged text as a diagnostic host so
+ * directives cannot disappear merely because no eligible declaration receives
+ * the comment.
  */
 export interface IEvidPhpDocumentation {
   /**
@@ -26,14 +28,16 @@ export interface IEvidPhpDocumentation {
   /**
    * Delimiter and tag-boundary rules used to map the carrier's text.
    *
-   * EvidPhpDocumentation also uses this classification to mask examples without moving offsets.
+   * EvidPhpDocumentation also uses this classification to mask examples without
+   * moving offsets.
    */
   syntax: IEvidCommentSyntax;
 
   /**
    * Declaration sites to which this carrier is immediately attached.
    *
-   * A comment can serve multiple units at one site before withdrawal hides descendants.
+   * A comment can serve multiple units at one site before withdrawal hides
+   * descendants.
    */
   attachments: IEvidPhpDocumentationAttachment[];
 }

@@ -11,11 +11,14 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * The adapter must make a file unit and H1 through H4 units without treating
  * Setext headings, code, malformed markers, or H5/H6 headings as public units.
  *
- * 1. Analyze headings with Unicode text, punctuation, explicit anchors, and duplicate anchors.
+ * 1. Analyze headings with Unicode text, punctuation, explicit anchors, and
+ *    duplicate anchors.
  * 2. Verify the supported units:
+ *
  *    - Their count, symbols, normalized identities, and parent hierarchy are exact.
  *    - Unsupported heading spellings do not add a unit.
- * 3. Resolve a repeated public anchor and require an ambiguous result while each duplicate remains a file child.
+ * 3. Resolve a repeated public anchor and require an ambiguous result while each
+ *    duplicate remains a file child.
  * 4. Require an otherwise diagnostic-free inventory.
  */
 export async function test_markdown_units(): Promise<void> {

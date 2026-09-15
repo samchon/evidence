@@ -3,7 +3,10 @@ import type { IEvidCommentSyntax, IEvidHost } from "evid";
 import { EvidSourceText } from "evid";
 import type { IEvidTestDocumentation } from "./IEvidTestDocumentation";
 
-/** Supplies explicit comment classification to the shared parser without scanning arbitrary source. */
+/**
+ * Supplies explicit comment classification to the shared parser without
+ * scanning arbitrary source.
+ */
 export namespace EvidTestDocumentation {
   export function create(
     comment: string,
@@ -18,7 +21,10 @@ export namespace EvidTestDocumentation {
   ): IEvidTestDocumentation {
     const content = "// 앞줄 😀\r\n" + comment + "\nexport const example = 0;";
     const start = content.indexOf(comment);
-    const range = new EvidSourceText(content).range(start, start + comment.length);
+    const range = new EvidSourceText(content).range(
+      start,
+      start + comment.length,
+    );
     const host: IEvidHost = {
       id: "host",
       file: "/project/example.ts",
@@ -30,12 +36,7 @@ export namespace EvidTestDocumentation {
     return {
       content,
       host,
-      documentation: EvidDocumentation.read(
-        content,
-        host.id,
-        range,
-        syntax,
-      ),
+      documentation: EvidDocumentation.read(content, host.id, range, syntax),
     };
   }
 }

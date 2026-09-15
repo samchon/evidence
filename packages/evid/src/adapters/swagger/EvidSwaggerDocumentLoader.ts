@@ -314,7 +314,8 @@ function location(
  * Finds the authored YAML node that supplied an operation description.
  *
  * A direct description wins. If the operation is a YAML alias, the resolved map
- * supplies the scalar whose source token still belongs to the original document.
+ * supplies the scalar whose source token still belongs to the original
+ * document.
  */
 function descriptionSource(
   yaml: EvidYamlDocument.Parsed<EvidYamlParsedNode>,
@@ -436,8 +437,9 @@ function resolveEntries(
 /**
  * Resolves one local OpenAPI component pointer through authored own properties.
  *
- * URI and JSON Pointer escapes are decoded per segment. Inherited properties are
- * excluded because only document-owned components may alter an operation digest.
+ * URI and JSON Pointer escapes are decoded per segment. Inherited properties
+ * are excluded because only document-owned components may alter an operation
+ * digest.
  */
 function componentAt(components: object, reference: string): unknown {
   if (!reference.startsWith(COMPONENT_REFERENCE_PREFIX)) return undefined;
@@ -464,8 +466,8 @@ function componentAt(components: object, reference: string): unknown {
 /**
  * Stores one detached load result in the bounded insertion-order cache.
  *
- * Existing digests remain stable entries; new values evict the oldest digest and
- * are cloned so later callers cannot mutate shared state.
+ * Existing digests remain stable entries; new values evict the oldest digest
+ * and are cloned so later callers cannot mutate shared state.
  */
 function remember(key: string, entry: IEvidSwaggerCacheEntry): void {
   if (cache.has(key)) return;
@@ -491,7 +493,8 @@ function compare(x: string, y: string): number {
  * Converts an unknown load failure into stable cached diagnostic text.
  *
  * Error instances retain their authored message; non-errors use JavaScript's
- * string conversion so every failure can cross the serializable cache boundary.
+ * string conversion so every failure can cross the serializable cache
+ * boundary.
  */
 function message(cause: unknown): string {
   return cause instanceof Error ? cause.message : String(cause);

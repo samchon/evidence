@@ -17,15 +17,20 @@ import type { EvidJavaTypeKind } from "./EvidJavaTypeKind";
 import { EvidSourceText } from "../../internal/EvidSourceText";
 
 /**
- * Extracts Java packages, declarations, and Javadoc before family materialization.
+ * Extracts Java packages, declarations, and Javadoc before family
+ * materialization.
  *
- * Ownership and visibility are recorded from selected source only; `EvidJavaAdapterBase`
- * later reconciles compatible declaration families into graph units.
+ * Ownership and visibility are recorded from selected source only;
+ * `EvidJavaAdapterBase` later reconciles compatible declaration families into
+ * graph units.
  */
 export class EvidJavaFileScanner {
   private readonly declarations: IEvidJavaDeclaration[] = [];
   private readonly documentation = new Map<string, IEvidJavaDocumentation>();
-  private readonly carrierDocumentation = new Map<string, IEvidJavaDocumentation>();
+  private readonly carrierDocumentation = new Map<
+    string,
+    IEvidJavaDocumentation
+  >();
   private readonly diagnostics: IEvidDiagnostic[] = [];
   private readonly reported = new Set<string>();
   private readonly text: EvidSourceText;
@@ -207,7 +212,10 @@ export class EvidJavaFileScanner {
       }
   }
 
-  private scanRecordComponents(item: EvidNode, owner: IEvidJavaTypeContext): void {
+  private scanRecordComponents(
+    item: EvidNode,
+    owner: IEvidJavaTypeContext,
+  ): void {
     const parameters = item.childForFieldName("parameters");
     for (const parameter of parameters === null
       ? []
@@ -303,7 +311,10 @@ export class EvidJavaFileScanner {
     );
   }
 
-  private scanAnnotationElement(item: EvidNode, owner: IEvidJavaTypeContext): void {
+  private scanAnnotationElement(
+    item: EvidNode,
+    owner: IEvidJavaTypeContext,
+  ): void {
     const name = EvidJavaSyntax.name(item.childForFieldName("name"));
     if (name === undefined) return;
     this.addDeclaration(
@@ -321,7 +332,10 @@ export class EvidJavaFileScanner {
     );
   }
 
-  private typePublic(item: EvidNode, owner: IEvidJavaTypeContext | undefined): boolean {
+  private typePublic(
+    item: EvidNode,
+    owner: IEvidJavaTypeContext | undefined,
+  ): boolean {
     if (owner === undefined) return EvidJavaSyntax.hasModifier(item, "public");
     if (!owner.public) return false;
     if (EvidJavaSyntax.hasModifier(item, "private")) return false;

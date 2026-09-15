@@ -3,8 +3,8 @@
 /**
  * Retains DBML enum semantics that affect dependent table fingerprints.
  *
- * Enums are not independently selectable Evid units, so their semantic
- * content travels with declarations that refer to them.
+ * Enums are not independently selectable Evid units, so their semantic content
+ * travels with declarations that refer to them.
  */
 export interface IEvidDbmlEnum {
   /**
@@ -17,7 +17,8 @@ export interface IEvidDbmlEnum {
   /**
    * Stores whitespace-independent enum tokens without documentation.
    *
-   * This value contributes schema meaning while ignoring annotation-only changes.
+   * This value contributes schema meaning while ignoring annotation-only
+   * changes.
    */
   content: string;
 

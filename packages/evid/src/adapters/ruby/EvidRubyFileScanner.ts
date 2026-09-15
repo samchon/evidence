@@ -22,10 +22,12 @@ import type { EvidRubyVisibility } from "./EvidRubyVisibility";
 import { EvidSourceText } from "../../internal/EvidSourceText";
 
 /**
- * Extracts bounded Ruby declarations, visibility changes, and documentation carriers.
+ * Extracts bounded Ruby declarations, visibility changes, and documentation
+ * carriers.
  *
- * The scanner follows Ruby's ordered class and module directives while retaining
- * declaration records for later inventory assembly and documentation attachment.
+ * The scanner follows Ruby's ordered class and module directives while
+ * retaining declaration records for later inventory assembly and documentation
+ * attachment.
  */
 export class EvidRubyFileScanner {
   /**
@@ -141,9 +143,13 @@ export class EvidRubyFileScanner {
   /**
    * Dispatches one statement to the supported Ruby surface classifier.
    *
-   * Unrecognized nested surface changes are preserved as incomplete diagnostics.
+   * Unrecognized nested surface changes are preserved as incomplete
+   * diagnostics.
    */
-  private scanStatement(statement: EvidNode, context: IEvidRubyScopeContext): void {
+  private scanStatement(
+    statement: EvidNode,
+    context: IEvidRubyScopeContext,
+  ): void {
     switch (statement.type) {
       case "comment":
       case "heredoc_body":
@@ -215,7 +221,9 @@ export class EvidRubyFileScanner {
       );
       return;
     }
-    const path = EvidRubySyntax.constantPath(statement.childForFieldName("name"));
+    const path = EvidRubySyntax.constantPath(
+      statement.childForFieldName("name"),
+    );
     if (path === undefined) {
       this.problem(
         "ruby-container-name",
@@ -373,7 +381,10 @@ export class EvidRubyFileScanner {
     const identity =
       object?.type === "self" && context.kind !== "top"
         ? context.identity
-        : this.resolveOptionalPath(EvidRubySyntax.constantPath(object), context);
+        : this.resolveOptionalPath(
+            EvidRubySyntax.constantPath(object),
+            context,
+          );
     if (identity === undefined || identity.length === 0) {
       if (context.kind !== "top" || object?.type !== "self")
         this.problem(
@@ -452,7 +463,10 @@ export class EvidRubyFileScanner {
    *
    * Dynamic targets are failures because they cannot supply stable addresses.
    */
-  private scanAssignment(statement: EvidNode, context: IEvidRubyScopeContext): void {
+  private scanAssignment(
+    statement: EvidNode,
+    context: IEvidRubyScopeContext,
+  ): void {
     const left = statement.childForFieldName("left");
     const path = EvidRubySyntax.constantPath(left);
     if (path === undefined) {
@@ -567,7 +581,10 @@ export class EvidRubyFileScanner {
    *
    * Such calls inherit the current lexical scope and visibility state.
    */
-  private scanBareDirective(statement: EvidNode, context: IEvidRubyScopeContext): void {
+  private scanBareDirective(
+    statement: EvidNode,
+    context: IEvidRubyScopeContext,
+  ): void {
     const name = statement.text;
     if (name === "public" || name === "private" || name === "protected") {
       context.visibility = name;
@@ -606,7 +623,9 @@ export class EvidRubyFileScanner {
       }
       if (wrapped.type === "singleton_method") {
         this.scanSingletonMethod(wrapped, call, context);
-        const name = EvidRubySyntax.methodName(wrapped.childForFieldName("name"));
+        const name = EvidRubySyntax.methodName(
+          wrapped.childForFieldName("name"),
+        );
         if (name !== undefined)
           this.changeMethodVisibility(
             context.identity,
@@ -651,7 +670,8 @@ export class EvidRubyFileScanner {
   /**
    * Applies a class-method visibility directive to singleton members.
    *
-   * Dynamic names are rejected because the selected member cannot be identified.
+   * Dynamic names are rejected because the selected member cannot be
+   * identified.
    */
   private scanClassVisibilityCall(
     call: EvidNode,
@@ -691,7 +711,8 @@ export class EvidRubyFileScanner {
   /**
    * Applies a constant-visibility directive to selected constants.
    *
-   * Visibility is retained for both prior records and later same-name declarations.
+   * Visibility is retained for both prior records and later same-name
+   * declarations.
    */
   private scanConstantVisibilityCall(
     call: EvidNode,
@@ -702,7 +723,9 @@ export class EvidRubyFileScanner {
       this.dynamicDirective(call, "constant visibility");
       return;
     }
-    const names = EvidRubySyntax.literalNames(EvidRubySyntax.callArguments(call));
+    const names = EvidRubySyntax.literalNames(
+      EvidRubySyntax.callArguments(call),
+    );
     if (
       names === undefined ||
       names.length === 0 ||
@@ -817,7 +840,9 @@ export class EvidRubyFileScanner {
   ): void {
     if (context.kind === "top") return;
     const name = EvidRubySyntax.methodName(statement.childForFieldName("name"));
-    const target = EvidRubySyntax.methodName(statement.childForFieldName("alias"));
+    const target = EvidRubySyntax.methodName(
+      statement.childForFieldName("alias"),
+    );
     if (name === undefined || target === undefined) {
       this.problem(
         "ruby-alias-name",
@@ -833,11 +858,14 @@ export class EvidRubyFileScanner {
   /**
    * Resolves an `alias_method` call with two literal method names.
    *
-   * It delegates to the common alias path after enforcing static argument count.
+   * It delegates to the common alias path after enforcing static argument
+   * count.
    */
   private scanAliasCall(call: EvidNode, context: IEvidRubyScopeContext): void {
     if (context.kind === "top") return;
-    const names = EvidRubySyntax.literalNames(EvidRubySyntax.callArguments(call));
+    const names = EvidRubySyntax.literalNames(
+      EvidRubySyntax.callArguments(call),
+    );
     if (names?.length !== 2) {
       this.problem(
         "ruby-alias-name",
@@ -908,7 +936,10 @@ export class EvidRubyFileScanner {
    * The directive privatizes the source method and creates a public singleton
    * copy only when its target can be identified statically.
    */
-  private scanModuleFunction(call: EvidNode, context: IEvidRubyScopeContext): void {
+  private scanModuleFunction(
+    call: EvidNode,
+    context: IEvidRubyScopeContext,
+  ): void {
     if (context.kind !== "module" || context.side !== "instance") {
       this.problem(
         "ruby-module-function-owner",
@@ -1048,7 +1079,8 @@ export class EvidRubyFileScanner {
   }
 
   /**
-   * Returns definition records matching one owner, side, and runtime method name.
+   * Returns definition records matching one owner, side, and runtime method
+   * name.
    *
    * Attributes participate because their generated readers and writers are
    * valid targets for Ruby visibility directives.
@@ -1130,9 +1162,12 @@ export class EvidRubyFileScanner {
    * Finds the nearest attachable documentation carrier before a declaration.
    *
    * Only line-leading comments without intervening content attach, preventing
-   * an unrelated earlier comment from becoming the declaration's evidence host.
+   * an unrelated earlier comment from becoming the declaration's evidence
+   * host.
    */
-  private attachedDocumentation(node: EvidNode): IEvidRubyDocumentation | undefined {
+  private attachedDocumentation(
+    node: EvidNode,
+  ): IEvidRubyDocumentation | undefined {
     const documentation = Array.from(this.documentation.values())
       .filter(
         (candidate) =>
@@ -1154,7 +1189,8 @@ export class EvidRubyFileScanner {
   }
 
   /**
-   * Checks whether a documentation range begins after only whitespace on its line.
+   * Checks whether a documentation range begins after only whitespace on its
+   * line.
    *
    * Inline comments cannot attach to the following Ruby declaration.
    */
@@ -1304,7 +1340,8 @@ export class EvidRubyFileScanner {
         return true;
       if (
         current.type === "assignment" &&
-        EvidRubySyntax.constantPath(current.childForFieldName("left")) !== undefined
+        EvidRubySyntax.constantPath(current.childForFieldName("left")) !==
+          undefined
       )
         return true;
       const callName = EvidRubySyntax.callName(current);
@@ -1383,7 +1420,8 @@ export class EvidRubyFileScanner {
   /**
    * Resolves a constant path when a supported path is present.
    *
-   * Absence remains undefined so callers can distinguish it from top-level paths.
+   * Absence remains undefined so callers can distinguish it from top-level
+   * paths.
    */
   private resolveOptionalPath(
     path: IEvidRubyConstantPath | undefined,
@@ -1395,7 +1433,8 @@ export class EvidRubyFileScanner {
   /**
    * Creates a public member address for instance or singleton ownership.
    *
-   * Singleton members use the explicit `self` segment to avoid identity clashes.
+   * Singleton members use the explicit `self` segment to avoid identity
+   * clashes.
    */
   private memberAddress(
     owner: string[],
@@ -1428,7 +1467,8 @@ export class EvidRubyFileScanner {
   /**
    * Serializes a parser node range as a stable source-local key.
    *
-   * The immutable selected source makes its offsets suitable for record identity.
+   * The immutable selected source makes its offsets suitable for record
+   * identity.
    */
   private nodeKey(node: EvidNode): string {
     return `${node.startIndex}:${node.endIndex}`;

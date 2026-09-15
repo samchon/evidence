@@ -9,21 +9,24 @@ import type { IEvidPythonOwnedUnit } from "./IEvidPythonOwnedUnit";
 /**
  * Preserves one Python file's serializable extraction after parsing.
  *
- * EvidPythonAdapterBase combines these records before resolving imports and exports, so
- * parser-owned nodes never escape their session and failures remain visible.
+ * EvidPythonAdapterBase combines these records before resolving imports and
+ * exports, so parser-owned nodes never escape their session and failures remain
+ * visible.
  */
 export interface IEvidPythonFileAnalysis {
   /**
    * Selected source whose declarations and diagnostics this analysis owns.
    *
-   * Its physical path anchors units, annotation ranges, and diagnostic locations.
+   * Its physical path anchors units, annotation ranges, and diagnostic
+   * locations.
    */
   source: IEvidSourceFile;
 
   /**
    * Static knowledge of the module's explicit export list.
    *
-   * The resolver falls back to underscore-based visibility only when this state permits it.
+   * The resolver falls back to underscore-based visibility only when this state
+   * permits it.
    */
   all: IEvidPythonAll;
 
@@ -58,14 +61,16 @@ export interface IEvidPythonFileAnalysis {
   /**
    * Source failures encountered while classifying this file.
    *
-   * They are carried into the inventory so incomplete extraction cannot certify coverage.
+   * They are carried into the inventory so incomplete extraction cannot certify
+   * coverage.
    */
   diagnostics: IEvidDiagnostic[];
 
   /**
    * Whether scanning classified every surface-changing construct in this file.
    *
-   * A false value propagates to the completed inventory even if other files succeed.
+   * A false value propagates to the completed inventory even if other files
+   * succeed.
    */
   complete: boolean;
 }

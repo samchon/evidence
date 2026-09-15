@@ -25,18 +25,21 @@ import type { IEvidUnitSite } from "../../structures/IEvidUnitSite";
 import type { EvidArtifactType } from "../../typings/EvidArtifactType";
 
 /**
- * Extracts Swagger/OpenAPI operations and their description-based annotation hosts.
+ * Extracts Swagger/OpenAPI operations and their description-based annotation
+ * hosts.
  *
  * Local snapshots and explicitly configured remote documents pass through the
- * same normalization and materialization path. Each method/path operation retains
- * its own identity even without a description, while supported description spans
- * map annotations back to source coordinates. EvidDocument failures remain incomplete.
+ * same normalization and materialization path. Each method/path operation
+ * retains its own identity even without a description, while supported
+ * description spans map annotations back to source coordinates. EvidDocument
+ * failures remain incomplete.
  */
 export class EvidSwaggerAdapter implements IEvidAdapter {
   /**
    * Artifact discriminator selecting API-operation extraction.
    *
-   * Operations use method/path targets within each independent document population.
+   * Operations use method/path targets within each independent document
+   * population.
    */
   public readonly type: EvidArtifactType = "swagger";
 
@@ -44,12 +47,11 @@ export class EvidSwaggerAdapter implements IEvidAdapter {
    * Normalizes captured JSON/YAML documents into operation inventories.
    *
    * Each document failure is retained alongside successfully loaded documents.
-   * Input is cloned, and final inventory validation preserves incompleteness rather
-   * than treating failed normalization as a document with no operations.
+   * Input is cloned, and final inventory validation preserves incompleteness
+   * rather than treating failed normalization as a document with no
+   * operations.
    */
-  public async analyze(
-    snapshot: IEvidSourceSnapshot,
-  ): Promise<IEvidInventory> {
+  public async analyze(snapshot: IEvidSourceSnapshot): Promise<IEvidInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory = this.inventory(input);
     if (input.files.length === 0)
@@ -82,10 +84,10 @@ export class EvidSwaggerAdapter implements IEvidAdapter {
   /**
    * Loads one exact local document or explicitly configured HTTP(S) URL.
    *
-   * Local paths resolve from the configuration-relative root and use source-loader
-   * dependency tracking. Remote bytes become a synthetic source snapshot without
-   * filesystem dependencies. Access and normalization failures return incomplete
-   * inventory diagnostics for the requested document.
+   * Local paths resolve from the configuration-relative root and use
+   * source-loader dependency tracking. Remote bytes become a synthetic source
+   * snapshot without filesystem dependencies. Access and normalization failures
+   * return incomplete inventory diagnostics for the requested document.
    */
   public async load(
     configFile: string,
@@ -102,7 +104,8 @@ export class EvidSwaggerAdapter implements IEvidAdapter {
           await EvidSourceLoader.file(configFile, file, root),
         );
       display = EvidSwaggerRemoteReader.display(remote);
-      const read: IEvidRemoteSwaggerSource = await EvidSwaggerRemoteReader.read(remote);
+      const read: IEvidRemoteSwaggerSource =
+        await EvidSwaggerRemoteReader.read(remote);
       const absoluteRoot: string = EvidSourcePath.root(configFile, root);
       return await this.analyze({
         root: {
@@ -142,10 +145,11 @@ export class EvidSwaggerAdapter implements IEvidAdapter {
   }
 
   /**
-   * Seeds an operation inventory with snapshot provenance and discovery failures.
+   * Seeds an operation inventory with snapshot provenance and discovery
+   * failures.
    *
-   * Operation and annotation collections remain empty until document normalization
-   * establishes supported API structure and source mappings.
+   * Operation and annotation collections remain empty until document
+   * normalization establishes supported API structure and source mappings.
    */
   private inventory(input: IEvidSourceSnapshot): IEvidInventory {
     return {
@@ -242,8 +246,9 @@ export class EvidSwaggerAdapter implements IEvidAdapter {
   /**
    * Parses one mapped operation description into inventory annotations.
    *
-   * Declarations, reviews, diagnostics, and their exact source ranges are copied
-   * together so fingerprinting can exclude metadata without dropping prose.
+   * Declarations, reviews, diagnostics, and their exact source ranges are
+   * copied together so fingerprinting can exclude metadata without dropping
+   * prose.
    */
   private parse(
     inventory: IEvidInventory,

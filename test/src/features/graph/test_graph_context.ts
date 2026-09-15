@@ -6,13 +6,16 @@ import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestInventory } from "../../internal/EvidTestInventory";
 
 /**
- * Keeps graph state isolated across repeated evaluations and reference policies.
+ * Keeps graph state isolated across repeated evaluations and reference
+ * policies.
  *
  * One claim host excludes a target shared by two references with different
- * exclusion policies. Coverage must remain local to each obligation, and neither
- * caller mutation nor prior diagnostics may affect a subsequent evaluation.
+ * exclusion policies. Coverage must remain local to each obligation, and
+ * neither caller mutation nor prior diagnostics may affect a subsequent
+ * evaluation.
  *
  * 1. Evaluate the shared exclusion against both references and verify that:
+ *
  *    - The permissive reference covers the target.
  *    - The strict reference keeps it missing with one forbidden-exclusion finding.
  * 2. Save the result, then clear the caller's input and the returned claim and

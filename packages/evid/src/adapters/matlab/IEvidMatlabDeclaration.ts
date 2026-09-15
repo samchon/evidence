@@ -2,23 +2,27 @@ import type { IEvidUnitSite } from "../../structures/IEvidUnitSite";
 import type { EvidProgrammingSymbol } from "../../typings/EvidProgrammingSymbol";
 
 /**
- * Represents a MATLAB declaration before class-folder and accessor reconciliation.
+ * Represents a MATLAB declaration before class-folder and accessor
+ * reconciliation.
  *
  * MATLAB can separate a public signature, implementation file, and property
- * accessors, so this record retains those physical facts until ownership is known.
+ * accessors, so this record retains those physical facts until ownership is
+ * known.
  */
 export interface IEvidMatlabDeclaration {
   /**
    * Identifies this physical declaration extracted from the selected source.
    *
-   * Documentation attachments and later ownership links use it before unit IDs exist.
+   * Documentation attachments and later ownership links use it before unit IDs
+   * exist.
    */
   id: string;
 
   /**
    * Stores the literal MATLAB identifier from the declaration.
    *
-   * The resolver appends it to its owner path when creating a public unit address.
+   * The resolver appends it to its owner path when creating a public unit
+   * address.
    */
   name: string;
 
@@ -32,28 +36,32 @@ export interface IEvidMatlabDeclaration {
   /**
    * Names package and lexical-owner segments that define semantic identity.
    *
-   * Ownership reconciliation may replace this path for an external class method.
+   * Ownership reconciliation may replace this path for an external class
+   * method.
    */
   identity: string[];
 
   /**
    * Names the public accessor segments projected from a selected source file.
    *
-   * The array remains distinct from identity because external methods have class-file aliases.
+   * The array remains distinct from identity because external methods have
+   * class-file aliases.
    */
   address: string[];
 
   /**
    * Identifies the physical file that establishes this declaration's ownership.
    *
-   * The resolver uses this anchor to match external members with their class definition.
+   * The resolver uses this anchor to match external members with their class
+   * definition.
    */
   anchor: string;
 
   /**
    * States whether static MATLAB visibility exposes this declaration publicly.
    *
-   * Ownership and accessor reconciliation can further restrict an initially visible record.
+   * Ownership and accessor reconciliation can further restrict an initially
+   * visible record.
    */
   public: boolean;
 
@@ -74,9 +82,11 @@ export interface IEvidMatlabDeclaration {
   implementation?: string;
 
   /**
-   * Identifies a getter or setter that contributes to an existing property unit.
+   * Identifies a getter or setter that contributes to an existing property
+   * unit.
    *
-   * Omission means this declaration is independently materialized rather than an accessor.
+   * Omission means this declaration is independently materialized rather than
+   * an accessor.
    */
   accessor?: "get" | "set";
 
@@ -105,14 +115,16 @@ export interface IEvidMatlabDeclaration {
   /**
    * References the scanner-local parent declaration when one exists.
    *
-   * Omission denotes a top-level function or class before ownership reconciliation.
+   * Omission denotes a top-level function or class before ownership
+   * reconciliation.
    */
   ownerDeclarationId?: string;
 
   /**
    * Holds physical declaration and content spans for hosts and fingerprints.
    *
-   * Materialized units retain these ranges even when ownership joins several files.
+   * Materialized units retain these ranges even when ownership joins several
+   * files.
    */
   site: IEvidUnitSite;
 }

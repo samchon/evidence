@@ -9,10 +9,11 @@ import type { EvidProgrammingSymbol } from "../../typings/EvidProgrammingSymbol"
  */
 export interface IEvidZigDeclaration {
   /**
-   * Identifies this extracted declaration at one physical site and exposed path.
+   * Identifies this extracted declaration at one physical site and exposed
+   * path.
    *
-   * Alias reconciliation uses the key to connect documentation attachments before
-   * it merges alias projections into their canonical semantic unit.
+   * Alias reconciliation uses the key to connect documentation attachments
+   * before it merges alias projections into their canonical semantic unit.
    */
   id: string;
 
@@ -60,7 +61,8 @@ export interface IEvidZigDeclaration {
    * Indicates whether the selected source exposes this declaration publicly.
    *
    * The adapter publishes only public records, while non-public boundaries can
-   * still be retained during extraction when needed for scanner classification.
+   * still be retained during extraction when needed for scanner
+   * classification.
    */
   public: boolean;
 
@@ -76,7 +78,8 @@ export interface IEvidZigDeclaration {
    * Identifies the explicit declaration that lexically owns this member.
    *
    * Omission marks a file-level declaration; otherwise materialization maps the
-   * owner to a unit parent so withdrawals propagate through the container tree.
+   * owner to a unit parent so withdrawals propagate through the container
+   * tree.
    */
   ownerDeclarationId?: string;
 }

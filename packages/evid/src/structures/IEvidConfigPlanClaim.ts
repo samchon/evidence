@@ -23,8 +23,9 @@ export interface IEvidConfigPlanClaim {
   /**
    * Validated claim retaining authored paths and optional settings.
    *
-   * Effective severity and selector defaults are stored separately. Keeping this
-   * declaration intact avoids replacing user intent with normalized defaults.
+   * Effective severity and selector defaults are stored separately. Keeping
+   * this declaration intact avoids replacing user intent with normalized
+   * defaults.
    */
   population: IEvidClaim;
 
@@ -47,8 +48,9 @@ export interface IEvidConfigPlanClaim {
   /**
    * Enabled references that independently require evidence from this claim.
    *
-   * Each retains its authored index and effective settings. Identical selections
-   * remain separate obligations and may apply different exclusion or review rules.
+   * Each retains its authored index and effective settings. Identical
+   * selections remain separate obligations and may apply different exclusion or
+   * review rules.
    */
   references: IEvidConfigPlanReference[];
 }

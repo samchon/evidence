@@ -1,13 +1,15 @@
 ﻿import type { IEvidSourceRange } from "../../structures/IEvidSourceRange";
 import type { EvidDatabaseSymbol } from "../../typings/EvidDatabaseSymbol";
 
-/** One declaration extracted from the DBML syntax tree.
+/**
+ * One declaration extracted from the DBML syntax tree.
  *
  * The scanner copies only stable declaration facts so later cross-file alias
  * resolution can materialize units after the parser session is closed.
  */
 export interface IEvidDbmlDeclaration {
-  /** File-independent schema identity.
+  /**
+   * File-independent schema identity.
    *
    * This names semantic ownership and is deliberately distinct from a source
    * range, which can appear in more than one selected file.
@@ -21,7 +23,8 @@ export interface IEvidDbmlDeclaration {
    */
   symbol: EvidDatabaseSymbol;
 
-  /** Whitespace-independent syntax tokens excluding documentation.
+  /**
+   * Whitespace-independent syntax tokens excluding documentation.
    *
    * The adapter fingerprints this value so annotation edits do not invalidate
    * the schema declaration they describe.
@@ -31,11 +34,13 @@ export interface IEvidDbmlDeclaration {
   /**
    * Stores the exact original declaration span used for its physical site.
    *
-   * This range anchors documentation and diagnostics in the selected source file.
+   * This range anchors documentation and diagnostics in the selected source
+   * file.
    */
   range: IEvidSourceRange;
 
-  /** Explicit table alias, when declared.
+  /**
+   * Explicit table alias, when declared.
    *
    * Omission means endpoint resolution uses the declaration's table identity.
    */

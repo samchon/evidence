@@ -10,7 +10,8 @@ export interface IEvidRustUse {
   /**
    * Stable ID for this use declaration.
    *
-   * Resolver diagnostics use it to report an unsupported or ambiguous export once.
+   * Resolver diagnostics use it to report an unsupported or ambiguous export
+   * once.
    */
   id: string;
 
@@ -31,7 +32,8 @@ export interface IEvidRustUse {
   /**
    * Source-site ID for attaching diagnostics to the declaration.
    *
-   * It is distinct from the use ID so a scanner site can be shared consistently.
+   * It is distinct from the use ID so a scanner site can be shared
+   * consistently.
    */
   siteId: string;
 }

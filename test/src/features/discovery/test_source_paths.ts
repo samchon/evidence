@@ -9,11 +9,12 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 /**
  * Keeps path identity case-sensitive and rejects ambiguous root spellings.
  *
- * Discovery uses portable, case-sensitive source identities even on a filesystem
- * that can otherwise accept alternate spellings.
+ * Discovery uses portable, case-sensitive source identities even on a
+ * filesystem that can otherwise accept alternate spellings.
  *
  * 1. Load a case-misspelled root and exact file beside the correctly cased file;
- *    require case-mismatch diagnostics for the former and completion for the latter.
+ *    require case-mismatch diagnostics for the former and completion for the
+ *    latter.
  * 2. Reject empty, padded, globbed, and drive-relative roots plus a drive-relative
  *    exact file before scanning can depend on the process working directory.
  * 3. Check containment for exact descendants and roots, trailing separators,

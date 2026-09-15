@@ -10,14 +10,17 @@ import { EvidSqliteFileScanner } from "./EvidSqliteFileScanner";
  */
 export class EvidSqliteAdapter extends EvidSqlAdapterBase {
   /**
-   * Selects SQLite grammar and declaration scanning for the shared adapter lifecycle.
+   * Selects SQLite grammar and declaration scanning for the shared adapter
+   * lifecycle.
    *
-   * Parser allocation and source analysis wait until analyze receives a snapshot.
+   * Parser allocation and source analysis wait until analyze receives a
+   * snapshot.
    */
   public constructor() {
     super({
       type: "sqlite",
-      scan: (session, source) => new EvidSqliteFileScanner(session, source).scan(),
+      scan: (session, source) =>
+        new EvidSqliteFileScanner(session, source).scan(),
     });
   }
 }

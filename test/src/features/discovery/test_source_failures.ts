@@ -8,7 +8,8 @@ import { EvidSourcePath } from "evid";
 import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
- * Distinguishes healthy empty selections from missing roots, files, and invalid UTF-8.
+ * Distinguishes healthy empty selections from missing roots, files, and invalid
+ * UTF-8.
  *
  * Source discovery must retain recoverable dependencies and valid neighboring
  * files when a selected population cannot be read completely.
@@ -17,7 +18,8 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
  *    require a complete empty result only for the absent pattern and the
  *    root-unreadable diagnostic for both roots.
  * 2. Verify that the missing root remains a recursive dependency, then load a
- *    missing exact file and a directory as a file to exercise exact-path failure.
+ *    missing exact file and a directory as a file to exercise exact-path
+ *    failure.
  * 3. Add malformed UTF-8 beside a valid Markdown file and require an incomplete
  *    snapshot with the encoding diagnostic while retaining the valid neighbor.
  * 4. Exclude the malformed file and require the selected population to become
@@ -62,7 +64,8 @@ export async function test_source_failures(): Promise<void> {
         "missing root remains watched",
         missingRoot.dependencies.some(
           (dependency) =>
-            dependency.path === EvidSourcePath.slash(join(directory, "missing")) &&
+            dependency.path ===
+              EvidSourcePath.slash(join(directory, "missing")) &&
             dependency.recursive,
         ),
       );

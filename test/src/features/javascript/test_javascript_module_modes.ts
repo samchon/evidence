@@ -12,9 +12,12 @@ import { EvidSourcePath } from "evid";
 import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Selects JavaScript module semantics from extensions and nearest package metadata.
+/**
+ * Selects JavaScript module semantics from extensions and nearest package
+ * metadata.
  *
- * Resolution must use the applicable file extension and package boundary rather than a global module assumption.
+ * Resolution must use the applicable file extension and package boundary rather
+ * than a global module assumption.
  *
  * 1. Create sources under contrasting package metadata.
  * 2. Analyze each extension.

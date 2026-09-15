@@ -4,7 +4,8 @@ import { TestValidator } from "@nestia/e2e";
 import { validateEvidConfig } from "evid";
 
 /**
- * Validates malformed population declarations before inactive entries are filtered.
+ * Validates malformed population declarations before inactive entries are
+ * filtered.
  *
  * Disabled and off settings control execution, not whether configuration shape
  * is valid. Ignoring malformed inactive declarations would let later activation

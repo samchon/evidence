@@ -1,13 +1,15 @@
-/** One closed HTML comment accepted as Markdown documentation.
+/**
+ * One closed HTML comment accepted as Markdown documentation.
  *
- * Offsets and lines let attachment rules distinguish adjacent documentation from
- * comments that belong to fenced content or another structural region.
+ * Offsets and lines let attachment rules distinguish adjacent documentation
+ * from comments that belong to fenced content or another structural region.
  */
 export interface IEvidMarkdownComment {
   /**
    * Marks the UTF-16 start offset of the complete HTML comment.
    *
-   * The scanner uses this offset to preserve the carrier's original source range.
+   * The scanner uses this offset to preserve the carrier's original source
+   * range.
    */
   start: number;
 

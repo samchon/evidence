@@ -5,9 +5,11 @@ import { join } from "node:path";
 
 import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
-/** Rebuilds Zig coverage after watched source and selector changes.
+/**
+ * Rebuilds Zig coverage after watched source and selector changes.
  *
- * New files, syntax failure, repair, and a changed selector must replace the current inventory.
+ * New files, syntax failure, repair, and a changed selector must replace the
+ * current inventory.
  *
  * 1. Compare each watch cycle to a fresh check.
  * 2. Add and break selected input, then require failure and incompleteness.

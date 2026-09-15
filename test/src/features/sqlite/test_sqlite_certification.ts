@@ -4,9 +4,12 @@ import { dedent } from "@typia/utils";
 import { EvidDatabaseAdapterCertification } from "../../internal/certification/EvidDatabaseAdapterCertification";
 import type { IEvidDatabaseAdapterCertification } from "../../internal/certification/IEvidDatabaseAdapterCertification";
 
-/** Applies shared database certification to independently specified SQLite behavior.
+/**
+ * Applies shared database certification to independently specified SQLite
+ * behavior.
  *
- * The fixture fixes SQLite inventory, missing-edge, ambiguity, and review fingerprint expectations.
+ * The fixture fixes SQLite inventory, missing-edge, ambiguity, and review
+ * fingerprint expectations.
  *
  * 1. Construct the SQLite certification fixture.
  * 2. Run the common database certification suite.

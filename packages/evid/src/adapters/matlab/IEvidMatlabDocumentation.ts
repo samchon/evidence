@@ -6,7 +6,8 @@ import type { IEvidMatlabDocumentationAttachment } from "./IEvidMatlabDocumentat
  * Represents a MATLAB documentation carrier or tag-bearing unsupported carrier.
  *
  * MATLAB help placement has language-specific attachment rules, so this record
- * preserves both accepted help and tagged text that needs an actionable failure.
+ * preserves both accepted help and tagged text that needs an actionable
+ * failure.
  */
 export interface IEvidMatlabDocumentation {
   /**
@@ -19,21 +20,25 @@ export interface IEvidMatlabDocumentation {
   /**
    * Locates the half-open UTF-16 source span occupied by the help text.
    *
-   * Inventory fingerprints exclude this range when reviewing documented declarations.
+   * Inventory fingerprints exclude this range when reviewing documented
+   * declarations.
    */
   range: IEvidSourceRange;
 
   /**
-   * Describes comment delimiters and annotation rules used to parse this carrier.
+   * Describes comment delimiters and annotation rules used to parse this
+   * carrier.
    *
-   * EvidMatlabDocumentation relies on the syntax to preserve source offsets while masking examples.
+   * EvidMatlabDocumentation relies on the syntax to preserve source offsets
+   * while masking examples.
    */
   syntax: IEvidCommentSyntax;
 
   /**
    * Lists physical declaration sites that directly own this help text.
    *
-   * Unsupported tagged carriers remain unattached so the adapter can report their placement.
+   * Unsupported tagged carriers remain unattached so the adapter can report
+   * their placement.
    */
   attachments: IEvidMatlabDocumentationAttachment[];
 }

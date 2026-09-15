@@ -1,19 +1,20 @@
-import {
-  EvidFingerprint,
-  EvidInventory,
-  EvidMysqlAdapter,
-} from "evid";
+import { EvidFingerprint, EvidInventory, EvidMysqlAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches MySQL COMMENT annotations to their owning schema units.
+/**
+ * Attaches MySQL COMMENT annotations to their owning schema units.
  *
- * Documentation strings can acknowledge a declaration, while SQL examples and strings remain inert; withdrawals and fingerprints retain their separate semantics.
+ * Documentation strings can acknowledge a declaration, while SQL examples and
+ * strings remain inert; withdrawals and fingerprints retain their separate
+ * semantics.
  *
- * 1. Analyze documented tables, columns, reviews, withdrawals, and inert comment-shaped text.
- * 2. Verify attachment, CRLF coordinates, target resolution, and withdrawal metadata.
+ * 1. Analyze documented tables, columns, reviews, withdrawals, and inert
+ *    comment-shaped text.
+ * 2. Verify attachment, CRLF coordinates, target resolution, and withdrawal
+ *    metadata.
  * 3. Compare review fingerprints after annotation and semantic edits.
  * 4. Require ambiguous schema input to remain incomplete.
  */
@@ -115,7 +116,10 @@ export async function test_mysql_hosts(): Promise<void> {
   const ambiguous = await adapter.analyze(
     EvidTestSourceSnapshot.combine([
       EvidTestSourceSnapshot.create("one.sql", "CREATE TABLE Same (id INT);"),
-      EvidTestSourceSnapshot.create("two.sql", "CREATE TABLE Same (other INT);"),
+      EvidTestSourceSnapshot.create(
+        "two.sql",
+        "CREATE TABLE Same (other INT);",
+      ),
     ]),
   );
   TestValidator.equals(

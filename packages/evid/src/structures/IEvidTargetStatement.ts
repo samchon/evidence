@@ -3,8 +3,8 @@ import type { IEvidSourceLocation } from "./IEvidSourceLocation";
 /**
  * Source attachment and target text shared by acknowledgements and reviews.
  *
- * Parsing establishes where a statement was written while leaving its target
- * in authored form. Artifact-specific resolution later interprets the token from
+ * Parsing establishes where a statement was written while leaving its target in
+ * authored form. Artifact-specific resolution later interprets the token from
  * the host's source context. Sharing these fields does not let a review satisfy
  * coverage: the derived record still determines the statement's role.
  */
@@ -20,16 +20,18 @@ export interface IEvidTargetStatement {
   /**
    * Target token preserved as written in the annotation.
    *
-   * The referenced artifact determines its grammar and lookup rules. Keeping the
-   * authored spelling allows diagnostics to explain aliases and invalid targets.
+   * The referenced artifact determines its grammar and lookup rules. Keeping
+   * the authored spelling allows diagnostics to explain aliases and invalid
+   * targets.
    */
   target: string;
 
   /**
    * Original source position of the complete statement.
    *
-   * Decoded documentation maps this location back to captured source characters,
-   * allowing a finding to identify the annotation rather than only its host.
+   * Decoded documentation maps this location back to captured source
+   * characters, allowing a finding to identify the annotation rather than only
+   * its host.
    */
   location: IEvidSourceLocation;
 }

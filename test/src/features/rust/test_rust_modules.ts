@@ -4,7 +4,8 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Resolves Rust inline and file modules through public visibility.
+/**
+ * Resolves Rust inline and file modules through public visibility.
  *
  * Public reexports and module files determine the addressable module graph.
  *
@@ -98,8 +99,7 @@ export async function test_rust_modules(): Promise<void> {
     inventory.addresses
       .filter((address) => address.unitId === sale.id)
       .map(
-        (address) =>
-          `${address.file}#${EvidAccessor.format(address.segments)}`,
+        (address) => `${address.file}#${EvidAccessor.format(address.segments)}`,
       )
       .sort(compare),
     [
@@ -119,8 +119,7 @@ export async function test_rust_modules(): Promise<void> {
     inventory.addresses
       .filter((address) => address.unitId === secret.id)
       .map(
-        (address) =>
-          `${address.file}#${EvidAccessor.format(address.segments)}`,
+        (address) => `${address.file}#${EvidAccessor.format(address.segments)}`,
       )
       .sort(compare),
     ["/project/src/hidden.rs#Secret", "/project/src/lib.rs#PublicSecret"],
@@ -136,8 +135,7 @@ export async function test_rust_modules(): Promise<void> {
     inventory.addresses
       .filter((address) => address.unitId === detail.id)
       .map(
-        (address) =>
-          `${address.file}#${EvidAccessor.format(address.segments)}`,
+        (address) => `${address.file}#${EvidAccessor.format(address.segments)}`,
       )
       .sort(compare),
     [

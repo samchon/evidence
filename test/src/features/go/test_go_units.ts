@@ -1,14 +1,13 @@
-import {
-  EvidGoAdapter,
-  EvidLanguageRegistry,
-} from "evid";
+import { EvidGoAdapter, EvidLanguageRegistry } from "evid";
 import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Classifies exported Go declarations, embedded fields, interfaces, and receivers.
+/**
+ * Classifies exported Go declarations, embedded fields, interfaces, and
+ * receivers.
  *
  * The denominator includes each externally visible form with its lexical owner.
  *
@@ -159,10 +158,7 @@ export async function test_go_units(): Promise<void> {
   );
 }
 
-function requireUnit(
-  inventory: IEvidInventory,
-  name: string,
-): IEvidUnit {
+function requireUnit(inventory: IEvidInventory, name: string): IEvidUnit {
   const unit = inventory.units.find((candidate) => candidate.name === name);
   if (unit === undefined) throw new Error(`Missing Go unit: ${name}`);
   return unit;

@@ -23,11 +23,12 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 2. Put Pricing evidence on an interface and its review on the merged namespace;
  *    require no review finding for that shared semantic identity.
  * 3. Add three independent invalid review scenarios and verify that:
+ *
  *    - A positive review of a Tax exclusion produces one wrong-kind finding.
  *    - A Pricing review on an unrelated host produces one orphan finding.
  *    - Two reviews on one acknowledgement produce one duplicate finding.
- * 4. Require no derivative missing-review finding for the wrong-kind pair, so
- *    the diagnostic identifies the actual repair rather than reporting it twice.
+ * 4. Require no derivative missing-review finding for the wrong-kind pair, so the
+ *    diagnostic identifies the actual repair rather than reporting it twice.
  */
 export async function test_graph_review_pairing(): Promise<void> {
   const requirements = await new EvidMarkdownAdapter().analyze(
@@ -156,10 +157,7 @@ export async function test_graph_review_pairing(): Promise<void> {
  * The helper accepts either fixture spelling and throws if extraction loses the
  * declaration, preventing a missing fixture from weakening the graph setup.
  */
-function requireUnit(
-  inventory: IEvidInventory,
-  identity: string,
-): IEvidUnit {
+function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === identity || candidate.identity.at(-1) === identity,
@@ -171,8 +169,8 @@ function requireUnit(
 /**
  * Counts graph findings for one expected review failure code.
  *
- * Exact counts distinguish one actionable diagnosis from duplicated or derivative
- * findings, which a presence-only assertion would not detect.
+ * Exact counts distinguish one actionable diagnosis from duplicated or
+ * derivative findings, which a presence-only assertion would not detect.
  */
 function count(
   result: ReturnType<typeof EvidGraph.evaluate>,

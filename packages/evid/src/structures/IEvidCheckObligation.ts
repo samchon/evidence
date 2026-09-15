@@ -6,7 +6,8 @@ import type { EvidArtifactType } from "../typings/EvidArtifactType";
  *
  * This projects a graph obligation into counts for command output. It retains
  * activation and completeness because a zero-sized result is not proof that
- * extraction succeeded, and severity determines whether findings fail the check.
+ * extraction succeeded, and severity determines whether findings fail the
+ * check.
  */
 export interface IEvidCheckObligation {
   /**
@@ -48,7 +49,8 @@ export interface IEvidCheckObligation {
   /**
    * Whether analysis could establish the obligation's full population.
    *
-   * An incomplete active obligation causes exit code two regardless of its counts.
+   * An incomplete active obligation causes exit code two regardless of its
+   * counts.
    */
   complete: boolean;
 
@@ -70,7 +72,8 @@ export interface IEvidCheckObligation {
   /**
    * Number of selected units still lacking required evidence.
    *
-   * Read this together with completeness before treating the result as exhaustive.
+   * Read this together with completeness before treating the result as
+   * exhaustive.
    */
   missingUnits: number;
 }

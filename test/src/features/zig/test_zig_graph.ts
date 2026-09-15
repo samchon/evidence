@@ -1,17 +1,15 @@
-import {
-  EvidGraph,
-  EvidZigAdapter,
-  EvidTypeScriptAdapter,
-} from "evid";
+import { EvidGraph, EvidZigAdapter, EvidTypeScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Evaluates Zig selectors as required cross-language references.
+/**
+ * Evaluates Zig selectors as required cross-language references.
  *
- * Selected units require evidence, and reviews remain recorded without supplying missing coverage.
+ * Selected units require evidence, and reviews remain recorded without
+ * supplying missing coverage.
  *
  * 1. Extract each Zig selector with matching claims.
  * 2. Evaluate acknowledged and undocumented populations.

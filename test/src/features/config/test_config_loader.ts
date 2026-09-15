@@ -10,11 +10,13 @@ import { evaluateTypeScriptConfig } from "evid";
 import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
- * Loads TypeScript configuration dependencies in isolation and preserves failures.
+ * Loads TypeScript configuration dependencies in isolation and preserves
+ * failures.
  *
- * Configuration evaluation must follow imported modules without checking unrelated
- * workspace files or leaking configuration logs into report stdout. Validation
- * still applies to artifact contracts before inactive populations are filtered.
+ * Configuration evaluation must follow imported modules without checking
+ * unrelated workspace files or leaking configuration logs into report stdout.
+ * Validation still applies to artifact contracts before inactive populations
+ * are filtered.
  *
  * 1. Use a path containing spaces and literal punctuation; load equivalent ts,
  *    cts, and mts configurations that import helper globs while an unrelated
@@ -26,7 +28,8 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
  * 4. Configure an unsupported artifact and require its exact claims[0].type path
  *    and adapter-certification cause in the loading error.
  * 5. Plan a disabled claim with missing source and reference paths; require the
- *    correct configuration anchor and no active claims without touching those inputs.
+ *    correct configuration anchor and no active claims without touching those
+ *    inputs.
  * 6. Require runtime exceptions and type errors in an imported helper to reject
  *    loading rather than return partial configuration data.
  */
@@ -68,9 +71,7 @@ export async function test_config_loader(): Promise<void> {
         const filename = `evidence.config.${extension}`;
         await EvidTestFileSystem.save(directory, { [filename]: source });
 
-        const output = await EvidConfigLoader.load(
-          join(directory, filename),
-        );
+        const output = await EvidConfigLoader.load(join(directory, filename));
 
         TestValidator.equals(
           `${extension} imported globs`,
@@ -205,8 +206,8 @@ export async function test_config_loader(): Promise<void> {
 /**
  * Captures a loading error for assertions about its configuration coordinates.
  *
- * Unexpected success fails the scenario, and non-Error rejections are propagated
- * so they cannot be mistaken for the diagnostic message under test.
+ * Unexpected success fails the scenario, and non-Error rejections are
+ * propagated so they cannot be mistaken for the diagnostic message under test.
  */
 async function failure(closure: () => Promise<unknown>): Promise<string> {
   try {

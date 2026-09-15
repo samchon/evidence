@@ -4,16 +4,16 @@ import type { IEvidSourceRange } from "../../structures/IEvidSourceRange";
 /**
  * Records one static Dart library-topology directive.
  *
- * EvidDartFileScanner retains this source-level relationship for EvidDartLibraries,
- * which resolves selected files, validates part ownership, and projects exports
- * into the public inventory without evaluating Dart.
+ * EvidDartFileScanner retains this source-level relationship for
+ * EvidDartLibraries, which resolves selected files, validates part ownership,
+ * and projects exports into the public inventory without evaluating Dart.
  */
 export interface IEvidDartDirective {
   /**
    * Identifies the library relationship expressed by this directive.
    *
-   * EvidDartLibraries uses `part` and `part-of` to establish a shared library and
-   * applies export projection only for `export`.
+   * EvidDartLibraries uses `part` and `part-of` to establish a shared library
+   * and applies export projection only for `export`.
    */
   kind: "part" | "part-of" | "export";
 
@@ -21,7 +21,8 @@ export interface IEvidDartDirective {
    * Names the decoded URI target or named `part of` library.
    *
    * Its interpretation depends on {@link named}: URI targets are resolved
-   * against selected source locations, while named libraries match declarations.
+   * against selected source locations, while named libraries match
+   * declarations.
    */
   target: string;
 
@@ -44,8 +45,8 @@ export interface IEvidDartDirective {
   /**
    * Retains export combinators in their source order.
    *
-   * EvidDartLibraries applies each filter to a candidate exported declaration, so a
-   * `show` intersects the population and a `hide` subtracts from it.
+   * EvidDartLibraries applies each filter to a candidate exported declaration,
+   * so a `show` intersects the population and a `hide` subtracts from it.
    */
   filters: IEvidDartExportFilter[];
 

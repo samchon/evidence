@@ -3,8 +3,9 @@
  *
  * Checklist mode requires each semantic claim host to answer the selected
  * reference items. Keeping these ledgers separate prevents one host's answer
- * from hiding another host's omissions. Explained IDs suppress redundant missing
- * messages when a more direct aggregate diagnostic already describes the failure.
+ * from hiding another host's omissions. Explained IDs suppress redundant
+ * missing messages when a more direct aggregate diagnostic already describes
+ * the failure.
  */
 export interface IEvidGraphHostCoverage {
   /**
@@ -18,7 +19,8 @@ export interface IEvidGraphHostCoverage {
   /**
    * Selected reference identities answered by this host.
    *
-   * An answer contributes here only under this obligation's acknowledgement policy.
+   * An answer contributes here only under this obligation's acknowledgement
+   * policy.
    */
   coveredUnitIds: string[];
 

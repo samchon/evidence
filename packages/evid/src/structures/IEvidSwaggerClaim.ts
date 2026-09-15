@@ -4,9 +4,9 @@ import type { IEvidClaimBase } from "./IEvidClaimBase";
  * Swagger/OpenAPI operations that cite evidence from their descriptions.
  *
  * Each HTTP method and path identifies one semantic operation host. Description
- * text provides its annotation carrier, but host participation does not depend on
- * already having written documentation; otherwise undocumented operations could
- * disappear from policies that require every selected host to answer.
+ * text provides its annotation carrier, but host participation does not depend
+ * on already having written documentation; otherwise undocumented operations
+ * could disappear from policies that require every selected host to answer.
  *
  * - File globs select local JSON/YAML documents. Each operation is a host
  *   addressed as METHOD:/path.

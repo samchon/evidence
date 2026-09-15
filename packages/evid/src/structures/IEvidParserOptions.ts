@@ -5,7 +5,8 @@ import type { tags } from "typia";
  *
  * A slot remains occupied throughout grammar acquisition, parsing, and the
  * asynchronous extraction callback. Bounding callbacks therefore also bounds
- * live parser/tree ownership, rather than only the synchronous parse operation.
+ * live parser/tree ownership, rather than only the synchronous parse
+ * operation.
  */
 export interface IEvidParserOptions {
   /**

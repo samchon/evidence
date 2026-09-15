@@ -1,13 +1,16 @@
 /**
- * Defines source-spelled MySQL names without consulting server or filesystem settings.
+ * Defines source-spelled MySQL names without consulting server or filesystem
+ * settings.
  *
- * The adapter preserves this deterministic identity across hosts with different server policy.
+ * The adapter preserves this deterministic identity across hosts with different
+ * server policy.
  */
 export namespace EvidMysqlIdentifier {
   /**
    * Unquotes backticks and rejects other dialect delimiters or ANSI quotes.
    *
-   * Their interpretation can depend on server configuration outside a source snapshot.
+   * Their interpretation can depend on server configuration outside a source
+   * snapshot.
    */
   export function read(raw: string): string | undefined {
     if (raw.includes("\0") || /[\uD800-\uDFFF]/.test(raw)) return undefined;

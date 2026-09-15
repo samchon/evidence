@@ -22,7 +22,8 @@ import { EvidPhpDocumentation } from "./EvidPhpDocumentation";
 import { EvidPhpFileScanner } from "./EvidPhpFileScanner";
 
 /**
- * Extracts PHP public identities and documentation with file-context fingerprints.
+ * Extracts PHP public identities and documentation with file-context
+ * fingerprints.
  *
  * Declaration groups and public addresses are materialized before annotations.
  * Local imports and directives can change declaration meaning without changing
@@ -33,20 +34,20 @@ export class EvidPhpAdapterBase implements IEvidAdapter {
   /**
    * Artifact family selecting PHP parsing and source-public extraction.
    *
-   * The value connects population configuration to this adapter's visibility and
-   * documentation attachment rules.
+   * The value connects population configuration to this adapter's visibility
+   * and documentation attachment rules.
    */
   public readonly type = "php";
 
   /**
-   * Builds a serializable PHP inventory while retaining source and parser failures.
+   * Builds a serializable PHP inventory while retaining source and parser
+   * failures.
    *
    * Input is validated and cloned before scanning. Only a complete normalized
-   * inventory receives context-sensitive digests, and parser resources close in cleanup.
+   * inventory receives context-sensitive digests, and parser resources close in
+   * cleanup.
    */
-  public async analyze(
-    snapshot: IEvidSourceSnapshot,
-  ): Promise<IEvidInventory> {
+  public async analyze(snapshot: IEvidSourceSnapshot): Promise<IEvidInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidInventory = {
       schemaVersion: 1,
@@ -92,9 +93,10 @@ export class EvidPhpAdapterBase implements IEvidAdapter {
   /**
    * Incorporates local imports and directives into declaration review content.
    *
-   * Context is combined with the existing content digest without widening physical
-   * declaration ranges. All new digests are computed before assignment so iteration
-   * order cannot make later calculations observe partially updated units.
+   * Context is combined with the existing content digest without widening
+   * physical declaration ranges. All new digests are computed before assignment
+   * so iteration order cannot make later calculations observe partially updated
+   * units.
    */
   private contextDigests(
     inventory: IEvidInventory,
@@ -132,7 +134,8 @@ export class EvidPhpAdapterBase implements IEvidAdapter {
    * Extracts one PHP file and translates acquisition or syntax failures.
    *
    * A failed scan preserves the source and located cause with incomplete state,
-   * allowing the enclosing inventory to explain why coverage cannot be certified.
+   * allowing the enclosing inventory to explain why coverage cannot be
+   * certified.
    */
   private async scan(
     parser: EvidParser,
@@ -145,8 +148,7 @@ export class EvidPhpAdapterBase implements IEvidAdapter {
         (session) => new EvidPhpFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError =
-        cause instanceof EvidParserError ? cause : undefined;
+      const parserError = cause instanceof EvidParserError ? cause : undefined;
       return {
         source,
         declarations: [],
@@ -177,7 +179,8 @@ export class EvidPhpAdapterBase implements IEvidAdapter {
   /**
    * Materializes public PHP identities and reports conflicting declarations.
    *
-   * It retains compatible physical sites under one unit while emitting each configured file address.
+   * It retains compatible physical sites under one unit while emitting each
+   * configured file address.
    */
   private materializeUnits(
     inventory: IEvidInventory,
@@ -252,7 +255,8 @@ export class EvidPhpAdapterBase implements IEvidAdapter {
   /**
    * Attaches PHPDoc after unit materialization and reconciles withdrawals.
    *
-   * Unsupported tagged carriers still receive diagnostic hosts so their directives remain visible.
+   * Unsupported tagged carriers still receive diagnostic hosts so their
+   * directives remain visible.
    */
   private materializeDocumentation(
     inventory: IEvidInventory,
@@ -332,7 +336,8 @@ export class EvidPhpAdapterBase implements IEvidAdapter {
   /**
    * Creates hosts for public declarations without attached documentation.
    *
-   * This preserves their claim obligations after withdrawn and documented units are excluded.
+   * This preserves their claim obligations after withdrawn and documented units
+   * are excluded.
    */
   private materializeUndocumentedHosts(
     inventory: IEvidInventory,
@@ -389,7 +394,8 @@ export class EvidPhpAdapterBase implements IEvidAdapter {
   /**
    * Groups a PHPDoc carrier's published declarations by physical source site.
    *
-   * One carrier can attach to multiple units, but each site requires its own host boundary.
+   * One carrier can attach to multiple units, but each site requires its own
+   * host boundary.
    */
   private attachmentGroups(
     documentation: IEvidPhpDocumentation,
@@ -409,7 +415,8 @@ export class EvidPhpAdapterBase implements IEvidAdapter {
   /**
    * Creates a host for attached documentation or an unsupported tagged carrier.
    *
-   * The host retains the original source range and eligible unit IDs for tag parsing.
+   * The host retains the original source range and eligible unit IDs for tag
+   * parsing.
    */
   private host(
     source: IEvidSourceFile,
@@ -438,7 +445,8 @@ export class EvidPhpAdapterBase implements IEvidAdapter {
   /**
    * Parses evidence tags after the adapter has established their owning host.
    *
-   * This prevents source-adjacent text from acquiring units through later lexical coincidence.
+   * This prevents source-adjacent text from acquiring units through later
+   * lexical coincidence.
    */
   private parse(
     source: IEvidSourceFile,
@@ -455,15 +463,19 @@ export class EvidPhpAdapterBase implements IEvidAdapter {
   /**
    * Detects supported annotations on a PHPDoc carrier before it has a host.
    *
-   * The result decides whether unsupported placement requires an actionable diagnostic host.
+   * The result decides whether unsupported placement requires an actionable
+   * diagnostic host.
    */
   private annotation(
     analysis: IEvidPhpFileAnalysis,
     documentation: IEvidPhpDocumentation,
   ): boolean {
     return this.annotationPattern(
-      EvidPhpDocumentation.read(analysis.source, documentation, documentation.id)
-        .text,
+      EvidPhpDocumentation.read(
+        analysis.source,
+        documentation,
+        documentation.id,
+      ).text,
       true,
     );
   }
@@ -471,15 +483,19 @@ export class EvidPhpAdapterBase implements IEvidAdapter {
   /**
    * Distinguishes claim annotations from withdrawal-only documentation.
    *
-   * Withdrawn units suppress ordinary hosts unless the carrier still contains an independent claim.
+   * Withdrawn units suppress ordinary hosts unless the carrier still contains
+   * an independent claim.
    */
   private claimAnnotation(
     analysis: IEvidPhpFileAnalysis,
     documentation: IEvidPhpDocumentation,
   ): boolean {
     return this.annotationPattern(
-      EvidPhpDocumentation.read(analysis.source, documentation, documentation.id)
-        .text,
+      EvidPhpDocumentation.read(
+        analysis.source,
+        documentation,
+        documentation.id,
+      ).text,
       false,
     );
   }
@@ -487,7 +503,8 @@ export class EvidPhpAdapterBase implements IEvidAdapter {
   /**
    * Recognizes supported tag names at normalized documentation line boundaries.
    *
-   * Parsing uses PHPDoc masking first so examples cannot accidentally create declarations.
+   * Parsing uses PHPDoc masking first so examples cannot accidentally create
+   * declarations.
    */
   private annotationPattern(raw: string, withdrawal: boolean): boolean {
     return withdrawal
@@ -500,9 +517,11 @@ export class EvidPhpAdapterBase implements IEvidAdapter {
   }
 
   /**
-   * Determines whether a unit is withdrawn directly or through its lexical parent.
+   * Determines whether a unit is withdrawn directly or through its lexical
+   * parent.
    *
-   * The visited set prevents malformed ownership cycles from making withdrawal traversal recurse indefinitely.
+   * The visited set prevents malformed ownership cycles from making withdrawal
+   * traversal recurse indefinitely.
    */
   private withdrawn(
     id: string,
@@ -520,9 +539,11 @@ export class EvidPhpAdapterBase implements IEvidAdapter {
   }
 
   /**
-   * Builds the unit ID using PHP's case-insensitive identity rules where applicable.
+   * Builds the unit ID using PHP's case-insensitive identity rules where
+   * applicable.
    *
-   * Public accessor spelling remains separate so case-sensitive properties retain their address.
+   * Public accessor spelling remains separate so case-sensitive properties
+   * retain their address.
    */
   private unitId(declaration: IEvidPhpDeclaration): string {
     const identity = declaration.identity.map((segment, index) =>
@@ -537,7 +558,8 @@ export class EvidPhpAdapterBase implements IEvidAdapter {
   /**
    * Records a declaration conflict and marks the inventory incomplete.
    *
-   * This prevents duplicate public identities from reducing the population to a passing subset.
+   * This prevents duplicate public identities from reducing the population to a
+   * passing subset.
    */
   private problem(
     inventory: IEvidInventory,

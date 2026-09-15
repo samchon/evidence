@@ -9,30 +9,37 @@ import type { IEvidScalaExport } from "./IEvidScalaExport";
 import type { IEvidScalaFileAnalysis } from "./IEvidScalaFileAnalysis";
 
 /**
- * Extracts explicit Scala 2/3 declarations while retaining unsupported surface boundaries.
+ * Extracts explicit Scala 2/3 declarations while retaining unsupported surface
+ * boundaries.
  *
- * The scanner records lexical declarations and explicit exports separately so
- * a later snapshot-wide pass can resolve singleton forwarding without inventing aliases.
+ * The scanner records lexical declarations and explicit exports separately so a
+ * later snapshot-wide pass can resolve singleton forwarding without inventing
+ * aliases.
  */
 export class EvidScalaFileScanner {
   /**
    * Collects declaration records that remain valid after parsing closes.
    *
-   * Each record retains source ranges and lexical ownership without holding a Tree-sitter node.
+   * Each record retains source ranges and lexical ownership without holding a
+   * Tree-sitter node.
    */
   private readonly declarations: IEvidScalaDeclaration[] = [];
 
   /**
-   * Indexes Scaladoc and unsupported tag carriers by their original source offset.
+   * Indexes Scaladoc and unsupported tag carriers by their original source
+   * offset.
    *
-   * The offset permits adjacent declaration attachment without reparsing the carrier text.
+   * The offset permits adjacent declaration attachment without reparsing the
+   * carrier text.
    */
   private readonly documentation = new Map<number, IEvidScalaDocumentation>();
 
   /**
-   * Collects explicit exports for resolution after every selected file is scanned.
+   * Collects explicit exports for resolution after every selected file is
+   * scanned.
    *
-   * Deferring resolution lets a forwarding file find declarations from other selected sources.
+   * Deferring resolution lets a forwarding file find declarations from other
+   * selected sources.
    */
   private readonly exports: IEvidScalaExport[] = [];
 
@@ -57,8 +64,9 @@ export class EvidScalaFileScanner {
   /**
    * Produces a serializable inventory fragment.
    *
-   * Documentation is collected first, then scopes are traversed without entering
-   * executable bodies, preserving source attachment and public-boundary semantics.
+   * Documentation is collected first, then scopes are traversed without
+   * entering executable bodies, preserving source attachment and
+   * public-boundary semantics.
    */
   public scan(): IEvidScalaFileAnalysis {
     this.collectDocumentation();
@@ -74,9 +82,11 @@ export class EvidScalaFileScanner {
   }
 
   /**
-   * Walks declaration scopes without descending into executable bodies or local definitions.
+   * Walks declaration scopes without descending into executable bodies or local
+   * definitions.
    *
-   * Package clauses extend the current namespace, while nested declaration bodies establish lexical owners.
+   * Package clauses extend the current namespace, while nested declaration
+   * bodies establish lexical owners.
    */
   private scope(
     nodes: EvidNode[],
@@ -101,7 +111,8 @@ export class EvidScalaFileScanner {
   /**
    * Selects supported source declarations and their explicit lexical children.
    *
-   * Unsupported public declaration forms are reported as incomplete instead of being guessed from syntax.
+   * Unsupported public declaration forms are reported as incomplete instead of
+   * being guessed from syntax.
    */
   private visit(
     node: EvidNode,
@@ -301,7 +312,8 @@ export class EvidScalaFileScanner {
   /**
    * Retains only statically bound value names from a Scala binding pattern.
    *
-   * Identifiers, tuple patterns, and multi-name patterns expand into declarations; visible extractor or typed patterns report a boundary.
+   * Identifiers, tuple patterns, and multi-name patterns expand into
+   * declarations; visible extractor or typed patterns report a boundary.
    */
   private bindings(
     pattern: EvidNode,
@@ -325,9 +337,11 @@ export class EvidScalaFileScanner {
   }
 
   /**
-   * Creates one lexical declaration without synthesizing runtime or compiler members.
+   * Creates one lexical declaration without synthesizing runtime or compiler
+   * members.
    *
-   * The record captures visibility, address, lookup path, source site, and unsupported semantic boundaries for later publication.
+   * The record captures visibility, address, lookup path, source site, and
+   * unsupported semantic boundaries for later publication.
    */
   private declare(
     node: EvidNode,
@@ -414,11 +428,16 @@ export class EvidScalaFileScanner {
   }
 
   /**
-   * Determines whether a declaration is publicly visible through its lexical chain.
+   * Determines whether a declaration is publicly visible through its lexical
+   * chain.
    *
-   * Any private or protected modifier, or a restricted owner, excludes the declaration from the public population.
+   * Any private or protected modifier, or a restricted owner, excludes the
+   * declaration from the public population.
    */
-  private visible(node: EvidNode, owner: IEvidScalaDeclaration | undefined): boolean {
+  private visible(
+    node: EvidNode,
+    owner: IEvidScalaDeclaration | undefined,
+  ): boolean {
     const modifiers = node.namedChildren.find(
       (child) => child.type === "modifiers",
     );
@@ -432,7 +451,8 @@ export class EvidScalaFileScanner {
   /**
    * Records supported named exports from selected singleton objects.
    *
-   * Imports, wildcard selectors, givens, unqualified paths, and dynamic selectors report incomplete resolution rather than creating aliases.
+   * Imports, wildcard selectors, givens, unqualified paths, and dynamic
+   * selectors report incomplete resolution rather than creating aliases.
    */
   private export(
     node: EvidNode,
@@ -522,16 +542,19 @@ export class EvidScalaFileScanner {
   /**
    * Decodes a backticked Scala name into its literal accessor segment.
    *
-   * Unquoted names retain their source text, while only the surrounding backticks are removed.
+   * Unquoted names retain their source text, while only the surrounding
+   * backticks are removed.
    */
   private name(node: EvidNode): string {
     return node.text.startsWith("`") ? node.text.slice(1, -1) : node.text;
   }
 
   /**
-   * Attaches a Scaladoc carrier only when it immediately precedes a declaration through whitespace.
+   * Attaches a Scaladoc carrier only when it immediately precedes a declaration
+   * through whitespace.
    *
-   * Other comments, intervening syntax, and non-Scaladoc blocks remain unattached for unsupported-host handling.
+   * Other comments, intervening syntax, and non-Scaladoc blocks remain
+   * unattached for unsupported-host handling.
    */
   private attach(node: EvidNode, declaration: IEvidScalaDeclaration): void {
     const previous = node.previousNamedSibling;
@@ -553,9 +576,11 @@ export class EvidScalaFileScanner {
   }
 
   /**
-   * Classifies comments and tag-bearing literal strings without treating them as declarations.
+   * Classifies comments and tag-bearing literal strings without treating them
+   * as declarations.
    *
-   * Scaladoc may attach to a declaration; other tag-shaped carriers remain available for diagnostics.
+   * Scaladoc may attach to a declaration; other tag-shaped carriers remain
+   * available for diagnostics.
    */
   private collectDocumentation(): void {
     for (const node of this.session.root.descendantsOfType([
@@ -603,9 +628,11 @@ export class EvidScalaFileScanner {
   }
 
   /**
-   * Reports an actionable incomplete-analysis boundary at the original syntax range.
+   * Reports an actionable incomplete-analysis boundary at the original syntax
+   * range.
    *
-   * The repair directs authors toward supported explicit declarations before graph evaluation can use the inventory.
+   * The repair directs authors toward supported explicit declarations before
+   * graph evaluation can use the inventory.
    */
   private problem(code: string, message: string, node: EvidNode): void {
     this.diagnostics.push({

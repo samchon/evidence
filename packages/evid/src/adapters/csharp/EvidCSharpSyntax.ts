@@ -4,10 +4,12 @@ import type { IEvidCommentSyntax } from "../../structures/IEvidCommentSyntax";
 import type { EvidCSharpAccessibility } from "./EvidCSharpAccessibility";
 
 /**
- * Provides C# grammar helpers for names, modifiers, documentation, and special members.
+ * Provides C# grammar helpers for names, modifiers, documentation, and special
+ * members.
  *
- * EvidCSharpFileScanner uses these helpers to classify source constructs and preserve
- * C# accessibility and member spelling before it builds declaration records.
+ * EvidCSharpFileScanner uses these helpers to classify source constructs and
+ * preserve C# accessibility and member spelling before it builds declaration
+ * records.
  */
 export namespace EvidCSharpSyntax {
   export function name(node: EvidNode | null): string | undefined {

@@ -10,33 +10,38 @@ import type { IEvidSqlDocumentation } from "../sql/IEvidSqlDocumentation";
 import type { IEvidSqlFileAnalysis } from "../sql/IEvidSqlFileAnalysis";
 import { EvidSqliteSyntax } from "./EvidSqliteSyntax";
 
-/** Extracts a static SQLite schema from declarative grammar nodes.
+/**
+ * Extracts a static SQLite schema from declarative grammar nodes.
  *
  * The scanner does not execute migrations or queries. It records only syntax
  * that establishes a stable schema and reports other constructs so they cannot
  * make a partial inventory appear complete.
  */
 export class EvidSqliteFileScanner {
-  /** Collects declarations established by recognized SQLite grammar positions.
+  /**
+   * Collects declarations established by recognized SQLite grammar positions.
    *
    * The array remains private until `scan` returns its node-free analysis.
    */
   private readonly declarations: IEvidSqlDeclaration[] = [];
 
-  /** Collects findings that prevent a smaller schema from appearing complete.
+  /**
+   * Collects findings that prevent a smaller schema from appearing complete.
    *
    * Each diagnostic identifies syntax requiring runtime interpretation or a
    * scanner capability that SQLite extraction does not support.
    */
   private readonly diagnostics: IEvidDiagnostic[] = [];
 
-  /** Maps SQLite node offsets into original UTF-16 source coordinates.
+  /**
+   * Maps SQLite node offsets into original UTF-16 source coordinates.
    *
    * Documentation and declaration sites share this coordinate authority.
    */
   private readonly text: EvidSourceText;
 
-  /** Initializes one scanner over a borrowed session and immutable source.
+  /**
+   * Initializes one scanner over a borrowed session and immutable source.
    *
    * The session supplies grammar nodes only during the scan; the returned
    * analysis contains no node references after this object finishes.
@@ -48,7 +53,8 @@ export class EvidSqliteFileScanner {
     this.text = new EvidSourceText(source.content);
   }
 
-  /** Returns declarations, documentation carriers, and truthful completeness.
+  /**
+   * Returns declarations, documentation carriers, and truthful completeness.
    *
    * Every unsupported statement records a diagnostic before the result reports
    * completion, preventing a reduced schema from passing coverage checks.
@@ -82,7 +88,8 @@ export class EvidSqliteFileScanner {
     };
   }
 
-  /** Creates one model and its explicitly declared columns and relations.
+  /**
+   * Creates one model and its explicitly declared columns and relations.
    *
    * The method rejects query-derived tables and ambiguous names because static
    * identity must come from explicit SQLite schema syntax.
@@ -128,7 +135,9 @@ export class EvidSqliteFileScanner {
       );
     const columnNames = columns.flatMap((column) => {
       const columnName = EvidSqliteSyntax.names(column)[0];
-      return columnName === undefined ? [] : [EvidSqliteSyntax.fold(columnName)];
+      return columnName === undefined
+        ? []
+        : [EvidSqliteSyntax.fold(columnName)];
     });
     for (const column of columns) {
       const columnName = EvidSqliteSyntax.names(column)[0];
@@ -167,7 +176,8 @@ export class EvidSqliteFileScanner {
       ];
   }
 
-  /** Creates a relation from a foreign-key clause with explicit endpoints.
+  /**
+   * Creates a relation from a foreign-key clause with explicit endpoints.
    *
    * Relations use a namespace below their model so a constraint does not
    * collide with a column, and endpoint arity must remain verifiable.
@@ -224,7 +234,8 @@ export class EvidSqliteFileScanner {
     );
   }
 
-  /** Creates a physical declaration record distinct from normalized identity.
+  /**
+   * Creates a physical declaration record distinct from normalized identity.
    *
    * SQLite case-folds semantic identity while preserving source spelling and
    * ranges for public addresses, documentation, and review fingerprints.
@@ -260,7 +271,8 @@ export class EvidSqliteFileScanner {
     return declaration;
   }
 
-  /** Attaches adjacent leading comments while retaining detached carriers.
+  /**
+   * Attaches adjacent leading comments while retaining detached carriers.
    *
    * Grouping is limited to standalone adjacent line comments so trailing text
    * cannot accidentally document the declaration on the following line.
@@ -319,7 +331,8 @@ export class EvidSqliteFileScanner {
     });
   }
 
-  /** Checks whether a comment begins before other content on its source line.
+  /**
+   * Checks whether a comment begins before other content on its source line.
    *
    * Trailing comments fail this check and therefore cannot absorb the next
    * declaration's leading documentation role.
@@ -335,7 +348,8 @@ export class EvidSqliteFileScanner {
     );
   }
 
-  /** Checks whether only one optional line break separates two source ranges.
+  /**
+   * Checks whether only one optional line break separates two source ranges.
    *
    * Blank lines and intervening syntax detach comments from declarations and
    * from preceding line-comment fragments.
@@ -347,7 +361,8 @@ export class EvidSqliteFileScanner {
     );
   }
 
-  /** Reports unsupported SQLite syntax without inferring runtime database state.
+  /**
+   * Reports unsupported SQLite syntax without inferring runtime database state.
    *
    * The repair tells authors how to restore a declarative complete inventory
    * while the diagnostic keeps the partial result from passing as complete.

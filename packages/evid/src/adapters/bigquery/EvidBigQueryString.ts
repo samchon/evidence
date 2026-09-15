@@ -1,15 +1,19 @@
 import type { IEvidDocumentation } from "../../structures/IEvidDocumentation";
 
 /**
- * Decodes static GoogleSQL descriptions while retaining original UTF-16 coordinates.
+ * Decodes static GoogleSQL descriptions while retaining original UTF-16
+ * coordinates.
  *
- * The BigQuery scanner uses these mappings when an OPTIONS description hosts annotations.
+ * The BigQuery scanner uses these mappings when an OPTIONS description hosts
+ * annotations.
  */
 export namespace EvidBigQueryString {
   /**
-   * Returns no mapping for unsupported byte strings, escapes, or concatenated expressions.
+   * Returns no mapping for unsupported byte strings, escapes, or concatenated
+   * expressions.
    *
-   * A missing result makes the enclosing declaration incomplete instead of guessing offsets.
+   * A missing result makes the enclosing declaration incomplete instead of
+   * guessing offsets.
    */
   export function read(
     raw: string,

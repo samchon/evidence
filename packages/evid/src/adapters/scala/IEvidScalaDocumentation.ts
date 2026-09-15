@@ -19,14 +19,16 @@ export interface IEvidScalaDocumentation {
   /**
    * Locates the half-open UTF-16 span occupied by the documentation carrier.
    *
-   * Review fingerprints exclude this range from its attached declaration content.
+   * Review fingerprints exclude this range from its attached declaration
+   * content.
    */
   range: IEvidSourceRange;
 
   /**
    * Describes delimiters and annotation rules for parsing this carrier.
    *
-   * Documentation mapping preserves these rules while masking ineligible examples.
+   * Documentation mapping preserves these rules while masking ineligible
+   * examples.
    */
   syntax: IEvidCommentSyntax;
 

@@ -13,7 +13,8 @@ export interface IEvidListCommand {
   /**
    * Discriminator selecting target discovery.
    *
-   * The result includes public spellings and structural selection state for each row.
+   * The result includes public spellings and structural selection state for
+   * each row.
    */
   operation: "list";
 
@@ -28,7 +29,8 @@ export interface IEvidListCommand {
   /**
    * Configuration path relative to the resolved command directory.
    *
-   * Parsing uses evidence.config.ts when the caller does not supply an override.
+   * Parsing uses evidence.config.ts when the caller does not supply an
+   * override.
    */
   config: string;
 
@@ -42,7 +44,8 @@ export interface IEvidListCommand {
   /**
    * Optional destination file relative to the command directory.
    *
-   * Omission returns report content through the command's standard output channel.
+   * Omission returns report content through the command's standard output
+   * channel.
    */
   output?: string;
 
@@ -56,7 +59,8 @@ export interface IEvidListCommand {
   /**
    * Optional symbol-kind filter applied to discovered units.
    *
-   * Omission retains all kinds; filtering does not recompute the coverage denominator.
+   * Omission retains all kinds; filtering does not recompute the coverage
+   * denominator.
    */
   kind?: EvidSymbol;
 }

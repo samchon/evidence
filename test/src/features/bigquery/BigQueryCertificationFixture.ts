@@ -1,21 +1,20 @@
 import { EvidAccessor, EvidBigQueryAdapter } from "evid";
-import type {
-  EvidDatabaseSymbol,
-  IEvidWithdrawal,
-} from "evid";
+import type { EvidDatabaseSymbol, IEvidWithdrawal } from "evid";
 import { dedent } from "@typia/utils";
 
 import type { IEvidDatabaseAdapterCertification } from "../../internal/certification/IEvidDatabaseAdapterCertification";
 import type { IEvidDatabaseAdapterCertificationUnit } from "../../internal/certification/IEvidDatabaseAdapterCertificationUnit";
 
-/** Defines independent GoogleSQL expectations for shared database certification.
+/**
+ * Defines independent GoogleSQL expectations for shared database certification.
  *
  * The fixture supplies the semantic inventory and failure contract that the
  * BigQuery adapter must satisfy without deriving expected values from its own
  * syntax-tree output.
  */
 export namespace BigQueryCertificationFixture {
-  /** Creates the complete BigQuery adapter certification fixture.
+  /**
+   * Creates the complete BigQuery adapter certification fixture.
    *
    * Shared certification consumes its selectors, documentation hosts,
    * withdrawals, failure controls, and semantic mutation expectations.
@@ -101,7 +100,8 @@ export namespace BigQueryCertificationFixture {
       },
     };
 
-    /** Creates one independently specified model or owned member expectation.
+    /**
+     * Creates one independently specified model or owned member expectation.
      *
      * The helper derives its canonical address from semantic identity and
      * assigns non-model records to the fixture's certified model owner.

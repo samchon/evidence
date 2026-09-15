@@ -4,8 +4,8 @@ import type { IEvidGoFileAnalysis } from "./IEvidGoFileAnalysis";
 /**
  * Associates one physical Go declaration with its package-wide semantic unit.
  *
- * EvidGoPackageResolver uses this transient record to collect declaration sites,
- * resolve receiver ownership, and emit public addresses for the unit.
+ * EvidGoPackageResolver uses this transient record to collect declaration
+ * sites, resolve receiver ownership, and emit public addresses for the unit.
  */
 export interface IEvidGoMaterializedDeclaration {
   /**

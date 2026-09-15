@@ -1,20 +1,22 @@
-import {
-  EvidCppAdapter,
-  EvidLanguageRegistry,
-} from "evid";
+import { EvidCppAdapter, EvidLanguageRegistry } from "evid";
 import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Classifies the public C++ surface across namespaces, types, callables, and properties.
+/**
+ * Classifies the public C++ surface across namespaces, types, callables, and
+ * properties.
  *
- * The adapter must publish full identities for public declarations and retain owner relationships for nested members and overload families.
+ * The adapter must publish full identities for public declarations and retain
+ * owner relationships for nested members and overload families.
  *
- * 1. Analyze C++ declarations spanning namespaces, classes, templates, and members.
+ * 1. Analyze C++ declarations spanning namespaces, classes, templates, and
+ *    members.
  * 2. Compare the complete unit symbols and accessor identities.
- * 3. Verify callable overloads and owned properties retain their expected sites and owners.
+ * 3. Verify callable overloads and owned properties retain their expected sites
+ *    and owners.
  */
 export async function test_cpp_units(): Promise<void> {
   // Certified metadata names the exact grammar and explicit declared surface.
@@ -176,10 +178,7 @@ export async function test_cpp_units(): Promise<void> {
   TestValidator.equals("C++ enumerator parent", ready.parentId, state.id);
 }
 
-function requireUnit(
-  inventory: IEvidInventory,
-  identity: string,
-): IEvidUnit {
+function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.join(".") === identity,
   );

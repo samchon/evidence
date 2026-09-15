@@ -1,12 +1,14 @@
 import { EvidFileTarget } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-/** Resolves encoded paths and literal accessor segments across platforms.
+/**
+ * Resolves encoded paths and literal accessor segments across platforms.
  *
- * Path encoding and accessor punctuation must survive platform path conversion without changing identity.
+ * Path encoding and accessor punctuation must survive platform path conversion
+ * without changing identity.
  *
- * 1. Parse and format a POSIX target containing encoded file characters and
- *    quoted literal accessor segments.
+ * 1. Parse and format a POSIX target containing encoded file characters and quoted
+ *    literal accessor segments.
  * 2. Parse and format a backslash-authored Windows target using the citing drive,
  *    then parse a file-only target with no accessor.
  * 3. Reject malformed percent encoding and a drive-relative authored path.

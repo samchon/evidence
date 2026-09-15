@@ -5,8 +5,9 @@ import type { EvidSeverity } from "../typings/EvidSeverity";
  *
  * A reference creates an independent obligation within its claim. Ordinary
  * evidence and permitted exclusions cover selected targets and their selected
- * descendants. Unselected structural ancestors can remain addressable so authors
- * can cite an aggregate scope without changing the required population.
+ * descendants. Unselected structural ancestors can remain addressable so
+ * authors can cite an aggregate scope without changing the required
+ * population.
  *
  * The optional policies tighten different parts of that obligation:
  *
@@ -25,10 +26,12 @@ export interface IEvidReferenceBase<
   SymbolKind extends string,
 > {
   /**
-   * Artifact discriminator selecting the reference's extraction and target rules.
+   * Artifact discriminator selecting the reference's extraction and target
+   * rules.
    *
-   * This can differ from the claim's artifact type. It determines supported symbol
-   * selectors and target grammar, not which host language must acknowledge them.
+   * This can differ from the claim's artifact type. It determines supported
+   * symbol selectors and target grammar, not which host language must
+   * acknowledge them.
    */
   type: Type;
 
@@ -39,8 +42,8 @@ export interface IEvidReferenceBase<
    *   resolve from that directory.
    * - Accepts absolute paths, directory symlinks, and Windows junctions.
    * - Names one directory, not a glob. Windows drive-relative paths are invalid.
-   * - Markdown citations use this root; programming citations use the citing file.
-   *   Prisma model addresses do not contain paths.
+   * - Markdown citations use this root; programming citations use the citing
+   *   file. Prisma model addresses do not contain paths.
    */
   root?: string;
 
@@ -61,8 +64,8 @@ export interface IEvidReferenceBase<
   /**
    * Overrides the claim's inherited diagnostic severity.
    *
-   * Omit or use `undefined` to inherit. `"off"` disables this reference's population
-   * and obligation after validating its configuration shape.
+   * Omit or use `undefined` to inherit. `"off"` disables this reference's
+   * population and obligation after validating its configuration shape.
    */
   severity?: EvidSeverity | undefined;
 
@@ -70,8 +73,8 @@ export interface IEvidReferenceBase<
    * Refuses exclusion acknowledgements for this reference.
    *
    * Report refused exclusions at their declarations and leave their targets
-   * uncovered unless positive evidence acknowledges them.
-   * The same declaration may still cover another reference that allows exclusions.
+   * uncovered unless positive evidence acknowledges them. The same declaration
+   * may still cover another reference that allows exclusions.
    *
    * @default false
    */
@@ -80,17 +83,19 @@ export interface IEvidReferenceBase<
   /**
    * Allows at most one distinct positive claim host per evidence unit.
    *
-   * Repeated tags, overloads, and merged declarations do not create extra hosts.
-   * Exclusions do not count; an uncited unit still fails coverage.
+   * Repeated tags, overloads, and merged declarations do not create extra
+   * hosts. Exclusions do not count; an uncited unit still fails coverage.
    *
    * @default false
    */
   uniqueEvid?: boolean;
 
   /**
-   * Require every selected claim host to cite exactly one selected evidence unit.
+   * Require every selected claim host to cite exactly one selected evidence
+   * unit.
    *
-   * - Hosts without tags count as zero; repeated citations to one unit count once.
+   * - Hosts without tags count as zero; repeated citations to one unit count
+   *   once.
    * - Aggregate targets count every selected descendant they cover.
    * - An empty reference population is reported as empty and evaluates no hosts.
    *
@@ -101,16 +106,17 @@ export interface IEvidReferenceBase<
   /**
    * Require a matching review with the current target content fingerprint.
    *
-   * - Evid needs evidenceReview; exclusions need evidenceExcludeReview.
-   *   Reviews do not provide coverage.
+   * - Evid needs evidenceReview; exclusions need evidenceExcludeReview. Reviews
+   *   do not provide coverage.
    * - Reviews carry a #-prefixed fingerprint. Missing or stale reviews fail the
    *   obligation; diagnostics provide the expected fingerprint.
    * - Fingerprints belong to the cited unit and its structural subtree,
    *   independently of reference selectors.
    * - TypeScript fingerprints include nested declarations, even withdrawn ones.
-   *   Swagger uses normalized operation content; Prisma uses parsed declarations
-   *   without the documentation comments that carry reviews.
-   * - This verifies the recorded review and fingerprint, not the truth of its prose.
+   *   Swagger uses normalized operation content; Prisma uses parsed
+   *   declarations without the documentation comments that carry reviews.
+   * - This verifies the recorded review and fingerprint, not the truth of its
+   *   prose.
    *
    * @default false
    */

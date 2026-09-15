@@ -18,11 +18,12 @@ const CACHE_LIMIT = 16;
 const cache = new Map<string, IEvidPrismaCacheEntry>();
 
 /**
- * Loads Prisma's resolved schema model through a consumer-compatible WASM bridge.
+ * Loads Prisma's resolved schema model through a consumer-compatible WASM
+ * bridge.
  *
  * The loader resolves the parser from the consumer first, caches complete
- * schema-set outcomes by parser identity and content digest, and returns detached
- * records that can outlive the WASM call.
+ * schema-set outcomes by parser identity and content digest, and returns
+ * detached records that can outlive the WASM call.
  */
 export namespace EvidPrismaModelLoader {
   export async function load(

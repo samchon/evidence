@@ -1,28 +1,32 @@
 /**
  * Parsed request to create a starter Evid configuration.
  *
- * Execution resolves the destination from command cwd and creates it exclusively.
- * Existing files are refused so initialization cannot overwrite an authored policy.
+ * Execution resolves the destination from command cwd and creates it
+ * exclusively. Existing files are refused so initialization cannot overwrite an
+ * authored policy.
  */
 export interface IEvidInitCommand {
   /**
    * Discriminator selecting configuration creation.
    *
-   * Initialization writes a starter contract without running an Evidence Graph check.
+   * Initialization writes a starter contract without running an Evidence Graph
+   * check.
    */
   operation: "init";
 
   /**
    * Working directory anchoring the configuration destination.
    *
-   * The command resolves this against its invocation base without changing process cwd.
+   * The command resolves this against its invocation base without changing
+   * process cwd.
    */
   cwd: string;
 
   /**
    * New configuration path, defaulting to evidence.config.ts during parsing.
    *
-   * Execution validates the supported file format and rejects an existing destination.
+   * Execution validates the supported file format and rejects an existing
+   * destination.
    */
   config: string;
 }

@@ -7,9 +7,9 @@
  * declarations, and several addresses can expose one unit through aliases.
  *
  * @example
- * // api.ts#Client.prototype["send.request"] decomposes into:
- * // file: "api.ts"
- * // segments: ["Client", "prototype", "send.request"]
+ *   // api.ts#Client.prototype["send.request"] decomposes into:
+ *   // file: "api.ts"
+ *   // segments: ["Client", "prototype", "send.request"]
  */
 export interface IEvidAddress {
   /**
@@ -24,7 +24,8 @@ export interface IEvidAddress {
    * Literal accessor components within the public file.
    *
    * Dots inside one component belong to its name. Use the accessor parser and
-   * serializer to preserve quoting instead of splitting a rendered dotted string.
+   * serializer to preserve quoting instead of splitting a rendered dotted
+   * string.
    */
   segments: string[];
 }

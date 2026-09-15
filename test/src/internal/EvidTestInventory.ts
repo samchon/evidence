@@ -65,8 +65,8 @@ export namespace EvidTestInventory {
   /**
    * Maps one exact fixture fragment to its source range.
    *
-   * The helper rejects absent text so a changed fixture cannot silently attach a
-   * graph record at an unrelated offset.
+   * The helper rejects absent text so a changed fixture cannot silently attach
+   * a graph record at an unrelated offset.
    */
   export function range(
     inventory: IEvidInventory,
@@ -77,7 +77,10 @@ export namespace EvidTestInventory {
     const start = source.content.indexOf(fragment);
     if (start < 0)
       throw new Error("The fixture source does not contain: " + fragment);
-    return new EvidSourceText(source.content).range(start, start + fragment.length);
+    return new EvidSourceText(source.content).range(
+      start,
+      start + fragment.length,
+    );
   }
 
   /**

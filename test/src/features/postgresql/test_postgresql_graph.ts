@@ -6,9 +6,11 @@ import { join } from "node:path";
 
 import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
-/** Evaluates PostgreSQL selectors as claim and reference populations.
+/**
+ * Evaluates PostgreSQL selectors as claim and reference populations.
  *
- * Selector role determines coverage ownership, and review-only annotations cannot satisfy a missing obligation.
+ * Selector role determines coverage ownership, and review-only annotations
+ * cannot satisfy a missing obligation.
  *
  * 1. Build configurations for each PostgreSQL selector in both roles.
  * 2. Check covered and missing-evidence graph outcomes.
@@ -73,7 +75,8 @@ export async function test_postgresql_graph(): Promise<void> {
   );
 }
 
-/** Builds PostgreSQL source with one acknowledgement on the selected host kind.
+/**
+ * Builds PostgreSQL source with one acknowledgement on the selected host kind.
  *
  * Unselected model, column, and relation positions receive ordinary prose so
  * each selector scenario isolates its own eligible documentation carrier.

@@ -12,10 +12,12 @@ import type { IEvidKotlinFileAnalysis } from "./IEvidKotlinFileAnalysis";
 import type { IEvidKotlinTypeReference } from "./IEvidKotlinTypeReference";
 
 /**
- * Extracts lexical Kotlin declarations without executing scripts or compiler synthesis.
+ * Extracts lexical Kotlin declarations without executing scripts or compiler
+ * synthesis.
  *
  * The scanner retains package, import, receiver, and alias facts so the later
- * resolver can establish extension ownership without guessing from local syntax.
+ * resolver can establish extension ownership without guessing from local
+ * syntax.
  */
 export class EvidKotlinFileScanner {
   /**
@@ -37,8 +39,9 @@ export class EvidKotlinFileScanner {
   /**
    * Failures that prevent a complete public denominator.
    *
-   * The emitted analysis derives completeness from this collection so unsupported
-   * Kotlin source cannot make coverage pass by omitting declarations.
+   * The emitted analysis derives completeness from this collection so
+   * unsupported Kotlin source cannot make coverage pass by omitting
+   * declarations.
    */
   private readonly diagnostics: IEvidDiagnostic[] = [];
 
@@ -59,7 +62,8 @@ export class EvidKotlinFileScanner {
   private readonly imports = new Map<string, string[]>();
 
   /**
-   * Whether a wildcard import requires dependency resolution for unknown receiver names.
+   * Whether a wildcard import requires dependency resolution for unknown
+   * receiver names.
    *
    * Its presence prevents the scanner from assuming that an unqualified core
    * type name necessarily refers to Kotlin's built-in declaration.
@@ -127,12 +131,16 @@ export class EvidKotlinFileScanner {
   }
 
   /**
-   * Visits declaration scopes without entering local function bodies or initializer expressions.
+   * Visits declaration scopes without entering local function bodies or
+   * initializer expressions.
    *
-   * Those regions can execute or introduce local values, neither of which belongs
-   * to the static public declaration surface.
+   * Those regions can execute or introduce local values, neither of which
+   * belongs to the static public declaration surface.
    */
-  private scope(body: EvidNode, owner: IEvidKotlinDeclaration | undefined): void {
+  private scope(
+    body: EvidNode,
+    owner: IEvidKotlinDeclaration | undefined,
+  ): void {
     for (const node of body.namedChildren) {
       switch (node.type) {
         case "package_header":
@@ -211,12 +219,16 @@ export class EvidKotlinFileScanner {
   }
 
   /**
-   * Establishes nominal ownership before reading constructor properties and members.
+   * Establishes nominal ownership before reading constructor properties and
+   * members.
    *
    * Constructor `val` and `var` parameters, enum entries, and body members use
    * the emitted type declaration as their semantic owner.
    */
-  private nominal(node: EvidNode, owner: IEvidKotlinDeclaration | undefined): void {
+  private nominal(
+    node: EvidNode,
+    owner: IEvidKotlinDeclaration | undefined,
+  ): void {
     const declaration = this.add(
       node,
       node.childForFieldName("name"),
@@ -385,12 +397,16 @@ export class EvidKotlinFileScanner {
   }
 
   /**
-   * Applies lexical visibility without letting a restricted setter hide a property.
+   * Applies lexical visibility without letting a restricted setter hide a
+   * property.
    *
    * A member is public unless its owner is nonpublic or its own declaration has
    * a nonpublic visibility modifier; accessor restrictions do not change it.
    */
-  private visible(node: EvidNode, owner: IEvidKotlinDeclaration | undefined): boolean {
+  private visible(
+    node: EvidNode,
+    owner: IEvidKotlinDeclaration | undefined,
+  ): boolean {
     const modifiers = node.namedChildren.find(
       (child) => child.type === "modifiers",
     );
@@ -405,12 +421,16 @@ export class EvidKotlinFileScanner {
   }
 
   /**
-   * Separates extension declarations from ordinary members and other receiver types.
+   * Separates extension declarations from ordinary members and other receiver
+   * types.
    *
    * Only a receiver type preceding a function or property name establishes an
    * extension; later type nodes cannot change its owner identity.
    */
-  private receiver(node: EvidNode, nameNode: EvidNode | null): EvidNode | undefined {
+  private receiver(
+    node: EvidNode,
+    nameNode: EvidNode | null,
+  ): EvidNode | undefined {
     if (
       node.type !== "function_declaration" &&
       node.type !== "property_declaration"
@@ -430,10 +450,12 @@ export class EvidKotlinFileScanner {
   }
 
   /**
-   * Retains nominal lookup paths and makes unresolved type substitution explicit.
+   * Retains nominal lookup paths and makes unresolved type substitution
+   * explicit.
    *
-   * Candidate paths preserve lexical, import, package, and qualified alternatives;
-   * generic and compound receivers carry a problem instead of a guessed owner.
+   * Candidate paths preserve lexical, import, package, and qualified
+   * alternatives; generic and compound receivers carry a problem instead of a
+   * guessed owner.
    */
   private typeReference(
     node: EvidNode,
@@ -521,7 +543,8 @@ export class EvidKotlinFileScanner {
   }
 
   /**
-   * Attaches only adjacent KDoc because annotations already belong to the declaration node.
+   * Attaches only adjacent KDoc because annotations already belong to the
+   * declaration node.
    *
    * Whitespace-only separation prevents a nearby unrelated documentation block
    * from being attached to the next declaration.
@@ -550,7 +573,8 @@ export class EvidKotlinFileScanner {
   }
 
   /**
-   * Includes annotation calls that the upstream grammar separates from a declaration.
+   * Includes annotation calls that the upstream grammar separates from a
+   * declaration.
    *
    * The returned prefix expands the declaration site and KDoc adjacency across
    * contiguous detached annotation expressions.
@@ -566,10 +590,12 @@ export class EvidKotlinFileScanner {
   }
 
   /**
-   * Recognizes only an annotation name immediately followed by its parenthesized argument.
+   * Recognizes only an annotation name immediately followed by its
+   * parenthesized argument.
    *
-   * The strict shape avoids treating arbitrary annotated expressions as declaration
-   * prefixes when their expression or spacing could alter source semantics.
+   * The strict shape avoids treating arbitrary annotated expressions as
+   * declaration prefixes when their expression or spacing could alter source
+   * semantics.
    */
   private detachedAnnotation(node: EvidNode): boolean {
     if (node.type !== "annotated_expression") return false;
@@ -598,10 +624,12 @@ export class EvidKotlinFileScanner {
   }
 
   /**
-   * Retains real KDoc and unsupported annotation carriers for truthful diagnostics.
+   * Retains real KDoc and unsupported annotation carriers for truthful
+   * diagnostics.
    *
-   * Annotation-shaped text in comments and strings is retained so the common tag
-   * parser can report unsupported placement instead of silently ignoring it.
+   * Annotation-shaped text in comments and strings is retained so the common
+   * tag parser can report unsupported placement instead of silently ignoring
+   * it.
    */
   private collectDocumentation(): void {
     for (const node of this.session.root.descendantsOfType([
@@ -653,7 +681,8 @@ export class EvidKotlinFileScanner {
    * Keeps unsupported extraction visible to graph evaluation.
    *
    * Every diagnostic names the Kotlin boundary and source range, causing the
-   * analysis to be incomplete rather than publishing a reduced declaration set.
+   * analysis to be incomplete rather than publishing a reduced declaration
+   * set.
    */
   private problem(code: string, message: string, node: EvidNode): void {
     this.diagnostics.push({

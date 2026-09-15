@@ -20,13 +20,15 @@ import { EvidEcmaScriptModuleResolver } from "./EvidEcmaScriptModuleResolver";
 import type { EvidEcmaScriptType } from "./EvidEcmaScriptType";
 
 /**
- * Shares declaration, export, and JSDoc materialization between TypeScript and JavaScript.
+ * Shares declaration, export, and JSDoc materialization between TypeScript and
+ * JavaScript.
  *
- * JavaScript first resolves file/package module modes; TypeScript uses its static
- * module rules. File scanning records units and physical comment attachment, then
- * export resolution determines which identities are publicly reachable within
- * the configured root. Only afterward are annotations materialized as hosts and
- * statements, preserving aliases without duplicating semantic declarations.
+ * JavaScript first resolves file/package module modes; TypeScript uses its
+ * static module rules. File scanning records units and physical comment
+ * attachment, then export resolution determines which identities are publicly
+ * reachable within the configured root. Only afterward are annotations
+ * materialized as hosts and statements, preserving aliases without duplicating
+ * semantic declarations.
  *
  * Source, package-scope, and syntax failures all contribute to completeness.
  * Package dependencies remain observable for watch, and each analysis owns its
@@ -58,16 +60,15 @@ export class EvidEcmaScriptAdapter implements IEvidAdapter {
   ) {}
 
   /**
-   * Extracts a fresh public module inventory from the supplied source snapshots.
+   * Extracts a fresh public module inventory from the supplied source
+   * snapshots.
    *
-   * The input is copied before package resolution or parsing. Export reachability
-   * filters semantic units only after all local declarations are available, and
-   * failures remain in completeness and diagnostics. Native parser resources close
-   * whether publication succeeds or throws.
+   * The input is copied before package resolution or parsing. Export
+   * reachability filters semantic units only after all local declarations are
+   * available, and failures remain in completeness and diagnostics. Native
+   * parser resources close whether publication succeeds or throws.
    */
-  public async analyze(
-    snapshot: IEvidSourceSnapshot,
-  ): Promise<IEvidInventory> {
+  public async analyze(snapshot: IEvidSourceSnapshot): Promise<IEvidInventory> {
     const input = structuredClone(typia.assert(snapshot));
     // JavaScript export semantics depend on package scope as well as syntax.
     // Capture that dependency before choosing a file scanner's module mode.
@@ -156,9 +157,10 @@ export class EvidEcmaScriptAdapter implements IEvidAdapter {
    *
    * Occurrence suffixes keep documentation on replaced values isolated during
    * export resolution. Once that resolver has selected the public winners, this
-   * pass canonicalizes their units, parents, addresses, comment attachments, and
-   * fallback host positions together. Attachments on unpublished occurrences
-   * retain private IDs and cannot become eligible through the transition.
+   * pass canonicalizes their units, parents, addresses, comment attachments,
+   * and fallback host positions together. Attachments on unpublished
+   * occurrences retain private IDs and cannot become eligible through the
+   * transition.
    */
   private stabilizeRuntimeUnits(
     inventory: IEvidInventory,
@@ -208,11 +210,15 @@ export class EvidEcmaScriptAdapter implements IEvidAdapter {
       return await parser.parse(
         { type: this.type, file, content: source.content },
         (session) =>
-          new EvidEcmaScriptFileScanner(session, source, this.type, mode).scan(),
+          new EvidEcmaScriptFileScanner(
+            session,
+            source,
+            this.type,
+            mode,
+          ).scan(),
       );
     } catch (cause) {
-      const parserError =
-        cause instanceof EvidParserError ? cause : undefined;
+      const parserError = cause instanceof EvidParserError ? cause : undefined;
       return {
         source,
         mode,

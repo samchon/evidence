@@ -4,12 +4,13 @@ import { TestValidator } from "@nestia/e2e";
 import { EvidTestInventory } from "../../internal/EvidTestInventory";
 
 /**
- * Separates shared documentation ownership from each declarator's fingerprint content.
+ * Separates shared documentation ownership from each declarator's fingerprint
+ * content.
  *
  * A multi-variable statement can expose several semantic units through one
  * physical host. The shared carrier must preserve both owners without making
- * sibling initializer text part of each unit's own content or accepting an invalid
- * adapter attachment as evidence.
+ * sibling initializer text part of each unit's own content or accepting an
+ * invalid adapter attachment as evidence.
  *
  * 1. Give two declarators the same statement site and documentation host but
  *    separate initializer content ranges.
@@ -18,8 +19,8 @@ import { EvidTestInventory } from "../../internal/EvidTestInventory";
  * 3. Point the host at an unowned site and require incomplete analysis with an
  *    inventory-host diagnostic explaining the ownership failure.
  * 4. Mark the host unsupported, remove its owners, and attach an evidence
- *    declaration; require incomplete analysis because unsupported carriers cannot
- *    supply evidence.
+ *    declaration; require incomplete analysis because unsupported carriers
+ *    cannot supply evidence.
  */
 export async function test_inventory_hosts(): Promise<void> {
   const input = EvidTestInventory.create();

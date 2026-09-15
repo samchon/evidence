@@ -11,13 +11,17 @@ import { dedent } from "@typia/utils";
 import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Evaluates C# type, function, and property evidence and fingerprints.
+/**
+ * Evaluates C# type, function, and property evidence and fingerprints.
  *
- * Each symbol kind must cover its requirement, and changing prose alone must not invalidate the implementation fingerprint.
+ * Each symbol kind must cover its requirement, and changing prose alone must
+ * not invalidate the implementation fingerprint.
  *
  * 1. Build C# claim and reference inventories for every supported symbol kind.
- * 2. Require covered graphs to pass and missing evidence to retain the exact reference units.
- * 3. Edit evidence prose without changing code and require the implementation fingerprint to remain stable.
+ * 2. Require covered graphs to pass and missing evidence to retain the exact
+ *    reference units.
+ * 3. Edit evidence prose without changing code and require the implementation
+ *    fingerprint to remain stable.
  */
 export async function test_csharp_graph(): Promise<void> {
   const requirements = await new EvidMarkdownAdapter().analyze(
@@ -175,10 +179,7 @@ async function fingerprintInventory(
   );
 }
 
-function requireUnit(
-  inventory: IEvidInventory,
-  name: string,
-): IEvidUnit {
+function requireUnit(inventory: IEvidInventory, name: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === name || candidate.identity.at(-1) === name,

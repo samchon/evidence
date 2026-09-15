@@ -1,7 +1,8 @@
 import { EvidAdapterCertification } from "../../internal/certification/EvidAdapterCertification";
 import { EvidAdapterCertificationFixtures } from "../../internal/certification/EvidAdapterCertificationFixtures";
 
-/** Applies shared adapter certification to Swift.
+/**
+ * Applies shared adapter certification to Swift.
  *
  * The Swift fixture defines inventory, graph, and fingerprint expectations.
  *

@@ -1,16 +1,18 @@
 /**
  * Filesystem discovery failure retained in a source snapshot.
  *
- * A failed read, unstable source, or unresolved path boundary prevents the loader
- * from certifying a complete population. Adapters can preserve this failure when
- * producing graph diagnostics instead of silently omitting the affected file.
+ * A failed read, unstable source, or unresolved path boundary prevents the
+ * loader from certifying a complete population. Adapters can preserve this
+ * failure when producing graph diagnostics instead of silently omitting the
+ * affected file.
  */
 export interface IEvidSourceDiagnostic {
   /**
    * Stable category of the failed discovery operation.
    *
-   * Callers can distinguish access, spelling, encoding, and snapshot-consistency
-   * failures without interpreting platform-specific message text.
+   * Callers can distinguish access, spelling, encoding, and
+   * snapshot-consistency failures without interpreting platform-specific
+   * message text.
    */
   code:
     | "root-unreadable"

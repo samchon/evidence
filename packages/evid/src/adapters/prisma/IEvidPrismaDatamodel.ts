@@ -1,9 +1,10 @@
 import type { IEvidPrismaDatamodelModel } from "./IEvidPrismaDatamodelModel";
 
-/** Prisma parser payload needed by the Evid adapter.
+/**
+ * Prisma parser payload needed by the Evid adapter.
  *
- * Evid deliberately consumes the parser's semantic model rather than
- * inferring model structure from source text.
+ * Evid deliberately consumes the parser's semantic model rather than inferring
+ * model structure from source text.
  */
 export interface IEvidPrismaDatamodel {
   /**

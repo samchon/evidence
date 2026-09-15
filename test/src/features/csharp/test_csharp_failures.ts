@@ -5,12 +5,17 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Reports C# partial, preprocessing, and syntax uncertainty without compilation.
+/**
+ * Reports C# partial, preprocessing, and syntax uncertainty without
+ * compilation.
  *
- * Conflicting identities and undecidable source forms must leave an incomplete inventory instead of a passing smaller population.
+ * Conflicting identities and undecidable source forms must leave an incomplete
+ * inventory instead of a passing smaller population.
  *
- * 1. Analyze conflicting partial declarations and sources separated by preprocessor boundaries.
- * 2. Analyze malformed and otherwise unsupported C# forms that prevent static ownership.
+ * 1. Analyze conflicting partial declarations and sources separated by
+ *    preprocessor boundaries.
+ * 2. Analyze malformed and otherwise unsupported C# forms that prevent static
+ *    ownership.
  * 3. Require every affected inventory to be incomplete with a diagnostic.
  */
 export async function test_csharp_failures(): Promise<void> {

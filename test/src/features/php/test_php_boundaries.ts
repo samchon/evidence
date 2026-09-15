@@ -3,9 +3,11 @@ import { TestValidator } from "@nestia/e2e";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Rejects PHP inputs whose declaration population is not statically knowable.
+/**
+ * Rejects PHP inputs whose declaration population is not statically knowable.
  *
- * Runtime-dependent declarations, malformed syntax, conflicts, and failed sources must remain incomplete.
+ * Runtime-dependent declarations, malformed syntax, conflicts, and failed
+ * sources must remain incomplete.
  *
  * 1. Analyze dynamic, unsupported, and malformed PHP sources.
  * 2. Require incomplete results with relevant diagnostics.

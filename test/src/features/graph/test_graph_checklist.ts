@@ -20,30 +20,35 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * Evaluates checklist coverage separately for every selected TypeScript host.
  *
  * A checklist turns each selected reference into an obligation for each host.
- * The scenario also establishes how aggregates, exclusions, unselected carriers,
- * and incomplete inputs affect the per-host coverage ledger and diagnostics.
+ * The scenario also establishes how aggregates, exclusions, unselected
+ * carriers, and incomplete inputs affect the per-host coverage ledger and
+ * diagnostics.
  *
  * 1. Evaluate complete, partially documented, and undocumented functions against
  *    two Markdown rules, then require independent complete and missing sets for
  *    each host and one missing-checklist diagnostic per incomplete host.
- * 2. Cite the Markdown file item while selecting its headings and require the
- *    file alone to be covered; a file acknowledgement must not cascade down.
+ * 2. Cite the Markdown file item while selecting its headings and require the file
+ *    alone to be covered; a file acknowledgement must not cascade down.
  * 3. Let an unselected positive aggregate answer both rules and require one
- *    aggregate diagnostic that explains both items without duplicate host repairs.
+ *    aggregate diagnostic that explains both items without duplicate host
+ *    repairs.
  * 4. Exercise exclusions on separate hosts and on one host:
+ *
  *    - An exclusion covers its selected subtree only for its own host.
  *    - Positive evidence on another host stays independent.
- *    - Opposed acknowledgements and overlapping exclusions produce one conflict
- *      and one duplicate-exclusion diagnostic for their shared semantic host.
+ *    - Opposed acknowledgements and overlapping exclusions produce one conflict and
+ *         one duplicate-exclusion diagnostic for their shared semantic host.
  * 5. Enable the exclusion prohibition and require the excluded host to owe both
  *    rules while reporting the forbidden exclusion.
  * 6. Place acknowledgements on an unselected carrier, then require that it can
- *    satisfy an ordinary sibling reference but cannot discharge a checklist host.
+ *    satisfy an ordinary sibling reference but cannot discharge a checklist
+ *    host.
  * 7. Vary sibling-reference health and require an incomplete sibling to withhold
  *    the unhosted conclusion, while a complete empty sibling preserves it.
- * 8. Give a separately selected aggregate carrier its own refused-aggregate
- *    repair and require the original claim's deferred finding to remain isolated.
+ * 8. Give a separately selected aggregate carrier its own refused-aggregate repair
+ *    and require the original claim's deferred finding to remain isolated.
  * 9. Supply failed and empty reference populations and require respectively:
+ *
  *    - An incomplete obligation with no derivative per-host finding.
  *    - Only the empty-reference finding and no host-coverage ledger.
  */
@@ -174,12 +179,14 @@ export async function test_graph_checklist(): Promise<void> {
 
   TestValidator.equals(
     "file citation covers only itself",
-    EvidTestGraph.hostCoverage(fileChecklist, 0, 0, checksFile.id).coveredUnitIds,
+    EvidTestGraph.hostCoverage(fileChecklist, 0, 0, checksFile.id)
+      .coveredUnitIds,
     [file.id],
   );
   TestValidator.equals(
     "headings remain owed",
-    EvidTestGraph.hostCoverage(fileChecklist, 0, 0, checksFile.id).missingUnitIds,
+    EvidTestGraph.hostCoverage(fileChecklist, 0, 0, checksFile.id)
+      .missingUnitIds,
     [hardcoding.id, whackAMole.id],
   );
 
@@ -263,7 +270,8 @@ export async function test_graph_checklist(): Promise<void> {
 
   TestValidator.equals(
     "exclusion cascades on its host",
-    EvidTestGraph.hostCoverage(excludedChecklist, 0, 0, excluded.id).coveredUnitIds,
+    EvidTestGraph.hostCoverage(excludedChecklist, 0, 0, excluded.id)
+      .coveredUnitIds,
     [hardcoding.id, whackAMole.id],
   );
   TestValidator.equals(
@@ -357,7 +365,8 @@ export async function test_graph_checklist(): Promise<void> {
 
   TestValidator.equals(
     "strict checklist refuses exclusion coverage",
-    EvidTestGraph.hostCoverage(strictChecklist, 0, 0, excluded.id).missingUnitIds,
+    EvidTestGraph.hostCoverage(strictChecklist, 0, 0, excluded.id)
+      .missingUnitIds,
     [hardcoding.id, whackAMole.id],
   );
   TestValidator.equals(
@@ -667,10 +676,12 @@ export async function test_graph_checklist(): Promise<void> {
 }
 
 /**
- * Resolves every acknowledgement in a claim against one selected reference population.
+ * Resolves every acknowledgement in a claim against one selected reference
+ * population.
  *
  * Checklist fixtures need each declaration's own host so graph evaluation can
- * distinguish evidence carried by selected hosts from unhosted acknowledgements.
+ * distinguish evidence carried by selected hosts from unhosted
+ * acknowledgements.
  */
 async function resolveAll(
   claim: IEvidInventory,
@@ -697,10 +708,7 @@ async function resolveAll(
  * The fixtures deliberately avoid candidates that collide across symbol, name,
  * and final identity segment, so a miss signals broken test setup.
  */
-function requireUnit(
-  inventory: IEvidInventory,
-  identity: string,
-): IEvidUnit {
+function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.symbol === identity ||

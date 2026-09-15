@@ -4,11 +4,14 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches MATLAB help annotations only at supported declaration sites.
+/**
+ * Attaches MATLAB help annotations only at supported declaration sites.
  *
- * Preceding and inline help can document declarations, whereas executable comments, examples, blocks, and strings must remain inert.
+ * Preceding and inline help can document declarations, whereas executable
+ * comments, examples, blocks, and strings must remain inert.
  *
- * 1. Analyze CRLF class, property, and method help with competing comment placements.
+ * 1. Analyze CRLF class, property, and method help with competing comment
+ *    placements.
  * 2. Verify the exact eligible targets, UTF-16 positions, and withdrawal handling.
  * 3. Compare fingerprints after documentation-only and semantic edits.
  */

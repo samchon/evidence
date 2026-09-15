@@ -10,9 +10,11 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Acquires pinned Objective-C syntax and reuses it offline.
+/**
+ * Acquires pinned Objective-C syntax and reuses it offline.
  *
- * Cold analysis must request only its required parser assets, and a warm cache must preserve the complete inventory.
+ * Cold analysis must request only its required parser assets, and a warm cache
+ * must preserve the complete inventory.
  *
  * 1. Analyze Objective-C input on a cold cache while recording requests.
  * 2. Verify the requested grammar and complete cold inventory.

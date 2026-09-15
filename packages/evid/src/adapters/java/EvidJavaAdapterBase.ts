@@ -21,21 +21,23 @@ import { EvidJavaFileScanner } from "./EvidJavaFileScanner";
 /**
  * Materializes Java public declaration families and their attached Javadoc.
  *
- * The scanner establishes source visibility, lexical owners, and physical sites.
- * Unit materialization reconciles supported callable families before comments
- * become evidence hosts, retaining distinct sites without counting each overload
- * as an unrelated public name. This boundary concerns declared Java visibility,
- * not module export policy or compiler-generated members.
+ * The scanner establishes source visibility, lexical owners, and physical
+ * sites. Unit materialization reconciles supported callable families before
+ * comments become evidence hosts, retaining distinct sites without counting
+ * each overload as an unrelated public name. This boundary concerns declared
+ * Java visibility, not module export policy or compiler-generated members.
  *
- * Source failures and incomplete scans remain visible in the returned inventory.
- * Each invocation owns its parser lifetime and mutable extraction state.
+ * Source failures and incomplete scans remain visible in the returned
+ * inventory. Each invocation owns its parser lifetime and mutable extraction
+ * state.
  */
 export class EvidJavaAdapterBase implements IEvidAdapter {
   /**
    * Java artifact discriminator for grammar selection and unit classification.
    *
-   * The public adapter uses this fixed language for both claim hosts and reference
-   * targets; it does not infer another language from a selected source filename.
+   * The public adapter uses this fixed language for both claim hosts and
+   * reference targets; it does not infer another language from a selected
+   * source filename.
    */
   public readonly type = "java";
 
@@ -46,9 +48,7 @@ export class EvidJavaAdapterBase implements IEvidAdapter {
    * Javadoc materialization so declaration families own their actual comment
    * positions, and parser cleanup runs after either success or failure.
    */
-  public async analyze(
-    snapshot: IEvidSourceSnapshot,
-  ): Promise<IEvidInventory> {
+  public async analyze(snapshot: IEvidSourceSnapshot): Promise<IEvidInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidInventory = {
       schemaVersion: 1,
@@ -100,8 +100,7 @@ export class EvidJavaAdapterBase implements IEvidAdapter {
         (session) => new EvidJavaFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError =
-        cause instanceof EvidParserError ? cause : undefined;
+      const parserError = cause instanceof EvidParserError ? cause : undefined;
       return {
         source,
         declarations: [],
@@ -382,8 +381,11 @@ export class EvidJavaAdapterBase implements IEvidAdapter {
     documentation: IEvidJavaDocumentation,
   ): boolean {
     return this.annotationPattern(
-      EvidJavaDocumentation.read(analysis.source, documentation, documentation.id)
-        .text,
+      EvidJavaDocumentation.read(
+        analysis.source,
+        documentation,
+        documentation.id,
+      ).text,
       true,
     );
   }
@@ -393,8 +395,11 @@ export class EvidJavaAdapterBase implements IEvidAdapter {
     documentation: IEvidJavaDocumentation,
   ): boolean {
     return this.annotationPattern(
-      EvidJavaDocumentation.read(analysis.source, documentation, documentation.id)
-        .text,
+      EvidJavaDocumentation.read(
+        analysis.source,
+        documentation,
+        documentation.id,
+      ).text,
       false,
     );
   }

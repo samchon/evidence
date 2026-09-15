@@ -76,9 +76,7 @@ async function main() {
         }),
       ].join("\n"),
     );
-  console.log(
-    `Verified compiled output for ${sources.length} Evid sources.`,
-  );
+  console.log(`Verified compiled output for ${sources.length} Evid sources.`);
 }
 
 void main().catch(function reportFailure(error) {

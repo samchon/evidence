@@ -1,9 +1,11 @@
 import { EvidAdapterCertification } from "../../internal/certification/EvidAdapterCertification";
 import { EvidAdapterCertificationFixtures } from "../../internal/certification/EvidAdapterCertificationFixtures";
 
-/** Applies the shared adapter certification contract to MATLAB.
+/**
+ * Applies the shared adapter certification contract to MATLAB.
  *
- * The MATLAB fixture defines the expected inventory, graph failures, mutations, and review fingerprint behavior independently of adapter implementation.
+ * The MATLAB fixture defines the expected inventory, graph failures, mutations,
+ * and review fingerprint behavior independently of adapter implementation.
  *
  * 1. Construct the MATLAB certification fixture.
  * 2. Run the shared certification suite against its declared expectations.

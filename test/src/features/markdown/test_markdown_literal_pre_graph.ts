@@ -21,14 +21,15 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
  *
  * 1. Check two H1 requirements where prose after the first mentions opening,
  *    closing, and paired `pre` tags in inline code plus a `<prefix>` literal.
- * 2. Acknowledge only the first and require two selected requirements, one
- *    missing acknowledgement, and exit code one.
+ * 2. Acknowledge only the first and require two selected requirements, one missing
+ *    acknowledgement, and exit code one.
  * 3. Replace the prose with a genuine multiline `pre` block containing a fake
  *    heading, leaving the second real heading after its close.
  * 4. Require the fake heading to stay excluded while the second requirement
  *    remains selected and continues to prevent false success.
  * 5. Change the claim to Markdown whose close/open line leaves a rendered region
- *    around a fake citation, followed by one real citation after the final close.
+ *    around a fake citation, followed by one real citation after the final
+ *    close.
  * 6. Require only the real citation to cover its target, retaining one missing
  *    requirement and exit code one.
  */
@@ -62,8 +63,7 @@ export async function test_markdown_literal_pre_graph(): Promise<void> {
       await EvidTestFileSystem.save(directory, {
         "rules.md": renderedRules(),
       });
-      const rendered: IEvidCheckReport =
-        await EvidChecker.check(config);
+      const rendered: IEvidCheckReport = await EvidChecker.check(config);
       assertMissingSecond("genuine rendered block", rendered);
 
       await EvidTestFileSystem.save(directory, {
@@ -94,12 +94,10 @@ export async function test_markdown_literal_pre_graph(): Promise<void> {
  * Requires one of two Markdown requirements to remain uncovered.
  *
  * The first requirement has real evidence in each scenario; this assertion
- * proves that content made inert by rendered boundaries did not cover the second.
+ * proves that content made inert by rendered boundaries did not cover the
+ * second.
  */
-function assertMissingSecond(
-  label: string,
-  report: IEvidCheckReport,
-): void {
+function assertMissingSecond(label: string, report: IEvidCheckReport): void {
   const claim: IEvidCheckClaim | undefined = report.claims[0];
   const obligation: IEvidCheckObligation | undefined =
     claim === undefined ? undefined : claim.obligations[0];

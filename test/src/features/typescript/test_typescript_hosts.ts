@@ -4,9 +4,11 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Binds TypeScript JSDoc only to supported declaration hosts.
+/**
+ * Binds TypeScript JSDoc only to supported declaration hosts.
  *
- * Tag-bearing comments outside declaration JSDoc remain findings and cannot create acknowledgements.
+ * Tag-bearing comments outside declaration JSDoc remain findings and cannot
+ * create acknowledgements.
  *
  * 1. Analyze eligible JSDoc and unsupported comment placements.
  * 2. Verify attached declarations and unsupported-host diagnostics.

@@ -8,7 +8,8 @@ export interface IEvidObjcDocumentationAttachment {
   /**
    * Physical declaration receiving the documentation.
    *
-   * The adapter resolves this extraction ID to its published unit when possible.
+   * The adapter resolves this extraction ID to its published unit when
+   * possible.
    */
   declarationId: string;
 

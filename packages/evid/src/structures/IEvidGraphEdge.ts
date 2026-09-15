@@ -4,9 +4,10 @@ import type { EvidAcknowledgementKind } from "../typings/EvidAcknowledgementKind
  * Accepted acknowledgement connecting a claim carrier to a reference scope.
  *
  * The named target can be an unselected structural ancestor whose selected
- * descendants receive coverage. The edge therefore retains both the exact target
- * and the selected identities it covers. Its fingerprint belongs to that exact
- * cited scope, allowing review validation without turning reviews into evidence.
+ * descendants receive coverage. The edge therefore retains both the exact
+ * target and the selected identities it covers. Its fingerprint belongs to that
+ * exact cited scope, allowing review validation without turning reviews into
+ * evidence.
  */
 export interface IEvidGraphEdge {
   /**
@@ -33,8 +34,8 @@ export interface IEvidGraphEdge {
   /**
    * Accepted scope-selection form of the acknowledgement.
    *
-   * The declaration form determines which part of the resolved target can supply
-   * selected units to this edge.
+   * The declaration form determines which part of the resolved target can
+   * supply selected units to this edge.
    */
   kind: EvidAcknowledgementKind;
 
@@ -56,8 +57,8 @@ export interface IEvidGraphEdge {
   /**
    * Current seven-character fingerprint of the exact cited scope.
    *
-   * Review matching compares the expected fingerprint with this scope's content,
-   * rather than hashing only the selected coverage subset.
+   * Review matching compares the expected fingerprint with this scope's
+   * content, rather than hashing only the selected coverage subset.
    */
   fingerprint: string;
 }

@@ -4,13 +4,18 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches C# XML documentation and rejects inert source carriers.
+/**
+ * Attaches C# XML documentation and rejects inert source carriers.
  *
- * The fixture separates eligible declaration docs from code examples, directives, strings, body comments, and inaccessible members.
+ * The fixture separates eligible declaration docs from code examples,
+ * directives, strings, body comments, and inaccessible members.
  *
- * 1. Extract evidence from XML documentation on public types, grouped fields, and methods.
+ * 1. Extract evidence from XML documentation on public types, grouped fields, and
+ *    methods.
  * 2. Verify grouped fields share a host and XML code/example regions remain inert.
- * 3. Require non-XML comments and inaccessible or directive-separated carriers to report unsupported annotations, while a withdrawn partial hierarchy stays hidden.
+ * 3. Require non-XML comments and inaccessible or directive-separated carriers to
+ *    report unsupported annotations, while a withdrawn partial hierarchy stays
+ *    hidden.
  */
 export async function test_csharp_hosts(): Promise<void> {
   const inventory = await new EvidCSharpAdapter().analyze(

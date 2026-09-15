@@ -1,7 +1,8 @@
-/** One resolved model member returned by Prisma's schema parser.
+/**
+ * One resolved model member returned by Prisma's schema parser.
  *
- * This reduced parser payload contains only information that affects Evid
- * unit selection, documentation, and fingerprints.
+ * This reduced parser payload contains only information that affects Evid unit
+ * selection, documentation, and fingerprints.
  */
 export interface IEvidPrismaDatamodelField {
   /**
@@ -15,12 +16,14 @@ export interface IEvidPrismaDatamodelField {
   /**
    * Parser classification used to select supported database members.
    *
-   * `EvidPrismaModelLoader` maps object fields to relations and every other retained
-   * field to columns when it creates the adapter's normalized field contract.
+   * `EvidPrismaModelLoader` maps object fields to relations and every other
+   * retained field to columns when it creates the adapter's normalized field
+   * contract.
    */
   kind: string;
 
-  /** Parser-attached documentation, when source supplied it.
+  /**
+   * Parser-attached documentation, when source supplied it.
    *
    * `null` and omission both mean no parser documentation is available.
    */

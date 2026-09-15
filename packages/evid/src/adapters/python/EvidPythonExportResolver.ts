@@ -351,7 +351,10 @@ export class EvidPythonExportResolver {
       if (base === undefined) continue;
       for (const candidate of this.candidates(base)) {
         if (
-          !EvidSourcePath.contains(this.locationKey(this.root.absolute), candidate)
+          !EvidSourcePath.contains(
+            this.locationKey(this.root.absolute),
+            candidate,
+          )
         ) {
           outside = true;
           continue;
@@ -426,7 +429,8 @@ export class EvidPythonExportResolver {
   /**
    * Lists source-file spellings that can implement one module base.
    *
-   * Python permits both implementation and stub files, plus package initializers.
+   * Python permits both implementation and stub files, plus package
+   * initializers.
    */
   private candidates(base: string): string[] {
     return [
@@ -440,8 +444,8 @@ export class EvidPythonExportResolver {
   /**
    * Checks whether a resolved source remains within the optional physical root.
    *
-   * Public addresses can alias a source, but its physical path still defines the
-   * boundary that imports may not escape.
+   * Public addresses can alias a source, but its physical path still defines
+   * the boundary that imports may not escape.
    */
   private insidePhysicalRoot(source: IEvidSourceFile): boolean {
     return (

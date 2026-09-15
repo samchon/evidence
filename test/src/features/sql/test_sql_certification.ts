@@ -2,9 +2,11 @@ import { TestValidator } from "@nestia/e2e";
 import { EvidDatabaseAdapterCertification } from "../../internal/certification/EvidDatabaseAdapterCertification";
 import { SqlCertificationFixture } from "./SqlCertificationFixture";
 
-/** Certifies SQL inventory against exact database adapter expectations.
+/**
+ * Certifies SQL inventory against exact database adapter expectations.
  *
- * Removing a unit, kind, host, or address must fail the fixture rather than weaken its declared contract.
+ * Removing a unit, kind, host, or address must fail the fixture rather than
+ * weaken its declared contract.
  *
  * 1. Construct the SQL certification fixture.
  * 2. Run shared database certification and its mutation checks.

@@ -8,9 +8,11 @@ import { join } from "node:path";
 import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Keeps Swagger source, parse, validation, and identity failures visible.
+/**
+ * Keeps Swagger source, parse, validation, and identity failures visible.
  *
- * Failed documents remain active and incomplete until repair so their graph obligations cannot disappear.
+ * Failed documents remain active and incomplete until repair so their graph
+ * obligations cannot disappear.
  *
  * 1. Analyze each malformed, invalid, and unreadable document.
  * 2. Verify incomplete status and diagnostics.
@@ -34,7 +36,10 @@ export async function test_swagger_failures(): Promise<void> {
     ),
   );
   const whitespace = await adapter.analyze(
-    EvidTestSourceSnapshot.create("whitespace.yaml", document("/bad path", "get")),
+    EvidTestSourceSnapshot.create(
+      "whitespace.yaml",
+      document("/bad path", "get"),
+    ),
   );
   const duplicate = await adapter.analyze(
     EvidTestSourceSnapshot.create(

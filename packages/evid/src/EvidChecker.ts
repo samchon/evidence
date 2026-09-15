@@ -6,7 +6,8 @@ import type { IEvidCheckReport } from "./structures/IEvidCheckReport";
 import type { IEvidConfigPlan } from "./structures/IEvidConfigPlan";
 
 /**
- * Runs configuration-driven extraction, target resolution, and graph evaluation.
+ * Runs configuration-driven extraction, target resolution, and graph
+ * evaluation.
  *
  * Use `check` for the command report, or `analyze` when queries also need the
  * captured inventories and graph relationships. Both operations reload the
@@ -19,10 +20,10 @@ import type { IEvidConfigPlan } from "./structures/IEvidConfigPlan";
  * the same operations for callers that do not need to retain a facade.
  *
  * @example
- * const checker: EvidChecker = new EvidChecker("evidence.config.ts");
- * const report: IEvidCheckReport = await checker.check();
- * // A subsequent call reloads the configuration and selected source files.
- * const updated: IEvidCheckReport = await checker.check();
+ *   const checker: EvidChecker = new EvidChecker("evidence.config.ts");
+ *   const report: IEvidCheckReport = await checker.check();
+ *   // A subsequent call reloads the configuration and selected source files.
+ *   const updated: IEvidCheckReport = await checker.check();
  */
 export class EvidChecker {
   /**
@@ -36,8 +37,9 @@ export class EvidChecker {
   /**
    * Selects the configuration file for subsequent checks.
    *
-   * Construction performs no file access or parser initialization. Omission uses
-   * `evidence.config.ts`; the loader resolves the supplied path when work begins.
+   * Construction performs no file access or parser initialization. Omission
+   * uses `evidence.config.ts`; the loader resolves the supplied path when work
+   * begins.
    */
   public constructor(configFile: string = "evidence.config.ts") {
     this.configFile = configFile;
@@ -46,9 +48,10 @@ export class EvidChecker {
   /**
    * Reloads configuration and returns the complete analysis of its populations.
    *
-   * The result retains graph input, graph evaluation, and the command report for
-   * queries against the same source snapshots. Configuration loading failures
-   * reject the call; materialized analysis findings remain in the result.
+   * The result retains graph input, graph evaluation, and the command report
+   * for queries against the same source snapshots. Configuration loading
+   * failures reject the call; materialized analysis findings remain in the
+   * result.
    */
   public async analyze(): Promise<IEvidCheckAnalysis> {
     return this.evaluate(await EvidConfigLoader.plan(this.configFile));
@@ -57,8 +60,8 @@ export class EvidChecker {
   /**
    * Analyzes one configuration through a temporary checker.
    *
-   * This is the static convenience form of the instance `analyze` operation.
-   * It returns captured graph context as well as the report, suitable for a
+   * This is the static convenience form of the instance `analyze` operation. It
+   * returns captured graph context as well as the report, suitable for a
    * subsequent list, inspection, or graph export without another source load.
    */
   public static async analyze(
@@ -71,7 +74,8 @@ export class EvidChecker {
    * Runs a fresh analysis and returns its command-facing result.
    *
    * Use this when counts, diagnostics, and exit status are sufficient. Call
-   * `analyze` instead when the caller also needs materialized units for queries.
+   * `analyze` instead when the caller also needs materialized units for
+   * queries.
    */
   public async check(): Promise<IEvidCheckReport> {
     return (await this.analyze()).report;
@@ -97,9 +101,7 @@ export class EvidChecker {
    * invocation from caller mutation. It supplies resolved configuration policy;
    * selected source inventories are still loaded afresh for the evaluation.
    */
-  public async evaluate(
-    input: IEvidConfigPlan,
-  ): Promise<IEvidCheckAnalysis> {
+  public async evaluate(input: IEvidConfigPlan): Promise<IEvidCheckAnalysis> {
     // Capture policy before awaiting extraction so a caller cannot change the
     // plan halfway through building this invocation's independent populations.
     const plan = structuredClone(input);
@@ -114,8 +116,8 @@ export class EvidChecker {
    * Evaluates a resolved plan through a temporary checker.
    *
    * The plan supplies its configuration location and is copied by the instance
-   * operation. This entry point skips configuration loading while retaining fresh
-   * source materialization and per-invocation graph state.
+   * operation. This entry point skips configuration loading while retaining
+   * fresh source materialization and per-invocation graph state.
    */
   public static async evaluate(
     input: IEvidConfigPlan,

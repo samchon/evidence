@@ -8,11 +8,15 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 /**
  * Extracts public Python units from stubs and explicit private exports.
  *
- * The stub fixture combines aliases, overloads, Unicode identifiers, properties, nested declarations, and __all__ selection to verify source spelling and public ownership.
+ * The stub fixture combines aliases, overloads, Unicode identifiers,
+ * properties, nested declarations, and **all** selection to verify source
+ * spelling and public ownership.
  *
  * 1. Analyze the .pyi and Unicode Python source snapshots together.
- * 2. Verify the expected unit identities, symbol kinds, overload sites, and Unicode target spelling.
- * 3. Verify explicitly exported private declarations remain selectable while unselected private declarations stay hidden.
+ * 2. Verify the expected unit identities, symbol kinds, overload sites, and
+ *    Unicode target spelling.
+ * 3. Verify explicitly exported private declarations remain selectable while
+ *    unselected private declarations stay hidden.
  */
 export async function test_python_stubs(): Promise<void> {
   const inventory = await new EvidPythonAdapter().analyze(

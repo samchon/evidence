@@ -7,32 +7,36 @@ import type { IEvidGraphExportEdge } from "./IEvidGraphExportEdge";
 import type { IEvidGraphExportReview } from "./IEvidGraphExportReview";
 
 /**
- * Versioned graph export preserving every independent claim/reference obligation.
+ * Versioned graph export preserving every independent claim/reference
+ * obligation.
  *
- * Nodes are qualified by boundary and role, so shared semantic identities do not
- * merge requirements across references. Accepted acknowledgement edges and review
- * relations remain separate. Report status and diagnostics come from the same
- * check analysis used to construct the graph.
+ * Nodes are qualified by boundary and role, so shared semantic identities do
+ * not merge requirements across references. Accepted acknowledgement edges and
+ * review relations remain separate. Report status and diagnostics come from the
+ * same check analysis used to construct the graph.
  */
 export interface IEvidGraphReport {
   /**
    * Serialization version for graph consumers.
    *
-   * Readers check this before interpreting boundary-qualified node and edge IDs.
+   * Readers check this before interpreting boundary-qualified node and edge
+   * IDs.
    */
   schemaVersion: 1;
 
   /**
    * Discriminator identifying a configured graph export.
    *
-   * This report includes relationship records beyond the ordinary check summary.
+   * This report includes relationship records beyond the ordinary check
+   * summary.
    */
   command: "graph";
 
   /**
    * Configuration file whose planned populations were evaluated.
    *
-   * Boundary indices refer to authored claims and references in this configuration.
+   * Boundary indices refer to authored claims and references in this
+   * configuration.
    */
   configFile: string;
 
@@ -46,7 +50,8 @@ export interface IEvidGraphReport {
   /**
    * Check success inherited from completeness and diagnostic severity.
    *
-   * A graph can be exported for a failing check so consumers can explain its gaps.
+   * A graph can be exported for a failing check so consumers can explain its
+   * gaps.
    */
   success: boolean;
 
@@ -60,36 +65,40 @@ export interface IEvidGraphReport {
   /**
    * Independent obligations with their selection, policy, and coverage ledgers.
    *
-   * Repeated references retain distinct entries even when they select identical units.
+   * Repeated references retain distinct entries even when they select identical
+   * units.
    */
   boundaries: IEvidGraphBoundary[];
 
   /**
    * Semantic-unit and standalone-carrier nodes ordered by export identity.
    *
-   * IDs include the obligation boundary so one unit can appear in several contexts.
+   * IDs include the obligation boundary so one unit can appear in several
+   * contexts.
    */
   nodes: EvidGraphNode[];
 
   /**
    * Accepted acknowledgement relationships ordered by edge identity.
    *
-   * Each edge identifies its carrier-side nodes, exact target, and selected coverage.
+   * Each edge identifies its carrier-side nodes, exact target, and selected
+   * coverage.
    */
   edges: IEvidGraphExportEdge[];
 
   /**
    * Review relationships retained separately from coverage edges.
    *
-   * Resolution status can expose unresolved or ambiguous reviews without treating
-   * them as accepted acknowledgements.
+   * Resolution status can expose unresolved or ambiguous reviews without
+   * treating them as accepted acknowledgements.
    */
   reviews: IEvidGraphExportReview[];
 
   /**
    * Findings from the full check analysis in deterministic report order.
    *
-   * These explain completeness, policy, and coverage failures visible in the graph.
+   * These explain completeness, policy, and coverage failures visible in the
+   * graph.
    */
   diagnostics: IEvidDiagnostic[];
 }

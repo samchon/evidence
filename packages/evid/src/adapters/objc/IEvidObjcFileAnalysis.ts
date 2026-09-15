@@ -4,7 +4,8 @@ import type { IEvidObjcDeclaration } from "./IEvidObjcDeclaration";
 import type { IEvidObjcDocumentation } from "./IEvidObjcDocumentation";
 
 /**
- * Holds the node-free Objective-C extraction retained after a parse session closes.
+ * Holds the node-free Objective-C extraction retained after a parse session
+ * closes.
  *
  * Interface and implementation sites are reconciled only after every selected
  * source is scanned, while this record keeps their physical provenance intact.
@@ -20,7 +21,8 @@ export interface IEvidObjcFileAnalysis {
   /**
    * Physical declaration sites before public identity reconciliation.
    *
-   * Later materialization merges compatible interface and implementation records.
+   * Later materialization merges compatible interface and implementation
+   * records.
    */
   declarations: IEvidObjcDeclaration[];
 

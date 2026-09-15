@@ -4,20 +4,22 @@ import { TestValidator } from "@nestia/e2e";
 import { EvidTestInventory } from "../../internal/EvidTestInventory";
 
 /**
- * Preserves incomplete analysis when inventory ownership or identity is inconsistent.
+ * Preserves incomplete analysis when inventory ownership or identity is
+ * inconsistent.
  *
  * An empty or partially usable unit list cannot prove successful extraction.
  * These cases exercise the inventory boundary directly so downstream coverage
  * cannot conceal failures by selecting fewer declarations.
  *
  * 1. Compare a healthy empty inventory with the same input marked incomplete:
+ *
  *    - Empty selection is complete only for the healthy input.
  *    - Lookup on failed input reports incomplete rather than merely missing.
  * 2. Give a class an absent parent and require incomplete reconciliation.
  * 3. Make that class its own parent and require terminating selection with an
  *    inventory-cycle diagnostic, rather than unbounded ancestor traversal.
- * 4. Remove the parent and merge copies assigning different symbol categories
- *    to the same ID; the contradictory identity must remain incomplete.
+ * 4. Remove the parent and merge copies assigning different symbol categories to
+ *    the same ID; the contradictory identity must remain incomplete.
  */
 export async function test_inventory_failures(): Promise<void> {
   const empty = EvidTestInventory.create();

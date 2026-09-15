@@ -20,13 +20,15 @@ import { EvidDartFileScanner } from "./EvidDartFileScanner";
 import { EvidDartLibraries } from "./EvidDartLibraries";
 
 /**
- * Resolves Dart library topology before publishing declarations and documentation.
+ * Resolves Dart library topology before publishing declarations and
+ * documentation.
  *
  * File scans record directives and physical declarations. Reciprocal part
  * resolution establishes defining-library ownership, then unit materialization
- * and show/hide export publication expose aliases without duplicating identities.
- * Documentation is attached after those owners exist. Missing library inputs
- * remain dependencies so a later watch cycle can observe their creation.
+ * and show/hide export publication expose aliases without duplicating
+ * identities. Documentation is attached after those owners exist. Missing
+ * library inputs remain dependencies so a later watch cycle can observe their
+ * creation.
  */
 export class EvidDartAdapterBase implements IEvidAdapter {
   /**
@@ -40,13 +42,12 @@ export class EvidDartAdapterBase implements IEvidAdapter {
   /**
    * Builds an owned Dart inventory from captured source and library directives.
    *
-   * Topology resolution runs before declarations are grouped by library. Source,
-   * topology, and syntax failures preserve incomplete status, and parser cleanup
-   * runs even if publication or documentation materialization throws.
+   * Topology resolution runs before declarations are grouped by library.
+   * Source, topology, and syntax failures preserve incomplete status, and
+   * parser cleanup runs even if publication or documentation materialization
+   * throws.
    */
-  public async analyze(
-    snapshot: IEvidSourceSnapshot,
-  ): Promise<IEvidInventory> {
+  public async analyze(snapshot: IEvidSourceSnapshot): Promise<IEvidInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidInventory = {
       schemaVersion: 1,
@@ -92,7 +93,8 @@ export class EvidDartAdapterBase implements IEvidAdapter {
   /**
    * Converts parser failures into incomplete source analysis.
    *
-   * The returned record preserves file and parser-range diagnostics for the inventory.
+   * The returned record preserves file and parser-range diagnostics for the
+   * inventory.
    */
   private async scan(
     parser: EvidParser,
@@ -105,8 +107,7 @@ export class EvidDartAdapterBase implements IEvidAdapter {
         (session) => new EvidDartFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError =
-        cause instanceof EvidParserError ? cause : undefined;
+      const parserError = cause instanceof EvidParserError ? cause : undefined;
       return {
         source,
         declarations: [],
@@ -136,9 +137,11 @@ export class EvidDartAdapterBase implements IEvidAdapter {
   }
 
   /**
-   * Reconciles library declarations and retains every physical declaration address.
+   * Reconciles library declarations and retains every physical declaration
+   * address.
    *
-   * This occurs before unit materialization so parts and exports share library identity.
+   * This occurs before unit materialization so parts and exports share library
+   * identity.
    */
   private materializeUnits(
     inventory: IEvidInventory,
@@ -333,7 +336,8 @@ export class EvidDartAdapterBase implements IEvidAdapter {
   /**
    * Groups published semantic owners by their physical declaration site.
    *
-   * One documentation carrier can attach to declarations that share a source span.
+   * One documentation carrier can attach to declarations that share a source
+   * span.
    */
   private attachmentGroups(
     documentation: IEvidDartDocumentation,
@@ -406,8 +410,11 @@ export class EvidDartAdapterBase implements IEvidAdapter {
     documentation: IEvidDartDocumentation,
   ): boolean {
     return this.annotationPattern(
-      EvidDartDocumentation.read(analysis.source, documentation, documentation.id)
-        .text,
+      EvidDartDocumentation.read(
+        analysis.source,
+        documentation,
+        documentation.id,
+      ).text,
       true,
     );
   }
@@ -422,8 +429,11 @@ export class EvidDartAdapterBase implements IEvidAdapter {
     documentation: IEvidDartDocumentation,
   ): boolean {
     return this.annotationPattern(
-      EvidDartDocumentation.read(analysis.source, documentation, documentation.id)
-        .text,
+      EvidDartDocumentation.read(
+        analysis.source,
+        documentation,
+        documentation.id,
+      ).text,
       false,
     );
   }
@@ -464,9 +474,11 @@ export class EvidDartAdapterBase implements IEvidAdapter {
   }
 
   /**
-   * Separates defining libraries and programming kinds while merging complementary accessors.
+   * Separates defining libraries and programming kinds while merging
+   * complementary accessors.
    *
-   * Unit IDs remain stable across parts that contribute one public Dart declaration.
+   * Unit IDs remain stable across parts that contribute one public Dart
+   * declaration.
    */
   private unitId(declaration: IEvidDartDeclaration): string {
     return `dart:${declaration.library}:${declaration.symbol}:${JSON.stringify(declaration.identity)}`;

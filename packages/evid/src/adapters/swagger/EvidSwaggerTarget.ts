@@ -1,12 +1,14 @@
 import type { IEvidAddress } from "../../structures/IEvidAddress";
 
-/** Parses one whitespace-free Swagger operation target.
+/**
+ * Parses one whitespace-free Swagger operation target.
  *
  * Swagger has no physical source-file address, so accepted selectors are placed
  * in the synthetic `swagger:` file namespace as one atomic segment.
  */
 export namespace EvidSwaggerTarget {
-  /** Converts a public `METHOD:/path` selector to an Evid address.
+  /**
+   * Converts a public `METHOD:/path` selector to an Evid address.
    *
    * Validation here matches loader targets so a citation cannot select an
    * operation shape the adapter would never materialize.

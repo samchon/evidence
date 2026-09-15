@@ -4,9 +4,12 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Rejects JavaScript export surfaces that static analysis cannot prove complete.
+/**
+ * Rejects JavaScript export surfaces that static analysis cannot prove
+ * complete.
  *
- * Dynamic or uncertain export behavior cannot publish a smaller selected denominator.
+ * Dynamic or uncertain export behavior cannot publish a smaller selected
+ * denominator.
  *
  * 1. Analyze each unsupported export form.
  * 2. Require incompleteness and diagnostics.

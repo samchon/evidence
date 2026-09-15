@@ -5,9 +5,10 @@ import type { EvidLanguageCandidateKind } from "../typings/EvidLanguageCandidate
 /**
  * Research record for a possible future language or embedded-format adapter.
  *
- * Grammar provenance and WASM availability describe parsing feasibility; visibility,
- * declaration boundaries, and blockers describe the semantic work still required.
- * Candidate records are not configuration support or adapter certification.
+ * Grammar provenance and WASM availability describe parsing feasibility;
+ * visibility, declaration boundaries, and blockers describe the semantic work
+ * still required. Candidate records are not configuration support or adapter
+ * certification.
  */
 export interface IEvidLanguageCandidate {
   /**
@@ -28,51 +29,56 @@ export interface IEvidLanguageCandidate {
   /**
    * Whether the candidate is a programming language or an embedded format.
    *
-   * The distinction affects which declaration and host model must be established.
+   * The distinction affects which declaration and host model must be
+   * established.
    */
   kind: EvidLanguageCandidateKind;
 
   /**
    * Dialects considered within this research entry.
    *
-   * These define the scope of investigation rather than promising certified support.
+   * These define the scope of investigation rather than promising certified
+   * support.
    */
   dialects: string[];
 
   /**
    * Upstream grammar repository used to assess parsing feasibility.
    *
-   * Certification still requires pinned provenance and verified runtime compatibility.
+   * Certification still requires pinned provenance and verified runtime
+   * compatibility.
    */
   grammarRepository: string;
 
   /**
    * License information recorded for the candidate grammar.
    *
-   * This accompanies provenance when evaluating whether to acquire and ship support.
+   * This accompanies provenance when evaluating whether to acquire and ship
+   * support.
    */
   grammarLicense: string;
 
   /**
    * Available route to obtaining grammar WASM bytes.
    *
-   * A release asset and a source build impose different acquisition work; neither
-   * alone establishes an ABI-compatible, certified adapter.
+   * A release asset and a source build impose different acquisition work;
+   * neither alone establishes an ABI-compatible, certified adapter.
    */
   wasm: EvidGrammarWasmAvailability;
 
   /**
    * Details qualifying the candidate's WASM acquisition route.
    *
-   * These explain build or distribution constraints beyond the route discriminator.
+   * These explain build or distribution constraints beyond the route
+   * discriminator.
    */
   wasmNotes: string;
 
   /**
    * Authoritative language reference guiding semantic extraction research.
    *
-   * Declaration ownership and public visibility must be derived from the language
-   * contract rather than guessed from grammar node names.
+   * Declaration ownership and public visibility must be derived from the
+   * language contract rather than guessed from grammar node names.
    */
   languageReference: string;
 
@@ -86,7 +92,8 @@ export interface IEvidLanguageCandidate {
   /**
    * Proposed declaration families and ownership boundaries to extract.
    *
-   * The description guides inventory work without claiming that extraction exists.
+   * The description guides inventory work without claiming that extraction
+   * exists.
    */
   declarations: string;
 
@@ -101,7 +108,8 @@ export interface IEvidLanguageCandidate {
   /**
    * Next concrete research or implementation step for the candidate.
    *
-   * This keeps the record actionable without turning it into a support guarantee.
+   * This keeps the record actionable without turning it into a support
+   * guarantee.
    */
   next: string;
 }

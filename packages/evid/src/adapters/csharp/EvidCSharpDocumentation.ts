@@ -14,8 +14,9 @@ export namespace EvidCSharpDocumentation {
   /**
    * Maps one C# XML documentation carrier and removes its example elements.
    *
-   * Character replacement keeps the shared source offsets intact while preventing
-   * tags inside `c`, `code`, `example`, or `pre` content from becoming evidence.
+   * Character replacement keeps the shared source offsets intact while
+   * preventing tags inside `c`, `code`, `example`, or `pre` content from
+   * becoming evidence.
    */
   export function read(
     source: IEvidSourceFile,

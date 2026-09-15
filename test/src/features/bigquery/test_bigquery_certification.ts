@@ -3,12 +3,17 @@ import { TestValidator } from "@nestia/e2e";
 import { EvidDatabaseAdapterCertification } from "../../internal/certification/EvidDatabaseAdapterCertification";
 import { BigQueryCertificationFixture } from "./BigQueryCertificationFixture";
 
-/** Certifies BigQuery inventory, graph, failure, fingerprint, and ambiguity contracts.
+/**
+ * Certifies BigQuery inventory, graph, failure, fingerprint, and ambiguity
+ * contracts.
  *
- * The fixture is the independent expected surface, so certification must reject changes that make a reported database population less exact.
+ * The fixture is the independent expected surface, so certification must reject
+ * changes that make a reported database population less exact.
  *
- * 1. Analyze the fixture and validate its inventory, graph, failure handling, fingerprint, and ambiguity checks.
- * 2. Remove a unit or host, change a column symbol, and replace an address segment.
+ * 1. Analyze the fixture and validate its inventory, graph, failure handling,
+ *    fingerprint, and ambiguity checks.
+ * 2. Remove a unit or host, change a column symbol, and replace an address
+ *    segment.
  * 3. Require inventory validation to reject each mutated report.
  */
 export async function test_bigquery_certification(): Promise<void> {

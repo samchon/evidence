@@ -15,19 +15,22 @@ export class EvidDbmlFileScanner {
   /**
    * Accumulates the serializable analysis for this source file.
    *
-   * Later adapter stages resolve its relations, enum dependencies, and documentation carriers.
+   * Later adapter stages resolve its relations, enum dependencies, and
+   * documentation carriers.
    */
   private readonly output: IEvidDbmlFileAnalysis;
 
   /**
    * Maps parser-node offsets to declaration identities they own.
    *
-   * Notes and comments use this map to attach only at the matching syntax level.
+   * Notes and comments use this map to attach only at the matching syntax
+   * level.
    */
   private readonly owners = new Map<number, string[][]>();
 
   /**
-   * Tracks line comments already included in a contiguous documentation carrier.
+   * Tracks line comments already included in a contiguous documentation
+   * carrier.
    *
    * Each comment can contribute to at most one attachment run.
    */
@@ -36,7 +39,8 @@ export class EvidDbmlFileScanner {
   /**
    * Binds the parsed DBML session and its immutable source snapshot.
    *
-   * Parser nodes are used only during extraction; the returned result contains serializable facts.
+   * Parser nodes are used only during extraction; the returned result contains
+   * serializable facts.
    */
   public constructor(
     private readonly session: EvidParseSession,
@@ -56,7 +60,8 @@ export class EvidDbmlFileScanner {
   /**
    * Extracts top-level DBML constructs and their documentation attachments.
    *
-   * A complete result contains every recognized declaration and explicit unsupported-syntax diagnostic.
+   * A complete result contains every recognized declaration and explicit
+   * unsupported-syntax diagnostic.
    */
   public scan(): IEvidDbmlFileAnalysis {
     for (const node of this.session.root.namedChildren) {
@@ -97,7 +102,8 @@ export class EvidDbmlFileScanner {
   /**
    * Retains enum semantic dependencies and validates their members.
    *
-   * Duplicate values make the declared schema ambiguous for dependent fingerprints.
+   * Duplicate values make the declared schema ambiguous for dependent
+   * fingerprints.
    */
   private enumeration(node: EvidNode): void {
     const name = node.childForFieldName("name");
@@ -124,7 +130,8 @@ export class EvidDbmlFileScanner {
   /**
    * Publishes a table and scalar columns directly owned by it.
    *
-   * Nested constructs are handled separately so each declaration has an unambiguous owner.
+   * Nested constructs are handled separately so each declaration has an
+   * unambiguous owner.
    */
   private table(node: EvidNode): void {
     const name = node.childForFieldName("name");
@@ -189,7 +196,8 @@ export class EvidDbmlFileScanner {
   }
 
   /**
-   * Retains relation endpoints until selected-schema declarations are available.
+   * Retains relation endpoints until selected-schema declarations are
+   * available.
    *
    * Cross-file resolution occurs after every DBML source has been scanned.
    */
@@ -223,7 +231,8 @@ export class EvidDbmlFileScanner {
   /**
    * Reads literal endpoint segments without resolving semantic existence.
    *
-   * Deferring lookup permits relations between declarations in separate source files.
+   * Deferring lookup permits relations between declarations in separate source
+   * files.
    */
   private endpoint(node: EvidNode): IEvidDbmlEndpoint {
     const table = node.childForFieldName("table");
@@ -244,7 +253,8 @@ export class EvidDbmlFileScanner {
   /**
    * Builds a table identity while applying DBML's implicit public schema.
    *
-   * Literal identifier dots remain part of their quoted segments rather than path separators.
+   * Literal identifier dots remain part of their quoted segments rather than
+   * path separators.
    */
   private tableName(node: EvidNode): string[] {
     const schema = node.namedChildren.find((child) => child.type === "schema");
@@ -266,7 +276,8 @@ export class EvidDbmlFileScanner {
   /**
    * Decodes quoted identifiers without altering their case or punctuation.
    *
-   * Literal spelling is required to preserve the DBML identity used by resolution.
+   * Literal spelling is required to preserve the DBML identity used by
+   * resolution.
    */
   private identifier(node: EvidNode): string {
     const text = node.text;
@@ -276,9 +287,11 @@ export class EvidDbmlFileScanner {
   }
 
   /**
-   * Attaches adjacent comments only to a recognized declaration at the same level.
+   * Attaches adjacent comments only to a recognized declaration at the same
+   * level.
    *
-   * This prevents comments inside nested syntax from documenting an enclosing declaration.
+   * This prevents comments inside nested syntax from documenting an enclosing
+   * declaration.
    */
   private comment(node: EvidNode): void {
     if (this.comments.has(node.startIndex)) return;
@@ -341,7 +354,8 @@ export class EvidDbmlFileScanner {
   }
 
   /**
-   * Checks that a documentation run reaches its next declaration without a blank line.
+   * Checks that a documentation run reaches its next declaration without a
+   * blank line.
    *
    * Separation means the comment has no unambiguous declaration owner.
    */
@@ -356,7 +370,8 @@ export class EvidDbmlFileScanner {
   /**
    * Attaches supported table and column notes to their owners.
    *
-   * Notes on enums, indexes, and projects remain explicit unsupported annotation carriers.
+   * Notes on enums, indexes, and projects remain explicit unsupported
+   * annotation carriers.
    */
   private note(node: EvidNode): void {
     const value = node.namedChildren.find((child) => child.type === "string");
@@ -383,7 +398,8 @@ export class EvidDbmlFileScanner {
   /**
    * Serializes enum semantics without including annotations.
    *
-   * Documentation acknowledges declarations but does not change the enum fingerprint.
+   * Documentation acknowledges declarations but does not change the enum
+   * fingerprint.
    */
   private semantic(node: EvidNode): string {
     if (node.type === "comment" || node.type === "note") return "";
@@ -404,7 +420,8 @@ export class EvidDbmlFileScanner {
   /**
    * Marks unsupported source as incomplete and records a repairable diagnostic.
    *
-   * The failure protects coverage from passing against a reduced obligation set.
+   * The failure protects coverage from passing against a reduced obligation
+   * set.
    */
   private problem(node: EvidNode, message: string): void {
     this.output.complete = false;

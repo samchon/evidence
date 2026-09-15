@@ -1,4 +1,5 @@
-/** One ATX heading and its public anchor candidate.
+/**
+ * One ATX heading and its public anchor candidate.
  *
  * The scanner keeps normalized heading data separate from source positions so
  * hierarchy and duplicate-anchor handling can decide public unit ownership.

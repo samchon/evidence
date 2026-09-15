@@ -6,7 +6,8 @@ import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestInventory } from "../../internal/EvidTestInventory";
 
 /**
- * Keeps overlapping claims and repeated references as independent coverage obligations.
+ * Keeps overlapping claims and repeated references as independent coverage
+ * obligations.
  *
  * The same semantic target appears in multiple graph boundaries. One accepted
  * acknowledgement must not discharge another claim's requirement or bypass a
@@ -14,10 +15,13 @@ import { EvidTestInventory } from "../../internal/EvidTestInventory";
  * that actually failed.
  *
  * 1. Give the first claim evidence and remove it from a copied second claim:
- *    - The first obligation has no missing units; the second still misses the target.
+ *
+ *    - The first obligation has no missing units; the second still misses the
+ *         target.
  *    - Exactly one missing finding identifies claim 1, reference 0 using zero-based
- *      indices, and its message includes the second claim's label.
+ *         indices, and its message includes the second claim's label.
  * 2. Evaluate one exclusion against two references selecting the same target:
+ *
  *    - The permissive reference is covered.
  *    - The exclusion-forbidding reference remains missing.
  *    - Exactly one forbidden-exclusion finding identifies claim 0, reference 1.
@@ -187,7 +191,8 @@ export async function test_graph_independent_obligations(): Promise<void> {
  * Builds one active graph claim around the supplied independent references.
  *
  * The helper keeps fixture setup focused on the changed population or policy.
- * It preserves reference order because the assertions verify diagnostic indices.
+ * It preserves reference order because the assertions verify diagnostic
+ * indices.
  */
 function claim(
   inventory: IEvidGraphClaim["inventory"],

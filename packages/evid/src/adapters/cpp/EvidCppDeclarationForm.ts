@@ -1,8 +1,9 @@
 /**
  * Enumerates C++ source forms that establish supported semantic declarations.
  *
- * EvidCppFileScanner uses the form to choose identity, ownership, visibility, and
- * address behavior while unsupported grammar forms remain incomplete diagnostics.
+ * EvidCppFileScanner uses the form to choose identity, ownership, visibility,
+ * and address behavior while unsupported grammar forms remain incomplete
+ * diagnostics.
  */
 export type EvidCppDeclarationForm =
   | "namespace"

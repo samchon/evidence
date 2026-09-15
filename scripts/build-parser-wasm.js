@@ -137,7 +137,10 @@ async function main() {
   process.stdout.write(`Built, reproduced and parsed ${id}: ${output}\n`);
 }
 
-/** Generates and compiles a detached source pin, recording generated and scanner inputs. */
+/**
+ * Generates and compiles a detached source pin, recording generated and scanner
+ * inputs.
+ */
 async function build(recipe, base, name, cli, env) {
   const checkout = path.join(base, name);
   await mkdir(checkout);
@@ -224,7 +227,10 @@ async function build(recipe, base, name, cli, env) {
   };
 }
 
-/** Parses a real declaration and queries its name with the installed engine/grammar pair. */
+/**
+ * Parses a real declaration and queries its name with the installed
+ * engine/grammar pair.
+ */
 async function verify(recipe, bytes) {
   const requireEvid = createRequire(
     path.join(root, "packages/evid/package.json"),

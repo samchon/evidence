@@ -4,11 +4,15 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Classifies the public C surface across tags, aliases, callables, objects, and members.
+/**
+ * Classifies the public C surface across tags, aliases, callables, objects, and
+ * members.
  *
- * The inventory must retain each distinct declaration category so coverage cannot omit public aggregate structure.
+ * The inventory must retain each distinct declaration category so coverage
+ * cannot omit public aggregate structure.
  *
- * 1. Analyze C declarations for tags, typedefs, functions, objects, fields, and enumerators.
+ * 1. Analyze C declarations for tags, typedefs, functions, objects, fields, and
+ *    enumerators.
  * 2. Compare the selected unit symbols and full identities.
  * 3. Verify members retain their aggregate owner.
  */

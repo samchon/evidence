@@ -9,9 +9,11 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Acquires PostgreSQL's pinned parser variant and reuses it offline.
+/**
+ * Acquires PostgreSQL's pinned parser variant and reuses it offline.
  *
- * The adapter must request only the configured grammar and preserve a complete schema inventory from the warmed cache.
+ * The adapter must request only the configured grammar and preserve a complete
+ * schema inventory from the warmed cache.
  *
  * 1. Analyze PostgreSQL input cold while recording grammar requests.
  * 2. Verify the requested variant and complete inventory.

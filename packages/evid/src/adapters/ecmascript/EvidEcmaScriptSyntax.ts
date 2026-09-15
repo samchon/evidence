@@ -6,7 +6,8 @@ import type { IEvidCommentSyntax } from "../../structures/IEvidCommentSyntax";
  * Tree-sitter spelling checks shared by TypeScript and JavaScript extraction.
  *
  * The scanner uses these narrow syntax helpers to preserve literal names,
- * bindings, comments, and supported static module forms without compiler evaluation.
+ * bindings, comments, and supported static module forms without compiler
+ * evaluation.
  */
 export namespace EvidEcmaScriptSyntax {
   export function token(node: EvidNode, value: string): boolean {

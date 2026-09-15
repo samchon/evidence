@@ -5,9 +5,15 @@ import { resolve } from "node:path";
 import { EvidTreeSitterAssets, EvidTreeSitterAssetScope } from "evid";
 import { EvidTestFileSystem } from "./EvidTestFileSystem";
 
-/** Acquires real pinned test grammars automatically while isolating each suite's runtime cache. */
+/**
+ * Acquires real pinned test grammars automatically while isolating each suite's
+ * runtime cache.
+ */
 export namespace EvidTestParserAssets {
-  /** Reuses a contributor/CI fixture cache independently of the acquisition scenario under test. */
+  /**
+   * Reuses a contributor/CI fixture cache independently of the acquisition
+   * scenario under test.
+   */
   export async function bytes(grammar: IEvidGrammar): Promise<Uint8Array> {
     return EvidTreeSitterAssetScope.run(
       {
@@ -22,7 +28,10 @@ export namespace EvidTestParserAssets {
     );
   }
 
-  /** Creates a disposable runtime cache and supplies only catalog-pinned bytes as its controlled transport. */
+  /**
+   * Creates a disposable runtime cache and supplies only catalog-pinned bytes
+   * as its controlled transport.
+   */
   export async function run<T>(closure: () => Promise<T>): Promise<T> {
     const grammars = await new EvidTreeSitterAssets().list();
     const files = new Map(

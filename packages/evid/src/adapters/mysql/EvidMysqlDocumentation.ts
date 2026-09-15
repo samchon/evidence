@@ -2,15 +2,19 @@ import type { IEvidDocumentation } from "../../structures/IEvidDocumentation";
 import type { IEvidSourceRange } from "../../structures/IEvidSourceRange";
 
 /**
- * Maps an attached MySQL COMMENT literal without losing original UTF-16 positions.
+ * Maps an attached MySQL COMMENT literal without losing original UTF-16
+ * positions.
  *
- * The MySQL scanner supplies the literal range after it has established ownership.
+ * The MySQL scanner supplies the literal range after it has established
+ * ownership.
  */
 export namespace EvidMysqlDocumentation {
   /**
-   * Decodes SQL doubled quotes while rejecting server-mode-dependent backslash escapes.
+   * Decodes SQL doubled quotes while rejecting server-mode-dependent backslash
+   * escapes.
    *
-   * Rejection avoids assigning annotation offsets under an unknown MySQL session mode.
+   * Rejection avoids assigning annotation offsets under an unknown MySQL
+   * session mode.
    */
   export function read(
     content: string,

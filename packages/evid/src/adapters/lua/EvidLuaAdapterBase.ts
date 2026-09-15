@@ -19,7 +19,8 @@ import { EvidLuaDocumentation } from "./EvidLuaDocumentation";
 import { EvidLuaFileScanner } from "./EvidLuaFileScanner";
 
 /**
- * Materializes statically established Lua declarations and documentation owners.
+ * Materializes statically established Lua declarations and documentation
+ * owners.
  *
  * The scanner records supported globals, returned-table fields, and local alias
  * relationships without executing the module. Materialization publishes their
@@ -31,21 +32,21 @@ export class EvidLuaAdapterBase implements IEvidAdapter {
   /**
    * Lua discriminator for static global and module-table extraction.
    *
-   * It selects Lua grammar and documentation rules. Tables remain property units
-   * rather than becoming type declarations by analogy with another language.
+   * It selects Lua grammar and documentation rules. Tables remain property
+   * units rather than becoming type declarations by analogy with another
+   * language.
    */
   public readonly type = "lua";
 
   /**
    * Analyzes a copied Lua snapshot and returns reconciled public records.
    *
-   * Declaration materialization precedes comment attachment, and common inventory
-   * validation checks the resulting ownership. The parser closes after success
-   * or failure; returned records contain no borrowed syntax nodes.
+   * Declaration materialization precedes comment attachment, and common
+   * inventory validation checks the resulting ownership. The parser closes
+   * after success or failure; returned records contain no borrowed syntax
+   * nodes.
    */
-  public async analyze(
-    snapshot: IEvidSourceSnapshot,
-  ): Promise<IEvidInventory> {
+  public async analyze(snapshot: IEvidSourceSnapshot): Promise<IEvidInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidInventory = {
       schemaVersion: 1,
@@ -89,8 +90,9 @@ export class EvidLuaAdapterBase implements IEvidAdapter {
   /**
    * Converts one parser failure into incomplete Lua source analysis.
    *
-   * The returned diagnostic retains the parser category and available range so a
-   * failed file cannot be mistaken for an empty inventory during graph evaluation.
+   * The returned diagnostic retains the parser category and available range so
+   * a failed file cannot be mistaken for an empty inventory during graph
+   * evaluation.
    */
   private async scan(
     parser: EvidParser,
@@ -103,8 +105,7 @@ export class EvidLuaAdapterBase implements IEvidAdapter {
         (session) => new EvidLuaFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError =
-        cause instanceof EvidParserError ? cause : undefined;
+      const parserError = cause instanceof EvidParserError ? cause : undefined;
       return {
         source,
         declarations: [],
@@ -135,7 +136,8 @@ export class EvidLuaAdapterBase implements IEvidAdapter {
    * Materializes literal aliases into units and physical public addresses.
    *
    * Shared declarations retain one unit identity while each selected source
-   * address remains visible; conflicting declarations make the inventory incomplete.
+   * address remains visible; conflicting declarations make the inventory
+   * incomplete.
    */
   private materializeUnits(
     inventory: IEvidInventory,
@@ -210,8 +212,9 @@ export class EvidLuaAdapterBase implements IEvidAdapter {
   /**
    * Resolves withdrawals before publishing attached documentation hosts.
    *
-   * Withdrawal propagation hides affected units first, then tag parsing publishes
-   * only visible attachment groups or an explicit unsupported annotation host.
+   * Withdrawal propagation hides affected units first, then tag parsing
+   * publishes only visible attachment groups or an explicit unsupported
+   * annotation host.
    */
   private materializeDocumentation(
     inventory: IEvidInventory,
@@ -350,8 +353,8 @@ export class EvidLuaAdapterBase implements IEvidAdapter {
   /**
    * Groups published semantic owners by their physical declaration site.
    *
-   * Multiple attachments at one site share a host and deduplicate unit IDs, while
-   * unpublished declarations do not create annotation ownership.
+   * Multiple attachments at one site share a host and deduplicate unit IDs,
+   * while unpublished declarations do not create annotation ownership.
    */
   private attachmentGroups(
     documentation: IEvidLuaDocumentation,
@@ -372,7 +375,8 @@ export class EvidLuaAdapterBase implements IEvidAdapter {
    * Creates an attached or explicitly unsupported documentation host.
    *
    * A host is attached only when it has both a declaration site and published
-   * units; otherwise its repair guidance explains why tags cannot affect coverage.
+   * units; otherwise its repair guidance explains why tags cannot affect
+   * coverage.
    */
   private host(
     source: IEvidSourceFile,
@@ -401,8 +405,9 @@ export class EvidLuaAdapterBase implements IEvidAdapter {
   /**
    * Parses Evid tags after the adapter establishes their host boundary.
    *
-   * EvidLuaDocumentation supplies normalized, example-masked text, ensuring tags
-   * inherit the attached or unsupported ownership selected by this adapter.
+   * EvidLuaDocumentation supplies normalized, example-masked text, ensuring
+   * tags inherit the attached or unsupported ownership selected by this
+   * adapter.
    */
   private parse(
     source: IEvidSourceFile,
@@ -427,8 +432,11 @@ export class EvidLuaAdapterBase implements IEvidAdapter {
     documentation: IEvidLuaDocumentation,
   ): boolean {
     return this.annotationPattern(
-      EvidLuaDocumentation.read(analysis.source, documentation, documentation.id)
-        .text,
+      EvidLuaDocumentation.read(
+        analysis.source,
+        documentation,
+        documentation.id,
+      ).text,
       true,
     );
   }
@@ -444,8 +452,11 @@ export class EvidLuaAdapterBase implements IEvidAdapter {
     documentation: IEvidLuaDocumentation,
   ): boolean {
     return this.annotationPattern(
-      EvidLuaDocumentation.read(analysis.source, documentation, documentation.id)
-        .text,
+      EvidLuaDocumentation.read(
+        analysis.source,
+        documentation,
+        documentation.id,
+      ).text,
       false,
     );
   }
@@ -453,8 +464,9 @@ export class EvidLuaAdapterBase implements IEvidAdapter {
   /**
    * Recognizes supported annotation names at documentation line boundaries.
    *
-   * The withdrawal mode includes hidden and ignore forms; ordinary claim parsing
-   * recognizes only evidence, exclusion, review, link, and internal annotations.
+   * The withdrawal mode includes hidden and ignore forms; ordinary claim
+   * parsing recognizes only evidence, exclusion, review, link, and internal
+   * annotations.
    */
   private annotationPattern(raw: string, withdrawal: boolean): boolean {
     return withdrawal
@@ -491,7 +503,8 @@ export class EvidLuaAdapterBase implements IEvidAdapter {
    * Builds a file-scoped unit identity that distinguishes programming kinds.
    *
    * Identity segments and the declaration symbol remain separate, allowing one
-   * Lua file to expose similarly named properties and functions without collision.
+   * Lua file to expose similarly named properties and functions without
+   * collision.
    */
   private unitId(declaration: IEvidLuaDeclaration): string {
     return `lua:${declaration.site.file}:${declaration.symbol}:${JSON.stringify(declaration.identity)}`;
@@ -501,7 +514,8 @@ export class EvidLuaAdapterBase implements IEvidAdapter {
    * Records a declaration conflict and marks the Lua inventory incomplete.
    *
    * The diagnostic identifies the selected source file and preserves caller
-   * repair guidance, preventing ambiguous public identity from entering coverage.
+   * repair guidance, preventing ambiguous public identity from entering
+   * coverage.
    */
   private problem(
     inventory: IEvidInventory,

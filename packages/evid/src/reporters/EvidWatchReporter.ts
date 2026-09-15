@@ -5,8 +5,8 @@ import type { EvidWatchCycle } from "../typings/EvidWatchCycle";
 /**
  * Serializes published watch cycles for terminal streams and append-only files.
  *
- * Watch output is framed per cycle so a long-lived process can report failures and
- * later recovery without mixing the fields of adjacent evaluations.
+ * Watch output is framed per cycle so a long-lived process can report failures
+ * and later recovery without mixing the fields of adjacent evaluations.
  */
 export namespace EvidWatchReporter {
   /**
@@ -25,15 +25,16 @@ export namespace EvidWatchReporter {
   /**
    * Emits one complete cycle as a single NDJSON record.
    *
-   * Compact JSON prevents line-oriented consumers from mistaking indentation in a
-   * report for a record boundary while preserving the cycle envelope.
+   * Compact JSON prevents line-oriented consumers from mistaking indentation in
+   * a report for a record boundary while preserving the cycle envelope.
    */
   export function json(cycle: EvidWatchCycle): string {
     return JSON.stringify(cycle) + "\n";
   }
 
   /**
-   * Renders a readable cycle heading followed by its report or failure guidance.
+   * Renders a readable cycle heading followed by its report or failure
+   * guidance.
    *
    * Normal cycles reuse check formatting. A preparation failure has no check
    * report, so it instead preserves configuration context and repair advice.

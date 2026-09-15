@@ -3,8 +3,8 @@
  *
  * A declaration can be reached through its ordinary identifier and, where the
  * language permits it, a tag or typedef spelling. `canonical` distinguishes the
- * spelling that establishes identity from aliases that must yield to a canonical
- * declaration occupying one of their prefixes.
+ * spelling that establishes identity from aliases that must yield to a
+ * canonical declaration occupying one of their prefixes.
  */
 export interface IEvidCDeclarationAddress {
   /**
@@ -24,7 +24,8 @@ export interface IEvidCDeclarationAddress {
   /**
    * Canonical prefixes that suppress this alias when they are already occupied.
    *
-   * They prevent a typedef or tag alias from changing an existing semantic owner's address.
+   * They prevent a typedef or tag alias from changing an existing semantic
+   * owner's address.
    */
   aliasPrefixes: string[][];
 }

@@ -10,7 +10,8 @@ import type { IEvidPhpDocumentation } from "./IEvidPhpDocumentation";
 import type { IEvidPhpFileAnalysis } from "./IEvidPhpFileAnalysis";
 
 /**
- * Extracts explicit PHP declarations without executing source or runtime loaders.
+ * Extracts explicit PHP declarations without executing source or runtime
+ * loaders.
  *
  * The scanner follows lexical syntax only and reports dynamic surface changes
  * that would make a static Evid inventory incomplete.
@@ -19,28 +20,32 @@ export class EvidPhpFileScanner {
   /**
    * Accumulates declarations and diagnostics in lexical source order.
    *
-   * The output is serializable and does not retain parser-node ownership after scanning.
+   * The output is serializable and does not retain parser-node ownership after
+   * scanning.
    */
   private readonly declarations: IEvidPhpDeclaration[] = [];
 
   /**
    * Stores PHPDoc carriers, including unsupported attachment positions.
    *
-   * Their offsets allow later annotation parsing to report the original source location.
+   * Their offsets allow later annotation parsing to report the original source
+   * location.
    */
   private readonly documentation = new Map<number, IEvidPhpDocumentation>();
 
   /**
    * Records failures that prevent a complete declared PHP surface.
    *
-   * The scan returns these diagnostics instead of silently omitting dynamic declarations.
+   * The scan returns these diagnostics instead of silently omitting dynamic
+   * declarations.
    */
   private readonly diagnostics: IEvidDiagnostic[] = [];
 
   /**
    * Maps original source content to UTF-16 Evid coordinates.
    *
-   * PHPDoc attachment and diagnostics retain positions from this unnormalized snapshot.
+   * PHPDoc attachment and diagnostics retain positions from this unnormalized
+   * snapshot.
    */
   private readonly text: EvidSourceText;
 
@@ -59,7 +64,8 @@ export class EvidPhpFileScanner {
   /**
    * Extracts namespaces, nominal types, functions, and visible members.
    *
-   * Dynamic declarations are diagnosed so the output cannot imply a complete static surface.
+   * Dynamic declarations are diagnosed so the output cannot imply a complete
+   * static surface.
    */
   public scan(): IEvidPhpFileAnalysis {
     for (const comment of this.session.root.descendantsOfType("comment")) {
@@ -101,7 +107,8 @@ export class EvidPhpFileScanner {
   /**
    * Traverses namespace scopes without creating namespace Evid units.
    *
-   * Both semicolon and bracketed forms affect lexical ownership of contained declarations.
+   * Both semicolon and bracketed forms affect lexical ownership of contained
+   * declarations.
    */
   private scanScope(
     node: EvidNode,
@@ -180,7 +187,8 @@ export class EvidPhpFileScanner {
   /**
    * Creates one fingerprinted declaration and attaches adjacent PHPDoc.
    *
-   * Each declaration keeps its physical site while its identity represents lexical ownership.
+   * Each declaration keeps its physical site while its identity represents
+   * lexical ownership.
    */
   private add(
     item: EvidNode,
@@ -263,9 +271,11 @@ export class EvidPhpFileScanner {
   }
 
   /**
-   * Reports dynamic global declarations, including ones nested in function bodies.
+   * Reports dynamic global declarations, including ones nested in function
+   * bodies.
    *
-   * Runtime declaration creation can add public surface absent from lexical analysis.
+   * Runtime declaration creation can add public surface absent from lexical
+   * analysis.
    */
   private dynamicSurface(root: EvidNode): void {
     const dynamicNames = new Set([
@@ -345,9 +355,11 @@ export class EvidPhpFileScanner {
   }
 
   /**
-   * Distinguishes declared-field writes from detectable runtime property creation.
+   * Distinguishes declared-field writes from detectable runtime property
+   * creation.
    *
-   * Dynamic public fields must be diagnosed because they escape the static inventory.
+   * Dynamic public fields must be diagnosed because they escape the static
+   * inventory.
    */
   private dynamicProperties(root: EvidNode): void {
     for (const member of root.descendantsOfType("member_access_expression")) {
@@ -410,7 +422,8 @@ export class EvidPhpFileScanner {
   /**
    * Records unsupported surface-changing syntax at its original source range.
    *
-   * Duplicate diagnostics are suppressed while the analysis remains explicitly incomplete.
+   * Duplicate diagnostics are suppressed while the analysis remains explicitly
+   * incomplete.
    */
   private problem(node: EvidNode, code: string, message: string): void {
     if (
@@ -438,7 +451,8 @@ export class EvidPhpFileScanner {
 /**
  * Lists nominal PHP declarations whose members have an explicit lexical owner.
  *
- * The scanner uses these node kinds to establish class-like ownership while traversing bodies.
+ * The scanner uses these node kinds to establish class-like ownership while
+ * traversing bodies.
  */
 const TYPES = new Set([
   "class_declaration",
@@ -450,7 +464,8 @@ const TYPES = new Set([
 /**
  * Lists syntax nodes that introduce no independently declared public symbol.
  *
- * Ignoring these nodes keeps traversal focused on syntax that can change the inventory.
+ * Ignoring these nodes keeps traversal focused on syntax that can change the
+ * inventory.
  */
 const IGNORED = new Set([
   "php_tag",

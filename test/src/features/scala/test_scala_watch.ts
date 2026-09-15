@@ -8,11 +8,15 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 /**
  * Rebuilds selected Scala populations across watcher cycles.
  *
- * A filesystem-backed claim initially covers one property, then new source, malformed source, a repair, and a selector change exercise replacement and recovery of watcher state.
+ * A filesystem-backed claim initially covers one property, then new source,
+ * malformed source, a repair, and a selector change exercise replacement and
+ * recovery of watcher state.
  *
  * 1. Start the watcher and compare each fresh cycle with a direct checker result.
- * 2. Add an uncovered source, introduce a syntax failure, and verify coverage failure then incomplete replacement.
- * 3. Repair the source and change the configuration selector, verifying recovery and the final type-selection cycle.
+ * 2. Add an uncovered source, introduce a syntax failure, and verify coverage
+ *    failure then incomplete replacement.
+ * 3. Repair the source and change the configuration selector, verifying recovery
+ *    and the final type-selection cycle.
  */
 export async function test_scala_watch(): Promise<void> {
   await EvidTestFileSystem.experiment(

@@ -3,14 +3,16 @@ import type { IEvidRustFileAnalysis } from "./IEvidRustFileAnalysis";
 /**
  * Assigns a selected Rust file to one crate root and module prefix.
  *
- * EvidRustModuleResolver creates placements before building module records, so the
- * same scan result can be addressed in the crate namespace and source files.
+ * EvidRustModuleResolver creates placements before building module records, so
+ * the same scan result can be addressed in the crate namespace and source
+ * files.
  */
 export interface IEvidRustFilePlacement {
   /**
    * EvidNode-free scan result for the selected file.
    *
-   * This record owns declarations and diagnostics associated with the placement.
+   * This record owns declarations and diagnostics associated with the
+   * placement.
    */
   analysis: IEvidRustFileAnalysis;
 

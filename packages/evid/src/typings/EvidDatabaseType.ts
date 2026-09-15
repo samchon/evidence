@@ -1,4 +1,5 @@
-/** Database schema languages and SQL dialects supported by database adapters.
+/**
+ * Database schema languages and SQL dialects supported by database adapters.
  *
  * This value selects a parser and adapter contract rather than inferring a
  * dialect from a file extension. `sql` represents the generic SQL grammar;

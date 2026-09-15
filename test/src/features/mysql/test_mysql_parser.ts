@@ -5,9 +5,11 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Acquires the selected MySQL grammar and reuses it offline.
+/**
+ * Acquires the selected MySQL grammar and reuses it offline.
  *
- * Parser acquisition must request only the configured grammar, then reproduce the same complete inventory from its warmed local cache.
+ * Parser acquisition must request only the configured grammar, then reproduce
+ * the same complete inventory from its warmed local cache.
  *
  * 1. Analyze a MySQL source with a cold parser cache while recording downloads.
  * 2. Require only MySQL parser assets and a complete cold result.

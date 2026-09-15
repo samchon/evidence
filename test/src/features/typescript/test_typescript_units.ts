@@ -5,9 +5,11 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Classifies TypeScript's supported public declaration matrix.
+/**
+ * Classifies TypeScript's supported public declaration matrix.
  *
- * Declaration kind and member path determine the addressable population exported by an artifact.
+ * Declaration kind and member path determine the addressable population
+ * exported by an artifact.
  *
  * 1. Analyze supported declarations and members.
  * 2. Verify exact symbols, identities, and public paths.

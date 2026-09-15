@@ -7,11 +7,13 @@ import type { IEvidLanguageGrammar } from "./IEvidLanguageGrammar";
  *
  * A grammar can recognize syntax before an adapter has established declaration
  * identity, visibility, and documentation ownership. Optional adapter metadata
- * prevents grammar availability from being advertised as certified graph support.
+ * prevents grammar availability from being advertised as certified graph
+ * support.
  */
 export interface IEvidLanguage {
   /**
-   * Programming artifact discriminator accepted by configuration and parser selection.
+   * Programming artifact discriminator accepted by configuration and parser
+   * selection.
    *
    * A single family can select several grammar variants by logical filename.
    */
@@ -20,7 +22,8 @@ export interface IEvidLanguage {
   /**
    * Human-readable language name shown by capability inspection.
    *
-   * Callers use the type discriminator, rather than this display label, in configuration.
+   * Callers use the type discriminator, rather than this display label, in
+   * configuration.
    */
   name: string;
 

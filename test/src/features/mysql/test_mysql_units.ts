@@ -1,16 +1,14 @@
-import {
-  EvidAccessor,
-  EvidInventory,
-  EvidMysqlAdapter,
-} from "evid";
+import { EvidAccessor, EvidInventory, EvidMysqlAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Extracts MySQL schema units with database-qualified ownership.
+/**
+ * Extracts MySQL schema units with database-qualified ownership.
  *
- * Tables, columns, and composite foreign keys must have exact owners and aliases, without inventing relationships from indexes or inline syntax.
+ * Tables, columns, and composite foreign keys must have exact owners and
+ * aliases, without inventing relationships from indexes or inline syntax.
  *
  * 1. Analyze qualified schemas with composite relations and aliases.
  * 2. Verify exact units, owners, relation endpoints, and supported addresses.

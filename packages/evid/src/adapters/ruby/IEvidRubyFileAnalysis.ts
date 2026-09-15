@@ -6,14 +6,16 @@ import type { IEvidRubyDocumentation } from "./IEvidRubyDocumentation";
 /**
  * Preserves one Ruby file's serializable extraction after parsing.
  *
- * EvidRubyAdapterBase merges all analyses to reconcile reopened declarations, visibility,
- * documentation attachment, and failures without retaining Tree-sitter nodes.
+ * EvidRubyAdapterBase merges all analyses to reconcile reopened declarations,
+ * visibility, documentation attachment, and failures without retaining
+ * Tree-sitter nodes.
  */
 export interface IEvidRubyFileAnalysis {
   /**
    * Selected source snapshot represented by this analysis.
    *
-   * Its addresses define the files through which materialized units are published.
+   * Its addresses define the files through which materialized units are
+   * published.
    */
   source: IEvidSourceFile;
 
@@ -34,7 +36,8 @@ export interface IEvidRubyFileAnalysis {
   /**
    * Classification failures that make this source population incomplete.
    *
-   * The final inventory retains them instead of silently omitting uncertain APIs.
+   * The final inventory retains them instead of silently omitting uncertain
+   * APIs.
    */
   diagnostics: IEvidDiagnostic[];
 

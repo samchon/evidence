@@ -1,7 +1,8 @@
 import { EvidEcmaScriptAdapter } from "../ecmascript/EvidEcmaScriptAdapter";
 
 /**
- * Extracts static JavaScript module exports and bounded CommonJS initialization.
+ * Extracts static JavaScript module exports and bounded CommonJS
+ * initialization.
  *
  * The shared ECMAScript extractor classifies the selected files' module modes,
  * establishes declaration and JSDoc ownership, and publishes file-qualified
@@ -13,15 +14,15 @@ import { EvidEcmaScriptAdapter } from "../ecmascript/EvidEcmaScriptAdapter";
  * failures rather than silently omitted exports.
  *
  * @example
- * // A declared instance method is addressed as client.js#Client.prototype.send.
- * // Adding another supported export name does not create a second method unit.
+ *   // A declared instance method is addressed as client.js#Client.prototype.send.
+ *   // Adding another supported export name does not create a second method unit.
  */
 export class EvidJavaScriptAdapter extends EvidEcmaScriptAdapter {
   /**
    * Configures the shared extractor for JavaScript and JSX source.
    *
-   * The inherited analysis chooses module semantics from file and package context.
-   * No grammar or source is loaded until a snapshot is analyzed.
+   * The inherited analysis chooses module semantics from file and package
+   * context. No grammar or source is loaded until a snapshot is analyzed.
    */
   public constructor() {
     super("javascript", "JavaScript");

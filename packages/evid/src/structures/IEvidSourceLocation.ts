@@ -4,8 +4,8 @@ import type { IEvidSourceRange } from "./IEvidSourceRange";
  * Source coordinate suitable for both declarations and file-level failures.
  *
  * Extraction can identify a file even when reading or parsing it fails before a
- * span exists. The optional range preserves that distinction instead of inventing
- * a line number for diagnostics without a concrete source position.
+ * span exists. The optional range preserves that distinction instead of
+ * inventing a line number for diagnostics without a concrete source position.
  */
 export interface IEvidSourceLocation {
   /**

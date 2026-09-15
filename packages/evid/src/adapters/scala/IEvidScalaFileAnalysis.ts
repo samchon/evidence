@@ -14,35 +14,41 @@ export interface IEvidScalaFileAnalysis {
   /**
    * Retains the selected source snapshot that produced this analysis.
    *
-   * Later export and documentation passes use its paths and content after the parser session closes.
+   * Later export and documentation passes use its paths and content after the
+   * parser session closes.
    */
   source: IEvidSourceFile;
 
   /**
-   * Lists declarations extracted from this source, including non-public boundaries.
+   * Lists declarations extracted from this source, including non-public
+   * boundaries.
    *
-   * Visibility is resolved during publication, while retained private records support export and withdrawal decisions.
+   * Visibility is resolved during publication, while retained private records
+   * support export and withdrawal decisions.
    */
   declarations: IEvidScalaDeclaration[];
 
   /**
    * Lists classified Scaladoc and tag-bearing unsupported carriers.
    *
-   * The adapter materializes them into attached or unsupported hosts after unit publication.
+   * The adapter materializes them into attached or unsupported hosts after unit
+   * publication.
    */
   documentation: IEvidScalaDocumentation[];
 
   /**
    * Lists failures encountered while establishing the Scala public surface.
    *
-   * Each diagnostic keeps the source inventory incomplete instead of allowing a smaller population to pass.
+   * Each diagnostic keeps the source inventory incomplete instead of allowing a
+   * smaller population to pass.
    */
   diagnostics: IEvidDiagnostic[];
 
   /**
    * Lists explicit forwarding exports awaiting selected-source resolution.
    *
-   * Resolution runs after every selected file supplies declarations and lexical lookup paths.
+   * Resolution runs after every selected file supplies declarations and lexical
+   * lookup paths.
    */
   exports: IEvidScalaExport[];
 

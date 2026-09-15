@@ -4,9 +4,11 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Acquires Zig's pinned grammar and reuses it offline.
+/**
+ * Acquires Zig's pinned grammar and reuses it offline.
  *
- * The adapter must request only its selected parser and reproduce the full inventory from a warmed cache.
+ * The adapter must request only its selected parser and reproduce the full
+ * inventory from a warmed cache.
  *
  * 1. Analyze Zig input cold while recording asset requests.
  * 2. Verify the requested grammar and complete inventory.

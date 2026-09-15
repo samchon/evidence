@@ -1,4 +1,5 @@
-/** Outcome category for resolving one authored file-qualified target.
+/**
+ * Outcome category for resolving one authored file-qualified target.
  *
  * `resolved` identifies one visible unit. Every other value explains why the
  * target cannot satisfy a reference, including semantic ambiguity, a boundary

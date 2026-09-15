@@ -5,7 +5,8 @@ import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestInventory } from "../../internal/EvidTestInventory";
 
 /**
- * Applies host eligibility and distinguishes failed analysis from empty or uncovered populations.
+ * Applies host eligibility and distinguishes failed analysis from empty or
+ * uncovered populations.
  *
  * Positive evidence requires a selected semantic claim host, while an eligible
  * exclusion carrier can lie outside the symbol selection. Incomplete analysis
@@ -13,13 +14,17 @@ import { EvidTestInventory } from "../../internal/EvidTestInventory";
  * denominator; reviews alone must never supply missing acknowledgement.
  *
  * 1. Put evidence and an exclusion on an unselected public carrier; require one
- *    out-of-scope-host finding for positive evidence and coverage from the exclusion.
- * 2. Set an explicit empty exclusion-host selection and require the target to remain missing.
- * 3. Add a review without any prepared acknowledgement resolution and require no coverage.
- * 4. Fail reference discovery with cardinality policies enabled; require incomplete
- *    obligation state and no derivative missing, empty-reference, or cardinality findings.
- * 5. Supply an incomplete resolution with no diagnostic and require overall failure
- *    while suppressing derived missing-unit results.
+ *    out-of-scope-host finding for positive evidence and coverage from the
+ *    exclusion.
+ * 2. Set an explicit empty exclusion-host selection and require the target to
+ *    remain missing.
+ * 3. Add a review without any prepared acknowledgement resolution and require no
+ *    coverage.
+ * 4. Fail reference discovery with cardinality policies enabled; require
+ *    incomplete obligation state and no derivative missing, empty-reference, or
+ *    cardinality findings.
+ * 5. Supply an incomplete resolution with no diagnostic and require overall
+ *    failure while suppressing derived missing-unit results.
  * 6. Supply a complete empty reference and require exactly one empty-reference
  *    finding, no missing units, and no per-host cardinality findings.
  */

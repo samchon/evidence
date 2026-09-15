@@ -7,10 +7,12 @@ import type { EvidRubyMethodSide } from "./EvidRubyMethodSide";
 import type { EvidRubyVisibility } from "./EvidRubyVisibility";
 
 /**
- * Captures one Ruby declaration before reopenings and runtime-name families reconcile.
+ * Captures one Ruby declaration before reopenings and runtime-name families
+ * reconcile.
  *
- * EvidRubyAdapterBase groups compatible records into semantic units after source-order
- * visibility changes, lexical ownership, and generated attribute surfaces are known.
+ * EvidRubyAdapterBase groups compatible records into semantic units after
+ * source-order visibility changes, lexical ownership, and generated attribute
+ * surfaces are known.
  */
 export interface IEvidRubyDeclaration {
   /**
@@ -23,21 +25,24 @@ export interface IEvidRubyDeclaration {
   /**
    * Source name displayed by the resulting Evid unit.
    *
-   * It can differ from `runtimeName` for generated accessors and singleton members.
+   * It can differ from `runtimeName` for generated accessors and singleton
+   * members.
    */
   name: string;
 
   /**
    * Ruby runtime name used to detect replacement and reopening conflicts.
    *
-   * Grouping cannot infer overloads because later Ruby definitions replace earlier ones.
+   * Grouping cannot infer overloads because later Ruby definitions replace
+   * earlier ones.
    */
   runtimeName: string;
 
   /**
    * Evid selector family assigned to this declaration.
    *
-   * It distinguishes types, methods, and property-like constant or attribute surfaces.
+   * It distinguishes types, methods, and property-like constant or attribute
+   * surfaces.
    */
   symbol: EvidProgrammingSymbol;
 
@@ -49,30 +54,35 @@ export interface IEvidRubyDeclaration {
   form: EvidRubyDeclarationForm;
 
   /**
-   * Semantic path used to group compatible declarations across files and reopenings.
+   * Semantic path used to group compatible declarations across files and
+   * reopenings.
    *
    * It remains separate from the file-qualified public address.
    */
   identity: string[];
 
   /**
-   * Accessor segments published for this declaration in each selected source address.
+   * Accessor segments published for this declaration in each selected source
+   * address.
    *
-   * Method-side conventions remain encoded here rather than changing semantic identity.
+   * Method-side conventions remain encoded here rather than changing semantic
+   * identity.
    */
   address: string[];
 
   /**
    * Physical source site and content ranges contributing to this declaration.
    *
-   * Reopened semantic units retain every compatible site for fingerprints and hosts.
+   * Reopened semantic units retain every compatible site for fingerprints and
+   * hosts.
    */
   site: IEvidUnitSite;
 
   /**
    * Visibility in effect at this declaration's source position.
    *
-   * Only public records can publish a group, while conflicts remain diagnostics.
+   * Only public records can publish a group, while conflicts remain
+   * diagnostics.
    */
   visibility: EvidRubyVisibility;
 
@@ -114,7 +124,8 @@ export interface IEvidRubyDeclaration {
   /**
    * Explicit superclass spelling on a class declaration.
    *
-   * Compatible reopenings may omit it, but conflicting supplied values make analysis incomplete.
+   * Compatible reopenings may omit it, but conflicting supplied values make
+   * analysis incomplete.
    */
   superclass?: string;
 }

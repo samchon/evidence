@@ -8,7 +8,8 @@ import type { IEvidDartDocumentation } from "./IEvidDartDocumentation";
  * Reads Dart documentation while preserving source mappings and masking code
  * examples.
  *
- * EvidDartAdapterBase uses the mapped text before Evid tags are parsed for each host.
+ * EvidDartAdapterBase uses the mapped text before Evid tags are parsed for each
+ * host.
  */
 export namespace EvidDartDocumentation {
   /**
@@ -36,7 +37,8 @@ export namespace EvidDartDocumentation {
   /**
    * Masks HTML examples and Markdown indented code before tag parsing.
    *
-   * Only visible characters are replaced, preserving source line and UTF-16 positions.
+   * Only visible characters are replaced, preserving source line and UTF-16
+   * positions.
    */
   function mask(input: string): string {
     const characters = input.split("");

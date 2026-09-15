@@ -5,12 +5,16 @@ import { join } from "node:path";
 
 import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
-/** Rebuilds MATLAB coverage after source and configuration changes.
+/**
+ * Rebuilds MATLAB coverage after source and configuration changes.
  *
- * Watch cycles must replace stale inventories when a selected file appears, becomes malformed, is repaired, or the selector changes.
+ * Watch cycles must replace stale inventories when a selected file appears,
+ * becomes malformed, is repaired, or the selector changes.
  *
- * 1. Start with a covered MATLAB property and compare every watch report to a fresh check.
- * 2. Add an undocumented class, then make it malformed, and require failure followed by incomplete status.
+ * 1. Start with a covered MATLAB property and compare every watch report to a
+ *    fresh check.
+ * 2. Add an undocumented class, then make it malformed, and require failure
+ *    followed by incomplete status.
  * 3. Repair the source and require coverage recovery.
  * 4. Change the selector to types and require a fresh passing population.
  */

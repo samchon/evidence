@@ -5,9 +5,15 @@ import { dedent } from "@typia/utils";
 import type { IEvidDatabaseAdapterCertification } from "./certification/IEvidDatabaseAdapterCertification";
 import type { IEvidDatabaseAdapterCertificationUnit } from "./certification/IEvidDatabaseAdapterCertificationUnit";
 
-/** Independent exact fixture for DBML schema declarations and annotation ownership. */
+/**
+ * Independent exact fixture for DBML schema declarations and annotation
+ * ownership.
+ */
 export namespace EvidDbmlCertificationFixture {
-  /** Supplies model, column and relation coverage with default exposure and withdrawal controls. */
+  /**
+   * Supplies model, column and relation coverage with default exposure and
+   * withdrawal controls.
+   */
   export function create(): IEvidDatabaseAdapterCertification {
     const file = "schema/certification.dbml";
     const model = key("model", ["public", "users"]);
@@ -111,7 +117,10 @@ export namespace EvidDbmlCertificationFixture {
     return `${symbol}:${EvidAccessor.format(identity)}`;
   }
 
-  /** Constructs expected canonical and default-schema addresses without consulting extraction. */
+  /**
+   * Constructs expected canonical and default-schema addresses without
+   * consulting extraction.
+   */
   function unit(
     file: string,
     symbol: EvidDatabaseSymbol,

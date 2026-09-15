@@ -5,9 +5,11 @@ import { join } from "node:path";
 
 import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
-/** Evaluates MySQL selectors in both claim and reference graph roles.
+/**
+ * Evaluates MySQL selectors in both claim and reference graph roles.
  *
- * A TypeScript boundary must preserve selected database obligations whether MySQL supplies claims or referenced units.
+ * A TypeScript boundary must preserve selected database obligations whether
+ * MySQL supplies claims or referenced units.
  *
  * 1. Build graph configurations for each supported MySQL selector and role.
  * 2. Check covered and missing-evidence outcomes for each configuration.

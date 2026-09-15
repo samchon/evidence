@@ -12,16 +12,16 @@ export interface IEvidQueryContext {
   /**
    * Complete analysis bundle captured by the query facade.
    *
-   * Its plan, inventories, graph input, and report remain aligned throughout the
-   * lifetime of the population indexes.
+   * Its plan, inventories, graph input, and report remain aligned throughout
+   * the lifetime of the population indexes.
    */
   readonly analysis: IEvidCheckAnalysis;
 
   /**
    * Absolute directory anchoring file-qualified query targets.
    *
-   * Capturing it once prevents later cwd changes from altering target formatting
-   * or inspection within the same facade.
+   * Capturing it once prevents later cwd changes from altering target
+   * formatting or inspection within the same facade.
    */
   readonly cwd: string;
 

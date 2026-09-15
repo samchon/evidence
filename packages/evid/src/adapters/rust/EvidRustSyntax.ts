@@ -4,17 +4,20 @@ import type { IEvidCommentSyntax } from "../../structures/IEvidCommentSyntax";
 import type { EvidRustVisibility } from "./EvidRustVisibility";
 
 /**
- * Provides grammar-level Rust extraction helpers for names, paths, attributes, and documentation.
+ * Provides grammar-level Rust extraction helpers for names, paths, attributes,
+ * and documentation.
  *
- * EvidRustFileScanner uses these functions to retain syntax facts. EvidRustModuleResolver
- * later decides crate reachability and public ownership from the scanner records.
+ * EvidRustFileScanner uses these functions to retain syntax facts.
+ * EvidRustModuleResolver later decides crate reachability and public ownership
+ * from the scanner records.
  */
 export namespace EvidRustSyntax {
   /**
    * Reads a supported Rust identifier spelling from a grammar node.
    *
-   * Scanners use it for declaration and member names; unsupported syntax returns
-   * undefined so extraction can preserve uncertainty instead of inventing a name.
+   * Scanners use it for declaration and member names; unsupported syntax
+   * returns undefined so extraction can preserve uncertainty instead of
+   * inventing a name.
    */
   export function name(node: EvidNode | null): string | undefined {
     return node !== null &&
@@ -43,7 +46,8 @@ export namespace EvidRustSyntax {
    * Reads a statically supported Rust path as ordered segments.
    *
    * Generic wrappers are unwrapped while `crate`, `self`, and `super` remain
-   * literal segments for EvidRustModuleResolver to interpret in its current module.
+   * literal segments for EvidRustModuleResolver to interpret in its current
+   * module.
    */
   export function path(node: EvidNode | null): string[] | undefined {
     if (node === null) return undefined;
@@ -84,10 +88,12 @@ export namespace EvidRustSyntax {
   }
 
   /**
-   * Collects outer attributes and outer documentation immediately preceding an item.
+   * Collects outer attributes and outer documentation immediately preceding an
+   * item.
    *
    * Ordinary comments are skipped because Rust treats them as whitespace. The
-   * returned source order lets scanners attach documentation and inspect attributes.
+   * returned source order lets scanners attach documentation and inspect
+   * attributes.
    */
   export function attributes(node: EvidNode): EvidNode[] {
     const output: EvidNode[] = [];
@@ -105,7 +111,8 @@ export namespace EvidRustSyntax {
   }
 
   /**
-   * States whether a comment is ordinary Rust whitespace rather than documentation.
+   * States whether a comment is ordinary Rust whitespace rather than
+   * documentation.
    *
    * Attribute collection skips these comments without treating them as evidence
    * carriers or allowing them to interrupt a valid outer-attribute sequence.
@@ -121,8 +128,8 @@ export namespace EvidRustSyntax {
   /**
    * Reads the qualified name from a Rust attribute or its wrapper item.
    *
-   * Scanner attribute policy uses the name to recognize documentation and report
-   * expansion risks; unsupported attribute shapes return undefined.
+   * Scanner attribute policy uses the name to recognize documentation and
+   * report expansion risks; unsupported attribute shapes return undefined.
    */
   export function attributeName(node: EvidNode): string | undefined {
     const attribute =
@@ -169,7 +176,8 @@ export namespace EvidRustSyntax {
   /**
    * States whether a Rust comment uses the inner documentation form.
    *
-   * Inner carriers document their containing module instead of the following item.
+   * Inner carriers document their containing module instead of the following
+   * item.
    */
   export function innerDocumentation(node: EvidNode): boolean {
     return (

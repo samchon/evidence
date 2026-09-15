@@ -6,13 +6,13 @@ import { validateEvidConfig } from "evid";
 /**
  * Rejects checklist policies that contradict per-host Markdown answers.
  *
- * Checklist coverage requires every selected host to answer every selected item.
- * Configuration must reject policies that would silently replace this meaning
- * with global host cardinality or shared exclusion carriers.
+ * Checklist coverage requires every selected host to answer every selected
+ * item. Configuration must reject policies that would silently replace this
+ * meaning with global host cardinality or shared exclusion carriers.
  *
  * 1. Accept a reviewed Markdown checklist that forbids exclusions.
- * 2. Enable both cardinality flags and require separate diagnostics for
- *    uniqueEvid and singleEvidPerSymbol instead of choosing one policy.
+ * 2. Enable both cardinality flags and require separate diagnostics for uniqueEvid
+ *    and singleEvidPerSymbol instead of choosing one policy.
  * 3. Add a checklist property to a TypeScript reference at runtime, even with
  *    value false, and require the artifact-placement diagnostic.
  * 4. Add shared exclusion-carrier globs to a checklist and require rejection.
@@ -42,9 +42,7 @@ export async function test_config_policies(): Promise<void> {
 
   TestValidator.predicate(
     "checklist rejects unique evidence",
-    cardinalityMessage.includes(
-      "checklist and uniqueEvid cannot both hold",
-    ),
+    cardinalityMessage.includes("checklist and uniqueEvid cannot both hold"),
   );
   TestValidator.predicate(
     "checklist rejects single evidence",
@@ -94,7 +92,8 @@ export async function test_config_policies(): Promise<void> {
  * Places a candidate reference under one active TypeScript claim.
  *
  * Keeping the surrounding claim fixed isolates the checklist policy being
- * accepted or rejected, including mutations of its exclusion-carrier selection.
+ * accepted or rejected, including mutations of its exclusion-carrier
+ * selection.
  */
 function createConfig(reference: IEvidReference): IEvidConfig {
   return {
@@ -111,8 +110,8 @@ function createConfig(reference: IEvidReference): IEvidConfig {
 /**
  * Retrieves the fixture's reference in either supported declaration form.
  *
- * A missing claim or reference is a fixture failure. It must not be mistaken for
- * the policy rejection the caller intends to exercise.
+ * A missing claim or reference is a fixture failure. It must not be mistaken
+ * for the policy rejection the caller intends to exercise.
  */
 function firstReference(config: IEvidConfig): IEvidReference {
   const claim = config.claims[0];
@@ -129,7 +128,8 @@ function firstReference(config: IEvidConfig): IEvidReference {
  * Returns the message from an expected policy-validation error.
  *
  * Successful validation throws a test failure, and non-Error causes propagate.
- * Callers can therefore assert the actual rejected policy rather than mere failure.
+ * Callers can therefore assert the actual rejected policy rather than mere
+ * failure.
  */
 function failure(config: IEvidConfig): string {
   try {

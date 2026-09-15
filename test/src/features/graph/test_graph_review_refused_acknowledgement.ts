@@ -1,8 +1,4 @@
-import {
-  EvidGraph,
-  EvidMarkdownAdapter,
-  EvidTypeScriptAdapter,
-} from "evid";
+import { EvidGraph, EvidMarkdownAdapter, EvidTypeScriptAdapter } from "evid";
 import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
@@ -11,7 +7,8 @@ import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
- * Retains a review's pairing when checklist policy refuses its aggregate acknowledgement.
+ * Retains a review's pairing when checklist policy refuses its aggregate
+ * acknowledgement.
  *
  * The function acknowledges the whole Markdown document while the checklist
  * selects only its price section. The aggregate acknowledgement needs its own
@@ -89,10 +86,7 @@ export async function test_graph_review_refused_acknowledgement(): Promise<void>
   );
 }
 
-function requireUnit(
-  inventory: IEvidInventory,
-  identity: string,
-): IEvidUnit {
+function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.at(-1) === identity,
   );

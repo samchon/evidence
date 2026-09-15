@@ -20,14 +20,16 @@ export interface IEvidDiagnostic {
   /**
    * Effective reporting level for this finding.
    *
-   * Off policies emit no diagnostic; an emitted error contributes to check failure.
+   * Off policies emit no diagnostic; an emitted error contributes to check
+   * failure.
    */
   severity: Exclude<EvidSeverity, "off">;
 
   /**
    * Explanation of the observed failure or policy violation.
    *
-   * Renderers present this separately from source coordinates and repair guidance.
+   * Renderers present this separately from source coordinates and repair
+   * guidance.
    */
   message: string;
 
@@ -55,21 +57,24 @@ export interface IEvidDiagnostic {
   /**
    * Zero-based authored reference index within the owning claim.
    *
-   * Omission permits a claim-level or unscoped finding without inventing a pair.
+   * Omission permits a claim-level or unscoped finding without inventing a
+   * pair.
    */
   reference?: number;
 
   /**
    * Documentation host implicated in the finding.
    *
-   * When present, this connects a statement-level error to its extracted carrier.
+   * When present, this connects a statement-level error to its extracted
+   * carrier.
    */
   hostId?: string;
 
   /**
    * Authored target text implicated in the finding.
    *
-   * This can be retained even when parsing or resolution failed to identify a unit.
+   * This can be retained even when parsing or resolution failed to identify a
+   * unit.
    */
   target?: string;
 }

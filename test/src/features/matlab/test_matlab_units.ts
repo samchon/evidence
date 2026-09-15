@@ -4,12 +4,16 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Extracts MATLAB's public class and top-level function denominator.
+/**
+ * Extracts MATLAB's public class and top-level function denominator.
  *
- * Visibility, accessor forms, aliases, and class metadata determine public units, while private, nested, and local declarations must not be promoted.
+ * Visibility, accessor forms, aliases, and class metadata determine public
+ * units, while private, nested, and local declarations must not be promoted.
  *
- * 1. Analyze class properties, methods, events, enumerations, accessors, and separate function files.
- * 2. Verify exact public identities, shared accessor sites, ownership, and host coverage.
+ * 1. Analyze class properties, methods, events, enumerations, accessors, and
+ *    separate function files.
+ * 2. Verify exact public identities, shared accessor sites, ownership, and host
+ *    coverage.
  * 3. Resolve an aliased public property through the inventory.
  */
 export async function test_matlab_units(): Promise<void> {

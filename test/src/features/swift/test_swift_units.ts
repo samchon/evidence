@@ -1,16 +1,14 @@
-import {
-  EvidAccessor,
-  EvidInventory,
-  EvidSwiftAdapter,
-} from "evid";
+import { EvidAccessor, EvidInventory, EvidSwiftAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Extracts Swift public units with exact ownership.
+/**
+ * Extracts Swift public units with exact ownership.
  *
- * Visibility, overloads, protocols, aliases, and extensions determine public identities.
+ * Visibility, overloads, protocols, aliases, and extensions determine public
+ * identities.
  *
  * 1. Analyze the supported declaration matrix.
  * 2. Verify units, ownership, and target resolution.

@@ -13,7 +13,8 @@ import type { IEvidObjcFileAnalysis } from "./IEvidObjcFileAnalysis";
 import type { EvidObjcDeclarationForm } from "./EvidObjcDeclarationForm";
 
 /**
- * Extracts explicit interfaces before reconciling implementations across selected files.
+ * Extracts explicit interfaces before reconciling implementations across
+ * selected files.
  *
  * Headers, implementations, categories, and extensions retain independent sites
  * here because the adapter must prove their common semantic identity later.
@@ -36,14 +37,16 @@ export class EvidObjcFileScanner {
   /**
    * Documentation carriers indexed by their original start offset.
    *
-   * Offset lookup supports adjacency checks without changing source coordinates.
+   * Offset lookup supports adjacency checks without changing source
+   * coordinates.
    */
   private readonly documentation = new Map<number, IEvidObjcDocumentation>();
 
   /**
    * Failures that prevent a complete public denominator.
    *
-   * The final adapter propagates these diagnostics into an incomplete inventory.
+   * The final adapter propagates these diagnostics into an incomplete
+   * inventory.
    */
   private readonly diagnostics: IEvidDiagnostic[] = [];
 
@@ -64,7 +67,8 @@ export class EvidObjcFileScanner {
    * Returns node-free declarations and documentation.
    *
    * Comment classification precedes top-level traversal, allowing Doxygen to
-   * attach only to the adjacent declaration before reconciliation merges sites.
+   * attach only to the adjacent declaration before reconciliation merges
+   * sites.
    */
   public scan(): IEvidObjcFileAnalysis {
     this.comments();
@@ -94,7 +98,8 @@ export class EvidObjcFileScanner {
   /**
    * Classifies every top-level form without executing preprocessing.
    *
-   * Unsupported source surfaces become diagnostics before they can reduce coverage.
+   * Unsupported source surfaces become diagnostics before they can reduce
+   * coverage.
    */
   private topLevel(item: EvidNode): void {
     switch (item.type) {
@@ -139,7 +144,8 @@ export class EvidObjcFileScanner {
   /**
    * Keeps protocols and named categories in distinct nominal namespaces.
    *
-   * Their literal owner paths must not collide with ordinary interface declarations.
+   * Their literal owner paths must not collide with ordinary interface
+   * declarations.
    */
   private typeDeclaration(item: EvidNode): void {
     const nameNode = item.namedChildren.find(
@@ -304,9 +310,13 @@ export class EvidObjcFileScanner {
   /**
    * Associates synthesize/dynamic sites with independently declared properties.
    *
-   * These implementation forms supplement a property identity without inventing one.
+   * These implementation forms supplement a property identity without inventing
+   * one.
    */
-  private propertyImplementation(item: EvidNode, owner: IEvidObjcDeclaration): void {
+  private propertyImplementation(
+    item: EvidNode,
+    owner: IEvidObjcDeclaration,
+  ): void {
     let next = true;
     const first = item.namedChildren.find(
       (child) => child.type === "identifier",
@@ -348,7 +358,8 @@ export class EvidObjcFileScanner {
   }
 
   /**
-   * Builds exact class/instance selectors using only top-level selector components.
+   * Builds exact class/instance selectors using only top-level selector
+   * components.
    *
    * Prefixes and colons distinguish source-spelled class and instance methods.
    */
@@ -377,7 +388,8 @@ export class EvidObjcFileScanner {
   /**
    * Projects property and ivar names without conflating their runtime storage.
    *
-   * Each supported declaration retains its own selector category and source site.
+   * Each supported declaration retains its own selector category and source
+   * site.
    */
   private properties(
     item: EvidNode,
@@ -399,7 +411,8 @@ export class EvidObjcFileScanner {
       );
     for (const declarator of declarators) {
       const node = declarator.namedChildren[0];
-      const shape = node === undefined ? undefined : EvidCSyntax.declarator(node);
+      const shape =
+        node === undefined ? undefined : EvidCSyntax.declarator(node);
       if (shape === undefined) {
         this.problem(
           declarator,
@@ -428,9 +441,11 @@ export class EvidObjcFileScanner {
   }
 
   /**
-   * Includes external C function declarations and definitions; static functions stay private.
+   * Includes external C function declarations and definitions; static functions
+   * stay private.
    *
-   * Linkage determines whether a C function can join the Objective-C public surface.
+   * Linkage determines whether a C function can join the Objective-C public
+   * surface.
    */
   private functionDeclaration(item: EvidNode): void {
     this.signature(item);
@@ -469,9 +484,11 @@ export class EvidObjcFileScanner {
   }
 
   /**
-   * Separates one declarator from its siblings while retaining shared type and attribute text.
+   * Separates one declarator from its siblings while retaining shared type and
+   * attribute text.
    *
-   * Each declarator receives its own unit site despite a shared declaration header.
+   * Each declarator receives its own unit site despite a shared declaration
+   * header.
    */
   private declaratorContent(
     site: EvidNode,
@@ -490,9 +507,11 @@ export class EvidObjcFileScanner {
   }
 
   /**
-   * Rejects nested aggregate definitions that would otherwise hide public fields behind a property or return type.
+   * Rejects nested aggregate definitions that would otherwise hide public
+   * fields behind a property or return type.
    *
-   * The scanner preserves incomplete state rather than claiming unsupported nested members.
+   * The scanner preserves incomplete state rather than claiming unsupported
+   * nested members.
    */
   private signature(item: EvidNode): void {
     if (item.type === "compound_statement") return;
@@ -513,9 +532,11 @@ export class EvidObjcFileScanner {
   }
 
   /**
-   * Adds a physical declaration site and attaches only adjacent Doxygen documentation.
+   * Adds a physical declaration site and attaches only adjacent Doxygen
+   * documentation.
    *
-   * Whitespace-only separation is required so unrelated comments cannot claim a host.
+   * Whitespace-only separation is required so unrelated comments cannot claim a
+   * host.
    */
   private add(
     item: EvidNode,
@@ -576,9 +597,11 @@ export class EvidObjcFileScanner {
   }
 
   /**
-   * Collects contiguous Doxygen lines and unsupported annotation-bearing comments.
+   * Collects contiguous Doxygen lines and unsupported annotation-bearing
+   * comments.
    *
-   * Tagged ordinary comments are retained for diagnostics without becoming declarations.
+   * Tagged ordinary comments are retained for diagnostics without becoming
+   * declarations.
    */
   private comments(): void {
     for (const comment of this.session.root.descendantsOfType("comment")) {
@@ -616,7 +639,8 @@ export class EvidObjcFileScanner {
   /**
    * Marks unsupported syntax incomplete instead of dropping public obligations.
    *
-   * The reported range identifies the source form that requires adapter support.
+   * The reported range identifies the source form that requires adapter
+   * support.
    */
   private problem(item: EvidNode, code: string, message: string): void {
     this.diagnostics.push({

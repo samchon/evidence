@@ -3,11 +3,15 @@ import { TestValidator } from "@nestia/e2e";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Rejects smaller Lua inventories for dynamic exports and recovers on static source.
+/**
+ * Rejects smaller Lua inventories for dynamic exports and recovers on static
+ * source.
  *
- * Dynamic module publication cannot pass coverage by omitting unknown exported units.
+ * Dynamic module publication cannot pass coverage by omitting unknown exported
+ * units.
  *
- * 1. Analyze dynamic exports. 2. Require incompleteness. 3. Analyze a fresh static snapshot and require recovery.
+ * 1. Analyze dynamic exports. 2. Require incompleteness. 3. Analyze a fresh static
+ *    snapshot and require recovery.
  */
 export async function test_lua_boundaries(): Promise<void> {
   const adapter = new EvidLuaAdapter();
@@ -103,7 +107,10 @@ export async function test_lua_boundaries(): Promise<void> {
       false,
     );
   }
-  const failed = EvidTestSourceSnapshot.create("module.lua", "function run() end");
+  const failed = EvidTestSourceSnapshot.create(
+    "module.lua",
+    "function run() end",
+  );
   failed.complete = false;
   failed.diagnostics.push({
     code: "path-unreadable",

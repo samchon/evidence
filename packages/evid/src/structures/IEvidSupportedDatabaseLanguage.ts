@@ -5,9 +5,9 @@ import type { IEvidLanguageGrammar } from "./IEvidLanguageGrammar";
 /**
  * Database capability entry guaranteed to have a certified schema adapter.
  *
- * Supported-database queries use this narrower shape after excluding grammar-only
- * entries. The required adapter contract lets callers inspect extraction and
- * target-address boundaries without another availability check.
+ * Supported-database queries use this narrower shape after excluding
+ * grammar-only entries. The required adapter contract lets callers inspect
+ * extraction and target-address boundaries without another availability check.
  */
 export interface IEvidSupportedDatabaseLanguage {
   /**
@@ -27,14 +27,16 @@ export interface IEvidSupportedDatabaseLanguage {
   /**
    * Grammar variants and logical filename rules associated with the adapter.
    *
-   * These describe syntax selection without implying that metadata inspection loads WASM.
+   * These describe syntax selection without implying that metadata inspection
+   * loads WASM.
    */
   grammars: IEvidLanguageGrammar[];
 
   /**
    * Guaranteed schema extraction and documentation-host contract.
    *
-   * This includes selectors, address policy, and explicit unsupported capabilities.
+   * This includes selectors, address policy, and explicit unsupported
+   * capabilities.
    */
   adapter: IEvidDatabaseLanguageAdapter;
 }

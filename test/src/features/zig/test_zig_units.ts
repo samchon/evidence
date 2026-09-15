@@ -1,15 +1,13 @@
-import {
-  EvidAccessor,
-  EvidInventory,
-  EvidZigAdapter,
-} from "evid";
+import { EvidAccessor, EvidInventory, EvidZigAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Extracts Zig units with independent public, alias, and file ownership.
+/**
+ * Extracts Zig units with independent public, alias, and file ownership.
  *
- * Explicit fields, aliases, private owners, and same-name files must not collapse into one public identity.
+ * Explicit fields, aliases, private owners, and same-name files must not
+ * collapse into one public identity.
  *
  * 1. Analyze declarations spanning those ownership boundaries.
  * 2. Verify exact units, parents, aliases, and addresses.

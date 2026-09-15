@@ -1,20 +1,22 @@
-import {
-  EvidBigQueryAdapter,
-  EvidTypeScriptAdapter,
-} from "evid";
+import { EvidBigQueryAdapter, EvidTypeScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Resolves BigQuery targets with quoted segments and source-file aliases intact.
+/**
+ * Resolves BigQuery targets with quoted segments and source-file aliases
+ * intact.
  *
- * A target resolver must preserve project, dataset, table, and flexible field boundaries when it follows evidence across files.
+ * A target resolver must preserve project, dataset, table, and flexible field
+ * boundaries when it follows evidence across files.
  *
  * 1. Build a schema with qualified, quoted, and nested declaration names.
- * 2. Resolve evidence targets that use the supported file aliases and literal accessor spelling.
- * 3. Require exact paths to resolve while flattened or otherwise invalid paths retain their failure status.
+ * 2. Resolve evidence targets that use the supported file aliases and literal
+ *    accessor spelling.
+ * 3. Require exact paths to resolve while flattened or otherwise invalid paths
+ *    retain their failure status.
  */
 export async function test_bigquery_targets(): Promise<void> {
   const reference = await new EvidBigQueryAdapter().analyze(

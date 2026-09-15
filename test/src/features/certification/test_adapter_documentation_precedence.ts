@@ -70,37 +70,38 @@ const NATIVE_DOCUMENTATION_TYPES: ReadonlySet<string> = new Set<string>([
  * 1. Inject separate fenced `<pre>` and `</pre>` literals around the first real
  *    evidence statement in every programming certification fixture, together
  *    with inline literals and a fenced fake statement.
- * 2. Require all 19 programming inventories to retain their exact certified
- *    units, hosts, declarations, source ranges, and completeness.
- * 3. For the 13 programming adapters that support example-element masking,
- *    insert fake statements inside ordinary `pre` regions. For the 12 HTML
- *    readers, repeat the check with slash-closed non-void openings.
+ * 2. Require all 19 programming inventories to retain their exact certified units,
+ *    hosts, declarations, source ranges, and completeness.
+ * 3. For the 13 programming adapters that support example-element masking, insert
+ *    fake statements inside ordinary `pre` regions. For the 12 HTML readers,
+ *    repeat the check with slash-closed non-void openings.
  * 4. Leave an HTML example open after the real statement and require every
  *    rendered statement through the host end to remain inert.
  * 5. Put indented HTML openings and closes around real or rendered statements;
  *    require those literal tokens not to change HTML pairing.
- * 6. Put attributes on a closing HTML tag and require that malformed token not
- *    to end the example before its exact close.
- * 7. Put an indented literal fence before a closed HTML region and require it
- *    not to consume the real statement that follows the HTML close.
+ * 6. Put attributes on a closing HTML tag and require that malformed token not to
+ *    end the example before its exact close.
+ * 7. Put an indented literal fence before a closed HTML region and require it not
+ *    to consume the real statement that follows the HTML close.
  * 8. Exercise a tab-indented HTML token and a nested example whose outer close
  *    implicitly closes its inner element directly against the shared helper.
- * 9. Apply the same separated-fence and HTML-boundary checks to SQL,
- *    PostgreSQL, MySQL, SQLite, and BigQuery adapters and compare their complete
+ * 9. Apply the same separated-fence and HTML-boundary checks to SQL, PostgreSQL,
+ *    MySQL, SQLite, and BigQuery adapters and compare their complete
  *    inventories with an unmodified baseline.
- * 10. Run the combined PHP reproductions through EvidChecker and require the
- *    real statement after the HTML close to cover its requirement with exit zero.
+ * 10. Run the combined PHP reproductions through EvidChecker and require the real
+ *     statement after the HTML close to cover its requirement with exit zero.
  * 11. Replace that PHP host with only an acknowledgement inside an unclosed HTML
- *    example and require the checker to report the requirement as uncovered.
- * 12. Put fake annotations in HTML comments across all programming adapters,
- *    keep comment-looking quoted attributes and commented example tags from
- *    changing real evidence, and prove an unclosed comment cannot cover PHP.
+ *     example and require the checker to report the requirement as uncovered.
+ * 12. Put fake annotations in HTML comments across all programming adapters, keep
+ *     comment-looking quoted attributes and commented example tags from
+ *     changing real evidence, and prove an unclosed comment cannot cover PHP.
  * 13. Preserve a true C# XML self-closing example before a real statement.
  * 14. Put literal HTML boundaries in Doxygen, Javadoc, and Scaladoc native code
- *    regions; require those regions to take precedence, and require unclosed
- *    Doxygen code to keep following fake annotations inert through the host end.
+ *     regions; require those regions to take precedence, and require unclosed
+ *     Doxygen code to keep following fake annotations inert through the host
+ *     end.
  * 15. Put native opening and closing delimiters in separate Markdown fences;
- *    require those literals not to span across the real Evid statement.
+ *     require those literals not to span across the real Evid statement.
  */
 export async function test_adapter_documentation_precedence(): Promise<void> {
   for (const certification of EvidAdapterCertificationFixtures.all()) {
@@ -142,7 +143,10 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
         );
         const slashClosedInventory: IEvidInventory =
           await EvidAdapterCertification.analyze(slashClosed);
-        EvidAdapterCertification.assertInventory(slashClosed, slashClosedInventory);
+        EvidAdapterCertification.assertInventory(
+          slashClosed,
+          slashClosedInventory,
+        );
       }
 
       const unclosed: IEvidAdapterCertification = mutateCertification(
@@ -293,7 +297,10 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
       EvidTestSourceSnapshot.create("schema.sql", genuineHtmlExample(source)),
     );
     const slashClosed: IEvidInventory = await adapter.analyze(
-      EvidTestSourceSnapshot.create("schema.sql", slashClosedHtmlOpening(source)),
+      EvidTestSourceSnapshot.create(
+        "schema.sql",
+        slashClosedHtmlOpening(source),
+      ),
     );
     const unclosed: IEvidInventory = await adapter.analyze(
       EvidTestSourceSnapshot.create("schema.sql", unclosedHtmlExample(source)),
@@ -305,7 +312,10 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
       EvidTestSourceSnapshot.create("schema.sql", indentedHtmlClose(source)),
     );
     const indented: IEvidInventory = await adapter.analyze(
-      EvidTestSourceSnapshot.create("schema.sql", indentedFenceBeforeHtml(source)),
+      EvidTestSourceSnapshot.create(
+        "schema.sql",
+        indentedFenceBeforeHtml(source),
+      ),
     );
     const malformedClose: IEvidInventory = await adapter.analyze(
       EvidTestSourceSnapshot.create("schema.sql", malformedHtmlClose(source)),
@@ -317,7 +327,10 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
       EvidTestSourceSnapshot.create("schema.sql", commentedHtmlTags(source)),
     );
     const quotedComment: IEvidInventory = await adapter.analyze(
-      EvidTestSourceSnapshot.create("schema.sql", quotedHtmlCommentLiteral(source)),
+      EvidTestSourceSnapshot.create(
+        "schema.sql",
+        quotedHtmlCommentLiteral(source),
+      ),
     );
     assertEquivalent(`${adapter.type} fenced examples`, baseline, fenced);
     assertEquivalent(`${adapter.type} HTML example`, baseline, rendered);
@@ -503,7 +516,9 @@ function mutateCertification(
 ): IEvidAdapterCertification {
   let changed: number = 0;
   const sources: IEvidAdapterCertificationSource[] = certification.sources.map(
-    (source: IEvidAdapterCertificationSource): IEvidAdapterCertificationSource => {
+    (
+      source: IEvidAdapterCertificationSource,
+    ): IEvidAdapterCertificationSource => {
       if (changed !== 0 || !source.content.includes("@evidence "))
         return source;
       ++changed;
@@ -743,34 +758,32 @@ function commentedHtmlTags(content: string): string {
 /**
  * Separates literal HTML tags with one adapter-native code syntax.
  *
- * If HTML pairing ignores the native regions, their opening and closing literals
- * cross the real Evid statement and remove it from the certified inventory.
+ * If HTML pairing ignores the native regions, their opening and closing
+ * literals cross the real Evid statement and remove it from the certified
+ * inventory.
  */
 function nativeCodePrecedence(type: string, content: string): string {
-  return replaceEvidLine(
-    content,
-    (prefix: string, line: string): string => {
-      if (type === "c" || type === "cpp")
-        return [
-          `${prefix}@code`,
-          `${prefix}<pre>`,
-          `${prefix}@endcode`,
-          line,
-          `${prefix}@code`,
-          `${prefix}</pre>`,
-          `${prefix}@endcode`,
-        ].join("\n");
-      if (type === "java")
-        return [`${prefix}{@code <pre>}`, line, `${prefix}{@code </pre>}`].join(
-          "\n",
-        );
-      if (type === "scala")
-        return [`${prefix}{{{ <pre> }}}`, line, `${prefix}{{{ </pre> }}}`].join(
-          "\n",
-        );
-      throw new Error(`No native documentation example syntax for ${type}.`);
-    },
-  );
+  return replaceEvidLine(content, (prefix: string, line: string): string => {
+    if (type === "c" || type === "cpp")
+      return [
+        `${prefix}@code`,
+        `${prefix}<pre>`,
+        `${prefix}@endcode`,
+        line,
+        `${prefix}@code`,
+        `${prefix}</pre>`,
+        `${prefix}@endcode`,
+      ].join("\n");
+    if (type === "java")
+      return [`${prefix}{@code <pre>}`, line, `${prefix}{@code </pre>}`].join(
+        "\n",
+      );
+    if (type === "scala")
+      return [`${prefix}{{{ <pre> }}}`, line, `${prefix}{{{ </pre> }}}`].join(
+        "\n",
+      );
+    throw new Error(`No native documentation example syntax for ${type}.`);
+  });
 }
 
 /**
@@ -780,33 +793,30 @@ function nativeCodePrecedence(type: string, content: string): string {
  * statement before a later fenced closing delimiter.
  */
 function markdownNativeLiteral(type: string, content: string): string {
-  return replaceEvidLine(
-    content,
-    (prefix: string, line: string): string => {
-      let opening: string;
-      let closing: string;
-      if (type === "c" || type === "cpp") {
-        opening = "@code";
-        closing = "@endcode";
-      } else if (type === "java") {
-        opening = "{@code";
-        closing = "}";
-      } else if (type === "scala") {
-        opening = "{{{";
-        closing = "}}}";
-      } else
-        throw new Error(`No native documentation example syntax for ${type}.`);
-      return [
-        `${prefix}\`\`\`\`text`,
-        `${prefix}${opening}`,
-        `${prefix}\`\`\`\``,
-        line,
-        `${prefix}\`\`\`\`text`,
-        `${prefix}${closing}`,
-        `${prefix}\`\`\`\``,
-      ].join("\n");
-    },
-  );
+  return replaceEvidLine(content, (prefix: string, line: string): string => {
+    let opening: string;
+    let closing: string;
+    if (type === "c" || type === "cpp") {
+      opening = "@code";
+      closing = "@endcode";
+    } else if (type === "java") {
+      opening = "{@code";
+      closing = "}";
+    } else if (type === "scala") {
+      opening = "{{{";
+      closing = "}}}";
+    } else
+      throw new Error(`No native documentation example syntax for ${type}.`);
+    return [
+      `${prefix}\`\`\`\`text`,
+      `${prefix}${opening}`,
+      `${prefix}\`\`\`\``,
+      line,
+      `${prefix}\`\`\`\`text`,
+      `${prefix}${closing}`,
+      `${prefix}\`\`\`\``,
+    ].join("\n");
+  });
 }
 
 /**
@@ -829,7 +839,8 @@ function unclosedDoxygenCode(content: string): string {
  * Replaces the unique Evid line while retaining its documentation prefix.
  *
  * Adapter fixtures use different comment delimiters, so mutations receive the
- * exact prefix and complete line rather than assuming one documentation syntax.
+ * exact prefix and complete line rather than assuming one documentation
+ * syntax.
  */
 function replaceEvidLine(
   content: string,

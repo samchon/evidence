@@ -8,14 +8,15 @@ import type { IEvidSqlDocumentation } from "./IEvidSqlDocumentation";
  * Reads SQL documentation while preserving source mappings and masking code
  * examples.
  *
- * Shared SQL adapters use the result before passing supported annotations to the
- * tag parser.
+ * Shared SQL adapters use the result before passing supported annotations to
+ * the tag parser.
  */
 export namespace EvidSqlDocumentation {
   /**
    * Maps a carrier and removes examples without moving source offsets.
    *
-   * Preserved offsets keep tag diagnostics aligned with the original SQL source.
+   * Preserved offsets keep tag diagnostics aligned with the original SQL
+   * source.
    */
   export function read(
     source: IEvidSourceFile,
@@ -58,8 +59,8 @@ export namespace EvidSqlDocumentation {
   /**
    * Masks HTML examples and Markdown indented code before tag parsing.
    *
-   * Masking replaces only visible characters so source line and UTF-16 positions
-   * remain stable.
+   * Masking replaces only visible characters so source line and UTF-16
+   * positions remain stable.
    */
   function mask(input: string): string {
     const characters = input.split("");

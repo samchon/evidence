@@ -19,10 +19,7 @@ import {
   EvidTypeScriptAdapter,
   EvidZigAdapter,
 } from "evid";
-import type {
-  EvidProgrammingSymbol,
-  IEvidWithdrawal,
-} from "evid";
+import type { EvidProgrammingSymbol, IEvidWithdrawal } from "evid";
 import { dedent } from "@typia/utils";
 
 import { EvidLuaCertificationFixture } from "./EvidLuaCertificationFixture";
@@ -31,7 +28,10 @@ import type { IEvidAdapterCertificationAddress } from "./IEvidAdapterCertificati
 import type { IEvidAdapterCertificationRequirement } from "./IEvidAdapterCertificationRequirement";
 import type { IEvidAdapterCertificationUnit } from "./IEvidAdapterCertificationUnit";
 
-/** Supplies the complete fixture contract for every initially certified language. */
+/**
+ * Supplies the complete fixture contract for every initially certified
+ * language.
+ */
 export namespace EvidAdapterCertificationFixtures {
   export function all(): IEvidAdapterCertification[] {
     return [
@@ -858,7 +858,10 @@ export namespace EvidAdapterCertificationFixtures {
     };
   }
 
-  /** Supplies exact Dart declarations and counterexamples for the common certification gates. */
+  /**
+   * Supplies exact Dart declarations and counterexamples for the common
+   * certification gates.
+   */
   function dart(): IEvidAdapterCertification {
     const file = "src/Contract.dart";
     return {
@@ -964,7 +967,10 @@ export namespace EvidAdapterCertificationFixtures {
     };
   }
 
-  /** Supplies exact Kotlin declarations and counterexamples for the common certification gates. */
+  /**
+   * Supplies exact Kotlin declarations and counterexamples for the common
+   * certification gates.
+   */
   function kotlin(): IEvidAdapterCertification {
     const file = "src/Contract.kt";
     return {
@@ -1175,7 +1181,10 @@ export namespace EvidAdapterCertificationFixtures {
     };
   }
 
-  /** Supplies exact MATLAB declarations and counterexamples for the common certification gates. */
+  /**
+   * Supplies exact MATLAB declarations and counterexamples for the common
+   * certification gates.
+   */
   function matlab(): IEvidAdapterCertification {
     const file = "src/Contract.m";
     return {
@@ -1272,7 +1281,10 @@ export namespace EvidAdapterCertificationFixtures {
     };
   }
 
-  /** Supplies exact Scala declarations and counterexamples for the common certification gates. */
+  /**
+   * Supplies exact Scala declarations and counterexamples for the common
+   * certification gates.
+   */
   function scala(): IEvidAdapterCertification {
     const file = "src/Contract.scala";
     return {

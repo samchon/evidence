@@ -5,9 +5,11 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Tracks PHP review fingerprints across semantic ownership changes.
+/**
+ * Tracks PHP review fingerprints across semantic ownership changes.
  *
- * Property hooks and namespace imports affect cited meaning, while unrelated sibling declarations remain isolated.
+ * Property hooks and namespace imports affect cited meaning, while unrelated
+ * sibling declarations remain isolated.
  *
  * 1. Analyze documented PHP declarations with hooks and imports.
  * 2. Apply annotation, sibling, hook, and import edits.
@@ -75,7 +77,8 @@ export async function test_php_fingerprints(): Promise<void> {
   );
 }
 
-/** Analyzes one independent PHP source revision for fingerprint comparison.
+/**
+ * Analyzes one independent PHP source revision for fingerprint comparison.
  *
  * Each caller receives a fresh inventory so a single textual mutation cannot
  * share parser or inventory state with the baseline revision.
@@ -86,7 +89,8 @@ async function analyze(content: string): Promise<IEvidInventory> {
   );
 }
 
-/** Reads the review fingerprint for one uniquely named PHP declaration.
+/**
+ * Reads the review fingerprint for one uniquely named PHP declaration.
  *
  * A missing name fails the scenario immediately because the comparison cannot
  * establish fingerprint behavior without its intended semantic unit.

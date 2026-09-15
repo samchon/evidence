@@ -3,8 +3,8 @@ import type { EvidPythonAllState } from "./EvidPythonAllState";
 /**
  * Records the statically known portion of a module's `__all__` declaration.
  *
- * EvidPythonExportResolver uses this state to choose between explicit exports and
- * Python's underscore convention. Dynamic mutation stays incomplete because
+ * EvidPythonExportResolver uses this state to choose between explicit exports
+ * and Python's underscore convention. Dynamic mutation stays incomplete because
  * executing module code would make coverage depend on runtime state.
  */
 export interface IEvidPythonAll {

@@ -33,8 +33,9 @@ export interface IEvidEcmaScriptStatementContext {
   /**
    * Evid unit ID of the direct enclosing declaration.
    *
-   * Omission denotes a root unit. Nested scanner calls pass this ID so inventory
-   * structure follows language containment instead of public path spelling.
+   * Omission denotes a root unit. Nested scanner calls pass this ID so
+   * inventory structure follows language containment instead of public path
+   * spelling.
    */
   parentId?: string;
 
@@ -57,8 +58,8 @@ export interface IEvidEcmaScriptStatementContext {
   /**
    * Whether enclosing export syntax restricts declarations to the type space.
    *
-   * Functions and variables stop scanning under this flag, while TypeScript type
-   * declarations retain the restriction for later export resolution.
+   * Functions and variables stop scanning under this flag, while TypeScript
+   * type declarations retain the restriction for later export resolution.
    */
   typeOnly: boolean;
 }

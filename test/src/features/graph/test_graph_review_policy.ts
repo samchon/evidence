@@ -4,11 +4,7 @@ import {
   EvidMarkdownAdapter,
   EvidTypeScriptAdapter,
 } from "evid";
-import type {
-  IEvidGraphReference,
-  IEvidInventory,
-  IEvidUnit,
-} from "evid";
+import type { IEvidGraphReference, IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -16,7 +12,8 @@ import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
- * Classifies required evidence reviews by the presence and freshness of fingerprints.
+ * Classifies required evidence reviews by the presence and freshness of
+ * fingerprints.
  *
  * One requirement is acknowledged by four functions whose review states differ.
  * The graph should issue the actionable repair for each state once and stop
@@ -25,6 +22,7 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 1. Create missing, unfingerprinted, stale, and current review declarations for
  *    one Markdown requirement, then enable required reviews.
  * 2. Require exactly one diagnostic for each repairable state:
+ *
  *    - A missing review.
  *    - A review with no fingerprint.
  *    - A review whose fingerprint differs from the current target.
@@ -88,9 +86,11 @@ export async function test_graph_review_policy(): Promise<void> {
     resolutions: await EvidTestGraph.resolveDeclarations(claims, requirements, [
       pricing.id,
     ]),
-    reviewResolutions: await EvidTestGraph.resolveReviews(claims, requirements, [
-      pricing.id,
-    ]),
+    reviewResolutions: await EvidTestGraph.resolveReviews(
+      claims,
+      requirements,
+      [pricing.id],
+    ),
     requireReview: true,
   };
   const result = EvidGraph.evaluate({
@@ -204,10 +204,7 @@ export async function test_graph_review_policy(): Promise<void> {
   );
 }
 
-function requireUnit(
-  inventory: IEvidInventory,
-  identity: string,
-): IEvidUnit {
+function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === identity || candidate.identity.at(-1) === identity,

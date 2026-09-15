@@ -11,14 +11,16 @@ import { dedent } from "@typia/utils";
 import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Evaluates Rust type, function, and property evidence.
+/**
+ * Evaluates Rust type, function, and property evidence.
  *
  * Graph coverage and review fingerprints depend on each selected semantic unit.
  *
  * 1. Link Rust type, function, and property hosts to Markdown requirements.
  * 2. Remove each acknowledgement and require its corresponding requirement to
  *    become missing while the remaining graph stays covered.
- * 3. Compare review fingerprints after metadata-only and declaration-content edits.
+ * 3. Compare review fingerprints after metadata-only and declaration-content
+ *    edits.
  */
 export async function test_rust_graph(): Promise<void> {
   const requirements = await new EvidMarkdownAdapter().analyze(
@@ -204,9 +206,7 @@ async function fieldInventory(second: string): Promise<IEvidInventory> {
   );
 }
 
-async function implementationInventory(
-  bound: string,
-): Promise<IEvidInventory> {
+async function implementationInventory(bound: string): Promise<IEvidInventory> {
   return new EvidRustAdapter().analyze(
     EvidTestSourceSnapshot.create(
       "src/implementation.rs",
@@ -224,10 +224,7 @@ async function implementationInventory(
   );
 }
 
-function requireUnit(
-  inventory: IEvidInventory,
-  name: string,
-): IEvidUnit {
+function requireUnit(inventory: IEvidInventory, name: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === name || candidate.identity.at(-1) === name,

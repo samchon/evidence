@@ -1,18 +1,18 @@
-import {
-  EvidFingerprint,
-  EvidInventory,
-  EvidKotlinAdapter,
-} from "evid";
+import { EvidFingerprint, EvidInventory, EvidKotlinAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Preserves KDoc coordinates, lexical withdrawals, and fingerprints without accepting examples.
+/**
+ * Preserves KDoc coordinates, lexical withdrawals, and fingerprints without
+ * accepting examples.
  *
- * KDoc hosts evidence at original source positions while examples and withdrawn hierarchy stay outside acknowledgement.
+ * KDoc hosts evidence at original source positions while examples and withdrawn
+ * hierarchy stay outside acknowledgement.
  *
- * 1. Analyze KDoc with Unicode and withdrawals. 2. Verify coordinates and hidden descendants. 3. Compare semantic and annotation-only fingerprints.
+ * 1. Analyze KDoc with Unicode and withdrawals. 2. Verify coordinates and hidden
+ *    descendants. 3. Compare semantic and annotation-only fingerprints.
  */
 export async function test_kotlin_hosts(): Promise<void> {
   const source = dedent`
@@ -117,7 +117,10 @@ export async function test_kotlin_hosts(): Promise<void> {
     EvidFingerprint.inspect(rewritten, contract.id).fingerprint,
   );
   const changed = await adapter.analyze(
-    EvidTestSourceSnapshot.create("src/Contract.kt", source.replace("= 1", "= 2")),
+    EvidTestSourceSnapshot.create(
+      "src/Contract.kt",
+      source.replace("= 1", "= 2"),
+    ),
   );
   TestValidator.notEquals(
     "semantic subtree edit changes fingerprint",

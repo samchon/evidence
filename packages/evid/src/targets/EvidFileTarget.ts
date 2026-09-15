@@ -14,17 +14,20 @@ import { EvidAccessor } from "./EvidAccessor";
  * text without changing literal accessor segments.
  *
  * @example
- * EvidFileTarget.parse("../api/client.ts#Client.prototype.send", "/repo/docs/guide.md");
+ *   EvidFileTarget.parse(
+ *     "../api/client.ts#Client.prototype.send",
+ *     "/repo/docs/guide.md",
+ *   );
  */
 export namespace EvidFileTarget {
   /**
    * Parses an authored file target relative to the documentation host's file.
    *
-   * A missing hash selects the file unit; a hash must be followed by an accessor.
-   * The file component permits percent encoding for reserved path characters,
-   * whereas accessor parsing remains delegated to `EvidAccessor`. The origin
-   * must be absolute so the same citation cannot resolve differently by process
-   * working directory.
+   * A missing hash selects the file unit; a hash must be followed by an
+   * accessor. The file component permits percent encoding for reserved path
+   * characters, whereas accessor parsing remains delegated to `EvidAccessor`.
+   * The origin must be absolute so the same citation cannot resolve differently
+   * by process working directory.
    */
   export function parse(target: string, origin: string): IEvidAddress {
     const hash = target.indexOf("#");
@@ -58,8 +61,9 @@ export namespace EvidFileTarget {
    * Formats a normalized address as canonical file-target text.
    *
    * Reserved path characters are percent-encoded, but directory separators and
-   * Windows drive separators stay readable. The accessor is formatted separately
-   * so literal segment characters cannot change the file/path boundary.
+   * Windows drive separators stay readable. The accessor is formatted
+   * separately so literal segment characters cannot change the file/path
+   * boundary.
    */
   export function format(address: IEvidAddress): string {
     const encoded = encodeURIComponent(normalize(address.file))
@@ -73,9 +77,9 @@ export namespace EvidFileTarget {
   /**
    * Normalizes separators and dot segments without consulting the filesystem.
    *
-   * This is lexical normalization only: symlinks, case rules, and file existence
-   * remain the scanner's responsibility. The UNC guard preserves a leading pair
-   * of slashes only when the author actually supplied a UNC path.
+   * This is lexical normalization only: symlinks, case rules, and file
+   * existence remain the scanner's responsibility. The UNC guard preserves a
+   * leading pair of slashes only when the author actually supplied a UNC path.
    */
   export function normalize(file: string): string {
     const slash = file.replaceAll("\\", "/");
@@ -89,9 +93,10 @@ export namespace EvidFileTarget {
   /**
    * Resolves a decoded file request using the host file's path flavor.
    *
-   * Drive-relative requests are rejected because Windows interprets them against
-   * a process-local drive directory. Selecting POSIX or Windows semantics from
-   * either input keeps cross-platform inventories deterministic.
+   * Drive-relative requests are rejected because Windows interprets them
+   * against a process-local drive directory. Selecting POSIX or Windows
+   * semantics from either input keeps cross-platform inventories
+   * deterministic.
    */
   function resolve(origin: string, file: string): string {
     const base = normalize(origin);
@@ -117,7 +122,8 @@ export namespace EvidFileTarget {
   /**
    * Detects Windows drive and UNC spellings after separators are normalized.
    *
-   * This selects `path.win32` even when an inventory is inspected on a POSIX host.
+   * This selects `path.win32` even when an inventory is inspected on a POSIX
+   * host.
    */
   function windows(file: string): boolean {
     return /^[A-Za-z]:\//u.test(file) || file.startsWith("//");

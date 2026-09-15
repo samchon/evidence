@@ -9,12 +9,14 @@ import type { IEvidSourceLocation } from "./IEvidSourceLocation";
 import type { IEvidUnit } from "./IEvidUnit";
 
 /**
- * Serializable adapter output from which claim and reference populations are selected.
+ * Serializable adapter output from which claim and reference populations are
+ * selected.
  *
  * An adapter returns this record after analyzing a captured source snapshot.
  * `EvidInventory` reconciles identities, validates source positions and
  * ownership, and projects the units requested by each population. Returned data
- * must not retain Tree-sitter nodes, sessions, or other borrowed parser resources.
+ * must not retain Tree-sitter nodes, sessions, or other borrowed parser
+ * resources.
  *
  * Units, addresses, and hosts answer different questions: what declaration
  * exists, how a citation names it, and where eligible documentation belongs.
@@ -22,16 +24,17 @@ import type { IEvidUnit } from "./IEvidUnit";
  * citation's content but cannot supply missing coverage. Eligible hosts without
  * tags must also remain present for policies that judge every selected host.
  *
- * Failed discovery or unsupported public syntax leaves partial records available
- * for diagnostics and sets `complete` to false. Losing declarations must not
- * create a smaller passing denominator. A successfully discovered empty
- * population, in contrast, can have an empty unit list and remain complete.
+ * Failed discovery or unsupported public syntax leaves partial records
+ * available for diagnostics and sets `complete` to false. Losing declarations
+ * must not create a smaller passing denominator. A successfully discovered
+ * empty population, in contrast, can have an empty unit list and remain
+ * complete.
  *
  * @example
- * const raw: IEvidInventory = await adapter.analyze(snapshot);
- * const inventory: EvidInventory = new EvidInventory([raw]);
- * const population: IEvidPopulation = inventory.select(requiredUnitIds);
- * // population.units contains requirements; scopes additionally includes owners.
+ *   const raw: IEvidInventory = await adapter.analyze(snapshot);
+ *   const inventory: EvidInventory = new EvidInventory([raw]);
+ *   const population: IEvidPopulation = inventory.select(requiredUnitIds);
+ *   // population.units contains requirements; scopes additionally includes owners.
  */
 export interface IEvidInventory {
   /**
@@ -45,16 +48,17 @@ export interface IEvidInventory {
   /**
    * Captured source files backing declaration and annotation ranges.
    *
-   * Fingerprinting reads these same snapshots so content and extracted positions
-   * cannot come from different revisions of a file.
+   * Fingerprinting reads these same snapshots so content and extracted
+   * positions cannot come from different revisions of a file.
    */
   sources: IEvidSourceFile[];
 
   /**
    * Accepted annotation spans excluded from content fingerprints.
    *
-   * Retain each complete recognized span, including continuation prose. Otherwise
-   * editing the body of a review could invalidate the fingerprint it records.
+   * Retain each complete recognized span, including continuation prose.
+   * Otherwise editing the body of a review could invalidate the fingerprint it
+   * records.
    */
   annotationRanges: IEvidSourceLocation[];
 
@@ -78,7 +82,8 @@ export interface IEvidInventory {
    * Documentation carriers and their semantic owners.
    *
    * Include eligible declarations without tags. Checklist and cardinality rules
-   * cannot detect an unanswered host if extraction records annotated hosts only.
+   * cannot detect an unanswered host if extraction records annotated hosts
+   * only.
    */
   hosts: IEvidHost[];
 
@@ -110,16 +115,17 @@ export interface IEvidInventory {
    * Filesystem paths whose changes can invalidate the analysis.
    *
    * Directories and missing inputs matter alongside successfully read files:
-   * watch needs them to detect new declarations and recovery from failed loads.
+   * watch needs them to detect new declarations and recovery from failed
+   * loads.
    */
   dependencies: IEvidSourceDependency[];
 
   /**
    * Whether the inventory can supply a trustworthy coverage denominator.
    *
-   * False preserves partial output while preventing a coverage pass based on lost
-   * declarations. A healthy empty selection remains true; emptiness alone is not
-   * an extraction failure.
+   * False preserves partial output while preventing a coverage pass based on
+   * lost declarations. A healthy empty selection remains true; emptiness alone
+   * is not an extraction failure.
    */
   complete: boolean;
 }

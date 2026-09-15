@@ -1,10 +1,12 @@
 import type { EvidJavaTypeKind } from "./EvidJavaTypeKind";
 
 /**
- * Carries an enclosing Java type's state while its nested declarations are scanned.
+ * Carries an enclosing Java type's state while its nested declarations are
+ * scanned.
  *
- * EvidJavaFileScanner passes this context through type bodies so descendants retain
- * their structural identity, public address prefix, and inherited visibility.
+ * EvidJavaFileScanner passes this context through type bodies so descendants
+ * retain their structural identity, public address prefix, and inherited
+ * visibility.
  */
 export interface IEvidJavaTypeContext {
   /**

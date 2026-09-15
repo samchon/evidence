@@ -19,18 +19,21 @@ import { EvidPythonExportResolver } from "./EvidPythonExportResolver";
 import { EvidPythonFileScanner } from "./EvidPythonFileScanner";
 
 /**
- * Extracts Python declarations through bounded static export and re-export analysis.
+ * Extracts Python declarations through bounded static export and re-export
+ * analysis.
  *
- * File scanning records candidate units, bindings, and docstring ownership before
- * EvidPythonExportResolver determines which identities are publicly reachable. Only
- * published owners receive eligible documentation hosts; parser and export
- * failures remain incomplete inventory diagnostics instead of shrinking coverage.
+ * File scanning records candidate units, bindings, and docstring ownership
+ * before EvidPythonExportResolver determines which identities are publicly
+ * reachable. Only published owners receive eligible documentation hosts; parser
+ * and export failures remain incomplete inventory diagnostics instead of
+ * shrinking coverage.
  */
 export class EvidPythonAdapterBase implements IEvidAdapter {
   /**
    * Artifact family selecting Python parsing and public-surface rules.
    *
-   * The common adapter contract uses this discriminator independently of query selectors.
+   * The common adapter contract uses this discriminator independently of query
+   * selectors.
    */
   public readonly type = "python";
 
@@ -38,12 +41,10 @@ export class EvidPythonAdapterBase implements IEvidAdapter {
    * Builds an owned inventory from the supplied Python source snapshot.
    *
    * The method validates and clones input, scans with a bounded parser runtime,
-   * resolves public exports, and materializes annotations on their published owners.
-   * Native resources close in cleanup even when extraction fails.
+   * resolves public exports, and materializes annotations on their published
+   * owners. Native resources close in cleanup even when extraction fails.
    */
-  public async analyze(
-    snapshot: IEvidSourceSnapshot,
-  ): Promise<IEvidInventory> {
+  public async analyze(snapshot: IEvidSourceSnapshot): Promise<IEvidInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidInventory = {
       schemaVersion: 1,
@@ -103,9 +104,10 @@ export class EvidPythonAdapterBase implements IEvidAdapter {
    * The scanner gives executable occurrences private suffixes so documentation
    * on a replaced definition cannot attach to its survivor. Export resolution
    * first chooses the winning occurrences; this pass then removes only their
-   * suffixes and rewrites the selected units, parents, addresses, and attachment
-   * candidates together. Unpublished attachments retain their occurrence IDs and
-   * therefore cannot regain eligibility after canonicalization.
+   * suffixes and rewrites the selected units, parents, addresses, and
+   * attachment candidates together. Unpublished attachments retain their
+   * occurrence IDs and therefore cannot regain eligibility after
+   * canonicalization.
    */
   private stabilizeRuntimeUnits(
     inventory: IEvidInventory,
@@ -146,7 +148,8 @@ export class EvidPythonAdapterBase implements IEvidAdapter {
   }
 
   /**
-   * Copies one Python file's declarations and bindings out of a borrowed parse session.
+   * Copies one Python file's declarations and bindings out of a borrowed parse
+   * session.
    *
    * A parse failure returns an explicitly incomplete analysis with its source
    * location, preserving the failure when other files can still be scanned.
@@ -162,8 +165,7 @@ export class EvidPythonAdapterBase implements IEvidAdapter {
         (session) => new EvidPythonFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError =
-        cause instanceof EvidParserError ? cause : undefined;
+      const parserError = cause instanceof EvidParserError ? cause : undefined;
       return {
         source,
         all: { state: "absent", names: [] },
@@ -194,7 +196,8 @@ export class EvidPythonAdapterBase implements IEvidAdapter {
   }
 
   /**
-   * Attaches parsed documentation only after exported identity selection is known.
+   * Attaches parsed documentation only after exported identity selection is
+   * known.
    *
    * Withdrawal directives are collected before visible hosts are finalized, so
    * hidden parents cannot leave descendants as eligible evidence carriers.

@@ -11,7 +11,8 @@ interface IRubyTargetStatus {
   status: EvidTargetResolutionStatus;
 }
 
-/** Resolves Ruby containers, method sides, attributes, setters, and operators.
+/**
+ * Resolves Ruby containers, method sides, attributes, setters, and operators.
  *
  * Ruby target spelling must preserve the owning container and callable form.
  *

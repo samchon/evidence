@@ -1,17 +1,15 @@
 import { EvidSwaggerAdapter } from "evid";
-import type {
-  IEvidDeclaration,
-  IEvidHost,
-  IEvidInventory,
-} from "evid";
+import type { IEvidDeclaration, IEvidHost, IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Parses annotation tags from supported Swagger operation descriptions.
+/**
+ * Parses annotation tags from supported Swagger operation descriptions.
  *
- * Descriptions on unrelated document nodes cannot acknowledge an operation, even when their text contains a tag.
+ * Descriptions on unrelated document nodes cannot acknowledge an operation,
+ * even when their text contains a tag.
  *
  * 1. Analyze eligible and ineligible descriptions.
  * 2. Verify extracted targets, coordinates, and host diagnostics.

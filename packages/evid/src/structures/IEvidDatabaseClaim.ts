@@ -5,10 +5,10 @@ import type { IEvidClaimBase } from "./IEvidClaimBase";
 /**
  * Database schema declarations that cite evidence in documentation comments.
  *
- * The database adapter determines schema identity, structural relationships, and
- * eligible documentation carriers. Symbol selection then chooses which models,
- * columns, or relations owe evidence; parsing failures retain an incomplete
- * population instead of removing requirements from the check.
+ * The database adapter determines schema identity, structural relationships,
+ * and eligible documentation carriers. Symbol selection then chooses which
+ * models, columns, or relations owe evidence; parsing failures retain an
+ * incomplete population instead of removing requirements from the check.
  *
  * Prisma host rules:
  *
@@ -18,8 +18,8 @@ import type { IEvidClaimBase } from "./IEvidClaimBase";
  *   Ordinary double-slash comments do not host tags.
  * - A blank line before a top-level block detaches the comment. Comments above
  *   block attributes or closing braces also have no declaration host.
- * - Evid and exclusions require a target and nonempty reason. Invalid or
- *   detached declarations are reported.
+ * - Evid and exclusions require a target and nonempty reason. Invalid or detached
+ *   declarations are reported.
  * - An unattached top-level triple-slash run may carry a file-level exclusion,
  *   independently of the symbol selector. It cannot carry ordinary evidence.
  */

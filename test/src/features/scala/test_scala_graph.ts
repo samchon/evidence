@@ -1,8 +1,4 @@
-import {
-  EvidGraph,
-  EvidScalaAdapter,
-  EvidTypeScriptAdapter,
-} from "evid";
+import { EvidGraph, EvidScalaAdapter, EvidTypeScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -12,11 +8,16 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 /**
  * Requires every selected Scala unit to have an evidence acknowledgement.
  *
- * A Scala reference exposes an undocumented type, function, and property while TypeScript claims selectively retain their declarations, separating graph coverage from review metadata.
+ * A Scala reference exposes an undocumented type, function, and property while
+ * TypeScript claims selectively retain their declarations, separating graph
+ * coverage from review metadata.
  *
- * 1. Analyze the reference and claim inventories and verify complete reference extraction.
- * 2. For each symbol kind, retain or remove its acknowledgement and verify the graph result and exact missing population.
- * 3. Analyze a review-only Scala annotation and verify it is retained as review data without supplying missing coverage.
+ * 1. Analyze the reference and claim inventories and verify complete reference
+ *    extraction.
+ * 2. For each symbol kind, retain or remove its acknowledgement and verify the
+ *    graph result and exact missing population.
+ * 3. Analyze a review-only Scala annotation and verify it is retained as review
+ *    data without supplying missing coverage.
  */
 export async function test_scala_graph(): Promise<void> {
   const reference = await new EvidScalaAdapter().analyze(

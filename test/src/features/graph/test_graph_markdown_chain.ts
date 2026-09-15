@@ -22,7 +22,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 2. Analyze a Markdown pricing requirement that acknowledges and reviews that
  *    export, then record the requirement's own fingerprint.
  * 3. Analyze a Markdown checkout guide that acknowledges and reviews the pricing
- *    requirement, evaluate both graph hops, and require no diagnostics or failures.
+ *    requirement, evaluate both graph hops, and require no diagnostics or
+ *    failures.
  * 4. Analyze a failed version of the Markdown claim and require that its graph
  *    result remains active and incomplete while suppressing empty-reference and
  *    missing-acknowledgement findings derived from unavailable claim content.
@@ -186,10 +187,7 @@ export async function test_graph_markdown_chain(): Promise<void> {
   );
 }
 
-function requireUnit(
-  inventory: IEvidInventory,
-  identity: string,
-): IEvidUnit {
+function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.at(-1) === identity,
   );

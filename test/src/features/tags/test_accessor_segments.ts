@@ -1,9 +1,11 @@
 import { EvidAccessor } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-/** Parses literal accessor segments without normalizing their public spelling.
+/**
+ * Parses literal accessor segments without normalizing their public spelling.
  *
- * Dots, spaces, Unicode, escapes, and unsigned numeric names remain distinct target segments.
+ * Dots, spaces, Unicode, escapes, and unsigned numeric names remain distinct
+ * target segments.
  *
  * 1. Round-trip identifier, quoted, numeric, Unicode, escaped, and empty literal
  *    segments through formatting and parsing.

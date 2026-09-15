@@ -28,28 +28,29 @@ import type { EvidDatabaseSymbol } from "../../typings/EvidDatabaseSymbol";
  * Extracts Prisma models, columns, relations, and declaration documentation.
  *
  * Selected files form one schema for the Prisma model loader, while a separate
- * source scan retains exact declaration and comment coordinates. Materialization
- * joins those views so semantic schema units remain tied to their physical hosts.
- * A schema-loading failure produces incomplete analysis instead of an empty pass.
+ * source scan retains exact declaration and comment coordinates.
+ * Materialization joins those views so semantic schema units remain tied to
+ * their physical hosts. A schema-loading failure produces incomplete analysis
+ * instead of an empty pass.
  */
 export class EvidPrismaAdapter implements IEvidAdapter {
   /**
    * Artifact discriminator selecting Prisma schema extraction.
    *
-   * Prisma target spelling and database selectors apply to the resulting inventory.
+   * Prisma target spelling and database selectors apply to the resulting
+   * inventory.
    */
   public readonly type: EvidArtifactType = "prisma";
 
   /**
    * Loads one combined schema from a validated, cloned source snapshot.
    *
-   * Incomplete discovery is returned without attempting to certify partial schema
-   * content. Complete input is deduplicated by physical identity, parsed for models,
-   * and joined to source locations before annotations are materialized.
+   * Incomplete discovery is returned without attempting to certify partial
+   * schema content. Complete input is deduplicated by physical identity, parsed
+   * for models, and joined to source locations before annotations are
+   * materialized.
    */
-  public async analyze(
-    snapshot: IEvidSourceSnapshot,
-  ): Promise<IEvidInventory> {
+  public async analyze(snapshot: IEvidSourceSnapshot): Promise<IEvidInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory = this.inventory(input);
     if (!input.complete || input.files.length === 0)
@@ -116,11 +117,12 @@ export class EvidPrismaAdapter implements IEvidAdapter {
   }
 
   /**
-   * Deduplicates physical schema files and chooses deterministic logical parser names.
+   * Deduplicates physical schema files and chooses deterministic logical parser
+   * names.
    *
-   * Multiple selected link spellings must not submit the same declarations twice.
-   * All addresses are retained while the first sorted selected relative path names
-   * the schema input supplied to the model loader.
+   * Multiple selected link spellings must not submit the same declarations
+   * twice. All addresses are retained while the first sorted selected relative
+   * path names the schema input supplied to the model loader.
    */
   private schemaFiles(sources: IEvidSourceFile[]): IEvidPrismaSchemaFile[] {
     const records = new Map<string, IEvidSourceFile>();
@@ -462,8 +464,7 @@ export class EvidPrismaAdapter implements IEvidAdapter {
         inventory.diagnostics.push({
           code: "prisma-buried-annotation",
           severity: "error",
-          message:
-            "An Evid tag is buried behind extra comment punctuation.",
+          message: "An Evid tag is buried behind extra comment punctuation.",
           repair:
             "Remove the extra leading slash or asterisk so the Evid tag opens its documentation line.",
           location: {

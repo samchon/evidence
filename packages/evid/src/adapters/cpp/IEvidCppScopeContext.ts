@@ -1,43 +1,61 @@
 import type { EvidCppScopeKind } from "./EvidCppScopeKind";
 
-/** Carries the enclosing C++ structural scope while `EvidCppFileScanner` descends through declarations.
+/**
+ * Carries the enclosing C++ structural scope while `EvidCppFileScanner`
+ * descends through declarations.
  *
- * The scanner derives child identities, public addresses, and visibility from this context. It represents a source-level namespace, record, or enum owner rather than a fully materialized Evid unit.
+ * The scanner derives child identities, public addresses, and visibility from
+ * this context. It represents a source-level namespace, record, or enum owner
+ * rather than a fully materialized Evid unit.
  */
 export interface IEvidCppScopeContext {
-  /** Scanner-local declaration record for this scope when it materializes a declaration.
+  /**
+   * Scanner-local declaration record for this scope when it materializes a
+   * declaration.
    *
-   * Omission denotes a namespace scope, which contributes paths and visibility but has no declaration record of its own.
+   * Omission denotes a namespace scope, which contributes paths and visibility
+   * but has no declaration record of its own.
    */
   declarationId?: string;
 
-  /** Semantic path used to identify child declarations beneath this owner.
+  /**
+   * Semantic path used to identify child declarations beneath this owner.
    *
-   * The scanner prefixes unqualified child names with this path and uses it to resolve qualified definitions relative to a record or namespace.
+   * The scanner prefixes unqualified child names with this path and uses it to
+   * resolve qualified definitions relative to a record or namespace.
    */
   identity: string[];
 
-  /** Public accessor path available through this owner.
+  /**
+   * Public accessor path available through this owner.
    *
-   * Child declarations inherit this path when the scope is public; it remains distinct from `identity` because aliases can change public spelling.
+   * Child declarations inherit this path when the scope is public; it remains
+   * distinct from `identity` because aliases can change public spelling.
    */
   address: string[];
 
-  /** Source construct that establishes this scope.
+  /**
+   * Source construct that establishes this scope.
    *
-   * The scanner uses the kind to apply C++ ownership rules, including namespace qualification and record member visibility.
+   * The scanner uses the kind to apply C++ ownership rules, including namespace
+   * qualification and record member visibility.
    */
   kind: EvidCppScopeKind;
 
-  /** Unqualified source spelling of the scope owner.
+  /**
+   * Unqualified source spelling of the scope owner.
    *
-   * It supports diagnostics and declaration construction while `identity` retains the complete enclosing path.
+   * It supports diagnostics and declaration construction while `identity`
+   * retains the complete enclosing path.
    */
   name: string;
 
-  /** Whether declarations directly contained by this scope can be publicly published.
+  /**
+   * Whether declarations directly contained by this scope can be publicly
+   * published.
    *
-   * The scanner combines this inherited boundary with member access before emitting a declaration's visibility.
+   * The scanner combines this inherited boundary with member access before
+   * emitting a declaration's visibility.
    */
   public: boolean;
 }

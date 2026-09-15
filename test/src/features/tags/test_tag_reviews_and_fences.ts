@@ -13,15 +13,15 @@ import { EvidTestDocumentation } from "../../internal/EvidTestDocumentation";
  *
  * 1. Parse real tags beside prose, zero- and three-column fences, and a shorter
  *    closing fence that must remain fenced.
- * 2. Put a delimiter four columns beyond the documentation baseline and require
- *    it to remain one indented-code line rather than opening a fence.
+ * 2. Put a delimiter four columns beyond the documentation baseline and require it
+ *    to remain one indented-code line rather than opening a fence.
  * 3. Start fences after complete and incomplete acknowledgements and require the
  *    opening delimiter to end each pending annotation.
  * 4. End with an unclosed true fence and require its example to stay inert.
  * 5. Verify the acknowledgements, multiline evidence reason, and no accidental
  *    withdrawal.
- * 6. Verify evidence and exclusion reviews stay distinct, only a shaped fingerprint
- *    is consumed, and review description prose remains intact.
+ * 6. Verify evidence and exclusion reviews stay distinct, only a shaped
+ *    fingerprint is consumed, and review description prose remains intact.
  */
 export async function test_tag_reviews_and_fences(): Promise<void> {
   const fixture = EvidTestDocumentation.create(dedent`

@@ -9,29 +9,32 @@ export interface IEvidParserState {
   /**
    * Number of currently reserved parse slots.
    *
-   * A reservation includes asynchronous extraction work until its callback settles.
+   * A reservation includes asynchronous extraction work until its callback
+   * settles.
    */
   active: number;
 
   /**
    * Number of accepted requests waiting for an available slot.
    *
-   * These requests remain eligible to run after close begins draining the queue.
+   * These requests remain eligible to run after close begins draining the
+   * queue.
    */
   waiting: number;
 
   /**
    * Sorted grammar IDs successfully loaded by this runtime.
    *
-   * Pending or failed acquisitions are absent, even if other runtimes have loaded
-   * the same grammar into a process-wide cache.
+   * Pending or failed acquisitions are absent, even if other runtimes have
+   * loaded the same grammar into a process-wide cache.
    */
   languages: string[];
 
   /**
    * Whether the runtime has stopped accepting new requests.
    *
-   * This flag does not by itself mean every previously accepted callback finished.
+   * This flag does not by itself mean every previously accepted callback
+   * finished.
    */
   closed: boolean;
 }

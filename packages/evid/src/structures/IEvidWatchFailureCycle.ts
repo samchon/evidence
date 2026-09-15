@@ -1,9 +1,10 @@
 /**
  * Published watch cycle for a stable configuration or operational exception.
  *
- * The watcher cannot provide a normal check report for this attempt, but retains
- * dependencies so a later repair can trigger another cycle. Parser acquisition
- * failures also retry on a timer because recovery may require no source edit.
+ * The watcher cannot provide a normal check report for this attempt, but
+ * retains dependencies so a later repair can trigger another cycle. Parser
+ * acquisition failures also retry on a timer because recovery may require no
+ * source edit.
  */
 export interface IEvidWatchFailureCycle {
   /**
@@ -23,7 +24,8 @@ export interface IEvidWatchFailureCycle {
   /**
    * Discriminator marking an ongoing watch-stream result.
    *
-   * A failed cycle does not imply that the watcher has stopped observing repairs.
+   * A failed cycle does not imply that the watcher has stopped observing
+   * repairs.
    */
   watch: true;
 
@@ -44,36 +46,40 @@ export interface IEvidWatchFailureCycle {
   /**
    * Failed outcome for consumers inspecting the common success field.
    *
-   * An exception cannot certify complete coverage, even if an earlier cycle passed.
+   * An exception cannot certify complete coverage, even if an earlier cycle
+   * passed.
    */
   success: false;
 
   /**
    * Outcome code for unavailable analysis in this cycle.
    *
-   * This is published as data and does not itself terminate ongoing observation.
+   * This is published as data and does not itself terminate ongoing
+   * observation.
    */
   exitCode: 2;
 
   /**
    * Resolved configuration path associated with the failed attempt.
    *
-   * The path remains available even when configuration evaluation itself failed.
+   * The path remains available even when configuration evaluation itself
+   * failed.
    */
   configFile: string;
 
   /**
    * Explanation derived from the configuration or operational exception.
    *
-   * It identifies the current failure rather than repeating the previous cycle's report.
+   * It identifies the current failure rather than repeating the previous
+   * cycle's report.
    */
   message: string;
 
   /**
    * Corrective guidance and the applicable retry behavior.
    *
-   * Parser acquisition can retry automatically; other failures wait for a watched
-   * filesystem change that permits another complete attempt.
+   * Parser acquisition can retry automatically; other failures wait for a
+   * watched filesystem change that permits another complete attempt.
    */
   repair: string;
 }

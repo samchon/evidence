@@ -4,7 +4,8 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Keeps detectable Ruby metaprogramming and unknown ownership incomplete.
+/**
+ * Keeps detectable Ruby metaprogramming and unknown ownership incomplete.
  *
  * Dynamic surfaces must not produce a smaller public inventory.
  *

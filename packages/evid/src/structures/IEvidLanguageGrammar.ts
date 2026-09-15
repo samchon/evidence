@@ -2,14 +2,16 @@
  * Logical filename rules selecting one pinned grammar variant.
  *
  * Selection first respects the configured artifact family, then matches exact
- * filename or extension spellings within that family. This supports variants such
- * as TSX and named Ruby files without treating ambiguous extensions as languages.
+ * filename or extension spellings within that family. This supports variants
+ * such as TSX and named Ruby files without treating ambiguous extensions as
+ * languages.
  */
 export interface IEvidLanguageGrammar {
   /**
    * Key of the pinned grammar provenance entry.
    *
-   * Parser acquisition uses this key after filename selection chooses the variant.
+   * Parser acquisition uses this key after filename selection chooses the
+   * variant.
    */
   id: string;
 

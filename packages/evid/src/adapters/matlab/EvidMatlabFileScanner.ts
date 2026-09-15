@@ -14,7 +14,8 @@ import type { IEvidMatlabFileAnalysis } from "./IEvidMatlabFileAnalysis";
  * Extracts declared MATLAB surfaces without evaluating application code.
  *
  * The scanner keeps class-folder facts, external signatures, and property
- * accessors separate because their public owner may be established in another file.
+ * accessors separate because their public owner may be established in another
+ * file.
  */
 export class EvidMatlabFileScanner {
   /**
@@ -52,8 +53,8 @@ export class EvidMatlabFileScanner {
   /**
    * Package-folder identity segments extracted from the physical path.
    *
-   * Declared names include these `+` folder segments when the scanner constructs
-   * a MATLAB public address for a class, function, or member.
+   * Declared names include these `+` folder segments when the scanner
+   * constructs a MATLAB public address for a class, function, or member.
    */
   private readonly packages: string[];
 
@@ -68,8 +69,9 @@ export class EvidMatlabFileScanner {
   /**
    * Borrows a live syntax tree only during extraction.
    *
-   * The constructor normalizes the source path and derives package segments once,
-   * so later ownership reconciliation has platform-independent physical identity.
+   * The constructor normalizes the source path and derives package segments
+   * once, so later ownership reconciliation has platform-independent physical
+   * identity.
    */
   public constructor(
     private readonly session: EvidParseSession,
@@ -86,8 +88,9 @@ export class EvidMatlabFileScanner {
   /**
    * Selects the primary declaration and recognizes dynamic-source boundaries.
    *
-   * MATLAB file layout determines ownership, so unsupported leading forms become
-   * diagnostics instead of being skipped and shrinking the public population.
+   * MATLAB file layout determines ownership, so unsupported leading forms
+   * become diagnostics instead of being skipped and shrinking the public
+   * population.
    */
   public scan(): IEvidMatlabFileAnalysis {
     const nodes = this.session.root.namedChildren.filter(
@@ -242,8 +245,9 @@ export class EvidMatlabFileScanner {
   /**
    * Maps explicit class members and independent read/write visibility.
    *
-   * MATLAB property access can make either accessor public, so this phase records
-   * the combined public surface without treating a private accessor as a new unit.
+   * MATLAB property access can make either accessor public, so this phase
+   * records the combined public surface without treating a private accessor as
+   * a new unit.
    */
   private members(block: EvidNode, owner: IEvidMatlabDeclaration): void {
     const attributes = this.attributes(block);
@@ -329,10 +333,12 @@ export class EvidMatlabFileScanner {
   }
 
   /**
-   * Reads known static class metadata and rejects unknown surface-changing attributes.
+   * Reads known static class metadata and rejects unknown surface-changing
+   * attributes.
    *
    * Attribute interpretation controls visibility and ownership; unsupported
-   * attributes become incomplete-analysis diagnostics instead of guessed policy.
+   * attributes become incomplete-analysis diagnostics instead of guessed
+   * policy.
    */
   private attributes(node: EvidNode): Map<string, string> {
     const result = new Map<string, string>();
@@ -418,10 +424,12 @@ export class EvidMatlabFileScanner {
   }
 
   /**
-   * Creates a declaration site before attaching the appropriate MATLAB help placement.
+   * Creates a declaration site before attaching the appropriate MATLAB help
+   * placement.
    *
-   * Separating site creation from documentation attachment keeps physical content
-   * ownership intact when help belongs after a signature or beside a member.
+   * Separating site creation from documentation attachment keeps physical
+   * content ownership intact when help belongs after a signature or beside a
+   * member.
    */
   private add(
     node: EvidNode,
@@ -462,7 +470,8 @@ export class EvidMatlabFileScanner {
    * Rejects source names that depend on MATLAB runtime name shadowing.
    *
    * The static inventory cannot determine which shadowed function MATLAB will
-   * invoke, so the scanner preserves this ambiguity as an actionable diagnostic.
+   * invoke, so the scanner preserves this ambiguity as an actionable
+   * diagnostic.
    */
   private filename(declaration: IEvidMatlabDeclaration, node: EvidNode): void {
     if (posix.basename(this.file, ".m") !== declaration.name)
@@ -485,10 +494,12 @@ export class EvidMatlabFileScanner {
   }
 
   /**
-   * Attaches post-signature class/function help and preceding-or-inline member help.
+   * Attaches post-signature class/function help and preceding-or-inline member
+   * help.
    *
    * MATLAB placement rules differ by declaration form; this method records only
-   * eligible carriers and leaves unsupported nearby comments visible for diagnostics.
+   * eligible carriers and leaves unsupported nearby comments visible for
+   * diagnostics.
    */
   private attach(node: EvidNode, declaration: IEvidMatlabDeclaration): void {
     const after =
@@ -606,7 +617,8 @@ export class EvidMatlabFileScanner {
   }
 
   /**
-   * Distinguishes standalone help lines from a preceding property's inline help.
+   * Distinguishes standalone help lines from a preceding property's inline
+   * help.
    *
    * Property declarations can carry MATLAB help on the same physical line, so
    * attachment needs this boundary before it creates a documentation range.
@@ -621,7 +633,8 @@ export class EvidMatlabFileScanner {
    * Preserves unsupported source constructs as actionable incomplete analysis.
    *
    * Each diagnostic records the source range and failure code, ensuring callers
-   * see a failed population rather than an inventory missing uncertain members.
+   * see a failed population rather than an inventory missing uncertain
+   * members.
    */
   private problem(code: string, message: string, node: EvidNode): void {
     this.diagnostics.push({

@@ -23,15 +23,17 @@ export interface IEvidClaimContext {
    * Reconciled claim inventory that receives preparation diagnostics.
    *
    * Invalid hosts or participation targets make this inventory incomplete so
-   * later graph evaluation can preserve the failure instead of dropping records.
+   * later graph evaluation can preserve the failure instead of dropping
+   * records.
    */
   readonly inventory: IEvidInventory;
 
   /**
    * Claim hosts indexed by the semantic identity that owns their annotations.
    *
-   * Multiple physical sites can describe one host identity; the map provides the
-   * canonical semantic attachment point used during acknowledgement matching.
+   * Multiple physical sites can describe one host identity; the map provides
+   * the canonical semantic attachment point used during acknowledgement
+   * matching.
    */
   readonly hosts: Map<string, IEvidHost>;
 
@@ -46,8 +48,9 @@ export interface IEvidClaimContext {
   /**
    * Reference positions to which each review applies, independent of coverage.
    *
-   * A review can target a reference without being an acknowledgement. Keeping its
-   * index separately prevents review metadata from changing coverage counts.
+   * A review can target a reference without being an acknowledgement. Keeping
+   * its index separately prevents review metadata from changing coverage
+   * counts.
    */
   readonly reviews: Map<string, Set<number>>;
 }

@@ -1,7 +1,4 @@
-import type {
-  IEvidSourceDiagnostic,
-  IEvidSourceSnapshot,
-} from "evid";
+import type { IEvidSourceDiagnostic, IEvidSourceSnapshot } from "evid";
 import { createHash } from "node:crypto";
 
 /**
@@ -37,7 +34,8 @@ export namespace EvidTestSourceSnapshot {
    * Creates one in-memory source with deterministic discovery metadata.
    *
    * The logical relative path also supplies the checkout-stable fingerprint
-   * identity, while aliases remain separate public addresses for resolution tests.
+   * identity, while aliases remain separate public addresses for resolution
+   * tests.
    */
   export function create(
     relative: string,
@@ -80,7 +78,8 @@ export namespace EvidTestSourceSnapshot {
    * Marks a fixture snapshot incomplete with one source diagnostic.
    *
    * Failure tests use the same mutable transition produced by filesystem
-   * discovery so adapters cannot mistake a missing population for an empty one.
+   * discovery so adapters cannot mistake a missing population for an empty
+   * one.
    */
   export function fail(
     snapshot: IEvidSourceSnapshot,

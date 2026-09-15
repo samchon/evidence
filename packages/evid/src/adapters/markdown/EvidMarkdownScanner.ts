@@ -21,7 +21,8 @@ export class EvidMarkdownScanner {
   /**
    * Maps UTF-16 offsets in the original source content to Evid ranges.
    *
-   * All sites, content ranges, and diagnostics use this source-preserving mapper.
+   * All sites, content ranges, and diagnostics use this source-preserving
+   * mapper.
    */
   private readonly text: EvidSourceText;
 
@@ -76,7 +77,8 @@ export class EvidMarkdownScanner {
    * Column-preserving HTML-comment spans grouped by physical source line.
    *
    * Structural Markdown parsing replaces these spans with spaces so invisible
-   * comment text cannot alter heading names, anchors, or rendered-prose checks.
+   * comment text cannot alter heading names, anchors, or rendered-prose
+   * checks.
    */
   private readonly commentMasks: Array<Array<readonly [number, number]>> = [];
 
@@ -99,8 +101,8 @@ export class EvidMarkdownScanner {
   /**
    * Physical site paired with each selected annotation host.
    *
-   * Host construction needs both semantic unit ownership and the exact site that
-   * contains the comment.
+   * Host construction needs both semantic unit ownership and the exact site
+   * that contains the comment.
    */
   private readonly hostSites: Array<string | undefined> = [];
 
@@ -142,7 +144,8 @@ export class EvidMarkdownScanner {
   }
 
   /**
-   * Scans Markdown structure, materializes units, and parses attached annotations.
+   * Scans Markdown structure, materializes units, and parses attached
+   * annotations.
    *
    * The phases run in source order because unit and host ownership depend on
    * line classification.
@@ -159,8 +162,8 @@ export class EvidMarkdownScanner {
   /**
    * Indexes physical source lines and initializes their classification state.
    *
-   * Carriage returns are excluded from line content while offsets remain tied to
-   * the original source.
+   * Carriage returns are excluded from line content while offsets remain tied
+   * to the original source.
    */
   private splitLines(): void {
     for (let index = 0; index < this.source.content.length; ++index)
@@ -350,9 +353,10 @@ export class EvidMarkdownScanner {
   /**
    * Finds the next quote-aware HTML token on one physical line.
    *
-   * Generic tags are returned as one span so comment and `pre` text inside quoted
-   * attributes cannot become Markdown boundaries. An incomplete line-start `pre`
-   * tag remains an opening token under the adapter's CommonMark boundary.
+   * Generic tags are returned as one span so comment and `pre` text inside
+   * quoted attributes cannot become Markdown boundaries. An incomplete
+   * line-start `pre` tag remains an opening token under the adapter's
+   * CommonMark boundary.
    */
   private markup(
     line: string,
@@ -405,9 +409,9 @@ export class EvidMarkdownScanner {
   /**
    * Locates the close belonging to the active rendered-region grammar.
    *
-   * HTML and MDX terminators are not interchangeable. The returned offset points
-   * after the matching delimiter so the caller can continue scanning the suffix
-   * for another ordered region transition.
+   * HTML and MDX terminators are not interchangeable. The returned offset
+   * points after the matching delimiter so the caller can continue scanning the
+   * suffix for another ordered region transition.
    */
   private renderedClosing(
     line: string,
@@ -449,7 +453,8 @@ export class EvidMarkdownScanner {
   }
 
   /**
-   * Returns one physical line with comment spans replaced by equal-width spaces.
+   * Returns one physical line with comment spans replaced by equal-width
+   * spaces.
    *
    * Rendered-annotation diagnostics need comment text to stay inert while their
    * marker columns continue to map to the original source line.
@@ -689,7 +694,8 @@ export class EvidMarkdownScanner {
   /**
    * Assigns non-comment source lines to their current semantic unit sites.
    *
-   * Annotation-only lines do not contribute to fingerprints of their documentation host.
+   * Annotation-only lines do not contribute to fingerprints of their
+   * documentation host.
    */
   private assignContent(): void {
     for (let index = 0; index < this.lineStarts.length; ++index) {
@@ -710,7 +716,8 @@ export class EvidMarkdownScanner {
   /**
    * Creates annotation hosts and parses each recognized HTML comment.
    *
-   * Unsupported attachment positions remain hosts so diagnostics retain their original location.
+   * Unsupported attachment positions remain hosts so diagnostics retain their
+   * original location.
    */
   private materializeComments(): void {
     const origins = this.source.addresses.map((address) => address.absolute);
@@ -759,7 +766,8 @@ export class EvidMarkdownScanner {
   /**
    * Diagnoses annotation markers rendered as ordinary Markdown prose.
    *
-   * A visible marker is not an Evid annotation until wrapped in an HTML comment.
+   * A visible marker is not an Evid annotation until wrapped in an HTML
+   * comment.
    */
   private reportRenderedAnnotations(): void {
     for (let index = 0; index < this.lineStarts.length; ++index) {
@@ -789,9 +797,11 @@ export class EvidMarkdownScanner {
   }
 
   /**
-   * Finds the nearest structural heading ancestor for a newly materialized unit.
+   * Finds the nearest structural heading ancestor for a newly materialized
+   * unit.
    *
-   * The file unit is the fallback owner when no prior heading level remains open.
+   * The file unit is the fallback owner when no prior heading level remains
+   * open.
    */
   private parent(
     structural: Array<string | undefined>,
@@ -808,7 +818,8 @@ export class EvidMarkdownScanner {
   /**
    * Returns one indexed line without its line-ending characters.
    *
-   * Classification helpers use this normalized view while source ranges retain original offsets.
+   * Classification helpers use this normalized view while source ranges retain
+   * original offsets.
    */
   private line(index: number): string {
     return this.source.content.slice(

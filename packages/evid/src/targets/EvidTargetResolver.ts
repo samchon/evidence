@@ -33,12 +33,12 @@ import type { EvidTargetResolutionStatus } from "../typings/EvidTargetResolution
  * multi-origin documentation silently select an arbitrary declaration.
  *
  * @example
- * const resolver: EvidTargetResolver = new EvidTargetResolver([inventory]);
- * const result: IEvidTargetResolution = await resolver.resolve(
- *   statement,
- *   host,
- *   selectedIds,
- * );
+ *   const resolver: EvidTargetResolver = new EvidTargetResolver([inventory]);
+ *   const result: IEvidTargetResolution = await resolver.resolve(
+ *     statement,
+ *     host,
+ *     selectedIds,
+ *   );
  */
 export class EvidTargetResolver {
   /**
@@ -68,8 +68,8 @@ export class EvidTargetResolver {
   /**
    * Normalized public addresses admitted by the reference's selected sources.
    *
-   * Ordinary targets may resolve only in this set; physical file existence alone
-   * never makes an unselected source part of the coverage denominator.
+   * Ordinary targets may resolve only in this set; physical file existence
+   * alone never makes an unselected source part of the coverage denominator.
    */
   private readonly selectedFiles = new Set<string>();
 
@@ -84,17 +84,17 @@ export class EvidTargetResolver {
   /**
    * Authored public file spellings grouped by their normalized file identity.
    *
-   * A target must be tested through every public spelling because address lookup
-   * preserves authored paths as part of the public identity contract.
+   * A target must be tested through every public spelling because address
+   * lookup preserves authored paths as part of the public identity contract.
    */
   private readonly publicFiles = new Map<string, Set<string>>();
 
   /**
    * Selected Markdown roots grouped by Markdown's root-relative path spelling.
    *
-   * Markdown targets are intentionally resolved from reference roots rather than
-   * relative to the documentation host, so one logical target may map to several
-   * physical selected files before ambiguity is decided.
+   * Markdown targets are intentionally resolved from reference roots rather
+   * than relative to the documentation host, so one logical target may map to
+   * several physical selected files before ambiguity is decided.
    */
   private readonly markdownFiles = new Map<string, Set<string>>();
 
@@ -105,10 +105,7 @@ export class EvidTargetResolver {
    * establish one. Construction records membership and aliases but performs no
    * filesystem access; `resolve` defers that work until a citation needs it.
    */
-  public constructor(
-    inventories: IEvidInventory[],
-    type?: EvidArtifactType,
-  ) {
+  public constructor(inventories: IEvidInventory[], type?: EvidArtifactType) {
     this.index = new EvidInventory(inventories);
     this.inventory = this.index.snapshot();
     this.type = type;
@@ -116,9 +113,7 @@ export class EvidTargetResolver {
       this.physicalFiles.add(EvidFileTarget.normalize(source.physicalPath));
       for (const address of source.addresses)
         if (address.selected !== false)
-          this.selectedFiles.add(
-            EvidFileTarget.normalize(address.absolute),
-          );
+          this.selectedFiles.add(EvidFileTarget.normalize(address.absolute));
     }
     // Preserve every public spelling for an address because the index resolves
     // public addresses, while membership checks operate on normalized paths.
@@ -141,9 +136,7 @@ export class EvidTargetResolver {
         ),
     );
     for (const source of this.inventory.sources) {
-      if (
-        !markdownSources.has(EvidFileTarget.normalize(source.physicalPath))
-      )
+      if (!markdownSources.has(EvidFileTarget.normalize(source.physicalPath)))
         continue;
       for (const address of source.addresses) {
         if (address.selected === false) continue;
@@ -163,13 +156,13 @@ export class EvidTargetResolver {
    *
    * The host must match the statement because diagnostics and relative origins
    * belong to that attachment. Specialized Markdown, Prisma, and Swagger target
-   * forms are parsed only for a uniquely identified artifact type. Ordinary file
-   * targets are attempted for each declared host origin, then deduplicated before
-   * index lookup and filesystem classification.
+   * forms are parsed only for a uniquely identified artifact type. Ordinary
+   * file targets are attempted for each declared host origin, then deduplicated
+   * before index lookup and filesystem classification.
    *
    * Incomplete inventories win before an empty or missing-member result. A scan
-   * that omitted declarations cannot prove coverage merely because the remaining
-   * selected population has no match.
+   * that omitted declarations cannot prove coverage merely because the
+   * remaining selected population has no match.
    */
   public async resolve(
     statement: IEvidTargetStatement,
@@ -323,10 +316,11 @@ export class EvidTargetResolver {
   /**
    * Converts address-index lookups into one semantic target resolution.
    *
-   * Multiple candidates may be aliases of one unit, which resolves successfully.
-   * Multiple unit IDs or an index-level ambiguity remain ambiguous. A withdrawal
-   * shadows an otherwise found unit, because a citation cannot acknowledge a
-   * declaration that has been explicitly removed from public coverage.
+   * Multiple candidates may be aliases of one unit, which resolves
+   * successfully. Multiple unit IDs or an index-level ambiguity remain
+   * ambiguous. A withdrawal shadows an otherwise found unit, because a citation
+   * cannot acknowledge a declaration that has been explicitly removed from
+   * public coverage.
    */
   private resolveCandidates(
     statement: IEvidTargetStatement,
@@ -411,9 +405,9 @@ export class EvidTargetResolver {
   /**
    * Creates a failed resolution with its one explanatory diagnostic.
    *
-   * Callers receive candidate addresses, units, and withdrawals even for failure
-   * states so reports can explain the evidence considered without reconstructing
-   * this resolver's normalization and alias work.
+   * Callers receive candidate addresses, units, and withdrawals even for
+   * failure states so reports can explain the evidence considered without
+   * reconstructing this resolver's normalization and alias work.
    */
   private failure(
     status: Exclude<EvidTargetResolutionStatus, "resolved">,
@@ -434,8 +428,9 @@ export class EvidTargetResolver {
   /**
    * Creates the conservative result required when inventory acquisition failed.
    *
-   * Existing inventory diagnostics are retained with the target-specific error so
-   * authors see both the acquisition cause and why this citation was not trusted.
+   * Existing inventory diagnostics are retained with the target-specific error
+   * so authors see both the acquisition cause and why this citation was not
+   * trusted.
    */
   private incomplete(
     statement: IEvidTargetStatement,
@@ -462,7 +457,8 @@ export class EvidTargetResolver {
    * Attaches target-resolution details to the statement's original source span.
    *
    * Keeping this construction centralized ensures every failure points to the
-   * authored target and owning host, rather than an internal normalized address.
+   * authored target and owning host, rather than an internal normalized
+   * address.
    */
   private diagnostic(
     statement: IEvidTargetStatement,
@@ -484,9 +480,9 @@ export class EvidTargetResolver {
   /**
    * Classifies one candidate path without treating access failure as absence.
    *
-   * Only regular files can be citation targets. Permission and I/O errors become
-   * `incomplete` so a transient inspection failure cannot be reported as a user
-   * typo or shrink the reference population.
+   * Only regular files can be citation targets. Permission and I/O errors
+   * become `incomplete` so a transient inspection failure cannot be reported as
+   * a user typo or shrink the reference population.
    */
   private async exists(
     file: string,
@@ -518,10 +514,12 @@ export class EvidTargetResolver {
   }
 
   /**
-   * Extracts a EvidNode-style error code without assuming an arbitrary thrown value.
+   * Extracts a EvidNode-style error code without assuming an arbitrary thrown
+   * value.
    *
    * Filesystem APIs may reject with non-Error values, which must remain an
-   * incomplete inspection rather than cause the resolver's classifier to throw.
+   * incomplete inspection rather than cause the resolver's classifier to
+   * throw.
    */
   private errorCode(cause: unknown): string | undefined {
     if (!(cause instanceof Error) || !("code" in cause)) return undefined;
@@ -545,9 +543,7 @@ export class EvidTargetResolver {
    * Withdrawals lack one shared unit ID in this result shape, so structural
    * serialization preserves the merger's full withdrawal identity.
    */
-  private uniqueWithdrawals(
-    withdrawals: IEvidWithdrawal[],
-  ): IEvidWithdrawal[] {
+  private uniqueWithdrawals(withdrawals: IEvidWithdrawal[]): IEvidWithdrawal[] {
     return EvidInventoryMerge.unique(withdrawals, (withdrawal) =>
       JSON.stringify(withdrawal),
     );
@@ -566,10 +562,11 @@ export class EvidTargetResolver {
   }
 
   /**
-   * Formats the representative accessor after candidate paths share its segments.
+   * Formats the representative accessor after candidate paths share its
+   * segments.
    *
-   * An empty array occurs only in defensive failure construction and deliberately
-   * produces an empty display rather than inventing an accessor.
+   * An empty array occurs only in defensive failure construction and
+   * deliberately produces an empty display rather than inventing an accessor.
    */
   private accessor(addresses: IEvidAddress[]): string {
     const first = addresses[0];

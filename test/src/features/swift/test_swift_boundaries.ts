@@ -4,9 +4,11 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Rejects Swift surfaces with unavailable ownership or compiler expansion.
+/**
+ * Rejects Swift surfaces with unavailable ownership or compiler expansion.
  *
- * These boundaries must remain incomplete rather than reduce the selected population.
+ * These boundaries must remain incomplete rather than reduce the selected
+ * population.
  *
  * 1. Analyze each unsupported source boundary.
  * 2. Verify incomplete diagnostics and failed-source handling.
@@ -82,7 +84,10 @@ export async function test_swift_boundaries(): Promise<void> {
     false,
   );
   const wrongExtension = await adapter.analyze(
-    EvidTestSourceSnapshot.create("src/Contract.kt", "public struct Present {}"),
+    EvidTestSourceSnapshot.create(
+      "src/Contract.kt",
+      "public struct Present {}",
+    ),
   );
   TestValidator.equals(
     "configured language does not guess another source spelling",

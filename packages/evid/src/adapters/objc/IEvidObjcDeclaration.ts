@@ -3,7 +3,8 @@ import type { EvidProgrammingSymbol } from "../../typings/EvidProgrammingSymbol"
 import type { EvidObjcDeclarationForm } from "./EvidObjcDeclarationForm";
 
 /**
- * Represents one Objective-C declaration before interface and implementation reconciliation.
+ * Represents one Objective-C declaration before interface and implementation
+ * reconciliation.
  *
  * The adapter keeps declarations from headers, implementations, categories, and
  * extensions distinct until it can establish the one public semantic identity.
@@ -33,7 +34,8 @@ export interface IEvidObjcDeclaration {
   /**
    * Source form governing exposure and merging.
    *
-   * Interfaces, implementations, and extensions follow distinct publication rules.
+   * Interfaces, implementations, and extensions follow distinct publication
+   * rules.
    */
   form: EvidObjcDeclarationForm;
 
@@ -59,9 +61,11 @@ export interface IEvidObjcDeclaration {
   site: IEvidUnitSite;
 
   /**
-   * Whether this declaration participates in the public inventory after reconciliation.
+   * Whether this declaration participates in the public inventory after
+   * reconciliation.
    *
-   * Private records can still become merge sites for a separately public identity.
+   * Private records can still become merge sites for a separately public
+   * identity.
    */
   public: boolean;
 

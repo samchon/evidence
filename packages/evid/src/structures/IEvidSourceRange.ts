@@ -3,13 +3,17 @@ import type { IEvidSourcePosition } from "./IEvidSourcePosition";
 /**
  * A half-open span in the original captured source string.
  *
- * The inclusive start and exclusive end match JavaScript slicing. Both positions
- * retain diagnostic coordinates in the same unnormalized UTF-16 text, so adapters
- * can expose serializable locations without retaining their parser nodes.
+ * The inclusive start and exclusive end match JavaScript slicing. Both
+ * positions retain diagnostic coordinates in the same unnormalized UTF-16 text,
+ * so adapters can expose serializable locations without retaining their parser
+ * nodes.
  *
  * @example
- * const fragment: string = content.slice(range.start.offset, range.end.offset);
- * // Equal offsets describe an empty span, such as an inserted missing token.
+ *   const fragment: string = content.slice(
+ *     range.start.offset,
+ *     range.end.offset,
+ *   );
+ *   // Equal offsets describe an empty span, such as an inserted missing token.
  */
 export interface IEvidSourceRange {
   /**

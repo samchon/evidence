@@ -14,8 +14,9 @@ export namespace EvidCppDocumentation {
   /**
    * Maps one classified C++ documentation carrier for Evid tag parsing.
    *
-   * Doxygen carriers preserve physical offsets while native and HTML code regions
-   * become inert. Non-withdrawal comments retain the shared mapped text directly.
+   * Doxygen carriers preserve physical offsets while native and HTML code
+   * regions become inert. Non-withdrawal comments retain the shared mapped text
+   * directly.
    */
   export function read(
     source: IEvidSourceFile,
@@ -36,7 +37,8 @@ export namespace EvidCppDocumentation {
    * Masks Markdown-aware Doxygen and HTML code regions in precedence order.
    *
    * Markdown code cannot open native state. Genuine native code is removed
-   * before HTML pairing, and an unclosed native region owns the host remainder.
+   * before HTML pairing, and an unclosed native region owns the host
+   * remainder.
    */
   function mask(input: string): string {
     const characters: string[] = input.split("");

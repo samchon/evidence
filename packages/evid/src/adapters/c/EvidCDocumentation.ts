@@ -7,8 +7,8 @@ import type { IEvidCDocumentation } from "./IEvidCDocumentation";
 /**
  * Reads C Doxygen documentation while masking embedded source examples.
  *
- * The C adapter uses this wrapper around the shared reader so Evid tags in
- * code and preformatted examples cannot be mistaken for documentation claims.
+ * The C adapter uses this wrapper around the shared reader so Evid tags in code
+ * and preformatted examples cannot be mistaken for documentation claims.
  */
 export namespace EvidCDocumentation {
   /**
@@ -36,7 +36,8 @@ export namespace EvidCDocumentation {
    * Masks Markdown-aware Doxygen and HTML code regions in precedence order.
    *
    * Markdown code cannot open native state. Genuine native code is removed
-   * before HTML pairing, and an unclosed native region owns the host remainder.
+   * before HTML pairing, and an unclosed native region owns the host
+   * remainder.
    */
   function mask(input: string): string {
     const characters: string[] = input.split("");

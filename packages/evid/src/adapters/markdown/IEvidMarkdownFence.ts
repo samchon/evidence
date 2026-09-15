@@ -1,4 +1,5 @@
-/** One valid Markdown fence delimiter after its allowed indentation.
+/**
+ * One valid Markdown fence delimiter after its allowed indentation.
  *
  * Fence records prevent heading and comment-like text inside examples from
  * becoming public Markdown structure or annotation hosts.

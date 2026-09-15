@@ -5,25 +5,25 @@ import {
   EvidRubyAdapter,
   EvidRustAdapter,
 } from "evid";
-import type {
-  IEvidInventory,
-  IEvidGraphResult,
-} from "evid";
+import type { IEvidInventory, IEvidGraphResult } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
- * Rejects evidence tags that a language adapter cannot attach to the selected declaration.
+ * Rejects evidence tags that a language adapter cannot attach to the selected
+ * declaration.
  *
  * Comment-boundary handling is part of graph correctness: a tag must cover the
  * declaration that owns it, rather than a neighbouring declaration whose text
  * happens to be aligned with the annotation.
  *
  * 1. Analyze Ruby and Rust member declarations with correctly attached evidence
- *    tags, then require each selected member to cover the Markdown requirement.
+ *    tags, then require each selected member to cover the Markdown
+ *    requirement.
  * 2. Replace each tag with ordinary text and require both results to fail:
+ *
  *    - The requirement remains the missing unit.
  *    - Removing documentation cannot leave accidental coverage behind.
  * 3. Put a Go tag at the end of an earlier variable declaration and require that
@@ -125,7 +125,8 @@ export async function test_graph_adapter_comment_boundaries(): Promise<void> {
 }
 
 /**
- * Evaluates the selected public property against the independent Markdown requirement.
+ * Evaluates the selected public property against the independent Markdown
+ * requirement.
  *
  * The helper excludes the control declaration named `Before` and uses the
  * Markdown heading as the sole required reference, keeping each boundary case

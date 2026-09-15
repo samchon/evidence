@@ -1,16 +1,14 @@
-import {
-  EvidAccessor,
-  EvidInventory,
-  EvidPhpAdapter,
-} from "evid";
+import { EvidAccessor, EvidInventory, EvidPhpAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Extracts PHP public units with namespace-aware ownership.
+/**
+ * Extracts PHP public units with namespace-aware ownership.
  *
- * Public defaults, independent declarators, property spelling, and namespace imports determine the addressable population.
+ * Public defaults, independent declarators, property spelling, and namespace
+ * imports determine the addressable population.
  *
  * 1. Analyze PHP namespaces, declarations, properties, and aliases.
  * 2. Verify exact units, identities, ownership, and target resolution.

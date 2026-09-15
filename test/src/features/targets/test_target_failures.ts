@@ -1,11 +1,5 @@
-import {
-  EvidTargetResolver,
-  EvidTypeScriptAdapter,
-} from "evid";
-import type {
-  IEvidHost,
-  IEvidTargetStatement,
-} from "evid";
+import { EvidTargetResolver, EvidTypeScriptAdapter } from "evid";
+import type { IEvidHost, IEvidTargetStatement } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
@@ -13,7 +7,8 @@ import { join } from "node:path";
 import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Distinguishes every unresolved target state.
+/**
+ * Distinguishes every unresolved target state.
  *
  * Missing, unselected, malformed, unsupported, withdrawn, ambiguous, and
  * incomplete addresses require different diagnostics and recovery behavior.
@@ -145,9 +140,7 @@ export async function test_target_failures(): Promise<void> {
       ),
     ]),
   );
-  const ambiguous = await new EvidTargetResolver([
-    ambiguousInventory,
-  ]).resolve(
+  const ambiguous = await new EvidTargetResolver([ambiguousInventory]).resolve(
     createStatement("../src/index.ts#value", "/project"),
     createHost("/project/docs/review.md"),
     ambiguousInventory.units.map((unit) => unit.id),
@@ -213,10 +206,7 @@ function createHost(file: string): IEvidHost {
   };
 }
 
-function createStatement(
-  target: string,
-  root: string,
-): IEvidTargetStatement {
+function createStatement(target: string, root: string): IEvidTargetStatement {
   return {
     hostId: "claim-host",
     target,

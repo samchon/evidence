@@ -1,13 +1,15 @@
 const TAG =
   /^@(evidenceExcludeReview|evidenceReview|evidenceExclude|evidence|link)(?:[ \t]|$)/u;
 
-/** Separates operation prose from Evid metadata appended to a description.
+/**
+ * Separates operation prose from Evid metadata appended to a description.
  *
  * Fingerprints retain author-facing prose but exclude Evid directives, which
  * control review state without changing the described API operation.
  */
 export namespace EvidSwaggerDescription {
-  /** Returns description prose before the first active Evid directive.
+  /**
+   * Returns description prose before the first active Evid directive.
    *
    * Directive-looking lines inside fenced examples remain semantic prose.
    */
@@ -20,7 +22,8 @@ export namespace EvidSwaggerDescription {
       .trimEnd();
   }
 
-  /** Reports whether an active Evid directive begins in this description.
+  /**
+   * Reports whether an active Evid directive begins in this description.
    *
    * Callers use this to decide whether the mapped scalar must become a
    * documentation carrier even when the visible prose is empty.
@@ -30,7 +33,8 @@ export namespace EvidSwaggerDescription {
   }
 }
 
-/** Finds the first directive line outside fenced Markdown examples.
+/**
+ * Finds the first directive line outside fenced Markdown examples.
  *
  * Fence tracking prevents an example annotation from changing operation review
  * metadata merely because it begins with a recognized tag.

@@ -1,6 +1,7 @@
 import type { IEvidPrismaModel } from "./IEvidPrismaModel";
 
-/** Parsed schema units beside the whole-set cache identity.
+/**
+ * Parsed schema units beside the whole-set cache identity.
  *
  * Prisma resolves relations across schema files, so the cache and parser result
  * belong to the selected file set rather than an individual source file.
@@ -17,8 +18,9 @@ export interface IEvidPrismaLoadResult {
   /**
    * Digest identifying the parser version and complete selected source set.
    *
-   * The loader returns this cache identity with its models so callers can retain
-   * a result only while every selected schema source and parser version agree.
+   * The loader returns this cache identity with its models so callers can
+   * retain a result only while every selected schema source and parser version
+   * agree.
    */
   digest: string;
 }

@@ -10,7 +10,8 @@ import type {
  * Swagger and OpenAPI document versions accepted by the shared converter.
  *
  * The Swagger adapter narrows supported parser output to this union before it
- * extracts operations, keeping version-specific source models behind one input.
+ * extracts operations, keeping version-specific source models behind one
+ * input.
  */
 export type EvidSwaggerDocumentInput =
   | SwaggerV2.IDocument

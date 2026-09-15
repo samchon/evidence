@@ -1,24 +1,27 @@
 import typia from "typia";
 
 /**
- * Converts the accessor portion of a file-qualified target between text and segments.
+ * Converts the accessor portion of a file-qualified target between text and
+ * segments.
  *
- * Target resolution uses segments to distinguish lexical ownership from a literal
- * dot in a member name. This namespace accepts the portable baseline syntax only:
- * identifiers after dots, JSON strings in brackets, and non-negative integer
- * bracket members. It neither resolves symbols nor interprets a segment as code.
+ * Target resolution uses segments to distinguish lexical ownership from a
+ * literal dot in a member name. This namespace accepts the portable baseline
+ * syntax only: identifiers after dots, JSON strings in brackets, and
+ * non-negative integer bracket members. It neither resolves symbols nor
+ * interprets a segment as code.
  *
  * @example
- * EvidAccessor.parse('Client.prototype["send.request"]');
- * // ["Client", "prototype", "send.request"]
+ *   EvidAccessor.parse('Client.prototype["send.request"]');
+ *   // ["Client", "prototype", "send.request"]
  */
 export namespace EvidAccessor {
   /**
    * Parses one accessor spelling into the literal segments used by an address.
    *
-   * A bracket string preserves characters that have structural meaning in dotted
-   * syntax. Invalid separators, unterminated brackets, and unsupported bracket
-   * content reject before a resolver can look up a different declaration.
+   * A bracket string preserves characters that have structural meaning in
+   * dotted syntax. Invalid separators, unterminated brackets, and unsupported
+   * bracket content reject before a resolver can look up a different
+   * declaration.
    */
   export function parse(value: string): string[] {
     const segments: string[] = [];

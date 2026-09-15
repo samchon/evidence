@@ -1,16 +1,14 @@
-import {
-  EvidFingerprint,
-  EvidInventory,
-  EvidPostgresqlAdapter,
-} from "evid";
+import { EvidFingerprint, EvidInventory, EvidPostgresqlAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Maps PostgreSQL documentation strings to their schema hosts.
+/**
+ * Maps PostgreSQL documentation strings to their schema hosts.
  *
- * COMMENT annotations, withdrawals, and fingerprints have distinct effects, while unrelated strings cannot acknowledge a unit.
+ * COMMENT annotations, withdrawals, and fingerprints have distinct effects,
+ * while unrelated strings cannot acknowledge a unit.
  *
  * 1. Analyze documented schema units, withdrawals, and inert text.
  * 2. Verify targets, resolution, and withdrawal metadata.

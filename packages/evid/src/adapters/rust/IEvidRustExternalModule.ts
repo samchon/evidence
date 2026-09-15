@@ -2,7 +2,8 @@
  * Records a file-backed Rust module awaiting selected-source resolution.
  *
  * EvidRustModuleResolver maps the declaration to an included file or reports an
- * incomplete crate graph instead of guessing filesystem or build-script behavior.
+ * incomplete crate graph instead of guessing filesystem or build-script
+ * behavior.
  */
 export interface IEvidRustExternalModule {
   /**
@@ -29,7 +30,8 @@ export interface IEvidRustExternalModule {
   /**
    * Whether a `#[path]` attribute supplies an explicit file spelling.
    *
-   * This changes the selected-source lookup and prevents conventional-path guessing.
+   * This changes the selected-source lookup and prevents conventional-path
+   * guessing.
    */
   pathOverride: boolean;
 }

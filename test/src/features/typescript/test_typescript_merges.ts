@@ -1,9 +1,5 @@
 import { EvidTypeScriptAdapter } from "evid";
-import type {
-  IEvidInventory,
-  IEvidPublicAddress,
-  IEvidUnit,
-} from "evid";
+import type { IEvidInventory, IEvidPublicAddress, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -16,8 +12,8 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * retaining every site needed for review. A namespace nested interface remains
  * addressable through the merged outer interface and namespace spelling.
  *
- * 1. Analyze function overloads, class/interface merges, function namespaces,
- *    and an interface with a companion namespace containing another interface.
+ * 1. Analyze function overloads, class/interface merges, function namespaces, and
+ *    an interface with a companion namespace containing another interface.
  * 2. Require overload and class/interface sites to merge without duplicating
  *    semantic units.
  * 3. Verify namespace members retain their public nested paths, including

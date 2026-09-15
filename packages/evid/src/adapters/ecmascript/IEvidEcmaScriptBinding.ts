@@ -1,5 +1,6 @@
 /**
- * Resolves one public ECMAScript export to a local declaration or module namespace.
+ * Resolves one public ECMAScript export to a local declaration or module
+ * namespace.
  *
  * The export resolver carries this intermediate record across local exports and
  * re-export paths before it publishes public addresses for owned units.

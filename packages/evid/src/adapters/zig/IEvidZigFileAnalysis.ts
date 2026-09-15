@@ -19,18 +19,21 @@ export interface IEvidZigFileAnalysis {
   source: IEvidSourceFile;
 
   /**
-   * Lists declarations extracted from the file, including non-public boundaries.
+   * Lists declarations extracted from the file, including non-public
+   * boundaries.
    *
    * Alias reconciliation filters public records for publication while retaining
-   * source-level ownership information needed to interpret their relationships.
+   * source-level ownership information needed to interpret their
+   * relationships.
    */
   declarations: IEvidZigDeclaration[];
 
   /**
    * Holds classified documentation and unsupported annotation carriers.
    *
-   * The adapter parses these records after public units are known so tags cannot
-   * attach to a declaration that never reaches the selected public surface.
+   * The adapter parses these records after public units are known so tags
+   * cannot attach to a declaration that never reaches the selected public
+   * surface.
    */
   documentation: IEvidZigDocumentation[];
 
@@ -46,7 +49,8 @@ export interface IEvidZigFileAnalysis {
    * States whether scanning classified every surface-affecting Zig form.
    *
    * The inventory treats false as a failed boundary, preserving uncertainty
-   * rather than allowing an unclassified alias to reduce the public population.
+   * rather than allowing an unclassified alias to reduce the public
+   * population.
    */
   complete: boolean;
 }

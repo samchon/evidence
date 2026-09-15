@@ -1,22 +1,24 @@
-import {
-  EvidFingerprint,
-  EvidInventory,
-  EvidScalaAdapter,
-} from "evid";
+import { EvidFingerprint, EvidInventory, EvidScalaAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
- * Extracts Scala evidence from supported Scaladoc hosts with stable coordinates.
+ * Extracts Scala evidence from supported Scaladoc hosts with stable
+ * coordinates.
  *
- * The CRLF fixture includes astral text, decorators, withdrawn descendants, literal names, code examples, and ordinary comments to distinguish active annotations from inert text.
+ * The CRLF fixture includes astral text, decorators, withdrawn descendants,
+ * literal names, code examples, and ordinary comments to distinguish active
+ * annotations from inert text.
  *
- * 1. Analyze the fixture and verify supported declarations, UTF-16 offset, and CRLF line coordinates.
- * 2. Resolve withdrawn and literal dotted paths and verify hidden, resolved, and missing outcomes.
+ * 1. Analyze the fixture and verify supported declarations, UTF-16 offset, and
+ *    CRLF line coordinates.
+ * 2. Resolve withdrawn and literal dotted paths and verify hidden, resolved, and
+ *    missing outcomes.
  * 3. Compare ancestor fingerprints after metadata and semantic subtree edits.
- * 4. Verify every Evid tag on an ordinary comment is rejected without creating evidence or review records.
+ * 4. Verify every Evid tag on an ordinary comment is rejected without creating
+ *    evidence or review records.
  */
 export async function test_scala_hosts(): Promise<void> {
   const source = dedent`

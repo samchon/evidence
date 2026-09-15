@@ -9,8 +9,9 @@ import type { IEvidSourceSnapshot } from "../../structures/IEvidSourceSnapshot";
  * Extracts PostgreSQL table schemas with cross-file DDL and COMMENT ownership.
  *
  * PostgreSQL scanning and ownership resolution feed the shared SQL inventory
- * materializer. A final fingerprint pass preserves review content semantics when
- * annotation-only COMMENT statements add eligible documentation positions.
+ * materializer. A final fingerprint pass preserves review content semantics
+ * when annotation-only COMMENT statements add eligible documentation
+ * positions.
  */
 export class EvidPostgresqlAdapter extends EvidSqlAdapterBase {
   /**
@@ -29,10 +30,12 @@ export class EvidPostgresqlAdapter extends EvidSqlAdapterBase {
   }
 
   /**
-   * Applies PostgreSQL COMMENT fingerprint policy after shared inventory extraction.
+   * Applies PostgreSQL COMMENT fingerprint policy after shared inventory
+   * extraction.
    *
-   * Annotation-only COMMENT additions remain eligible hosts while the fingerprint
-   * layer avoids making review metadata invalidate the declaration it reviews.
+   * Annotation-only COMMENT additions remain eligible hosts while the
+   * fingerprint layer avoids making review metadata invalidate the declaration
+   * it reviews.
    */
   public override async analyze(
     snapshot: IEvidSourceSnapshot,

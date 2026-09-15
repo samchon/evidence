@@ -9,8 +9,8 @@ import type { IEvidTagParseResult } from "../structures/IEvidTagParseResult";
  * Parses Evid annotations from documentation already mapped to a source host.
  *
  * Adapters own comment syntax and provide a normalized documentation map; this
- * namespace owns only Evid tag semantics. Its mutable context carries a
- * pending multiline tag, fenced-code state, and parse result so every emitted
+ * namespace owns only Evid tag semantics. Its mutable context carries a pending
+ * multiline tag, fenced-code state, and parse result so every emitted
  * annotation can retain coordinates in the original source file.
  *
  * @example
@@ -123,10 +123,10 @@ export namespace EvidTagProgrammer {
    * Verifies that a documentation map belongs to its declared source host.
    *
    * Offset and end arrays must cover the normalized text exactly and remain
-   * monotonic inside the host range. The source lookup also validates that every
-   * retained boundary can be converted into a public line-and-column location.
-   * Violations are adapter bugs, so this function throws instead of producing a
-   * user-facing annotation diagnostic.
+   * monotonic inside the host range. The source lookup also validates that
+   * every retained boundary can be converted into a public line-and-column
+   * location. Violations are adapter bugs, so this function throws instead of
+   * producing a user-facing annotation diagnostic.
    */
   function validate(context: IEvidTagContext): void {
     if (
@@ -153,11 +153,13 @@ export namespace EvidTagProgrammer {
   }
 
   /**
-   * Converts a half-open documentation-text span to an original source location.
+   * Converts a half-open documentation-text span to an original source
+   * location.
    *
-   * The documentation map can omit or transform syntax such as comment prefixes,
-   * so source offsets cannot be derived from character counts. The final character
-   * uses its mapped end boundary; an empty span uses its mapped start boundary.
+   * The documentation map can omit or transform syntax such as comment
+   * prefixes, so source offsets cannot be derived from character counts. The
+   * final character uses its mapped end boundary; an empty span uses its mapped
+   * start boundary.
    */
   function location(
     context: IEvidTagContext,
@@ -177,9 +179,9 @@ export namespace EvidTagProgrammer {
   /**
    * Appends a source-located tag diagnostic for the current host.
    *
-   * Centralizing this projection guarantees parser errors carry the same severity
-   * and host identity as later graph diagnostics, while callers supply the
-   * actionable repair text appropriate to the failed tag rule.
+   * Centralizing this projection guarantees parser errors carry the same
+   * severity and host identity as later graph diagnostics, while callers supply
+   * the actionable repair text appropriate to the failed tag rule.
    */
   function problem(
     context: IEvidTagContext,
@@ -199,12 +201,14 @@ export namespace EvidTagProgrammer {
   }
 
   /**
-   * Finalizes the pending tag, appending an annotation or an explanatory diagnostic.
+   * Finalizes the pending tag, appending an annotation or an explanatory
+   * diagnostic.
    *
-   * Pending state is cleared before validation so a failing tag cannot be emitted
-   * again at a later boundary. Attachment, inline-link, target, review-fingerprint,
-   * and reason requirements are checked in that order because each later rule
-   * assumes the preceding source and target interpretation is valid.
+   * Pending state is cleared before validation so a failing tag cannot be
+   * emitted again at a later boundary. Attachment, inline-link, target,
+   * review-fingerprint, and reason requirements are checked in that order
+   * because each later rule assumes the preceding source and target
+   * interpretation is valid.
    */
   function flush(context: IEvidTagContext): void {
     if (context.pending === undefined) return;

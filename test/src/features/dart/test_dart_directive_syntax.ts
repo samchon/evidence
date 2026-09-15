@@ -4,12 +4,16 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Parses Dart directives by their URI fields despite annotations and trivia.
+/**
+ * Parses Dart directives by their URI fields despite annotations and trivia.
  *
- * Annotation string arguments are not dependencies, while actual export and part URIs define the library topology used for resolution.
+ * Annotation string arguments are not dependencies, while actual export and
+ * part URIs define the library topology used for resolution.
  *
- * 1. Analyze a library and part with annotated directives, spaced library name, and a commented declarator list.
- * 2. Require both declared variables and the exported type to resolve through the actual API URI.
+ * 1. Analyze a library and part with annotated directives, spaced library name,
+ *    and a commented declarator list.
+ * 2. Require both declared variables and the exported type to resolve through the
+ *    actual API URI.
  * 3. Verify annotation strings do not create dependencies.
  */
 export async function test_dart_directive_syntax(): Promise<void> {

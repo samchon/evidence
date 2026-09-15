@@ -1,8 +1,9 @@
 /**
  * Enumerates C# source forms that establish supported semantic declarations.
  *
- * EvidCSharpFileScanner uses the form to select identity and ownership rules before
- * public accessibility filtering determines the published graph population.
+ * EvidCSharpFileScanner uses the form to select identity and ownership rules
+ * before public accessibility filtering determines the published graph
+ * population.
  */
 export type EvidCSharpDeclarationForm =
   | "class"

@@ -3,10 +3,12 @@ import { TestValidator } from "@nestia/e2e";
 import { EvidFileGlob } from "evid";
 
 /**
- * Preserves upstream wildcard boundaries, Unicode characters, and ordered exclusions.
+ * Preserves upstream wildcard boundaries, Unicode characters, and ordered
+ * exclusions.
  *
- * File selection must preserve the configured pattern sequence after normalizing
- * separators, without adding character-class or case-insensitive glob semantics.
+ * File selection must preserve the configured pattern sequence after
+ * normalizing separators, without adding character-class or case-insensitive
+ * glob semantics.
  *
  * 1. Match shallow and recursive Markdown patterns, proving that `*` remains in
  *    one segment while `**` accepts both zero and nested segments.

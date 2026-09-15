@@ -18,7 +18,8 @@ export interface IEvidDartDocumentationAttachment {
    * Identifies the physical declaration site covered by the DartDoc.
    *
    * A semantic unit can have multiple sites, so this keeps attachment scoped to
-   * the adjacent source occurrence instead of every site with the same unit ID.
+   * the adjacent source occurrence instead of every site with the same unit
+   * ID.
    */
   siteId: string;
 }

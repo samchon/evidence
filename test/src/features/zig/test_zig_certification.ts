@@ -1,9 +1,11 @@
 import { EvidAdapterCertification } from "../../internal/certification/EvidAdapterCertification";
 import { EvidAdapterCertificationFixtures } from "../../internal/certification/EvidAdapterCertificationFixtures";
 
-/** Applies the shared adapter certification contract to Zig.
+/**
+ * Applies the shared adapter certification contract to Zig.
  *
- * The Zig fixture defines expected inventory, graph failure, mutation, and fingerprint behavior.
+ * The Zig fixture defines expected inventory, graph failure, mutation, and
+ * fingerprint behavior.
  *
  * 1. Construct the Zig fixture.
  * 2. Run shared adapter certification.

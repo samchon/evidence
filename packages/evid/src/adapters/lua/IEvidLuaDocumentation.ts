@@ -9,27 +9,36 @@ import type { IEvidLuaDocumentationAttachment } from "./IEvidLuaDocumentationAtt
  * dynamic or detached source can be reported truthfully rather than discarded.
  */
 export interface IEvidLuaDocumentation {
-  /** Identifies this physical Lua documentation carrier within the scanned file.
+  /**
+   * Identifies this physical Lua documentation carrier within the scanned file.
    *
-   * Attachments and generated hosts use this scanner-local ID, which does not name a semantic declaration.
+   * Attachments and generated hosts use this scanner-local ID, which does not
+   * name a semantic declaration.
    */
   id: string;
 
-  /** Locates the carrier's original half-open UTF-16 source span.
+  /**
+   * Locates the carrier's original half-open UTF-16 source span.
    *
-   * The adapter preserves this range for diagnostics and annotation-range exclusion.
+   * The adapter preserves this range for diagnostics and annotation-range
+   * exclusion.
    */
   range: IEvidSourceRange;
 
-  /** Defines the delimiters and annotation-reading rules for this comment carrier.
+  /**
+   * Defines the delimiters and annotation-reading rules for this comment
+   * carrier.
    *
-   * Documentation parsing uses the syntax instead of guessing from raw Lua source text.
+   * Documentation parsing uses the syntax instead of guessing from raw Lua
+   * source text.
    */
   syntax: IEvidCommentSyntax;
 
-  /** Lists declaration sites that accept this carrier as attached LuaDoc.
+  /**
+   * Lists declaration sites that accept this carrier as attached LuaDoc.
    *
-   * The scanner establishes attachment from source adjacency before static value reconciliation.
+   * The scanner establishes attachment from source adjacency before static
+   * value reconciliation.
    */
   attachments: IEvidLuaDocumentationAttachment[];
 }

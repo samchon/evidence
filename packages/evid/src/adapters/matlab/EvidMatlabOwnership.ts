@@ -5,10 +5,12 @@ import type { IEvidMatlabDeclaration } from "./IEvidMatlabDeclaration";
 import type { IEvidMatlabFileAnalysis } from "./IEvidMatlabFileAnalysis";
 
 /**
- * Reconciles selected class folders, external implementations, and property accessors.
+ * Reconciles selected class folders, external implementations, and property
+ * accessors.
  *
- * MATLAB distributes one public class surface across files, so semantic ownership
- * must be proven from class-folder paths before units and annotation hosts exist.
+ * MATLAB distributes one public class surface across files, so semantic
+ * ownership must be proven from class-folder paths before units and annotation
+ * hosts exist.
  */
 export namespace EvidMatlabOwnership {
   /**
@@ -165,7 +167,8 @@ export namespace EvidMatlabOwnership {
    * Records unresolved source ownership without shrinking a passing population.
    *
    * The ownership pass retains this diagnostic when class-folder or external
-   * declarations cannot be paired, preserving an incomplete result for recovery.
+   * declarations cannot be paired, preserving an incomplete result for
+   * recovery.
    */
   function problem(
     analysis: IEvidMatlabFileAnalysis,

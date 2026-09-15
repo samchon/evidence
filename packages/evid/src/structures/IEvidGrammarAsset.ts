@@ -3,9 +3,10 @@ import type { tags } from "typia";
 /**
  * Immutable upstream asset identified by its size and SHA-256 digest.
  *
- * Grammar metadata uses the same shape for WASM and license provenance. Acquisition
- * can bound a download before hashing it, and cache identity depends on verified
- * bytes rather than trusting a mutable filename or the server response alone.
+ * Grammar metadata uses the same shape for WASM and license provenance.
+ * Acquisition can bound a download before hashing it, and cache identity
+ * depends on verified bytes rather than trusting a mutable filename or the
+ * server response alone.
  */
 export interface IEvidGrammarAsset {
   /**
@@ -26,8 +27,8 @@ export interface IEvidGrammarAsset {
   /**
    * Lowercase SHA-256 digest of the exact upstream bytes.
    *
-   * Verification rejects altered downloads, and immutable cache entries use this
-   * digest to distinguish content independently of its filename.
+   * Verification rejects altered downloads, and immutable cache entries use
+   * this digest to distinguish content independently of its filename.
    */
   sha256: string & tags.Pattern<"^[0-9a-f]{64}$">;
 

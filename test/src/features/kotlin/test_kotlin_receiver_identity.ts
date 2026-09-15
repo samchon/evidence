@@ -4,11 +4,15 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Resolves Kotlin extension receivers across nominal names and selected aliases.
+/**
+ * Resolves Kotlin extension receivers across nominal names and selected
+ * aliases.
  *
- * Equivalent receiver spelling must resolve one semantic extension without duplicate obligations.
+ * Equivalent receiver spelling must resolve one semantic extension without
+ * duplicate obligations.
  *
- * 1. Analyze qualified receivers and aliases. 2. Resolve their extension targets. 3. Compare the resulting unit identities.
+ * 1. Analyze qualified receivers and aliases. 2. Resolve their extension targets.
+ *    3. Compare the resulting unit identities.
  */
 export async function test_kotlin_receiver_identity(): Promise<void> {
   const snapshot = EvidTestSourceSnapshot.combine([

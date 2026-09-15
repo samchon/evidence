@@ -13,10 +13,11 @@
  * - File paths are relative to the reference root. Both path separators are
  *   accepted, but paths cannot contain whitespace.
  * - Sections append "#<anchor>" to the file path.
+ *
  *   - An explicit "{#anchor}" wins. It starts with an ASCII letter/digit, followed
- *     by ASCII letters/digits, ".", "_", ":", or "-".
+ *       by ASCII letters/digits, ".", "_", ":", or "-".
  *   - Otherwise, lowercase the heading; retain letters, numbers, and "_"; collapse
- *     whitespace/hyphens to "-"; remove other punctuation.
+ *       whitespace/hyphens to "-"; remove other punctuation.
  * - Duplicate selected heading targets are ambiguous and need explicit anchors.
  */
 export type EvidMarkdownSymbol = "file" | "h1" | "h2" | "h3" | "h4";

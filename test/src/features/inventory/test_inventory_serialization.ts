@@ -4,12 +4,13 @@ import { TestValidator } from "@nestia/e2e";
 import { EvidTestInventory } from "../../internal/EvidTestInventory";
 
 /**
- * Normalizes duplicate inventory inputs without losing selection or annotation meaning.
+ * Normalizes duplicate inventory inputs without losing selection or annotation
+ * meaning.
  *
  * Deterministic merging must treat source ranges as a set while retaining real
- * coordinate conflicts. Reviews and tag diagnostics also have different effects:
- * reviews cannot create acknowledgements, and tag problems do not shrink a
- * successfully extracted declaration population.
+ * coordinate conflicts. Reviews and tag diagnostics also have different
+ * effects: reviews cannot create acknowledgements, and tag problems do not
+ * shrink a successfully extracted declaration population.
  *
  * 1. Prepare matching inventories with a review, a tag diagnostic, an added public
  *    alias, and repeated content ranges; mark one source copy dependency-only.
@@ -18,7 +19,8 @@ import { EvidTestInventory } from "../../internal/EvidTestInventory";
  * 3. Require the merged inventory to retain one review, no acknowledgements, one
  *    selected declaration, and complete extraction despite the tag diagnostic.
  * 4. Alter the line coordinate of a duplicate content range while keeping its
- *    offset and require incomplete analysis rather than deduplicating away the conflict.
+ *    offset and require incomplete analysis rather than deduplicating away the
+ *    conflict.
  */
 export async function test_inventory_serialization(): Promise<void> {
   const input = EvidTestInventory.create();

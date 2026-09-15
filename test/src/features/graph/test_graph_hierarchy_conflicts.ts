@@ -5,18 +5,22 @@ import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestInventory } from "../../internal/EvidTestInventory";
 
 /**
- * Expands explicit target hierarchy and attributes acknowledgement conflicts once per scope.
+ * Expands explicit target hierarchy and attributes acknowledgement conflicts
+ * once per scope.
  *
- * Aggregate citations cover selected descendants without covering unrelated units.
- * Conflict detection must distinguish repeated positive evidence on one semantic
- * host, evidence from another host, overlapping exclusions, and opposite intent
- * without multiplying findings for every descendant in an aggregate scope.
+ * Aggregate citations cover selected descendants without covering unrelated
+ * units. Conflict detection must distinguish repeated positive evidence on one
+ * semantic host, evidence from another host, overlapping exclusions, and
+ * opposite intent without multiplying findings for every descendant in an
+ * aggregate scope.
  *
  * 1. Cite an unselected parent and require its two selected children to be covered
  *    while an unrelated selected declaration remains missing.
  * 2. Repeat one child citation across two physical fragments of the same semantic
- *    host and also cite it from another host; require one duplicate-evidence finding.
+ *    host and also cite it from another host; require one duplicate-evidence
+ *    finding.
  * 3. Follow positive child evidence with child and parent exclusions:
+ *
  *    - Require one opposite-intent finding for each later exclusion scope.
  *    - Require one duplicate-exclusion finding for the overlap.
  *    - Retain coverage of both selected children despite the conflict diagnostics.

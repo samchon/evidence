@@ -1,15 +1,15 @@
-import {
-  EvidJavaAdapter,
-  EvidLanguageRegistry,
-} from "evid";
+import { EvidJavaAdapter, EvidLanguageRegistry } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Classifies Java public types, overloads, fields, records, enums, and annotations.
+/**
+ * Classifies Java public types, overloads, fields, records, enums, and
+ * annotations.
  *
- * The selected surface must retain all public forms and their lexical ownership.
+ * The selected surface must retain all public forms and their lexical
+ * ownership.
  *
  * 1. Analyze the declared Java forms.
  * 2. Compare symbols and identities.

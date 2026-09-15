@@ -27,7 +27,10 @@ export namespace EvidTestFileSystem {
     });
   }
 
-  /** Runs a closure in a new fixture directory and cleans up after either outcome. */
+  /**
+   * Runs a closure in a new fixture directory and cleans up after either
+   * outcome.
+   */
   export async function experiment<T>(
     location: string,
     records: Record<string, string>,

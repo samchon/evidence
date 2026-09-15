@@ -1,9 +1,9 @@
 /**
  * Connects a LuaDoc carrier to one extracted Lua declaration site.
  *
- * EvidLuaFileScanner records this source-adjacent pair before static value handling,
- * so the documentation pass can evaluate annotations without giving comments
- * ownership of the declaration's semantic unit.
+ * EvidLuaFileScanner records this source-adjacent pair before static value
+ * handling, so the documentation pass can evaluate annotations without giving
+ * comments ownership of the declaration's semantic unit.
  */
 export interface IEvidLuaDocumentationAttachment {
   /**

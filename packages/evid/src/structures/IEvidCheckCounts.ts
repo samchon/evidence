@@ -2,8 +2,9 @@
  * Aggregate participation and coverage totals for a check report.
  *
  * Unit counts sum active obligations rather than deduplicating across the whole
- * graph. Two references to the same population therefore retain two requirements.
- * Diagnostic totals include every reported finding at the corresponding severity.
+ * graph. Two references to the same population therefore retain two
+ * requirements. Diagnostic totals include every reported finding at the
+ * corresponding severity.
  */
 export interface IEvidCheckCounts {
   /**
@@ -23,7 +24,8 @@ export interface IEvidCheckCounts {
   /**
    * Number of reference results across retained claims.
    *
-   * Repeated reference entries count separately even when their populations match.
+   * Repeated reference entries count separately even when their populations
+   * match.
    */
   obligations: number;
 
@@ -37,14 +39,16 @@ export interface IEvidCheckCounts {
   /**
    * Number of active obligations whose analysis could not complete.
    *
-   * This exposes incomplete extraction separately from ordinary missing evidence.
+   * This exposes incomplete extraction separately from ordinary missing
+   * evidence.
    */
   incompleteObligations: number;
 
   /**
    * Sum of selected reference-unit counts in active obligations.
    *
-   * The same semantic identity can contribute to several independent requirements.
+   * The same semantic identity can contribute to several independent
+   * requirements.
    */
   units: number;
 

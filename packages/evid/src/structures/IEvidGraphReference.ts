@@ -4,16 +4,17 @@ import type { IEvidGraphReviewResolution } from "./IEvidGraphReviewResolution";
 import type { IEvidInventory } from "./IEvidInventory";
 
 /**
- * One materialized target population and the policies governing its acknowledgements.
+ * One materialized target population and the policies governing its
+ * acknowledgements.
  *
  * Target resolutions join claim statements to units in this inventory. Selected
  * IDs define the denominator, while real ancestors remain usable as aggregate
  * scopes. Review resolutions remain separate because reviews validate evidence
  * without contributing coverage.
  *
- * Every record is an independent obligation, even when another reference has the
- * same inventory and selectors. An exclusion can cover a permissive reference
- * while leaving a repeated, exclusion-forbidding reference missing.
+ * Every record is an independent obligation, even when another reference has
+ * the same inventory and selectors. An exclusion can cover a permissive
+ * reference while leaving a repeated, exclusion-forbidding reference missing.
  */
 export interface IEvidGraphReference {
   /**
@@ -67,8 +68,9 @@ export interface IEvidGraphReference {
   /**
    * Whether this obligation refuses exclusion acknowledgements.
    *
-   * Omission permits eligible exclusions. A refused exclusion produces a finding
-   * and leaves its target needing positive evidence in this reference only.
+   * Omission permits eligible exclusions. A refused exclusion produces a
+   * finding and leaves its target needing positive evidence in this reference
+   * only.
    */
   noEvidExclude?: boolean;
 
@@ -83,8 +85,9 @@ export interface IEvidGraphReference {
   /**
    * Whether every selected claim host must cite exactly one selected unit.
    *
-   * Omission leaves cardinality unrestricted. Untagged hosts count as zero, repeated
-   * citations count once per target, and aggregates count each selected descendant.
+   * Omission leaves cardinality unrestricted. Untagged hosts count as zero,
+   * repeated citations count once per target, and aggregates count each
+   * selected descendant.
    */
   singleEvidPerSymbol?: boolean;
 
@@ -92,7 +95,8 @@ export interface IEvidGraphReference {
    * Whether each selected host must answer every selected Markdown item.
    *
    * Omission uses ordinary population coverage. Checklist evidence answers only
-   * the named item, while permitted exclusions retain host-local descendant scope.
+   * the named item, while permitted exclusions retain host-local descendant
+   * scope.
    */
   checklist?: boolean;
 
@@ -100,7 +104,8 @@ export interface IEvidGraphReference {
    * Whether accepted acknowledgements need a current matching review.
    *
    * Omission leaves review optional. Pairing requires the same semantic host,
-   * target, and kind, followed by a fingerprint match for the cited content scope.
+   * target, and kind, followed by a fingerprint match for the cited content
+   * scope.
    */
   requireReview?: boolean;
 }

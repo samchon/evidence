@@ -4,25 +4,28 @@ import type { EvidCDeclarationForm } from "./EvidCDeclarationForm";
 import type { IEvidCDeclarationAddress } from "./IEvidCDeclarationAddress";
 
 /**
- * Captures one supported C declaration before file-local identity reconciliation.
+ * Captures one supported C declaration before file-local identity
+ * reconciliation.
  *
- * `EvidCFileScanner` creates this record without retaining a Tree-sitter node. The
- * adapter later groups compatible records by `identity`, expands their public
- * addresses, and uses `site` to retain the physical source location that may
- * host a Doxygen annotation.
+ * `EvidCFileScanner` creates this record without retaining a Tree-sitter node.
+ * The adapter later groups compatible records by `identity`, expands their
+ * public addresses, and uses `site` to retain the physical source location that
+ * may host a Doxygen annotation.
  */
 export interface IEvidCDeclaration {
   /**
    * Stable scanner-local key used by documentation attachments and grouping.
    *
-   * Materialization replaces this physical-record key with the group's semantic unit ID.
+   * Materialization replaces this physical-record key with the group's semantic
+   * unit ID.
    */
   id: string;
 
   /**
    * Source spelling of this declared entity, without its enclosing path.
    *
-   * The adapter uses `identity` and `addresses` for the enclosing semantic and public paths.
+   * The adapter uses `identity` and `addresses` for the enclosing semantic and
+   * public paths.
    */
   name: string;
 
@@ -36,7 +39,8 @@ export interface IEvidCDeclaration {
   /**
    * C source form that determines conflict and alias reconciliation rules.
    *
-   * Only compatible forms may contribute to one materialized declaration family.
+   * Only compatible forms may contribute to one materialized declaration
+   * family.
    */
   form: EvidCDeclarationForm;
 
@@ -50,7 +54,8 @@ export interface IEvidCDeclaration {
   /**
    * Public spelling candidates, including supported tag and typedef aliases.
    *
-   * Materialization publishes only unambiguous candidates under its canonical-prefix rules.
+   * Materialization publishes only unambiguous candidates under its
+   * canonical-prefix rules.
    */
   addresses: IEvidCDeclarationAddress[];
 
@@ -64,7 +69,8 @@ export interface IEvidCDeclaration {
   /**
    * Whether this occurrence supplies a body rather than only a declaration.
    *
-   * Repeated bodies in an otherwise incompatible family make the inventory incomplete.
+   * Repeated bodies in an otherwise incompatible family make the inventory
+   * incomplete.
    */
   definition: boolean;
 

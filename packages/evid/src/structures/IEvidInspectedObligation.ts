@@ -20,14 +20,16 @@ export interface IEvidInspectedObligation {
   /**
    * Authored reference index defining the requirement population.
    *
-   * This identifies the ledger and effective policy used for the displayed state.
+   * This identifies the ledger and effective policy used for the displayed
+   * state.
    */
   reference: number;
 
   /**
    * Effective acknowledgement and review rules for this obligation.
    *
-   * These explain why an edge accepted elsewhere may not cover the same identity here.
+   * These explain why an edge accepted elsewhere may not cover the same
+   * identity here.
    */
   policy: IEvidGraphPolicy;
 
@@ -48,22 +50,25 @@ export interface IEvidInspectedObligation {
   /**
    * Whether the inspected identity is selected or supplies structural context.
    *
-   * Ancestors summarize descendant requirements without adding another selected unit.
+   * Ancestors summarize descendant requirements without adding another selected
+   * unit.
    */
   selection: EvidUnitSelection;
 
   /**
-   * Whether the identity is directly covered or all selected descendants of an ancestor are covered.
+   * Whether the identity is directly covered or all selected descendants of an
+   * ancestor are covered.
    *
-   * Ancestor coverage requires at least one selected descendant, avoiding a vacuous pass.
+   * Ancestor coverage requires at least one selected descendant, avoiding a
+   * vacuous pass.
    */
   covered: boolean;
 
   /**
    * Whether the identity or any selected descendant remains missing.
    *
-   * This exposes an aggregate scope's remaining requirement even when some of its
-   * descendants already have accepted evidence.
+   * This exposes an aggregate scope's remaining requirement even when some of
+   * its descendants already have accepted evidence.
    */
   missing: boolean;
 }

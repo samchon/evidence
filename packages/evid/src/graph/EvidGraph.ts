@@ -29,11 +29,12 @@ import type { EvidAcknowledgementKind } from "../typings/EvidAcknowledgementKind
 import type { EvidSeverity } from "../typings/EvidSeverity";
 
 /**
- * Evaluates coverage and review policies over captured, materialized populations.
+ * Evaluates coverage and review policies over captured, materialized
+ * populations.
  *
  * The checker supplies inventories, selected unit IDs, target resolutions, and
- * reference policies. This facade validates and captures that input; it does not
- * load files or infer declarations. Each call creates a fresh evaluator and
+ * reference policies. This facade validates and captures that input; it does
+ * not load files or infer declarations. Each call creates a fresh evaluator and
  * returns an owned result, isolating prior diagnostics and caller mutations.
  *
  * Evaluation preserves the following boundaries:
@@ -46,17 +47,18 @@ import type { EvidSeverity } from "../typings/EvidSeverity";
  *    applicable references have been examined.
  *
  * @example
- * const graph: EvidGraph = new EvidGraph(materializedInput);
- * const first: IEvidGraphResult = graph.evaluate();
- * const second: IEvidGraphResult = graph.evaluate();
- * // The results have independent storage and no accumulated evaluator state.
+ *   const graph: EvidGraph = new EvidGraph(materializedInput);
+ *   const first: IEvidGraphResult = graph.evaluate();
+ *   const second: IEvidGraphResult = graph.evaluate();
+ *   // The results have independent storage and no accumulated evaluator state.
  */
 export class EvidGraph {
   /**
    * Validated input snapshot owned by this facade.
    *
-   * Evaluators read this captured policy and inventory data. Neither later caller
-   * edits nor modifications to an earlier result can change the snapshot.
+   * Evaluators read this captured policy and inventory data. Neither later
+   * caller edits nor modifications to an earlier result can change the
+   * snapshot.
    */
   private readonly input: IEvidGraphInput;
 
@@ -64,7 +66,8 @@ export class EvidGraph {
    * Validates the input shape and captures an independent graph snapshot.
    *
    * Semantic inventory and resolution checks occur during evaluation so their
-   * findings can be reported in graph context. Construction performs no source IO.
+   * findings can be reported in graph context. Construction performs no source
+   * IO.
    */
   public constructor(input: IEvidGraphInput) {
     this.input = structuredClone(typia.assert(input));
@@ -73,9 +76,9 @@ export class EvidGraph {
   /**
    * Evaluates every independent obligation in the captured input.
    *
-   * A fresh evaluator prevents coverage sets and deferred diagnostics from leaking
-   * across calls. The returned clone also prevents consumers from mutating records
-   * retained by the facade.
+   * A fresh evaluator prevents coverage sets and deferred diagnostics from
+   * leaking across calls. The returned clone also prevents consumers from
+   * mutating records retained by the facade.
    */
   public evaluate(): IEvidGraphResult {
     return structuredClone(new EvidGraphEvaluator(this.input).evaluate());
@@ -84,8 +87,8 @@ export class EvidGraph {
   /**
    * Captures and evaluates input without retaining a graph facade.
    *
-   * This convenience entry point has the same validation and result ownership as
-   * construction followed by the instance `evaluate` method.
+   * This convenience entry point has the same validation and result ownership
+   * as construction followed by the instance `evaluate` method.
    */
   public static evaluate(input: IEvidGraphInput): IEvidGraphResult {
     return new EvidGraph(input).evaluate();
@@ -95,14 +98,15 @@ export class EvidGraph {
 /**
  * Owns coverage accumulation and deferred findings for one graph evaluation.
  *
- * Claim and reference contexts keep local populations and resolutions, while this
- * controller records whether acknowledgements participate within each claim.
- * That claim-local participation state avoids declaring an unhosted checklist
- * citation invalid before another applicable reference can explain it, without
- * allowing an independent claim to suppress the finding.
+ * Claim and reference contexts keep local populations and resolutions, while
+ * this controller records whether acknowledgements participate within each
+ * claim. That claim-local participation state avoids declaring an unhosted
+ * checklist citation invalid before another applicable reference can explain
+ * it, without allowing an independent claim to suppress the finding.
  *
  * The public facade creates a new controller for every evaluation. Its sets and
- * maps therefore describe one traversal only and must not become facade caches.
+ * maps therefore describe one traversal only and must not become facade
+ * caches.
  */
 class EvidGraphEvaluator {
   /**
@@ -117,8 +121,8 @@ class EvidGraphEvaluator {
   /**
    * Findings accumulated during this single traversal.
    *
-   * Finalization deduplicates equivalent findings after all claims are evaluated.
-   * The array is never reused by a later facade invocation.
+   * Finalization deduplicates equivalent findings after all claims are
+   * evaluated. The array is never reused by a later facade invocation.
    */
   private readonly diagnostics: IEvidDiagnostic[] = [];
 
@@ -134,7 +138,8 @@ class EvidGraphEvaluator {
    * Checklist statements awaiting graph-wide participation finalization.
    *
    * Each record retains its diagnostic boundary and severity. Later references
-   * can establish that the statement was handled or that its status is uncertain.
+   * can establish that the statement was handled or that its status is
+   * uncertain.
    */
   private readonly unhostedChecklists = new Map<
     string,
@@ -145,7 +150,8 @@ class EvidGraphEvaluator {
    * Captured facade input used to create this traversal's claim contexts.
    *
    * The controller relies on the facade's shape validation and copy ownership;
-   * it adds evaluation state without replacing or reloading source populations.
+   * it adds evaluation state without replacing or reloading source
+   * populations.
    */
   private readonly input: IEvidGraphInput;
 
@@ -160,7 +166,8 @@ class EvidGraphEvaluator {
   }
 
   /**
-   * Evaluates claims, then finalizes findings that depend on reference participation.
+   * Evaluates claims, then finalizes findings that depend on reference
+   * participation.
    *
    * Inactive obligations do not affect completeness. Every active claim and
    * reference must be complete, and the final diagnostic list must be empty,
@@ -173,8 +180,9 @@ class EvidGraphEvaluator {
     // A citation can participate in another reference. Decide deferred checklist
     // findings only after every claim has recorded accepted or uncertain usage.
     this.reportUnhostedChecklists();
-    const diagnostics = EvidInventoryMerge.unique(this.diagnostics, (diagnostic) =>
-      typia.json.stringify(diagnostic),
+    const diagnostics = EvidInventoryMerge.unique(
+      this.diagnostics,
+      (diagnostic) => typia.json.stringify(diagnostic),
     );
     const complete = claims.every(
       (claim) =>
@@ -197,7 +205,8 @@ class EvidGraphEvaluator {
    * Disabled claims produce inactive reference records without touching their
    * inventories. A complete claim with no selected units is likewise inactive;
    * otherwise an incomplete claim remains active and marks every child
-   * obligation incomplete so missing extraction cannot reduce required coverage.
+   * obligation incomplete so missing extraction cannot reduce required
+   * coverage.
    */
   private evaluateClaim(
     claim: IEvidGraphClaim,
@@ -254,7 +263,8 @@ class EvidGraphEvaluator {
   }
 
   /**
-   * Prepares one reference obligation and stops before coverage when its inputs are uncertain.
+   * Prepares one reference obligation and stops before coverage when its inputs
+   * are uncertain.
    *
    * Reference selection, acknowledgement resolution, and review resolution are
    * validated at this boundary because each reference owns them independently.
@@ -405,13 +415,11 @@ class EvidGraphEvaluator {
    * Evaluates acknowledgements against one independent reference context.
    *
    * Coverage, exclusion conflicts, reviews, and cardinality all use this same
-   * claim/reference boundary. The method retains one edge per accepted statement
-   * so reports can explain both the selected units it covers and the host that
-   * accepted responsibility for them.
+   * claim/reference boundary. The method retains one edge per accepted
+   * statement so reports can explain both the selected units it covers and the
+   * host that accepted responsibility for them.
    */
-  private cover(
-    context: IEvidGraphReferenceContext,
-  ): IEvidGraphObligation {
+  private cover(context: IEvidGraphReferenceContext): IEvidGraphObligation {
     const {
       claim: {
         claim,
@@ -678,8 +686,8 @@ class EvidGraphEvaluator {
         if (covered === undefined) continue;
         for (const unitId of edge.unitIds) covered.add(unitId);
       }
-    const hostCoverage: IEvidGraphHostCoverage[] =
-      claimPopulation.units.map((host) => {
+    const hostCoverage: IEvidGraphHostCoverage[] = claimPopulation.units.map(
+      (host) => {
         const covered = coveredByHost.get(host.id) ?? new Set<string>();
         const explained = explainedByHost.get(host.id) ?? new Set<string>();
         const coveredUnitIds = selectedUnits
@@ -717,7 +725,8 @@ class EvidGraphEvaluator {
           missingUnitIds: missingUnits.map((unit) => unit.id),
           explainedUnitIds,
         };
-      });
+      },
+    );
     const coveredUnitIds = selectedUnits
       .filter((unit) =>
         hostCoverage.every((host) => host.coveredUnitIds.includes(unit.id)),
@@ -807,12 +816,14 @@ class EvidGraphEvaluator {
   }
 
   /**
-   * Reports duplicate and contradictory acknowledgement scopes before adding an edge.
+   * Reports duplicate and contradictory acknowledgement scopes before adding an
+   * edge.
    *
-   * Normal coverage permits one aggregate target to cover several selected units,
-   * while checklist coverage also requires the same host to overlap. Comparing
-   * the appropriate scopes prevents an exclusion or repeated annotation from
-   * silently changing the meaning of an earlier acknowledgement.
+   * Normal coverage permits one aggregate target to cover several selected
+   * units, while checklist coverage also requires the same host to overlap.
+   * Comparing the appropriate scopes prevents an exclusion or repeated
+   * annotation from silently changing the meaning of an earlier
+   * acknowledgement.
    */
   private conflicts(
     declaration: IEvidDeclaration,
@@ -895,8 +906,8 @@ class EvidGraphEvaluator {
    *
    * Reviews validate fingerprints but never discharge missing coverage. This
    * phase first validates review statements against resolved acknowledgements,
-   * then enforces required-review freshness only for accepted coverage edges.
-   * A malformed review therefore remains diagnostic evidence without becoming a
+   * then enforces required-review freshness only for accepted coverage edges. A
+   * malformed review therefore remains diagnostic evidence without becoming a
    * substitute for the positive or exclusion statement it names.
    */
   private evaluateReviews(
@@ -1107,7 +1118,8 @@ class EvidGraphEvaluator {
   }
 
   /**
-   * Tests whether a review belongs to an acknowledgement's semantic host population.
+   * Tests whether a review belongs to an acknowledgement's semantic host
+   * population.
    *
    * Unattached reviews can match only their exact documentation host. Attached
    * reviews instead match any shared semantic owner, which preserves alias and
@@ -1146,7 +1158,8 @@ class EvidGraphEvaluator {
   }
 
   /**
-   * Validates and orders acknowledgement resolutions within one reference obligation.
+   * Validates and orders acknowledgement resolutions within one reference
+   * obligation.
    *
    * Repeated identical entries collapse to one statement. Conflicting entries
    * are removed and diagnosed because selecting either outcome would let source
@@ -1201,7 +1214,8 @@ class EvidGraphEvaluator {
   }
 
   /**
-   * Validates and orders review resolutions without combining them with acknowledgements.
+   * Validates and orders review resolutions without combining them with
+   * acknowledgements.
    *
    * Reviews have their own target-resolution lifecycle. Conflicts therefore
    * invalidate only the review statement and cannot alter acknowledgement
@@ -1302,8 +1316,8 @@ class EvidGraphEvaluator {
   /**
    * Tests whether two semantic-identity collections share a member.
    *
-   * Callers use this for host and target scope relations where duplicated aliases
-   * must not change the boolean result.
+   * Callers use this for host and target scope relations where duplicated
+   * aliases must not change the boolean result.
    */
   private overlaps(x: string[], y: string[]): boolean {
     const right = new Set(y);
@@ -1315,7 +1329,8 @@ class EvidGraphEvaluator {
    *
    * An address from a selected source is preferred so the repair text reflects
    * the configured population. If no public address exists, the semantic name
-   * remains a useful fallback for invalid or partially extracted inventory data.
+   * remains a useful fallback for invalid or partially extracted inventory
+   * data.
    */
   private display(inventory: IEvidInventory, unit: IEvidUnit): string {
     const selectedFiles = new Set(
@@ -1346,11 +1361,12 @@ class EvidGraphEvaluator {
   }
 
   /**
-   * Applies an obligation's severity and configured coordinates to an existing diagnostic.
+   * Applies an obligation's severity and configured coordinates to an existing
+   * diagnostic.
    *
-   * Inventory diagnostics carry adapter facts but no graph boundary. This wrapper
-   * preserves their repair data while adding the claim/reference identity needed
-   * to distinguish repeated populations in one check result.
+   * Inventory diagnostics carry adapter facts but no graph boundary. This
+   * wrapper preserves their repair data while adding the claim/reference
+   * identity needed to distinguish repeated populations in one check result.
    */
   private context(
     diagnostic: IEvidDiagnostic,
@@ -1372,12 +1388,13 @@ class EvidGraphEvaluator {
   }
 
   /**
-   * Creates a graph diagnostic with the most specific available repair location.
+   * Creates a graph diagnostic with the most specific available repair
+   * location.
    *
-   * A statement location wins because its annotation should be edited; otherwise
-   * a missing-coverage finding points at the selected unit's first declaration
-   * site. Disabled obligations are forbidden from emitting findings, protecting
-   * the inactive-result contract.
+   * A statement location wins because its annotation should be edited;
+   * otherwise a missing-coverage finding points at the selected unit's first
+   * declaration site. Disabled obligations are forbidden from emitting
+   * findings, protecting the inactive-result contract.
    */
   private problem(
     code: string,
@@ -1444,8 +1461,8 @@ class EvidGraphEvaluator {
   /**
    * Maps a reference position to its configured stable index within a claim.
    *
-   * This fallback mirrors claim indexing so diagnostics remain attributable even
-   * while reporting an invalid graph structure.
+   * This fallback mirrors claim indexing so diagnostics remain attributable
+   * even while reporting an invalid graph structure.
    */
   private referenceIndex(claim: number, position: number): number {
     const input = this.input.claims[claim];
@@ -1459,7 +1476,8 @@ class EvidGraphEvaluator {
    *
    * Checklist asks every selected host to answer every Markdown item, whereas
    * cardinality and gathered exclusions impose incompatible global rules. Fail
-   * early rather than producing coverage findings whose denominator is unclear.
+   * early rather than producing coverage findings whose denominator is
+   * unclear.
    */
   private validateReferencePolicy(
     claim: IEvidGraphClaim,
@@ -1469,10 +1487,7 @@ class EvidGraphEvaluator {
     referenceIndex: number,
   ): void {
     if (reference.checklist !== true) return;
-    if (
-      reference.uniqueEvid === true ||
-      reference.singleEvidPerSymbol === true
-    )
+    if (reference.uniqueEvid === true || reference.singleEvidPerSymbol === true)
       throw new Error(
         `${this.label(claimIndex, referenceIndex)} combines checklist with an incompatible cardinality policy.`,
       );
@@ -1490,7 +1505,8 @@ class EvidGraphEvaluator {
   }
 
   /**
-   * Defers an unhosted checklist finding until every claim reference participates.
+   * Defers an unhosted checklist finding until every claim reference
+   * participates.
    *
    * The same declaration may be an eligible answer under another obligation.
    * For duplicate deferred records, the error severity is retained over warning
@@ -1518,7 +1534,8 @@ class EvidGraphEvaluator {
   }
 
   /**
-   * Reports claim-local checklist annotations that remain conclusively unhosted.
+   * Reports claim-local checklist annotations that remain conclusively
+   * unhosted.
    *
    * Accepted participation suppresses the finding, and uncertain participation
    * suppresses it as well because an incomplete reference cannot prove that the
@@ -1585,8 +1602,8 @@ class EvidGraphEvaluator {
    * Creates an active but incomplete obligation after analysis failure.
    *
    * It retains configured IDs for inspection while leaving coverage sets empty,
-   * preventing callers from interpreting a partial traversal as an uncovered
-   * or successfully covered population.
+   * preventing callers from interpreting a partial traversal as an uncovered or
+   * successfully covered population.
    */
   private incompleteObligation(
     claim: number,

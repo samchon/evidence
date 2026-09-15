@@ -2,9 +2,9 @@
  * Connects one parsed Python documentation region to a declaration position.
  *
  * Scanning retains this compact relationship after its Tree-sitter session
- * closes. EvidPythonAdapterBase later filters it by public reachability before creating
- * evidence hosts, so a private declaration's docstring cannot document an
- * exported unit by accident.
+ * closes. EvidPythonAdapterBase later filters it by public reachability before
+ * creating evidence hosts, so a private declaration's docstring cannot document
+ * an exported unit by accident.
  */
 export interface IEvidPythonDocumentationAttachment {
   /**

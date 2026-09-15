@@ -22,7 +22,8 @@ export interface IEvidPostgresqlReference {
   /**
    * Distinguishes a COMMENT site from an ALTER TABLE extension.
    *
-   * Comment sites retain a separate physical address after ownership resolution.
+   * Comment sites retain a separate physical address after ownership
+   * resolution.
    */
   comment: boolean;
 }

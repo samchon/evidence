@@ -31,7 +31,8 @@ import type { IEvidCheckContext } from "../contexts/IEvidCheckContext";
 import type { IEvidClaimContext } from "../contexts/IEvidClaimContext";
 
 /**
- * Turns a validated check plan into inventories, graph input, and a command report.
+ * Turns a validated check plan into inventories, graph input, and a command
+ * report.
  *
  * This namespace is the orchestration boundary between configuration and graph
  * evaluation. It keeps every configured reference independent, so the same
@@ -62,10 +63,11 @@ export namespace EvidCheckProgrammer {
   /**
    * Prepares graph input and evaluates the checker result for one execution.
    *
-   * Preparation resolves annotations against each independent reference boundary
-   * before {@link EvidGraph.evaluate} applies coverage policy. The returned
-   * analysis deliberately retains both graph input and graph output so query
-   * commands can explain the result without rebuilding or reloading inventories.
+   * Preparation resolves annotations against each independent reference
+   * boundary before {@link EvidGraph.evaluate} applies coverage policy. The
+   * returned analysis deliberately retains both graph input and graph output so
+   * query commands can explain the result without rebuilding or reloading
+   * inventories.
    */
   export async function evaluate(
     context: IEvidCheckContext,
@@ -82,7 +84,8 @@ export namespace EvidCheckProgrammer {
    *
    * All paths are resolved from the single configuration file, even though the
    * loads run concurrently. This produces selected unit identifiers only; it
-   * does not add visible structural ancestors, which are a query-layer concern.
+   * does not add visible structural ancestors, which are a query-layer
+   * concern.
    */
   async function materializeClaim(
     configFile: string,
@@ -121,7 +124,8 @@ export namespace EvidCheckProgrammer {
   }
 
   /**
-   * Loads one configured population through the adapter that owns its artifact grammar.
+   * Loads one configured population through the adapter that owns its artifact
+   * grammar.
    *
    * File-backed Swagger is exceptional because its adapter owns direct document
    * loading. Every other population first expands source globs relative to the
@@ -165,7 +169,8 @@ export namespace EvidCheckProgrammer {
   }
 
   /**
-   * Selects documentation hosts whose source files match exclusion-carrier globs.
+   * Selects documentation hosts whose source files match exclusion-carrier
+   * globs.
    *
    * Matching starts from selected logical addresses, then maps their physical
    * files back to hosts. This lets aliases share one exclusion decision while
@@ -192,12 +197,14 @@ export namespace EvidCheckProgrammer {
   }
 
   /**
-   * Clones a claim inventory and prepares its graph-facing reference boundaries.
+   * Clones a claim inventory and prepares its graph-facing reference
+   * boundaries.
    *
-   * The clone receives preparation diagnostics so the materialized inventory can
-   * still serve as the unmodified loading result. Declaration and review indexes
-   * record eligible reference positions before resolving targets, ensuring an
-   * annotation is only evaluated where its grammar and host can participate.
+   * The clone receives preparation diagnostics so the materialized inventory
+   * can still serve as the unmodified loading result. Declaration and review
+   * indexes record eligible reference positions before resolving targets,
+   * ensuring an annotation is only evaluated where its grammar and host can
+   * participate.
    */
   async function prepareClaim(
     materialized: IEvidMaterializedClaim,
@@ -254,7 +261,8 @@ export namespace EvidCheckProgrammer {
   }
 
   /**
-   * Maps one annotation to the reference positions whose target grammar accepts it.
+   * Maps one annotation to the reference positions whose target grammar accepts
+   * it.
    *
    * Positions, rather than reference identities, preserve duplicate configured
    * references as separate obligations. The returned set is later consulted by
@@ -273,12 +281,13 @@ export namespace EvidCheckProgrammer {
   }
 
   /**
-   * Builds one graph reference from the claim annotations eligible for this position.
+   * Builds one graph reference from the claim annotations eligible for this
+   * position.
    *
-   * A resolver sees only this reference inventory and its selected unit IDs. That
-   * isolation is essential: the same textual target may resolve differently in
-   * another reference population, and a review remains independent of an
-   * acknowledgement that happens to cover the same identity.
+   * A resolver sees only this reference inventory and its selected unit IDs.
+   * That isolation is essential: the same textual target may resolve
+   * differently in another reference population, and a review remains
+   * independent of an acknowledgement that happens to cover the same identity.
    */
   async function prepareReference(
     context: IEvidClaimContext,
@@ -304,21 +313,20 @@ export namespace EvidCheckProgrammer {
           : [],
       ),
     );
-    const reviewResolutions: IEvidGraphReviewResolution[] =
-      await Promise.all(
-        claim.reviews.flatMap((review) =>
-          selected(reviews, review.id, position)
-            ? [
-                resolveReview(
-                  resolver,
-                  review,
-                  requireHost(hosts, review.hostId),
-                  materialized.unitIds,
-                ),
-              ]
-            : [],
-        ),
-      );
+    const reviewResolutions: IEvidGraphReviewResolution[] = await Promise.all(
+      claim.reviews.flatMap((review) =>
+        selected(reviews, review.id, position)
+          ? [
+              resolveReview(
+                resolver,
+                review,
+                requireHost(hosts, review.hostId),
+                materialized.unitIds,
+              ),
+            ]
+          : [],
+      ),
+    );
     const population = materialized.plan.population;
     return {
       index: materialized.plan.index,
@@ -348,9 +356,9 @@ export namespace EvidCheckProgrammer {
   /**
    * Resolves one acknowledgement against a preselected reference population.
    *
-   * The wrapper keeps the source declaration identity beside the resolver output,
-   * allowing graph evaluation and inspection reports to trace every edge back to
-   * the authored annotation.
+   * The wrapper keeps the source declaration identity beside the resolver
+   * output, allowing graph evaluation and inspection reports to trace every
+   * edge back to the authored annotation.
    */
   async function resolveDeclaration(
     resolver: EvidTargetResolver,
@@ -367,9 +375,9 @@ export namespace EvidCheckProgrammer {
   /**
    * Resolves one review against the same boundary used for acknowledgements.
    *
-   * Reviews are returned in a separate collection because review policy assesses
-   * their status independently; resolving one must never manufacture an evidence
-   * edge or change coverage counts.
+   * Reviews are returned in a separate collection because review policy
+   * assesses their status independently; resolving one must never manufacture
+   * an evidence edge or change coverage counts.
    */
   async function resolveReview(
     resolver: EvidTargetResolver,
@@ -386,14 +394,11 @@ export namespace EvidCheckProgrammer {
   /**
    * Retrieves an annotation host from the claim-local host index.
    *
-   * A missing host means an inventory invariant was broken after parsing. Throwing
-   * here prevents a later resolver error from losing the statement identity that
-   * caused the invalid graph input.
+   * A missing host means an inventory invariant was broken after parsing.
+   * Throwing here prevents a later resolver error from losing the statement
+   * identity that caused the invalid graph input.
    */
-  function requireHost(
-    hosts: Map<string, IEvidHost>,
-    id: string,
-  ): IEvidHost {
+  function requireHost(hosts: Map<string, IEvidHost>, id: string): IEvidHost {
     const host = hosts.get(id);
     if (host === undefined)
       throw new Error(`Evid statement '${id}' has no documentation host.`);
@@ -404,8 +409,8 @@ export namespace EvidCheckProgrammer {
    * Tests whether an indexed annotation participates in one reference position.
    *
    * Missing records are treated as nonparticipating. This keeps the caller safe
-   * when an inventory has no annotation of the requested identity while retaining
-   * position-based separation for duplicated reference entries.
+   * when an inventory has no annotation of the requested identity while
+   * retaining position-based separation for duplicated reference entries.
    */
   function selected(
     records: Map<string, Set<number>>,
@@ -420,8 +425,8 @@ export namespace EvidCheckProgrammer {
    * Appends diagnostics for annotations accepted by no configured reference.
    *
    * Both acknowledgement and review diagnostics retain the authored location,
-   * host, and target so a caller can repair configuration or source text without
-   * inferring which pre-resolution applicability decision failed.
+   * host, and target so a caller can repair configuration or source text
+   * without inferring which pre-resolution applicability decision failed.
    */
   function reportNonParticipating(
     inventory: IEvidInventory,
@@ -457,10 +462,10 @@ export namespace EvidCheckProgrammer {
   /**
    * Converts evaluated graph state into the stable public check report.
    *
-   * Completion is stricter than diagnostic success: inactive claims are ignored,
-   * while every active claim and active obligation must be complete. Exit code 2
-   * denotes incomplete graph state, code 1 denotes a complete graph with errors,
-   * and code 0 denotes a successful execution.
+   * Completion is stricter than diagnostic success: inactive claims are
+   * ignored, while every active claim and active obligation must be complete.
+   * Exit code 2 denotes incomplete graph state, code 1 denotes a complete graph
+   * with errors, and code 0 denotes a successful execution.
    */
   function report(
     plan: IEvidConfigPlan,
@@ -492,12 +497,13 @@ export namespace EvidCheckProgrammer {
   }
 
   /**
-   * Projects graph claims into report rows using their configuration-plan labels.
+   * Projects graph claims into report rows using their configuration-plan
+   * labels.
    *
    * Positional joins are intentional: graph input is constructed in plan order,
-   * including duplicate populations. Missing plan entries are invariant failures,
-   * not report omissions, because emitting a relabelled obligation would mislead
-   * consumers about the policy that produced it.
+   * including duplicate populations. Missing plan entries are invariant
+   * failures, not report omissions, because emitting a relabelled obligation
+   * would mislead consumers about the policy that produced it.
    */
   function checkClaims(
     plan: IEvidConfigPlan,
@@ -540,9 +546,9 @@ export namespace EvidCheckProgrammer {
   /**
    * Summarizes claims, active obligations, coverage, and diagnostic severities.
    *
-   * Coverage totals include only active obligations, matching the policy used for
-   * completion. Overall claim and obligation counts remain unfiltered so callers
-   * can distinguish disabled configuration from absent configuration.
+   * Coverage totals include only active obligations, matching the policy used
+   * for completion. Overall claim and obligation counts remain unfiltered so
+   * callers can distinguish disabled configuration from absent configuration.
    */
   function checkCounts(
     claims: IEvidCheckClaim[],
@@ -628,8 +634,8 @@ export namespace EvidCheckProgrammer {
   /**
    * Returns the first decisive comparison result in priority order.
    *
-   * Comparator construction remains separate from execution so ordering rules can
-   * be read as a single ordered list in {@link compareDiagnostics}.
+   * Comparator construction remains separate from execution so ordering rules
+   * can be read as a single ordered list in {@link compareDiagnostics}.
    */
   function firstDifference(values: number[]): number {
     return values.find((value) => value !== 0) ?? 0;

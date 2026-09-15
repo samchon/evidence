@@ -7,8 +7,8 @@ import type { IEvidPythonDocumentationAttachment } from "./IEvidPythonDocumentat
  * Retains one Python docstring or adjacent comment run after parsing.
  *
  * The scanner keeps source coordinates and either a precomputed mapping or the
- * syntax needed to derive one. EvidPythonAdapterBase attaches the text only after it
- * knows which declarations are part of the public export surface.
+ * syntax needed to derive one. EvidPythonAdapterBase attaches the text only
+ * after it knows which declarations are part of the public export surface.
  */
 export interface IEvidPythonDocumentation {
   /**
@@ -21,8 +21,8 @@ export interface IEvidPythonDocumentation {
   /**
    * Byte and coordinate range occupied by the original documentation text.
    *
-   * Annotation ranges exclude this source slice from a unit fingerprint when
-   * it contains Evid directives.
+   * Annotation ranges exclude this source slice from a unit fingerprint when it
+   * contains Evid directives.
    */
   range: IEvidSourceRange;
 

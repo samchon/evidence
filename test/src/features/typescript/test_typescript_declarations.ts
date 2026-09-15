@@ -5,9 +5,11 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Extracts TypeScript declarations across ambient and structural forms.
+/**
+ * Extracts TypeScript declarations across ambient and structural forms.
  *
- * Ambient, abstract, parameter-property, and dotted namespace syntax each contribute different public units.
+ * Ambient, abstract, parameter-property, and dotted namespace syntax each
+ * contribute different public units.
  *
  * 1. Analyze the supported declaration matrix.
  * 2. Verify exact identities, symbols, and ownership.

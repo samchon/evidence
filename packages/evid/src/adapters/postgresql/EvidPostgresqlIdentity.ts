@@ -3,13 +3,15 @@ import type { Node as EvidNode } from "web-tree-sitter";
 /**
  * Decodes PostgreSQL identifiers without relying on the session search path.
  *
- * The PostgreSQL scanner requires explicit schema paths so snapshot extraction stays deterministic.
+ * The PostgreSQL scanner requires explicit schema paths so snapshot extraction
+ * stays deterministic.
  */
 export namespace EvidPostgresqlIdentity {
   /**
    * Preserves quoted case and literal dots while folding unquoted ASCII case.
    *
-   * The result is a semantic segment, so a quoted dot never creates another path segment.
+   * The result is a semantic segment, so a quoted dot never creates another
+   * path segment.
    */
   export function identifier(raw: string): string | undefined {
     if (/^"(?:[^"]|"")+"$/u.test(raw)) {
@@ -25,7 +27,8 @@ export namespace EvidPostgresqlIdentity {
   /**
    * Reads segmented identifiers from a grammar-owned object reference.
    *
-   * Invalid or missing identifier segments leave the path unresolved for the caller to diagnose.
+   * Invalid or missing identifier segments leave the path unresolved for the
+   * caller to diagnose.
    */
   export function path(node: EvidNode): string[] | undefined {
     const identifiers = node.descendantsOfType("identifier");

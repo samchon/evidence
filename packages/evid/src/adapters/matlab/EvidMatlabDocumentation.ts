@@ -8,7 +8,8 @@ import type { IEvidMatlabDocumentation } from "./IEvidMatlabDocumentation";
  * Reads MATLAB help while preserving source mappings and masking code examples.
  *
  * The MATLAB adapter supplies attached help carriers here before shared tag
- * parsing, preserving source coordinates while examples become ineligible text.
+ * parsing, preserving source coordinates while examples become ineligible
+ * text.
  */
 export namespace EvidMatlabDocumentation {
   /**
@@ -38,7 +39,8 @@ export namespace EvidMatlabDocumentation {
    * Masks HTML examples and Markdown-indented code in MATLAB help text.
    *
    * Shared Evid parsing handles fenced examples separately; this helper only
-   * replaces content whose physical offsets must remain aligned with the source.
+   * replaces content whose physical offsets must remain aligned with the
+   * source.
    */
   function mask(input: string): string {
     const characters = input.split("");
@@ -77,8 +79,8 @@ export namespace EvidMatlabDocumentation {
   /**
    * Replaces example characters while retaining original line boundaries.
    *
-   * Preserved newlines and character positions keep parsed tag offsets valid for
-   * source diagnostics after the example text has been hidden.
+   * Preserved newlines and character positions keep parsed tag offsets valid
+   * for source diagnostics after the example text has been hidden.
    */
   function hide(characters: string[], start: number, end: number): void {
     for (let index = start; index < end; ++index)

@@ -1,17 +1,16 @@
-import {
-  EvidGraph,
-  EvidMatlabAdapter,
-  EvidTypeScriptAdapter,
-} from "evid";
+import { EvidGraph, EvidMatlabAdapter, EvidTypeScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Evaluates each selected MATLAB declaration as a required cross-language reference.
+/**
+ * Evaluates each selected MATLAB declaration as a required cross-language
+ * reference.
  *
- * Evid and reviews have different graph effects: missing evidence fails coverage, while a review is retained but cannot satisfy it.
+ * Evid and reviews have different graph effects: missing evidence fails
+ * coverage, while a review is retained but cannot satisfy it.
  *
  * 1. Extract MATLAB type, function, and property units with TypeScript claims.
  * 2. Evaluate each selector with and without its matching acknowledgement.

@@ -5,12 +5,15 @@ import { join } from "node:path";
 
 import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
-/** Rebuilds Objective-C populations as selected files change.
+/**
+ * Rebuilds Objective-C populations as selected files change.
  *
- * Watch output must replace merged inventories after implementation edits, new headers, malformed source, and repair.
+ * Watch output must replace merged inventories after implementation edits, new
+ * headers, malformed source, and repair.
  *
  * 1. Start with covered input and compare each cycle to a fresh check.
- * 2. Add and mutate declarations, then require failed coverage and incomplete parsing.
+ * 2. Add and mutate declarations, then require failed coverage and incomplete
+ *    parsing.
  * 3. Repair the source and require coverage recovery.
  */
 export async function test_objc_watch(): Promise<void> {

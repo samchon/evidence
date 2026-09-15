@@ -28,13 +28,13 @@ import { EvidTestGraph } from "../../internal/EvidTestGraph";
  * 3. Compare omitted and empty root server/security defaults, then change root,
  *    path, and operation server scopes plus inherited security; require only
  *    operations whose effective contract changes to expire.
- * 4. Change ordinary, OAuth, and prototype-shaped used security definitions
- *    while editing an unused scheme; require only referenced authentication
- *    contracts to affect the digest.
+ * 4. Change ordinary, OAuth, and prototype-shaped used security definitions while
+ *    editing an unused scheme; require only referenced authentication contracts
+ *    to affect the digest.
  * 5. Reorder security alternatives, schemes, and scopes without expiring the
  *    review, then change their membership and preserve server ordering.
- * 6. Repeat effective server and security mutations through Swagger 2.0
- *    conversion and require the normalized operation hash to move.
+ * 6. Repeat effective server and security mutations through Swagger 2.0 conversion
+ *    and require the normalized operation hash to move.
  * 7. Exercise `requireReview` with the old hash after a root server change and
  *    require a stale-review diagnostic rather than a passing obsolete review.
  * 8. Verify the expected description stability or invalidation.
@@ -109,9 +109,7 @@ export async function test_swagger_fingerprints(): Promise<void> {
   const implicitDefaults: IEvidInventory = await analyze(
     defaultDocument(false),
   );
-  const explicitDefaults: IEvidInventory = await analyze(
-    defaultDocument(true),
-  );
+  const explicitDefaults: IEvidInventory = await analyze(defaultDocument(true));
   TestValidator.equals(
     "empty root defaults preserve effective contract",
     fingerprint(explicitDefaults, "GET:/defaults"),
@@ -395,10 +393,7 @@ function fingerprint(inventory: IEvidInventory, target: string): string {
  * Fingerprint fixtures use unique METHOD/path names, so absence is an adapter
  * regression rather than an optional scenario outcome.
  */
-function requireUnit(
-  inventory: IEvidInventory,
-  target: string,
-): IEvidUnit {
+function requireUnit(inventory: IEvidInventory, target: string): IEvidUnit {
   const unit = inventory.units.find((candidate) => candidate.name === target);
   if (unit === undefined)
     throw new Error(`Missing Swagger operation: ${target}`);
@@ -449,8 +444,9 @@ function document(description: string, identifierType: string): string {
 /**
  * Builds an operation with an unresolved component-shaped reference.
  *
- * Names inherited from `Object.prototype` remain ordinary JSON Pointer segments;
- * changing the unresolved token must still change the reviewed operation.
+ * Names inherited from `Object.prototype` remain ordinary JSON Pointer
+ * segments; changing the unresolved token must still change the reviewed
+ * operation.
  */
 function unresolvedReferenceDocument(reference: string): string {
   return dedent`

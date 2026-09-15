@@ -4,10 +4,10 @@ import type { IEvidClaimBase } from "./IEvidClaimBase";
 /**
  * Markdown documents that host evidence tags in HTML comments.
  *
- * Heading structure supplies semantic claim hosts, and comment placement assigns
- * each annotation to a file or section. Selecting an exact heading level controls
- * which subjects owe evidence without flattening nested sections into their
- * parent's identity.
+ * Heading structure supplies semantic claim hosts, and comment placement
+ * assigns each annotation to a file or section. Selecting an exact heading
+ * level controls which subjects owe evidence without flattening nested sections
+ * into their parent's identity.
  *
  * - Every matching regular file is parsed as Markdown regardless of extension.
  * - File hosts precede the first ATX heading. Section hosts belong to the nearest

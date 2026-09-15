@@ -5,9 +5,11 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Preserves Rust module and syntax uncertainty as incomplete analysis.
+/**
+ * Preserves Rust module and syntax uncertainty as incomplete analysis.
  *
- * Modules, reexports, impls, conditions, macros, and parse failure cannot shrink coverage.
+ * Modules, reexports, impls, conditions, macros, and parse failure cannot
+ * shrink coverage.
  *
  * 1. Analyze missing and ambiguous modules, unresolved reexports and impl owners,
  *    conditional or expanding attributes, macros, and parse failures.

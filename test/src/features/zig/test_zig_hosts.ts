@@ -1,16 +1,14 @@
-import {
-  EvidFingerprint,
-  EvidInventory,
-  EvidZigAdapter,
-} from "evid";
+import { EvidFingerprint, EvidInventory, EvidZigAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches Zig documentation with exact coordinates and withdrawal semantics.
+/**
+ * Attaches Zig documentation with exact coordinates and withdrawal semantics.
  *
- * Lexical withdrawals and review fingerprints affect eligible documentation, while code examples cannot acknowledge units.
+ * Lexical withdrawals and review fingerprints affect eligible documentation,
+ * while code examples cannot acknowledge units.
  *
  * 1. Analyze documentation, withdrawals, and inert examples.
  * 2. Verify coordinates, records, and resolution.
@@ -117,7 +115,10 @@ export async function test_zig_hosts(): Promise<void> {
     EvidFingerprint.inspect(rewritten, contract.id).fingerprint,
   );
   const changed = await adapter.analyze(
-    EvidTestSourceSnapshot.create("src/Contract.zig", source.replace("= 1", "= 2")),
+    EvidTestSourceSnapshot.create(
+      "src/Contract.zig",
+      source.replace("= 1", "= 2"),
+    ),
   );
   TestValidator.notEquals(
     "semantic subtree edit changes fingerprint",

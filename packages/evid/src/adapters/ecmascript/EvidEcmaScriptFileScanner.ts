@@ -18,10 +18,12 @@ import type { IEvidEcmaScriptStatementContext } from "./IEvidEcmaScriptStatement
 import { EvidEcmaScriptSyntax } from "./EvidEcmaScriptSyntax";
 
 /**
- * Extracts local ECMAScript-family declarations before exports assign addresses.
+ * Extracts local ECMAScript-family declarations before exports assign
+ * addresses.
  *
  * It captures declared ownership, comment attachment, and static module edges;
- * `EvidEcmaScriptExportResolver` alone decides which local units become public.
+ * `EvidEcmaScriptExportResolver` alone decides which local units become
+ * public.
  */
 export class EvidEcmaScriptFileScanner {
   /**
@@ -67,10 +69,12 @@ export class EvidEcmaScriptFileScanner {
   }
 
   /**
-   * Scans declarations, static imports, and export edges into one module record.
+   * Scans declarations, static imports, and export edges into one module
+   * record.
    *
-   * Unsupported dynamic or malformed public-surface constructs retain diagnostics
-   * and incompleteness instead of disappearing from downstream coverage.
+   * Unsupported dynamic or malformed public-surface constructs retain
+   * diagnostics and incompleteness instead of disappearing from downstream
+   * coverage.
    */
   public scan(): IEvidEcmaScriptFileAnalysis {
     if (this.mode === "esm") this.collectImports();
@@ -155,7 +159,8 @@ export class EvidEcmaScriptFileScanner {
           localName: local,
           importedName: imported,
           specifier,
-          typeOnly: statementTypeOnly || EvidEcmaScriptSyntax.token(entry, "type"),
+          typeOnly:
+            statementTypeOnly || EvidEcmaScriptSyntax.token(entry, "type"),
           namespace: false,
         });
       }
@@ -341,7 +346,9 @@ export class EvidEcmaScriptFileScanner {
     context: IEvidEcmaScriptStatementContext,
     classNames: Set<string>,
   ): void {
-    const local = EvidEcmaScriptSyntax.name(declaration.childForFieldName("name"));
+    const local = EvidEcmaScriptSyntax.name(
+      declaration.childForFieldName("name"),
+    );
     if (local === undefined || !context.visible) return;
     const defaulted =
       wrapper.type === "export_statement" &&
@@ -384,7 +391,9 @@ export class EvidEcmaScriptFileScanner {
     context: IEvidEcmaScriptStatementContext,
   ): void {
     if (!context.visible) return;
-    const local = EvidEcmaScriptSyntax.name(declaration.childForFieldName("name"));
+    const local = EvidEcmaScriptSyntax.name(
+      declaration.childForFieldName("name"),
+    );
     if (local === undefined) return;
     this.excludedRoots.add(local);
     this.directExport(wrapper, local, context, false);
@@ -395,7 +404,9 @@ export class EvidEcmaScriptFileScanner {
     declaration: EvidNode,
     context: IEvidEcmaScriptStatementContext,
   ): void {
-    const local = EvidEcmaScriptSyntax.name(declaration.childForFieldName("name"));
+    const local = EvidEcmaScriptSyntax.name(
+      declaration.childForFieldName("name"),
+    );
     if (local === undefined || !context.visible) return;
     const identity = [...context.semanticPrefix, local];
     const root = context.root ?? local;
@@ -511,9 +522,7 @@ export class EvidEcmaScriptFileScanner {
         constant &&
         bindingNode?.type === "identifier" &&
         EvidEcmaScriptSyntax.functionValue(value);
-      const symbol: EvidProgrammingSymbol = callable
-        ? "function"
-        : "property";
+      const symbol: EvidProgrammingSymbol = callable ? "function" : "property";
       for (const binding of EvidEcmaScriptSyntax.bindings(bindingNode)) {
         const local = EvidEcmaScriptSyntax.name(binding);
         if (local === undefined) continue;
@@ -610,7 +619,8 @@ export class EvidEcmaScriptFileScanner {
       root,
       parentId,
       ambient:
-        context.ambient || EvidEcmaScriptSyntax.modifier(declaration, "declare"),
+        context.ambient ||
+        EvidEcmaScriptSyntax.modifier(declaration, "declare"),
       visible: true,
       typeOnly: context.typeOnly,
     });
@@ -635,7 +645,9 @@ export class EvidEcmaScriptFileScanner {
           continue;
         symbol = "function";
       } else if (member.type === "property_signature")
-        symbol = EvidEcmaScriptSyntax.functionType(member.childForFieldName("type"))
+        symbol = EvidEcmaScriptSyntax.functionType(
+          member.childForFieldName("type"),
+        )
           ? "function"
           : "property";
       else continue;
@@ -676,7 +688,8 @@ export class EvidEcmaScriptFileScanner {
     const effective: Map<string, EvidNode> = new Map<string, EvidNode>();
     if (this.type === "javascript")
       for (const member of body.namedChildren) {
-        const name: string | undefined = EvidEcmaScriptSyntax.memberName(member);
+        const name: string | undefined =
+          EvidEcmaScriptSyntax.memberName(member);
         const slot: string | undefined =
           name === undefined ? undefined : this.classMemberSlot(member, name);
         if (slot === undefined) continue;
@@ -738,7 +751,9 @@ export class EvidEcmaScriptFileScanner {
         member.type === "field_definition"
       ) {
         const symbol: EvidProgrammingSymbol =
-          EvidEcmaScriptSyntax.functionValue(member.childForFieldName("value")) ||
+          EvidEcmaScriptSyntax.functionValue(
+            member.childForFieldName("value"),
+          ) ||
           EvidEcmaScriptSyntax.functionType(member.childForFieldName("type"))
             ? "function"
             : "property";
@@ -758,10 +773,10 @@ export class EvidEcmaScriptFileScanner {
   /**
    * Names the runtime storage slot used by one supported class member.
    *
-   * Static methods and fields replace one property on the class object. Instance
-   * methods live on the prototype while instance fields initialize own properties,
-   * so those two forms remain separate even when Evid projects both through
-   * a `prototype` address segment.
+   * Static methods and fields replace one property on the class object.
+   * Instance methods live on the prototype while instance fields initialize own
+   * properties, so those two forms remain separate even when Evid projects both
+   * through a `prototype` address segment.
    */
   private classMemberSlot(member: EvidNode, name: string): string | undefined {
     const method: boolean =
@@ -771,7 +786,8 @@ export class EvidEcmaScriptFileScanner {
     const field: boolean = this.classField(member);
     if (!method && !field) return undefined;
     if (method && name === "constructor") return undefined;
-    if (EvidEcmaScriptSyntax.modifier(member, "static")) return `static:${name}`;
+    if (EvidEcmaScriptSyntax.modifier(member, "static"))
+      return `static:${name}`;
     return `${method ? "prototype" : "instance"}:${name}`;
   }
 
@@ -817,7 +833,9 @@ export class EvidEcmaScriptFileScanner {
       const name = EvidEcmaScriptSyntax.name(pattern);
       if (name === undefined) continue;
       const symbol: EvidProgrammingSymbol =
-        EvidEcmaScriptSyntax.functionValue(parameter.childForFieldName("value")) ||
+        EvidEcmaScriptSyntax.functionValue(
+          parameter.childForFieldName("value"),
+        ) ||
         EvidEcmaScriptSyntax.functionType(parameter.childForFieldName("type"))
           ? "function"
           : "property";
@@ -1228,7 +1246,11 @@ export class EvidEcmaScriptFileScanner {
     }
   }
 
-  private bindCommonJs(name: string, right: EvidNode, assignment: EvidNode): void {
+  private bindCommonJs(
+    name: string,
+    right: EvidNode,
+    assignment: EvidNode,
+  ): void {
     if (name === "__proto__") {
       this.problem(
         "javascript-commonjs-prototype",
@@ -1374,10 +1396,10 @@ export class EvidEcmaScriptFileScanner {
   /**
    * Records the effective declaration for one ECMAScript semantic identity.
    *
-   * TypeScript overloads and declaration merges append sites to one stable unit.
-   * JavaScript runtime definitions instead receive occurrence-specific IDs and
-   * replace the semantic lookup, preventing documentation on an obsolete value
-   * from attaching to the binding selected by exports.
+   * TypeScript overloads and declaration merges append sites to one stable
+   * unit. JavaScript runtime definitions instead receive occurrence-specific
+   * IDs and replace the semantic lookup, preventing documentation on an
+   * obsolete value from attaching to the binding selected by exports.
    */
   private addUnit(
     siteNode: EvidNode,
@@ -1404,7 +1426,8 @@ export class EvidEcmaScriptFileScanner {
       range: this.session.range(siteNode),
       content: [this.session.range(contentNode)],
     };
-    let record: IEvidEcmaScriptOwnedUnit | undefined = this.units.get(semanticId);
+    let record: IEvidEcmaScriptOwnedUnit | undefined =
+      this.units.get(semanticId);
     if (record === undefined || runtimeReplacement) {
       const unit: IEvidUnit = {
         id,

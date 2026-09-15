@@ -14,28 +14,31 @@ import type { EvidDatabaseSymbol } from "../../typings/EvidDatabaseSymbol";
 /**
  * Extracts supported BigQuery schema declarations from one parsed source file.
  *
- * The scanner publishes only explicit, complete DDL so unsupported syntax cannot
- * reduce the inventory used to evaluate coverage.
+ * The scanner publishes only explicit, complete DDL so unsupported syntax
+ * cannot reduce the inventory used to evaluate coverage.
  */
 export class EvidBigQueryFileScanner {
   /**
    * Accumulates the serializable result for this source file.
    *
-   * Every declaration, documentation carrier, and diagnostic returned by scan belongs here.
+   * Every declaration, documentation carrier, and diagnostic returned by scan
+   * belongs here.
    */
   private readonly output: IEvidSqlFileAnalysis;
 
   /**
    * Maps original source offsets without normalizing line endings.
    *
-   * Comment attachment relies on the physical UTF-16 positions from this source snapshot.
+   * Comment attachment relies on the physical UTF-16 positions from this source
+   * snapshot.
    */
   private readonly text: EvidSourceText;
 
   /**
    * Binds one completed GoogleSQL tree to the source it represents.
    *
-   * The scanner borrows both inputs for this extraction and never retains parser nodes in its result.
+   * The scanner borrows both inputs for this extraction and never retains
+   * parser nodes in its result.
    */
   public constructor(
     private readonly session: EvidParseSession,
@@ -52,9 +55,11 @@ export class EvidBigQueryFileScanner {
   }
 
   /**
-   * Extracts declarations and documentation from the supported BigQuery DDL surface.
+   * Extracts declarations and documentation from the supported BigQuery DDL
+   * surface.
    *
-   * Unsupported statements mark the analysis incomplete before the result is returned.
+   * Unsupported statements mark the analysis incomplete before the result is
+   * returned.
    */
   public scan(): IEvidSqlFileAnalysis {
     for (const node of this.session.root.namedChildren) {
@@ -186,7 +191,8 @@ export class EvidBigQueryFileScanner {
   /**
    * Publishes a column or nested STRUCT field under its table owner.
    *
-   * Field paths preserve nested schema identity while ownership remains with the containing table.
+   * Field paths preserve nested schema identity while ownership remains with
+   * the containing table.
    */
   private column(
     node: EvidNode,
@@ -240,7 +246,8 @@ export class EvidBigQueryFileScanner {
   /**
    * Interprets constraints that affect the declared table surface.
    *
-   * Primary keys remain table semantics, while foreign keys become independently selectable relations.
+   * Primary keys remain table semantics, while foreign keys become
+   * independently selectable relations.
    */
   private constraint(
     node: EvidNode,
@@ -318,7 +325,8 @@ export class EvidBigQueryFileScanner {
   /**
    * Publishes a foreign-key relation with a stable endpoint-based identity.
    *
-   * Anonymous composite keys must not depend on their incidental statement order.
+   * Anonymous composite keys must not depend on their incidental statement
+   * order.
    */
   private relation(
     node: EvidNode,
@@ -368,7 +376,8 @@ export class EvidBigQueryFileScanner {
   /**
    * Rejects key constraints that claim unsupported enforcement semantics.
    *
-   * BigQuery keys still describe schema, but enforcement changes their operational meaning.
+   * BigQuery keys still describe schema, but enforcement changes their
+   * operational meaning.
    */
   private enforcement(node: EvidNode): void {
     for (const capture of this.session.captures(
@@ -385,7 +394,8 @@ export class EvidBigQueryFileScanner {
   /**
    * Reads description strings from OPTIONS clauses attached to one declaration.
    *
-   * Restricting the search to this node prevents nested or unrelated strings becoming documentation.
+   * Restricting the search to this node prevents nested or unrelated strings
+   * becoming documentation.
    */
   private options(node: EvidNode, declaration: IEvidSqlDeclaration): void {
     const clause = node.namedChildren.find(
@@ -431,7 +441,8 @@ export class EvidBigQueryFileScanner {
   /**
    * Attaches contiguous standalone comments to their following declarations.
    *
-   * Comments embedded in examples or strings stay inert because they are not documentation carriers.
+   * Comments embedded in examples or strings stay inert because they are not
+   * documentation carriers.
    */
   private comment(node: EvidNode, last: EvidNode): void {
     const following = this.output.declarations
@@ -478,7 +489,8 @@ export class EvidBigQueryFileScanner {
   /**
    * Determines whether a comment begins on otherwise blank source text.
    *
-   * Trailing comments must not be reassigned as documentation for the next declaration.
+   * Trailing comments must not be reassigned as documentation for the next
+   * declaration.
    */
   private standalone(start: number): boolean {
     const line = this.source.content.lastIndexOf("\n", start - 1) + 1;
@@ -488,7 +500,8 @@ export class EvidBigQueryFileScanner {
   /**
    * Constructs one serializable declaration site with exact source ranges.
    *
-   * The site records physical location separately from the semantic identity used across files.
+   * The site records physical location separately from the semantic identity
+   * used across files.
    */
   private declare(
     node: EvidNode,
@@ -527,7 +540,8 @@ export class EvidBigQueryFileScanner {
   /**
    * Marks unsupported schema-changing syntax as an analysis failure.
    *
-   * This preserves the failed scan instead of allowing a smaller inventory to pass coverage.
+   * This preserves the failed scan instead of allowing a smaller inventory to
+   * pass coverage.
    */
   private fail(node: EvidNode, message: string): void {
     this.output.complete = false;

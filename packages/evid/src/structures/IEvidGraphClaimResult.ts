@@ -26,8 +26,8 @@ export interface IEvidGraphClaimResult {
   /**
    * Whether the active claim population was materialized completely.
    *
-   * Reference extraction and target resolution have their own completeness state
-   * on each obligation, so callers must inspect both levels.
+   * Reference extraction and target resolution have their own completeness
+   * state on each obligation, so callers must inspect both levels.
    */
   complete: boolean;
 

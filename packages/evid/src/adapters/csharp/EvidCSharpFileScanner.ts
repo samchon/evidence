@@ -22,7 +22,8 @@ import { EvidSourceText } from "../../internal/EvidSourceText";
  * Extracts C# namespaces, declarations, and XML documentation.
  *
  * It preserves declaration ownership and physical attachment decisions for
- * `EvidCSharpAdapterBase`, which reconciles partial families after parsing closes.
+ * `EvidCSharpAdapterBase`, which reconciles partial families after parsing
+ * closes.
  */
 export class EvidCSharpFileScanner {
   private readonly declarations: IEvidCSharpDeclaration[] = [];
@@ -51,10 +52,11 @@ export class EvidCSharpFileScanner {
   }
 
   /**
-   * Extracts supported file and block namespace declarations into a file record.
+   * Extracts supported file and block namespace declarations into a file
+   * record.
    *
-   * Invalid namespace or declaration surfaces contribute diagnostics and preserve
-   * incompleteness for the adapter's final inventory.
+   * Invalid namespace or declaration surfaces contribute diagnostics and
+   * preserve incompleteness for the adapter's final inventory.
    */
   public scan(): IEvidCSharpFileAnalysis {
     let namespacePath: string[] = [];
@@ -125,7 +127,9 @@ export class EvidCSharpFileScanner {
           namespacePath,
           owner,
           "record",
-          EvidCSharpSyntax.hasToken(item, "struct") ? "record-struct" : "record",
+          EvidCSharpSyntax.hasToken(item, "struct")
+            ? "record-struct"
+            : "record",
         );
         return;
       case "enum_declaration":
@@ -401,7 +405,10 @@ export class EvidCSharpFileScanner {
     );
   }
 
-  private scanConversionOperator(item: EvidNode, owner: IEvidCSharpTypeContext): void {
+  private scanConversionOperator(
+    item: EvidNode,
+    owner: IEvidCSharpTypeContext,
+  ): void {
     const name = EvidCSharpSyntax.conversionOperatorName(item);
     if (name === undefined) {
       this.problem(
@@ -505,7 +512,9 @@ export class EvidCSharpFileScanner {
     }));
   }
 
-  private documentationFor(node: EvidNode): IEvidCSharpDocumentation | undefined {
+  private documentationFor(
+    node: EvidNode,
+  ): IEvidCSharpDocumentation | undefined {
     const previous = node.previousNamedSibling;
     if (previous === null || !EvidCSharpSyntax.isXmlDocumentation(previous))
       return undefined;

@@ -5,9 +5,12 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Merges compatible C++ declarations and definitions into their semantic identities.
+/**
+ * Merges compatible C++ declarations and definitions into their semantic
+ * identities.
  *
- * A callable family may appear as declarations, overloads, and qualified out-of-class definitions, all of which must contribute sites to one owner.
+ * A callable family may appear as declarations, overloads, and qualified
+ * out-of-class definitions, all of which must contribute sites to one owner.
  *
  * 1. Analyze class and namespace declarations with matching qualified definitions.
  * 2. Compare the resulting callable identities and their declaration-site counts.
@@ -118,10 +121,7 @@ export async function test_cpp_definitions(): Promise<void> {
   );
 }
 
-function requireUnit(
-  inventory: IEvidInventory,
-  identity: string,
-): IEvidUnit {
+function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.join(".") === identity,
   );

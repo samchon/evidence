@@ -3,12 +3,14 @@ import type { IEvidSourceRange } from "../../structures/IEvidSourceRange";
 import type { IEvidCSharpDocumentationAttachment } from "./IEvidCSharpDocumentationAttachment";
 
 /**
- * Retains one C# XML documentation carrier until the adapter creates evidence hosts.
+ * Retains one C# XML documentation carrier until the adapter creates evidence
+ * hosts.
  *
- * EvidCSharpFileScanner records its physical range, comment syntax, and accepted
- * declaration sites without binding it to a semantic unit. EvidCSharpAdapterBase later
- * groups its attachments against published declarations, then parses the same
- * carrier either as attached documentation or as an unsupported annotation.
+ * EvidCSharpFileScanner records its physical range, comment syntax, and
+ * accepted declaration sites without binding it to a semantic unit.
+ * EvidCSharpAdapterBase later groups its attachments against published
+ * declarations, then parses the same carrier either as attached documentation
+ * or as an unsupported annotation.
  */
 export interface IEvidCSharpDocumentation {
   /**
@@ -31,13 +33,15 @@ export interface IEvidCSharpDocumentation {
   /**
    * Preserves the comment form required to normalize the carrier's XML text.
    *
-   * EvidCSharpDocumentation passes it to the shared documentation reader so line
-   * delimiters and indentation are removed according to the original syntax.
+   * EvidCSharpDocumentation passes it to the shared documentation reader so
+   * line delimiters and indentation are removed according to the original
+   * syntax.
    */
   syntax: IEvidCommentSyntax;
 
   /**
-   * Names the declaration sites that the scanner accepted as this carrier's owners.
+   * Names the declaration sites that the scanner accepted as this carrier's
+   * owners.
    *
    * Each attachment preserves both a scanner-local declaration and its physical
    * site. Materialization uses this list to form hosts; it never broadens

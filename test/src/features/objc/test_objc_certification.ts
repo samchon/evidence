@@ -1,9 +1,11 @@
 import { EvidAdapterCertification } from "../../internal/certification/EvidAdapterCertification";
 import { EvidAdapterCertificationFixtures } from "../../internal/certification/EvidAdapterCertificationFixtures";
 
-/** Applies the shared adapter certification contract to Objective-C.
+/**
+ * Applies the shared adapter certification contract to Objective-C.
  *
- * The fixture fixes expected populations, mutations, graph failures, and stable review fingerprints.
+ * The fixture fixes expected populations, mutations, graph failures, and stable
+ * review fingerprints.
  *
  * 1. Construct the Objective-C certification fixture.
  * 2. Run the shared certification suite.

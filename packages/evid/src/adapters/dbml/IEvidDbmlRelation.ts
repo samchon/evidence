@@ -1,14 +1,16 @@
 import type { IEvidSourceRange } from "../../structures/IEvidSourceRange";
 import type { IEvidDbmlEndpoint } from "./IEvidDbmlEndpoint";
 
-/** A pending relation whose owning table is resolved across selected files.
+/**
+ * A pending relation whose owning table is resolved across selected files.
  *
  * DBML relation syntax can name aliases outside its physical file, so this
  * record defers ownership and public-address materialization until all selected
  * declarations are available.
  */
 export interface IEvidDbmlRelation {
-  /** Declared optional relation name.
+  /**
+   * Declared optional relation name.
    *
    * Omission leaves endpoint and cardinality data to establish identity.
    */
@@ -42,7 +44,8 @@ export interface IEvidDbmlRelation {
    */
   inline: boolean;
 
-  /** Semantic relation syntax excluding documentation.
+  /**
+   * Semantic relation syntax excluding documentation.
    *
    * This excludes annotation carriers so review metadata cannot change relation
    * fingerprint content.
@@ -56,7 +59,8 @@ export interface IEvidDbmlRelation {
    */
   range: IEvidSourceRange;
 
-  /** Temporary syntax identity replaced after endpoint resolution.
+  /**
+   * Temporary syntax identity replaced after endpoint resolution.
    *
    * It exists only until cross-file aliases identify the relation's owner.
    */

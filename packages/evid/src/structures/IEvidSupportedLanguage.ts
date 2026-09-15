@@ -7,7 +7,8 @@ import type { IEvidLanguageGrammar } from "./IEvidLanguageGrammar";
  *
  * Supported-language queries narrow the broader grammar catalog to entries that
  * can extract Evid inventories. Consumers can inspect adapter boundaries
- * directly without mistaking a grammar-only entry for implemented graph support.
+ * directly without mistaking a grammar-only entry for implemented graph
+ * support.
  */
 export interface IEvidSupportedLanguage {
   /**
@@ -20,7 +21,8 @@ export interface IEvidSupportedLanguage {
   /**
    * Display name accompanying the family discriminator.
    *
-   * It is intended for capability reports rather than target or identity matching.
+   * It is intended for capability reports rather than target or identity
+   * matching.
    */
   name: string;
 

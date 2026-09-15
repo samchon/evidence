@@ -7,9 +7,11 @@ import { join } from "node:path";
 
 import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
-/** Normalizes Swagger 2.0 and OpenAPI 3.x documents into operations.
+/**
+ * Normalizes Swagger 2.0 and OpenAPI 3.x documents into operations.
  *
- * Version-specific syntax must yield the same exact operation addressing model without conflating distinct documents.
+ * Version-specific syntax must yield the same exact operation addressing model
+ * without conflating distinct documents.
  *
  * 1. Analyze local Swagger and OpenAPI JSON and YAML documents.
  * 2. Verify exact operation targets and complete inventories.

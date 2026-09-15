@@ -1,4 +1,5 @@
-/** One recognized Prisma top-level block declaration.
+/**
+ * One recognized Prisma top-level block declaration.
  *
  * The position scanner records only the head needed to associate parser-owned
  * semantic models with their original source spans.

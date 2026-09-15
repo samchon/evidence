@@ -4,17 +4,20 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestDocumentation } from "../../internal/EvidTestDocumentation";
 
-/** Reports common annotation failures without applying reference-specific syntax rules.
+/**
+ * Reports common annotation failures without applying reference-specific syntax
+ * rules.
  *
- * Tag parsing validates its own required form and preserves invalid inputs as findings.
+ * Tag parsing validates its own required form and preserves invalid inputs as
+ * findings.
  *
  * 1. Parse targetless evidence, reasonless evidence, inline links, and malformed
  *    review fingerprints or descriptions.
  * 2. Verify their diagnostic codes while preserving artifact-specific target text
  *    for later resolver validation.
  * 3. Require malformed reviews to create no review records.
- * 4. Parse unattached and unsupported hosts, then require a host diagnostic and
- *    no guessed declaration attachment.
+ * 4. Parse unattached and unsupported hosts, then require a host diagnostic and no
+ *    guessed declaration attachment.
  */
 export async function test_tag_diagnostics(): Promise<void> {
   const fixture = EvidTestDocumentation.create(dedent`

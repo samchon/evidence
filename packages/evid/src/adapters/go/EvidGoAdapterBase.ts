@@ -18,13 +18,14 @@ import type { IEvidGoDocumentation } from "./IEvidGoDocumentation";
 import type { IEvidGoFileAnalysis } from "./IEvidGoFileAnalysis";
 
 /**
- * Coordinates Go file scanning, package ownership, and documentation materialization.
+ * Coordinates Go file scanning, package ownership, and documentation
+ * materialization.
  *
  * A file scan cannot resolve every method owner: receiver types can live in
- * another selected file of the package. `EvidGoPackageResolver` therefore publishes
- * identities and addresses after all file analyses exist. Documentation then
- * joins those identities through recorded declaration sites, including grouped
- * declarations and package-specific test boundaries.
+ * another selected file of the package. `EvidGoPackageResolver` therefore
+ * publishes identities and addresses after all file analyses exist.
+ * Documentation then joins those identities through recorded declaration sites,
+ * including grouped declarations and package-specific test boundaries.
  *
  * The pipeline retains discovery and parse failures before common inventory
  * validation. It never treats an unresolved receiver as permission to omit a
@@ -40,15 +41,15 @@ export class EvidGoAdapterBase implements IEvidAdapter {
   public readonly type = "go";
 
   /**
-   * Builds a Go package inventory from an independently captured input snapshot.
+   * Builds a Go package inventory from an independently captured input
+   * snapshot.
    *
-   * All files are scanned before package publication and documentation attachment.
-   * Discovery dependencies survive for watch recovery, and the invocation closes
-   * its parser on every path before returning a serializable inventory.
+   * All files are scanned before package publication and documentation
+   * attachment. Discovery dependencies survive for watch recovery, and the
+   * invocation closes its parser on every path before returning a serializable
+   * inventory.
    */
-  public async analyze(
-    snapshot: IEvidSourceSnapshot,
-  ): Promise<IEvidInventory> {
+  public async analyze(snapshot: IEvidSourceSnapshot): Promise<IEvidInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidInventory = {
       schemaVersion: 1,
@@ -81,7 +82,10 @@ export class EvidGoAdapterBase implements IEvidAdapter {
       }
       // A receiver declaration can live in another selected package file. Resolve
       // package ownership before interpreting method comments as evidence hosts.
-      const published = new EvidGoPackageResolver(analyses, inventory).publish();
+      const published = new EvidGoPackageResolver(
+        analyses,
+        inventory,
+      ).publish();
       this.materializeDocumentation(inventory, analyses, published);
       return new EvidInventory([inventory]).snapshot();
     } finally {
@@ -100,8 +104,7 @@ export class EvidGoAdapterBase implements IEvidAdapter {
         (session) => new EvidGoFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError =
-        cause instanceof EvidParserError ? cause : undefined;
+      const parserError = cause instanceof EvidParserError ? cause : undefined;
       return {
         source,
         directory: source.physicalPath.replace(/[\\/][^\\/]*$/u, ""),

@@ -10,27 +10,36 @@ import type { IEvidLuaDocumentation } from "./IEvidLuaDocumentation";
  * the resulting public-value candidates into inventory materialization.
  */
 export interface IEvidLuaFileAnalysis {
-  /** Retains the selected Lua source file that produced this analysis.
+  /**
+   * Retains the selected Lua source file that produced this analysis.
    *
-   * Its physical identity and configured addresses are used when units and comment hosts are materialized.
+   * Its physical identity and configured addresses are used when units and
+   * comment hosts are materialized.
    */
   source: IEvidSourceFile;
 
-  /** Lists declarations and alias projections established by supported static initialization.
+  /**
+   * Lists declarations and alias projections established by supported static
+   * initialization.
    *
-   * `EvidLuaAdapterBase` reconciles these node-free records into public units after scanning ends.
+   * `EvidLuaAdapterBase` reconciles these node-free records into public units
+   * after scanning ends.
    */
   declarations: IEvidLuaDeclaration[];
 
-  /** Lists classified LuaDoc and unsupported annotation carriers from this file.
+  /**
+   * Lists classified LuaDoc and unsupported annotation carriers from this file.
    *
-   * Tagged unsupported carriers remain available for diagnostics instead of silently disappearing.
+   * Tagged unsupported carriers remain available for diagnostics instead of
+   * silently disappearing.
    */
   documentation: IEvidLuaDocumentation[];
 
-  /** Lists failures encountered while establishing the static public surface.
+  /**
+   * Lists failures encountered while establishing the static public surface.
    *
-   * The adapter forwards them into the inventory together with the `complete` boundary.
+   * The adapter forwards them into the inventory together with the `complete`
+   * boundary.
    */
   diagnostics: IEvidDiagnostic[];
 

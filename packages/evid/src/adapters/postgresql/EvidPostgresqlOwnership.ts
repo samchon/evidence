@@ -3,16 +3,18 @@ import typia from "typia";
 import type { IEvidSqlFileAnalysis } from "../sql/IEvidSqlFileAnalysis";
 import type { IEvidPostgresqlFileAnalysis } from "./IEvidPostgresqlFileAnalysis";
 
-/** Reconciles ALTER and COMMENT sites independently of selected file ordering.
+/**
+ * Reconciles ALTER and COMMENT sites independently of selected file ordering.
  *
  * PostgreSQL permits extension statements in other files, so publication waits
  * until a unique selected declaration can establish their semantic ownership.
  */
 export namespace EvidPostgresqlOwnership {
-  /** Resolves every deferred extension against exactly one declaration.
+  /**
+   * Resolves every deferred extension against exactly one declaration.
    *
-   * Ambiguity makes analysis incomplete rather than allowing an ALTER or COMMENT
-   * to silently attach to an arbitrary same-named table.
+   * Ambiguity makes analysis incomplete rather than allowing an ALTER or
+   * COMMENT to silently attach to an arbitrary same-named table.
    */
   export function resolve(input: IEvidSqlFileAnalysis[]): void {
     const analyses = typia.assert<IEvidPostgresqlFileAnalysis[]>(input);

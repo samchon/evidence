@@ -1,8 +1,9 @@
 /**
  * Represents one Dart export combinator retained from source order.
  *
- * An {@link IEvidDartDirective} owns these filters, and EvidDartLibraries applies them
- * in sequence while deciding whether each exported top-level name is public.
+ * An {@link IEvidDartDirective} owns these filters, and EvidDartLibraries
+ * applies them in sequence while deciding whether each exported top-level name
+ * is public.
  */
 export interface IEvidDartExportFilter {
   /**

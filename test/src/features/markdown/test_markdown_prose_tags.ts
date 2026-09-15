@@ -6,15 +6,19 @@ import { dedent } from "@typia/utils";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
- * Reports annotation-looking lines rendered as prose while preserving HTML annotations.
+ * Reports annotation-looking lines rendered as prose while preserving HTML
+ * annotations.
  *
  * Markdown comments are the supported annotation host. Rendered text, lists,
  * quotes, code blocks, `<pre>` content, and MDX template text must not silently
  * become Evid declarations.
  *
- * 1. Analyze a document that places tag syntax in rendered prose and code-like regions.
- * 2. Require one unsupported-host diagnostic for each rendered tag line, at its source line.
- * 3. Verify that prose mentions and code examples add no declarations or diagnostics.
+ * 1. Analyze a document that places tag syntax in rendered prose and code-like
+ *    regions.
+ * 2. Require one unsupported-host diagnostic for each rendered tag line, at its
+ *    source line.
+ * 3. Verify that prose mentions and code examples add no declarations or
+ *    diagnostics.
  * 4. Verify that the HTML comment still produces its real Evid target.
  */
 export async function test_markdown_prose_tags(): Promise<void> {

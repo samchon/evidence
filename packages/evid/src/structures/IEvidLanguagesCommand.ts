@@ -3,8 +3,8 @@ import type { EvidReportFormat } from "../typings/EvidReportFormat";
 /**
  * Parsed request for certified programming and database capability metadata.
  *
- * This command does not load configuration or analyze project files. Its working
- * directory exists only to resolve an optional report destination.
+ * This command does not load configuration or analyze project files. Its
+ * working directory exists only to resolve an optional report destination.
  */
 export interface IEvidLanguagesCommand {
   /**
@@ -17,7 +17,8 @@ export interface IEvidLanguagesCommand {
   /**
    * Working directory used to resolve the output destination.
    *
-   * It does not select project populations because the catalog is configuration-independent.
+   * It does not select project populations because the catalog is
+   * configuration-independent.
    */
   cwd: string;
 
@@ -31,7 +32,8 @@ export interface IEvidLanguagesCommand {
   /**
    * Optional destination file for capability output.
    *
-   * Omission sends the formatted catalog to standard output without source analysis.
+   * Omission sends the formatted catalog to standard output without source
+   * analysis.
    */
   output?: string;
 }

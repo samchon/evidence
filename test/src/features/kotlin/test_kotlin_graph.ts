@@ -1,19 +1,19 @@
-import {
-  EvidGraph,
-  EvidKotlinAdapter,
-  EvidTypeScriptAdapter,
-} from "evid";
+import { EvidGraph, EvidKotlinAdapter, EvidTypeScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Evaluates Kotlin selector coverage, including undocumented and review-only claims.
+/**
+ * Evaluates Kotlin selector coverage, including undocumented and review-only
+ * claims.
  *
- * Reviews are recorded independently and cannot satisfy missing reference evidence.
+ * Reviews are recorded independently and cannot satisfy missing reference
+ * evidence.
  *
- * 1. Select each Kotlin symbol kind. 2. Evaluate covered and uncovered claims. 3. Require review-only claims to retain missing IDs.
+ * 1. Select each Kotlin symbol kind. 2. Evaluate covered and uncovered claims. 3.
+ *    Require review-only claims to retain missing IDs.
  */
 export async function test_kotlin_graph(): Promise<void> {
   const reference = await new EvidKotlinAdapter().analyze(

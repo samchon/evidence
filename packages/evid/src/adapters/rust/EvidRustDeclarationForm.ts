@@ -1,8 +1,9 @@
 /**
  * Enumerates supported Rust source forms that establish semantic declarations.
  *
- * EvidRustFileScanner assigns these forms to lexical records. EvidRustModuleResolver uses
- * them to apply module, associated-item, and public-occurrence ownership rules.
+ * EvidRustFileScanner assigns these forms to lexical records.
+ * EvidRustModuleResolver uses them to apply module, associated-item, and
+ * public-occurrence ownership rules.
  */
 export type EvidRustDeclarationForm =
   | "module"

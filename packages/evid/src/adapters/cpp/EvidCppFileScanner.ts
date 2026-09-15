@@ -24,13 +24,17 @@ import { EvidSourceText } from "../../internal/EvidSourceText";
  * Extracts explicit C++ declarations and Doxygen without semantic lookup.
  *
  * The scanner retains only source-established scopes, aliases, and attachment
- * facts; `EvidCppAdapterBase` later resolves publication among those bounded records.
+ * facts; `EvidCppAdapterBase` later resolves publication among those bounded
+ * records.
  */
 export class EvidCppFileScanner {
   private readonly declarations: IEvidCppDeclaration[] = [];
   private readonly aliases: IEvidCppAlias[] = [];
   private readonly documentation = new Map<string, IEvidCppDocumentation>();
-  private readonly carrierDocumentation = new Map<string, IEvidCppDocumentation>();
+  private readonly carrierDocumentation = new Map<
+    string,
+    IEvidCppDocumentation
+  >();
   private readonly diagnostics: IEvidDiagnostic[] = [];
   private readonly reported = new Set<string>();
   private readonly text: EvidSourceText;
@@ -51,7 +55,8 @@ export class EvidCppFileScanner {
   }
 
   /**
-   * Produces the node-free declarations, aliases, and documentation for one file.
+   * Produces the node-free declarations, aliases, and documentation for one
+   * file.
    *
    * Unsupported relevant syntax makes this result incomplete so materialization
    * cannot report success over a reduced public population.
@@ -186,7 +191,8 @@ export class EvidCppFileScanner {
         this.conditional(item);
         return;
       case "preproc_call":
-        if (!EvidCppSyntax.isInertDirective(item)) this.preprocessorDirective(item);
+        if (!EvidCppSyntax.isInertDirective(item))
+          this.preprocessorDirective(item);
         return;
       case "expression_statement":
         if (!EvidCppSyntax.isStaticAssertion(item)) this.macroDeclaration(item);
@@ -208,7 +214,9 @@ export class EvidCppFileScanner {
     inheritedDocumentation: IEvidCppDocumentation[],
   ): void {
     const body = item.childForFieldName("body");
-    const qualified = EvidCppSyntax.qualifiedName(item.childForFieldName("name"));
+    const qualified = EvidCppSyntax.qualifiedName(
+      item.childForFieldName("name"),
+    );
     const documentation = this.documentationForSite(
       siteNode,
       item,
@@ -1092,7 +1100,9 @@ export class EvidCppFileScanner {
       );
       return;
     }
-    const target = EvidCppSyntax.qualifiedName(item.namedChildren.at(-1) ?? null);
+    const target = EvidCppSyntax.qualifiedName(
+      item.namedChildren.at(-1) ?? null,
+    );
     const targetTail =
       target === undefined ? undefined : target.segments.at(-1);
     const name =
@@ -1138,7 +1148,10 @@ export class EvidCppFileScanner {
     for (const entry of documentation) this.attach(entry, alias.id, site.id);
   }
 
-  private scanLinkage(item: EvidNode, owner: IEvidCppScopeContext | undefined): void {
+  private scanLinkage(
+    item: EvidNode,
+    owner: IEvidCppScopeContext | undefined,
+  ): void {
     const body = item.childForFieldName("body");
     if (body === null) return;
     const children =
@@ -1316,7 +1329,10 @@ export class EvidCppFileScanner {
       const sequence: EvidNode[] = [first];
       consumed.add(this.nodeKey(first));
       let last = first;
-      if (first.text.startsWith("//") && !EvidCppSyntax.isTrailingDoxygen(first)) {
+      if (
+        first.text.startsWith("//") &&
+        !EvidCppSyntax.isTrailingDoxygen(first)
+      ) {
         let next = last.nextNamedSibling;
         while (
           next !== null &&

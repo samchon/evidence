@@ -5,9 +5,12 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Reports Java parse and identity uncertainty without publishing a partial surface.
+/**
+ * Reports Java parse and identity uncertainty without publishing a partial
+ * surface.
  *
- * Source-only analysis must retain failures when parsing or declaration identity is uncertain.
+ * Source-only analysis must retain failures when parsing or declaration
+ * identity is uncertain.
  *
  * 1. Analyze uncertain Java source.
  * 2. Require incompleteness and diagnostics.

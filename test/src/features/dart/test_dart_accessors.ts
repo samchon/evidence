@@ -4,12 +4,17 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Classifies Dart accessor families without reclassifying a function named set.
+/**
+ * Classifies Dart accessor families without reclassifying a function named set.
  *
- * Getter and setter declarations share a property identity even when a setter omits or spells out its return type, but a normal function retains its function identity.
+ * Getter and setter declarations share a property identity even when a setter
+ * omits or spells out its return type, but a normal function retains its
+ * function identity.
  *
- * 1. Analyze paired getters and setters, an explicit-void setter, a function named set, and an external setter.
- * 2. Require paired accessors to produce one property with two sites and the named function to remain a function.
+ * 1. Analyze paired getters and setters, an explicit-void setter, a function named
+ *    set, and an external setter.
+ * 2. Require paired accessors to produce one property with two sites and the named
+ *    function to remain a function.
  * 3. Verify a withdrawn accessor family is hidden and has no eligible host.
  */
 export async function test_dart_accessors(): Promise<void> {

@@ -1,15 +1,13 @@
-import {
-  EvidAccessor,
-  EvidInventory,
-  EvidSqlAdapter,
-} from "evid";
+import { EvidAccessor, EvidInventory, EvidSqlAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Extracts SQL models and composite foreign keys with exact ownership.
+/**
+ * Extracts SQL models and composite foreign keys with exact ownership.
  *
- * File order cannot change a schema unit, and qualified-name ambiguity must be reported rather than guessed.
+ * File order cannot change a schema unit, and qualified-name ambiguity must be
+ * reported rather than guessed.
  *
  * 1. Analyze composite schemas across independent files.
  * 2. Verify model identities, ordered relation endpoints, and target resolution.
@@ -54,7 +52,10 @@ export async function test_sql_units(): Promise<void> {
 
   const duplicate = await adapter.analyze(
     EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create("first.sql", "CREATE TABLE same (id INTEGER);"),
+      EvidTestSourceSnapshot.create(
+        "first.sql",
+        "CREATE TABLE same (id INTEGER);",
+      ),
       EvidTestSourceSnapshot.create(
         "second.sql",
         "CREATE TABLE same (value INTEGER);",

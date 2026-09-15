@@ -12,14 +12,16 @@ export interface IEvidCDeclarationGroup {
   /**
    * File-qualified identifier shared by every member of the group.
    *
-   * The adapter uses it as the materialized unit ID within this physical source boundary.
+   * The adapter uses it as the materialized unit ID within this physical source
+   * boundary.
    */
   id: string;
 
   /**
    * Declarations whose forms and definitions must be mutually compatible.
    *
-   * Their sites and addresses become the selected unit only after validation succeeds.
+   * Their sites and addresses become the selected unit only after validation
+   * succeeds.
    */
   declarations: IEvidCDeclaration[];
 }

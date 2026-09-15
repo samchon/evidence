@@ -4,11 +4,7 @@ import {
   EvidMarkdownAdapter,
   EvidTypeScriptAdapter,
 } from "evid";
-import type {
-  IEvidGraphReference,
-  IEvidInventory,
-  IEvidUnit,
-} from "evid";
+import type { IEvidGraphReference, IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -16,19 +12,22 @@ import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
- * Reuses one current review across selected scopes and public aliases of the same identity.
+ * Reuses one current review across selected scopes and public aliases of the
+ * same identity.
  *
- * The pricing section has two public paths and contains a coupons subsection.
- * A single acknowledgement and review through the alias must satisfy separate
- * selector obligations without changing the target fingerprint carried by edges.
+ * The pricing section has two public paths and contains a coupons subsection. A
+ * single acknowledgement and review through the alias must satisfy separate
+ * selector obligations without changing the target fingerprint carried by
+ * edges.
  *
  * 1. Analyze aliased Markdown pricing and coupons scopes, then obtain the pricing
  *    fingerprint from the shared semantic unit.
  * 2. Analyze a function that acknowledges pricing through one path and reviews it
  *    through the other alias with that fingerprint.
- * 3. Evaluate separate pricing and coupons reference selectors with required reviews.
- * 4. Require no diagnostics and require both obligations' first edges to carry
- *    the same expected pricing fingerprint.
+ * 3. Evaluate separate pricing and coupons reference selectors with required
+ *    reviews.
+ * 4. Require no diagnostics and require both obligations' first edges to carry the
+ *    same expected pricing fingerprint.
  */
 export async function test_graph_review_selectors(): Promise<void> {
   const requirements = await new EvidMarkdownAdapter().analyze(
@@ -111,10 +110,7 @@ export async function test_graph_review_selectors(): Promise<void> {
   );
 }
 
-function requireUnit(
-  inventory: IEvidInventory,
-  identity: string,
-): IEvidUnit {
+function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === identity || candidate.identity.at(-1) === identity,

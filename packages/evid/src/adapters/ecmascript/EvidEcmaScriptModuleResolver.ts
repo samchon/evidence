@@ -23,15 +23,19 @@ import { EvidSourcePath } from "../../internal/EvidSourcePath";
  */
 export class EvidEcmaScriptModuleResolver {
   /**
-   * Creates a resolver whose package-scope lookups are isolated to one analysis.
+   * Creates a resolver whose package-scope lookups are isolated to one
+   * analysis.
    *
    * The lazy cache reads each package directory at most once. Missing manifests
-   * delegate to the parent directory, matching EvidNode's nearest-package scope rule.
+   * delegate to the parent directory, matching EvidNode's nearest-package scope
+   * rule.
    */
   public constructor() {
     this.packages = new VariadicSingleton(
       async (directory: string): Promise<EvidEcmaScriptModuleMode> => {
-        const manifest = EvidSourcePath.slash(path.join(directory, "package.json"));
+        const manifest = EvidSourcePath.slash(
+          path.join(directory, "package.json"),
+        );
         this.dependencies.set(manifest, { path: manifest, recursive: false });
         try {
           const content = await readFile(manifest, "utf8");
@@ -72,9 +76,9 @@ export class EvidEcmaScriptModuleResolver {
   /**
    * Resolves module modes and watched package manifests for selected sources.
    *
-   * Every logical address of one source must select the same mode. A mismatch is
-   * reported because parsing one file with either mode alone would make export
-   * semantics depend on an arbitrary alias.
+   * Every logical address of one source must select the same mode. A mismatch
+   * is reported because parsing one file with either mode alone would make
+   * export semantics depend on an arbitrary alias.
    */
   public async resolve(
     sources: IEvidSourceFile[],
@@ -126,7 +130,8 @@ export class EvidEcmaScriptModuleResolver {
    * Selects a file's explicit or package-inherited JavaScript module mode.
    *
    * `.mjs` and `.cjs` always determine their own mode; other extensions consult
-   * the nearest cached package directory after converting the path to a stable key.
+   * the nearest cached package directory after converting the path to a stable
+   * key.
    */
   private async mode(file: string): Promise<EvidEcmaScriptModuleMode> {
     const extension = path.extname(file).toLowerCase();
@@ -140,8 +145,9 @@ export class EvidEcmaScriptModuleResolver {
   /**
    * Memoizes package metadata lookup by normalized directory.
    *
-   * Its callback also records the manifest before reading it, ensuring watch can
-   * rerun analysis when a missing, changed, or repaired package boundary changes.
+   * Its callback also records the manifest before reading it, ensuring watch
+   * can rerun analysis when a missing, changed, or repaired package boundary
+   * changes.
    */
   private readonly packages: VariadicSingleton<
     Promise<EvidEcmaScriptModuleMode>,
@@ -149,10 +155,12 @@ export class EvidEcmaScriptModuleResolver {
   >;
 
   /**
-   * Identifies a missing package manifest without suppressing other read errors.
+   * Identifies a missing package manifest without suppressing other read
+   * errors.
    *
-   * Only ENOENT permits parent-scope fallback; permissions and malformed metadata
-   * must leave a diagnostic because their intended module mode is unknown.
+   * Only ENOENT permits parent-scope fallback; permissions and malformed
+   * metadata must leave a diagnostic because their intended module mode is
+   * unknown.
    */
   private absent(cause: unknown): boolean {
     return cause instanceof Error && "code" in cause && cause.code === "ENOENT";
@@ -161,8 +169,8 @@ export class EvidEcmaScriptModuleResolver {
   /**
    * Converts an unknown read failure into diagnostic text.
    *
-   * Error messages retain filesystem context while non-Error throws still produce
-   * a useful, deterministic string for the inventory diagnostic.
+   * Error messages retain filesystem context while non-Error throws still
+   * produce a useful, deterministic string for the inventory diagnostic.
    */
   private message(cause: unknown): string {
     return cause instanceof Error ? cause.message : String(cause);
@@ -171,8 +179,9 @@ export class EvidEcmaScriptModuleResolver {
   /**
    * Appends a package-resolution failure for the adapter to materialize.
    *
-   * Each call represents a distinct encountered failure; unlike export traversal,
-   * package lookup is memoized so this method does not need an extra deduplication key.
+   * Each call represents a distinct encountered failure; unlike export
+   * traversal, package lookup is memoized so this method does not need an extra
+   * deduplication key.
    */
   private problem(
     code: string,

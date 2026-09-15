@@ -3,13 +3,16 @@ import type { Node as EvidNode } from "web-tree-sitter";
 /**
  * Defines the portable subset independently of the broad SQL parser grammar.
  *
- * `EvidSqlFileScanner` uses this policy to reject syntax whose meaning varies by dialect.
+ * `EvidSqlFileScanner` uses this policy to reject syntax whose meaning varies
+ * by dialect.
  */
 export namespace EvidSqlPolicy {
   /**
-   * Folds regular identifiers to upper case and preserves standard quoted identifiers.
+   * Folds regular identifiers to upper case and preserves standard quoted
+   * identifiers.
    *
-   * This yields portable semantic identity while retaining literal quoted spelling.
+   * This yields portable semantic identity while retaining literal quoted
+   * spelling.
    */
   export function identifier(raw: string): string | undefined {
     if (/^"(?:[^"]|"")+"$/u.test(raw))
@@ -20,9 +23,11 @@ export namespace EvidSqlPolicy {
   }
 
   /**
-   * Rejects every statement or extension outside explicit portable CREATE TABLE.
+   * Rejects every statement or extension outside explicit portable CREATE
+   * TABLE.
    *
-   * The scanner reports the returned reason so unsupported syntax cannot shrink the population.
+   * The scanner reports the returned reason so unsupported syntax cannot shrink
+   * the population.
    */
   export function validate(node: EvidNode): string | undefined {
     if (node.type === "comment" || node.type === "marginalia") return undefined;

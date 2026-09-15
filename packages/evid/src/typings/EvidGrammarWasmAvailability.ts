@@ -1,4 +1,6 @@
-/** How a researched grammar can provide WASM compatible with the packaged runtime.
+/**
+ * How a researched grammar can provide WASM compatible with the packaged
+ * runtime.
  *
  * A release asset can be downloaded and pinned directly. A source build needs a
  * reproducible compilation route before the candidate can become a certified

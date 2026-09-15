@@ -8,16 +8,17 @@ import type { EvidGraphNode } from "../typings/EvidGraphNode";
 /**
  * Serializes the authoritative graph report as JSON, Mermaid, or DOT.
  *
- * Visual formats escape authored labels before embedding them in their respective
- * grammars. They are projections of an already evaluated graph and never change
- * graph membership, coverage, or review resolution.
+ * Visual formats escape authored labels before embedding them in their
+ * respective grammars. They are projections of an already evaluated graph and
+ * never change graph membership, coverage, or review resolution.
  */
 export namespace EvidGraphReporter {
   /**
    * Chooses the requested graph serialization.
    *
-   * JSON preserves the report object, while Mermaid and DOT encode its boundaries,
-   * nodes, evidence edges, and review edges for visualization tools.
+   * JSON preserves the report object, while Mermaid and DOT encode its
+   * boundaries, nodes, evidence edges, and review edges for visualization
+   * tools.
    */
   export function render(
     report: IEvidGraphReport,
@@ -30,8 +31,8 @@ export namespace EvidGraphReporter {
   /**
    * Serializes the complete graph report as indented JSON.
    *
-   * This format keeps stable identifiers and every exported property available to
-   * programmatic consumers without visual-format escaping.
+   * This format keeps stable identifiers and every exported property available
+   * to programmatic consumers without visual-format escaping.
    */
   export function json(report: IEvidGraphReport): string {
     return JSON.stringify(report, null, 2) + "\n";
@@ -75,8 +76,8 @@ export namespace EvidGraphReporter {
   /**
    * Emits a DOT directed graph with clusters for configuration boundaries.
    *
-   * Evidence Graph exclusion and review relations use distinct line styles so their
-   * meaning remains visible when a viewer does not expose edge metadata.
+   * Evidence Graph exclusion and review relations use distinct line styles so
+   * their meaning remains visible when a viewer does not expose edge metadata.
    */
   export function dot(report: IEvidGraphReport): string {
     const names = nodeNames(report.nodes);
@@ -136,8 +137,8 @@ function requireNodeName(names: Map<string, string>, id: string): string {
 /**
  * Summarizes a claim/reference boundary and its resolved policy state.
  *
- * The label makes inactive and incomplete boundaries visible even when they have
- * no ordinary evidence edges in the graph export.
+ * The label makes inactive and incomplete boundaries visible even when they
+ * have no ordinary evidence edges in the graph export.
  */
 function boundaryLabel(boundary: IEvidGraphBoundary): string {
   const policies = [
@@ -158,8 +159,8 @@ function boundaryLabel(boundary: IEvidGraphBoundary): string {
 /**
  * Produces a concise label for a graph node.
  *
- * Hosts identify their physical source location; unit nodes identify their role,
- * target, symbol, and selection or coverage state.
+ * Hosts identify their physical source location; unit nodes identify their
+ * role, target, symbol, and selection or coverage state.
  */
 function nodeLabel(node: EvidGraphNode): string {
   if (node.role === "host")
@@ -182,7 +183,8 @@ function edgeLabel(edge: IEvidGraphExportEdge): string {
 }
 
 /**
- * Labels a review relation with its review-tag spelling and optional fingerprint.
+ * Labels a review relation with its review-tag spelling and optional
+ * fingerprint.
  *
  * Missing fingerprints remain explicit because their absence affects review
  * matching rather than meaning that the review edge has no source data.
@@ -215,8 +217,8 @@ function mermaidText(value: string): string {
 /**
  * Escapes text embedded in a DOT quoted string literal.
  *
- * Backslashes are handled first so later quote and line-break substitutions cannot
- * create an escape sequence with a different meaning.
+ * Backslashes are handled first so later quote and line-break substitutions
+ * cannot create an escape sequence with a different meaning.
  */
 function dotText(value: string): string {
   return value

@@ -3,10 +3,11 @@ import type { EvidProgrammingSymbol } from "../../typings/EvidProgrammingSymbol"
 import type { EvidJavaDeclarationForm } from "./EvidJavaDeclarationForm";
 
 /**
- * Records one Java declaration before its public unit and overload family are materialized.
+ * Records one Java declaration before its public unit and overload family are
+ * materialized.
  *
- * EvidJavaFileScanner creates these physical records, and EvidJavaAdapterBase reconciles
- * compatible records into the language-independent Evid inventory.
+ * EvidJavaFileScanner creates these physical records, and EvidJavaAdapterBase
+ * reconciles compatible records into the language-independent Evid inventory.
  */
 export interface IEvidJavaDeclaration {
   /**

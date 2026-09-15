@@ -10,7 +10,8 @@ import type { IEvidSwiftDocumentation } from "./IEvidSwiftDocumentation";
 import type { IEvidSwiftFileAnalysis } from "./IEvidSwiftFileAnalysis";
 
 /**
- * Extracts lexical Swift source without compiler expansion or build-condition evaluation.
+ * Extracts lexical Swift source without compiler expansion or build-condition
+ * evaluation.
  *
  * Extensions and aliases are held apart from nominal declarations because their
  * semantic ownership can resolve only after all selected files are available.
@@ -19,7 +20,8 @@ export class EvidSwiftFileScanner {
   /**
    * EvidNode-free declarations retained after the parser callback.
    *
-   * EvidSwiftOwnership later reconciles them without extending the parse session lifetime.
+   * EvidSwiftOwnership later reconciles them without extending the parse
+   * session lifetime.
    */
   private readonly declarations: IEvidSwiftDeclaration[] = [];
 
@@ -33,7 +35,8 @@ export class EvidSwiftFileScanner {
   /**
    * Unsupported syntax that prevents a complete denominator.
    *
-   * These findings propagate to the inventory instead of allowing partial coverage to pass.
+   * These findings propagate to the inventory instead of allowing partial
+   * coverage to pass.
    */
   private readonly diagnostics: IEvidDiagnostic[] = [];
 
@@ -77,9 +80,11 @@ export class EvidSwiftFileScanner {
   }
 
   /**
-   * Visits declaration containers, never local function bodies or initializer expressions.
+   * Visits declaration containers, never local function bodies or initializer
+   * expressions.
    *
-   * The boundary prevents local implementation syntax from entering the public declaration inventory.
+   * The boundary prevents local implementation syntax from entering the public
+   * declaration inventory.
    */
   private walk(
     container: EvidNode,
@@ -273,7 +278,8 @@ export class EvidSwiftFileScanner {
   /**
    * Publishes source coordinates, ownership, and independently attached DocC.
    *
-   * The record carries enough source facts for later ownership and host materialization.
+   * The record carries enough source facts for later ownership and host
+   * materialization.
    */
   private declare(
     node: EvidNode,
@@ -376,9 +382,11 @@ export class EvidSwiftFileScanner {
   }
 
   /**
-   * Ignores setter-only restrictions while respecting getter access and contextual defaults.
+   * Ignores setter-only restrictions while respecting getter access and
+   * contextual defaults.
    *
-   * The public surface follows readable-member visibility rather than setter mutability.
+   * The public surface follows readable-member visibility rather than setter
+   * mutability.
    */
   private visible(node: EvidNode, fallback: boolean): boolean {
     const modifiers = node.namedChildren.find(
@@ -398,7 +406,8 @@ export class EvidSwiftFileScanner {
   /**
    * Decodes backtick identifiers as literal accessor segments.
    *
-   * The resulting name is used unchanged in semantic identities and public addresses.
+   * The resulting name is used unchanged in semantic identities and public
+   * addresses.
    */
   private name(node: EvidNode): string {
     return node.text.startsWith("`") ? node.text.slice(1, -1) : node.text;
@@ -407,7 +416,8 @@ export class EvidSwiftFileScanner {
   /**
    * Resolves only explicit, nongeneric nominal paths.
    *
-   * Unsupported generic or qualified grammar shapes return no target for a visible diagnostic.
+   * Unsupported generic or qualified grammar shapes return no target for a
+   * visible diagnostic.
    */
   private path(node: EvidNode): string[] {
     if (node.type === "type_identifier") return [this.name(node)];
@@ -420,9 +430,11 @@ export class EvidSwiftFileScanner {
   }
 
   /**
-   * Groups adjacent DocC line comments while keeping unsupported carriers diagnosable.
+   * Groups adjacent DocC line comments while keeping unsupported carriers
+   * diagnosable.
    *
-   * Tag-bearing non-DocC carriers remain records so the adapter can report their invalid placement.
+   * Tag-bearing non-DocC carriers remain records so the adapter can report
+   * their invalid placement.
    */
   private collectDocumentation(): void {
     const nodes = this.session.root.descendantsOfType([
@@ -493,7 +505,8 @@ export class EvidSwiftFileScanner {
   }
 
   /**
-   * Retains actionable failure instead of returning a smaller successful inventory.
+   * Retains actionable failure instead of returning a smaller successful
+   * inventory.
    *
    * Every reported boundary marks the containing analysis incomplete.
    */

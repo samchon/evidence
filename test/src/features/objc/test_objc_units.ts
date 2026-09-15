@@ -1,16 +1,14 @@
-import {
-  EvidAccessor,
-  EvidInventory,
-  EvidObjcAdapter,
-} from "evid";
+import { EvidAccessor, EvidInventory, EvidObjcAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Reconciles Objective-C headers and implementations into owned public units.
+/**
+ * Reconciles Objective-C headers and implementations into owned public units.
  *
- * Class, category, protocol, and selector sites can merge while retaining their distinct ownership and addresses.
+ * Class, category, protocol, and selector sites can merge while retaining their
+ * distinct ownership and addresses.
  *
  * 1. Analyze matching headers and implementations with categories and protocols.
  * 2. Verify exact public units, merged sites, parentage, and target resolution.

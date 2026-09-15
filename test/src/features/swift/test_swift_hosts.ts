@@ -1,14 +1,11 @@
-import {
-  EvidFingerprint,
-  EvidInventory,
-  EvidSwiftAdapter,
-} from "evid";
+import { EvidFingerprint, EvidInventory, EvidSwiftAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches Swift DocC with exact coordinates and withdrawal behavior.
+/**
+ * Attaches Swift DocC with exact coordinates and withdrawal behavior.
  *
  * Attributes, CRLF text, and examples must not alter eligible host semantics.
  *

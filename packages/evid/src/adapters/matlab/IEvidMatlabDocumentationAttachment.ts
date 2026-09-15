@@ -8,14 +8,17 @@ export interface IEvidMatlabDocumentationAttachment {
   /**
    * Identifies the scanner-local declaration receiving this help carrier.
    *
-   * Materialization resolves it to a semantic unit after class-folder ownership is known.
+   * Materialization resolves it to a semantic unit after class-folder ownership
+   * is known.
    */
   declarationId: string;
 
   /**
-   * Identifies the physical declaration site owned by the eventual semantic unit.
+   * Identifies the physical declaration site owned by the eventual semantic
+   * unit.
    *
-   * This keeps a shared class unit's source hosts distinct across selected files.
+   * This keeps a shared class unit's source hosts distinct across selected
+   * files.
    */
   siteId: string;
 }

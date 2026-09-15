@@ -1,14 +1,14 @@
-import {
-  EvidLanguageRegistry,
-  EvidMatlabAdapter,
-} from "evid";
+import { EvidLanguageRegistry, EvidMatlabAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Rejects MATLAB inputs whose public surface cannot be determined safely.
+/**
+ * Rejects MATLAB inputs whose public surface cannot be determined safely.
  *
- * Dynamic runtime behavior, malformed declarations, unavailable sources, and unsupported file forms must remain incomplete so they cannot shrink coverage.
+ * Dynamic runtime behavior, malformed declarations, unavailable sources, and
+ * unsupported file forms must remain incomplete so they cannot shrink
+ * coverage.
  *
  * 1. Analyze dynamic, malformed, duplicate, and unsupported MATLAB sources.
  * 2. Require each inventory to be incomplete with an actionable diagnostic.
@@ -48,7 +48,10 @@ export async function test_matlab_boundaries(): Promise<void> {
     "class closing semicolon is a supported delimiter",
     (
       await adapter.analyze(
-        EvidTestSourceSnapshot.create("src/Dynamic.m", "classdef Dynamic\nend;"),
+        EvidTestSourceSnapshot.create(
+          "src/Dynamic.m",
+          "classdef Dynamic\nend;",
+        ),
       )
     ).complete,
     true,

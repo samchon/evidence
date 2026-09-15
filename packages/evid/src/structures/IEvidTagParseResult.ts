@@ -6,9 +6,10 @@ import type { IEvidWithdrawal } from "./IEvidWithdrawal";
 /**
  * Annotation records extracted from one mapped documentation host.
  *
- * Acknowledgements, reviews, and withdrawals remain separate because they affect
- * coverage, freshness, and public visibility respectively. Invalid annotations
- * retain diagnostics instead of being accepted as evidence or discarded silently.
+ * Acknowledgements, reviews, and withdrawals remain separate because they
+ * affect coverage, freshness, and public visibility respectively. Invalid
+ * annotations retain diagnostics instead of being accepted as evidence or
+ * discarded silently.
  */
 export interface IEvidTagParseResult {
   /**
@@ -28,7 +29,8 @@ export interface IEvidTagParseResult {
   /**
    * Accepted directives withdrawing documented declarations from public API.
    *
-   * Extraction records the original locations for inherited exclusion diagnostics.
+   * Extraction records the original locations for inherited exclusion
+   * diagnostics.
    */
   withdrawals: IEvidWithdrawal[];
 

@@ -3,9 +3,10 @@ import type { IEvidTargetResolution } from "./IEvidTargetResolution";
 /**
  * Prepared reference-target resolution for a review statement.
  *
- * Reviews resolve through the same target grammar as acknowledgements but remain
- * separate records: matching a review validates a paired citation and never
- * creates coverage by itself. Failed resolution is retained for diagnostics.
+ * Reviews resolve through the same target grammar as acknowledgements but
+ * remain separate records: matching a review validates a paired citation and
+ * never creates coverage by itself. Failed resolution is retained for
+ * diagnostics.
  */
 export interface IEvidGraphReviewResolution {
   /**

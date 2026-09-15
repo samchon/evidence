@@ -1,18 +1,20 @@
-import {
-  EvidBigQueryAdapter,
-  EvidFingerprint,
-} from "evid";
+import { EvidBigQueryAdapter, EvidFingerprint } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Classifies BigQuery tables, fields, and declared keys with their full ownership paths.
+/**
+ * Classifies BigQuery tables, fields, and declared keys with their full
+ * ownership paths.
  *
- * The selected schema surface includes nested and repeated field structure, so identity must retain explicit project qualifiers and parent relationships.
+ * The selected schema surface includes nested and repeated field structure, so
+ * identity must retain explicit project qualifiers and parent relationships.
  *
- * 1. Analyze qualified tables with scalar, nested, repeated, and flexible-name fields plus key constraints.
- * 2. Compare the complete unit identities and symbols against the declared schema surface.
+ * 1. Analyze qualified tables with scalar, nested, repeated, and flexible-name
+ *    fields plus key constraints.
+ * 2. Compare the complete unit identities and symbols against the declared schema
+ *    surface.
  * 3. Verify nested fields and constraints retain the model as their owner.
  */
 export async function test_bigquery_units(): Promise<void> {

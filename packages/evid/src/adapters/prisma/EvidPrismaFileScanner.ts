@@ -20,48 +20,56 @@ const BLOCK_KEYWORDS = new Set([
 ]);
 const MEMBER_BLOCKS = new Set(["model", "view", "type"]);
 
-/** Locates physical Prisma declarations and documentation without parsing semantics.
+/**
+ * Locates physical Prisma declarations and documentation without parsing
+ * semantics.
  *
  * The whole-schema parser remains responsible for deciding which declarations
  * exist. This scanner supplies its source spans and comment-coordinate maps so
  * those semantic declarations can own accurate sites and documentation.
  */
 export class EvidPrismaFileScanner {
-  /** Holds raw source lines in scan order, preserving a final empty line.
+  /**
+   * Holds raw source lines in scan order, preserving a final empty line.
    *
    * Parallel coordinate arrays translate each line's local positions back to
    * the immutable source snapshot.
    */
   private readonly lines: string[];
 
-  /** Stores the UTF-16 offset at which each source line begins.
+  /**
+   * Stores the UTF-16 offset at which each source line begins.
    *
    * Missing defensive entries fall back to the source boundary when malformed
    * line state is encountered.
    */
   private readonly lineStarts: number[] = [];
 
-  /** Stores the UTF-16 offset immediately after each line's content.
+  /**
+   * Stores the UTF-16 offset immediately after each line's content.
    *
    * Carriage returns are excluded because declaration ranges use content-only
    * line boundaries.
    */
   private readonly lineEnds: number[] = [];
 
-  /** Stores the offset of each line's newline character or line terminus.
+  /**
+   * Stores the offset of each line's newline character or line terminus.
    *
    * Comment-run maps use these positions for newlines introduced between
    * fragments on different source lines.
    */
   private readonly newlineOffsets: number[] = [];
 
-  /** Translates scanner offsets into Evid source ranges.
+  /**
+   * Translates scanner offsets into Evid source ranges.
    *
    * All locations and comment carriers use this one coordinate authority.
    */
   private readonly text: EvidSourceText;
 
-  /** Initializes line and coordinate indexes for one immutable source snapshot.
+  /**
+   * Initializes line and coordinate indexes for one immutable source snapshot.
    *
    * The scanner borrows no parser session because it deliberately recognizes
    * only structural Prisma positions and comments.
@@ -79,7 +87,8 @@ export class EvidPrismaFileScanner {
     }
   }
 
-  /** Scans declaration positions and contiguous comment runs for the source.
+  /**
+   * Scans declaration positions and contiguous comment runs for the source.
    *
    * It flushes pending comments whenever syntax breaks adjacency, preserving
    * detached carriers instead of attaching them to a later declaration.
@@ -159,12 +168,16 @@ export class EvidPrismaFileScanner {
     };
   }
 
-  /** Separates code from a line comment while carrying block-comment state.
+  /**
+   * Separates code from a line comment while carrying block-comment state.
    *
    * Quotes suppress comment delimiters so URL-like and escaped string content
    * cannot alter declaration scanning or comment attachment.
    */
-  private parts(line: number, initiallyCommented: boolean): IEvidPrismaLineParts {
+  private parts(
+    line: number,
+    initiallyCommented: boolean,
+  ): IEvidPrismaLineParts {
     const raw = this.lines[line] ?? "";
     const content = raw.endsWith("\r") ? raw.slice(0, -1) : raw;
     const start = this.lineStarts[line] ?? 0;
@@ -258,7 +271,8 @@ export class EvidPrismaFileScanner {
     };
   }
 
-  /** Converts pending fragments into attached and detached documentation runs.
+  /**
+   * Converts pending fragments into attached and detached documentation runs.
    *
    * Ordinary or trailing line comments remain separate carriers, while
    * non-trailing documentation forms are grouped for one eligible key.
@@ -290,7 +304,8 @@ export class EvidPrismaFileScanner {
     return output;
   }
 
-  /** Builds one mapped run from source-order comment fragments.
+  /**
+   * Builds one mapped run from source-order comment fragments.
    *
    * Explicit newline entries preserve a continuous documentation string even
    * when adjacent source comments occur on different lines.
@@ -337,7 +352,8 @@ export class EvidPrismaFileScanner {
   }
 }
 
-/** Recognizes a top-level Prisma block header from structural source text.
+/**
+ * Recognizes a top-level Prisma block header from structural source text.
  *
  * It accepts only known block keywords and valid identifiers, leaving semantic
  * acceptance to Prisma's whole-schema parser.
@@ -357,17 +373,21 @@ function blockHead(line: string): IEvidPrismaBlockHead | undefined {
   return { keyword, name };
 }
 
-/** Extracts an addressable member name from one nested block line.
+/**
+ * Extracts an addressable member name from one nested block line.
  *
  * Attribute and closing-brace lines cannot introduce member locations.
  */
 function memberName(line: string): string | undefined {
   if (line.startsWith("@") || line.startsWith("}")) return undefined;
   const name = line.split(/\s+/u)[0];
-  return name !== undefined && EvidPrismaSyntax.identifier(name) ? name : undefined;
+  return name !== undefined && EvidPrismaSyntax.identifier(name)
+    ? name
+    : undefined;
 }
 
-/** Counts occurrences of one structural character in code-only source text.
+/**
+ * Counts occurrences of one structural character in code-only source text.
  *
  * Callers invoke this only after comment stripping, so braces inside comments
  * cannot change scanner depth.
@@ -377,7 +397,8 @@ function count(value: string, character: string): number {
     .length;
 }
 
-/** Trims surrounding whitespace while preserving retained source coordinates.
+/**
+ * Trims surrounding whitespace while preserving retained source coordinates.
  *
  * The returned arrays stay aligned with the shortened text, allowing later
  * documentation mapping to identify every retained character precisely.

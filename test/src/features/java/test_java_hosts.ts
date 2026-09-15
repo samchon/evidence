@@ -4,7 +4,8 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches Java evidence to Javadoc and rejects inert carriers.
+/**
+ * Attaches Java evidence to Javadoc and rejects inert carriers.
  *
  * Only Javadoc owned by eligible declarations can acknowledge units.
  *

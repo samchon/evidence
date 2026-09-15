@@ -5,9 +5,11 @@ import { join } from "node:path";
 
 import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
-/** Rebuilds SQL coverage as watched sources and selectors change.
+/**
+ * Rebuilds SQL coverage as watched sources and selectors change.
  *
- * Each watch report must reflect newly selected files, syntax failures, repairs, and a changed selector instead of stale state.
+ * Each watch report must reflect newly selected files, syntax failures,
+ * repairs, and a changed selector instead of stale state.
  *
  * 1. Start with covered SQL input and compare cycles to a fresh check.
  * 2. Add an undocumented model, then make it malformed.

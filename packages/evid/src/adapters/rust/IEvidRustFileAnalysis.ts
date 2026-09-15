@@ -9,15 +9,16 @@ import type { IEvidRustUse } from "./IEvidRustUse";
 /**
  * Holds the node-free result of scanning one selected Rust source file.
  *
- * EvidRustModuleResolver consumes this record after the Tree-sitter session closes,
- * using its declarations and relationships to assemble the selected crate graph.
+ * EvidRustModuleResolver consumes this record after the Tree-sitter session
+ * closes, using its declarations and relationships to assemble the selected
+ * crate graph.
  */
 export interface IEvidRustFileAnalysis {
   /**
    * Selected source file that supplied this extraction.
    *
-   * Diagnostics and published addresses retain this file's physical and selected
-   * locations rather than relying on transient parser nodes.
+   * Diagnostics and published addresses retain this file's physical and
+   * selected locations rather than relying on transient parser nodes.
    */
   source: IEvidSourceFile;
 

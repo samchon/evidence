@@ -5,9 +5,12 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Resolves JavaScript aliases, defaults, imports, star exports, shadowing, and cycles.
+/**
+ * Resolves JavaScript aliases, defaults, imports, star exports, shadowing, and
+ * cycles.
  *
- * Module topology must retain defining identity while exposing supported public aliases.
+ * Module topology must retain defining identity while exposing supported public
+ * aliases.
  *
  * 1. Analyze the module graph.
  * 2. Resolve exported paths.
@@ -29,7 +32,10 @@ export async function test_javascript_exports(): Promise<void> {
         "src/default.mjs",
         "export default class DefaultService { value = 1; }",
       ),
-      EvidTestSourceSnapshot.create("src/star.mjs", "export const starred = true;"),
+      EvidTestSourceSnapshot.create(
+        "src/star.mjs",
+        "export const starred = true;",
+      ),
       EvidTestSourceSnapshot.create(
         "src/index.mjs",
         dedent`

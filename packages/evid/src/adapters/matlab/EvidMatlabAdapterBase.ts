@@ -23,15 +23,17 @@ import { EvidMatlabOwnership } from "./EvidMatlabOwnership";
  * Extracts MATLAB public units after resolving file and class-folder ownership.
  *
  * Snapshot-wide ownership connects declarations that lexical scanning alone
- * cannot place under their final public owner. Unit materialization then precedes
- * documentation attachment, preserving shared identities, physical sites, and
- * incomplete-analysis diagnostics across the selected source population.
+ * cannot place under their final public owner. Unit materialization then
+ * precedes documentation attachment, preserving shared identities, physical
+ * sites, and incomplete-analysis diagnostics across the selected source
+ * population.
  */
 export class EvidMatlabAdapterBase implements IEvidAdapter {
   /**
    * Artifact discriminator selecting MATLAB source interpretation.
    *
-   * It disambiguates .m sources from other languages that accept the same suffix.
+   * It disambiguates .m sources from other languages that accept the same
+   * suffix.
    */
   public readonly type = "matlab";
 
@@ -39,11 +41,10 @@ export class EvidMatlabAdapterBase implements IEvidAdapter {
    * Builds an owned MATLAB inventory and closes the bounded parser runtime.
    *
    * Ownership resolution runs across file analyses before publishing units and
-   * comment hosts. Failed source discovery or parsing remains an incomplete result.
+   * comment hosts. Failed source discovery or parsing remains an incomplete
+   * result.
    */
-  public async analyze(
-    snapshot: IEvidSourceSnapshot,
-  ): Promise<IEvidInventory> {
+  public async analyze(snapshot: IEvidSourceSnapshot): Promise<IEvidInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidInventory = {
       schemaVersion: 1,
@@ -89,7 +90,8 @@ export class EvidMatlabAdapterBase implements IEvidAdapter {
    * Scans one MATLAB file without retaining borrowed syntax nodes.
    *
    * Parser failures become source-located diagnostics with incomplete state, so
-   * failed extraction cannot be mistaken for a file containing no public declarations.
+   * failed extraction cannot be mistaken for a file containing no public
+   * declarations.
    */
   private async scan(
     parser: EvidParser,
@@ -102,8 +104,7 @@ export class EvidMatlabAdapterBase implements IEvidAdapter {
         (session) => new EvidMatlabFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError =
-        cause instanceof EvidParserError ? cause : undefined;
+      const parserError = cause instanceof EvidParserError ? cause : undefined;
       return {
         source,
         declarations: [],
@@ -131,10 +132,12 @@ export class EvidMatlabAdapterBase implements IEvidAdapter {
   }
 
   /**
-   * Reconciles class member sites and retains each physical declaration address.
+   * Reconciles class member sites and retains each physical declaration
+   * address.
    *
    * Materialization joins scanner declarations under their resolved class owner
-   * while preserving each physical implementation site for fingerprints and tags.
+   * while preserving each physical implementation site for fingerprints and
+   * tags.
    */
   private materializeUnits(
     inventory: IEvidInventory,
@@ -196,7 +199,8 @@ export class EvidMatlabAdapterBase implements IEvidAdapter {
    * Resolves withdrawals before publishing attached annotation hosts.
    *
    * A withdrawn declaration must not expose a host that could satisfy coverage,
-   * so this phase establishes effective withdrawal before tag parsing proceeds.
+   * so this phase establishes effective withdrawal before tag parsing
+   * proceeds.
    */
   private materializeDocumentation(
     inventory: IEvidInventory,
@@ -335,7 +339,8 @@ export class EvidMatlabAdapterBase implements IEvidAdapter {
    * Groups published semantic owners by their physical declaration site.
    *
    * One site can represent several owners through MATLAB accessors and external
-   * implementations, so later annotation attachment needs this retained grouping.
+   * implementations, so later annotation attachment needs this retained
+   * grouping.
    */
   private attachmentGroups(
     documentation: IEvidMatlabDocumentation,
@@ -411,8 +416,11 @@ export class EvidMatlabAdapterBase implements IEvidAdapter {
     documentation: IEvidMatlabDocumentation,
   ): boolean {
     return this.annotationPattern(
-      EvidMatlabDocumentation.read(analysis.source, documentation, documentation.id)
-        .text,
+      EvidMatlabDocumentation.read(
+        analysis.source,
+        documentation,
+        documentation.id,
+      ).text,
       true,
     );
   }
@@ -421,15 +429,19 @@ export class EvidMatlabAdapterBase implements IEvidAdapter {
    * Detects acknowledgements and reviews on withdrawn carriers.
    *
    * Withdrawal may coexist with prose, but acknowledgement and review tags on
-   * that carrier are rejected because a withdrawn host cannot provide evidence.
+   * that carrier are rejected because a withdrawn host cannot provide
+   * evidence.
    */
   private claimAnnotation(
     analysis: IEvidMatlabFileAnalysis,
     documentation: IEvidMatlabDocumentation,
   ): boolean {
     return this.annotationPattern(
-      EvidMatlabDocumentation.read(analysis.source, documentation, documentation.id)
-        .text,
+      EvidMatlabDocumentation.read(
+        analysis.source,
+        documentation,
+        documentation.id,
+      ).text,
       false,
     );
   }
@@ -453,8 +465,9 @@ export class EvidMatlabAdapterBase implements IEvidAdapter {
   /**
    * Follows explicit parent ownership to propagate withdrawal.
    *
-   * A child inherits a withdrawn semantic owner only through the resolved parent
-   * chain, keeping unrelated sites from losing their eligible annotation hosts.
+   * A child inherits a withdrawn semantic owner only through the resolved
+   * parent chain, keeping unrelated sites from losing their eligible annotation
+   * hosts.
    */
   private withdrawn(
     id: string,
@@ -472,10 +485,12 @@ export class EvidMatlabAdapterBase implements IEvidAdapter {
   }
 
   /**
-   * Separates programming kinds while unifying class-folder implementation identities.
+   * Separates programming kinds while unifying class-folder implementation
+   * identities.
    *
    * This mapping gives MATLAB declarations stable public identities while class
-   * folders and external method files continue to represent the same semantic owner.
+   * folders and external method files continue to represent the same semantic
+   * owner.
    */
   private unitId(declaration: IEvidMatlabDeclaration): string {
     return `matlab:${declaration.anchor}:${declaration.symbol}:${JSON.stringify(declaration.identity)}`;

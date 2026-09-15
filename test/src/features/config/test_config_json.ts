@@ -8,16 +8,19 @@ import { EvidConfigDependencyScanner } from "evid";
 import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
- * Preserves JSON configuration semantics through loading, dependency scanning, and initialization.
+ * Preserves JSON configuration semantics through loading, dependency scanning,
+ * and initialization.
  *
  * JSON strings must remain data even when they resemble module-loading code.
  * The loader should produce the same claim plan as equivalent TypeScript while
- * rejecting malformed or unsupported formats and refusing destructive initialization.
+ * rejecting malformed or unsupported formats and refusing destructive
+ * initialization.
  *
  * 1. Load matching JSON and TypeScript configurations and require equal active
- *    claims, with the JSON plan anchored to its own absolute configuration path.
- * 2. Scan JSON containing a require-like claim label and require no dependency
- *    on the module name embedded in that string.
+ *    claims, with the JSON plan anchored to its own absolute configuration
+ *    path.
+ * 2. Scan JSON containing a require-like claim label and require no dependency on
+ *    the module name embedded in that string.
  * 3. Reject YAML extensions and malformed JSON during planning.
  * 4. Initialize a new JSON configuration and successfully plan it; reject a second
  *    initialization at the same destination and reject new YAML destinations.

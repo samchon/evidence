@@ -1,17 +1,15 @@
-import {
-  EvidGraph,
-  EvidObjcAdapter,
-  EvidTypeScriptAdapter,
-} from "evid";
+import { EvidGraph, EvidObjcAdapter, EvidTypeScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Evaluates every selected Objective-C declaration as a graph reference.
+/**
+ * Evaluates every selected Objective-C declaration as a graph reference.
  *
- * Evid covers selected units, whereas reviews remain recorded without satisfying missing obligations.
+ * Evid covers selected units, whereas reviews remain recorded without
+ * satisfying missing obligations.
  *
  * 1. Extract Objective-C units and TypeScript claims for each selector.
  * 2. Evaluate covered and undocumented selector populations.

@@ -1,7 +1,8 @@
 import type { EvidPythonBindingKind } from "./EvidPythonBindingKind";
 
 /**
- * Describes one source-ordered module binding used for static export resolution.
+ * Describes one source-ordered module binding used for static export
+ * resolution.
  *
  * The resolver selects the latest compatible binding for a name and follows
  * imports without executing Python. Unsupported or ambiguous paths become

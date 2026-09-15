@@ -18,18 +18,21 @@ import { EvidRustFileScanner } from "./EvidRustFileScanner";
 import { EvidRustModuleResolver } from "./EvidRustModuleResolver";
 
 /**
- * Builds Rust public inventories by resolving modules, implementations, and uses.
+ * Builds Rust public inventories by resolving modules, implementations, and
+ * uses.
  *
  * File scans retain declaration and documentation candidates without assuming
- * that lexical presence makes an item publicly reachable. EvidRustModuleResolver
- * publishes semantic identities across the configured snapshot before doc comments
- * attach to those identities and inherited withdrawal removes eligible hosts.
+ * that lexical presence makes an item publicly reachable.
+ * EvidRustModuleResolver publishes semantic identities across the configured
+ * snapshot before doc comments attach to those identities and inherited
+ * withdrawal removes eligible hosts.
  */
 export class EvidRustAdapterBase implements IEvidAdapter {
   /**
    * Artifact discriminator selecting Rust grammar and visibility rules.
    *
-   * Population configuration uses this value to choose the crate-oriented adapter.
+   * Population configuration uses this value to choose the crate-oriented
+   * adapter.
    */
   public readonly type = "rust";
 
@@ -40,9 +43,7 @@ export class EvidRustAdapterBase implements IEvidAdapter {
    * failures retain incomplete state, and the parser runtime closes after all
    * accepted file scans finish.
    */
-  public async analyze(
-    snapshot: IEvidSourceSnapshot,
-  ): Promise<IEvidInventory> {
+  public async analyze(snapshot: IEvidSourceSnapshot): Promise<IEvidInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidInventory = {
       schemaVersion: 1,
@@ -75,7 +76,10 @@ export class EvidRustAdapterBase implements IEvidAdapter {
       }
       // Source-local declaration IDs need the resolver's published identity map
       // before documentation attachments can name cross-module semantic owners.
-      const published = new EvidRustModuleResolver(analyses, inventory).publish();
+      const published = new EvidRustModuleResolver(
+        analyses,
+        inventory,
+      ).publish();
       this.materializeDocumentation(inventory, analyses, published);
       return new EvidInventory([inventory]).snapshot();
     } finally {
@@ -87,7 +91,8 @@ export class EvidRustAdapterBase implements IEvidAdapter {
    * Extracts one Rust file while its syntax tree remains borrowed.
    *
    * Module, use, and implementation records survive as serializable values. A
-   * parser failure retains a located diagnostic and explicitly incomplete state.
+   * parser failure retains a located diagnostic and explicitly incomplete
+   * state.
    */
   private async scan(
     parser: EvidParser,
@@ -100,8 +105,7 @@ export class EvidRustAdapterBase implements IEvidAdapter {
         (session) => new EvidRustFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError =
-        cause instanceof EvidParserError ? cause : undefined;
+      const parserError = cause instanceof EvidParserError ? cause : undefined;
       return {
         source,
         declarations: [],

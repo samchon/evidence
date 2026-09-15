@@ -11,13 +11,17 @@ interface ICTargetStatus {
   status: EvidTargetResolutionStatus;
 }
 
-/** Resolves C tags, typedef aliases, and aggregate members to their declared owners.
+/**
+ * Resolves C tags, typedef aliases, and aggregate members to their declared
+ * owners.
  *
- * Target spelling can name either an ordinary public alias or an exact tag, and the resolver must keep those possibilities distinct.
+ * Target spelling can name either an ordinary public alias or an exact tag, and
+ * the resolver must keep those possibilities distinct.
  *
  * 1. Analyze declarations with tags, typedefs, and aggregate fields.
  * 2. Resolve evidence targets using exact names and supported aliases.
- * 3. Require valid targets to resolve and invalid or ambiguous forms to keep their reported status.
+ * 3. Require valid targets to resolve and invalid or ambiguous forms to keep their
+ *    reported status.
  */
 export async function test_c_targets(): Promise<void> {
   const adapter = new EvidCAdapter();

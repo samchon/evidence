@@ -1,14 +1,14 @@
-import {
-  EvidPostgresqlAdapter,
-  EvidSqlAdapter,
-} from "evid";
+import { EvidPostgresqlAdapter, EvidSqlAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Uses configured PostgreSQL naming for a source that portable SQL also accepts.
+/**
+ * Uses configured PostgreSQL naming for a source that portable SQL also
+ * accepts.
  *
- * Dialect selection changes the public spelling and must remain visible in units and targets.
+ * Dialect selection changes the public spelling and must remain visible in
+ * units and targets.
  *
  * 1. Analyze the same schema with PostgreSQL and portable SQL adapters.
  * 2. Verify both inventories are complete.

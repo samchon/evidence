@@ -18,15 +18,20 @@ import { EvidSourcePath } from "../../internal/EvidSourcePath";
 import { EvidSourceText } from "../../internal/EvidSourceText";
 
 /**
- * Extracts Go declarations and documentation before package-wide ownership resolution.
+ * Extracts Go declarations and documentation before package-wide ownership
+ * resolution.
  *
  * It keeps physical sites and comment adjacency local to the file while
- * `EvidGoAdapterBase` assigns receiver members to their package-wide semantic owners.
+ * `EvidGoAdapterBase` assigns receiver members to their package-wide semantic
+ * owners.
  */
 export class EvidGoFileScanner {
   private readonly declarations: IEvidGoDeclaration[] = [];
   private readonly documentation = new Map<string, IEvidGoDocumentation>();
-  private readonly commentDocumentation = new Map<string, IEvidGoDocumentation>();
+  private readonly commentDocumentation = new Map<
+    string,
+    IEvidGoDocumentation
+  >();
   private readonly diagnostics: IEvidDiagnostic[] = [];
   private readonly reported = new Set<string>();
   private readonly text: EvidSourceText;
@@ -47,7 +52,8 @@ export class EvidGoFileScanner {
   }
 
   /**
-   * Extracts the package clause and supported exported declarations from one file.
+   * Extracts the package clause and supported exported declarations from one
+   * file.
    *
    * A missing package clause or unsupported relevant form is retained as an
    * incomplete analysis so package materialization cannot hide it.
@@ -125,9 +131,9 @@ export class EvidGoFileScanner {
       const names =
         declared.length !== 0
           ? declared
-          : [EvidGoSyntax.embeddedField(field.childForFieldName("type"))].filter(
-              (name) => name !== undefined,
-            );
+          : [
+              EvidGoSyntax.embeddedField(field.childForFieldName("type")),
+            ].filter((name) => name !== undefined);
       if (declared.length === 0 && names.length === 0)
         this.problem(
           "go-embedded-field",
@@ -313,7 +319,8 @@ export class EvidGoFileScanner {
   }
 
   /**
-   * Keeps trailing source comments separate from the next declaration's documentation.
+   * Keeps trailing source comments separate from the next declaration's
+   * documentation.
    *
    * Go attaches documentation only from the leading comment run, so a preceding
    * declaration's trailing comment must not become evidence for the next one.

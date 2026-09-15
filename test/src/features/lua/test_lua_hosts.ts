@@ -4,11 +4,14 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches LuaDoc at original UTF-16 coordinates and keeps inert carriers out.
+/**
+ * Attaches LuaDoc at original UTF-16 coordinates and keeps inert carriers out.
  *
- * Declaration-owned LuaDoc can acknowledge units while examples and detached comments cannot.
+ * Declaration-owned LuaDoc can acknowledge units while examples and detached
+ * comments cannot.
  *
- * 1. Analyze coordinate-sensitive LuaDoc. 2. Compare attached hosts and ranges. 3. Reject examples and detached annotations.
+ * 1. Analyze coordinate-sensitive LuaDoc. 2. Compare attached hosts and ranges. 3.
+ *    Reject examples and detached annotations.
  */
 export async function test_lua_hosts(): Promise<void> {
   const content = dedent`
@@ -62,7 +65,10 @@ export async function test_lua_hosts(): Promise<void> {
   const fn = inventory.units.find((unit) => unit.name === "run");
   if (fn === undefined) throw new Error("Public function is missing.");
   const normalized = await adapter.analyze(
-    EvidTestSourceSnapshot.create("source.lua", content.replaceAll("\r\n", "\n")),
+    EvidTestSourceSnapshot.create(
+      "source.lua",
+      content.replaceAll("\r\n", "\n"),
+    ),
   );
   TestValidator.equals(
     "CRLF semantic fingerprints are stable",

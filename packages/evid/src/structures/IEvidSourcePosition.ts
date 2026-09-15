@@ -8,15 +8,16 @@
  * rather than byte offsets or visual editor columns.
  *
  * @example
- * // In "A😀\r\nB", B begins at offset 5, line 2, column 1.
- * // The emoji contributes two code units and the CRLF contributes two more.
+ *   // In "A😀\r\nB", B begins at offset 5, line 2, column 1.
+ *   // The emoji contributes two code units and the CRLF contributes two more.
  */
 export interface IEvidSourcePosition {
   /**
    * Zero-based UTF-16 offset into the captured source string.
    *
-   * This is suitable for `String.slice` without byte conversion. Surrogate pairs
-   * occupy two positions, so a code-point count cannot substitute for the offset.
+   * This is suitable for `String.slice` without byte conversion. Surrogate
+   * pairs occupy two positions, so a code-point count cannot substitute for the
+   * offset.
    */
   offset: number;
 

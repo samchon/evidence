@@ -2,8 +2,8 @@
  * Associates one Doxygen carrier with one eligible C declaration position.
  *
  * A declaration can expose several sites through grouped declarators, so the
- * declaration key alone is insufficient. The site key identifies the exact
- * host retained by inventory materialization.
+ * declaration key alone is insufficient. The site key identifies the exact host
+ * retained by inventory materialization.
  */
 export interface IEvidCDocumentationAttachment {
   /**
@@ -16,7 +16,8 @@ export interface IEvidCDocumentationAttachment {
   /**
    * Physical declaration site that accepts the preceding documentation.
    *
-   * It prevents a shared declaration family from borrowing a different occurrence's comment.
+   * It prevents a shared declaration family from borrowing a different
+   * occurrence's comment.
    */
   siteId: string;
 }

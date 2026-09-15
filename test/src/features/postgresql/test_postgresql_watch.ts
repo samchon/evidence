@@ -5,9 +5,11 @@ import { join } from "node:path";
 
 import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
-/** Rebuilds PostgreSQL cross-file ownership during watch cycles.
+/**
+ * Rebuilds PostgreSQL cross-file ownership during watch cycles.
  *
- * Newly selected files, syntax failures, and repair must replace the current additive schema inventory.
+ * Newly selected files, syntax failures, and repair must replace the current
+ * additive schema inventory.
  *
  * 1. Start with covered schema input and compare cycles to a fresh check.
  * 2. Add a selected file and introduce a parse failure.

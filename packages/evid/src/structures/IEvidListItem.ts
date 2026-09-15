@@ -8,12 +8,13 @@ import type { IEvidSourceLocation } from "./IEvidSourceLocation";
  *
  * A row groups public aliases and physical declaration locations under one unit
  * identity. Its population-qualified ID distinguishes appearances across claims
- * and references, while selection state separates required units from addressable
- * structural ancestors.
+ * and references, while selection state separates required units from
+ * addressable structural ancestors.
  */
 export interface IEvidListItem {
   /**
-   * Query-row identity combining configuration scope and semantic unit identity.
+   * Query-row identity combining configuration scope and semantic unit
+   * identity.
    *
    * The same unit in another configured population receives a different row ID.
    */
@@ -29,29 +30,33 @@ export interface IEvidListItem {
   /**
    * Semantic identity assigned by extraction and inventory normalization.
    *
-   * Aliases and merged declaration sites retain this identity without adding units.
+   * Aliases and merged declaration sites retain this identity without adding
+   * units.
    */
   unitId: string;
 
   /**
    * Artifact-specific declaration kind used by symbol selection.
    *
-   * List filtering compares this value without changing the underlying analysis.
+   * List filtering compares this value without changing the underlying
+   * analysis.
    */
   symbol: EvidSymbol;
 
   /**
    * Declaration name retained for human-readable output.
    *
-   * Use target or aliases for citations because a local name alone may be ambiguous.
+   * Use target or aliases for citations because a local name alone may be
+   * ambiguous.
    */
   name: string;
 
   /**
    * Relationship of the identity to the configured symbol selection.
    *
-   * Ancestors support aggregate addressing without entering the selected denominator;
-   * inspection can also expose an unselected child or hidden candidate.
+   * Ancestors support aggregate addressing without entering the selected
+   * denominator; inspection can also expose an unselected child or hidden
+   * candidate.
    */
   selection: EvidUnitSelection;
 
@@ -65,14 +70,16 @@ export interface IEvidListItem {
   /**
    * All accepted public spellings, deduplicated and sorted.
    *
-   * This includes target itself; choosing another alias does not change semantic identity.
+   * This includes target itself; choosing another alias does not change
+   * semantic identity.
    */
   aliases: string[];
 
   /**
    * Physical declaration locations contributing to the identity.
    *
-   * Merged declarations retain multiple sites even when list output contains one row.
+   * Merged declarations retain multiple sites even when list output contains
+   * one row.
    */
   locations: IEvidSourceLocation[];
 }

@@ -1,9 +1,11 @@
 import { EvidAdapterCertification } from "../../internal/certification/EvidAdapterCertification";
 import { EvidAdapterCertificationFixtures } from "../../internal/certification/EvidAdapterCertificationFixtures";
 
-/** Applies the shared adapter certification contract to PHP.
+/**
+ * Applies the shared adapter certification contract to PHP.
  *
- * The PHP fixture declares the expected inventory, graph, mutation, and fingerprint behavior.
+ * The PHP fixture declares the expected inventory, graph, mutation, and
+ * fingerprint behavior.
  *
  * 1. Construct the PHP fixture.
  * 2. Run shared adapter certification.

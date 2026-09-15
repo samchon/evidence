@@ -5,9 +5,11 @@ import { once } from "node:events";
 import { createServer, type Server } from "node:http";
 import { join } from "node:path";
 
-/** Loads bounded remote Swagger snapshots through a controlled endpoint.
+/**
+ * Loads bounded remote Swagger snapshots through a controlled endpoint.
  *
- * HTTP failure and oversized responses must remain incomplete while valid bounded snapshots produce a normal inventory.
+ * HTTP failure and oversized responses must remain incomplete while valid
+ * bounded snapshots produce a normal inventory.
  *
  * 1. Serve valid, failing, and oversized document responses.
  * 2. Analyze each remote source.

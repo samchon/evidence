@@ -4,9 +4,11 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Publishes the bounded CommonJS surface with replacement and alias semantics.
+/**
+ * Publishes the bounded CommonJS surface with replacement and alias semantics.
  *
- * Assignment order determines exported identity and aliases cannot expose an unproved dynamic surface.
+ * Assignment order determines exported identity and aliases cannot expose an
+ * unproved dynamic surface.
  *
  * 1. Analyze CommonJS replacement and alias assignments.
  * 2. Compare exported units.

@@ -4,16 +4,21 @@ import { TestValidator } from "@nestia/e2e";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
- * Retains Markdown path and discovery failures without losing independent diagnostics.
+ * Retains Markdown path and discovery failures without losing independent
+ * diagnostics.
  *
  * A source spelling can fail to form a public Markdown address even when the
- * physical content is readable, and a source-read failure must keep parsing diagnostics visible.
+ * physical content is readable, and a source-read failure must keep parsing
+ * diagnostics visible.
  *
- * 1. Analyze a whitespace-containing source path and require no units plus its path diagnostic.
+ * 1. Analyze a whitespace-containing source path and require no units plus its
+ *    path diagnostic.
  * 2. Analyze that physical file through invalid and valid aliases:
+ *
  *    - Keep the valid address for both physical entries.
  *    - Retain the invalid alias diagnostic.
- * 3. Combine a failed source snapshot with malformed heading syntax and require incomplete status with both diagnostic classes.
+ * 3. Combine a failed source snapshot with malformed heading syntax and require
+ *    incomplete status with both diagnostic classes.
  */
 export async function test_markdown_failures(): Promise<void> {
   const adapter = new EvidMarkdownAdapter();
@@ -47,11 +52,14 @@ export async function test_markdown_failures(): Promise<void> {
   );
 
   const incomplete = await adapter.analyze(
-    EvidTestSourceSnapshot.fail(EvidTestSourceSnapshot.create("guide.md", "##"), {
-      code: "path-unreadable",
-      path: "/project/missing.md",
-      message: "The selected Markdown source could not be read.",
-    }),
+    EvidTestSourceSnapshot.fail(
+      EvidTestSourceSnapshot.create("guide.md", "##"),
+      {
+        code: "path-unreadable",
+        path: "/project/missing.md",
+        message: "The selected Markdown source could not be read.",
+      },
+    ),
   );
   TestValidator.equals(
     "source failure remains incomplete",

@@ -1,6 +1,7 @@
 import type { EvidDatabaseSymbol } from "../../typings/EvidDatabaseSymbol";
 
-/** One parser-classified Prisma model member.
+/**
+ * One parser-classified Prisma model member.
  *
  * These detached records make the cross-file materializer independent of the
  * WASM parser lifetime while preserving the member fingerprint boundary.
@@ -18,15 +19,17 @@ export interface IEvidPrismaField {
    * Evid unit symbol selected from the parser field kind.
    *
    * Prisma scalar fields become columns and object fields become relations, so
-   * this normalized symbol controls selector matching without retaining WASM data.
+   * this normalized symbol controls selector matching without retaining WASM
+   * data.
    */
   symbol: Exclude<EvidDatabaseSymbol, "model">;
 
   /**
    * Documentation text used to recover directive and withdrawal state.
    *
-   * The adapter parses this detached text after it establishes the field's host,
-   * keeping comment metadata separate from the semantic fingerprint payload.
+   * The adapter parses this detached text after it establishes the field's
+   * host, keeping comment metadata separate from the semantic fingerprint
+   * payload.
    */
   documentation: string;
 

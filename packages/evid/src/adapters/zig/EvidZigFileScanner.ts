@@ -17,10 +17,12 @@ import type { IEvidZigFileAnalysis } from "./IEvidZigFileAnalysis";
  */
 export class EvidZigFileScanner {
   /**
-   * Collects serializable declarations, including intentional alias projections.
+   * Collects serializable declarations, including intentional alias
+   * projections.
    *
    * Each entry preserves its physical site and public path before the parser
-   * session closes and later reconciliation merges aliases into canonical units.
+   * session closes and later reconciliation merges aliases into canonical
+   * units.
    */
   private readonly declarations: IEvidZigDeclaration[] = [];
 
@@ -28,7 +30,8 @@ export class EvidZigFileScanner {
    * Indexes documentation carriers by their adjacent source-line position.
    *
    * Declaration attachment uses this grouping to find contiguous triple-slash
-   * comments without attaching ordinary comments or string literals by proximity.
+   * comments without attaching ordinary comments or string literals by
+   * proximity.
    */
   private readonly documentation = new Map<number, IEvidZigDocumentation>();
 
@@ -36,15 +39,17 @@ export class EvidZigFileScanner {
    * Collects unsupported public forms that prevent a complete population.
    *
    * The scan result uses a nonempty set to preserve extraction uncertainty in
-   * the final inventory instead of certifying only the recognized declarations.
+   * the final inventory instead of certifying only the recognized
+   * declarations.
    */
   private readonly diagnostics: IEvidDiagnostic[] = [];
 
   /**
    * Borrows the real syntax tree for the bounded parser callback.
    *
-   * The scanner copies source identity and ranges into records before returning,
-   * so no inventory state relies on a parser node after the callback ends.
+   * The scanner copies source identity and ranges into records before
+   * returning, so no inventory state relies on a parser node after the callback
+   * ends.
    */
   public constructor(
     private readonly session: EvidParseSession,
@@ -70,7 +75,8 @@ export class EvidZigFileScanner {
   }
 
   /**
-   * Visits supported namespace members while excluding local function bodies and tests.
+   * Visits supported namespace members while excluding local function bodies
+   * and tests.
    *
    * Only namespace scope can establish declared public surface, so unsupported
    * comptime execution and namespace injection become incomplete diagnostics.
@@ -132,7 +138,8 @@ export class EvidZigFileScanner {
    * Resolves bounded local aliases and establishes container ownership.
    *
    * Recursion is restricted to declarations in the current lexical container,
-   * preserving canonical identity while rejecting cycles and ambiguous targets.
+   * preserving canonical identity while rejecting cycles and ambiguous
+   * targets.
    */
   private declaration(
     node: EvidNode,
@@ -387,12 +394,18 @@ export class EvidZigFileScanner {
   }
 
   /**
-   * Recognizes aliases of Zig's metatype in function return positions without execution.
+   * Recognizes aliases of Zig's metatype in function return positions without
+   * execution.
    *
    * Type-producing returns require complete member discovery, so recognizing
-   * them allows the scanner to retain an incomplete boundary rather than infer one.
+   * them allows the scanner to retain an incomplete boundary rather than infer
+   * one.
    */
-  private metaType(node: EvidNode, scope: EvidNode, visited: Set<number>): boolean {
+  private metaType(
+    node: EvidNode,
+    scope: EvidNode,
+    visited: Set<number>,
+  ): boolean {
     if (node.text === "type") return true;
     if (node.type !== "identifier" || visited.has(node.startIndex))
       return false;
@@ -413,12 +426,18 @@ export class EvidZigFileScanner {
   }
 
   /**
-   * Distinguishes copied scalar values from identity-preserving namespace aliases.
+   * Distinguishes copied scalar values from identity-preserving namespace
+   * aliases.
    *
    * A scalar alias becomes its own property declaration; other aliases recurse
-   * to their original declaration so they share semantic identity and ownership.
+   * to their original declaration so they share semantic identity and
+   * ownership.
    */
-  private scalar(node: EvidNode, scope: EvidNode, visited: Set<number>): boolean {
+  private scalar(
+    node: EvidNode,
+    scope: EvidNode,
+    visited: Set<number>,
+  ): boolean {
     if (visited.has(node.startIndex) || node.type !== "variable_declaration")
       return false;
     visited.add(node.startIndex);
@@ -446,10 +465,12 @@ export class EvidZigFileScanner {
   }
 
   /**
-   * Copies one physical declaration and its public path before the tree is released.
+   * Copies one physical declaration and its public path before the tree is
+   * released.
    *
    * The record includes parser-derived ranges, ownership, and attachment state
-   * so later adapter phases do not retain Tree-sitter nodes beyond the callback.
+   * so later adapter phases do not retain Tree-sitter nodes beyond the
+   * callback.
    */
   private add(
     node: EvidNode,
@@ -484,10 +505,11 @@ export class EvidZigFileScanner {
   }
 
   /**
-   * Identifies a declaration initializer from syntax delimiters rather than source regexes.
+   * Identifies a declaration initializer from syntax delimiters rather than
+   * source regexes.
    *
-   * The first named child following an equals token supplies the supported static
-   * form used for alias, type, and inferred-surface classification.
+   * The first named child following an equals token supplies the supported
+   * static form used for alias, type, and inferred-surface classification.
    */
   private initializer(node: EvidNode): EvidNode | undefined {
     const equals = node.children.find((child) => child.type === "=");
@@ -505,7 +527,10 @@ export class EvidZigFileScanner {
    * Alias lookup therefore treats a literal identifier and its supported quoted
    * source spelling as the same declaration name within one lexical container.
    */
-  private sameName(left: EvidNode | null | undefined, right: EvidNode): boolean {
+  private sameName(
+    left: EvidNode | null | undefined,
+    right: EvidNode,
+  ): boolean {
     return (
       left !== undefined &&
       left !== null &&
@@ -514,10 +539,12 @@ export class EvidZigFileScanner {
   }
 
   /**
-   * Decodes literal Zig identifiers while preserving dots as one accessor segment.
+   * Decodes literal Zig identifiers while preserving dots as one accessor
+   * segment.
    *
    * Unsupported escape syntax emits a diagnostic and returns the original text,
-   * preventing an invented decoded name from changing alias or address identity.
+   * preventing an invented decoded name from changing alias or address
+   * identity.
    */
   private name(node: EvidNode): string {
     if (!node.text.startsWith('@"')) return node.text;
@@ -537,8 +564,9 @@ export class EvidZigFileScanner {
   /**
    * Attaches an adjacent triple-slash group to its declaration.
    *
-   * Only directly preceding standalone documentation comments qualify, preventing
-   * strings and ordinary comments from creating an accidental documentation host.
+   * Only directly preceding standalone documentation comments qualify,
+   * preventing strings and ordinary comments from creating an accidental
+   * documentation host.
    */
   private attach(node: EvidNode, declaration: IEvidZigDeclaration): void {
     const previous = node.previousNamedSibling;
@@ -573,10 +601,12 @@ export class EvidZigFileScanner {
   }
 
   /**
-   * Classifies documentation comments and tag-bearing strings with UTF-16 positions.
+   * Classifies documentation comments and tag-bearing strings with UTF-16
+   * positions.
    *
-   * Triple-slash runs form attachable documentation, while other carriers remain
-   * available only when they contain supported annotations that require diagnostics.
+   * Triple-slash runs form attachable documentation, while other carriers
+   * remain available only when they contain supported annotations that require
+   * diagnostics.
    */
   private collectDocumentation(): void {
     const nodes = this.session.root.descendantsOfType([
@@ -643,10 +673,12 @@ export class EvidZigFileScanner {
   }
 
   /**
-   * Records unsupported namespace semantics as actionable incomplete diagnostics.
+   * Records unsupported namespace semantics as actionable incomplete
+   * diagnostics.
    *
    * Duplicate suppression keeps one reported source location from producing
-   * repeated errors while ensuring every unsupported public form fails analysis.
+   * repeated errors while ensuring every unsupported public form fails
+   * analysis.
    */
   private problem(code: string, message: string, node: EvidNode): void {
     if (

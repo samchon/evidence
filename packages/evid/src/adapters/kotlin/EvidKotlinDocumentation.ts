@@ -62,8 +62,8 @@ export namespace EvidKotlinDocumentation {
   /**
    * Counts Markdown indentation after the documentation delimiter is removed.
    *
-   * Tabs advance to their next four-column stop so mixed indentation follows the
-   * same threshold used when identifying indented code examples.
+   * Tabs advance to their next four-column stop so mixed indentation follows
+   * the same threshold used when identifying indented code examples.
    */
   function indentation(line: string): number {
     let spaces = 0;

@@ -2,7 +2,8 @@ import type { IEvidUnitSite } from "../../structures/IEvidUnitSite";
 import type { EvidProgrammingSymbol } from "../../typings/EvidProgrammingSymbol";
 
 /**
- * Represents one physical Dart declaration before library identity reconciliation.
+ * Represents one physical Dart declaration before library identity
+ * reconciliation.
  *
  * The scanner deliberately retains private and part-file declarations here: the
  * library resolver needs their lexical ownership before it can decide which
@@ -17,15 +18,20 @@ export interface IEvidDartDeclaration {
    */
   id: string;
 
-  /** Gives the declared name or explicit constructor or operator segment.
+  /**
+   * Gives the declared name or explicit constructor or operator segment.
    *
-   * The scanner combines this with `identity` and `address`; it is unqualified so diagnostics can retain the source spelling.
+   * The scanner combines this with `identity` and `address`; it is unqualified
+   * so diagnostics can retain the source spelling.
    */
   name: string;
 
-  /** Classifies the declaration in Evid's language-independent selector vocabulary.
+  /**
+   * Classifies the declaration in Evid's language-independent selector
+   * vocabulary.
    *
-   * Materialization preserves this category while it reconciles declarations with the same Dart name.
+   * Materialization preserves this category while it reconciles declarations
+   * with the same Dart name.
    */
   symbol: EvidProgrammingSymbol;
 
@@ -45,27 +51,38 @@ export interface IEvidDartDeclaration {
    */
   library: string;
 
-  /** Lists the lexical segments that establish the declaration's semantic identity.
+  /**
+   * Lists the lexical segments that establish the declaration's semantic
+   * identity.
    *
-   * Library reconciliation prefixes this path with the defining library so parts share their owner's identity.
+   * Library reconciliation prefixes this path with the defining library so
+   * parts share their owner's identity.
    */
   identity: string[];
 
-  /** Lists the public accessor segments used in a selected source address.
+  /**
+   * Lists the public accessor segments used in a selected source address.
    *
-   * This may differ from `identity` after library exports project a declaration through another file.
+   * This may differ from `identity` after library exports project a declaration
+   * through another file.
    */
   address: string[];
 
-  /** Retains the physical declaration range and content used by hosts and fingerprints.
+  /**
+   * Retains the physical declaration range and content used by hosts and
+   * fingerprints.
    *
-   * A reconciled unit can collect multiple sites from parts or complementary accessors.
+   * A reconciled unit can collect multiple sites from parts or complementary
+   * accessors.
    */
   site: IEvidUnitSite;
 
-  /** States whether this declaration and every lexical owner are publicly visible.
+  /**
+   * States whether this declaration and every lexical owner are publicly
+   * visible.
    *
-   * The adapter excludes private declarations from publication while retaining them for ownership and boundary diagnostics.
+   * The adapter excludes private declarations from publication while retaining
+   * them for ownership and boundary diagnostics.
    */
   public: boolean;
 

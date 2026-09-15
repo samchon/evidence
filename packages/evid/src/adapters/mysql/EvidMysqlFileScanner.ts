@@ -15,15 +15,21 @@ import type { IEvidSourceFile } from "../../structures/IEvidSourceFile";
  */
 export namespace EvidMysqlFileScanner {
   /**
-   * Attaches only table and column COMMENT strings to their exact declaration owner.
+   * Attaches only table and column COMMENT strings to their exact declaration
+   * owner.
    *
-   * Shared SQL scanning supplies declarations; this pass adds dialect-specific documentation.
+   * Shared SQL scanning supplies declarations; this pass adds dialect-specific
+   * documentation.
    */
   export function scan(
     session: EvidParseSession,
     source: IEvidSourceFile,
   ): IEvidSqlFileAnalysis {
-    const analysis = new EvidSqlFileScanner(session, source, EvidMysqlPolicy).scan();
+    const analysis = new EvidSqlFileScanner(
+      session,
+      source,
+      EvidMysqlPolicy,
+    ).scan();
     const text = new EvidSourceText(source.content);
     for (const node of descendants(session.root)) {
       if (node.type !== "column_definition" && node.type !== "create_table")
@@ -91,9 +97,11 @@ export namespace EvidMysqlFileScanner {
 }
 
 /**
- * Visits named syntax while keeping all attachment decisions local to declarations.
+ * Visits named syntax while keeping all attachment decisions local to
+ * declarations.
  *
- * String contents remain opaque because they are not grammar nodes in the traversal.
+ * String contents remain opaque because they are not grammar nodes in the
+ * traversal.
  */
 function descendants(node: EvidNode): EvidNode[] {
   return [node, ...node.namedChildren.flatMap(descendants)];

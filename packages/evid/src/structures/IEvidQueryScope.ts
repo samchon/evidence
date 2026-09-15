@@ -5,8 +5,9 @@ import type { EvidPopulationRole } from "../typings/EvidPopulationRole";
  * Configuration boundary identifying a population in query output.
  *
  * One semantic unit can appear in several claims or references with different
- * selections and policies. Role and authored indices distinguish those appearances
- * while the optional name remains a display label rather than graph identity.
+ * selections and policies. Role and authored indices distinguish those
+ * appearances while the optional name remains a display label rather than graph
+ * identity.
  */
 export interface IEvidQueryScope {
   /**
@@ -38,7 +39,8 @@ export interface IEvidQueryScope {
   name?: string;
 
   /**
-   * Artifact family whose extraction and target grammar apply to this population.
+   * Artifact family whose extraction and target grammar apply to this
+   * population.
    *
    * Queries use it to filter list rows and choose compatible target resolution.
    */

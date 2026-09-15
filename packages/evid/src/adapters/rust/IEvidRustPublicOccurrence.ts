@@ -3,7 +3,8 @@ import type { IEvidRustFilePlacement } from "./IEvidRustFilePlacement";
 import type { IEvidRustLocatedDeclaration } from "./IEvidRustLocatedDeclaration";
 
 /**
- * Records one public path through which a selected Rust declaration is reachable.
+ * Records one public path through which a selected Rust declaration is
+ * reachable.
  *
  * Materialization turns each occurrence into addresses while keeping the
  * declaration's semantic identity independent of aliases and reexports.

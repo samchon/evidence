@@ -9,9 +9,11 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Acquires SQLite's configured WASM parser and reuses it offline.
+/**
+ * Acquires SQLite's configured WASM parser and reuses it offline.
  *
- * Cold analysis must load one required dialect asset, while a warm cache reproduces the complete inventory without network access.
+ * Cold analysis must load one required dialect asset, while a warm cache
+ * reproduces the complete inventory without network access.
  *
  * 1. Analyze SQLite input cold while recording requests.
  * 2. Verify the selected transfer and complete inventory.

@@ -1,17 +1,15 @@
-import {
-  EvidGraph,
-  EvidPhpAdapter,
-  EvidTypeScriptAdapter,
-} from "evid";
+import { EvidGraph, EvidPhpAdapter, EvidTypeScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Evaluates PHP selectors as required cross-language references.
+/**
+ * Evaluates PHP selectors as required cross-language references.
  *
- * Selected PHP units need evidence, and a retained review alone must not cover an obligation.
+ * Selected PHP units need evidence, and a retained review alone must not cover
+ * an obligation.
  *
  * 1. Extract PHP units and matching TypeScript claims for every selector.
  * 2. Evaluate present and absent acknowledgements.

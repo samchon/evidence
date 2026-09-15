@@ -19,12 +19,13 @@ import { EvidSqlDocumentation } from "./EvidSqlDocumentation";
 import type { IEvidSqlAdapterOptions } from "./IEvidSqlAdapterOptions";
 
 /**
- * Materializes SQL-family inventories using an explicitly selected dialect scanner.
+ * Materializes SQL-family inventories using an explicitly selected dialect
+ * scanner.
  *
- * Dialect options own parsing and optional cross-file ownership resolution. This
- * shared layer manages parser lifetime, semantic declaration grouping, public
- * addresses, and documentation materialization. It analyzes source declarations
- * without connecting to a database or executing the supplied SQL.
+ * Dialect options own parsing and optional cross-file ownership resolution.
+ * This shared layer manages parser lifetime, semantic declaration grouping,
+ * public addresses, and documentation materialization. It analyzes source
+ * declarations without connecting to a database or executing the supplied SQL.
  */
 export class EvidSqlAdapterBase implements IEvidAdapter {
   /**
@@ -45,7 +46,8 @@ export class EvidSqlAdapterBase implements IEvidAdapter {
     /**
      * Dialect-specific grammar discriminator and extraction hooks.
      *
-     * The resolver, when present, runs after all file scans and before unit publication.
+     * The resolver, when present, runs after all file scans and before unit
+     * publication.
      */
     private readonly options: IEvidSqlAdapterOptions,
   ) {
@@ -53,15 +55,14 @@ export class EvidSqlAdapterBase implements IEvidAdapter {
   }
 
   /**
-   * Builds an owned SQL inventory through dialect scanning and shared materialization.
+   * Builds an owned SQL inventory through dialect scanning and shared
+   * materialization.
    *
    * Source and parser failures retain incomplete state. Optional ownership
    * resolution precedes public grouping and annotation attachment, and native
    * parser resources close in cleanup after accepted scans settle.
    */
-  public async analyze(
-    snapshot: IEvidSourceSnapshot,
-  ): Promise<IEvidInventory> {
+  public async analyze(snapshot: IEvidSourceSnapshot): Promise<IEvidInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidInventory = {
       schemaVersion: 1,
@@ -106,8 +107,9 @@ export class EvidSqlAdapterBase implements IEvidAdapter {
   /**
    * Invokes the configured dialect scanner within a borrowed parse session.
    *
-   * A failed parse becomes a dialect-prefixed diagnostic with source coordinates
-   * and incomplete state, preserving its effect on the coverage denominator.
+   * A failed parse becomes a dialect-prefixed diagnostic with source
+   * coordinates and incomplete state, preserving its effect on the coverage
+   * denominator.
    */
   private async scan(
     parser: EvidParser,
@@ -120,8 +122,7 @@ export class EvidSqlAdapterBase implements IEvidAdapter {
         (session) => this.options.scan(session, source),
       );
     } catch (cause) {
-      const parserError =
-        cause instanceof EvidParserError ? cause : undefined;
+      const parserError = cause instanceof EvidParserError ? cause : undefined;
       return {
         source,
         declarations: [],
@@ -149,11 +150,13 @@ export class EvidSqlAdapterBase implements IEvidAdapter {
   }
 
   /**
-   * Publishes public schema identities with explicit parents and physical aliases.
+   * Publishes public schema identities with explicit parents and physical
+   * aliases.
    *
-   * Source-local declaration IDs are mapped before parents are assigned. Repeated
-   * declarations require an explicit merge allowance; otherwise a conflict remains
-   * a diagnostic instead of silently combining independent schema definitions.
+   * Source-local declaration IDs are mapped before parents are assigned.
+   * Repeated declarations require an explicit merge allowance; otherwise a
+   * conflict remains a diagnostic instead of silently combining independent
+   * schema definitions.
    */
   private materializeUnits(
     inventory: IEvidInventory,
@@ -234,7 +237,8 @@ export class EvidSqlAdapterBase implements IEvidAdapter {
   /**
    * Resolves withdrawals before publishing attached annotation hosts.
    *
-   * Hidden declaration sites cannot receive claim or review hosts in the inventory.
+   * Hidden declaration sites cannot receive claim or review hosts in the
+   * inventory.
    */
   private materializeDocumentation(
     inventory: IEvidInventory,
@@ -371,7 +375,8 @@ export class EvidSqlAdapterBase implements IEvidAdapter {
   /**
    * Groups published semantic owners by their physical declaration site.
    *
-   * One comment can attach to merged declarations that share a single source range.
+   * One comment can attach to merged declarations that share a single source
+   * range.
    */
   private attachmentGroups(
     documentation: IEvidSqlDocumentation,
@@ -391,7 +396,8 @@ export class EvidSqlAdapterBase implements IEvidAdapter {
   /**
    * Creates an attached or explicitly unsupported documentation carrier.
    *
-   * Unsupported carriers remain materialized so diagnostics can direct users to a valid site.
+   * Unsupported carriers remain materialized so diagnostics can direct users to
+   * a valid site.
    */
   private host(
     source: IEvidSourceFile,
@@ -437,15 +443,19 @@ export class EvidSqlAdapterBase implements IEvidAdapter {
   /**
    * Detects Evid or withdrawal annotations outside masked examples.
    *
-   * The result retains otherwise detached carriers that require a diagnostic host.
+   * The result retains otherwise detached carriers that require a diagnostic
+   * host.
    */
   private annotation(
     analysis: IEvidSqlFileAnalysis,
     documentation: IEvidSqlDocumentation,
   ): boolean {
     return this.annotationPattern(
-      EvidSqlDocumentation.read(analysis.source, documentation, documentation.id)
-        .text,
+      EvidSqlDocumentation.read(
+        analysis.source,
+        documentation,
+        documentation.id,
+      ).text,
       true,
     );
   }
@@ -460,8 +470,11 @@ export class EvidSqlAdapterBase implements IEvidAdapter {
     documentation: IEvidSqlDocumentation,
   ): boolean {
     return this.annotationPattern(
-      EvidSqlDocumentation.read(analysis.source, documentation, documentation.id)
-        .text,
+      EvidSqlDocumentation.read(
+        analysis.source,
+        documentation,
+        documentation.id,
+      ).text,
       false,
     );
   }
@@ -469,7 +482,8 @@ export class EvidSqlAdapterBase implements IEvidAdapter {
   /**
    * Recognizes supported annotation names at documentation line boundaries.
    *
-   * Boundary matching prevents prose and examples from becoming annotation syntax.
+   * Boundary matching prevents prose and examples from becoming annotation
+   * syntax.
    */
   private annotationPattern(raw: string, withdrawal: boolean): boolean {
     return withdrawal
@@ -484,7 +498,8 @@ export class EvidSqlAdapterBase implements IEvidAdapter {
   /**
    * Follows explicit parent ownership to propagate withdrawal.
    *
-   * A visited set preserves termination when malformed ownership would otherwise cycle.
+   * A visited set preserves termination when malformed ownership would
+   * otherwise cycle.
    */
   private withdrawn(
     id: string,
@@ -504,7 +519,8 @@ export class EvidSqlAdapterBase implements IEvidAdapter {
   /**
    * Separates database kinds while unifying schema identities.
    *
-   * Unit IDs remain stable across physical declaration sites for one database selector.
+   * Unit IDs remain stable across physical declaration sites for one database
+   * selector.
    */
   private unitId(declaration: IEvidSqlDeclaration): string {
     return `${this.type}:${declaration.symbol}:${JSON.stringify(declaration.identity)}`;
@@ -513,7 +529,8 @@ export class EvidSqlAdapterBase implements IEvidAdapter {
   /**
    * Marks a declaration conflict as incomplete analysis.
    *
-   * A conflict must not allow the remaining declarations to appear as a complete population.
+   * A conflict must not allow the remaining declarations to appear as a
+   * complete population.
    */
   private problem(
     inventory: IEvidInventory,

@@ -4,7 +4,8 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Binds JavaScript evidence to JSDoc without reading JSX or literal examples.
+/**
+ * Binds JavaScript evidence to JSDoc without reading JSX or literal examples.
  *
  * Only declaration-owned JSDoc is eligible; JSX and literal text remain inert.
  *

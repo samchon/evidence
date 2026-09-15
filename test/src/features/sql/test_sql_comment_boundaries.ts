@@ -3,9 +3,11 @@ import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Distinguishes leading SQL documentation from trailing and detached comments.
+/**
+ * Distinguishes leading SQL documentation from trailing and detached comments.
  *
- * Attachment is determined by the declaration boundary, so adjacent comment positions can have different acknowledgement effects.
+ * Attachment is determined by the declaration boundary, so adjacent comment
+ * positions can have different acknowledgement effects.
  *
  * 1. Analyze leading, trailing, and detached SQL comment carriers.
  * 2. Verify only the supported leading comment attaches.

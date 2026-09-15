@@ -3,9 +3,11 @@ import { TestValidator } from "@nestia/e2e";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Keeps rejected and unreadable Prisma schemas incomplete until repair.
+/**
+ * Keeps rejected and unreadable Prisma schemas incomplete until repair.
  *
- * A failing schema remains an active graph participant so coverage cannot pass from a reduced population.
+ * A failing schema remains an active graph participant so coverage cannot pass
+ * from a reduced population.
  *
  * 1. Analyze rejected and unreadable schemas and inspect their diagnostics.
  * 2. Evaluate their active claim in the graph and require failure.

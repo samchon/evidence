@@ -4,7 +4,8 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches Ruby RDoc only at supported documentation hosts.
+/**
+ * Attaches Ruby RDoc only at supported documentation hosts.
  *
  * Tags in non-documentation carriers cannot acknowledge Ruby units.
  *

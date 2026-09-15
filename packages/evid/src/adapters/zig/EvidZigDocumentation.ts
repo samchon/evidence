@@ -5,17 +5,20 @@ import type { IEvidSourceFile } from "../../structures/IEvidSourceFile";
 import type { IEvidZigDocumentation } from "./IEvidZigDocumentation";
 
 /**
- * Reads Zig documentation while preserving source mappings and masking examples.
+ * Reads Zig documentation while preserving source mappings and masking
+ * examples.
  *
- * EvidZigAdapterBase uses this wrapper around the shared reader so annotations in HTML
- * or indented code examples cannot become claims at the original source host.
+ * EvidZigAdapterBase uses this wrapper around the shared reader so annotations
+ * in HTML or indented code examples cannot become claims at the original source
+ * host.
  */
 export namespace EvidZigDocumentation {
   /**
    * Maps one carrier and removes examples without moving source offsets.
    *
    * Only triple-slash documentation is masked because other carrier forms exist
-   * solely to report unsupported tag-bearing source text with its original mapping.
+   * solely to report unsupported tag-bearing source text with its original
+   * mapping.
    */
   export function read(
     source: IEvidSourceFile,
@@ -36,7 +39,8 @@ export namespace EvidZigDocumentation {
   }
 
   /**
-   * Masks HTML examples and Markdown indented code in mapped documentation text.
+   * Masks HTML examples and Markdown indented code in mapped documentation
+   * text.
    *
    * Fenced code remains the shared tag parser's responsibility, while this pass
    * preserves offsets by replacing example characters with spaces.

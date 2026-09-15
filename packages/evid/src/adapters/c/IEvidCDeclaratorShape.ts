@@ -14,21 +14,25 @@ export interface IEvidCDeclaratorShape {
   /**
    * Declared identifier read from the effective direct declarator.
    *
-   * The scanner combines it with its enclosing context to create a declaration identity.
+   * The scanner combines it with its enclosing context to create a declaration
+   * identity.
    */
   name: string;
 
   /**
-   * Whether the effective declarator denotes a direct, function, or object entity.
+   * Whether the effective declarator denotes a direct, function, or object
+   * entity.
    *
-   * The scanner routes the shape to callable or object extraction with this classification.
+   * The scanner routes the shape to callable or object extraction with this
+   * classification.
    */
   kind: EvidCDeclaratorKind;
 
   /**
    * Original declarator subtree used to derive source sites and diagnostics.
    *
-   * Retaining the node keeps physical locations tied to the declarator that supplied the name.
+   * Retaining the node keeps physical locations tied to the declarator that
+   * supplied the name.
    */
   node: EvidNode;
 }

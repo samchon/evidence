@@ -6,9 +6,10 @@ import type { IEvidSourceRoot } from "./IEvidSourceRoot";
 /**
  * Captured discovery result for one configured source selection.
  *
- * The loader resolves a root, applies ordered globs, reads files, and deduplicates
- * physical identities while preserving logical addresses. Adapters consume this
- * snapshot so declaration positions and content come from the same source revision.
+ * The loader resolves a root, applies ordered globs, reads files, and
+ * deduplicates physical identities while preserving logical addresses. Adapters
+ * consume this snapshot so declaration positions and content come from the same
+ * source revision.
  *
  * Dependencies include locations needed to observe new files and repairs.
  * Diagnostics and completeness distinguish an empty successful selection from a
@@ -27,8 +28,9 @@ export interface IEvidSourceSnapshot {
   /**
    * Captured physical files ordered by their first selected address.
    *
-   * The list can be partial after failure. Inspect `complete` before treating it
-   * as the full source population, even when some files were loaded successfully.
+   * The list can be partial after failure. Inspect `complete` before treating
+   * it as the full source population, even when some files were loaded
+   * successfully.
    */
   files: IEvidSourceFile[];
 
@@ -51,8 +53,9 @@ export interface IEvidSourceSnapshot {
   /**
    * Whether discovery completed without failures.
    *
-   * An empty successful glob selection remains complete. Missing roots, unreadable
-   * files, or other discovery failures cannot be concealed by an empty file list.
+   * An empty successful glob selection remains complete. Missing roots,
+   * unreadable files, or other discovery failures cannot be concealed by an
+   * empty file list.
    */
   complete: boolean;
 }

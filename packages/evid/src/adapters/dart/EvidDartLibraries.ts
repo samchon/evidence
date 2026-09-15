@@ -6,18 +6,21 @@ import type { IEvidDartDirective } from "./IEvidDartDirective";
 import type { IEvidDartFileAnalysis } from "./IEvidDartFileAnalysis";
 
 /**
- * Resolves selected Dart library ownership and export aliases without executing package tooling.
+ * Resolves selected Dart library ownership and export aliases without executing
+ * package tooling.
  *
- * Physical scans cannot decide whether a part belongs to a library or whether an
- * exported spelling denotes an existing unit, so this pass establishes those
+ * Physical scans cannot decide whether a part belongs to a library or whether
+ * an exported spelling denotes an existing unit, so this pass establishes those
  * relationships before inventory publication and documentation attachment.
  */
 export namespace EvidDartLibraries {
   /**
-   * Validates reciprocal part ownership and retains missing URI paths for watch invalidation.
+   * Validates reciprocal part ownership and retains missing URI paths for watch
+   * invalidation.
    *
-   * A missing or conflicting part makes the analysis incomplete because treating
-   * it as absent could remove public declarations from the coverage denominator.
+   * A missing or conflicting part makes the analysis incomplete because
+   * treating it as absent could remove public declarations from the coverage
+   * denominator.
    */
   export function resolve(
     analyses: IEvidDartFileAnalysis[],
@@ -189,9 +192,11 @@ export namespace EvidDartLibraries {
   }
 
   /**
-   * Projects library and transitive show or hide export addresses without duplicating semantic units.
+   * Projects library and transitive show or hide export addresses without
+   * duplicating semantic units.
    *
-   * One declaration can have several public paths while retaining a single unit identity.
+   * One declaration can have several public paths while retaining a single unit
+   * identity.
    */
   export function publish(
     analyses: IEvidDartFileAnalysis[],
@@ -283,7 +288,8 @@ export namespace EvidDartLibraries {
   /**
    * Applies sequential Dart combinators to one root name.
    *
-   * Source order determines whether a later show or hide filter keeps the export.
+   * Source order determines whether a later show or hide filter keeps the
+   * export.
    */
   function allowed(directive: IEvidDartDirective, name: string): boolean {
     return directive.filters.every((filter) =>
@@ -305,7 +311,8 @@ export namespace EvidDartLibraries {
   /**
    * Records a library topology failure on its source analysis.
    *
-   * The affected analysis remains incomplete until its URI relationship is repaired.
+   * The affected analysis remains incomplete until its URI relationship is
+   * repaired.
    */
   function problem(
     analysis: IEvidDartFileAnalysis,

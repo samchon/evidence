@@ -3,9 +3,12 @@ import { TestValidator } from "@nestia/e2e";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Rejects SQLite input that changes schema interpretation or relation certainty.
+/**
+ * Rejects SQLite input that changes schema interpretation or relation
+ * certainty.
  *
- * Execution-dependent statements and invalid foreign keys must keep the inventory incomplete rather than silently remove obligations.
+ * Execution-dependent statements and invalid foreign keys must keep the
+ * inventory incomplete rather than silently remove obligations.
  *
  * 1. Analyze each schema-changing or invalid relation form.
  * 2. Require incomplete status with actionable diagnostics.

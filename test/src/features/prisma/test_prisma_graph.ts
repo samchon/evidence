@@ -18,9 +18,11 @@ import { dedent } from "@typia/utils";
 import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Evaluates Prisma as a claim and a reviewed reference.
+/**
+ * Evaluates Prisma as a claim and a reviewed reference.
  *
- * Prisma model and field populations require correct role-specific evidence; a review alone remains separate from coverage.
+ * Prisma model and field populations require correct role-specific evidence; a
+ * review alone remains separate from coverage.
  *
  * 1. Build Prisma claim and reference inventories.
  * 2. Evaluate matching, missing, and review-only target resolutions.
@@ -85,10 +87,7 @@ export async function test_prisma_graph(): Promise<void> {
   );
   const sale = requireUnit(prisma, "prisma:Sale");
   const seller = requireUnit(prisma, "prisma:Seller");
-  const saleFingerprint = EvidFingerprint.inspect(
-    prisma,
-    sale.id,
-  ).fingerprint;
+  const saleFingerprint = EvidFingerprint.inspect(prisma, sale.id).fingerprint;
   const sellerFingerprint = EvidFingerprint.inspect(
     prisma,
     seller.id,
@@ -145,10 +144,11 @@ export async function test_prisma_graph(): Promise<void> {
             severity: "error",
             inventory: prisma,
             unitIds: [sale.id, seller.id],
-            resolutions: await EvidTestGraph.resolveDeclarations(contract, prisma, [
-              sale.id,
-              seller.id,
-            ]),
+            resolutions: await EvidTestGraph.resolveDeclarations(
+              contract,
+              prisma,
+              [sale.id, seller.id],
+            ),
             reviewResolutions: await EvidTestGraph.resolveReviews(
               contract,
               prisma,
@@ -224,10 +224,7 @@ export async function test_prisma_graph(): Promise<void> {
   );
 }
 
-function requireUnit(
-  inventory: IEvidInventory,
-  identity: string,
-): IEvidUnit {
+function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.id === identity || candidate.identity.at(-1) === identity,

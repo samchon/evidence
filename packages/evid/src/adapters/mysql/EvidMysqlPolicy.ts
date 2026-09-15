@@ -5,18 +5,22 @@ import { EvidMysqlIdentifier } from "./EvidMysqlIdentifier";
 /**
  * Validates the explicitly selected MySQL CREATE TABLE source subset.
  *
- * Shared SQL extraction asks this policy to fail closed when syntax depends on server state.
+ * Shared SQL extraction asks this policy to fail closed when syntax depends on
+ * server state.
  */
 export namespace EvidMysqlPolicy {
   /**
-   * Retains source spelling independently of lower_case_table_names and host operating system.
+   * Retains source spelling independently of lower_case_table_names and host
+   * operating system.
    *
-   * Snapshot identity cannot safely depend on a database server or filesystem setting.
+   * Snapshot identity cannot safely depend on a database server or filesystem
+   * setting.
    */
   export const identifier = EvidMysqlIdentifier.read;
 
   /**
-   * Ignores column REFERENCES because MySQL does not create a foreign key from that syntax.
+   * Ignores column REFERENCES because MySQL does not create a foreign key from
+   * that syntax.
    *
    * Only a table-level FOREIGN KEY declaration contributes a relation unit.
    */
@@ -25,14 +29,17 @@ export namespace EvidMysqlPolicy {
   /**
    * Ignores FOREIGN KEY index names when identifying MySQL relations.
    *
-   * The endpoint tuple is stable while an index name does not name the constraint.
+   * The endpoint tuple is stable while an index name does not name the
+   * constraint.
    */
   export const constraintNames = false;
 
   /**
-   * Places an unqualified REFERENCES target in its explicitly qualified owning database.
+   * Places an unqualified REFERENCES target in its explicitly qualified owning
+   * database.
    *
-   * This supplies a deterministic semantic path without consulting the current database.
+   * This supplies a deterministic semantic path without consulting the current
+   * database.
    */
   export function reference(target: string[], owner: string[]): string[] {
     return target.length === 1 && owner.length === 2
@@ -41,9 +48,11 @@ export namespace EvidMysqlPolicy {
   }
 
   /**
-   * Rejects environment state and syntax from the shared grammar's other dialects.
+   * Rejects environment state and syntax from the shared grammar's other
+   * dialects.
    *
-   * Returning a reason makes the source analysis incomplete rather than partially inferred.
+   * Returning a reason makes the source analysis incomplete rather than
+   * partially inferred.
    */
   export function validate(node: EvidNode): string | undefined {
     if (node.type === "comment" || node.type === "marginalia") {
@@ -126,7 +135,8 @@ export namespace EvidMysqlPolicy {
 /**
  * Collects a statement's named syntax while keeping strings opaque.
  *
- * Policy validation must inspect grammar nodes without treating literal contents as SQL syntax.
+ * Policy validation must inspect grammar nodes without treating literal
+ * contents as SQL syntax.
  */
 function descendants(node: EvidNode): EvidNode[] {
   return [node, ...node.namedChildren.flatMap(descendants)];
@@ -135,7 +145,8 @@ function descendants(node: EvidNode): EvidNode[] {
 /**
  * Accepts MySQL options whose schema and documentation ownership are static.
  *
- * Other options can depend on server behavior outside the selected source snapshot.
+ * Other options can depend on server behavior outside the selected source
+ * snapshot.
  */
 function tableOption(node: EvidNode): string | undefined {
   const raw = node.text;
@@ -160,9 +171,11 @@ function tableOption(node: EvidNode): string | undefined {
 }
 
 /**
- * Lists syntax whose effects require state or semantics outside the declared subset.
+ * Lists syntax whose effects require state or semantics outside the declared
+ * subset.
  *
- * Validation uses this set to reject shared-grammar constructs before extraction.
+ * Validation uses this set to reject shared-grammar constructs before
+ * extraction.
  */
 const FORBIDDEN = new Set([
   "array",
@@ -186,9 +199,11 @@ const FORBIDDEN = new Set([
 ]);
 
 /**
- * Lists accepted direct syntax so unrelated shared-grammar dialect options fail closed.
+ * Lists accepted direct syntax so unrelated shared-grammar dialect options fail
+ * closed.
  *
- * This boundary limits MySQL extraction to declarations with stable snapshot semantics.
+ * This boundary limits MySQL extraction to declarations with stable snapshot
+ * semantics.
  */
 const TABLE_CHILDREN = new Set([
   "keyword_create",

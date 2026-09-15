@@ -53,9 +53,9 @@ export class EvidPythonFileScanner {
    * Effective class-dictionary unit for each owner and runtime binding name.
    *
    * Evid symbols and public address projections can differ for a method,
-   * property, alias, or nested class even though Python assigns them through one
-   * class namespace. The map lets a later statement remove the replaced unit and
-   * its descendants before publication.
+   * property, alias, or nested class even though Python assigns them through
+   * one class namespace. The map lets a later statement remove the replaced
+   * unit and its descendants before publication.
    */
   private readonly classBindings: Map<string, string> = new Map<
     string,
@@ -77,7 +77,8 @@ export class EvidPythonFileScanner {
   /**
    * Tracks declaration positions used to identify enclosing public hosts.
    *
-   * Position records retain nesting information after parser nodes are released.
+   * Position records retain nesting information after parser nodes are
+   * released.
    */
   private readonly positions = new Map<string, IEvidPythonHostPosition>();
 
@@ -124,7 +125,8 @@ export class EvidPythonFileScanner {
   /**
    * Converts parser offsets into source ranges for units and documentation.
    *
-   * The scanner owns this helper because all returned records must outlive nodes.
+   * The scanner owns this helper because all returned records must outlive
+   * nodes.
    */
   private readonly text: EvidSourceText;
 
@@ -154,7 +156,8 @@ export class EvidPythonFileScanner {
    * Produces the serializable extraction result for this Python source file.
    *
    * The first pass establishes `__all__`; the second records declarations and
-   * bindings, so public-name decisions do not depend on statement encounter order.
+   * bindings, so public-name decisions do not depend on statement encounter
+   * order.
    */
   public scan(): IEvidPythonFileAnalysis {
     const statements = this.session.root.namedChildren.filter(
@@ -216,7 +219,8 @@ export class EvidPythonFileScanner {
     if (statement.type !== "expression_statement") return false;
     const expression = statement.namedChildren[0];
     if (expression?.type === "assignment") {
-      if (EvidPythonSyntax.assignmentName(expression) !== "__all__") return false;
+      if (EvidPythonSyntax.assignmentName(expression) !== "__all__")
+        return false;
       const names = EvidPythonSyntax.literalSequence(
         expression.childForFieldName("right"),
       );
@@ -228,7 +232,8 @@ export class EvidPythonFileScanner {
       return true;
     }
     if (expression?.type === "augmented_assignment") {
-      if (EvidPythonSyntax.assignmentName(expression) !== "__all__") return false;
+      if (EvidPythonSyntax.assignmentName(expression) !== "__all__")
+        return false;
       const names = EvidPythonSyntax.literalSequence(
         expression.childForFieldName("right"),
       );
@@ -547,8 +552,9 @@ export class EvidPythonFileScanner {
    * Records an augmented assignment as a property update.
    *
    * A same-kind class property keeps its earlier declaration sites. When the
-   * update reuses a name previously occupied by another supported kind, the class
-   * dictionary replacement removes that obsolete unit before the property is added.
+   * update reuses a name previously occupied by another supported kind, the
+   * class dictionary replacement removes that obsolete unit before the property
+   * is added.
    */
   private scanAugmentedAssignment(
     statement: EvidNode,
@@ -781,9 +787,9 @@ export class EvidPythonFileScanner {
    * Removes the class binding displaced by one later suite statement.
    *
    * Python stores methods, attributes, aliases, and nested classes in the same
-   * executed class dictionary. Unless the new declaration extends an established
-   * overload or accessor family, replacing a binding also removes every unit
-   * structurally owned by the obsolete nested declaration.
+   * executed class dictionary. Unless the new declaration extends an
+   * established overload or accessor family, replacing a binding also removes
+   * every unit structurally owned by the obsolete nested declaration.
    */
   private replaceClassBinding(
     parentId: string,
@@ -840,7 +846,8 @@ export class EvidPythonFileScanner {
     let changed: boolean = true;
     while (changed) {
       changed = false;
-      const records: IterableIterator<IEvidPythonOwnedUnit> = this.units.values();
+      const records: IterableIterator<IEvidPythonOwnedUnit> =
+        this.units.values();
       for (const record of records)
         if (
           record.unit.parentId !== undefined &&
@@ -900,7 +907,11 @@ export class EvidPythonFileScanner {
    *
    * Positions retain parser-independent nesting and source-location metadata.
    */
-  private registerPosition(node: EvidNode, siteId: string, unitId: string): void {
+  private registerPosition(
+    node: EvidNode,
+    siteId: string,
+    unitId: string,
+  ): void {
     const id = this.positionId(node);
     let position = this.positions.get(id);
     if (position === undefined) {
@@ -955,7 +966,9 @@ export class EvidPythonFileScanner {
     siteId: string,
     unitId: string,
   ): void {
-    const value = EvidPythonSyntax.docstring(definition.childForFieldName("body"));
+    const value = EvidPythonSyntax.docstring(
+      definition.childForFieldName("body"),
+    );
     if (value === undefined) return;
     const parts = EvidPythonSyntax.docstringParts(value);
     if (parts === undefined) return;
@@ -1001,9 +1014,11 @@ export class EvidPythonFileScanner {
   }
 
   /**
-   * Collects contiguous Python comment runs eligible for declaration attachment.
+   * Collects contiguous Python comment runs eligible for declaration
+   * attachment.
    *
-   * The final line index allows a constant-time lookup from the next declaration.
+   * The final line index allows a constant-time lookup from the next
+   * declaration.
    */
   private collectCommentRuns(): void {
     const comments = this.session.root
@@ -1212,7 +1227,8 @@ export class EvidPythonFileScanner {
   /**
    * Detects nested mutations of the module's `__all__` binding.
    *
-   * Control flow around this state prevents a complete static export population.
+   * Control flow around this state prevents a complete static export
+   * population.
    */
   private containsAllMutation(node: EvidNode): boolean {
     const definition = EvidPythonSyntax.definition(node);
@@ -1339,7 +1355,8 @@ export class EvidPythonFileScanner {
   /**
    * Checks whether a module name is eligible for public extraction.
    *
-   * Private spellings are excluded unless `__all__` later explicitly exposes them.
+   * Private spellings are excluded unless `__all__` later explicitly exposes
+   * them.
    */
   private selectedModuleName(name: string | undefined): boolean {
     if (name === undefined) return false;
@@ -1379,7 +1396,10 @@ export class EvidPythonFileScanner {
    * Receiver-aware scanning distinguishes supported initializer fields from
    * arbitrary mutation in nested executable code.
    */
-  private containsReceiverAssignment(node: EvidNode, receiver: string): boolean {
+  private containsReceiverAssignment(
+    node: EvidNode,
+    receiver: string,
+  ): boolean {
     const mutations = [
       ...node.descendantsOfType("assignment"),
       ...node.descendantsOfType("augmented_assignment"),
@@ -1399,7 +1419,10 @@ export class EvidPythonFileScanner {
    *
    * Only these names can be represented as static property declarations.
    */
-  private receiverAttributes(node: EvidNode | null, receiver: string): string[] {
+  private receiverAttributes(
+    node: EvidNode | null,
+    receiver: string,
+  ): string[] {
     if (node === null) return [];
     const attributes =
       node.type === "attribute" ? [node] : node.descendantsOfType("attribute");
@@ -1463,7 +1486,8 @@ export class EvidPythonFileScanner {
   /**
    * Checks whether raw comment or string text contains an Evid tag.
    *
-   * Tagged carriers are retained even when ordinary documentation attachment fails.
+   * Tagged carriers are retained even when ordinary documentation attachment
+   * fails.
    */
   private annotation(raw: string): boolean {
     return /(?:^|[\r\n])[ \t]*(?:#[ \t]*)?@(evidenceExcludeReview|evidenceReview|evidenceExclude|evidence|link|internal|hidden|ignore)\b/u.test(

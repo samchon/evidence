@@ -3,14 +3,16 @@ import type { EvidProgrammingSymbol } from "../../typings/EvidProgrammingSymbol"
 import type { EvidGoDeclarationForm } from "./EvidGoDeclarationForm";
 
 /**
- * Records one exported Go declaration before package-wide ownership is resolved.
+ * Records one exported Go declaration before package-wide ownership is
+ * resolved.
  *
- * EvidGoFileScanner creates these physical records, and EvidGoPackageResolver combines
- * compatible records into the semantic units that Evid publishes.
+ * EvidGoFileScanner creates these physical records, and EvidGoPackageResolver
+ * combines compatible records into the semantic units that Evid publishes.
  */
 export interface IEvidGoDeclaration {
   /**
-   * Scanner-local identifier used to attach documentation before reconciliation.
+   * Scanner-local identifier used to attach documentation before
+   * reconciliation.
    *
    * The resolver replaces this physical key with a package-wide unit ID.
    */
@@ -33,14 +35,16 @@ export interface IEvidGoDeclaration {
   /**
    * Go syntax form used to resolve receivers and compatible declarations.
    *
-   * Package materialization accepts only local defined types as method receivers.
+   * Package materialization accepts only local defined types as method
+   * receivers.
    */
   form: EvidGoDeclarationForm;
 
   /**
    * Exported enclosing type name for a member or receiver method.
    *
-   * Omission means that the declaration belongs directly to the package surface.
+   * Omission means that the declaration belongs directly to the package
+   * surface.
    */
   owner?: string;
 

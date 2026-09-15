@@ -4,7 +4,10 @@ import { parseArgs } from "node:util";
 
 import { EvidTestParserAssets } from "./internal/EvidTestParserAssets";
 
-/** Executes all logic tests, or file-name filters explicitly supplied by a contributor. */
+/**
+ * Executes all logic tests, or file-name filters explicitly supplied by a
+ * contributor.
+ */
 async function main(): Promise<void> {
   await EvidTestParserAssets.run(run);
 }

@@ -2,9 +2,10 @@
  * Configured, logical, and physical locations of a source population's root.
  *
  * Relative roots resolve from the configuration directory, while directory
- * symlinks and Windows junctions can redirect the physical scan. These spellings
- * remain separate so discovery can enforce boundaries and diagnostics can still
- * explain the path the user configured, including roots that cannot be read.
+ * symlinks and Windows junctions can redirect the physical scan. These
+ * spellings remain separate so discovery can enforce boundaries and diagnostics
+ * can still explain the path the user configured, including roots that cannot
+ * be read.
  */
 export interface IEvidSourceRoot {
   /**
@@ -26,16 +27,18 @@ export interface IEvidSourceRoot {
   /**
    * Canonical directory used for scanning when discovery resolves the root.
    *
-   * Omission records that no directory could be resolved. The logical path remains
-   * available for diagnostics and watch recovery of a missing or repaired root.
+   * Omission records that no directory could be resolved. The logical path
+   * remains available for diagnostics and watch recovery of a missing or
+   * repaired root.
    */
   physical?: string;
 
   /**
-   * User-facing root path relative to the configuration directory where possible.
+   * User-facing root path relative to the configuration directory where
+   * possible.
    *
-   * Cross-volume paths remain absolute. This presentation choice does not replace
-   * logical or physical identity during source discovery.
+   * Cross-volume paths remain absolute. This presentation choice does not
+   * replace logical or physical identity during source discovery.
    */
   display: string;
 }

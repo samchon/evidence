@@ -4,9 +4,11 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches PHPDoc annotations to exact declaration hosts.
+/**
+ * Attaches PHPDoc annotations to exact declaration hosts.
  *
- * PHPDoc may acknowledge its attached declaration, while strings, ordinary comments, and examples remain inert.
+ * PHPDoc may acknowledge its attached declaration, while strings, ordinary
+ * comments, and examples remain inert.
  *
  * 1. Analyze declarations with eligible and ineligible tag-shaped text.
  * 2. Verify exact host attachment and original coordinates.

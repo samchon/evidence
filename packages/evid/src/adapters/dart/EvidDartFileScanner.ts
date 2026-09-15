@@ -10,11 +10,12 @@ import type { IEvidDartDocumentation } from "./IEvidDartDocumentation";
 import type { IEvidDartFileAnalysis } from "./IEvidDartFileAnalysis";
 
 /**
- * Extracts explicit Dart declarations while leaving library topology to snapshot resolution.
+ * Extracts explicit Dart declarations while leaving library topology to
+ * snapshot resolution.
  *
- * The scanner owns parser-bound nodes for one source only. It emits declarations,
- * directives, and documentation as independent records so parts and exported
- * aliases can be reconciled across the selected snapshot.
+ * The scanner owns parser-bound nodes for one source only. It emits
+ * declarations, directives, and documentation as independent records so parts
+ * and exported aliases can be reconciled across the selected snapshot.
  */
 export class EvidDartFileScanner {
   /**
@@ -34,22 +35,24 @@ export class EvidDartFileScanner {
   /**
    * Stores unsupported source boundaries that prevent complete analysis.
    *
-   * These diagnostics preserve failed extraction rather than omitting declarations.
+   * These diagnostics preserve failed extraction rather than omitting
+   * declarations.
    */
   private readonly diagnostics: IEvidDiagnostic[] = [];
 
   /**
    * Stores static part and export relationships.
    *
-   * EvidDartLibraries resolves this topology after every selected file is scanned.
+   * EvidDartLibraries resolves this topology after every selected file is
+   * scanned.
    */
   private readonly directives: IEvidDartDirective[] = [];
 
   /**
    * Borrows the active parser session and immutable source.
    *
-   * The session supplies syntax and ranges, while source identity is copied into
-   * records that remain valid after the parser callback closes.
+   * The session supplies syntax and ranges, while source identity is copied
+   * into records that remain valid after the parser callback closes.
    */
   public constructor(
     private readonly session: EvidParseSession,
@@ -57,7 +60,8 @@ export class EvidDartFileScanner {
   ) {}
 
   /**
-   * Establishes physical declarations, documentation ownership, and source boundaries.
+   * Establishes physical declarations, documentation ownership, and source
+   * boundaries.
    *
    * Documentation is collected first so adjacency is decided from original
    * source positions before directives and declarations consume the tree.
@@ -97,9 +101,11 @@ export class EvidDartFileScanner {
   }
 
   /**
-   * Visits library and nominal scopes without entering initializers or function bodies.
+   * Visits library and nominal scopes without entering initializers or function
+   * bodies.
    *
-   * Executable code cannot add a stable declaration to the static public surface.
+   * Executable code cannot add a stable declaration to the static public
+   * surface.
    */
   private scope(body: EvidNode, owner: IEvidDartDeclaration | undefined): void {
     for (const node of body.namedChildren) {
@@ -182,11 +188,15 @@ export class EvidDartFileScanner {
   }
 
   /**
-   * Gives named extensions their own owner while unnamed extensions remain library-local.
+   * Gives named extensions their own owner while unnamed extensions remain
+   * library-local.
    *
    * This preserves Dart's distinct public address rules for extension members.
    */
-  private nominal(node: EvidNode, owner: IEvidDartDeclaration | undefined): void {
+  private nominal(
+    node: EvidNode,
+    owner: IEvidDartDeclaration | undefined,
+  ): void {
     let name = node.childForFieldName("name");
     if (name?.type === "extension_type_name")
       name =
@@ -216,11 +226,15 @@ export class EvidDartFileScanner {
   }
 
   /**
-   * Unwraps class members while preserving metadata and documentation on the whole declaration.
+   * Unwraps class members while preserving metadata and documentation on the
+   * whole declaration.
    *
    * Attachments must remain on the declaration that defines the public unit.
    */
-  private member(node: EvidNode, owner: IEvidDartDeclaration | undefined): void {
+  private member(
+    node: EvidNode,
+    owner: IEvidDartDeclaration | undefined,
+  ): void {
     const declaration = node.namedChildren.find(
       (child) =>
         child.type === "declaration" || child.type === "method_declaration",
@@ -249,9 +263,11 @@ export class EvidDartFileScanner {
   }
 
   /**
-   * Treats getters and setters as one property and explicit constructors or operators as functions.
+   * Treats getters and setters as one property and explicit constructors or
+   * operators as functions.
    *
-   * The classification determines the public selector emitted for the declaration.
+   * The classification determines the public selector emitted for the
+   * declaration.
    */
   private signature(
     node: EvidNode,
@@ -291,7 +307,8 @@ export class EvidDartFileScanner {
   }
 
   /**
-   * Reads only declarator lists, never identifiers nested in initializer expressions.
+   * Reads only declarator lists, never identifiers nested in initializer
+   * expressions.
    *
    * This prevents referenced names from becoming false variable declarations.
    */
@@ -404,7 +421,8 @@ export class EvidDartFileScanner {
   /**
    * Copies static URI relationships and ordered export filters.
    *
-   * Library resolution applies filters in source order to determine exported names.
+   * Library resolution applies filters in source order to determine exported
+   * names.
    */
   private directive(node: EvidNode, kind: IEvidDartDirective["kind"]): void {
     const named = node.namedChildren.find(
@@ -460,9 +478,11 @@ export class EvidDartFileScanner {
   }
 
   /**
-   * Normalizes a named library from identifier segments rather than source whitespace.
+   * Normalizes a named library from identifier segments rather than source
+   * whitespace.
    *
-   * Segment-based identity keeps comments and formatting out of the semantic name.
+   * Segment-based identity keeps comments and formatting out of the semantic
+   * name.
    */
   private qualifiedName(node: EvidNode): string {
     return node.namedChildren
@@ -472,7 +492,8 @@ export class EvidDartFileScanner {
   }
 
   /**
-   * Groups adjacent DartDoc comments and retains unsupported annotation carriers.
+   * Groups adjacent DartDoc comments and retains unsupported annotation
+   * carriers.
    *
    * Detached carriers remain available for a truthful host diagnostic.
    */

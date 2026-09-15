@@ -5,14 +5,17 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Merges compatible Ruby reopenings while retaining replacement conflicts.
+/**
+ * Merges compatible Ruby reopenings while retaining replacement conflicts.
  *
- * Reopened declarations can share identity, but incompatible definitions must remain incomplete.
+ * Reopened declarations can share identity, but incompatible definitions must
+ * remain incomplete.
  *
  * 1. Analyze two compatible `Shop::Sale` class bodies and require one semantic
  *    type with two physical sites and no diagnostics.
  * 2. Analyze conflicting container, superclass, constant, attribute, and method
- *    replacements; require incompleteness, every conflict code, and both method sites.
+ *    replacements; require incompleteness, every conflict code, and both method
+ *    sites.
  */
 export async function test_ruby_definitions(): Promise<void> {
   const compatible = await new EvidRubyAdapter().analyze(
@@ -107,10 +110,7 @@ export async function test_ruby_definitions(): Promise<void> {
   );
 }
 
-function requireUnit(
-  inventory: IEvidInventory,
-  identity: string,
-): IEvidUnit {
+function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.join(".") === identity,
   );

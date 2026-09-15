@@ -20,8 +20,9 @@ export namespace EvidQueryReporter {
   /**
    * Selects the text or JSON representation for a query result.
    *
-   * Every representation ends with a newline so callers can write it directly to
-   * stdout or a report file. The command discriminator selects the text layout.
+   * Every representation ends with a newline so callers can write it directly
+   * to stdout or a report file. The command discriminator selects the text
+   * layout.
    */
   export function render(
     report: EvidQueryReport,
@@ -33,8 +34,8 @@ export namespace EvidQueryReporter {
   /**
    * Serializes the complete query report as indented JSON.
    *
-   * JSON retains all diagnostics and inspection details for tools that should not
-   * infer structure from terminal-oriented text.
+   * JSON retains all diagnostics and inspection details for tools that should
+   * not infer structure from terminal-oriented text.
    */
   export function json(report: EvidQueryReport): string {
     return JSON.stringify(report, null, 2) + "\n";
@@ -56,8 +57,8 @@ export namespace EvidQueryReporter {
 /**
  * Renders a filtered inventory listing and its analysis diagnostics.
  *
- * Filters appear in the heading so a copied terminal report records the selected
- * population even when its item list is empty.
+ * Filters appear in the heading so a copied terminal report records the
+ * selected population even when its item list is empty.
  */
 function list(report: IEvidListReport): string {
   const filters = [
@@ -118,8 +119,9 @@ function inspect(report: IEvidInspectReport): string {
 /**
  * Expands one population's selected units, obligations, and acknowledgements.
  *
- * The report includes both declared target candidates and resolved units so users
- * can distinguish spelling ambiguity from graph coverage or review state.
+ * The report includes both declared target candidates and resolved units so
+ * users can distinguish spelling ambiguity from graph coverage or review
+ * state.
  */
 function inspectionLines(inspection: IEvidInspection): string[] {
   const lines = [`${scope(inspection.scope)} ${inspection.status}`];
@@ -159,7 +161,8 @@ function inspectionLines(inspection: IEvidInspection): string[] {
 }
 
 /**
- * Renders the certified adapter catalog without consulting project configuration.
+ * Renders the certified adapter catalog without consulting project
+ * configuration.
  *
  * Grammar patterns, addressing rules, and documented unsupported forms let an
  * author choose an available artifact type before writing a configuration.
@@ -191,8 +194,8 @@ function languages(report: IEvidLanguagesReport): string {
 /**
  * Appends analysis findings in the compact query-report diagnostic layout.
  *
- * Query reports retain diagnostics from the shared analysis even if their primary
- * listing or inspection data was successfully produced.
+ * Query reports retain diagnostics from the shared analysis even if their
+ * primary listing or inspection data was successfully produced.
  */
 function appendDiagnostics(
   lines: string[],

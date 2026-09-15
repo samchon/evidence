@@ -11,13 +11,19 @@ import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
 import { EvidTestParserError } from "../../internal/EvidTestParserError";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Acquires the selected GoogleSQL grammar and reuses its cached inventory offline.
+/**
+ * Acquires the selected GoogleSQL grammar and reuses its cached inventory
+ * offline.
  *
- * The parser boundary must load BigQuery alone and preserve a completed schema analysis after the network becomes unavailable.
+ * The parser boundary must load BigQuery alone and preserve a completed schema
+ * analysis after the network becomes unavailable.
  *
- * 1. Fetch the configured BigQuery WASM once and analyze an ARRAY<STRUCT> table without diagnostics.
- * 2. Reanalyze from the populated cache with a failing fetch callback and require the identical inventory.
- * 3. Parse the schema directly, then reject a TypeScript extension and an unsupported GoogleSQL query capture.
+ * 1. Fetch the configured BigQuery WASM once and analyze an ARRAY<STRUCT> table
+ *    without diagnostics.
+ * 2. Reanalyze from the populated cache with a failing fetch callback and require
+ *    the identical inventory.
+ * 3. Parse the schema directly, then reject a TypeScript extension and an
+ *    unsupported GoogleSQL query capture.
  */
 export async function test_bigquery_acquisition(): Promise<void> {
   const grammar = await new EvidTreeSitterAssets().grammar("bigquery");

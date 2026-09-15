@@ -5,7 +5,8 @@ import type { IEvidRustFilePlacement } from "./IEvidRustFilePlacement";
  * Describes one public Rust module binding and the file that exposes its alias.
  *
  * Resolver traversal carries the declaration and its module placement together
- * so visibility is evaluated at the binding boundary instead of the use site alone.
+ * so visibility is evaluated at the binding boundary instead of the use site
+ * alone.
  */
 export interface IEvidRustExportRecord {
   /**

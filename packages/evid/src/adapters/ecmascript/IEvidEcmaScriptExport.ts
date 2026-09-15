@@ -4,7 +4,8 @@ import type { EvidEcmaScriptExportKind } from "./EvidEcmaScriptExportKind";
  * Describes one static export edge discovered in an ECMAScript-family module.
  *
  * The export resolver follows these edges through the source snapshot to expose
- * local units under their public module names and diagnose unsupported targets.
+ * local units under their public module names and diagnose unsupported
+ * targets.
  */
 export interface IEvidEcmaScriptExport {
   /**
@@ -34,8 +35,8 @@ export interface IEvidEcmaScriptExport {
   /**
    * Name requested from the referenced module by a named re-export.
    *
-   * Omission means this edge does not select one imported member, as with local,
-   * namespace, and star export forms.
+   * Omission means this edge does not select one imported member, as with
+   * local, namespace, and star export forms.
    */
   importedName?: string;
 

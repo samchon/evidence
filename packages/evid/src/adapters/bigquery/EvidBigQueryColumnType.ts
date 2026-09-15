@@ -1,12 +1,15 @@
 import type { Node as EvidNode } from "web-tree-sitter";
 
-/** Bounds the grammar's permissive type names to declared GoogleSQL schema types.
+/**
+ * Bounds the grammar's permissive type names to declared GoogleSQL schema
+ * types.
  *
  * Tree-sitter accepts broader syntax than this adapter can materialize safely,
  * so the scanner rejects fields outside this explicit semantic surface.
  */
 export namespace EvidBigQueryColumnType {
-  /** Checks scalar leaves and structural envelopes.
+  /**
+   * Checks scalar leaves and structural envelopes.
    *
    * Nested fields are validated separately by the scanner; replacing them with
    * `FIELD` here verifies only the enclosing ARRAY or STRUCT shape.

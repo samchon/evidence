@@ -24,9 +24,9 @@ import { EvidSwiftOwnership } from "./EvidSwiftOwnership";
  *
  * The scanner records explicit declarations before snapshot-wide ownership
  * resolution links extensions and nominal types. Materialization includes the
- * root identity so equal declarations in separate module selections stay distinct.
- * Documentation then attaches to the reconciled owners, while source dependencies
- * retain every physical file needed to invalidate the analysis.
+ * root identity so equal declarations in separate module selections stay
+ * distinct. Documentation then attaches to the reconciled owners, while source
+ * dependencies retain every physical file needed to invalidate the analysis.
  */
 export class EvidSwiftAdapterBase implements IEvidAdapter {
   /**
@@ -40,13 +40,12 @@ export class EvidSwiftAdapterBase implements IEvidAdapter {
   /**
    * Builds a module-scoped Swift inventory from a captured source population.
    *
-   * Extension ownership resolves before units are published. Inaccessible input,
-   * unsupported ownership, and syntax failures remain incomplete findings; the
-   * invocation releases its parser regardless of the materialization outcome.
+   * Extension ownership resolves before units are published. Inaccessible
+   * input, unsupported ownership, and syntax failures remain incomplete
+   * findings; the invocation releases its parser regardless of the
+   * materialization outcome.
    */
-  public async analyze(
-    snapshot: IEvidSourceSnapshot,
-  ): Promise<IEvidInventory> {
+  public async analyze(snapshot: IEvidSourceSnapshot): Promise<IEvidInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidInventory = {
       schemaVersion: 1,
@@ -101,7 +100,8 @@ export class EvidSwiftAdapterBase implements IEvidAdapter {
   /**
    * Converts parser failures into incomplete source analysis.
    *
-   * The returned record preserves a source-specific diagnostic so parsing failure cannot shrink coverage.
+   * The returned record preserves a source-specific diagnostic so parsing
+   * failure cannot shrink coverage.
    */
   private async scan(
     parser: EvidParser,
@@ -114,8 +114,7 @@ export class EvidSwiftAdapterBase implements IEvidAdapter {
         (session) => new EvidSwiftFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError =
-        cause instanceof EvidParserError ? cause : undefined;
+      const parserError = cause instanceof EvidParserError ? cause : undefined;
       return {
         source,
         declarations: [],
@@ -145,7 +144,8 @@ export class EvidSwiftAdapterBase implements IEvidAdapter {
   /**
    * Reconciles overload families and retains each physical declaration address.
    *
-   * Conflicting public identities remain incomplete instead of being merged by source order.
+   * Conflicting public identities remain incomplete instead of being merged by
+   * source order.
    */
   private materializeUnits(
     inventory: IEvidInventory,
@@ -235,9 +235,11 @@ export class EvidSwiftAdapterBase implements IEvidAdapter {
   }
 
   /**
-   * Allows a protocol requirement and its explicit extension property implementation to share a unit.
+   * Allows a protocol requirement and its explicit extension property
+   * implementation to share a unit.
    *
-   * Other repeated non-function declarations remain conflicts because they do not establish this pairing.
+   * Other repeated non-function declarations remain conflicts because they do
+   * not establish this pairing.
    */
   private protocolDefault(
     declaration: IEvidSwiftDeclaration,
@@ -261,7 +263,8 @@ export class EvidSwiftAdapterBase implements IEvidAdapter {
   /**
    * Resolves withdrawals before publishing attached annotation hosts.
    *
-   * Hidden units remain unavailable to ordinary tags while their withdrawal location stays diagnostic context.
+   * Hidden units remain unavailable to ordinary tags while their withdrawal
+   * location stays diagnostic context.
    */
   private materializeDocumentation(
     inventory: IEvidInventory,
@@ -340,7 +343,8 @@ export class EvidSwiftAdapterBase implements IEvidAdapter {
   /**
    * Retains public declaration sites even when they carry no documentation.
    *
-   * Host policies can therefore distinguish an eligible untagged site from missing extraction.
+   * Host policies can therefore distinguish an eligible untagged site from
+   * missing extraction.
    */
   private materializeUndocumentedHosts(
     inventory: IEvidInventory,
@@ -397,7 +401,8 @@ export class EvidSwiftAdapterBase implements IEvidAdapter {
   /**
    * Groups published semantic owners by their physical declaration site.
    *
-   * One documentation carrier can attach to several selected units at the same source occurrence.
+   * One documentation carrier can attach to several selected units at the same
+   * source occurrence.
    */
   private attachmentGroups(
     documentation: IEvidSwiftDocumentation,
@@ -417,7 +422,8 @@ export class EvidSwiftAdapterBase implements IEvidAdapter {
   /**
    * Creates an attached or explicitly unsupported documentation carrier.
    *
-   * Unsupported annotation carriers retain repair guidance rather than being discarded.
+   * Unsupported annotation carriers retain repair guidance rather than being
+   * discarded.
    */
   private host(
     source: IEvidSourceFile,
@@ -446,7 +452,8 @@ export class EvidSwiftAdapterBase implements IEvidAdapter {
   /**
    * Parses Evid tags only after the adapter establishes their host.
    *
-   * Host ownership determines the source context in which authored targets resolve.
+   * Host ownership determines the source context in which authored targets
+   * resolve.
    */
   private parse(
     source: IEvidSourceFile,
@@ -463,15 +470,19 @@ export class EvidSwiftAdapterBase implements IEvidAdapter {
   /**
    * Detects Evid or withdrawal annotations outside masked examples.
    *
-   * The result decides whether an otherwise unsupported carrier needs a diagnostic host.
+   * The result decides whether an otherwise unsupported carrier needs a
+   * diagnostic host.
    */
   private annotation(
     analysis: IEvidSwiftFileAnalysis,
     documentation: IEvidSwiftDocumentation,
   ): boolean {
     return this.annotationPattern(
-      EvidSwiftDocumentation.read(analysis.source, documentation, documentation.id)
-        .text,
+      EvidSwiftDocumentation.read(
+        analysis.source,
+        documentation,
+        documentation.id,
+      ).text,
       true,
     );
   }
@@ -479,15 +490,19 @@ export class EvidSwiftAdapterBase implements IEvidAdapter {
   /**
    * Detects acknowledgements and reviews on withdrawn carriers.
    *
-   * Withdrawal directives themselves are excluded so they can be processed as visibility state.
+   * Withdrawal directives themselves are excluded so they can be processed as
+   * visibility state.
    */
   private claimAnnotation(
     analysis: IEvidSwiftFileAnalysis,
     documentation: IEvidSwiftDocumentation,
   ): boolean {
     return this.annotationPattern(
-      EvidSwiftDocumentation.read(analysis.source, documentation, documentation.id)
-        .text,
+      EvidSwiftDocumentation.read(
+        analysis.source,
+        documentation,
+        documentation.id,
+      ).text,
       false,
     );
   }
@@ -495,7 +510,8 @@ export class EvidSwiftAdapterBase implements IEvidAdapter {
   /**
    * Recognizes supported annotation names at documentation line boundaries.
    *
-   * Restricting the match avoids treating inline prose or example fragments as annotations.
+   * Restricting the match avoids treating inline prose or example fragments as
+   * annotations.
    */
   private annotationPattern(raw: string, withdrawal: boolean): boolean {
     return withdrawal
@@ -510,7 +526,8 @@ export class EvidSwiftAdapterBase implements IEvidAdapter {
   /**
    * Follows explicit parent ownership to propagate withdrawal.
    *
-   * The visited set rejects cycles while preserving the nearest valid hidden ancestor.
+   * The visited set rejects cycles while preserving the nearest valid hidden
+   * ancestor.
    */
   private withdrawn(
     id: string,
@@ -528,18 +545,24 @@ export class EvidSwiftAdapterBase implements IEvidAdapter {
   }
 
   /**
-   * Separates programming kinds while unifying module-scoped overload identities.
+   * Separates programming kinds while unifying module-scoped overload
+   * identities.
    *
-   * The module root keeps equal source-relative declarations in different selections distinct.
+   * The module root keeps equal source-relative declarations in different
+   * selections distinct.
    */
-  private unitId(declaration: IEvidSwiftDeclaration, moduleRoot: string): string {
+  private unitId(
+    declaration: IEvidSwiftDeclaration,
+    moduleRoot: string,
+  ): string {
     return `swift:${JSON.stringify([moduleRoot, declaration.symbol, ...declaration.identity])}`;
   }
 
   /**
    * Marks a declaration conflict as incomplete analysis.
    *
-   * The diagnostic remains associated with the source analysis that supplied the conflict.
+   * The diagnostic remains associated with the source analysis that supplied
+   * the conflict.
    */
   private problem(
     inventory: IEvidInventory,

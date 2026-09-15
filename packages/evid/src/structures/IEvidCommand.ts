@@ -11,8 +11,8 @@ import type { IEvidVersionCommand } from "./IEvidVersionCommand";
  * Validated operation selected from the complete CLI argument list.
  *
  * Parsing rejects unknown, repeated, or incompatible options before producing
- * this discriminated union. Execution dispatches on operation without reinterpreting
- * raw tokens or allowing trailing input to escape validation.
+ * this discriminated union. Execution dispatches on operation without
+ * reinterpreting raw tokens or allowing trailing input to escape validation.
  */
 export type IEvidCommand =
   | IEvidCheckCommand

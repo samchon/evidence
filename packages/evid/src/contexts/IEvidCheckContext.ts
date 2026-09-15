@@ -13,16 +13,18 @@ export interface IEvidCheckContext {
   /**
    * Resolved configuration plan used throughout this checker execution.
    *
-   * It retains effective activation and original configuration coordinates, which
-   * graph diagnostics use to identify the declaration that created an obligation.
+   * It retains effective activation and original configuration coordinates,
+   * which graph diagnostics use to identify the declaration that created an
+   * obligation.
    */
   readonly plan: IEvidConfigPlan;
 
   /**
    * Claim adapter results materialized from the same configuration snapshot.
    *
-   * Each entry retains claim and reference inventories before graph evaluation so
-   * incomplete scans remain visible instead of being removed during preparation.
+   * Each entry retains claim and reference inventories before graph evaluation
+   * so incomplete scans remain visible instead of being removed during
+   * preparation.
    */
   readonly claims: IEvidMaterializedClaim[];
 }

@@ -11,9 +11,12 @@ import { dedent } from "@typia/utils";
 import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Evaluates Java type, function, and property evidence with semantic fingerprints.
+/**
+ * Evaluates Java type, function, and property evidence with semantic
+ * fingerprints.
  *
- * Graph obligations remain exact across symbol kinds and prose cannot alter code identity.
+ * Graph obligations remain exact across symbol kinds and prose cannot alter
+ * code identity.
  *
  * 1. Evaluate covered claims.
  * 2. Evaluate missing claims and compare IDs.
@@ -163,8 +166,7 @@ export async function test_java_graph(): Promise<void> {
     "Java overload implementation moves family fingerprint",
     EvidFingerprint.inspect(overloadOriginal, overloadOriginalUnit.id)
       .fingerprint,
-    EvidFingerprint.inspect(overloadEdited, overloadEditedUnit.id)
-      .fingerprint,
+    EvidFingerprint.inspect(overloadEdited, overloadEditedUnit.id).fingerprint,
   );
 
   // A sibling variable has its own source content range within a shared declaration.
@@ -198,9 +200,7 @@ async function fingerprintInventory(
   );
 }
 
-async function overloadInventory(
-  statement: string,
-): Promise<IEvidInventory> {
+async function overloadInventory(statement: string): Promise<IEvidInventory> {
   return new EvidJavaAdapter().analyze(
     EvidTestSourceSnapshot.create(
       "src/Calculator.java",
@@ -227,10 +227,7 @@ async function fieldInventory(second: string): Promise<IEvidInventory> {
   );
 }
 
-function requireUnit(
-  inventory: IEvidInventory,
-  name: string,
-): IEvidUnit {
+function requireUnit(inventory: IEvidInventory, name: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === name || candidate.identity.at(-1) === name,

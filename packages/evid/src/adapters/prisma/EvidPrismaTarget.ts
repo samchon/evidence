@@ -5,7 +5,8 @@ import { EvidPrismaSyntax } from "./EvidPrismaSyntax";
  * Parses one file-independent Prisma model or member target.
  *
  * Prisma references use the `prisma:` prefix because their parser-established
- * identities can span files, leaving the returned file key as a fixed namespace.
+ * identities can span files, leaving the returned file key as a fixed
+ * namespace.
  */
 export namespace EvidPrismaTarget {
   export function parse(target: string): IEvidAddress {

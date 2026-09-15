@@ -4,14 +4,17 @@ import type { IEvidScalaDeclaration } from "./IEvidScalaDeclaration";
 import type { IEvidScalaFileAnalysis } from "./IEvidScalaFileAnalysis";
 
 /**
- * Resolves named exports as alternate addresses of selected public source members.
+ * Resolves named exports as alternate addresses of selected public source
+ * members.
  *
  * Export syntax has its own physical declaration and documentation site, while
- * the forwarded member retains identity and withdrawal ownership at its source.
+ * the forwarded member retains identity and withdrawal ownership at its
+ * source.
  */
 export namespace EvidScalaExports {
   /**
-   * Keeps source ownership and identity while attaching the export's own declaration site.
+   * Keeps source ownership and identity while attaching the export's own
+   * declaration site.
    *
    * Only one selected singleton owner can satisfy an export; ambiguity remains
    * incomplete instead of choosing a same-named member from another object.
@@ -99,7 +102,8 @@ export namespace EvidScalaExports {
   /**
    * Resolves lexical withdrawals before exports can expose alternate addresses.
    *
-   * Attached withdrawal annotations seed hidden declarations, then explicit parent ownership propagates that state to descendants.
+   * Attached withdrawal annotations seed hidden declarations, then explicit
+   * parent ownership propagates that state to descendants.
    */
   function withdrawals(analyses: IEvidScalaFileAnalysis[]): Set<string> {
     const hidden = new Set<string>();
@@ -140,9 +144,11 @@ export namespace EvidScalaExports {
   }
 
   /**
-   * Requires an export owner path made entirely of singleton and package objects.
+   * Requires an export owner path made entirely of singleton and package
+   * objects.
    *
-   * Classes, traits, cycles, and unresolved parent records cannot supply a static source namespace for export resolution.
+   * Classes, traits, cycles, and unresolved parent records cannot supply a
+   * static source namespace for export resolution.
    */
   function staticObject(
     declaration: IEvidScalaDeclaration,

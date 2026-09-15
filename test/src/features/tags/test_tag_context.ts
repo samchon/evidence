@@ -7,7 +7,8 @@ import { EvidTestDocumentation } from "../../internal/EvidTestDocumentation";
 /**
  * Resets annotation continuations, fences, and diagnostics for every parse.
  *
- * Reusing a controller after mutating its original host and a previous result preserves the captured documentation and its valid annotation.
+ * Reusing a controller after mutating its original host and a previous result
+ * preserves the captured documentation and its valid annotation.
  *
  * 1. Parse a host and retain its baseline annotation result.
  * 2. Mutate the original host and prior result, then parse again.

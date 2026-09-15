@@ -7,14 +7,15 @@ import type { IEvidSwiftDocumentation } from "./IEvidSwiftDocumentation";
 /**
  * Reads DocC while preserving source mappings and masking code examples.
  *
- * EvidSwiftAdapterBase uses the normalized result for tag parsing after it establishes a
- * documentation host.
+ * EvidSwiftAdapterBase uses the normalized result for tag parsing after it
+ * establishes a documentation host.
  */
 export namespace EvidSwiftDocumentation {
   /**
    * Maps a carrier and removes examples without moving source offsets.
    *
-   * Preserved line positions let tag diagnostics map back to the original Swift source.
+   * Preserved line positions let tag diagnostics map back to the original Swift
+   * source.
    */
   export function read(
     source: IEvidSourceFile,
@@ -75,7 +76,8 @@ export namespace EvidSwiftDocumentation {
   /**
    * Replaces example characters while retaining original line boundaries.
    *
-   * Keeping newlines intact preserves offsets for subsequent parsing and diagnostics.
+   * Keeping newlines intact preserves offsets for subsequent parsing and
+   * diagnostics.
    */
   function hide(characters: string[], start: number, end: number): void {
     for (let index = start; index < end; ++index)

@@ -1,7 +1,8 @@
 import type { IEvidUnit } from "../../structures/IEvidUnit";
 import type { IEvidUnitSite } from "../../structures/IEvidUnitSite";
 
-/** Prisma unit beside the parser documentation used to recover withdrawal state.
+/**
+ * Prisma unit beside the parser documentation used to recover withdrawal state.
  *
  * Ownership is kept explicitly because unit materialization needs both semantic
  * output and the comment text that established its review state.
@@ -18,8 +19,9 @@ export interface IEvidPrismaOwnedUnit {
   /**
    * Parser documentation associated with this semantic unit.
    *
-   * Withdrawal and review handling reads this value after it establishes a host,
-   * preserving the parser's documentation independently of source coordinates.
+   * Withdrawal and review handling reads this value after it establishes a
+   * host, preserving the parser's documentation independently of source
+   * coordinates.
    */
   documentation: string;
 

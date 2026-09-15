@@ -9,13 +9,15 @@ import { EvidSourcePath } from "evid";
 import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
- * Deduplicates linked files without losing addresses and diagnoses traversed directory cycles.
+ * Deduplicates linked files without losing addresses and diagnoses traversed
+ * directory cycles.
  *
- * A snapshot identifies one physical file while preserving every selected logical
- * address, and follows links only while their topology remains acyclic.
+ * A snapshot identifies one physical file while preserving every selected
+ * logical address, and follows links only while their topology remains
+ * acyclic.
  *
- * 1. Create directory junction aliases and a hard link to one Prisma schema,
- *    then require one physical file with all three selected addresses and link
+ * 1. Create directory junction aliases and a hard link to one Prisma schema, then
+ *    require one physical file with all three selected addresses and link
  *    topology dependencies. Require the first logical address to own its stable
  *    fingerprint path while the physical project root maps to `.`.
  * 2. Select through a linked root and require its local relative address while

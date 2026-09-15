@@ -4,9 +4,12 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches C++ Doxygen evidence and reports annotations in unsupported carriers.
+/**
+ * Attaches C++ Doxygen evidence and reports annotations in unsupported
+ * carriers.
  *
- * A declaration-leading documentation comment can host evidence, while literals and unsupported comments cannot create a graph acknowledgement.
+ * A declaration-leading documentation comment can host evidence, while literals
+ * and unsupported comments cannot create a graph acknowledgement.
  *
  * 1. Analyze supported Doxygen comments before C++ declarations.
  * 2. Compare attached declarations and hosts with the expected public units.

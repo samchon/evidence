@@ -5,7 +5,8 @@ import { dedent } from "@typia/utils";
 import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Resolves Java owners, nested declarations, properties, and overload families.
+/**
+ * Resolves Java owners, nested declarations, properties, and overload families.
  *
  * Exact target paths preserve class ownership and overload grouping.
  *

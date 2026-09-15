@@ -3,13 +3,17 @@ import { TestValidator } from "@nestia/e2e";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Keeps unresolved Dart topology and unsupported changes incomplete.
+/**
+ * Keeps unresolved Dart topology and unsupported changes incomplete.
  *
- * The adapter must not publish a smaller public surface when parts, exports, augmentation, parsing, or declaration uniqueness cannot be determined.
+ * The adapter must not publish a smaller public surface when parts, exports,
+ * augmentation, parsing, or declaration uniqueness cannot be determined.
  *
- * 1. Analyze missing parts, external and conditional exports, augmentation, malformed syntax, and duplicate declarations.
+ * 1. Analyze missing parts, external and conditional exports, augmentation,
+ *    malformed syntax, and duplicate declarations.
  * 2. Require the matching incomplete diagnostic and repair for each rejected case.
- * 3. Accept supported external imports and local forms, reject an unadvertised extension, and retain an unreadable-source failure.
+ * 3. Accept supported external imports and local forms, reject an unadvertised
+ *    extension, and retain an unreadable-source failure.
  */
 export async function test_dart_boundaries(): Promise<void> {
   const adapter = new EvidDartAdapter();

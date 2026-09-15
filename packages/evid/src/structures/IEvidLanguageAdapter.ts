@@ -4,14 +4,16 @@ import type { EvidProgrammingSymbol } from "../typings/EvidProgrammingSymbol";
  * Certified declaration and documentation boundaries of a programming adapter.
  *
  * Capability inspection publishes this contract alongside grammar metadata so
- * authors can see which public surfaces and citation spellings extraction supports.
- * Unsupported cases remain explicit instead of being implied by grammar coverage.
+ * authors can see which public surfaces and citation spellings extraction
+ * supports. Unsupported cases remain explicit instead of being implied by
+ * grammar coverage.
  */
 export interface IEvidLanguageAdapter {
   /**
    * Public constructor name exposing the certified adapter.
    *
-   * This connects catalog inspection to the programmatic extraction entry point.
+   * This connects catalog inspection to the programmatic extraction entry
+   * point.
    */
   entry: string;
 
@@ -47,9 +49,11 @@ export interface IEvidLanguageAdapter {
   comments: string[];
 
   /**
-   * Known source capabilities outside the adapter's certified extraction boundary.
+   * Known source capabilities outside the adapter's certified extraction
+   * boundary.
    *
-   * These limitations qualify the public-surface description for capability readers.
+   * These limitations qualify the public-surface description for capability
+   * readers.
    */
   unsupported: string[];
 }

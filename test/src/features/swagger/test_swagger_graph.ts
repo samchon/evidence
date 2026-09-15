@@ -18,9 +18,11 @@ import { dedent } from "@typia/utils";
 import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Evaluates Swagger as a claim and cross-artifact reference.
+/**
+ * Evaluates Swagger as a claim and cross-artifact reference.
  *
- * Operations can supply or require evidence, while reviewed targets remain distinct from acknowledged coverage.
+ * Operations can supply or require evidence, while reviewed targets remain
+ * distinct from acknowledged coverage.
  *
  * 1. Build Swagger and counterpart claim inventories.
  * 2. Resolve supported, missing, and review-only operations.
@@ -109,12 +111,16 @@ export async function test_swagger_graph(): Promise<void> {
             severity: "error",
             inventory: swagger,
             unitIds: [operation.id],
-            resolutions: await EvidTestGraph.resolveDeclarations(client, swagger, [
-              operation.id,
-            ]),
-            reviewResolutions: await EvidTestGraph.resolveReviews(client, swagger, [
-              operation.id,
-            ]),
+            resolutions: await EvidTestGraph.resolveDeclarations(
+              client,
+              swagger,
+              [operation.id],
+            ),
+            reviewResolutions: await EvidTestGraph.resolveReviews(
+              client,
+              swagger,
+              [operation.id],
+            ),
             requireReview: true,
           },
         ],
@@ -186,7 +192,10 @@ export async function test_swagger_graph(): Promise<void> {
 
   // Equal addresses in separate documents become ambiguous when selected together.
   const duplicate = await new EvidSwaggerAdapter().analyze(
-    EvidTestSourceSnapshot.create("duplicate.yaml", swaggerDocument("Duplicate.")),
+    EvidTestSourceSnapshot.create(
+      "duplicate.yaml",
+      swaggerDocument("Duplicate."),
+    ),
   );
   const duplicateOperation = requireUnit(duplicate, "POST:/members");
   const ambiguous = new EvidTargetResolver([swagger, duplicate]);
@@ -227,10 +236,7 @@ function swaggerDocument(description: string): string {
   `;
 }
 
-function requireUnit(
-  inventory: IEvidInventory,
-  identity: string,
-): IEvidUnit {
+function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === identity || candidate.identity.at(-1) === identity,

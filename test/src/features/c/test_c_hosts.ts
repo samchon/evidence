@@ -4,9 +4,11 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches C Doxygen evidence and rejects annotations in inert source carriers.
+/**
+ * Attaches C Doxygen evidence and rejects annotations in inert source carriers.
  *
- * Only documentation that leads an eligible declaration may satisfy evidence; comments in literals or unsupported positions must remain visible failures.
+ * Only documentation that leads an eligible declaration may satisfy evidence;
+ * comments in literals or unsupported positions must remain visible failures.
  *
  * 1. Analyze Doxygen comments before supported declarations.
  * 2. Compare the resulting declarations and attached hosts.

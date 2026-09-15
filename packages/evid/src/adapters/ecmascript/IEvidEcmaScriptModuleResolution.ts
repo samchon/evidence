@@ -5,9 +5,9 @@ import type { EvidEcmaScriptModuleMode } from "./EvidEcmaScriptModuleMode";
 /**
  * Module-mode selection and its evidence for an ECMAScript source snapshot.
  *
- * The adapter consumes this result before parsing files so scanner behavior uses
- * the selected ESM or CommonJS semantics and inventory completeness preserves
- * any package-metadata failure.
+ * The adapter consumes this result before parsing files so scanner behavior
+ * uses the selected ESM or CommonJS semantics and inventory completeness
+ * preserves any package-metadata failure.
  */
 export interface IEvidEcmaScriptModuleResolution {
   /**

@@ -15,7 +15,8 @@ export interface IEvidDbmlFileAnalysis {
   /**
    * Provides the source snapshot that owns every range in this analysis.
    *
-   * All ranges use this snapshot's UTF-16 offsets rather than normalized positions.
+   * All ranges use this snapshot's UTF-16 offsets rather than normalized
+   * positions.
    */
   source: IEvidSourceFile;
 
@@ -34,16 +35,19 @@ export interface IEvidDbmlFileAnalysis {
   relations: IEvidDbmlRelation[];
 
   /**
-   * Retains mapped comments and notes, including unsupported attachment carriers.
+   * Retains mapped comments and notes, including unsupported attachment
+   * carriers.
    *
-   * Later parsing can emit precise diagnostics instead of silently dropping annotations.
+   * Later parsing can emit precise diagnostics instead of silently dropping
+   * annotations.
    */
   documentation: IEvidDbmlDocumentation[];
 
   /**
    * Lists enum semantics required by affected table fingerprints.
    *
-   * The adapter applies these nonselectable dependencies to referring declarations.
+   * The adapter applies these nonselectable dependencies to referring
+   * declarations.
    */
   enums: IEvidDbmlEnum[];
 

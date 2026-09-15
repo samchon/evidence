@@ -5,9 +5,12 @@ import { dedent } from "@typia/utils";
 import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Resolves Go functions and receiver methods through declaration and owner files.
+/**
+ * Resolves Go functions and receiver methods through declaration and owner
+ * files.
  *
- * Receiver ownership and file-relative target paths determine the resolved public declaration.
+ * Receiver ownership and file-relative target paths determine the resolved
+ * public declaration.
  *
  * 1. Analyze functions and receiver methods.
  * 2. Resolve supported targets.

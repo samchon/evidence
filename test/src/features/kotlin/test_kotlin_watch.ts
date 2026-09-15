@@ -5,11 +5,15 @@ import { join } from "node:path";
 
 import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
-/** Rebuilds Kotlin populations after source, discovery, syntax, and configuration changes.
+/**
+ * Rebuilds Kotlin populations after source, discovery, syntax, and
+ * configuration changes.
  *
- * Watch must publish each checked state instead of retaining stale Kotlin analysis.
+ * Watch must publish each checked state instead of retaining stale Kotlin
+ * analysis.
  *
- * 1. Mutate selected source and add a file. 2. Introduce malformed source. 3. Repair it and verify recovery after configuration change.
+ * 1. Mutate selected source and add a file. 2. Introduce malformed source. 3.
+ *    Repair it and verify recovery after configuration change.
  */
 export async function test_kotlin_watch(): Promise<void> {
   await EvidTestFileSystem.experiment(

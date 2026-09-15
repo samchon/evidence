@@ -3,10 +3,12 @@ import type { IEvidSourceRange } from "../../structures/IEvidSourceRange";
 import type { IEvidEcmaScriptCommentAttachment } from "./IEvidEcmaScriptCommentAttachment";
 
 /**
- * Retains one parsed source comment and its scanner-established JSDoc attachments.
+ * Retains one parsed source comment and its scanner-established JSDoc
+ * attachments.
  *
- * The adapter later materializes only attachments whose units become public, so a
- * comment resembling JSDoc cannot create evidence without an eligible declaration.
+ * The adapter later materializes only attachments whose units become public, so
+ * a comment resembling JSDoc cannot create evidence without an eligible
+ * declaration.
  */
 export interface IEvidEcmaScriptComment {
   /**
@@ -21,7 +23,8 @@ export interface IEvidEcmaScriptComment {
    * Physical source range occupied by the complete comment.
    *
    * Materialized documentation uses this range when the comment supplies a
-   * claim, while the declaration host retains its own range when no comment does.
+   * claim, while the declaration host retains its own range when no comment
+   * does.
    */
   range: IEvidSourceRange;
 

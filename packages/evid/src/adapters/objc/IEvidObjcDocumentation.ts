@@ -3,7 +3,8 @@ import type { IEvidSourceRange } from "../../structures/IEvidSourceRange";
 import type { IEvidObjcDocumentationAttachment } from "./IEvidObjcDocumentationAttachment";
 
 /**
- * Represents a Doxygen documentation carrier or unsupported annotation-bearing comment.
+ * Represents a Doxygen documentation carrier or unsupported annotation-bearing
+ * comment.
  *
  * Attachment is determined before interface and implementation sites merge, so
  * tagged ordinary comments remain available for an accurate host diagnostic.
@@ -26,7 +27,8 @@ export interface IEvidObjcDocumentation {
   /**
    * Mapped comment delimiters and withdrawal eligibility.
    *
-   * Tag parsing uses the syntax mapping to preserve carrier-specific boundaries.
+   * Tag parsing uses the syntax mapping to preserve carrier-specific
+   * boundaries.
    */
   syntax: IEvidCommentSyntax;
 

@@ -5,8 +5,9 @@ import type { IEvidCommentSyntax } from "../../structures/IEvidCommentSyntax";
 /**
  * Grammar-specific Go spelling and ownership helpers.
  *
- * Go extraction uses these helpers to recognize exported identifiers, receivers,
- * embedded fields, comments, and literal carriers directly from Tree-sitter nodes.
+ * Go extraction uses these helpers to recognize exported identifiers,
+ * receivers, embedded fields, comments, and literal carriers directly from
+ * Tree-sitter nodes.
  */
 export namespace EvidGoSyntax {
   export function name(node: EvidNode | null): string | undefined {

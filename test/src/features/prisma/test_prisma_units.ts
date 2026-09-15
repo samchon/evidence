@@ -1,17 +1,15 @@
 import { EvidFingerprint, EvidPrismaAdapter } from "evid";
-import type {
-  IEvidInventory,
-  IEvidSourceFile,
-  IEvidUnit,
-} from "evid";
+import type { IEvidInventory, IEvidSourceFile, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Extracts Prisma model, view, column, and relation identities.
+/**
+ * Extracts Prisma model, view, column, and relation identities.
  *
- * Parser-backed units retain exact owners and relations for the public schema population.
+ * Parser-backed units retain exact owners and relations for the public schema
+ * population.
  *
  * 1. Analyze a representative Prisma schema.
  * 2. Verify exact units, owners, identities, and relations.
@@ -146,10 +144,7 @@ function requireUnit(inventory: IEvidInventory, id: string): IEvidUnit {
   return unit;
 }
 
-function requireSource(
-  inventory: IEvidInventory,
-  id: string,
-): IEvidSourceFile {
+function requireSource(inventory: IEvidInventory, id: string): IEvidSourceFile {
   const source = inventory.sources.find((candidate) => candidate.id === id);
   if (source === undefined) throw new Error(`Missing Prisma source: ${id}`);
   return source;

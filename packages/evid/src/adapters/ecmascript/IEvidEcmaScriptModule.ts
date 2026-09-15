@@ -6,9 +6,9 @@ import type { IEvidEcmaScriptOwnedUnit } from "./IEvidEcmaScriptOwnedUnit";
 /**
  * Resolver state retained for one parsed ECMAScript-family source module.
  *
- * `EvidEcmaScriptExportResolver` converts scanner output into this mutable graph
- * node, then uses it to follow local declarations, imports, and re-export edges
- * while assigning public addresses to the inventory.
+ * `EvidEcmaScriptExportResolver` converts scanner output into this mutable
+ * graph node, then uses it to follow local declarations, imports, and re-export
+ * edges while assigning public addresses to the inventory.
  */
 export interface IEvidEcmaScriptModule {
   /**

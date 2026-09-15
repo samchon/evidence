@@ -1,16 +1,14 @@
-import {
-  EvidFingerprint,
-  EvidInventory,
-  EvidObjcAdapter,
-} from "evid";
+import { EvidFingerprint, EvidInventory, EvidObjcAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Merges Objective-C declaration sites without collapsing distinct members.
+/**
+ * Merges Objective-C declaration sites without collapsing distinct members.
  *
- * Properties, getter selectors, synthesized content, and duplicate definitions have different identity and completeness rules.
+ * Properties, getter selectors, synthesized content, and duplicate definitions
+ * have different identity and completeness rules.
  *
  * 1. Analyze class interfaces and implementations with properties and accessors.
  * 2. Verify expected merged identities and independent selector addresses.

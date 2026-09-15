@@ -10,27 +10,35 @@ import type { IEvidKotlinDocumentation } from "./IEvidKotlinDocumentation";
  * this boundary owns source-context facts without retaining parser objects.
  */
 export interface IEvidKotlinFileAnalysis {
-  /** Retains the selected Kotlin source file that produced this analysis.
+  /**
+   * Retains the selected Kotlin source file that produced this analysis.
    *
-   * Receiver resolution uses its physical identity for file-private lookup, and materialization uses its addresses for public citations.
+   * Receiver resolution uses its physical identity for file-private lookup, and
+   * materialization uses its addresses for public citations.
    */
   source: IEvidSourceFile;
 
-  /** Lists extracted declarations, including non-public lookup boundaries.
+  /**
+   * Lists extracted declarations, including non-public lookup boundaries.
    *
-   * `EvidKotlinReceivers` consumes the records across the snapshot before `EvidKotlinAdapterBase` selects public units.
+   * `EvidKotlinReceivers` consumes the records across the snapshot before
+   * `EvidKotlinAdapterBase` selects public units.
    */
   declarations: IEvidKotlinDeclaration[];
 
-  /** Lists classified KDoc and unsupported annotation carriers from this file.
+  /**
+   * Lists classified KDoc and unsupported annotation carriers from this file.
    *
-   * The adapter preserves tagged unsupported carriers so they can produce host-level diagnostics.
+   * The adapter preserves tagged unsupported carriers so they can produce
+   * host-level diagnostics.
    */
   documentation: IEvidKotlinDocumentation[];
 
-  /** Lists failures encountered while establishing this file's public surface.
+  /**
+   * Lists failures encountered while establishing this file's public surface.
    *
-   * The adapter forwards them into the inventory together with the `complete` status.
+   * The adapter forwards them into the inventory together with the `complete`
+   * status.
    */
   diagnostics: IEvidDiagnostic[];
 

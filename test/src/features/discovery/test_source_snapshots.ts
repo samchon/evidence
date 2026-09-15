@@ -8,10 +8,12 @@ import { EvidSourcePath } from "evid";
 import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
- * Anchors roots to the config, preserves raw source, and returns deterministic snapshots.
+ * Anchors roots to the config, preserves raw source, and returns deterministic
+ * snapshots.
  *
  * Discovery must preserve source bytes and stable address order while resolving
- * relative roots from the configuration file rather than the caller's directory.
+ * relative roots from the configuration file rather than the caller's
+ * directory.
  *
  * 1. Load the same selected Markdown population through relative and absolute
  *    roots; require equal inventories, ordered addresses, the authored root
@@ -83,7 +85,8 @@ export async function test_source_snapshots(): Promise<void> {
         "root tracks new matches",
         relative.dependencies.some(
           (dependency) =>
-            dependency.path === EvidSourcePath.slash(join(directory, "shared")) &&
+            dependency.path ===
+              EvidSourcePath.slash(join(directory, "shared")) &&
             dependency.recursive,
         ),
       );

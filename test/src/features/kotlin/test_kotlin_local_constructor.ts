@@ -4,11 +4,14 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Prevents local constructor parameters in defaults from becoming owner properties.
+/**
+ * Prevents local constructor parameters in defaults from becoming owner
+ * properties.
  *
  * Only declared public constructor properties belong to the enclosing type.
  *
- * 1. Analyze constructor defaults with local parameters. 2. Compare selected properties. 3. Require local names to stay absent.
+ * 1. Analyze constructor defaults with local parameters. 2. Compare selected
+ *    properties. 3. Require local names to stay absent.
  */
 export async function test_kotlin_local_constructor(): Promise<void> {
   const inventory = await new EvidKotlinAdapter().analyze(

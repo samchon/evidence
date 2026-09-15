@@ -1,7 +1,8 @@
 import type { IEvidSourceRange } from "../../structures/IEvidSourceRange";
 import type { IEvidYamlScalarMapping } from "./IEvidYamlScalarMapping";
 
-/** Source spans for one normalized Swagger operation and its description.
+/**
+ * Source spans for one normalized Swagger operation and its description.
  *
  * Locations are optional on operations because OpenAPI conversion can preserve
  * semantics for values that do not map to one source token.

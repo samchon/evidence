@@ -7,11 +7,15 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 /**
  * Attaches evidence from valid Python docstring and comment hosts.
  *
- * The source mixes ordinary and concatenated docstrings, decorator-adjacent comments, assigned strings, f-strings, and detached comments to distinguish documentation carriers from lookalikes.
+ * The source mixes ordinary and concatenated docstrings, decorator-adjacent
+ * comments, assigned strings, f-strings, and detached comments to distinguish
+ * documentation carriers from lookalikes.
  *
  * 1. Analyze the mixed host fixture.
- * 2. Verify only ordinary, concatenated, and decorator-adjacent documentation produces declarations and their expected hosts.
- * 3. Verify assigned strings, f-strings, and detached comments do not acknowledge declarations and report the exercised unsupported cases.
+ * 2. Verify only ordinary, concatenated, and decorator-adjacent documentation
+ *    produces declarations and their expected hosts.
+ * 3. Verify assigned strings, f-strings, and detached comments do not acknowledge
+ *    declarations and report the exercised unsupported cases.
  */
 export async function test_python_hosts(): Promise<void> {
   const inventory = await new EvidPythonAdapter().analyze(

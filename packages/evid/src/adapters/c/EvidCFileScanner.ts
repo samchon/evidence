@@ -21,13 +21,16 @@ import { EvidSourceText } from "../../internal/EvidSourceText";
 /**
  * Extracts explicit C declarations and Doxygen without preprocessing source.
  *
- * It records physical declaration and attachment facts for `EvidCAdapterBase` to
- * reconcile; it never infers declarations from included or expanded source.
+ * It records physical declaration and attachment facts for `EvidCAdapterBase`
+ * to reconcile; it never infers declarations from included or expanded source.
  */
 export class EvidCFileScanner {
   private readonly declarations: IEvidCDeclaration[] = [];
   private readonly documentation = new Map<string, IEvidCDocumentation>();
-  private readonly carrierDocumentation = new Map<string, IEvidCDocumentation>();
+  private readonly carrierDocumentation = new Map<
+    string,
+    IEvidCDocumentation
+  >();
   private readonly diagnostics: IEvidDiagnostic[] = [];
   private readonly reported = new Set<string>();
   private readonly tags = new Map<string, IEvidCTypeContext>();
@@ -99,7 +102,8 @@ export class EvidCFileScanner {
         this.conditional(item);
         return;
       case "preproc_call":
-        if (!EvidCSyntax.isInertDirective(item)) this.preprocessorDirective(item);
+        if (!EvidCSyntax.isInertDirective(item))
+          this.preprocessorDirective(item);
         return;
       case "expression_statement":
         if (!EvidCSyntax.isStaticAssertion(item)) this.macroDeclaration(item);
@@ -399,7 +403,8 @@ export class EvidCFileScanner {
           this.conditional(item);
           break;
         case "preproc_call":
-          if (!EvidCSyntax.isInertDirective(item)) this.preprocessorDirective(item);
+          if (!EvidCSyntax.isInertDirective(item))
+            this.preprocessorDirective(item);
           break;
         default:
           this.problem(
@@ -569,7 +574,10 @@ export class EvidCFileScanner {
       const sequence: EvidNode[] = [first];
       consumed.add(this.nodeKey(first));
       let last = first;
-      if (first.text.startsWith("//") && !EvidCSyntax.isTrailingDoxygen(first)) {
+      if (
+        first.text.startsWith("//") &&
+        !EvidCSyntax.isTrailingDoxygen(first)
+      ) {
         let next = last.nextNamedSibling;
         while (
           next !== null &&

@@ -1,16 +1,14 @@
-import {
-  EvidFingerprint,
-  EvidInventory,
-  EvidSqliteAdapter,
-} from "evid";
+import { EvidFingerprint, EvidInventory, EvidSqliteAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches SQLite documentation with stable Unicode source coordinates.
+/**
+ * Attaches SQLite documentation with stable Unicode source coordinates.
  *
- * Eligible comments can acknowledge a table or column, while examples and withdrawn tables remain outside normal evidence coverage.
+ * Eligible comments can acknowledge a table or column, while examples and
+ * withdrawn tables remain outside normal evidence coverage.
  *
  * 1. Analyze documented schema units, Unicode comments, examples, and withdrawals.
  * 2. Verify coordinates, target resolution, and withdrawal handling.

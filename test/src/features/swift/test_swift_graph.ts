@@ -1,15 +1,12 @@
-import {
-  EvidGraph,
-  EvidSwiftAdapter,
-  EvidTypeScriptAdapter,
-} from "evid";
+import { EvidGraph, EvidSwiftAdapter, EvidTypeScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Evaluates every selected Swift declaration as a reference.
+/**
+ * Evaluates every selected Swift declaration as a reference.
  *
  * Evid covers a selector while a review-only target remains missing.
  *

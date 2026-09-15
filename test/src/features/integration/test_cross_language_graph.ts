@@ -1,8 +1,5 @@
 import { EvidChecker } from "evid";
-import type {
-  IEvidCheckAnalysis,
-  IEvidConfigPlan,
-} from "evid";
+import type { IEvidCheckAnalysis, IEvidConfigPlan } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
@@ -12,14 +9,15 @@ import { createEvidConfigPlan } from "evid";
 import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
 /**
- * Runs one graph through Markdown, Prisma, Swagger, implementation, and test declarations.
+ * Runs one graph through Markdown, Prisma, Swagger, implementation, and test
+ * declarations.
  *
  * The cross-language graph must keep independently configured obligations and
  * distinguish coverage violations from target-resolution and parser failures.
  *
  * 1. Evaluate the five-claim fixture spanning TypeScript, Markdown, Prisma, and
- *    Swagger; require six covered obligations with the expected claim, reference,
- *    artifact, and unit counts.
+ *    Swagger; require six covered obligations with the expected claim,
+ *    reference, artifact, and unit counts.
  * 2. Remove one implementation-to-Markdown citation and require only that
  *    obligation to become missing, with exit 1 and its graph diagnostic.
  * 3. Add a second Markdown requirement and require the denominator to grow to
@@ -27,8 +25,8 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
  * 4. Rename the barrel export cited by the test claim and require the precise
  *    file-qualified target-missing-member diagnostic plus the resulting gap.
  * 5. Malform the Swagger document and require incomplete exit 2, diagnostics at
- *    every affected graph position, and no derivative empty-reference or missing
- *    acknowledgement findings.
+ *    every affected graph position, and no derivative empty-reference or
+ *    missing acknowledgement findings.
  * 6. Restore the fixture records and require the same complete six-obligation
  *    graph in the existing checker process.
  */

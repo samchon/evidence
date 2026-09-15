@@ -8,9 +8,11 @@ import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches SQL comment annotations while preserving source coordinates.
+/**
+ * Attaches SQL comment annotations while preserving source coordinates.
  *
- * Eligible documentation uses UTF-16 positions and literal qualified targets; examples and withdrawals must retain their separate behavior.
+ * Eligible documentation uses UTF-16 positions and literal qualified targets;
+ * examples and withdrawals must retain their separate behavior.
  *
  * 1. Analyze documented schema units, inert examples, and withdrawn declarations.
  * 2. Verify attachment, coordinates, targets, and withdrawal metadata.

@@ -20,12 +20,14 @@ import { EvidCSharpDocumentation } from "./EvidCSharpDocumentation";
 import { EvidCSharpFileScanner } from "./EvidCSharpFileScanner";
 
 /**
- * Reconciles C# public declaration families and XML documentation within a snapshot.
+ * Reconciles C# public declaration families and XML documentation within a
+ * snapshot.
  *
- * File analysis records accessibility, partial declarations, and physical sites.
- * Materialization uses the configured root boundary to merge compatible parts
- * without combining equal names from unrelated source populations. XML comments
- * then attach to the reconciled units while retaining their original positions.
+ * File analysis records accessibility, partial declarations, and physical
+ * sites. Materialization uses the configured root boundary to merge compatible
+ * parts without combining equal names from unrelated source populations. XML
+ * comments then attach to the reconciled units while retaining their original
+ * positions.
  *
  * Inventory completeness includes discovery and syntax findings. A partial or
  * unsupported declaration is not discarded as though the remaining source were
@@ -35,21 +37,20 @@ export class EvidCSharpAdapterBase implements IEvidAdapter {
   /**
    * C# artifact discriminator selecting source-public extraction rules.
    *
-   * The inherited public entry point exposes this value to the adapter contract;
-   * claim and reference roles use the same C# extraction semantics.
+   * The inherited public entry point exposes this value to the adapter
+   * contract; claim and reference roles use the same C# extraction semantics.
    */
   public readonly type = "csharp";
 
   /**
    * Extracts and reconciles one captured C# source population.
    *
-   * Each call copies its input, scans files, materializes root-scoped identities,
-   * and maps documentation before common validation. The parser is released in
-   * the failure path as well as after a successful inventory snapshot.
+   * Each call copies its input, scans files, materializes root-scoped
+   * identities, and maps documentation before common validation. The parser is
+   * released in the failure path as well as after a successful inventory
+   * snapshot.
    */
-  public async analyze(
-    snapshot: IEvidSourceSnapshot,
-  ): Promise<IEvidInventory> {
+  public async analyze(snapshot: IEvidSourceSnapshot): Promise<IEvidInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidInventory = {
       schemaVersion: 1,
@@ -105,8 +106,7 @@ export class EvidCSharpAdapterBase implements IEvidAdapter {
         (session) => new EvidCSharpFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError =
-        cause instanceof EvidParserError ? cause : undefined;
+      const parserError = cause instanceof EvidParserError ? cause : undefined;
       return {
         source,
         declarations: [],
@@ -562,8 +562,11 @@ export class EvidCSharpAdapterBase implements IEvidAdapter {
     documentation: IEvidCSharpDocumentation,
   ): boolean {
     return this.annotationPattern(
-      EvidCSharpDocumentation.read(analysis.source, documentation, documentation.id)
-        .text,
+      EvidCSharpDocumentation.read(
+        analysis.source,
+        documentation,
+        documentation.id,
+      ).text,
       true,
     );
   }
@@ -573,8 +576,11 @@ export class EvidCSharpAdapterBase implements IEvidAdapter {
     documentation: IEvidCSharpDocumentation,
   ): boolean {
     return this.annotationPattern(
-      EvidCSharpDocumentation.read(analysis.source, documentation, documentation.id)
-        .text,
+      EvidCSharpDocumentation.read(
+        analysis.source,
+        documentation,
+        documentation.id,
+      ).text,
       false,
     );
   }
@@ -604,7 +610,10 @@ export class EvidCSharpAdapterBase implements IEvidAdapter {
       : this.withdrawn(unit.parentId, units, visited);
   }
 
-  private unitId(declaration: IEvidCSharpDeclaration, boundary: string): string {
+  private unitId(
+    declaration: IEvidCSharpDeclaration,
+    boundary: string,
+  ): string {
     return `csharp:${JSON.stringify(boundary)}:${declaration.symbol}:${JSON.stringify(declaration.identity)}`;
   }
 

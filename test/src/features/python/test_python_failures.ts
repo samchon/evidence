@@ -8,11 +8,17 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 /**
  * Marks unsupported and unresolved Python public surfaces incomplete.
  *
- * These fixtures isolate dynamic __all__ updates, failed exports, conditional bindings, unsupported destructuring, import cycles, and parser recovery so an uncertain inventory cannot shrink its obligations.
+ * These fixtures isolate dynamic **all** updates, failed exports, conditional
+ * bindings, unsupported destructuring, import cycles, and parser recovery so an
+ * uncertain inventory cannot shrink its obligations.
  *
- * 1. Analyze dynamic and unresolved export forms and verify their diagnostics while preserving ordinary public declarations.
- * 2. Analyze conditional module and instance bindings, including __all__ exclusions and explicit private selection, and verify only selected unsupported surfaces fail.
- * 3. Analyze selected destructuring and a declaration-free cycle and verify their incomplete diagnostics.
+ * 1. Analyze dynamic and unresolved export forms and verify their diagnostics
+ *    while preserving ordinary public declarations.
+ * 2. Analyze conditional module and instance bindings, including **all**
+ *    exclusions and explicit private selection, and verify only selected
+ *    unsupported surfaces fail.
+ * 3. Analyze selected destructuring and a declaration-free cycle and verify their
+ *    incomplete diagnostics.
  * 4. Analyze malformed source and verify parse failure is reported as incomplete.
  */
 export async function test_python_failures(): Promise<void> {

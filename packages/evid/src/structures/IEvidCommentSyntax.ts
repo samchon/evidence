@@ -1,15 +1,17 @@
 /**
  * Comment-normalization rules supplied by an artifact adapter.
  *
- * The adapter must first establish that a source span is a documentation comment
- * and determine its host. EvidDocumentation uses these rules to remove known
- * syntax while preserving source mappings; it does not discover comments itself.
+ * The adapter must first establish that a source span is a documentation
+ * comment and determine its host. EvidDocumentation uses these rules to remove
+ * known syntax while preserving source mappings; it does not discover comments
+ * itself.
  */
 export interface IEvidCommentSyntax {
   /**
    * Exact opening delimiter expected at the supplied source span's start.
    *
-   * A mismatch rejects the span instead of stripping unrelated source characters.
+   * A mismatch rejects the span instead of stripping unrelated source
+   * characters.
    */
   opening: string;
 
@@ -24,15 +26,16 @@ export interface IEvidCommentSyntax {
   /**
    * Optional decoration removed after horizontal whitespace at each line start.
    *
-   * Lines lacking the prefix keep their original leading text. Omission disables
-   * this removal while retaining delimiter normalization.
+   * Lines lacking the prefix keep their original leading text. Omission
+   * disables this removal while retaining delimiter normalization.
    */
   linePrefix?: string;
 
   /**
    * Whether unrelated line-start tags end the current annotation's reason.
    *
-   * Enable this for JSDoc-like carriers where other tools' tags share the comment.
+   * Enable this for JSDoc-like carriers where other tools' tags share the
+   * comment.
    */
   tagBoundaries: boolean;
 

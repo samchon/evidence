@@ -4,9 +4,11 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Scopes MATLAB member fingerprints to their own content and relevant metadata.
+/**
+ * Scopes MATLAB member fingerprints to their own content and relevant metadata.
  *
- * A review must survive edits to unrelated members while changes to a member or its shared access policy invalidate the affected fingerprint.
+ * A review must survive edits to unrelated members while changes to a member or
+ * its shared access policy invalidate the affected fingerprint.
  *
  * 1. Analyze a class with independently documented members and access metadata.
  * 2. Compare fingerprints after unrelated and annotation-only edits.

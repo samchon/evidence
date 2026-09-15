@@ -4,7 +4,8 @@ import type { IEvidAddress } from "../../structures/IEvidAddress";
  * Parses one root-relative Markdown path and optional literal anchor.
  *
  * Target resolution uses this grammar for Markdown references, retaining the
- * anchor as one accessor segment because Markdown headings are not nested paths.
+ * anchor as one accessor segment because Markdown headings are not nested
+ * paths.
  */
 export namespace EvidMarkdownTarget {
   export function parse(target: string): IEvidAddress {

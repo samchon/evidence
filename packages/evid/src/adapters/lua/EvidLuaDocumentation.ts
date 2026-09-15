@@ -5,18 +5,19 @@ import type { IEvidSourceFile } from "../../structures/IEvidSourceFile";
 import type { IEvidLuaDocumentation } from "./IEvidLuaDocumentation";
 
 /**
- * Reads Lua documentation while preserving source mappings and masking examples.
+ * Reads Lua documentation while preserving source mappings and masking
+ * examples.
  *
- * EvidLuaFileScanner supplies classified carriers to this boundary, which normalizes
- * their text through the shared mapper and suppresses examples before the tag
- * parser can treat them as Evid annotations.
+ * EvidLuaFileScanner supplies classified carriers to this boundary, which
+ * normalizes their text through the shared mapper and suppresses examples
+ * before the tag parser can treat them as Evid annotations.
  */
 export namespace EvidLuaDocumentation {
   /**
    * Maps one classified carrier into shared documentation data.
    *
-   * Example text is replaced after shared parsing preserves original offsets, so
-   * diagnostics and attachments still cite locations in the source file.
+   * Example text is replaced after shared parsing preserves original offsets,
+   * so diagnostics and attachments still cite locations in the source file.
    */
   export function read(
     source: IEvidSourceFile,
@@ -36,10 +37,12 @@ export namespace EvidLuaDocumentation {
   }
 
   /**
-   * Masks HTML examples and Markdown-indented code in parsed documentation text.
+   * Masks HTML examples and Markdown-indented code in parsed documentation
+   * text.
    *
-   * Shared tag parsing already handles fenced code; this pass preserves all line
-   * boundaries while removing other example regions from annotation recognition.
+   * Shared tag parsing already handles fenced code; this pass preserves all
+   * line boundaries while removing other example regions from annotation
+   * recognition.
    */
   function mask(input: string): string {
     const characters = input.split("");

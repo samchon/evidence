@@ -7,11 +7,15 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 /**
  * Applies Python visibility rules to declarations and reexports.
  *
- * The package fixture combines conventionally public names, underscored names, local aliases, nested helpers, and withdrawals to test which addresses enter the selected surface.
+ * The package fixture combines conventionally public names, underscored names,
+ * local aliases, nested helpers, and withdrawals to test which addresses enter
+ * the selected surface.
  *
- * 1. Analyze the package and verify public declarations and allowed local reexports are present.
+ * 1. Analyze the package and verify public declarations and allowed local
+ *    reexports are present.
  * 2. Verify nested helpers and conventionally private names remain absent.
- * 3. Verify withdrawal hides its target without suppressing unrelated public declarations or completion.
+ * 3. Verify withdrawal hides its target without suppressing unrelated public
+ *    declarations or completion.
  */
 export async function test_python_visibility(): Promise<void> {
   const inventory = await new EvidPythonAdapter().analyze(

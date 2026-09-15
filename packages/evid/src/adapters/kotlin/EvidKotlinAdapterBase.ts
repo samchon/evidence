@@ -20,33 +20,33 @@ import { EvidKotlinFileScanner } from "./EvidKotlinFileScanner";
 import { EvidKotlinReceivers } from "./EvidKotlinReceivers";
 
 /**
- * Resolves Kotlin nominal receivers before publishing declaration and KDoc hosts.
+ * Resolves Kotlin nominal receivers before publishing declaration and KDoc
+ * hosts.
  *
  * File analysis retains aliases, type parameters, and receiver candidates until
- * the selected snapshot is available for lookup. Receiver resolution then updates
- * ownership or records uncertainty before unit materialization. KDoc attachments
- * join the resulting units through physical declaration sites, preserving the
- * distinction between a receiver-qualified public path and its original source.
+ * the selected snapshot is available for lookup. Receiver resolution then
+ * updates ownership or records uncertainty before unit materialization. KDoc
+ * attachments join the resulting units through physical declaration sites,
+ * preserving the distinction between a receiver-qualified public path and its
+ * original source.
  */
 export class EvidKotlinAdapterBase implements IEvidAdapter {
   /**
    * Kotlin discriminator selecting KDoc and receiver-aware declaration rules.
    *
-   * This fixes the language of inventory records; it does not widen selection to
-   * scripts or compiler-generated declarations absent from the snapshot.
+   * This fixes the language of inventory records; it does not widen selection
+   * to scripts or compiler-generated declarations absent from the snapshot.
    */
   public readonly type = "kotlin";
 
   /**
    * Extracts and reconciles Kotlin declarations from an owned source snapshot.
    *
-   * All files are scanned before receiver lookup. Resolution findings contribute
-   * to completeness before units and documentation are published, and the parser
-   * closes after both successful and failed materialization.
+   * All files are scanned before receiver lookup. Resolution findings
+   * contribute to completeness before units and documentation are published,
+   * and the parser closes after both successful and failed materialization.
    */
-  public async analyze(
-    snapshot: IEvidSourceSnapshot,
-  ): Promise<IEvidInventory> {
+  public async analyze(snapshot: IEvidSourceSnapshot): Promise<IEvidInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidInventory = {
       schemaVersion: 1,
@@ -105,8 +105,7 @@ export class EvidKotlinAdapterBase implements IEvidAdapter {
         (session) => new EvidKotlinFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError =
-        cause instanceof EvidParserError ? cause : undefined;
+      const parserError = cause instanceof EvidParserError ? cause : undefined;
       return {
         source,
         declarations: [],
@@ -136,8 +135,9 @@ export class EvidKotlinAdapterBase implements IEvidAdapter {
   /**
    * Reconciles overload families and retains each physical declaration address.
    *
-   * Functions sharing a Kotlin identity form one unit with multiple sites, while
-   * other duplicate identities remain a completeness error rather than a merge.
+   * Functions sharing a Kotlin identity form one unit with multiple sites,
+   * while other duplicate identities remain a completeness error rather than a
+   * merge.
    */
   private materializeUnits(
     inventory: IEvidInventory,
@@ -213,8 +213,9 @@ export class EvidKotlinAdapterBase implements IEvidAdapter {
   /**
    * Resolves withdrawals before publishing attached annotation hosts.
    *
-   * Tags first populate unit withdrawals, then inherited hidden ownership filters
-   * visible hosts so withdrawn declarations cannot receive acknowledgements.
+   * Tags first populate unit withdrawals, then inherited hidden ownership
+   * filters visible hosts so withdrawn declarations cannot receive
+   * acknowledgements.
    */
   private materializeDocumentation(
     inventory: IEvidInventory,
@@ -294,8 +295,8 @@ export class EvidKotlinAdapterBase implements IEvidAdapter {
   /**
    * Retains public declaration sites even when they carry no documentation.
    *
-   * Evid needs a host for every visible unit so unhosted checklist results
-   * can identify declarations that have no attached KDoc.
+   * Evid needs a host for every visible unit so unhosted checklist results can
+   * identify declarations that have no attached KDoc.
    */
   private materializeUndocumentedHosts(
     inventory: IEvidInventory,
@@ -403,8 +404,8 @@ export class EvidKotlinAdapterBase implements IEvidAdapter {
   /**
    * Parses Evid tags only after the adapter establishes their host.
    *
-   * Kotlin-specific documentation normalization runs before the shared parser so
-   * source mappings and masked examples apply consistently to every host.
+   * Kotlin-specific documentation normalization runs before the shared parser
+   * so source mappings and masked examples apply consistently to every host.
    */
   private parse(
     source: IEvidSourceFile,
@@ -429,8 +430,11 @@ export class EvidKotlinAdapterBase implements IEvidAdapter {
     documentation: IEvidKotlinDocumentation,
   ): boolean {
     return this.annotationPattern(
-      EvidKotlinDocumentation.read(analysis.source, documentation, documentation.id)
-        .text,
+      EvidKotlinDocumentation.read(
+        analysis.source,
+        documentation,
+        documentation.id,
+      ).text,
       true,
     );
   }
@@ -446,8 +450,11 @@ export class EvidKotlinAdapterBase implements IEvidAdapter {
     documentation: IEvidKotlinDocumentation,
   ): boolean {
     return this.annotationPattern(
-      EvidKotlinDocumentation.read(analysis.source, documentation, documentation.id)
-        .text,
+      EvidKotlinDocumentation.read(
+        analysis.source,
+        documentation,
+        documentation.id,
+      ).text,
       false,
     );
   }
@@ -490,7 +497,8 @@ export class EvidKotlinAdapterBase implements IEvidAdapter {
   }
 
   /**
-   * Separates programming kinds while unifying package-scoped overload identities.
+   * Separates programming kinds while unifying package-scoped overload
+   * identities.
    *
    * Kotlin function overloads intentionally share an identity, whereas symbol
    * kind remains part of the key to keep types and properties distinct.

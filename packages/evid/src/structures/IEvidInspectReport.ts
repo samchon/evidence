@@ -15,14 +15,16 @@ export interface IEvidInspectReport {
   /**
    * Serialization version of the inspection report.
    *
-   * Consumers inspect this before interpreting population-specific detail records.
+   * Consumers inspect this before interpreting population-specific detail
+   * records.
    */
   schemaVersion: 1;
 
   /**
    * Discriminator identifying target-inspection output.
    *
-   * The report expands one requested target rather than listing all discoverable units.
+   * The report expands one requested target rather than listing all
+   * discoverable units.
    */
   command: "inspect";
 
@@ -36,23 +38,24 @@ export interface IEvidInspectReport {
   /**
    * Combined completeness of the original check and target resolutions.
    *
-   * Any incomplete inspection makes the report incomplete even if other boundaries resolve.
+   * Any incomplete inspection makes the report incomplete even if other
+   * boundaries resolve.
    */
   status: EvidCheckStatus;
 
   /**
    * Whether all inspected targets resolve and the combined outcome passes.
    *
-   * An empty inspection set cannot establish success, nor can successful resolution
-   * hide an error from the underlying check.
+   * An empty inspection set cannot establish success, nor can successful
+   * resolution hide an error from the underlying check.
    */
   success: boolean;
 
   /**
    * Outcome prioritizing incomplete analysis over unresolved targets.
    *
-   * Incomplete analysis returns two, unresolved complete inspection returns one,
-   * and fully resolved inspection inherits the check's outcome.
+   * Incomplete analysis returns two, unresolved complete inspection returns
+   * one, and fully resolved inspection inherits the check's outcome.
    */
   exitCode: EvidCommandExitCode;
 
@@ -66,14 +69,16 @@ export interface IEvidInspectReport {
   /**
    * Resolution and graph context for each applicable population boundary.
    *
-   * Entries are ordered by scope identity so asynchronous resolution stays deterministic.
+   * Entries are ordered by scope identity so asynchronous resolution stays
+   * deterministic.
    */
   inspections: IEvidInspection[];
 
   /**
    * Deduplicated findings from the check and the individual target inspections.
    *
-   * These explain both global analysis failures and target-specific resolution problems.
+   * These explain both global analysis failures and target-specific resolution
+   * problems.
    */
   diagnostics: IEvidDiagnostic[];
 }

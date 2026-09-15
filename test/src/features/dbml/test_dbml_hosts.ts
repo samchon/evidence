@@ -4,9 +4,11 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches DBML notes and comments only when their schema ownership is direct.
+/**
+ * Attaches DBML notes and comments only when their schema ownership is direct.
  *
- * Notes on declarations can host evidence, while values and examples are inert and duplicate physical-source aliases retain their own locations.
+ * Notes on declarations can host evidence, while values and examples are inert
+ * and duplicate physical-source aliases retain their own locations.
  *
  * 1. Analyze annotated notes and comments on supported schema declarations.
  * 2. Compare their declarations, hosts, and physical-source aliases.

@@ -4,9 +4,11 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Preserves TypeScript syntax and export failures as incomplete analysis.
+/**
+ * Preserves TypeScript syntax and export failures as incomplete analysis.
  *
- * Malformed source and missing export dependencies cannot be masked by tag-shaped strings or prior inventory state.
+ * Malformed source and missing export dependencies cannot be masked by
+ * tag-shaped strings or prior inventory state.
  *
  * 1. Analyze malformed sources and missing export edges.
  * 2. Verify incomplete status and diagnostics.
@@ -70,7 +72,10 @@ export async function test_typescript_failures(): Promise<void> {
 
   const missingBinding = await adapter.analyze(
     EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create("src/available.ts", "export const other = 1;"),
+      EvidTestSourceSnapshot.create(
+        "src/available.ts",
+        "export const other = 1;",
+      ),
       EvidTestSourceSnapshot.create(
         "src/reexport.ts",
         'export { Contract } from "./available";',

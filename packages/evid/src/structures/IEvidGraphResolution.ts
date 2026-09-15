@@ -11,7 +11,8 @@ export interface IEvidGraphResolution {
   /**
    * Identity of the acknowledgement whose target was resolved.
    *
-   * The evaluator uses it to find the prepared result for that source statement.
+   * The evaluator uses it to find the prepared result for that source
+   * statement.
    */
   declarationId: string;
 

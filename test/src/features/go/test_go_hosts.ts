@@ -4,9 +4,11 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches Go group, specification, field, and method documentation.
+/**
+ * Attaches Go group, specification, field, and method documentation.
  *
- * Declaration documentation can host evidence while non-document carriers remain diagnostics.
+ * Declaration documentation can host evidence while non-document carriers
+ * remain diagnostics.
  *
  * 1. Analyze supported Go doc positions.
  * 2. Compare attached hosts.

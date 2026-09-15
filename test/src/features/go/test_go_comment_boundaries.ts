@@ -1,13 +1,10 @@
-import {
-  EvidFingerprint,
-  EvidGoAdapter,
-  EvidInventory,
-} from "evid";
+import { EvidFingerprint, EvidGoAdapter, EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Separates trailing Go comments from leading documentation runs.
+/**
+ * Separates trailing Go comments from leading documentation runs.
  *
  * Evid attaches only to the declaration-leading run despite matching columns.
  *

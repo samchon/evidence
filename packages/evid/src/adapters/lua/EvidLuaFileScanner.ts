@@ -13,14 +13,16 @@ import type { IEvidLuaValue } from "./IEvidLuaValue";
  * Resolves an explicit, non-executing Lua module initialization convention.
  *
  * Lua exports arise from values and table writes, so the scanner follows only
- * supported static initialization and reports dynamic boundaries it cannot prove.
+ * supported static initialization and reports dynamic boundaries it cannot
+ * prove.
  */
 export class EvidLuaFileScanner {
   /**
    * Stores chunk-level bindings, including private local values.
    *
    * Static alias resolution consults this map before publishing globals or a
-   * returned module table, while function-local names use lexical lookup instead.
+   * returned module table, while function-local names use lexical lookup
+   * instead.
    */
   private readonly bindings = new Map<string, IEvidLuaValue>();
 
@@ -35,16 +37,18 @@ export class EvidLuaFileScanner {
   /**
    * Retains the table returned by the supported module-return statement.
    *
-   * Omission means no valid table return was found; a present table is published
-   * under the module address after all chunk initialization has been processed.
+   * Omission means no valid table return was found; a present table is
+   * published under the module address after all chunk initialization has been
+   * processed.
    */
   private returned: IEvidLuaValue | undefined;
 
   /**
    * Accumulates serializable public declarations and alias projections.
    *
-   * Each publication contributes an address projection, while shared values reuse
-   * their first declaration identity to keep aliases from duplicating units.
+   * Each publication contributes an address projection, while shared values
+   * reuse their first declaration identity to keep aliases from duplicating
+   * units.
    */
   private readonly declarations: IEvidLuaDeclaration[] = [];
 
@@ -52,7 +56,8 @@ export class EvidLuaFileScanner {
    * Indexes documentation carriers by the start offset of each comment line.
    *
    * Adjacent LuaDoc lines add keys for one extended carrier, allowing later
-   * declaration attachment to find that group's complete original source range.
+   * declaration attachment to find that group's complete original source
+   * range.
    */
   private readonly documentation = new Map<number, IEvidLuaDocumentation>();
 
@@ -102,7 +107,8 @@ export class EvidLuaFileScanner {
    * Processes deterministic chunk initialization without executing Lua.
    *
    * Only supported declarations, assignments, and one static module return can
-   * establish values; other chunk statements receive an incomplete-surface diagnostic.
+   * establish values; other chunk statements receive an incomplete-surface
+   * diagnostic.
    */
   private statement(node: EvidNode): void {
     if (["comment", "hash_bang_line", "empty_statement"].includes(node.type))
@@ -194,8 +200,9 @@ export class EvidLuaFileScanner {
   /**
    * Resolves one supported static value or an already established alias.
    *
-   * Literal values receive the current declaration site, while table and function
-   * aliases retain identity so publication can preserve shared ownership.
+   * Literal values receive the current declaration site, while table and
+   * function aliases retain identity so publication can preserve shared
+   * ownership.
    */
   private value(node: EvidNode, site: EvidNode): IEvidLuaValue | undefined {
     if (node.type === "parenthesized_expression") {
@@ -241,7 +248,11 @@ export class EvidLuaFileScanner {
     )
       return { kind: "literal", node: site, fields: new Map() };
     if (node.type === "table_constructor") {
-      const value: IEvidLuaValue = { kind: "table", node: site, fields: new Map() };
+      const value: IEvidLuaValue = {
+        kind: "table",
+        node: site,
+        fields: new Map(),
+      };
       for (const field of node.namedChildren.filter(
         (child) => child.type !== "comment",
       )) {
@@ -279,7 +290,8 @@ export class EvidLuaFileScanner {
    * Defines one binding or a previously absent literal table member.
    *
    * Reassignment, environment writes, and non-table owners are rejected because
-   * they can change a public declaration after its static identity is established.
+   * they can change a public declaration after its static identity is
+   * established.
    */
   private assign(
     name: EvidNode,
@@ -347,8 +359,9 @@ export class EvidLuaFileScanner {
   /**
    * Reads exact static accessor segments from a Lua expression.
    *
-   * Numeric and computed keys are rejected instead of being conflated with string
-   * members, preserving the target spelling used for bindings and table fields.
+   * Numeric and computed keys are rejected instead of being conflated with
+   * string members, preserving the target spelling used for bindings and table
+   * fields.
    */
   private path(node: EvidNode): string[] | undefined {
     if (node.type === "identifier") return [node.text];
@@ -378,7 +391,8 @@ export class EvidLuaFileScanner {
   }
 
   /**
-   * Decodes a supported literal table key without changing its accessor spelling.
+   * Decodes a supported literal table key without changing its accessor
+   * spelling.
    *
    * Unescaped quoted and long strings have deterministic text; escaped strings
    * require byte-string decoding and therefore produce a diagnostic instead.
@@ -405,7 +419,8 @@ export class EvidLuaFileScanner {
    * Publishes a value address with one canonical identity and table owner.
    *
    * Recursive traversal projects table fields, detects cycles, and requires a
-   * shared value to retain the same structural owner across every public alias.
+   * shared value to retain the same structural owner across every public
+   * alias.
    */
   private publish(
     value: IEvidLuaValue,
@@ -455,8 +470,9 @@ export class EvidLuaFileScanner {
   /**
    * Reports deferred writes and table escapes inside function bodies.
    *
-   * Function execution can mutate an exported surface after chunk initialization,
-   * so the scanner marks writes, returns, and calls involving public tables incomplete.
+   * Function execution can mutate an exported surface after chunk
+   * initialization, so the scanner marks writes, returns, and calls involving
+   * public tables incomplete.
    */
   private deferredMutations(): void {
     for (const fn of this.session.root.descendantsOfType([
@@ -532,8 +548,9 @@ export class EvidLuaFileScanner {
   /**
    * Detects exported-table references that may expose a mutable surface.
    *
-   * Reads of known scalar or callable fields remain static, while passing a table,
-   * using `self`, or reaching an unknown field requires runtime alias analysis.
+   * Reads of known scalar or callable fields remain static, while passing a
+   * table, using `self`, or reaching an unknown field requires runtime alias
+   * analysis.
    */
   private tableReferences(container: EvidNode, site: EvidNode): boolean {
     for (const node of container.descendantsOfType([
@@ -566,7 +583,8 @@ export class EvidLuaFileScanner {
   }
 
   /**
-   * Resolves parameters and preceding lexical locals visible at one source node.
+   * Resolves parameters and preceding lexical locals visible at one source
+   * node.
    *
    * The scope walk excludes later and sibling declarations so deferred-mutation
    * checks do not mistake a local binding for a write to a public value.
@@ -690,7 +708,8 @@ export class EvidLuaFileScanner {
    * Attaches an adjacent LuaDoc carrier to one static declaration site.
    *
    * Whitespace-only separation is permitted; any intervening syntax prevents
-   * attachment so a detached comment cannot annotate a later public declaration.
+   * attachment so a detached comment cannot annotate a later public
+   * declaration.
    */
   private attach(node: EvidNode, declaration: IEvidLuaDeclaration): void {
     const previous = node.previousNamedSibling;
@@ -717,7 +736,8 @@ export class EvidLuaFileScanner {
    * Records one actionable diagnostic for an unproven public surface.
    *
    * Every unsupported boundary receives the original node range and makes this
-   * file's inventory incomplete, preserving failure instead of guessing exports.
+   * file's inventory incomplete, preserving failure instead of guessing
+   * exports.
    */
   private problem(node: EvidNode, message: string): void {
     this.diagnostics.push({

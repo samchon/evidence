@@ -1,16 +1,14 @@
-import {
-  EvidFingerprint,
-  EvidInventory,
-  EvidSwiftAdapter,
-} from "evid";
+import { EvidFingerprint, EvidInventory, EvidSwiftAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Resolves Swift extension ownership independently of source order.
+/**
+ * Resolves Swift extension ownership independently of source order.
  *
- * Extensions preserve protocol implementation ownership through their dependencies.
+ * Extensions preserve protocol implementation ownership through their
+ * dependencies.
  *
  * 1. Analyze reordered extensions and owners.
  * 2. Verify ownership, dependencies, and rejected boundaries.
@@ -47,7 +45,9 @@ export async function test_swift_extension_ownership(): Promise<void> {
     ),
   ];
   const adapter = new EvidSwiftAdapter();
-  const inventory = await adapter.analyze(EvidTestSourceSnapshot.combine(sources));
+  const inventory = await adapter.analyze(
+    EvidTestSourceSnapshot.combine(sources),
+  );
 
   TestValidator.equals(
     "extension dependency chain is complete",

@@ -4,14 +4,16 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestDocumentation } from "../../internal/EvidTestDocumentation";
 
-/** Parses supported comment styles with exact CRLF source locations.
+/**
+ * Parses supported comment styles with exact CRLF source locations.
  *
- * HTML prose and Prisma-style carriers have distinct tag boundaries that must preserve original coordinates.
+ * HTML prose and Prisma-style carriers have distinct tag boundaries that must
+ * preserve original coordinates.
  *
  * 1. Parse HTML comments where foreign tags remain evidence prose and cannot
  *    create withdrawals, while an evidence review ends the acknowledgement.
- * 2. Parse CRLF Prisma-style line comments where a foreign tag ends the reason
- *    and an `@internal` line withdraws the declaration.
+ * 2. Parse CRLF Prisma-style line comments where a foreign tag ends the reason and
+ *    an `@internal` line withdraws the declaration.
  * 3. Verify the extracted annotation span excludes the CR and comment prefix and
  *    retains its original line and column.
  */

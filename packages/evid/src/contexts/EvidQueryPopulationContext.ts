@@ -3,53 +3,60 @@ import type { IEvidPublicAddress } from "../structures/IEvidPublicAddress";
 import type { IEvidUnit } from "../structures/IEvidUnit";
 
 /**
- * Indexes one configured population for repeated structural and coverage queries.
+ * Indexes one configured population for repeated structural and coverage
+ * queries.
  *
  * The containing facade owns the analysis snapshot. This context borrows its
- * records, distinguishes explicit selection from ancestor closure and visibility,
- * and caches descendant traversal without rebuilding indexes for each operation.
+ * records, distinguishes explicit selection from ancestor closure and
+ * visibility, and caches descendant traversal without rebuilding indexes for
+ * each operation.
  */
 export class EvidQueryPopulationContext {
   /**
    * Claim or reference coordinates identifying the configured population.
    *
-   * Query rows qualify semantic identities with this scope to retain independent obligations.
+   * Query rows qualify semantic identities with this scope to retain
+   * independent obligations.
    */
   public readonly scope: IEvidQueryPopulation["scope"];
 
   /**
    * Inventory borrowed from the containing facade's isolated analysis snapshot.
    *
-   * It supplies full structural context, including units outside explicit selection.
+   * It supplies full structural context, including units outside explicit
+   * selection.
    */
   public readonly inventory: IEvidQueryPopulation["inventory"];
 
   /**
    * Configured semantic selection in its original order.
    *
-   * Descendant results preserve this order rather than adopting map traversal order.
+   * Descendant results preserve this order rather than adopting map traversal
+   * order.
    */
   public readonly unitIds: IEvidQueryPopulation["unitIds"];
 
   /**
    * Effective graph input when the population represents a reference.
    *
-   * Claim populations leave this undefined because they do not own a reference policy.
+   * Claim populations leave this undefined because they do not own a reference
+   * policy.
    */
   public readonly reference: IEvidQueryPopulation["reference"];
 
   /**
    * Evaluated obligation ledger for a reference population.
    *
-   * Coverage inspection uses this alongside structural selection; claim entries omit it.
+   * Coverage inspection uses this alongside structural selection; claim entries
+   * omit it.
    */
   public readonly obligation: IEvidQueryPopulation["obligation"];
 
   /**
    * Full inventory indexed by semantic unit identity.
    *
-   * Parent traversal follows these explicit links instead of inferring ownership
-   * from public accessor prefixes.
+   * Parent traversal follows these explicit links instead of inferring
+   * ownership from public accessor prefixes.
    */
   public readonly units: Map<string, IEvidUnit>;
 
@@ -70,31 +77,37 @@ export class EvidQueryPopulationContext {
   public readonly configured = new Set<string>();
 
   /**
-   * Configured identities with neither an own withdrawal nor a withdrawn ancestor.
+   * Configured identities with neither an own withdrawal nor a withdrawn
+   * ancestor.
    *
-   * List queries use this set to avoid advertising hidden public targets as visible API.
+   * List queries use this set to avoid advertising hidden public targets as
+   * visible API.
    */
   public readonly visible = new Set<string>();
 
   /**
    * Public addresses grouped by semantic identity in inventory order.
    *
-   * Formatting later sorts and deduplicates target spellings for each query row.
+   * Formatting later sorts and deduplicates target spellings for each query
+   * row.
    */
   public readonly addresses = new Map<string, IEvidPublicAddress[]>();
 
   /**
    * Cached selected-descendant lists keyed by queried ancestor identity.
    *
-   * The immutable snapshot boundary lets repeated coverage queries reuse traversal results.
+   * The immutable snapshot boundary lets repeated coverage queries reuse
+   * traversal results.
    */
   private readonly descendants = new Map<string, string[]>();
 
   /**
-   * Builds selection, visibility, and address indexes over an owned analysis population.
+   * Builds selection, visibility, and address indexes over an owned analysis
+   * population.
    *
-   * This constructor does not clone records itself; the containing facade supplies
-   * isolated data. Parent walks stop at cycles or missing units so inspection cannot loop.
+   * This constructor does not clone records itself; the containing facade
+   * supplies isolated data. Parent walks stop at cycles or missing units so
+   * inspection cannot loop.
    */
   public constructor(population: IEvidQueryPopulation) {
     this.scope = population.scope;
@@ -144,10 +157,12 @@ export class EvidQueryPopulationContext {
   }
 
   /**
-   * Returns selected descendants in configured order, including a selected ancestor itself.
+   * Returns selected descendants in configured order, including a selected
+   * ancestor itself.
    *
    * The cached result follows explicit parent relationships. Callers receive a
-   * readonly view because mutating it would corrupt subsequent coverage summaries.
+   * readonly view because mutating it would corrupt subsequent coverage
+   * summaries.
    */
   public selectedDescendants(ancestorId: string): readonly string[] {
     const remembered = this.descendants.get(ancestorId);
@@ -160,7 +175,8 @@ export class EvidQueryPopulationContext {
   }
 
   /**
-   * Tests whether an identity belongs to an ancestor's explicit structural subtree.
+   * Tests whether an identity belongs to an ancestor's explicit structural
+   * subtree.
    *
    * A unit descends from itself. Missing parents and cycles terminate the walk,
    * and literal dots in names never invent another ownership edge.

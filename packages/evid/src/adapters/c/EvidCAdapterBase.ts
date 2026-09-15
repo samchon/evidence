@@ -24,35 +24,34 @@ import { EvidCFileScanner } from "./EvidCFileScanner";
 /**
  * Reconciles C declaration records and Doxygen ownership into graph inventory.
  *
- * File scanning records tags, declarators, source sites, and documentation before
- * publication. Materialization groups compatible declarations within their
- * physical file boundary, projects supported aliases, then attaches annotations
- * to the resulting semantic owners. Cross-file name equality is not C linkage
- * analysis and does not authorize merging units.
+ * File scanning records tags, declarators, source sites, and documentation
+ * before publication. Materialization groups compatible declarations within
+ * their physical file boundary, projects supported aliases, then attaches
+ * annotations to the resulting semantic owners. Cross-file name equality is not
+ * C linkage analysis and does not authorize merging units.
  *
  * Each analysis owns its parser and output records. Source and syntax failures
- * remain on the inventory through final ownership validation, preventing partial
- * extraction from being mistaken for a complete empty population.
+ * remain on the inventory through final ownership validation, preventing
+ * partial extraction from being mistaken for a complete empty population.
  */
 export class EvidCAdapterBase implements IEvidAdapter {
   /**
    * C artifact discriminator for extraction and inventory records.
    *
-   * A header extension alone does not select C++ semantics; configuration chooses
-   * this adapter and its C-specific declaration and tag namespaces.
+   * A header extension alone does not select C++ semantics; configuration
+   * chooses this adapter and its C-specific declaration and tag namespaces.
    */
   public readonly type = "c";
 
   /**
    * Analyzes captured C source and returns reconciled, serializable records.
    *
-   * The snapshot is validated and copied before parsing. Compatible declarations
-   * are materialized before documentation so aliases and shared sites retain
-   * correct owners. Parser resources close on both success and failure.
+   * The snapshot is validated and copied before parsing. Compatible
+   * declarations are materialized before documentation so aliases and shared
+   * sites retain correct owners. Parser resources close on both success and
+   * failure.
    */
-  public async analyze(
-    snapshot: IEvidSourceSnapshot,
-  ): Promise<IEvidInventory> {
+  public async analyze(snapshot: IEvidSourceSnapshot): Promise<IEvidInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidInventory = {
       schemaVersion: 1,
@@ -104,8 +103,7 @@ export class EvidCAdapterBase implements IEvidAdapter {
         (session) => new EvidCFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError =
-        cause instanceof EvidParserError ? cause : undefined;
+      const parserError = cause instanceof EvidParserError ? cause : undefined;
       return {
         source,
         declarations: [],

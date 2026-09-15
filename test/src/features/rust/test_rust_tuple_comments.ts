@@ -1,15 +1,13 @@
-import {
-  EvidFingerprint,
-  EvidInventory,
-  EvidRustAdapter,
-} from "evid";
+import { EvidFingerprint, EvidInventory, EvidRustAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Preserves Rust tuple-field identity across interleaved comments.
+/**
+ * Preserves Rust tuple-field identity across interleaved comments.
  *
- * Comments between field tokens cannot change tuple indexes, visibility, or documentation ownership.
+ * Comments between field tokens cannot change tuple indexes, visibility, or
+ * documentation ownership.
  *
  * 1. Analyze public and private tuple fields separated by ordinary comments,
  *    documentation, attributes, and whitespace.

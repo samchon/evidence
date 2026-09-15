@@ -6,9 +6,11 @@ import { EvidDatabaseAdapterCertification } from "../../internal/certification/E
 import type { IEvidDatabaseAdapterCertification } from "../../internal/certification/IEvidDatabaseAdapterCertification";
 import type { IEvidDatabaseAdapterCertificationUnit } from "../../internal/certification/IEvidDatabaseAdapterCertificationUnit";
 
-/** Applies the shared database certification contract to MySQL.
+/**
+ * Applies the shared database certification contract to MySQL.
  *
- * The MySQL fixture specifies expected inventory, coverage, failure, ambiguity, and fingerprint behavior at the database adapter boundary.
+ * The MySQL fixture specifies expected inventory, coverage, failure, ambiguity,
+ * and fingerprint behavior at the database adapter boundary.
  *
  * 1. Construct the MySQL certification fixture.
  * 2. Execute the shared database certification suite.
@@ -110,7 +112,8 @@ export async function test_mysql_certification(): Promise<void> {
   await EvidDatabaseAdapterCertification.assertAmbiguity(fixture);
 }
 
-/** Creates one MySQL unit expectation independently of parser output.
+/**
+ * Creates one MySQL unit expectation independently of parser output.
  *
  * The helper formats the semantic identity once for its key and source address,
  * preserving an explicit parent only for members owned by a model.

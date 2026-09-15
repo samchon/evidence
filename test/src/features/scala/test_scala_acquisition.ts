@@ -11,11 +11,15 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 /**
  * Acquires the pinned Scala grammar and reuses its warm cache offline.
  *
- * The test records the configured grammar bytes, blocks network acquisition after warming the cache, and analyzes the same Scala snapshot through both paths.
+ * The test records the configured grammar bytes, blocks network acquisition
+ * after warming the cache, and analyzes the same Scala snapshot through both
+ * paths.
  *
  * 1. Load the pinned Scala grammar and capture its bytes.
- * 2. Analyze a representative Scala source through a cold cache and verify the request is only for that grammar and the inventory completes.
- * 3. Reopen the warmed cache with network access disabled and verify its inventory equals the cold result.
+ * 2. Analyze a representative Scala source through a cold cache and verify the
+ *    request is only for that grammar and the inventory completes.
+ * 3. Reopen the warmed cache with network access disabled and verify its inventory
+ *    equals the cold result.
  */
 export async function test_scala_acquisition(): Promise<void> {
   const grammar = await new EvidTreeSitterAssets().grammar("scala");

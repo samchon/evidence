@@ -6,21 +6,24 @@ import type { IEvidSwiftDocumentation } from "./IEvidSwiftDocumentation";
 /**
  * Holds the node-free Swift extraction retained after a parse session closes.
  *
- * Module-wide nominal and alias resolution consumes these records after parsing,
- * so they retain source sites and boundaries without borrowing tree nodes.
+ * Module-wide nominal and alias resolution consumes these records after
+ * parsing, so they retain source sites and boundaries without borrowing tree
+ * nodes.
  */
 export interface IEvidSwiftFileAnalysis {
   /**
    * Original selected source snapshot.
    *
-   * Materialization uses its physical path and configured addresses for units and hosts.
+   * Materialization uses its physical path and configured addresses for units
+   * and hosts.
    */
   source: IEvidSourceFile;
 
   /**
    * Extracted declarations, including non-public boundaries.
    *
-   * Ownership reconciliation needs inaccessible records to determine the public surface.
+   * Ownership reconciliation needs inaccessible records to determine the public
+   * surface.
    */
   declarations: IEvidSwiftDeclaration[];
 
@@ -34,7 +37,8 @@ export interface IEvidSwiftFileAnalysis {
   /**
    * Failures encountered while establishing the public surface.
    *
-   * The adapter propagates them instead of treating omitted declarations as absent.
+   * The adapter propagates them instead of treating omitted declarations as
+   * absent.
    */
   diagnostics: IEvidDiagnostic[];
 

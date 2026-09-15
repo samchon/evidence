@@ -1,4 +1,5 @@
-/** Relationship between an inventory unit and a configured population.
+/**
+ * Relationship between an inventory unit and a configured population.
  *
  * `selected` units form the coverage denominator. `ancestor` units remain
  * addressable to cover selected descendants but do not count themselves, while

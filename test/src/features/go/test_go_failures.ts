@@ -5,9 +5,11 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Keeps uncertain Go package surfaces incomplete.
+/**
+ * Keeps uncertain Go package surfaces incomplete.
  *
- * Missing ownership, package conflicts, conditional duplicates, and parse errors cannot shrink selected coverage.
+ * Missing ownership, package conflicts, conditional duplicates, and parse
+ * errors cannot shrink selected coverage.
  *
  * 1. Analyze each uncertain source form.
  * 2. Require an incomplete inventory and diagnostic.
@@ -108,8 +110,14 @@ export async function test_go_failures(): Promise<void> {
 
   const packages = await adapter.analyze(
     EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create("mixed/one.go", "package one\nfunc One() {}\n"),
-      EvidTestSourceSnapshot.create("mixed/two.go", "package two\nfunc Two() {}\n"),
+      EvidTestSourceSnapshot.create(
+        "mixed/one.go",
+        "package one\nfunc One() {}\n",
+      ),
+      EvidTestSourceSnapshot.create(
+        "mixed/two.go",
+        "package two\nfunc Two() {}\n",
+      ),
     ]),
   );
   TestValidator.equals("incompatible Go packages", packages.complete, false);

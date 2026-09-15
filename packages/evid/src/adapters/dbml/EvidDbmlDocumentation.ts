@@ -3,15 +3,19 @@ import type { IEvidDocumentation } from "../../structures/IEvidDocumentation";
 import type { IEvidDbmlDocumentation } from "./IEvidDbmlDocumentation";
 
 /**
- * Decodes DBML note escapes without losing original UTF-16 annotation positions.
+ * Decodes DBML note escapes without losing original UTF-16 annotation
+ * positions.
  *
- * The adapter uses mapped positions to attach Evid tags to original source text.
+ * The adapter uses mapped positions to attach Evid tags to original source
+ * text.
  */
 export namespace EvidDbmlDocumentation {
   /**
-   * Reads established comment or note ownership and preserves mapped decoded characters.
+   * Reads established comment or note ownership and preserves mapped decoded
+   * characters.
    *
-   * Callers provide a scanner-created carrier after structural ownership is known.
+   * Callers provide a scanner-created carrier after structural ownership is
+   * known.
    */
   export function read(
     content: string,

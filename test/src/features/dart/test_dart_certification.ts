@@ -1,9 +1,12 @@
 import { EvidAdapterCertification } from "../../internal/certification/EvidAdapterCertification";
 import { EvidAdapterCertificationFixtures } from "../../internal/certification/EvidAdapterCertificationFixtures";
 
-/** Certifies Dart inventory, graph, failure, fingerprint, and ambiguity behavior.
+/**
+ * Certifies Dart inventory, graph, failure, fingerprint, and ambiguity
+ * behavior.
  *
- * The Dart fixture supplies an independent public surface for the shared certification helpers.
+ * The Dart fixture supplies an independent public surface for the shared
+ * certification helpers.
  *
  * 1. Locate the Dart certification fixture.
  * 2. Validate its analyzed inventory against the fixture.

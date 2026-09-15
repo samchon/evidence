@@ -1,15 +1,19 @@
 import type { Node as EvidNode } from "web-tree-sitter";
 
 /**
- * Decodes SQLite source identifiers without interpreting strings as executable SQL.
+ * Decodes SQLite source identifiers without interpreting strings as executable
+ * SQL.
  *
- * The SQLite scanner uses these helpers only for grammar-established name nodes.
+ * The SQLite scanner uses these helpers only for grammar-established name
+ * nodes.
  */
 export namespace EvidSqliteSyntax {
   /**
-   * Returns a literal name, including SQLite's context-specific single-quote spelling.
+   * Returns a literal name, including SQLite's context-specific single-quote
+   * spelling.
    *
-   * Callers pass identifier tokens, so string expressions cannot become schema names.
+   * Callers pass identifier tokens, so string expressions cannot become schema
+   * names.
    */
   export function identifier(node: EvidNode): string | undefined {
     if (node.type !== "identifier" && node.type !== "string_literal")
@@ -25,7 +29,8 @@ export namespace EvidSqliteSyntax {
   /**
    * Folds SQLite identifier ASCII letters while preserving other code points.
    *
-   * This matches the adapter's comparison boundary without changing Unicode spelling.
+   * This matches the adapter's comparison boundary without changing Unicode
+   * spelling.
    */
   export function fold(value: string): string {
     return value.replace(/[A-Z]/gu, (character) => character.toLowerCase());
@@ -34,7 +39,8 @@ export namespace EvidSqliteSyntax {
   /**
    * Reads direct grammar-established names, excluding names inside expressions.
    *
-   * The returned segments remain separate so quoted dots are not treated as path delimiters.
+   * The returned segments remain separate so quoted dots are not treated as
+   * path delimiters.
    */
   export function names(node: EvidNode): string[] {
     return node.namedChildren.flatMap((child) => {

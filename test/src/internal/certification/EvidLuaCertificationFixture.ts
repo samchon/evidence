@@ -3,7 +3,10 @@ import { dedent } from "@typia/utils";
 
 import type { IEvidAdapterCertification } from "./IEvidAdapterCertification";
 
-/** Supplies independent exact Lua expectations without inventing type declarations. */
+/**
+ * Supplies independent exact Lua expectations without inventing type
+ * declarations.
+ */
 export namespace EvidLuaCertificationFixture {
   /** Builds a fresh Lua certification scenario. */
   export function create(): IEvidAdapterCertification {

@@ -19,20 +19,23 @@ import { EvidZigDocumentation } from "./EvidZigDocumentation";
 import { EvidZigFileScanner } from "./EvidZigFileScanner";
 
 /**
- * Materializes explicit Zig container declarations and their documentation hosts.
+ * Materializes explicit Zig container declarations and their documentation
+ * hosts.
  *
  * File scanning establishes lexical visibility, supported aliases, and source
- * attachment before publication. The adapter reconciles those declaration records
- * into units and public addresses, then applies documentation and withdrawals
- * through their real owners. It preserves unsupported source forms as incomplete
- * findings rather than evaluating comptime code to guess a public surface.
+ * attachment before publication. The adapter reconciles those declaration
+ * records into units and public addresses, then applies documentation and
+ * withdrawals through their real owners. It preserves unsupported source forms
+ * as incomplete findings rather than evaluating comptime code to guess a public
+ * surface.
  */
 export class EvidZigAdapterBase implements IEvidAdapter {
   /**
    * Zig discriminator for the pinned declared-source extraction rules.
    *
    * It fixes grammar and container semantics for both graph roles; it does not
-   * authorize build execution or inferred declarations outside selected source.
+   * authorize build execution or inferred declarations outside selected
+   * source.
    */
   public readonly type = "zig";
 
@@ -43,9 +46,7 @@ export class EvidZigAdapterBase implements IEvidAdapter {
    * owner and withdrawals. Completeness includes every scan's outcome, and the
    * invocation releases parser resources on all completion paths.
    */
-  public async analyze(
-    snapshot: IEvidSourceSnapshot,
-  ): Promise<IEvidInventory> {
+  public async analyze(snapshot: IEvidSourceSnapshot): Promise<IEvidInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidInventory = {
       schemaVersion: 1,
@@ -103,8 +104,7 @@ export class EvidZigAdapterBase implements IEvidAdapter {
         (session) => new EvidZigFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError =
-        cause instanceof EvidParserError ? cause : undefined;
+      const parserError = cause instanceof EvidParserError ? cause : undefined;
       return {
         source,
         declarations: [],
@@ -132,10 +132,12 @@ export class EvidZigAdapterBase implements IEvidAdapter {
   }
 
   /**
-   * Reconciles aliases into units while retaining every physical declaration address.
+   * Reconciles aliases into units while retaining every physical declaration
+   * address.
    *
    * Canonical identity deduplicates alias projections, whereas each supported
-   * public accessor contributes an address and its original source site remains reviewable.
+   * public accessor contributes an address and its original source site remains
+   * reviewable.
    */
   private materializeUnits(
     inventory: IEvidInventory,
@@ -292,8 +294,9 @@ export class EvidZigAdapterBase implements IEvidAdapter {
   /**
    * Materializes public declaration sites that carry no documentation.
    *
-   * These hosts preserve uncovered eligible units after attachment and withdrawal
-   * processing, grouping declarations that share one physical source site.
+   * These hosts preserve uncovered eligible units after attachment and
+   * withdrawal processing, grouping declarations that share one physical source
+   * site.
    */
   private materializeUndocumentedHosts(
     inventory: IEvidInventory,
@@ -369,10 +372,12 @@ export class EvidZigAdapterBase implements IEvidAdapter {
   }
 
   /**
-   * Creates a host for an attached or explicitly unsupported documentation carrier.
+   * Creates a host for an attached or explicitly unsupported documentation
+   * carrier.
    *
    * Unattached tag-bearing source receives an unsupported host so diagnostics
-   * retain a physical location instead of being discarded during materialization.
+   * retain a physical location instead of being discarded during
+   * materialization.
    */
   private host(
     source: IEvidSourceFile,
@@ -427,8 +432,11 @@ export class EvidZigAdapterBase implements IEvidAdapter {
     documentation: IEvidZigDocumentation,
   ): boolean {
     return this.annotationPattern(
-      EvidZigDocumentation.read(analysis.source, documentation, documentation.id)
-        .text,
+      EvidZigDocumentation.read(
+        analysis.source,
+        documentation,
+        documentation.id,
+      ).text,
       true,
     );
   }
@@ -444,8 +452,11 @@ export class EvidZigAdapterBase implements IEvidAdapter {
     documentation: IEvidZigDocumentation,
   ): boolean {
     return this.annotationPattern(
-      EvidZigDocumentation.read(analysis.source, documentation, documentation.id)
-        .text,
+      EvidZigDocumentation.read(
+        analysis.source,
+        documentation,
+        documentation.id,
+      ).text,
       false,
     );
   }
@@ -491,7 +502,8 @@ export class EvidZigAdapterBase implements IEvidAdapter {
    * Builds a canonical unit identity without merging declarations across files.
    *
    * Source identity prefixes the lexical declaration path so aliases can unify
-   * within their selected file while physically distinct files stay independent.
+   * within their selected file while physically distinct files stay
+   * independent.
    */
   private unitId(declaration: IEvidZigDeclaration): string {
     return `zig:${declaration.site.file}:${declaration.symbol}:${JSON.stringify(declaration.identity)}`;

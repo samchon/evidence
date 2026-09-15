@@ -7,19 +7,21 @@ import { EvidTestInventory } from "../../internal/EvidTestInventory";
 /**
  * Distinguishes inactive claims from claims whose discovery could not complete.
  *
- * A complete empty claim owes no reference work, but failed discovery cannot prove
- * emptiness. Activation must preserve that distinction before reference failures
- * or derived missing-evidence findings are considered.
+ * A complete empty claim owes no reference work, but failed discovery cannot
+ * prove emptiness. Activation must preserve that distinction before reference
+ * failures or derived missing-evidence findings are considered.
  *
  * 1. Give an off claim a failed reference and require an inactive claim and
  *    obligation, no diagnostics, and successful graph evaluation.
  * 2. Select no units from a complete claim and require the same inactive boundary
  *    without exposing the failed reference's diagnostics.
  * 3. Mark claim discovery incomplete with an empty selection and require it to
- *    remain active, with incomplete claim and obligation state and overall failure.
- *    Do not emit derived missing-acknowledgement findings from that partial input.
+ *    remain active, with incomplete claim and obligation state and overall
+ *    failure. Do not emit derived missing-acknowledgement findings from that
+ *    partial input.
  * 4. Remove all references from the incomplete claim and require failure anyway,
- *    proving claim completeness does not depend on an obligation carrying the error.
+ *    proving claim completeness does not depend on an obligation carrying the
+ *    error.
  */
 export async function test_graph_activation(): Promise<void> {
   const claim = EvidTestInventory.create();

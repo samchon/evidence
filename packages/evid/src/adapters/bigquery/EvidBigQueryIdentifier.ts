@@ -1,13 +1,16 @@
-/** Decodes GoogleSQL names without inferring an ambient project or dataset.
+/**
+ * Decodes GoogleSQL names without inferring an ambient project or dataset.
  *
  * Explicit segments preserve schema identity across snapshots, avoiding an
  * environment-dependent address when source omits a project or dataset.
  */
 export namespace EvidBigQueryIdentifier {
-  /** Splits a declared table path into explicit identity segments.
+  /**
+   * Splits a declared table path into explicit identity segments.
    *
-   * A whole-path backtick pair still permits segment boundaries at dots, matching
-   * BigQuery table qualification rather than treating it as one member name.
+   * A whole-path backtick pair still permits segment boundaries at dots,
+   * matching BigQuery table qualification rather than treating it as one member
+   * name.
    */
   export function table(raw: string): string[] | undefined {
     const quoted =
@@ -25,7 +28,8 @@ export namespace EvidBigQueryIdentifier {
     return parts.filter((part) => part !== undefined);
   }
 
-  /** Decodes one member identifier without splitting its literal content.
+  /**
+   * Decodes one member identifier without splitting its literal content.
    *
    * Unsupported escapes and line breaks are rejected because they cannot form a
    * stable selector segment.
@@ -38,10 +42,11 @@ export namespace EvidBigQueryIdentifier {
     return /^[A-Za-z_][A-Za-z0-9_]*$/u.test(raw) ? raw : undefined;
   }
 
-  /** Normalizes a case-insensitive field or constraint identifier.
+  /**
+   * Normalizes a case-insensitive field or constraint identifier.
    *
-   * Table paths retain their declared spelling; only member comparisons use this
-   * canonical form.
+   * Table paths retain their declared spelling; only member comparisons use
+   * this canonical form.
    */
   export function canonical(raw: string): string | undefined {
     const value = member(raw);
@@ -49,9 +54,11 @@ export namespace EvidBigQueryIdentifier {
   }
 
   /**
-   * Accepts documented flexible column characters, including quoted whitespace and Unicode letters.
+   * Accepts documented flexible column characters, including quoted whitespace
+   * and Unicode letters.
    *
-   * Field validation remains separate from table-path validation because their grammars differ.
+   * Field validation remains separate from table-path validation because their
+   * grammars differ.
    */
   export function column(raw: string): string | undefined {
     const value = member(raw);
@@ -73,9 +80,11 @@ export namespace EvidBigQueryIdentifier {
   }
 
   /**
-   * Normalizes valid field endpoints independently of case-sensitive table paths.
+   * Normalizes valid field endpoints independently of case-sensitive table
+   * paths.
    *
-   * Foreign-key endpoint comparison needs one stable spelling for supported field names.
+   * Foreign-key endpoint comparison needs one stable spelling for supported
+   * field names.
    */
   export function canonicalColumn(raw: string): string | undefined {
     const value = column(raw);

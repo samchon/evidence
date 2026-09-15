@@ -1,6 +1,7 @@
 import type { IEvidSourceRange } from "../../structures/IEvidSourceRange";
 
-/** Source position found for one parser-established Prisma identity.
+/**
+ * Source position found for one parser-established Prisma identity.
  *
  * Keys connect semantic parser output to physical content without making source
  * scanning guess which declarations the Prisma parser accepts.
@@ -17,8 +18,8 @@ export interface IEvidPrismaLocation {
   /**
    * Exact physical source range used for the materialized site.
    *
-   * The resulting Evid site owns this range for diagnostics, fingerprints,
-   * and documentation attachment in the immutable source snapshot.
+   * The resulting Evid site owns this range for diagnostics, fingerprints, and
+   * documentation attachment in the immutable source snapshot.
    */
   range: IEvidSourceRange;
 }

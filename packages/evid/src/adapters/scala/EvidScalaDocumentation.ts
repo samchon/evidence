@@ -12,10 +12,11 @@ import type { IEvidScalaDocumentation } from "./IEvidScalaDocumentation";
  */
 export namespace EvidScalaDocumentation {
   /**
-   * Maps a documentation carrier and masks examples without moving source offsets.
+   * Maps a documentation carrier and masks examples without moving source
+   * offsets.
    *
-   * Non-Scaladoc carriers retain the shared parser mapping unchanged because only
-   * Scaladoc supports example masking here.
+   * Non-Scaladoc carriers retain the shared parser mapping unchanged because
+   * only Scaladoc supports example masking here.
    */
   export function read(
     source: IEvidSourceFile,

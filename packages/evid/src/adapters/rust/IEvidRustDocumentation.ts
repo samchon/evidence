@@ -5,14 +5,16 @@ import type { IEvidRustDocumentationAttachment } from "./IEvidRustDocumentationA
 /**
  * Retains one Rust documentation carrier, including unsupported tagged text.
  *
- * The adapter delays attachment until public occurrences and inherited withdrawals
- * are known, while preserving unsupported annotations as diagnosable hosts.
+ * The adapter delays attachment until public occurrences and inherited
+ * withdrawals are known, while preserving unsupported annotations as
+ * diagnosable hosts.
  */
 export interface IEvidRustDocumentation {
   /**
    * Stable source-region identity for this documentation carrier.
    *
-   * It becomes the evidence-host ID after attachment or unsupported-host creation.
+   * It becomes the evidence-host ID after attachment or unsupported-host
+   * creation.
    */
   id: string;
 
@@ -33,7 +35,8 @@ export interface IEvidRustDocumentation {
   /**
    * Declaration sites directly associated with this carrier.
    *
-   * Publication and withdrawal filtering decide which sites reach a visible host.
+   * Publication and withdrawal filtering decide which sites reach a visible
+   * host.
    */
   attachments: IEvidRustDocumentationAttachment[];
 

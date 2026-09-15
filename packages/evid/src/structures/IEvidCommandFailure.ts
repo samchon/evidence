@@ -16,14 +16,16 @@ export interface IEvidCommandFailure {
   /**
    * Requested analysis operation that failed.
    *
-   * This retains the command identity even though its normal report is unavailable.
+   * This retains the command identity even though its normal report is
+   * unavailable.
    */
   command: "check" | "graph" | "inspect" | "list";
 
   /**
    * Discriminator identifying an operational failure.
    *
-   * The normal check report instead describes analysis as complete or incomplete.
+   * The normal check report instead describes analysis as complete or
+   * incomplete.
    */
   status: "failed";
 
@@ -44,7 +46,8 @@ export interface IEvidCommandFailure {
   /**
    * Resolved configuration path associated with the attempted command.
    *
-   * It remains available when loading that file was itself the failing operation.
+   * It remains available when loading that file was itself the failing
+   * operation.
    */
   configFile: string;
 

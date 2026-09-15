@@ -4,19 +4,20 @@ import type { IEvidCSharpDeclaration } from "./IEvidCSharpDeclaration";
 import type { IEvidCSharpDocumentation } from "./IEvidCSharpDocumentation";
 
 /**
- * Carries one source file's C# extraction after its Tree-sitter session can close.
+ * Carries one source file's C# extraction after its Tree-sitter session can
+ * close.
  *
- * EvidCSharpFileScanner produces this node-free boundary between syntax traversal and
- * EvidCSharpAdapterBase materialization. The adapter reconciles declarations across files,
- * maps documentation to hosts, and propagates incomplete extraction to the final
- * inventory without retaining parser nodes.
+ * EvidCSharpFileScanner produces this node-free boundary between syntax
+ * traversal and EvidCSharpAdapterBase materialization. The adapter reconciles
+ * declarations across files, maps documentation to hosts, and propagates
+ * incomplete extraction to the final inventory without retaining parser nodes.
  */
 export interface IEvidCSharpFileAnalysis {
   /**
    * Identifies the source snapshot from which this extraction was produced.
    *
-   * EvidCSharpAdapterBase uses its physical path for diagnostics and hosts and its
-   * configured addresses when publishing declaration accessors.
+   * EvidCSharpAdapterBase uses its physical path for diagnostics and hosts and
+   * its configured addresses when publishing declaration accessors.
    */
   source: IEvidSourceFile;
 
@@ -39,10 +40,12 @@ export interface IEvidCSharpFileAnalysis {
   documentation: IEvidCSharpDocumentation[];
 
   /**
-   * Reports extraction problems that prevent this analysis from representing its full source surface.
+   * Reports extraction problems that prevent this analysis from representing
+   * its full source surface.
    *
    * The adapter copies these diagnostics to the final inventory and treats the
-   * file as incomplete, preventing missing declarations from reducing coverage.
+   * file as incomplete, preventing missing declarations from reducing
+   * coverage.
    */
   diagnostics: IEvidDiagnostic[];
 

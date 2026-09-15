@@ -26,16 +26,17 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * checked-in content will disagree between a developer checkout, CI, and an
  * editor's replacement save.
  *
- * 1. Discover and analyze identical Markdown files from two independent
- *    checkout roots; require different snapshot IDs but equal heading hashes.
+ * 1. Discover and analyze identical Markdown files from two independent checkout
+ *    roots; require different snapshot IDs but equal heading hashes.
  * 2. Replace one file at the same path with byte-identical content through
- *    renames; require its filesystem identity to change and its hash to remain.
+ *    renames; require its filesystem identity to change and its hash to
+ *    remain.
  * 3. Change the heading's semantic prose and require the hash to expire.
  * 4. Load an LF/CRLF checkout pair and require equal hashes.
  * 5. Analyze two different declaring paths with identical anchored content and
  *    require distinct hashes, preserving declaration rebinding sensitivity.
- * 6. Add an unrelated source whose process-local ID prefixes the reviewed
- *    source ID; require the reviewed TypeScript fingerprint to remain stable.
+ * 6. Add an unrelated source whose process-local ID prefixes the reviewed source
+ *    ID; require the reviewed TypeScript fingerprint to remain stable.
  */
 export async function test_fingerprint_portability(): Promise<void> {
   const location: string = join(
@@ -66,10 +67,14 @@ export async function test_fingerprint_portability(): Promise<void> {
         directory,
         "checkout-crlf/evidence.config.ts",
       );
-      const firstSnapshot: IEvidSourceSnapshot =
-        await EvidSourceLoader.glob(firstConfig, { files: ["rules.md"] });
-      const secondSnapshot: IEvidSourceSnapshot =
-        await EvidSourceLoader.glob(secondConfig, { files: ["rules.md"] });
+      const firstSnapshot: IEvidSourceSnapshot = await EvidSourceLoader.glob(
+        firstConfig,
+        { files: ["rules.md"] },
+      );
+      const secondSnapshot: IEvidSourceSnapshot = await EvidSourceLoader.glob(
+        secondConfig,
+        { files: ["rules.md"] },
+      );
       const firstInventory: IEvidInventory =
         await new EvidMarkdownAdapter().analyze(firstSnapshot);
       const secondInventory: IEvidInventory =
@@ -101,8 +106,10 @@ export async function test_fingerprint_portability(): Promise<void> {
       await rename(active, retired);
       await rename(replacement, active);
       await rm(retired);
-      const replacedSnapshot: IEvidSourceSnapshot =
-        await EvidSourceLoader.glob(firstConfig, { files: ["rules.md"] });
+      const replacedSnapshot: IEvidSourceSnapshot = await EvidSourceLoader.glob(
+        firstConfig,
+        { files: ["rules.md"] },
+      );
       const replacedInventory: IEvidInventory =
         await new EvidMarkdownAdapter().analyze(replacedSnapshot);
       TestValidator.notEquals(
@@ -112,18 +119,18 @@ export async function test_fingerprint_portability(): Promise<void> {
       );
       TestValidator.equals(
         "identical replacement fingerprint",
-        EvidFingerprint.inspect(
-          replacedInventory,
-          rule(replacedInventory).id,
-        ).fingerprint,
+        EvidFingerprint.inspect(replacedInventory, rule(replacedInventory).id)
+          .fingerprint,
         baseline,
       );
 
       await EvidTestFileSystem.save(directory, {
         "checkout-a/rules.md": content.replace("Do the work.", "Do more work."),
       });
-      const changedSnapshot: IEvidSourceSnapshot =
-        await EvidSourceLoader.glob(firstConfig, { files: ["rules.md"] });
+      const changedSnapshot: IEvidSourceSnapshot = await EvidSourceLoader.glob(
+        firstConfig,
+        { files: ["rules.md"] },
+      );
       const changedInventory: IEvidInventory =
         await new EvidMarkdownAdapter().analyze(changedSnapshot);
       TestValidator.notEquals(
@@ -133,8 +140,10 @@ export async function test_fingerprint_portability(): Promise<void> {
         baseline,
       );
 
-      const crlfSnapshot: IEvidSourceSnapshot =
-        await EvidSourceLoader.glob(crlfConfig, { files: ["rules.md"] });
+      const crlfSnapshot: IEvidSourceSnapshot = await EvidSourceLoader.glob(
+        crlfConfig,
+        { files: ["rules.md"] },
+      );
       const crlfInventory: IEvidInventory =
         await new EvidMarkdownAdapter().analyze(crlfSnapshot);
       TestValidator.equals(
@@ -147,16 +156,16 @@ export async function test_fingerprint_portability(): Promise<void> {
       await EvidTestFileSystem.save(directory, {
         "checkout-b/other.md": content,
       });
-      const distinctSnapshot: IEvidSourceSnapshot =
-        await EvidSourceLoader.glob(secondConfig, {
+      const distinctSnapshot: IEvidSourceSnapshot = await EvidSourceLoader.glob(
+        secondConfig,
+        {
           files: ["rules.md", "other.md"],
-        });
+        },
+      );
       const distinctInventory: IEvidInventory =
         await new EvidMarkdownAdapter().analyze(distinctSnapshot);
       const distinct: string[] = distinctInventory.units
-        .filter(
-          (unit: IEvidUnit): boolean => unit.identity.at(-1) === "rule",
-        )
+        .filter((unit: IEvidUnit): boolean => unit.identity.at(-1) === "rule")
         .map(
           (unit: IEvidUnit): string =>
             EvidFingerprint.inspect(distinctInventory, unit.id).fingerprint,

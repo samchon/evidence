@@ -7,10 +7,10 @@ import type { IEvidWithdrawal } from "./IEvidWithdrawal";
 /**
  * Resolution outcome for an authored target within one reference population.
  *
- * The resolver retains attempted addresses and candidate units even when it cannot
- * accept a unique visible target. Diagnostics distinguish malformed spelling,
- * unavailable files, selection boundaries, and incomplete extraction so callers
- * do not report every failure as a missing member.
+ * The resolver retains attempted addresses and candidate units even when it
+ * cannot accept a unique visible target. Diagnostics distinguish malformed
+ * spelling, unavailable files, selection boundaries, and incomplete extraction
+ * so callers do not report every failure as a missing member.
  */
 export interface IEvidTargetResolution {
   /**
@@ -24,9 +24,9 @@ export interface IEvidTargetResolution {
   /**
    * Candidate public addresses produced by the artifact's target grammar.
    *
-   * File-qualified targets can produce several absolute paths when a merged host
-   * retains multiple origins. Synthetic artifact grammars retain their own file
-   * keys, and malformed targets may produce no addresses.
+   * File-qualified targets can produce several absolute paths when a merged
+   * host retains multiple origins. Synthetic artifact grammars retain their own
+   * file keys, and malformed targets may produce no addresses.
    */
   addresses: IEvidAddress[];
 

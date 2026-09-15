@@ -18,27 +18,30 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 import { EvidTestGraph } from "../../internal/EvidTestGraph";
 
 /**
- * Fingerprints complete structural scopes, including identity rebinding and withdrawn descendants.
+ * Fingerprints complete structural scopes, including identity rebinding and
+ * withdrawn descendants.
  *
- * A scope review concerns the actual declaration subtree, not only selected public
- * leaves. Own content, structural descendants, and withdrawal metadata must remain
- * distinguishable so annotation exclusion does not hide changes to reviewed API meaning.
+ * A scope review concerns the actual declaration subtree, not only selected
+ * public leaves. Own content, structural descendants, and withdrawal metadata
+ * must remain distinguishable so annotation exclusion does not hide changes to
+ * reviewed API meaning.
  *
- * 1. Edit a nested Markdown section and require its parent's own content digest
- *    to stay stable while the parent scope fingerprint changes.
- * 2. Insert ordinary prose and accepted Evid metadata before the reviewed
- *    heading; require its fingerprint and exact shifted range to remain stable,
- *    then exercise `requireReview` against the shifted document.
+ * 1. Edit a nested Markdown section and require its parent's own content digest to
+ *    stay stable while the parent scope fingerprint changes.
+ * 2. Insert ordinary prose and accepted Evid metadata before the reviewed heading;
+ *    require its fingerprint and exact shifted range to remain stable, then
+ *    exercise `requireReview` against the shifted document.
  * 3. Edit prose after single- and multiline HTML comments; require the owning
  *    heading fingerprint to expire while annotation text remains excluded.
- * 4. Edit an unrelated sibling section and require the original scope to stay stable.
+ * 4. Edit an unrelated sibling section and require the original scope to stay
+ *    stable.
  * 5. Rebind identical Markdown content to another source path, then rebind one
- *    TypeScript public alias between identical declarations; require both identity
- *    changes to expire their respective fingerprints.
- * 6. Withdraw a TypeScript member through documentation and require unchanged parent
- *    own content but a changed parent scope fingerprint.
- * 7. Change the already withdrawn member's type and require the enclosing scope
- *    to change again, proving hidden descendants remain part of reviewed content.
+ *    TypeScript public alias between identical declarations; require both
+ *    identity changes to expire their respective fingerprints.
+ * 6. Withdraw a TypeScript member through documentation and require unchanged
+ *    parent own content but a changed parent scope fingerprint.
+ * 7. Change the already withdrawn member's type and require the enclosing scope to
+ *    change again, proving hidden descendants remain part of reviewed content.
  * 8. Edit only an HTML-comment annotation inside a generated-anchor heading and
  *    require its public identity and fingerprint to remain stable.
  */
@@ -86,9 +89,7 @@ export async function test_fingerprint_scope(): Promise<void> {
 
     <!-- @evidence other.md Explains the file aggregate. -->
   `}\n\n`;
-  const prefixed: IEvidInventory = await markdownInventory(
-    prefix + markdown,
-  );
+  const prefixed: IEvidInventory = await markdownInventory(prefix + markdown);
   const prefixedPricing: IEvidUnit = requireUnit(prefixed, "pricing");
   const prefixedSite: IEvidUnitSite | undefined = prefixedPricing.sites[0];
   if (prefixedSite === undefined)
@@ -123,12 +124,16 @@ export async function test_fingerprint_scope(): Promise<void> {
     severity: "error",
     inventory: prefixed,
     unitIds: [prefixedPricing.id],
-    resolutions: await EvidTestGraph.resolveDeclarations(reviewedClaim, prefixed, [
-      prefixedPricing.id,
-    ]),
-    reviewResolutions: await EvidTestGraph.resolveReviews(reviewedClaim, prefixed, [
-      prefixedPricing.id,
-    ]),
+    resolutions: await EvidTestGraph.resolveDeclarations(
+      reviewedClaim,
+      prefixed,
+      [prefixedPricing.id],
+    ),
+    reviewResolutions: await EvidTestGraph.resolveReviews(
+      reviewedClaim,
+      prefixed,
+      [prefixedPricing.id],
+    ),
     requireReview: true,
   };
   TestValidator.predicate(
@@ -218,10 +223,9 @@ export async function test_fingerprint_scope(): Promise<void> {
   const inlineHeadingComment: IEvidInventory = await markdownInventory(
     "# Rule <!-- @evidence other.md First explanation. -->\n",
   );
-  const changedInlineHeadingComment: IEvidInventory =
-    await markdownInventory(
-      "# Rule <!-- @evidence other.md Second explanation. -->\n",
-    );
+  const changedInlineHeadingComment: IEvidInventory = await markdownInventory(
+    "# Rule <!-- @evidence other.md Second explanation. -->\n",
+  );
   const inlineRule: IEvidUnit = requireUnit(inlineHeadingComment, "rule");
   const changedInlineRule: IEvidUnit = requireUnit(
     changedInlineHeadingComment,
@@ -234,12 +238,9 @@ export async function test_fingerprint_scope(): Promise<void> {
   );
   TestValidator.equals(
     "inline heading annotation preserves fingerprint",
-    EvidFingerprint.inspect(
-      changedInlineHeadingComment,
-      changedInlineRule.id,
-    ).fingerprint,
-    EvidFingerprint.inspect(inlineHeadingComment, inlineRule.id)
+    EvidFingerprint.inspect(changedInlineHeadingComment, changedInlineRule.id)
       .fingerprint,
+    EvidFingerprint.inspect(inlineHeadingComment, inlineRule.id).fingerprint,
   );
 
   const changedSibling = await markdownInventory(
@@ -345,19 +346,19 @@ async function markdownInventory(
  * Shared source identity keeps withdrawal and member-content changes isolated
  * from unrelated rebinding effects.
  */
-async function typescriptInventory(
-  content: string,
-): Promise<IEvidInventory> {
+async function typescriptInventory(content: string): Promise<IEvidInventory> {
   return new EvidTypeScriptAdapter().analyze(
     EvidTestSourceSnapshot.create("src/contracts.ts", content),
   );
 }
 
 /**
- * Resolves one public alias after choosing which identical declaration it forwards.
+ * Resolves one public alias after choosing which identical declaration it
+ * forwards.
  *
- * The barrel address stays constant while its target module changes. Fingerprinting
- * the resolved declaration tests whether semantic rebinding expires the review.
+ * The barrel address stays constant while its target module changes.
+ * Fingerprinting the resolved declaration tests whether semantic rebinding
+ * expires the review.
  */
 async function reexportedFingerprint(module: string): Promise<string> {
   const inventory = await new EvidTypeScriptAdapter().analyze(
@@ -395,10 +396,7 @@ async function reexportedFingerprint(module: string): Promise<string> {
  * Failure to extract the intended unit aborts setup rather than producing a
  * misleading fingerprint comparison against another candidate.
  */
-function requireUnit(
-  inventory: IEvidInventory,
-  identity: string,
-): IEvidUnit {
+function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === identity || candidate.identity.at(-1) === identity,

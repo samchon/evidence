@@ -5,11 +5,15 @@ import { join } from "node:path";
 
 import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
-/** Rebuilds Lua populations after source, discovery, syntax, and configuration changes.
+/**
+ * Rebuilds Lua populations after source, discovery, syntax, and configuration
+ * changes.
  *
- * Watch must invalidate stale module analysis as selected project inputs change.
+ * Watch must invalidate stale module analysis as selected project inputs
+ * change.
  *
- * 1. Mutate source and add a selected file. 2. Introduce malformed input. 3. Repair it and verify recovered configuration output.
+ * 1. Mutate source and add a selected file. 2. Introduce malformed input. 3.
+ *    Repair it and verify recovered configuration output.
  */
 export async function test_lua_watch(): Promise<void> {
   await EvidTestFileSystem.experiment(

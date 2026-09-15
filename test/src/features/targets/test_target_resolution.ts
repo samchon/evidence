@@ -1,19 +1,15 @@
-import {
-  EvidTargetResolver,
-  EvidTypeScriptAdapter,
-} from "evid";
-import type {
-  IEvidHost,
-  IEvidTargetStatement,
-} from "evid";
+import { EvidTargetResolver, EvidTypeScriptAdapter } from "evid";
+import type { IEvidHost, IEvidTargetStatement } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Resolves public files, ancestors, aliases, and literal members.
+/**
+ * Resolves public files, ancestors, aliases, and literal members.
  *
- * Resolution must distinguish structural containment from public identity while preserving aliases and literal member names.
+ * Resolution must distinguish structural containment from public identity while
+ * preserving aliases and literal member names.
  *
  * 1. Build units with files, ancestors, aliases, and literal members.
  * 2. Resolve each supported target form.
@@ -52,8 +48,14 @@ export async function test_target_resolution(): Promise<void> {
           export type { SomeClass as ClassType } from "./SomeClass";
         `,
       ),
-      EvidTestSourceSnapshot.create("src/a # b.ts", "export const encoded = 1;"),
-      EvidTestSourceSnapshot.create("src/wrong.ts", "export const different = 1;"),
+      EvidTestSourceSnapshot.create(
+        "src/a # b.ts",
+        "export const encoded = 1;",
+      ),
+      EvidTestSourceSnapshot.create(
+        "src/wrong.ts",
+        "export const different = 1;",
+      ),
     ]),
   );
   const resolver = new EvidTargetResolver([inventory]);

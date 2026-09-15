@@ -13,21 +13,24 @@ import type { EvidSymbol } from "../typings/EvidSymbol";
  * Provides queries over one owned analysis snapshot.
  *
  * Construction clones the supplied check analysis and captures an absolute base
- * directory for file-qualified target formatting. List, inspect, and graph queries
- * reuse population indexes without reevaluating configuration or extraction.
- * Returned reports are cloned so caller mutation cannot invalidate later queries.
+ * directory for file-qualified target formatting. List, inspect, and graph
+ * queries reuse population indexes without reevaluating configuration or
+ * extraction. Returned reports are cloned so caller mutation cannot invalidate
+ * later queries.
  *
  * @example
- * const query: EvidQuery = new EvidQuery(analysis, process.cwd());
- * const list: IEvidListReport = query.list("typescript", "function");
- * const first: IEvidListReport["items"][number] | undefined = list.items[0];
- * if (first !== undefined) await query.inspect(first.target);
+ *   const query: EvidQuery = new EvidQuery(analysis, process.cwd());
+ *   const list: IEvidListReport = query.list("typescript", "function");
+ *   const first: IEvidListReport["items"][number] | undefined =
+ *     list.items[0];
+ *   if (first !== undefined) await query.inspect(first.target);
  */
 export class EvidQuery {
   /**
    * Analysis snapshot, target base directory, and reusable population indexes.
    *
-   * This context owns its input data; programmer results are cloned before leaving the facade.
+   * This context owns its input data; programmer results are cloned before
+   * leaving the facade.
    */
   private readonly context: IEvidQueryContext;
 
@@ -47,15 +50,14 @@ export class EvidQuery {
   }
 
   /**
-   * Lists selected identities and addressable ancestors with optional display filters.
+   * Lists selected identities and addressable ancestors with optional display
+   * filters.
    *
-   * Language and kind restrict returned rows without changing the check's diagnostic
-   * or success state. Aliases remain grouped under each population-qualified identity.
+   * Language and kind restrict returned rows without changing the check's
+   * diagnostic or success state. Aliases remain grouped under each
+   * population-qualified identity.
    */
-  public list(
-    language?: EvidArtifactType,
-    kind?: EvidSymbol,
-  ): IEvidListReport {
+  public list(language?: EvidArtifactType, kind?: EvidSymbol): IEvidListReport {
     return structuredClone(
       EvidQueryProgrammer.list(this.context, language, kind),
     );
@@ -65,7 +67,8 @@ export class EvidQuery {
    * Lists targets through a newly owned query snapshot.
    *
    * Use an instance when several queries should share population indexes; this
-   * convenience call captures and indexes the supplied analysis for one operation.
+   * convenience call captures and indexes the supplied analysis for one
+   * operation.
    */
   public static list(
     analysis: IEvidCheckAnalysis,
@@ -77,7 +80,8 @@ export class EvidQuery {
   }
 
   /**
-   * Resolves a target and gathers its evidence context in applicable populations.
+   * Resolves a target and gathers its evidence context in applicable
+   * populations.
    *
    * File-qualified targets use the captured base directory. Artifact-specific
    * grammars retain their own addressing rules, and each population keeps an
@@ -92,8 +96,8 @@ export class EvidQuery {
   /**
    * Inspects one target through a newly captured analysis context.
    *
-   * Input data is isolated before asynchronous resolution begins. Reuse an instance
-   * when subsequent inspections should share its population indexes.
+   * Input data is isolated before asynchronous resolution begins. Reuse an
+   * instance when subsequent inspections should share its population indexes.
    */
   public static async inspect(
     analysis: IEvidCheckAnalysis,
@@ -104,10 +108,12 @@ export class EvidQuery {
   }
 
   /**
-   * Exports independent obligation boundaries, nodes, acknowledgements, and reviews.
+   * Exports independent obligation boundaries, nodes, acknowledgements, and
+   * reviews.
    *
-   * EvidNode identities include their boundary so repeated populations retain separate
-   * coverage. Reviews remain distinct relations and never become acknowledgement edges.
+   * EvidNode identities include their boundary so repeated populations retain
+   * separate coverage. Reviews remain distinct relations and never become
+   * acknowledgement edges.
    */
   public graph(): IEvidGraphReport {
     return structuredClone(EvidQueryProgrammer.graph(this.context));
@@ -116,8 +122,9 @@ export class EvidQuery {
   /**
    * Exports a graph through a newly owned query snapshot.
    *
-   * The supplied base directory controls file-qualified target display; extraction
-   * and evaluation results come entirely from the provided analysis.
+   * The supplied base directory controls file-qualified target display;
+   * extraction and evaluation results come entirely from the provided
+   * analysis.
    */
   public static graph(
     analysis: IEvidCheckAnalysis,
@@ -129,8 +136,8 @@ export class EvidQuery {
   /**
    * Lists certified programming and database adapter capabilities.
    *
-   * This metadata query requires no configuration, source scan, or grammar load and
-   * excludes candidates that only have parsing metadata.
+   * This metadata query requires no configuration, source scan, or grammar load
+   * and excludes candidates that only have parsing metadata.
    */
   public static languages(): IEvidLanguagesReport {
     return EvidQueryProgrammer.languages();

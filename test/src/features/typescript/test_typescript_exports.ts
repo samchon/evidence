@@ -5,9 +5,11 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Resolves TypeScript public exports through every supported edge.
+/**
+ * Resolves TypeScript public exports through every supported edge.
  *
- * Aliases, defaults, type-only edges, imports, stars, and namespaces change which declarations are public.
+ * Aliases, defaults, type-only edges, imports, stars, and namespaces change
+ * which declarations are public.
  *
  * 1. Analyze sources with each export form.
  * 2. Verify public identities, aliases, and target resolution.
@@ -23,7 +25,10 @@ export async function test_typescript_exports(): Promise<void> {
         export enum Ignored { VALUE }
       `,
     ),
-    EvidTestSourceSnapshot.create("src/star.ts", "export const starred = true;"),
+    EvidTestSourceSnapshot.create(
+      "src/star.ts",
+      "export const starred = true;",
+    ),
     EvidTestSourceSnapshot.create(
       "src/default-interface.ts",
       "export default interface DefaultContract { value: string; }",

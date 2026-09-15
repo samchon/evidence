@@ -13,13 +13,14 @@ import type { IEvidUnitSite } from "../structures/IEvidUnitSite";
 import type { IEvidWithdrawal } from "../structures/IEvidWithdrawal";
 
 /**
- * Reconciles adapter records and indexes independently selected evidence populations.
+ * Reconciles adapter records and indexes independently selected evidence
+ * populations.
  *
  * Construction captures the supplied inventories, merges compatible identities,
- * and checks source ranges, parent relationships, addresses, and host ownership.
- * Inconsistent records leave diagnostics and an incomplete inventory instead of
- * silently disappearing from the denominator. Normalization makes snapshots and
- * serialization deterministic.
+ * and checks source ranges, parent relationships, addresses, and host
+ * ownership. Inconsistent records leave diagnostics and an incomplete inventory
+ * instead of silently disappearing from the denominator. Normalization makes
+ * snapshots and serialization deterministic.
  *
  * Selection distinguishes required units from their addressable ancestors and
  * propagates withdrawals through explicit parent links. Resolution then matches
@@ -30,20 +31,21 @@ import type { IEvidWithdrawal } from "../structures/IEvidWithdrawal";
  * cannot affect this index or a later selection.
  *
  * @example
- * const inventory: EvidInventory = new EvidInventory([adapterOutput]);
- * const population: IEvidPopulation = inventory.select([methodId]);
- * const target: IEvidResolution = inventory.resolve(
- *   { file: "api.ts", segments: ["Client"] },
- *   [methodId],
- * );
- * // Client may resolve as an aggregate owner while only its method is required.
+ *   const inventory: EvidInventory = new EvidInventory([adapterOutput]);
+ *   const population: IEvidPopulation = inventory.select([methodId]);
+ *   const target: IEvidResolution = inventory.resolve(
+ *     { file: "api.ts", segments: ["Client"] },
+ *     [methodId],
+ *   );
+ *   // Client may resolve as an aggregate owner while only its method is required.
  */
 export class EvidInventory {
   /**
    * Reconciled records owned by this index.
    *
-   * Validation appends findings here before normalization. Public methods return
-   * copies so callers cannot invalidate the lookup tables by editing a snapshot.
+   * Validation appends findings here before normalization. Public methods
+   * return copies so callers cannot invalidate the lookup tables by editing a
+   * snapshot.
    */
   private readonly data: IEvidInventory;
 
@@ -59,7 +61,8 @@ export class EvidInventory {
    * Effective withdrawals for each unit, including its ancestors' directives.
    *
    * Validation computes these chains once. Selection excludes affected units,
-   * while resolution retains the directive locations to explain hidden targets.
+   * while resolution retains the directive locations to explain hidden
+   * targets.
    */
   private readonly withdrawals = new Map<string, IEvidWithdrawal[]>();
 
@@ -82,8 +85,9 @@ export class EvidInventory {
   /**
    * Returns a serializable copy of the reconciled inventory.
    *
-   * The copy includes diagnostics and incomplete records. Callers may inspect or
-   * mutate it without changing future selections or resolutions on this index.
+   * The copy includes diagnostics and incomplete records. Callers may inspect
+   * or mutate it without changing future selections or resolutions on this
+   * index.
    */
   public snapshot(): IEvidInventory {
     return structuredClone(this.data);
@@ -93,24 +97,25 @@ export class EvidInventory {
    * Serializes the normalized inventory in stable schema order.
    *
    * Construction has already reconciled and sorted the collections. Serializing
-   * therefore preserves deterministic output without changing selection state or
-   * requiring callers to normalize a snapshot themselves.
+   * therefore preserves deterministic output without changing selection state
+   * or requiring callers to normalize a snapshot themselves.
    */
   public serialize(): string {
     return typia.json.stringify(this.data);
   }
 
   /**
-   * Projects selected identities and the structural context needed to resolve them.
+   * Projects selected identities and the structural context needed to resolve
+   * them.
    *
-   * Required units exclude effective withdrawals, while scopes include their real
-   * ancestors. Hosts are narrowed to selected semantic owners, including hosts
-   * without tags. Unknown requested IDs throw because they indicate an invalid
-   * selection, rather than an empty configured population.
+   * Required units exclude effective withdrawals, while scopes include their
+   * real ancestors. Hosts are narrowed to selected semantic owners, including
+   * hosts without tags. Unknown requested IDs throw because they indicate an
+   * invalid selection, rather than an empty configured population.
    *
    * @example
-   * // Selecting a method retains its class as a resolvable aggregate scope.
-   * // The class does not become an extra required unit unless its ID is selected.
+   *   // Selecting a method retains its class as a resolvable aggregate scope.
+   *   // The class does not become an extra required unit unless its ID is selected.
    */
   public select(ids: string[]): IEvidPopulation {
     const requested = new Set(ids);
@@ -155,17 +160,16 @@ export class EvidInventory {
   }
 
   /**
-   * Resolves an exact public address inside a selected population's structural scope.
+   * Resolves an exact public address inside a selected population's structural
+   * scope.
    *
-   * Aliases resolving to one unit are deduplicated by identity; distinct matching
-   * units remain ambiguous. A withdrawn match carries its withdrawal locations.
-   * Incomplete inventory takes precedence over all apparent matches because
-   * missing extraction may hide another candidate or invalidate the population.
+   * Aliases resolving to one unit are deduplicated by identity; distinct
+   * matching units remain ambiguous. A withdrawn match carries its withdrawal
+   * locations. Incomplete inventory takes precedence over all apparent matches
+   * because missing extraction may hide another candidate or invalidate the
+   * population.
    */
-  public resolve(
-    address: IEvidAddress,
-    ids: string[],
-  ): IEvidResolution {
+  public resolve(address: IEvidAddress, ids: string[]): IEvidResolution {
     const population = this.select(ids);
     const visible = new Set(population.scopes.map((unit) => unit.id));
     const hidden = new Set(population.hidden.map((unit) => unit.id));
@@ -206,22 +210,26 @@ export class EvidInventory {
   }
 
   /**
-   * Tests whether a semantic identity is removed by its own or an inherited withdrawal.
+   * Tests whether a semantic identity is removed by its own or an inherited
+   * withdrawal.
    *
-   * The map is populated during validation from the explicit parent chain. Consumers
-   * use this predicate after retaining structural closure, so a hidden ancestor can
-   * still be named in a diagnostic without returning it as a visible requirement.
+   * The map is populated during validation from the explicit parent chain.
+   * Consumers use this predicate after retaining structural closure, so a
+   * hidden ancestor can still be named in a diagnostic without returning it as
+   * a visible requirement.
    */
   private hidden(id: string): boolean {
     return (this.withdrawals.get(id)?.length ?? 0) !== 0;
   }
 
   /**
-   * Returns an identity and its reachable structural ancestors in child-to-root order.
+   * Returns an identity and its reachable structural ancestors in child-to-root
+   * order.
    *
-   * Selection uses this closure for aggregate addresses and inherited withdrawals.
-   * The visited set bounds malformed parent cycles; validation reports the cycle
-   * separately rather than letting a lookup or diagnostic construction loop forever.
+   * Selection uses this closure for aggregate addresses and inherited
+   * withdrawals. The visited set bounds malformed parent cycles; validation
+   * reports the cycle separately rather than letting a lookup or diagnostic
+   * construction loop forever.
    */
   private ancestors(id: string): IEvidUnit[] {
     const output: IEvidUnit[] = [];
@@ -239,11 +247,13 @@ export class EvidInventory {
   }
 
   /**
-   * Checks that merged records still describe a coherent source and ownership graph.
+   * Checks that merged records still describe a coherent source and ownership
+   * graph.
    *
    * Validation is deliberately non-throwing for semantic contradictions. Each
-   * finding marks the inventory incomplete and remains available to graph reporting,
-   * while malformed runtime input has already failed shape validation at construction.
+   * finding marks the inventory incomplete and remains available to graph
+   * reporting, while malformed runtime input has already failed shape
+   * validation at construction.
    */
   private validate(): void {
     const sources = new Map<string, EvidSourceText>();
@@ -293,7 +303,8 @@ export class EvidInventory {
         const previous = sites.get(site.id);
         if (
           previous !== undefined &&
-          EvidInventoryMerge.siteKey(previous) !== EvidInventoryMerge.siteKey(site)
+          EvidInventoryMerge.siteKey(previous) !==
+            EvidInventoryMerge.siteKey(site)
         )
           this.problem(
             "inventory-site",
@@ -425,11 +436,13 @@ export class EvidInventory {
   }
 
   /**
-   * Verifies that an optional source range belongs to the recorded source snapshot.
+   * Verifies that an optional source range belongs to the recorded source
+   * snapshot.
    *
    * Adapter records must point into the exact original content, not merely to a
-   * path that happens to exist. Missing source text, absent ranges, and out-of-bounds
-   * coordinates all make later diagnostics and fingerprints unreliable.
+   * path that happens to exist. Missing source text, absent ranges, and
+   * out-of-bounds coordinates all make later diagnostics and fingerprints
+   * unreliable.
    */
   private checkLocation(
     location: IEvidSourceLocation,
@@ -449,11 +462,13 @@ export class EvidInventory {
   }
 
   /**
-   * Appends one inventory diagnostic and permanently marks this snapshot incomplete.
+   * Appends one inventory diagnostic and permanently marks this snapshot
+   * incomplete.
    *
-   * This central path keeps all validation failures visible to the graph evaluator.
-   * An optional location is reduced to the portable file/range form accepted by the
-   * report schema, preserving a specific repair site when the source record supplied one.
+   * This central path keeps all validation failures visible to the graph
+   * evaluator. An optional location is reduced to the portable file/range form
+   * accepted by the report schema, preserving a specific repair site when the
+   * source record supplied one.
    */
   private problem(
     code: string,
@@ -483,9 +498,10 @@ export class EvidInventory {
   /**
    * Deduplicates and canonically orders merged records after validation.
    *
-   * Normalization does not repair contradictions already reported. It only gives
-   * snapshots, serialized output, and diagnostic ordering a stable representation
-   * when equivalent adapter records arrived from independent scan inputs.
+   * Normalization does not repair contradictions already reported. It only
+   * gives snapshots, serialized output, and diagnostic ordering a stable
+   * representation when equivalent adapter records arrived from independent
+   * scan inputs.
    */
   private normalize(): void {
     this.data.sources = EvidInventoryMerge.unique(
@@ -498,7 +514,10 @@ export class EvidInventory {
       this.data.annotationRanges,
       (location) => typia.json.stringify(location),
     );
-    this.data.units = EvidInventoryMerge.unique(this.data.units, (unit) => unit.id);
+    this.data.units = EvidInventoryMerge.unique(
+      this.data.units,
+      (unit) => unit.id,
+    );
     for (const unit of this.data.units) {
       unit.sites = EvidInventoryMerge.unique(unit.sites, (site) => site.id);
       for (const site of unit.sites)
@@ -508,8 +527,9 @@ export class EvidInventory {
           const start = x.start.offset - y.start.offset;
           return start !== 0 ? start : x.end.offset - y.end.offset;
         });
-      unit.withdrawals = EvidInventoryMerge.unique(unit.withdrawals, (withdrawal) =>
-        typia.json.stringify(withdrawal),
+      unit.withdrawals = EvidInventoryMerge.unique(
+        unit.withdrawals,
+        (withdrawal) => typia.json.stringify(withdrawal),
       );
     }
     this.data.addresses = EvidInventoryMerge.unique(
@@ -517,7 +537,10 @@ export class EvidInventory {
       (address) =>
         JSON.stringify([address.file, address.segments, address.unitId]),
     );
-    this.data.hosts = EvidInventoryMerge.unique(this.data.hosts, (host) => host.id);
+    this.data.hosts = EvidInventoryMerge.unique(
+      this.data.hosts,
+      (host) => host.id,
+    );
     for (const host of this.data.hosts) {
       host.unitIds = EvidInventoryMerge.unique(host.unitIds, (id) => id);
       host.origins = EvidInventoryMerge.unique(

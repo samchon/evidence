@@ -1,8 +1,8 @@
 /**
  * Public package API.
  *
- * Importing this entry point registers no parser work, configuration loading, or
- * command execution. Consumers choose explicit checker, command, loader, and
+ * Importing this entry point registers no parser work, configuration loading,
+ * or command execution. Consumers choose explicit checker, command, loader, and
  * adapter entry points for their own execution boundary.
  */
 export { EvidDartAdapter } from "./adapters/dart/EvidDartAdapter";
@@ -12,9 +12,9 @@ export { EvidChecker } from "./EvidChecker";
 /**
  * Exports certified adapters for supported programming and database artifacts.
  *
- * Consumers select these adapters when constructing an explicit parsing boundary;
- * configuration-driven checks use the package registry to select them by artifact
- * type instead.
+ * Consumers select these adapters when constructing an explicit parsing
+ * boundary; configuration-driven checks use the package registry to select them
+ * by artifact type instead.
  */
 export { EvidCAdapter } from "./adapters/c/EvidCAdapter";
 export { EvidBigQueryAdapter } from "./adapters/bigquery/EvidBigQueryAdapter";
@@ -67,8 +67,8 @@ export { EvidQuery } from "./graph/EvidQuery";
 /**
  * Exports configuration and local-source loading boundaries.
  *
- * EvidChecker composes these loaders for normal checks, while integrations
- * can call them directly when they need validated configuration or snapshots.
+ * EvidChecker composes these loaders for normal checks, while integrations can
+ * call them directly when they need validated configuration or snapshots.
  */
 export { EvidConfigLoader } from "./loaders/EvidConfigLoader";
 export { EvidSourceLoader } from "./loaders/EvidSourceLoader";
@@ -76,8 +76,8 @@ export { EvidSourceLoader } from "./loaders/EvidSourceLoader";
 /**
  * Exports advanced source, configuration, and parser-cache utilities.
  *
- * Test and integration authors use these supported boundaries through the package
- * entry point rather than reaching into package source paths.
+ * Test and integration authors use these supported boundaries through the
+ * package entry point rather than reaching into package source paths.
  */
 export { EvidConfigDependencyScanner } from "./internal/EvidConfigDependencyScanner";
 export { EvidFileGlob } from "./internal/EvidFileGlob";
@@ -92,10 +92,12 @@ export { evaluateTypeScriptConfig } from "./internal/evaluateTypeScriptConfig";
 export { validateEvidConfig } from "./internal/validateEvidConfig";
 
 /**
- * Exports parser sessions, documentation tags, and certified language registry access.
+ * Exports parser sessions, documentation tags, and certified language registry
+ * access.
  *
  * Adapter implementations use these boundaries to parse supported artifacts and
- * interpret evidence annotations without importing the command execution layer.
+ * interpret evidence annotations without importing the command execution
+ * layer.
  */
 export { EvidDocumentation } from "./parsers/EvidDocumentation";
 export { EvidDocumentationExamples } from "./parsers/EvidDocumentationExamples";
@@ -108,8 +110,9 @@ export { EvidTagParser } from "./parsers/EvidTagParser";
 /**
  * Exports serializers for check, query, graph, and watch reports.
  *
- * They project already evaluated report objects into text, JSON, or graph formats
- * without changing the underlying inventory, diagnostics, or exit semantics.
+ * They project already evaluated report objects into text, JSON, or graph
+ * formats without changing the underlying inventory, diagnostics, or exit
+ * semantics.
  */
 export { EvidGraphReporter } from "./reporters/EvidGraphReporter";
 export { EvidQueryReporter } from "./reporters/EvidQueryReporter";
@@ -119,8 +122,9 @@ export { EvidWatchReporter } from "./reporters/EvidWatchReporter";
 /**
  * Exports target parsing and resolution utilities.
  *
- * Query and annotation consumers use them to preserve literal accessor spelling,
- * normalize file addresses, and resolve targets within selected populations.
+ * Query and annotation consumers use them to preserve literal accessor
+ * spelling, normalize file addresses, and resolve targets within selected
+ * populations.
  */
 export { EvidAccessor } from "./targets/EvidAccessor";
 export { EvidFileTarget } from "./targets/EvidFileTarget";
@@ -129,8 +133,8 @@ export { EvidTargetResolver } from "./targets/EvidTargetResolver";
 /**
  * Re-exports public configuration, report, source, and semantic contract types.
  *
- * These type-only exports define the values exchanged by checker, command, loader,
- * and query APIs without adding runtime work to a package import.
+ * These type-only exports define the values exchanged by checker, command,
+ * loader, and query APIs without adding runtime work to a package import.
  */
 export type * from "./structures";
 export type * from "./typings";

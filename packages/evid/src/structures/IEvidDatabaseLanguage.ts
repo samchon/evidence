@@ -3,11 +3,13 @@ import type { IEvidDatabaseLanguageAdapter } from "./IEvidDatabaseLanguageAdapte
 import type { IEvidLanguageGrammar } from "./IEvidLanguageGrammar";
 
 /**
- * Database-language catalog entry separating grammar availability from schema extraction.
+ * Database-language catalog entry separating grammar availability from schema
+ * extraction.
  *
- * A parser recognizing schema syntax does not establish model, column, relation,
- * or documentation ownership. Adapter metadata appears only when those Evid
- * boundaries are certified, allowing catalog inspection without overstating support.
+ * A parser recognizing schema syntax does not establish model, column,
+ * relation, or documentation ownership. Adapter metadata appears only when
+ * those Evid boundaries are certified, allowing catalog inspection without
+ * overstating support.
  */
 export interface IEvidDatabaseLanguage {
   /**
@@ -20,7 +22,8 @@ export interface IEvidDatabaseLanguage {
   /**
    * Human-readable schema-language name.
    *
-   * Capability reports display this label alongside the configuration discriminator.
+   * Capability reports display this label alongside the configuration
+   * discriminator.
    */
   name: string;
 

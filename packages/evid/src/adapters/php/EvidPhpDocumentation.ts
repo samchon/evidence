@@ -8,14 +8,16 @@ import type { IEvidPhpDocumentation } from "./IEvidPhpDocumentation";
  * Reads PHPDoc while preserving source mappings and masking code examples.
  *
  * The PHP adapter supplies attached carriers here before shared tag parsing, so
- * diagnostics retain their original source positions after examples are hidden.
+ * diagnostics retain their original source positions after examples are
+ * hidden.
  */
 export namespace EvidPhpDocumentation {
   /**
    * Maps a carrier and removes examples without moving source offsets.
    *
    * The returned documentation keeps the shared parser's coordinates while its
-   * masked text prevents annotations in PHPDoc examples from becoming evidence.
+   * masked text prevents annotations in PHPDoc examples from becoming
+   * evidence.
    */
   export function read(
     source: IEvidSourceFile,
@@ -76,7 +78,8 @@ export namespace EvidPhpDocumentation {
   }
 
   /**
-   * Replaces example characters with spaces while retaining original line boundaries.
+   * Replaces example characters with spaces while retaining original line
+   * boundaries.
    *
    * Preserved length and newlines keep offsets from `EvidDocumentation` valid
    * for diagnostics and source-range attachment after masking.

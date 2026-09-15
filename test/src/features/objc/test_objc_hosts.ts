@@ -1,16 +1,14 @@
-import {
-  EvidFingerprint,
-  EvidInventory,
-  EvidObjcAdapter,
-} from "evid";
+import { EvidFingerprint, EvidInventory, EvidObjcAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches Objective-C Doxygen annotations at exact source locations.
+/**
+ * Attaches Objective-C Doxygen annotations at exact source locations.
  *
- * Eligible documentation retains UTF-16 coordinates and merged withdrawals, while ordinary comments and examples cannot acknowledge units.
+ * Eligible documentation retains UTF-16 coordinates and merged withdrawals,
+ * while ordinary comments and examples cannot acknowledge units.
  *
  * 1. Analyze documented declarations, withdrawals, and inert comment-shaped text.
  * 2. Verify targets, CRLF positions, and resolution behavior.

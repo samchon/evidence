@@ -1,16 +1,15 @@
-import {
-  EvidDbmlAdapter,
-  EvidInventory,
-  EvidFingerprint,
-} from "evid";
+import { EvidDbmlAdapter, EvidInventory, EvidFingerprint } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Prevents malformed, conflicting, unsupported, or unresolved DBML from passing with a smaller inventory.
+/**
+ * Prevents malformed, conflicting, unsupported, or unresolved DBML from passing
+ * with a smaller inventory.
  *
- * A failed schema analysis must retain incompleteness until the underlying source is repaired rather than reporting empty coverage.
+ * A failed schema analysis must retain incompleteness until the underlying
+ * source is repaired rather than reporting empty coverage.
  *
  * 1. Analyze malformed, conflicting, unsupported, and unresolved DBML source.
  * 2. Require each case to report incompleteness with its diagnostic.
@@ -103,7 +102,10 @@ export async function test_dbml_failure_recovery(): Promise<void> {
   const moved = await adapter.analyze(
     EvidTestSourceSnapshot.combine([
       dependent,
-      EvidTestSourceSnapshot.create("moved.dbml", "Table public.users { id int }"),
+      EvidTestSourceSnapshot.create(
+        "moved.dbml",
+        "Table public.users { id int }",
+      ),
     ]),
   );
   TestValidator.equals(

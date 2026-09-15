@@ -11,12 +11,15 @@ import { dedent } from "@typia/utils";
 import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Evaluates C type, function, and property evidence with semantic fingerprints.
+/**
+ * Evaluates C type, function, and property evidence with semantic fingerprints.
  *
- * Every selected C symbol kind must have reciprocal acknowledgement, while documentation-only edits must not change implementation identity.
+ * Every selected C symbol kind must have reciprocal acknowledgement, while
+ * documentation-only edits must not change implementation identity.
  *
  * 1. Build claim and reference inventories for each supported C symbol kind.
- * 2. Require covered declarations to pass and missing declarations to remain obligations.
+ * 2. Require covered declarations to pass and missing declarations to remain
+ *    obligations.
  * 3. Compare fingerprints before and after an evidence-prose-only edit.
  */
 export async function test_c_graph(): Promise<void> {
@@ -186,10 +189,7 @@ async function objectInventory(second: string): Promise<IEvidInventory> {
   );
 }
 
-function requireUnit(
-  inventory: IEvidInventory,
-  name: string,
-): IEvidUnit {
+function requireUnit(inventory: IEvidInventory, name: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === name || candidate.identity.at(-1) === name,

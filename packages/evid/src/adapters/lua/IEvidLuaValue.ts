@@ -4,9 +4,10 @@ import type { IEvidLuaDeclaration } from "./IEvidLuaDeclaration";
 /**
  * Represents a statically understood Lua value during file scanning.
  *
- * EvidLuaFileScanner keeps these records for bindings, table fields, aliases, and
- * final module returns so it can construct public declarations without
- * evaluating Lua; they are internal scanner state rather than serialized output.
+ * EvidLuaFileScanner keeps these records for bindings, table fields, aliases,
+ * and final module returns so it can construct public declarations without
+ * evaluating Lua; they are internal scanner state rather than serialized
+ * output.
  */
 export interface IEvidLuaValue {
   /**
@@ -20,8 +21,8 @@ export interface IEvidLuaValue {
   /**
    * Points to the source node that establishes this value's declaration site.
    *
-   * EvidLuaFileScanner derives a stable declaration ID and diagnostic location from
-   * this node, including a copied site for scalar alias assignments.
+   * EvidLuaFileScanner derives a stable declaration ID and diagnostic location
+   * from this node, including a copied site for scalar alias assignments.
    */
   node: EvidNode;
 

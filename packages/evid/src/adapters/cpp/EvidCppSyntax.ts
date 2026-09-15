@@ -10,8 +10,9 @@ import type { IEvidCppQualifiedName } from "./IEvidCppQualifiedName";
 /**
  * Provides C++ grammar helpers for names, declarators, comments, and modifiers.
  *
- * EvidCppFileScanner uses these helpers to preserve C++-specific spelling and scope
- * distinctions while it decides which supported declarations form graph units.
+ * EvidCppFileScanner uses these helpers to preserve C++-specific spelling and
+ * scope distinctions while it decides which supported declarations form graph
+ * units.
  */
 export namespace EvidCppSyntax {
   export function name(node: EvidNode | null): string | undefined {
@@ -93,7 +94,9 @@ export namespace EvidCppSyntax {
     return node.childrenForFieldName("declarator");
   }
 
-  export function declarator(node: EvidNode): IEvidCppDeclaratorShape | undefined {
+  export function declarator(
+    node: EvidNode,
+  ): IEvidCppDeclaratorShape | undefined {
     let current: EvidNode | null = node;
     let nearest: EvidCppDeclaratorKind = "direct";
     while (current !== null) {
@@ -146,7 +149,10 @@ export namespace EvidCppSyntax {
 
   export function recordForm(
     node: EvidNode | null,
-  ): Extract<EvidCppDeclarationForm, "class" | "struct" | "union" | "enum"> | null {
+  ): Extract<
+    EvidCppDeclarationForm,
+    "class" | "struct" | "union" | "enum"
+  > | null {
     if (node?.type === "class_specifier") return "class";
     if (node?.type === "struct_specifier") return "struct";
     if (node?.type === "union_specifier") return "union";
@@ -178,7 +184,10 @@ export namespace EvidCppSyntax {
     );
   }
 
-  export function topLevelConstObject(node: EvidNode, declarator: EvidNode): boolean {
+  export function topLevelConstObject(
+    node: EvidNode,
+    declarator: EvidNode,
+  ): boolean {
     const constantExpression = node.namedChildren.some(
       (child) => child.text === "constexpr",
     );

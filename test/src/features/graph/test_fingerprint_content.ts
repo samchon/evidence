@@ -1,7 +1,4 @@
-import {
-  EvidFingerprint,
-  EvidTypeScriptAdapter,
-} from "evid";
+import { EvidFingerprint, EvidTypeScriptAdapter } from "evid";
 import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
@@ -9,7 +6,8 @@ import { dedent } from "@typia/utils";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
- * Fingerprints TypeScript declaration content independently of annotations and siblings.
+ * Fingerprints TypeScript declaration content independently of annotations and
+ * siblings.
  *
  * Reviews must expire for semantic source changes while remaining stable when
  * only review metadata or checkout formatting changes. Leaf content also needs
@@ -21,8 +19,9 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  * 2. Mark the inventory incomplete and require fingerprint inspection to reject.
  * 3. Change review hash/prose, line endings, and trailing whitespace; require the
  *    enclosing type's fingerprint to remain unchanged.
- * 4. Change the member's type and require both leaf and enclosing-scope fingerprints
- *    to change; alter an ordinary inline comment and require the leaf to change.
+ * 4. Change the member's type and require both leaf and enclosing-scope
+ *    fingerprints to change; alter an ordinary inline comment and require the
+ *    leaf to change.
  * 5. Edit the unrelated type and second variable declarator, then require the
  *    original type scope and first declarator fingerprint to remain stable.
  */
@@ -158,14 +157,13 @@ async function analyze(content: string): Promise<IEvidInventory> {
 }
 
 /**
- * Requires a named declaration before comparing its fingerprint across variants.
+ * Requires a named declaration before comparing its fingerprint across
+ * variants.
  *
- * Missing extraction fails explicitly instead of comparing an unrelated fallback unit.
+ * Missing extraction fails explicitly instead of comparing an unrelated
+ * fallback unit.
  */
-function requireUnit(
-  inventory: IEvidInventory,
-  name: string,
-): IEvidUnit {
+function requireUnit(inventory: IEvidInventory, name: string): IEvidUnit {
   const unit = inventory.units.find((candidate) => candidate.name === name);
   if (unit === undefined) throw new Error(`Missing fingerprint unit: ${name}`);
   return unit;

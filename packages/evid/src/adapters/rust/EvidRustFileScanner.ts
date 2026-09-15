@@ -43,15 +43,20 @@ const INERT_ATTRIBUTES = new Set([
 ]);
 
 /**
- * Extracts supported Rust declarations and documentation from one parsed source file.
+ * Extracts supported Rust declarations and documentation from one parsed source
+ * file.
  *
- * The scanner deliberately retains node-free records because EvidRustModuleResolver
- * must continue crate, import, and impl resolution after the parse session closes.
+ * The scanner deliberately retains node-free records because
+ * EvidRustModuleResolver must continue crate, import, and impl resolution after
+ * the parse session closes.
  */
 export class EvidRustFileScanner {
   private readonly declarations: IEvidRustDeclaration[] = [];
   private readonly documentation = new Map<string, IEvidRustDocumentation>();
-  private readonly carrierDocumentation = new Map<string, IEvidRustDocumentation>();
+  private readonly carrierDocumentation = new Map<
+    string,
+    IEvidRustDocumentation
+  >();
   private readonly externalModules: IEvidRustExternalModule[] = [];
   private readonly implementations: IEvidRustImplementation[] = [];
   private readonly uses: IEvidRustUse[] = [];
@@ -401,7 +406,12 @@ export class EvidRustFileScanner {
 
   private scanTypeAlias(item: EvidNode, modulePath: string[]): void {
     this.inspectAttributes(item);
-    this.namedType(item, modulePath, "type-alias", EvidRustSyntax.visibility(item));
+    this.namedType(
+      item,
+      modulePath,
+      "type-alias",
+      EvidRustSyntax.visibility(item),
+    );
   }
 
   private scanFreeFunction(item: EvidNode, modulePath: string[]): void {
@@ -472,7 +482,9 @@ export class EvidRustFileScanner {
       this.inspectAttributes(member);
       const name = EvidRustSyntax.name(member.childForFieldName("name"));
       const visibility =
-        traitPath === undefined ? EvidRustSyntax.visibility(member) : "implicit";
+        traitPath === undefined
+          ? EvidRustSyntax.visibility(member)
+          : "implicit";
       if (name !== undefined && member.type === "function_item") {
         const declaration = this.addDeclaration(
           member,

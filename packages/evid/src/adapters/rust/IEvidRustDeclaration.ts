@@ -4,16 +4,19 @@ import type { EvidRustDeclarationForm } from "./EvidRustDeclarationForm";
 import type { EvidRustVisibility } from "./EvidRustVisibility";
 
 /**
- * Captures one Rust declaration before module reachability and impl ownership resolve.
+ * Captures one Rust declaration before module reachability and impl ownership
+ * resolve.
  *
- * EvidRustModuleResolver combines this lexical record with the selected crate graph;
- * scanners do not assume that a visible spelling is externally reachable.
+ * EvidRustModuleResolver combines this lexical record with the selected crate
+ * graph; scanners do not assume that a visible spelling is externally
+ * reachable.
  */
 export interface IEvidRustDeclaration {
   /**
    * Stable scanner identity for this declaration.
    *
-   * Modules, implementations, and documentation attachments use it before semantic IDs exist.
+   * Modules, implementations, and documentation attachments use it before
+   * semantic IDs exist.
    */
   id: string;
 
@@ -34,7 +37,8 @@ export interface IEvidRustDeclaration {
   /**
    * Evid selector family assigned to the declaration.
    *
-   * Consumers distinguish nominal types, functions, and properties through this value.
+   * Consumers distinguish nominal types, functions, and properties through this
+   * value.
    */
   symbol: EvidProgrammingSymbol;
 
@@ -48,7 +52,8 @@ export interface IEvidRustDeclaration {
   /**
    * Lexical visibility controlling whether a use can publish this item.
    *
-   * Its scope is evaluated at module boundaries rather than from the declaration alone.
+   * Its scope is evaluated at module boundaries rather than from the
+   * declaration alone.
    */
   visibility: EvidRustVisibility;
 
@@ -62,7 +67,8 @@ export interface IEvidRustDeclaration {
   /**
    * Enclosing declaration identity for directly lexical members.
    *
-   * Omission leaves owner resolution to a separate impl record or module context.
+   * Omission leaves owner resolution to a separate impl record or module
+   * context.
    */
   ownerDeclarationId?: string;
 
@@ -76,7 +82,8 @@ export interface IEvidRustDeclaration {
   /**
    * Public child segment when this declaration is an impl member.
    *
-   * Omission keeps non-member declarations from acquiring an artificial accessor.
+   * Omission keeps non-member declarations from acquiring an artificial
+   * accessor.
    */
   memberSegment?: string;
 }

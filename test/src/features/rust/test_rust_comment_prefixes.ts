@@ -1,20 +1,19 @@
-import {
-  EvidFingerprint,
-  EvidInventory,
-  EvidRustAdapter,
-} from "evid";
+import { EvidFingerprint, EvidInventory, EvidRustAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Keeps Rust outer attributes attached across whitespace comments.
+/**
+ * Keeps Rust outer attributes attached across whitespace comments.
  *
- * Intervening comments cannot become evidence merely because they precede an attribute.
+ * Intervening comments cannot become evidence merely because they precede an
+ * attribute.
  *
  * 1. Analyze outer documentation, attributes, and ordinary comments separated by
  *    whitespace before one public item.
- * 2. Require only the documentation carrier to attach, ordinary tagged comments
- *    to remain unsupported, and content edits to affect the intended fingerprints.
+ * 2. Require only the documentation carrier to attach, ordinary tagged comments to
+ *    remain unsupported, and content edits to affect the intended
+ *    fingerprints.
  */
 export async function test_rust_comment_prefixes(): Promise<void> {
   const source = dedent`

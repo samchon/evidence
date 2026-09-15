@@ -9,7 +9,8 @@ import type { IEvidCDeclaratorShape } from "./IEvidCDeclaratorShape";
  * Provides C grammar helpers for names, declarators, comments, and modifiers.
  *
  * EvidCFileScanner uses these syntactic facts to construct declarations and
- * documentation records without assigning public-surface policy to this namespace.
+ * documentation records without assigning public-surface policy to this
+ * namespace.
  */
 export namespace EvidCSyntax {
   export function name(node: EvidNode | null): string | undefined {
@@ -32,7 +33,9 @@ export namespace EvidCSyntax {
     return node.childrenForFieldName("declarator");
   }
 
-  export function declarator(node: EvidNode): IEvidCDeclaratorShape | undefined {
+  export function declarator(
+    node: EvidNode,
+  ): IEvidCDeclaratorShape | undefined {
     let current: EvidNode | null = node;
     let nearest: EvidCDeclaratorKind = "direct";
     while (current !== null) {

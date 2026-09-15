@@ -17,7 +17,8 @@ export interface IEvidPythonHostPosition {
   /**
    * Stable declaration-site identity shared by all units at this position.
    *
-   * It becomes the host site when a published attachment survives withdrawal filtering.
+   * It becomes the host site when a published attachment survives withdrawal
+   * filtering.
    */
   siteId: string;
 
@@ -31,7 +32,8 @@ export interface IEvidPythonHostPosition {
   /**
    * Candidate semantic units declared at this source position.
    *
-   * Export reachability decides which members are actually represented by the host.
+   * Export reachability decides which members are actually represented by the
+   * host.
    */
   unitIds: string[];
 }

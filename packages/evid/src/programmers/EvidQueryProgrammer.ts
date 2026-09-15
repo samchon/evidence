@@ -45,8 +45,8 @@ import type { EvidUnitSelection } from "../typings/EvidUnitSelection";
  * Projects one completed checker analysis into query-command reports.
  *
  * Query operations never re-evaluate graph policy or mutate inventories. They
- * retain the claim/reference coordinates established during checking, so a list,
- * target inspection, and exported graph all describe the same independent
+ * retain the claim/reference coordinates established during checking, so a
+ * list, target inspection, and exported graph all describe the same independent
  * obligation boundaries and diagnostic set.
  *
  * @example
@@ -58,12 +58,14 @@ import type { EvidUnitSelection } from "../typings/EvidUnitSelection";
  */
 export namespace EvidQueryProgrammer {
   /**
-   * Lists configured identities and the structural ancestors needed to address them.
+   * Lists configured identities and the structural ancestors needed to address
+   * them.
    *
-   * Language and symbol filters apply after each population is projected, so they
-   * do not change configured selection or graph coverage. Rows are sorted by
-   * stable query identity, and checker diagnostics are passed through unchanged
-   * because a list command is an observation of the existing analysis.
+   * Language and symbol filters apply after each population is projected, so
+   * they do not change configured selection or graph coverage. Rows are sorted
+   * by stable query identity, and checker diagnostics are passed through
+   * unchanged because a list command is an observation of the existing
+   * analysis.
    */
   export function list(
     context: IEvidQueryContext,
@@ -96,12 +98,14 @@ export namespace EvidQueryProgrammer {
   }
 
   /**
-   * Inspects one CLI-relative target across the populations that can interpret it.
+   * Inspects one CLI-relative target across the populations that can interpret
+   * it.
    *
-   * Exact indexed spellings take precedence over grammar inference, preventing a
-   * target alias from being hidden by a broad file-extension match. Resolution is
-   * isolated per population; the report is resolved only when every selected
-   * boundary resolves, and preserves incomplete checker state as exit code 2.
+   * Exact indexed spellings take precedence over grammar inference, preventing
+   * a target alias from being hidden by a broad file-extension match.
+   * Resolution is isolated per population; the report is resolved only when
+   * every selected boundary resolves, and preserves incomplete checker state as
+   * exit code 2.
    */
   export async function inspect(
     context: IEvidQueryContext,
@@ -159,7 +163,8 @@ export namespace EvidQueryProgrammer {
   }
 
   /**
-   * Exports the evaluated graph as boundaries, nodes, acknowledgement edges, and reviews.
+   * Exports the evaluated graph as boundaries, nodes, acknowledgement edges,
+   * and reviews.
    *
    * Each claim/reference pair receives its own boundary even when it reuses an
    * inventory. Nodes are keyed by boundary and role so coverage cannot visually
@@ -337,8 +342,9 @@ export namespace EvidQueryProgrammer {
    * Lists artifact adapters that the installed runtime can actually analyze.
    *
    * Registry entries without an adapter remain parser metadata and are omitted.
-   * Language and database entries are combined then ordered by type, providing a
-   * stable capability report without depending on registry declaration order.
+   * Language and database entries are combined then ordered by type, providing
+   * a stable capability report without depending on registry declaration
+   * order.
    */
   export function languages(): IEvidLanguagesReport {
     const languages = [
@@ -378,9 +384,10 @@ export namespace EvidQueryProgrammer {
   /**
    * Builds a query context for every configured claim and reference entry.
    *
-   * The context list preserves graph-input order and gives each reference its own
-   * wrapper, even when several entries share the same inventory. This preserves
-   * obligation-specific selection, policies, and coverage during later queries.
+   * The context list preserves graph-input order and gives each reference its
+   * own wrapper, even when several entries share the same inventory. This
+   * preserves obligation-specific selection, policies, and coverage during
+   * later queries.
    */
   export function populations(
     analysis: IEvidCheckAnalysis,
@@ -428,10 +435,11 @@ export namespace EvidQueryProgrammer {
   }
 
   /**
-   * Lists one population's selected identities and visible structural ancestors.
+   * Lists one population's selected identities and visible structural
+   * ancestors.
    *
-   * Visibility is owned by {@link EvidQueryPopulationContext}; this helper
-   * only turns visible units into public rows. Units without a public address are
+   * Visibility is owned by {@link EvidQueryPopulationContext}; this helper only
+   * turns visible units into public rows. Units without a public address are
    * excluded because list output must contain targets that inspect can accept.
    */
   function listPopulation(
@@ -479,7 +487,8 @@ export namespace EvidQueryProgrammer {
   }
 
   /**
-   * Resolves a target and gathers its query evidence within one population boundary.
+   * Resolves a target and gathers its query evidence within one population
+   * boundary.
    *
    * A synthetic attached host gives the shared resolver a CLI-relative source
    * context without pretending that the query came from a real documentation
@@ -533,9 +542,10 @@ export namespace EvidQueryProgrammer {
   /**
    * Builds the detailed inspection record for one resolved unit.
    *
-   * Only direct children are included so recursive client views can choose their
-   * own expansion. A fingerprint is exposed only from a complete inventory: an
-   * incomplete parse cannot safely provide a stable review identity.
+   * Only direct children are included so recursive client views can choose
+   * their own expansion. A fingerprint is exposed only from a complete
+   * inventory: an incomplete parse cannot safely provide a stable review
+   * identity.
    */
   function inspectedUnit(
     population: EvidQueryPopulationContext,
@@ -558,17 +568,15 @@ export namespace EvidQueryProgrammer {
         .sort((left, right) => compare(left.id, right.id)),
       ...(population.inventory.complete
         ? {
-            fingerprint: EvidFingerprint.inspect(
-              population.inventory,
-              unit.id,
-            ),
+            fingerprint: EvidFingerprint.inspect(population.inventory, unit.id),
           }
         : {}),
     };
   }
 
   /**
-   * Reports the reference obligations that govern inspected selected identities.
+   * Reports the reference obligations that govern inspected selected
+   * identities.
    *
    * Claim populations own no coverage obligation, and unselected resolved units
    * must not imply coverage. Missing graph policy data returns no rows so an
@@ -609,7 +617,8 @@ export namespace EvidQueryProgrammer {
    *
    * The search joins graph results to the matching claim input by configured
    * coordinates, preserving duplicate reference obligations. Broken graph links
-   * are omitted here because checker construction already owns their diagnostics.
+   * are omitted here because checker construction already owns their
+   * diagnostics.
    */
   function inspectedAcknowledgements(
     analysis: IEvidCheckAnalysis,
@@ -721,7 +730,8 @@ export namespace EvidQueryProgrammer {
   }
 
   /**
-   * Narrows target inspection to populations whose artifact grammar can accept it.
+   * Narrows target inspection to populations whose artifact grammar can accept
+   * it.
    *
    * Prisma and Swagger have unmistakable target forms; file targets consult the
    * installed registry. When inference finds no type, every population remains
@@ -774,11 +784,13 @@ export namespace EvidQueryProgrammer {
   }
 
   /**
-   * Formats the public aliases for one semantic identity in deterministic order.
+   * Formats the public aliases for one semantic identity in deterministic
+   * order.
    *
    * Inventory aliases may render to the same artifact target, so deduplication
-   * occurs after formatting. The sorted result supplies the canonical list target
-   * and makes exact-target matching stable across adapter traversal order.
+   * occurs after formatting. The sorted result supplies the canonical list
+   * target and makes exact-target matching stable across adapter traversal
+   * order.
    */
   function targets(
     population: EvidQueryPopulationContext,
@@ -794,11 +806,13 @@ export namespace EvidQueryProgrammer {
   }
 
   /**
-   * Tests whether a configured identity exposes the exact requested target spelling.
+   * Tests whether a configured identity exposes the exact requested target
+   * spelling.
    *
    * Only configured addresses participate because an ancestor's visible address
    * must not override grammar inference for a target that names no obligation.
-   * A match is used solely to choose populations; resolution remains authoritative.
+   * A match is used solely to choose populations; resolution remains
+   * authoritative.
    */
   function populationHasTarget(
     population: EvidQueryPopulationContext,
@@ -820,7 +834,8 @@ export namespace EvidQueryProgrammer {
    *
    * Prisma and Swagger do not use file-qualified accessors, while Markdown must
    * preserve selected logical aliases for a physical file. Other artifacts are
-   * made CLI-relative; an unrenderable Swagger address is omitted from query output.
+   * made CLI-relative; an unrenderable Swagger address is omitted from query
+   * output.
    */
   function formatAddress(
     population: EvidQueryPopulationContext,
@@ -860,11 +875,13 @@ export namespace EvidQueryProgrammer {
   }
 
   /**
-   * Creates the attached synthetic host used for command-line target resolution.
+   * Creates the attached synthetic host used for command-line target
+   * resolution.
    *
-   * Its file anchors relative paths at the query working directory without adding
-   * a document to any inventory. The fixed identity prevents command hosts from
-   * being confused with authored annotation hosts in resolver diagnostics.
+   * Its file anchors relative paths at the query working directory without
+   * adding a document to any inventory. The fixed identity prevents command
+   * hosts from being confused with authored annotation hosts in resolver
+   * diagnostics.
    */
   function commandHost(cwd: string): IEvidHost {
     const file = path.join(cwd, ".evidence-inspect");
@@ -881,9 +898,9 @@ export namespace EvidQueryProgrammer {
   /**
    * Creates the zero-width coordinate assigned to a synthetic command host.
    *
-   * Query input has no authored source span, but downstream diagnostics require a
-   * complete location. Line and column one with offset zero provides that boundary
-   * without claiming a real character exists in the synthetic file.
+   * Query input has no authored source span, but downstream diagnostics require
+   * a complete location. Line and column one with offset zero provides that
+   * boundary without claiming a real character exists in the synthetic file.
    */
   function zeroLocation(file: string): Required<IEvidSourceLocation> {
     return {
@@ -898,9 +915,10 @@ export namespace EvidQueryProgrammer {
   /**
    * Projects an addressable query row into a boundary-specific graph unit node.
    *
-   * The caller supplies coverage state because it differs by reference obligation
-   * even when the underlying inventory unit is shared. The generated node carries
-   * the public target and source locations needed by graph consumers.
+   * The caller supplies coverage state because it differs by reference
+   * obligation even when the underlying inventory unit is shared. The generated
+   * node carries the public target and source locations needed by graph
+   * consumers.
    */
   function graphUnitNode(
     boundaryId: string,
@@ -929,7 +947,8 @@ export namespace EvidQueryProgrammer {
    *
    * Hosts attached to units reuse claim nodes, preserving unit-level edges. A
    * detached-from-selection host becomes a dedicated node so evidence remains
-   * visible without inventing a claim unit; absent hosts fail the graph invariant.
+   * visible without inventing a claim unit; absent hosts fail the graph
+   * invariant.
    */
   function graphSourceNodes(
     nodes: Map<string, EvidGraphNode>,
@@ -963,9 +982,9 @@ export namespace EvidQueryProgrammer {
   /**
    * Ensures a boundary-specific graph node exists for a referenced identity.
    *
-   * Existing nodes are retained to preserve their coverage state. An absent unit
-   * or missing public address is an invalid graph projection, so this throws
-   * instead of exporting an edge that a consumer cannot inspect.
+   * Existing nodes are retained to preserve their coverage state. An absent
+   * unit or missing public address is an invalid graph projection, so this
+   * throws instead of exporting an edge that a consumer cannot inspect.
    */
   function ensureUnitNode(
     nodes: Map<string, EvidGraphNode>,
@@ -1015,9 +1034,9 @@ export namespace EvidQueryProgrammer {
   /**
    * Tests whether a reference unit exposes missing coverage in its obligation.
    *
-   * Direct missing identities and ancestors with any missing selected descendant
-   * are both marked missing. Without an obligation, the population owns no
-   * coverage state and therefore returns false.
+   * Direct missing identities and ancestors with any missing selected
+   * descendant are both marked missing. Without an obligation, the population
+   * owns no coverage state and therefore returns false.
    */
   function missing(
     population: EvidQueryPopulationContext,
@@ -1035,8 +1054,9 @@ export namespace EvidQueryProgrammer {
    * Retrieves the query population at an exact claim/reference coordinate.
    *
    * Role is part of the key because one inventory can serve both sides of an
-   * obligation. A missing entry means analysis and query context lost positional
-   * alignment, so graph export throws rather than relabelling its data.
+   * obligation. A missing entry means analysis and query context lost
+   * positional alignment, so graph export throws rather than relabelling its
+   * data.
    */
   function requirePopulation(
     entries: EvidQueryPopulationContext[],
@@ -1060,9 +1080,9 @@ export namespace EvidQueryProgrammer {
   /**
    * Retrieves graph reference policy input from a reference population.
    *
-   * Only reference contexts own this data. Its absence signals a context assembly
-   * invariant failure, and throwing prevents a graph report from silently using
-   * fabricated defaults.
+   * Only reference contexts own this data. Its absence signals a context
+   * assembly invariant failure, and throwing prevents a graph report from
+   * silently using fabricated defaults.
    */
   function requirePopulationReference(
     population: EvidQueryPopulationContext,
@@ -1075,13 +1095,11 @@ export namespace EvidQueryProgrammer {
   /**
    * Projects effective reference policy flags into a public graph boundary.
    *
-   * Optional graph-input flags become explicit booleans so report consumers need
-   * not reproduce configuration defaults. Severity is retained unchanged because
-   * it controls the consequence of coverage diagnostics.
+   * Optional graph-input flags become explicit booleans so report consumers
+   * need not reproduce configuration defaults. Severity is retained unchanged
+   * because it controls the consequence of coverage diagnostics.
    */
-  function graphPolicy(
-    reference: IEvidGraphReference,
-  ): IEvidGraphPolicy {
+  function graphPolicy(reference: IEvidGraphReference): IEvidGraphPolicy {
     return {
       severity: reference.severity,
       noEvidExclude: reference.noEvidExclude === true,
@@ -1095,9 +1113,9 @@ export namespace EvidQueryProgrammer {
   /**
    * Retrieves the checker report claim at a graph-input position.
    *
-   * Graph export joins report labels by construction order. A missing row exposes
-   * a broken checker-analysis invariant and throws before coordinates can be
-   * assigned to a wrong boundary.
+   * Graph export joins report labels by construction order. A missing row
+   * exposes a broken checker-analysis invariant and throws before coordinates
+   * can be assigned to a wrong boundary.
    */
   function requireReportClaim(
     analysis: IEvidCheckAnalysis,
@@ -1113,8 +1131,8 @@ export namespace EvidQueryProgrammer {
    * Retrieves the evaluated graph claim at a graph-input position.
    *
    * This preserves the checker?셲 positional join with its input and report. A
-   * missing result is an internal invariant failure, not an empty claim suitable
-   * for graph serialization.
+   * missing result is an internal invariant failure, not an empty claim
+   * suitable for graph serialization.
    */
   function requireResultClaim(
     analysis: IEvidCheckAnalysis,
@@ -1129,8 +1147,8 @@ export namespace EvidQueryProgrammer {
   /**
    * Retrieves the report obligation for exact claim and reference positions.
    *
-   * The returned row supplies public coordinates for graph export. Throwing on a
-   * missing position prevents edges and policies from being emitted under an
+   * The returned row supplies public coordinates for graph export. Throwing on
+   * a missing position prevents edges and policies from being emitted under an
    * unrelated reference label.
    */
   function requireReportObligation(
@@ -1151,8 +1169,8 @@ export namespace EvidQueryProgrammer {
   /**
    * Retrieves the evaluated obligation for exact claim and reference positions.
    *
-   * Graph export uses its coverage, edges, and completion state together with the
-   * matching report row. Missing positional state is fatal because an empty
+   * Graph export uses its coverage, edges, and completion state together with
+   * the matching report row. Missing positional state is fatal because an empty
    * substitute could falsely make a boundary look complete.
    */
   function requireResultObligation(
@@ -1173,9 +1191,10 @@ export namespace EvidQueryProgrammer {
   /**
    * Retrieves an acknowledgement by its inventory-local identity.
    *
-   * Graph edges retain only this identity, while export needs the authored target,
-   * reason, and location. A missing record breaks that graph-to-inventory link and
-   * throws instead of emitting an unverifiable edge.
+   * Graph edges retain only this identity, while export needs the authored
+   * target, reason, and location. A missing record breaks that
+   * graph-to-inventory link and throws instead of emitting an unverifiable
+   * edge.
    */
   function requireDeclaration(
     inventory: EvidQueryPopulationContext["inventory"],
@@ -1192,9 +1211,9 @@ export namespace EvidQueryProgrammer {
   /**
    * Retrieves a review by its inventory-local identity.
    *
-   * Review resolutions refer back to the authored annotation through this value.
-   * A missing record indicates invalid graph input and is fatal because the public
-   * report cannot accurately represent the review without it.
+   * Review resolutions refer back to the authored annotation through this
+   * value. A missing record indicates invalid graph input and is fatal because
+   * the public report cannot accurately represent the review without it.
    */
   function requireReview(
     inventory: EvidQueryPopulationContext["inventory"],
@@ -1222,8 +1241,9 @@ export namespace EvidQueryProgrammer {
    * Adds the query population?셲 configured coordinates to a diagnostic.
    *
    * Resolver diagnostics are inventory-local; query output must identify the
-   * independent claim and reference obligation that produced them. Claim scope is
-   * always present, while reference scope remains absent for claim populations.
+   * independent claim and reference obligation that produced them. Claim scope
+   * is always present, while reference scope remains absent for claim
+   * populations.
    */
   function scopedDiagnostic(
     diagnostic: IEvidDiagnostic,
@@ -1240,8 +1260,9 @@ export namespace EvidQueryProgrammer {
    * Deduplicates diagnostics whose complete public content is identical.
    *
    * Inspection combines checker and per-population diagnostics, which can reach
-   * the same error through several compatible populations. Serialization includes
-   * coordinates and repair text, preserving distinct actionable failures.
+   * the same error through several compatible populations. Serialization
+   * includes coordinates and repair text, preserving distinct actionable
+   * failures.
    */
   function uniqueDiagnostics(
     diagnostics: IEvidDiagnostic[],
@@ -1254,9 +1275,9 @@ export namespace EvidQueryProgrammer {
   /**
    * Formats the stable key for a claim scope or one of its reference scopes.
    *
-   * The key is internal to query ordering and exact-population selection. Omitting
-   * the reference segment for claims preserves the distinct coordinate shape and
-   * prevents a claim from colliding with its first reference.
+   * The key is internal to query ordering and exact-population selection.
+   * Omitting the reference segment for claims preserves the distinct coordinate
+   * shape and prevents a claim from colliding with its first reference.
    */
   function scopeId(scope: IEvidQueryScope): string {
     return scope.reference === undefined
@@ -1267,9 +1288,9 @@ export namespace EvidQueryProgrammer {
   /**
    * Formats the graph boundary identity for one claim/reference obligation.
    *
-   * Boundary IDs are intentionally coordinate-based, even when populations share
-   * an inventory, so exported nodes and edges cannot leak coverage across policy
-   * boundaries.
+   * Boundary IDs are intentionally coordinate-based, even when populations
+   * share an inventory, so exported nodes and edges cannot leak coverage across
+   * policy boundaries.
    */
   function boundary(claim: number, reference: number): string {
     return `claim:${claim}:reference:${reference}`;
@@ -1278,9 +1299,9 @@ export namespace EvidQueryProgrammer {
   /**
    * Formats a graph node identity for one unit within a boundary and role.
    *
-   * Claim and reference nodes need separate IDs because the same semantic unit can
-   * appear on both sides of an obligation with different selection and coverage
-   * state.
+   * Claim and reference nodes need separate IDs because the same semantic unit
+   * can appear on both sides of an obligation with different selection and
+   * coverage state.
    */
   function graphUnitNodeId(
     boundaryId: string,
@@ -1293,9 +1314,10 @@ export namespace EvidQueryProgrammer {
   /**
    * Extracts the decoded file portion from a possibly qualified target.
    *
-   * Type inference examines only the physical-looking file prefix, leaving accessor
-   * syntax untouched. Invalid percent encoding is retained verbatim so inference
-   * can fail normally and the resolver can report the authored target.
+   * Type inference examines only the physical-looking file prefix, leaving
+   * accessor syntax untouched. Invalid percent encoding is retained verbatim so
+   * inference can fail normally and the resolver can report the authored
+   * target.
    */
   function targetFile(target: string): string {
     const separator = target.indexOf("#");
@@ -1326,8 +1348,9 @@ export namespace EvidQueryProgrammer {
   /**
    * Orders query identities and rendered targets by code-unit comparison.
    *
-   * Avoiding locale collation makes list, inspection, and graph output reproducible
-   * across operating systems and independent of the invoking process locale.
+   * Avoiding locale collation makes list, inspection, and graph output
+   * reproducible across operating systems and independent of the invoking
+   * process locale.
    */
   function compare(left: string, right: string): number {
     return left < right ? -1 : left > right ? 1 : 0;

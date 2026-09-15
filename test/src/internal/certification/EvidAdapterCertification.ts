@@ -26,22 +26,25 @@ import type { IEvidAdapterCertificationHost } from "./IEvidAdapterCertificationH
 import type { IEvidAdapterCertificationSource } from "./IEvidAdapterCertificationSource";
 
 /**
- * Runs the shared inventory, graph, failure, and mutation contract for adapters.
+ * Runs the shared inventory, graph, failure, and mutation contract for
+ * adapters.
  *
  * Language-specific fixtures supply expected declarations while this namespace
  * enforces the cross-adapter completeness and fingerprint guarantees.
  */
 export namespace EvidAdapterCertification {
   /**
-   * Analyzes one certification fixture under a chosen physical checkout identity.
+   * Analyzes one certification fixture under a chosen physical checkout
+   * identity.
    *
-   * Most callers use the deterministic default snapshot. Fingerprint portability
-   * checks supply another root and source identity while preserving relative
-   * declaring paths, reproducing the discovery changes caused by checkout moves
-   * and file replacement.
+   * Most callers use the deterministic default snapshot. Fingerprint
+   * portability checks supply another root and source identity while preserving
+   * relative declaring paths, reproducing the discovery changes caused by
+   * checkout moves and file replacement.
    */
   export async function analyze(
-    certification: IEvidAdapterCertification | IEvidDatabaseAdapterCertification,
+    certification:
+      IEvidAdapterCertification | IEvidDatabaseAdapterCertification,
     sources: IEvidAdapterCertificationSource[] = certification.sources,
     root: string = "/project",
     sourceIdentity: string = "source",
@@ -52,13 +55,15 @@ export namespace EvidAdapterCertification {
   }
 
   /**
-   * Compares one analyzed fixture with its complete declared inventory contract.
+   * Compares one analyzed fixture with its complete declared inventory
+   * contract.
    *
-   * Units, public addresses, hosts, annotations, diagnostics, and Unicode source
-   * mappings must all match; excluded declarations must remain absent.
+   * Units, public addresses, hosts, annotations, diagnostics, and Unicode
+   * source mappings must all match; excluded declarations must remain absent.
    */
   export function assertInventory(
-    certification: IEvidAdapterCertification | IEvidDatabaseAdapterCertification,
+    certification:
+      IEvidAdapterCertification | IEvidDatabaseAdapterCertification,
     inventory: IEvidInventory,
   ): void {
     TestValidator.equals(
@@ -178,13 +183,15 @@ export namespace EvidAdapterCertification {
   }
 
   /**
-   * Verifies complete and one-missing-unit graph outcomes for one adapter fixture.
+   * Verifies complete and one-missing-unit graph outcomes for one adapter
+   * fixture.
    *
    * Each declared requirement is removed in turn so a passing aggregate cannot
    * hide an adapter that attached evidence to the wrong semantic unit.
    */
   export async function assertGraph(
-    certification: IEvidAdapterCertification | IEvidDatabaseAdapterCertification,
+    certification:
+      IEvidAdapterCertification | IEvidDatabaseAdapterCertification,
   ): Promise<void> {
     const claim = await analyze(certification);
     const reference = await new EvidMarkdownAdapter().analyze(
@@ -281,10 +288,12 @@ export namespace EvidAdapterCertification {
    * Requires malformed, incomplete, and false-positive controls to fail safely.
    *
    * Adapter diagnostics must preserve incompleteness for lost surface while
-   * unsupported annotations remain explicit without inventing declaration hosts.
+   * unsupported annotations remain explicit without inventing declaration
+   * hosts.
    */
   export async function assertFailures(
-    certification: IEvidAdapterCertification | IEvidDatabaseAdapterCertification,
+    certification:
+      IEvidAdapterCertification | IEvidDatabaseAdapterCertification,
   ): Promise<void> {
     for (const failure of [certification.incomplete, certification.malformed]) {
       const inventory = await analyze(certification, failure.sources);
@@ -333,7 +342,8 @@ export namespace EvidAdapterCertification {
    * relative declaration.
    */
   export async function assertFingerprint(
-    certification: IEvidAdapterCertification | IEvidDatabaseAdapterCertification,
+    certification:
+      IEvidAdapterCertification | IEvidDatabaseAdapterCertification,
   ): Promise<void> {
     const original = await analyze(certification);
     const reason = await analyze(
@@ -354,7 +364,9 @@ export namespace EvidAdapterCertification {
     );
     const portableSources: IEvidAdapterCertificationSource[] =
       certification.sources.map(
-        (source: IEvidAdapterCertificationSource): IEvidAdapterCertificationSource => ({
+        (
+          source: IEvidAdapterCertificationSource,
+        ): IEvidAdapterCertificationSource => ({
           ...source,
           content: source.content.replaceAll("\n", "\r\n"),
         }),
@@ -397,7 +409,8 @@ export namespace EvidAdapterCertification {
    * resolver to refuse an arbitrary declaration choice.
    */
   export async function assertAmbiguity(
-    certification: IEvidAdapterCertification | IEvidDatabaseAdapterCertification,
+    certification:
+      IEvidAdapterCertification | IEvidDatabaseAdapterCertification,
   ): Promise<void> {
     const inventory = await analyze(certification);
     const first = requireUnit(
@@ -507,10 +520,7 @@ export namespace EvidAdapterCertification {
     return { ...host, units: [...host.units].sort(compare) };
   }
 
-  function requireUnit(
-    inventory: IEvidInventory,
-    key: string,
-  ): IEvidUnit {
+  function requireUnit(inventory: IEvidInventory, key: string): IEvidUnit {
     const unit = inventory.units.find(
       (candidate) => unitKey(candidate) === key,
     );

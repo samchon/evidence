@@ -3,7 +3,8 @@ import { TestValidator } from "@nestia/e2e";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Rejects TypeScript reexports that escape their population root.
+/**
+ * Rejects TypeScript reexports that escape their population root.
  *
  * Logical and physical roots both bound the selected public population.
  *

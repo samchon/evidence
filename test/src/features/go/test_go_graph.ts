@@ -11,9 +11,12 @@ import { dedent } from "@typia/utils";
 import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Evaluates Go type, function, and property evidence with semantic fingerprints.
+/**
+ * Evaluates Go type, function, and property evidence with semantic
+ * fingerprints.
  *
- * Reciprocal coverage uses the exact selected units and evidence prose does not change implementation identity.
+ * Reciprocal coverage uses the exact selected units and evidence prose does not
+ * change implementation identity.
  *
  * 1. Build covered and uncovered claims by symbol.
  * 2. Compare missing IDs.
@@ -198,10 +201,7 @@ async function groupedInventory(second: number): Promise<IEvidInventory> {
   );
 }
 
-function requireUnit(
-  inventory: IEvidInventory,
-  name: string,
-): IEvidUnit {
+function requireUnit(inventory: IEvidInventory, name: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === name || candidate.identity.at(-1) === name,

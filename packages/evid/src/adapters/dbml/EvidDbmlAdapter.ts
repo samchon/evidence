@@ -24,27 +24,27 @@ import { EvidDbmlFileScanner } from "./EvidDbmlFileScanner";
  *
  * Physical source aliases are deduplicated before parsing. Schema aliases and
  * relation endpoints are resolved across file analyses before public units and
- * annotation carriers are materialized, preserving semantic ownership and explicit
- * failures instead of guessing unresolved schema links.
+ * annotation carriers are materialized, preserving semantic ownership and
+ * explicit failures instead of guessing unresolved schema links.
  */
 export class EvidDbmlAdapter implements IEvidAdapter {
   /**
    * Database family discriminator selecting DBML parsing and schema rules.
    *
-   * Claims and references use this value to apply the adapter's database selectors.
+   * Claims and references use this value to apply the adapter's database
+   * selectors.
    */
   public readonly type = "dbml";
 
   /**
-   * Builds a normalized DBML inventory from a validated, cloned source snapshot.
+   * Builds a normalized DBML inventory from a validated, cloned source
+   * snapshot.
    *
-   * Failed scans preserve located diagnostics and incomplete state. Successfully
-   * scanned files contribute dependencies, aliases, relation ownership, and
-   * documentation before the parser runtime closes in cleanup.
+   * Failed scans preserve located diagnostics and incomplete state.
+   * Successfully scanned files contribute dependencies, aliases, relation
+   * ownership, and documentation before the parser runtime closes in cleanup.
    */
-  public async analyze(
-    snapshot: IEvidSourceSnapshot,
-  ): Promise<IEvidInventory> {
+  public async analyze(snapshot: IEvidSourceSnapshot): Promise<IEvidInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidInventory = {
       schemaVersion: 1,
@@ -104,8 +104,9 @@ export class EvidDbmlAdapter implements IEvidAdapter {
   /**
    * Extracts DBML declaration records inside one borrowed parse session.
    *
-   * Syntax and acquisition failures retain their source range when available and
-   * mark analysis incomplete, rather than contributing a successful empty schema.
+   * Syntax and acquisition failures retain their source range when available
+   * and mark analysis incomplete, rather than contributing a successful empty
+   * schema.
    */
   private async scan(
     parser: EvidParser,
@@ -147,9 +148,11 @@ export class EvidDbmlAdapter implements IEvidAdapter {
   }
 
   /**
-   * Establishes file-independent tables and detects conflicting schema declarations or aliases.
+   * Establishes file-independent tables and detects conflicting schema
+   * declarations or aliases.
    *
-   * Relation resolution uses this map after every selected DBML file has been scanned.
+   * Relation resolution uses this map after every selected DBML file has been
+   * scanned.
    */
   private aliases(
     inventory: IEvidInventory,
@@ -192,9 +195,11 @@ export class EvidDbmlAdapter implements IEvidAdapter {
   }
 
   /**
-   * Resolves endpoint existence, ordered composite arity, direction, and owning model.
+   * Resolves endpoint existence, ordered composite arity, direction, and owning
+   * model.
    *
-   * Resolved relations become semantic declarations before units and hosts are materialized.
+   * Resolved relations become semantic declarations before units and hosts are
+   * materialized.
    */
   private relations(
     inventory: IEvidInventory,
@@ -258,7 +263,8 @@ export class EvidDbmlAdapter implements IEvidAdapter {
   }
 
   /**
-   * Rejects missing or ambiguous semantic endpoints instead of dropping a relation obligation.
+   * Rejects missing or ambiguous semantic endpoints instead of dropping a
+   * relation obligation.
    *
    * Returning no endpoint preserves the failure in inventory completeness.
    */
@@ -295,9 +301,11 @@ export class EvidDbmlAdapter implements IEvidAdapter {
   }
 
   /**
-   * Publishes one semantic identity and each declaration's physical file address.
+   * Publishes one semantic identity and each declaration's physical file
+   * address.
    *
-   * Aliased schema declarations can therefore share a unit while retaining their source sites.
+   * Aliased schema declarations can therefore share a unit while retaining
+   * their source sites.
    */
   private units(
     inventory: IEvidInventory,
@@ -364,7 +372,8 @@ export class EvidDbmlAdapter implements IEvidAdapter {
   }
 
   /**
-   * Hashes semantic declaration text and enum dependencies without documentation syntax.
+   * Hashes semantic declaration text and enum dependencies without
+   * documentation syntax.
    *
    * Review fingerprints change for schema behavior, not annotation prose.
    */
@@ -375,9 +384,11 @@ export class EvidDbmlAdapter implements IEvidAdapter {
   }
 
   /**
-   * Applies withdrawals first, then retains every visible documented or undocumented host.
+   * Applies withdrawals first, then retains every visible documented or
+   * undocumented host.
    *
-   * Hidden declarations must not create hosts that can satisfy graph obligations.
+   * Hidden declarations must not create hosts that can satisfy graph
+   * obligations.
    */
   private documentation(
     inventory: IEvidInventory,
@@ -447,9 +458,11 @@ export class EvidDbmlAdapter implements IEvidAdapter {
   }
 
   /**
-   * Creates a source-mapped carrier sharing one declaration site for inline column relations.
+   * Creates a source-mapped carrier sharing one declaration site for inline
+   * column relations.
    *
-   * The shared site lets one DBML note acknowledge the column and its inline relation.
+   * The shared site lets one DBML note acknowledge the column and its inline
+   * relation.
    */
   private host(
     analysis: IEvidDbmlFileAnalysis,
@@ -485,7 +498,8 @@ export class EvidDbmlAdapter implements IEvidAdapter {
   /**
    * Parses notes and comments only after structural ownership is known.
    *
-   * Tag parsing needs the resolved unit IDs and attachment status of each carrier.
+   * Tag parsing needs the resolved unit IDs and attachment status of each
+   * carrier.
    */
   private parse(
     analysis: IEvidDbmlFileAnalysis,
@@ -495,14 +509,20 @@ export class EvidDbmlAdapter implements IEvidAdapter {
     return EvidTagParser.parse(
       analysis.source.content,
       host,
-      EvidDbmlDocumentation.read(analysis.source.content, host.id, documentation),
+      EvidDbmlDocumentation.read(
+        analysis.source.content,
+        host.id,
+        documentation,
+      ),
     );
   }
 
   /**
-   * Encodes literal schema segments without conflating punctuation or file placement.
+   * Encodes literal schema segments without conflating punctuation or file
+   * placement.
    *
-   * JSON serialization preserves a stable unit key for segments containing dots or separators.
+   * JSON serialization preserves a stable unit key for segments containing dots
+   * or separators.
    */
   private id(identity: string[]): string {
     return `dbml:${JSON.stringify(identity)}`;
@@ -511,7 +531,8 @@ export class EvidDbmlAdapter implements IEvidAdapter {
   /**
    * Preserves missing schema facts as actionable incomplete analysis.
    *
-   * The diagnostic prevents unresolved DBML declarations from silently shrinking coverage.
+   * The diagnostic prevents unresolved DBML declarations from silently
+   * shrinking coverage.
    */
   private problem(
     inventory: IEvidInventory,

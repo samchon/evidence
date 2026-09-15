@@ -1,5 +1,6 @@
 /**
- * Carries the enclosing aggregate or enum while its nested C members are scanned.
+ * Carries the enclosing aggregate or enum while its nested C members are
+ * scanned.
  *
  * Fields and enumerators derive their ownership and semantic path from this
  * context. Keeping the declaration key as well as the path allows later
@@ -9,7 +10,8 @@ export interface IEvidCTypeContext {
   /**
    * Scanner-local declaration key for the enclosing aggregate or enum.
    *
-   * Nested declarations retain it until the adapter resolves their selected parent unit.
+   * Nested declarations retain it until the adapter resolves their selected
+   * parent unit.
    */
   declarationId: string;
 

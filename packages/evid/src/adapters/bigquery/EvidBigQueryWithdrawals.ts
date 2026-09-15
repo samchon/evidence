@@ -3,15 +3,18 @@ import { EvidSqlDocumentation } from "../sql/EvidSqlDocumentation";
 import type { IEvidSqlFileAnalysis } from "../sql/IEvidSqlFileAnalysis";
 
 /**
- * Propagates STRUCT withdrawals while keeping each field owned by its table model.
+ * Propagates STRUCT withdrawals while keeping each field owned by its table
+ * model.
  *
- * Nested fields inherit only parsed withdrawal annotations from their enclosing schema field.
+ * Nested fields inherit only parsed withdrawal annotations from their enclosing
+ * schema field.
  */
 export namespace EvidBigQueryWithdrawals {
   /**
    * Copies parsed withdrawal annotations to explicitly nested schema fields.
    *
-   * This runs after documentation attachment so ordinary annotations remain at their own sites.
+   * This runs after documentation attachment so ordinary annotations remain at
+   * their own sites.
    */
   export function apply(analysis: IEvidSqlFileAnalysis): void {
     const declarations = new Map(

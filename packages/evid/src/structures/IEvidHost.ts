@@ -1,7 +1,8 @@
 import type { IEvidSourceRange } from "./IEvidSourceRange";
 
 /**
- * A physical documentation carrier and the declarations that own its statements.
+ * A physical documentation carrier and the declarations that own its
+ * statements.
  *
  * Adapters establish attachment from language syntax before evidence tags are
  * parsed. This record supplies the source location and semantic owners used to
@@ -15,7 +16,8 @@ import type { IEvidSourceRange } from "./IEvidSourceRange";
  * - An artifact's exclusion-only carrier can be attached without owning a unit.
  *
  * Unattached and unsupported carriers remain available for diagnostics. Graph
- * cardinality counts the owning semantic identities, not the number of comments.
+ * cardinality counts the owning semantic identities, not the number of
+ * comments.
  */
 export interface IEvidHost {
   /**
@@ -38,7 +40,8 @@ export interface IEvidHost {
    * Span of the documentation position in the captured source.
    *
    * Coordinates use the original UTF-16 text and an exclusive end. The carrier
-   * span is separate from its owner's declaration and fingerprint content ranges.
+   * span is separate from its owner's declaration and fingerprint content
+   * ranges.
    */
   range: IEvidSourceRange;
 
@@ -46,24 +49,26 @@ export interface IEvidHost {
    * Source paths from which relative citations may resolve.
    *
    * Omission uses `file`. Reconciliation preserves every origin when equivalent
-   * carriers merge, so choosing one alias does not discard another valid base path.
+   * carriers merge, so choosing one alias does not discard another valid base
+   * path.
    */
   origins?: string[];
 
   /**
    * Physical declaration site establishing the carrier's semantic ownership.
    *
-   * An exclusion-only carrier can omit this link. For a semantic host, inventory
-   * validation requires the site to belong to its claimed unit owners.
+   * An exclusion-only carrier can omit this link. For a semantic host,
+   * inventory validation requires the site to belong to its claimed unit
+   * owners.
    */
   siteId?: string;
 
   /**
    * Semantic declarations owning this documentation position.
    *
-   * Retain all owners of shared declaration positions. Empty ownership is allowed
-   * only where the artifact's carrier rules permit evidence without a declaration,
-   * such as an eligible exclusion-only position.
+   * Retain all owners of shared declaration positions. Empty ownership is
+   * allowed only where the artifact's carrier rules permit evidence without a
+   * declaration, such as an eligible exclusion-only position.
    */
   unitIds: string[];
 
@@ -71,8 +76,9 @@ export interface IEvidHost {
    * Result of the adapter's syntactic attachment analysis.
    *
    * Attached carriers participate under the artifact's rules, including allowed
-   * exclusion-only carriers with no unit IDs. Unattached or unsupported positions
-   * retain their status so their annotations can produce actionable findings.
+   * exclusion-only carriers with no unit IDs. Unattached or unsupported
+   * positions retain their status so their annotations can produce actionable
+   * findings.
    */
   attachment: "attached" | "unattached" | "unsupported";
 
@@ -80,7 +86,8 @@ export interface IEvidHost {
    * Adapter explanation for an unsupported documentation position.
    *
    * Supply the source construct or ownership limitation that prevents this
-   * carrier from participating. Ordinary supported positions omit the explanation.
+   * carrier from participating. Ordinary supported positions omit the
+   * explanation.
    */
   problem?: string;
 }

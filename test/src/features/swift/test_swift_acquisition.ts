@@ -9,7 +9,8 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Acquires the pinned Swift parser and reuses it offline.
+/**
+ * Acquires the pinned Swift parser and reuses it offline.
  *
  * Cold and warm analysis must produce the same complete inventory.
  *

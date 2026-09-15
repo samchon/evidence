@@ -1,17 +1,16 @@
 import { EvidInventory, EvidPrismaAdapter } from "evid";
-import type {
-  IEvidDeclaration,
-  IEvidHost,
-  IEvidInventory,
-} from "evid";
+import type { IEvidDeclaration, IEvidHost, IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches Prisma documentation and preserves withdrawal and exclusion semantics.
+/**
+ * Attaches Prisma documentation and preserves withdrawal and exclusion
+ * semantics.
  *
- * Eligible documentation hosts create acknowledgements, while lexical withdrawals and exclusions remain independently observable.
+ * Eligible documentation hosts create acknowledgements, while lexical
+ * withdrawals and exclusions remain independently observable.
  *
  * 1. Analyze documented models and fields with withdrawals and exclusions.
  * 2. Verify attachment, targets, and ledger records.

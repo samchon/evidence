@@ -17,17 +17,20 @@ import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
- * Evaluates a requirement-to-implementation-to-test chain through real adapters.
+ * Evaluates a requirement-to-implementation-to-test chain through real
+ * adapters.
  *
  * Each link is an independent configured claim/reference pair. Evid from the
- * test to the implementation cannot substitute for the implementation's citation
- * to a requirement, and breaking one link must not erase the other link's coverage.
+ * test to the implementation cannot substitute for the implementation's
+ * citation to a requirement, and breaking one link must not erase the other
+ * link's coverage.
  *
- * 1. Extract a Markdown rounding requirement, a TypeScript method citing it, and
- *    a TypeScript test citing that method; resolve both authored targets.
+ * 1. Extract a Markdown rounding requirement, a TypeScript method citing it, and a
+ *    TypeScript test citing that method; resolve both authored targets.
  * 2. Evaluate both claim/reference pairs and require success with no diagnostics.
- * 3. Remove only the implementation acknowledgement and require the requirement
- *    to become missing while the test-to-implementation obligation remains covered.
+ * 3. Remove only the implementation acknowledgement and require the requirement to
+ *    become missing while the test-to-implementation obligation remains
+ *    covered.
  * 4. Restore the implementation citation and remove only the test acknowledgement;
  *    require implementation-to-requirement coverage to remain and the test's
  *    reference obligation to report the method as missing.
@@ -241,10 +244,7 @@ export async function test_graph_chain(): Promise<void> {
  * Markdown explicit IDs can appear as the final identity segment, while code
  * fixtures use declaration names. Missing extraction fails setup immediately.
  */
-function requireUnit(
-  inventory: IEvidInventory,
-  name: string,
-): IEvidUnit {
+function requireUnit(inventory: IEvidInventory, name: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === name || candidate.identity.at(-1) === name,
@@ -254,14 +254,13 @@ function requireUnit(
 }
 
 /**
- * Requires the fixture's authored acknowledgement to survive adapter extraction.
+ * Requires the fixture's authored acknowledgement to survive adapter
+ * extraction.
  *
  * The scenario has one citation per citing inventory; absence must fail setup
  * instead of constructing an accidentally empty resolution list.
  */
-function requireDeclaration(
-  inventory: IEvidInventory,
-): IEvidDeclaration {
+function requireDeclaration(inventory: IEvidInventory): IEvidDeclaration {
   const declaration = inventory.declarations[0];
   if (declaration === undefined)
     throw new Error("Missing graph declaration fixture.");

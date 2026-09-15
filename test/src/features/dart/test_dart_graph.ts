@@ -1,21 +1,23 @@
-import {
-  EvidGraph,
-  EvidDartAdapter,
-  EvidTypeScriptAdapter,
-} from "evid";
+import { EvidGraph, EvidDartAdapter, EvidTypeScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Evaluates Dart type, function, and property coverage across a TypeScript claim.
+/**
+ * Evaluates Dart type, function, and property coverage across a TypeScript
+ * claim.
  *
- * Each selected reference kind remains an obligation without evidence, and review metadata is tracked separately from acknowledgement.
+ * Each selected reference kind remains an obligation without evidence, and
+ * review metadata is tracked separately from acknowledgement.
  *
- * 1. Analyze one Dart type, function, and property plus TypeScript claims for each target.
- * 2. Evaluate covered and uncovered graph states for every symbol kind and compare exact missing IDs.
- * 3. Resolve a review-only Dart annotation and require it to leave the referenced function missing.
+ * 1. Analyze one Dart type, function, and property plus TypeScript claims for each
+ *    target.
+ * 2. Evaluate covered and uncovered graph states for every symbol kind and compare
+ *    exact missing IDs.
+ * 3. Resolve a review-only Dart annotation and require it to leave the referenced
+ *    function missing.
  */
 export async function test_dart_graph(): Promise<void> {
   const reference = await new EvidDartAdapter().analyze(

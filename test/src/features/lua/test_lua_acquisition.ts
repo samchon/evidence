@@ -5,11 +5,15 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Acquires only the selected Lua grammar and reuses its complete inventory offline.
+/**
+ * Acquires only the selected Lua grammar and reuses its complete inventory
+ * offline.
  *
- * Lazy parser loading must avoid unrelated grammars and cached analysis must survive a failing transport.
+ * Lazy parser loading must avoid unrelated grammars and cached analysis must
+ * survive a failing transport.
  *
- * 1. Fetch the Lua grammar and analyze source. 2. Reanalyze offline from cache. 3. Compare the complete inventories.
+ * 1. Fetch the Lua grammar and analyze source. 2. Reanalyze offline from cache. 3.
+ *    Compare the complete inventories.
  */
 export async function test_lua_acquisition(): Promise<void> {
   const parser = new EvidParser();

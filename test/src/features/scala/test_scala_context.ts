@@ -1,8 +1,4 @@
-import {
-  EvidFingerprint,
-  EvidInventory,
-  EvidScalaAdapter,
-} from "evid";
+import { EvidFingerprint, EvidInventory, EvidScalaAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
@@ -10,11 +6,15 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 /**
  * Preserves Scala extension context while applying lexical export withdrawal.
  *
- * The fixture places extension members and exports under different receivers, then withdraws an export carrier to ensure source ownership remains independent of a hidden lexical path.
+ * The fixture places extension members and exports under different receivers,
+ * then withdraws an export carrier to ensure source ownership remains
+ * independent of a hidden lexical path.
  *
  * 1. Analyze extensions and exports with their evidence annotations.
- * 2. Verify group Scaladoc attaches to both extension methods and a sibling-body edit leaves the first method fingerprint stable.
- * 3. Change the receiver to invalidate that fingerprint, then verify withdrawal removes the exported path while the source member remains selectable.
+ * 2. Verify group Scaladoc attaches to both extension methods and a sibling-body
+ *    edit leaves the first method fingerprint stable.
+ * 3. Change the receiver to invalidate that fingerprint, then verify withdrawal
+ *    removes the exported path while the source member remains selectable.
  */
 export async function test_scala_context(): Promise<void> {
   const adapter = new EvidScalaAdapter();
@@ -43,10 +43,7 @@ export async function test_scala_context(): Promise<void> {
     inventory.declarations.length,
     2,
   );
-  const fingerprint = EvidFingerprint.inspect(
-    inventory,
-    first.id,
-  ).fingerprint;
+  const fingerprint = EvidFingerprint.inspect(inventory, first.id).fingerprint;
   const sibling = await adapter.analyze(
     EvidTestSourceSnapshot.create(
       "src/Context.scala",

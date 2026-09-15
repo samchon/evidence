@@ -1,4 +1,5 @@
-/** Stable categories for failures that invalidate adapter extraction.
+/**
+ * Stable categories for failures that invalidate adapter extraction.
  *
  * Parser failures never quietly become an empty inventory: callers retain the
  * category in diagnostics so an unavailable asset, malformed query, incomplete

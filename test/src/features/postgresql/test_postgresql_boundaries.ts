@@ -3,9 +3,12 @@ import { TestValidator } from "@nestia/e2e";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Rejects PostgreSQL schemas whose selected population depends on unresolved context.
+/**
+ * Rejects PostgreSQL schemas whose selected population depends on unresolved
+ * context.
  *
- * Search paths, migration state, unsupported syntax, and failed source snapshots must remain incomplete.
+ * Search paths, migration state, unsupported syntax, and failed source
+ * snapshots must remain incomplete.
  *
  * 1. Analyze each context-dependent or malformed schema.
  * 2. Require incomplete status and actionable diagnostics.
@@ -68,8 +71,11 @@ export async function test_postgresql_boundaries(): Promise<void> {
   ])
     TestValidator.equals(
       "quoted keyword and maximum-length identifier remain declarations",
-      (await adapter.analyze(EvidTestSourceSnapshot.create("valid.sql", source)))
-        .diagnostics,
+      (
+        await adapter.analyze(
+          EvidTestSourceSnapshot.create("valid.sql", source),
+        )
+      ).diagnostics,
       [],
     );
   const failed = EvidTestSourceSnapshot.create(

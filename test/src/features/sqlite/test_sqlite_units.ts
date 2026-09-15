@@ -9,9 +9,11 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Extracts SQLite schema units with exact quoted ownership and relations.
+/**
+ * Extracts SQLite schema units with exact quoted ownership and relations.
  *
- * Generated columns and composite foreign keys must retain their explicit declaration semantics and owning model.
+ * Generated columns and composite foreign keys must retain their explicit
+ * declaration semantics and owning model.
  *
  * 1. Analyze quoted schemas, generated columns, and composite relations.
  * 2. Verify physical sites, owners, identities, and target resolution.

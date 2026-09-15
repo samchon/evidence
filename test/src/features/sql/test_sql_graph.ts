@@ -4,9 +4,11 @@ import { dedent } from "@typia/utils";
 import { join } from "node:path";
 import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
-/** Exercises SQL configuration selectors in both database graph roles.
+/**
+ * Exercises SQL configuration selectors in both database graph roles.
  *
- * The evaluated configuration must preserve covered and missing-evidence behavior for each selected SQL population.
+ * The evaluated configuration must preserve covered and missing-evidence
+ * behavior for each selected SQL population.
  *
  * 1. Run real claim and reference configurations for each selector.
  * 2. Evaluate matching acknowledgement and missing-evidence cases.

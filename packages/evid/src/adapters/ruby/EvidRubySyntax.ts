@@ -4,10 +4,12 @@ import type { IEvidCommentSyntax } from "../../structures/IEvidCommentSyntax";
 import type { IEvidRubyConstantPath } from "./IEvidRubyConstantPath";
 
 /**
- * Provides grammar-level Ruby extraction helpers without public-surface decisions.
+ * Provides grammar-level Ruby extraction helpers without public-surface
+ * decisions.
  *
- * EvidRubyFileScanner uses these functions to recognize statically readable syntax.
- * Publication, visibility, and reopening policy remain in the scanner and adapter.
+ * EvidRubyFileScanner uses these functions to recognize statically readable
+ * syntax. Publication, visibility, and reopening policy remain in the scanner
+ * and adapter.
  */
 export namespace EvidRubySyntax {
   /**
@@ -26,7 +28,8 @@ export namespace EvidRubySyntax {
    * Returns the direct named arguments of a Ruby call node.
    *
    * Attribute, visibility, and alias directives inspect this collection before
-   * accepting literal arguments; non-call nodes deliberately produce no arguments.
+   * accepting literal arguments; non-call nodes deliberately produce no
+   * arguments.
    */
   export function callArguments(node: EvidNode): EvidNode[] {
     if (node.type !== "call") return [];
@@ -37,7 +40,8 @@ export namespace EvidRubySyntax {
    * States whether a Ruby call has an explicit receiver.
    *
    * The scanner rejects or classifies directives differently when a receiver
-   * changes their lexical effect, so this check does not interpret the receiver.
+   * changes their lexical effect, so this check does not interpret the
+   * receiver.
    */
   export function hasReceiver(node: EvidNode): boolean {
     return node.type === "call" && node.childForFieldName("receiver") !== null;
@@ -64,8 +68,9 @@ export namespace EvidRubySyntax {
   /**
    * Reads a flattened list of statically literal Ruby names.
    *
-   * Nested arrays are expanded for directives that accept name lists. One dynamic
-   * element makes the whole result undefined so callers can report uncertainty.
+   * Nested arrays are expanded for directives that accept name lists. One
+   * dynamic element makes the whole result undefined so callers can report
+   * uncertainty.
    */
   export function literalNames(nodes: EvidNode[]): string[] | undefined {
     const output: string[] = [];
@@ -86,8 +91,8 @@ export namespace EvidRubySyntax {
   /**
    * Reads one interpolation-free Ruby symbol or string as a literal name.
    *
-   * Escape sequences and interpolation make runtime content uncertain, so callers
-   * receive undefined instead of an approximated declaration name.
+   * Escape sequences and interpolation make runtime content uncertain, so
+   * callers receive undefined instead of an approximated declaration name.
    */
   export function literalName(node: EvidNode): string | undefined {
     if (node.type === "simple_symbol") return node.text.slice(1);
@@ -105,7 +110,8 @@ export namespace EvidRubySyntax {
   }
 
   /**
-   * Converts a supported Ruby constant expression into root-qualified path segments.
+   * Converts a supported Ruby constant expression into root-qualified path
+   * segments.
    *
    * The scanner uses absolute to distinguish `::Name` from lexical lookup while
    * resolving containers, superclass paths, and generated-constant receivers.
@@ -134,10 +140,12 @@ export namespace EvidRubySyntax {
   }
 
   /**
-   * Identifies the normalization rules for a supported Ruby documentation comment.
+   * Identifies the normalization rules for a supported Ruby documentation
+   * comment.
    *
-   * Line RDoc and complete embedded RDoc blocks retain tag boundaries and permit
-   * withdrawals. Other comment forms return undefined and cannot become hosts.
+   * Line RDoc and complete embedded RDoc blocks retain tag boundaries and
+   * permit withdrawals. Other comment forms return undefined and cannot become
+   * hosts.
    */
   export function commentSyntax(
     node: EvidNode,
@@ -166,8 +174,9 @@ export namespace EvidRubySyntax {
   /**
    * Normalizes the explicit superclass spelling on a Ruby class declaration.
    *
-   * Reopening reconciliation compares this normalized text only when a superclass
-   * is supplied, preserving the distinction between omission and conflict.
+   * Reopening reconciliation compares this normalized text only when a
+   * superclass is supplied, preserving the distinction between omission and
+   * conflict.
    */
   export function superclass(node: EvidNode): string | undefined {
     const superclass = node.childForFieldName("superclass");
@@ -176,10 +185,11 @@ export namespace EvidRubySyntax {
   }
 
   /**
-   * Detects calls that generate a runtime constant instead of a declared container.
+   * Detects calls that generate a runtime constant instead of a declared
+   * container.
    *
-   * EvidRubyFileScanner reports these forms as incomplete because their members cannot
-   * be derived from the declared source model without executing Ruby.
+   * EvidRubyFileScanner reports these forms as incomplete because their members
+   * cannot be derived from the declared source model without executing Ruby.
    */
   export function generatedConstant(node: EvidNode | null): boolean {
     if (node?.type !== "call") return false;

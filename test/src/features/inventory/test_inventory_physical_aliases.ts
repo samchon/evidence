@@ -4,11 +4,13 @@ import { TestValidator } from "@nestia/e2e";
 import { EvidTestInventory } from "../../internal/EvidTestInventory";
 
 /**
- * Merges physical aliases while retaining every public address and citation origin.
+ * Merges physical aliases while retaining every public address and citation
+ * origin.
  *
  * Independent populations may discover one inode through different hard-link
  * spellings. The merged inventory must avoid duplicate units and hosts without
- * choosing relative citation behavior according to whichever input arrived first.
+ * choosing relative citation behavior according to whichever input arrived
+ * first.
  *
  * 1. Clone a declaration and its host under another physical-path spelling while
  *    retaining the same source identity, then merge both input orders.

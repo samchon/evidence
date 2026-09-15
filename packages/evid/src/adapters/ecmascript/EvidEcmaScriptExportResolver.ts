@@ -14,17 +14,18 @@ import { EvidSourcePath } from "../../internal/EvidSourcePath";
 /**
  * Publishes local ECMAScript declarations that have a static public export.
  *
- * `EvidEcmaScriptAdapter` constructs this resolver after every selected source has
- * been scanned. It follows local exports and re-exports, records each resulting
- * public address in the inventory, and reports resolution failures so an
- * incomplete export graph cannot reduce the coverage population silently.
+ * `EvidEcmaScriptAdapter` constructs this resolver after every selected source
+ * has been scanned. It follows local exports and re-exports, records each
+ * resulting public address in the inventory, and reports resolution failures so
+ * an incomplete export graph cannot reduce the coverage population silently.
  */
 export class EvidEcmaScriptExportResolver {
   /**
    * Scanned module data by stable source ID.
    *
    * Resolution follows these records instead of reparsing source files, so each
-   * export path refers to the same declaration inventory gathered by the adapter.
+   * export path refers to the same declaration inventory gathered by the
+   * adapter.
    */
   private readonly modules = new Map<string, IEvidEcmaScriptModule>();
 
@@ -106,9 +107,9 @@ export class EvidEcmaScriptExportResolver {
   /**
    * Materializes public addresses and returns the reachable semantic unit IDs.
    *
-   * The adapter uses the returned set to remove declarations that have no public
-   * export. Addresses remain in the shared inventory because aliases can expose
-   * one unit through several public module paths.
+   * The adapter uses the returned set to remove declarations that have no
+   * public export. Addresses remain in the shared inventory because aliases can
+   * expose one unit through several public module paths.
    */
   public publish(): Set<string> {
     const published = new Set<string>();
@@ -145,8 +146,9 @@ export class EvidEcmaScriptExportResolver {
   /**
    * Adds names inherited through transitive star exports to every module.
    *
-   * Repeating until no name changes reaches a fixed point even when barrel files
-   * form a cycle. `default` is excluded because ECMAScript star exports omit it.
+   * Repeating until no name changes reaches a fixed point even when barrel
+   * files form a cycle. `default` is excluded because ECMAScript star exports
+   * omit it.
    */
   private expandStars(): void {
     let changed = true;
@@ -172,7 +174,8 @@ export class EvidEcmaScriptExportResolver {
    * Resolves one exported name and caches the result for later publication.
    *
    * Recursive traversal receives a fresh cycle-tracking set; only a completed
-   * resolution is memoized because its bindings do not depend on the caller path.
+   * resolution is memoized because its bindings do not depend on the caller
+   * path.
    */
   private resolve(sourceId: string, name: string): IEvidEcmaScriptResolution {
     const key = JSON.stringify([sourceId, name]);
@@ -186,8 +189,9 @@ export class EvidEcmaScriptExportResolver {
   /**
    * Follows export edges from a source/name pair to declaration bindings.
    *
-   * The visited set is scoped to this traversal so circular re-exports become an
-   * incomplete cycle result without suppressing bindings found on other paths.
+   * The visited set is scoped to this traversal so circular re-exports become
+   * an incomplete cycle result without suppressing bindings found on other
+   * paths.
    */
   private resolveFrom(
     sourceId: string,
@@ -389,8 +393,9 @@ export class EvidEcmaScriptExportResolver {
   /**
    * Carries failure state from a nested resolution to its caller.
    *
-   * Bindings alone cannot distinguish an excluded declaration from a missing one,
-   * and cycles must remain visible until publication can diagnose an empty cycle.
+   * Bindings alone cannot distinguish an excluded declaration from a missing
+   * one, and cycles must remain visible until publication can diagnose an empty
+   * cycle.
    */
   private mergeState(
     output: IEvidEcmaScriptResolution,
@@ -401,7 +406,8 @@ export class EvidEcmaScriptExportResolver {
   }
 
   /**
-   * Reports whether a module declares an export name before resolving its binding.
+   * Reports whether a module declares an export name before resolving its
+   * binding.
    *
    * Callers use this to avoid diagnosing a recursive or excluded path as a
    * missing export when the target module did declare the requested name.
@@ -414,9 +420,9 @@ export class EvidEcmaScriptExportResolver {
   /**
    * Resolves a supported local module specifier to one selected source ID.
    *
-   * Resolution accepts physical and logical source locations but rejects package
-   * semantics, root escapes, absent files, and aliases that identify multiple
-   * physical sources. Those cases make the inventory incomplete.
+   * Resolution accepts physical and logical source locations but rejects
+   * package semantics, root escapes, absent files, and aliases that identify
+   * multiple physical sources. Those cases make the inventory incomplete.
    */
   private target(
     source: IEvidSourceFile,
@@ -487,8 +493,8 @@ export class EvidEcmaScriptExportResolver {
   /**
    * Checks whether a selected source remains under an optional physical root.
    *
-   * Logical aliases may lie under the configured address root while their actual
-   * file is elsewhere; physical-root selection forbids that escape.
+   * Logical aliases may lie under the configured address root while their
+   * actual file is elsewhere; physical-root selection forbids that escape.
    */
   private insidePhysicalRoot(source: IEvidSourceFile): boolean {
     return (
@@ -603,8 +609,9 @@ export class EvidEcmaScriptExportResolver {
   /**
    * Records one export-resolution failure and marks the inventory incomplete.
    *
-   * The key deduplicates repeated traversal failures while preserving a separate
-   * diagnostic when another source or exported name has a distinct cause.
+   * The key deduplicates repeated traversal failures while preserving a
+   * separate diagnostic when another source or exported name has a distinct
+   * cause.
    */
   private problem(
     source: IEvidSourceFile,

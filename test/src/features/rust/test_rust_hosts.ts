@@ -4,7 +4,8 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches Rust doc comments and doc attributes to eligible hosts.
+/**
+ * Attaches Rust doc comments and doc attributes to eligible hosts.
  *
  * Ordinary carriers cannot create acknowledgements.
  *

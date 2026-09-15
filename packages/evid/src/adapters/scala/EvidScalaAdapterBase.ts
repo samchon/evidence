@@ -20,12 +20,13 @@ import { EvidScalaFileScanner } from "./EvidScalaFileScanner";
 import { EvidScalaExports } from "./EvidScalaExports";
 
 /**
- * Builds Scala public inventories after resolving source-level export forwarding.
+ * Builds Scala public inventories after resolving source-level export
+ * forwarding.
  *
- * File scans retain declaration owners, export records, and Scaladoc attachments.
- * Forwarded exports are resolved before semantic groups are published, ensuring
- * public aliases and documentation refer to the same underlying identity rather
- * than creating independent coverage units.
+ * File scans retain declaration owners, export records, and Scaladoc
+ * attachments. Forwarded exports are resolved before semantic groups are
+ * published, ensuring public aliases and documentation refer to the same
+ * underlying identity rather than creating independent coverage units.
  */
 export class EvidScalaAdapterBase implements IEvidAdapter {
   /**
@@ -39,12 +40,11 @@ export class EvidScalaAdapterBase implements IEvidAdapter {
   /**
    * Builds a normalized Scala inventory from a validated, cloned snapshot.
    *
-   * Export resolution and public unit grouping precede annotation materialization.
-   * Diagnostics preserve incomplete scans, and parser cleanup runs on every exit.
+   * Export resolution and public unit grouping precede annotation
+   * materialization. Diagnostics preserve incomplete scans, and parser cleanup
+   * runs on every exit.
    */
-  public async analyze(
-    snapshot: IEvidSourceSnapshot,
-  ): Promise<IEvidInventory> {
+  public async analyze(snapshot: IEvidSourceSnapshot): Promise<IEvidInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidInventory = {
       schemaVersion: 1,
@@ -87,10 +87,12 @@ export class EvidScalaAdapterBase implements IEvidAdapter {
   }
 
   /**
-   * Copies Scala declaration, export, and comment records out of a parse session.
+   * Copies Scala declaration, export, and comment records out of a parse
+   * session.
    *
-   * A parser failure retains a located diagnostic and incomplete state so missing
-   * extraction cannot silently lower the configured coverage requirement.
+   * A parser failure retains a located diagnostic and incomplete state so
+   * missing extraction cannot silently lower the configured coverage
+   * requirement.
    */
   private async scan(
     parser: EvidParser,
@@ -103,8 +105,7 @@ export class EvidScalaAdapterBase implements IEvidAdapter {
         (session) => new EvidScalaFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError =
-        cause instanceof EvidParserError ? cause : undefined;
+      const parserError = cause instanceof EvidParserError ? cause : undefined;
       return {
         source,
         declarations: [],
@@ -133,9 +134,11 @@ export class EvidScalaAdapterBase implements IEvidAdapter {
   }
 
   /**
-   * Reconciles public Scala declarations into semantic units and physical addresses.
+   * Reconciles public Scala declarations into semantic units and physical
+   * addresses.
    *
-   * Functions may merge overload sites, while conflicting non-function identities make the inventory incomplete.
+   * Functions may merge overload sites, while conflicting non-function
+   * identities make the inventory incomplete.
    */
   private materializeUnits(
     inventory: IEvidInventory,
@@ -213,7 +216,8 @@ export class EvidScalaAdapterBase implements IEvidAdapter {
   /**
    * Resolves withdrawals before publishing attached documentation hosts.
    *
-   * Initial parsing records withdrawals on units, then hidden owners suppress attached claims while preserving unsupported carriers for diagnostics.
+   * Initial parsing records withdrawals on units, then hidden owners suppress
+   * attached claims while preserving unsupported carriers for diagnostics.
    */
   private materializeDocumentation(
     inventory: IEvidInventory,
@@ -293,7 +297,8 @@ export class EvidScalaAdapterBase implements IEvidAdapter {
   /**
    * Retains public declaration sites even when they carry no documentation.
    *
-   * Undocumented hosts let inspection and graph consumers address every visible unit without inventing annotation content.
+   * Undocumented hosts let inspection and graph consumers address every visible
+   * unit without inventing annotation content.
    */
   private materializeUndocumentedHosts(
     inventory: IEvidInventory,
@@ -350,7 +355,8 @@ export class EvidScalaAdapterBase implements IEvidAdapter {
   /**
    * Groups published semantic owners by their physical declaration site.
    *
-   * A single Scaladoc host may attach to several units at one site, while aliases sharing identity are deduplicated.
+   * A single Scaladoc host may attach to several units at one site, while
+   * aliases sharing identity are deduplicated.
    */
   private attachmentGroups(
     documentation: IEvidScalaDocumentation,
@@ -368,9 +374,11 @@ export class EvidScalaAdapterBase implements IEvidAdapter {
   }
 
   /**
-   * Creates an attached host or an explicitly unsupported documentation carrier.
+   * Creates an attached host or an explicitly unsupported documentation
+   * carrier.
    *
-   * Missing site ownership produces a host with repair guidance so tag parsing can report an actionable diagnostic.
+   * Missing site ownership produces a host with repair guidance so tag parsing
+   * can report an actionable diagnostic.
    */
   private host(
     source: IEvidSourceFile,
@@ -399,7 +407,8 @@ export class EvidScalaAdapterBase implements IEvidAdapter {
   /**
    * Parses Evid tags only after the adapter establishes their host.
    *
-   * Host classification determines whether parsed acknowledgements attach to units or remain unsupported diagnostics.
+   * Host classification determines whether parsed acknowledgements attach to
+   * units or remain unsupported diagnostics.
    */
   private parse(
     source: IEvidSourceFile,
@@ -414,33 +423,43 @@ export class EvidScalaAdapterBase implements IEvidAdapter {
   }
 
   /**
-   * Detects Evid and withdrawal annotations outside masked documentation examples.
+   * Detects Evid and withdrawal annotations outside masked documentation
+   * examples.
    *
-   * This broader check keeps tag-bearing unattached carriers available for unsupported-host materialization.
+   * This broader check keeps tag-bearing unattached carriers available for
+   * unsupported-host materialization.
    */
   private annotation(
     analysis: IEvidScalaFileAnalysis,
     documentation: IEvidScalaDocumentation,
   ): boolean {
     return this.annotationPattern(
-      EvidScalaDocumentation.read(analysis.source, documentation, documentation.id)
-        .text,
+      EvidScalaDocumentation.read(
+        analysis.source,
+        documentation,
+        documentation.id,
+      ).text,
       true,
     );
   }
 
   /**
-   * Detects acknowledgement and review annotations on carriers owned by withdrawn units.
+   * Detects acknowledgement and review annotations on carriers owned by
+   * withdrawn units.
    *
-   * Withdrawal-only tags do not create a visible host after their owning unit has been hidden.
+   * Withdrawal-only tags do not create a visible host after their owning unit
+   * has been hidden.
    */
   private claimAnnotation(
     analysis: IEvidScalaFileAnalysis,
     documentation: IEvidScalaDocumentation,
   ): boolean {
     return this.annotationPattern(
-      EvidScalaDocumentation.read(analysis.source, documentation, documentation.id)
-        .text,
+      EvidScalaDocumentation.read(
+        analysis.source,
+        documentation,
+        documentation.id,
+      ).text,
       false,
     );
   }
@@ -448,7 +467,8 @@ export class EvidScalaAdapterBase implements IEvidAdapter {
   /**
    * Recognizes supported annotation names at documentation line boundaries.
    *
-   * The withdrawal mode includes internal visibility tags; claim-only mode restricts matching to evidence and review tags.
+   * The withdrawal mode includes internal visibility tags; claim-only mode
+   * restricts matching to evidence and review tags.
    */
   private annotationPattern(raw: string, withdrawal: boolean): boolean {
     return withdrawal
@@ -463,7 +483,8 @@ export class EvidScalaAdapterBase implements IEvidAdapter {
   /**
    * Follows explicit parent ownership to determine whether a unit is withdrawn.
    *
-   * A visited set stops malformed ownership cycles, while any direct withdrawal hides the unit and every descendant.
+   * A visited set stops malformed ownership cycles, while any direct withdrawal
+   * hides the unit and every descendant.
    */
   private withdrawn(
     id: string,
@@ -483,7 +504,8 @@ export class EvidScalaAdapterBase implements IEvidAdapter {
   /**
    * Builds a Scala unit identity from programming kind and lexical identity.
    *
-   * Matching function declarations therefore unify overload sites, while different symbol kinds remain distinct units.
+   * Matching function declarations therefore unify overload sites, while
+   * different symbol kinds remain distinct units.
    */
   private unitId(declaration: IEvidScalaDeclaration): string {
     return `scala:${declaration.symbol}:${JSON.stringify(declaration.identity)}`;
@@ -492,7 +514,8 @@ export class EvidScalaAdapterBase implements IEvidAdapter {
   /**
    * Marks a public declaration conflict as incomplete analysis.
    *
-   * The diagnostic is attached to the contributing source so coverage cannot pass after competing selected declarations share one identity.
+   * The diagnostic is attached to the contributing source so coverage cannot
+   * pass after competing selected declarations share one identity.
    */
   private problem(
     inventory: IEvidInventory,

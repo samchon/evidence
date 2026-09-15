@@ -4,10 +4,13 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestDocumentation } from "../../internal/EvidTestDocumentation";
 
-/** Tokenizes source, Markdown, schema, and operation targets without changing their spelling.
+/**
+ * Tokenizes source, Markdown, schema, and operation targets without changing
+ * their spelling.
  *
- * The common tag parser must preserve each target for its artifact-specific resolver,
- * including a quoted accessor segment whose following prose is the reason.
+ * The common tag parser must preserve each target for its artifact-specific
+ * resolver, including a quoted accessor segment whose following prose is the
+ * reason.
  *
  * 1. Parse TypeScript declaration and member paths, a C++ quoted-member path,
  *    Markdown, Prisma, and HTTP targets.

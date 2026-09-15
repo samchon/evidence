@@ -1,11 +1,15 @@
 import { EvidDbmlCertificationFixture } from "../../internal/EvidDbmlCertificationFixture";
 import { EvidDatabaseAdapterCertification } from "../../internal/certification/EvidDatabaseAdapterCertification";
 
-/** Certifies DBML inventories, selector graphs, failures, fingerprints, and ambiguity.
+/**
+ * Certifies DBML inventories, selector graphs, failures, fingerprints, and
+ * ambiguity.
  *
- * The DBML fixture independently specifies the expected database surface for the shared certification contract.
+ * The DBML fixture independently specifies the expected database surface for
+ * the shared certification contract.
  *
- * 1. Analyze the fixture and compare its declared units, ownership, addresses, and hosts.
+ * 1. Analyze the fixture and compare its declared units, ownership, addresses, and
+ *    hosts.
  * 2. Run coverage and failure checks for every DBML selector.
  * 3. Verify review fingerprints and competing target resolution behavior.
  */

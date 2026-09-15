@@ -6,8 +6,9 @@ import type { IEvidPhpDocumentation } from "./IEvidPhpDocumentation";
 /**
  * Preserves one PHP file's serializable extraction after parsing.
  *
- * EvidPhpAdapterBase materializes its units only after all selected files have yielded
- * declarations, diagnostics, documentation carriers, and context for digests.
+ * EvidPhpAdapterBase materializes its units only after all selected files have
+ * yielded declarations, diagnostics, documentation carriers, and context for
+ * digests.
  */
 export interface IEvidPhpFileAnalysis {
   /**
@@ -48,7 +49,8 @@ export interface IEvidPhpFileAnalysis {
   /**
    * Whether every surface-changing construct in this file was classified.
    *
-   * The adapter propagates false to reject coverage based on an incomplete population.
+   * The adapter propagates false to reject coverage based on an incomplete
+   * population.
    */
   complete: boolean;
 }

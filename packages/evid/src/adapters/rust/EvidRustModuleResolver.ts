@@ -15,13 +15,17 @@ import type { IEvidRustResolvedMember } from "./IEvidRustResolvedMember";
 import { EvidSourcePath } from "../../internal/EvidSourcePath";
 
 /**
- * Resolves selected Rust file analyses into crate modules, public aliases, and impl ownership.
+ * Resolves selected Rust file analyses into crate modules, public aliases, and
+ * impl ownership.
  *
  * The resolver joins node-free scan results, then materializes semantic units
  * and every supported public address in the supplied Evid inventory.
  */
 export class EvidRustModuleResolver {
-  private readonly declarations = new Map<string, IEvidRustLocatedDeclaration>();
+  private readonly declarations = new Map<
+    string,
+    IEvidRustLocatedDeclaration
+  >();
   private readonly childModules = new Map<string, IEvidRustModuleRecord>();
   private readonly exports = new Map<
     string,
@@ -90,7 +94,9 @@ export class EvidRustModuleResolver {
                   ...external.modulePath,
                 );
                 return [
-                  EvidSourcePath.slash(path.join(directory, `${external.name}.rs`)),
+                  EvidSourcePath.slash(
+                    path.join(directory, `${external.name}.rs`),
+                  ),
                   EvidSourcePath.slash(
                     path.join(directory, external.name, "mod.rs"),
                   ),
@@ -921,7 +927,9 @@ export class EvidRustModuleResolver {
     return true;
   }
 
-  private uniqueExports(records: IEvidRustExportRecord[]): IEvidRustExportRecord[] {
+  private uniqueExports(
+    records: IEvidRustExportRecord[],
+  ): IEvidRustExportRecord[] {
     return Array.from(
       new Map(
         records.map((record) => [record.declaration.id, record]),

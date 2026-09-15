@@ -1,16 +1,15 @@
-import {
-  EvidLanguageRegistry,
-  EvidRubyAdapter,
-} from "evid";
+import { EvidLanguageRegistry, EvidRubyAdapter } from "evid";
 import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Classifies Ruby public units across reopenings and member forms.
+/**
+ * Classifies Ruby public units across reopenings and member forms.
  *
- * Visibility, method sides, constants, and attributes determine owned public identities.
+ * Visibility, method sides, constants, and attributes determine owned public
+ * identities.
  *
  * 1. Verify the registered Ruby adapter metadata, then analyze public and hidden
  *    containers, methods, constants, aliases, attributes, and reopenings.
@@ -152,10 +151,7 @@ export async function test_ruby_units(): Promise<void> {
   TestValidator.equals("Ruby accessor property site", status.sites.length, 1);
 }
 
-function requireUnit(
-  inventory: IEvidInventory,
-  identity: string,
-): IEvidUnit {
+function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.join(".") === identity,
   );

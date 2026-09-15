@@ -5,8 +5,8 @@ import type { IEvidCommentSyntax } from "../../structures/IEvidCommentSyntax";
 /**
  * Provides grammar-specific Python syntax helpers without export decisions.
  *
- * EvidPythonFileScanner uses these helpers to recognize supported declaration and
- * documentation shapes while keeping public-surface policy in the scanner.
+ * EvidPythonFileScanner uses these helpers to recognize supported declaration
+ * and documentation shapes while keeping public-surface policy in the scanner.
  */
 export namespace EvidPythonSyntax {
   /**
@@ -54,7 +54,8 @@ export namespace EvidPythonSyntax {
   }
 
   /**
-   * Collects canonical decorator spellings from a decorated declaration wrapper.
+   * Collects canonical decorator spellings from a decorated declaration
+   * wrapper.
    *
    * Method scanning uses these spellings to recognize static, class, property,
    * and cached-property ownership without evaluating arbitrary decorators.
@@ -74,7 +75,8 @@ export namespace EvidPythonSyntax {
    * Returns the first parameter name of a function definition when recoverable.
    *
    * Initializer scanning treats this name as the instance receiver for direct
-   * field assignments; missing or complex forms do not establish instance fields.
+   * field assignments; missing or complex forms do not establish instance
+   * fields.
    */
   export function parameterName(node: EvidNode): string | undefined {
     const parameters = node.childForFieldName("parameters");
@@ -151,7 +153,8 @@ export namespace EvidPythonSyntax {
   }
 
   /**
-   * Resolves a supported literal list or tuple expression to its string members.
+   * Resolves a supported literal list or tuple expression to its string
+   * members.
    *
    * Static `+` composition and parentheses are accepted for `__all__`; any
    * dynamic value returns undefined so the scanner preserves incompleteness.
@@ -255,7 +258,8 @@ export namespace EvidPythonSyntax {
   }
 
   /**
-   * Serializes a supported identifier, attribute, call, or parenthesized decorator expression.
+   * Serializes a supported identifier, attribute, call, or parenthesized
+   * decorator expression.
    *
    * Decorator recognition requires only the callable's dotted spelling; other
    * expression forms remain unclassified rather than being evaluated.
@@ -278,10 +282,11 @@ export namespace EvidPythonSyntax {
   }
 
   /**
-   * Checks whether a string literal can participate in a static Python docstring.
+   * Checks whether a string literal can participate in a static Python
+   * docstring.
    *
-   * Bytes and formatted literals are rejected because they cannot provide stable
-   * source text without runtime evaluation.
+   * Bytes and formatted literals are rejected because they cannot provide
+   * stable source text without runtime evaluation.
    */
   function docstringLiteral(node: EvidNode): boolean {
     const syntax = stringSyntax(node);

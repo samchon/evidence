@@ -16,16 +16,18 @@ export interface IEvidConfigPlan {
   /**
    * Canonical configuration path anchoring relative population roots.
    *
-   * Materialization uses its directory instead of the current working directory,
-   * keeping programmatic evaluation consistent with configuration loading.
+   * Materialization uses its directory instead of the current working
+   * directory, keeping programmatic evaluation consistent with configuration
+   * loading.
    */
   configFile: string;
 
   /**
    * Enabled claims with effective policy and selectors.
    *
-   * Entries retain their original configuration indices. Filtering inactive claims
-   * does not renumber later diagnostics or merge overlapping populations.
+   * Entries retain their original configuration indices. Filtering inactive
+   * claims does not renumber later diagnostics or merge overlapping
+   * populations.
    */
   claims: IEvidConfigPlanClaim[];
 }

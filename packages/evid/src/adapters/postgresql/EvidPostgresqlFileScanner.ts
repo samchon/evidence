@@ -10,7 +10,8 @@ import type { IEvidPostgresqlFileAnalysis } from "./IEvidPostgresqlFileAnalysis"
 import { EvidPostgresqlIdentity } from "./EvidPostgresqlIdentity";
 
 /**
- * Extracts the supported PostgreSQL DDL surface from authoritative grammar nodes.
+ * Extracts the supported PostgreSQL DDL surface from authoritative grammar
+ * nodes.
  *
  * It records unsupported schema changes as incomplete instead of producing a
  * smaller declaration inventory that could make coverage pass.
@@ -19,21 +20,24 @@ export class EvidPostgresqlFileScanner {
   /**
    * Accumulates the serializable analysis for this source scan.
    *
-   * References remain provisional until cross-file ownership resolution completes.
+   * References remain provisional until cross-file ownership resolution
+   * completes.
    */
   private readonly output: Required<IEvidPostgresqlFileAnalysis>;
 
   /**
    * Maps parser-node offsets to declarations created from that node.
    *
-   * Comment attachment uses this transient map before the scanner returns its serializable output.
+   * Comment attachment uses this transient map before the scanner returns its
+   * serializable output.
    */
   private readonly nodes = new Map<number, IEvidSqlDeclaration[]>();
 
   /**
    * Binds one borrowed PostgreSQL syntax tree and its UTF-16 source snapshot.
    *
-   * Parser nodes are retained only for this scan and never escape in the analysis result.
+   * Parser nodes are retained only for this scan and never escape in the
+   * analysis result.
    */
   public constructor(
     private readonly session: EvidParseSession,
@@ -52,7 +56,8 @@ export class EvidPostgresqlFileScanner {
   /**
    * Visits supported statements and attaches adjacent SQL comments.
    *
-   * Traversal stays at statement syntax so executable bodies and string examples cannot create units.
+   * Traversal stays at statement syntax so executable bodies and string
+   * examples cannot create units.
    */
   public scan(): IEvidPostgresqlFileAnalysis {
     for (const node of this.session.root.namedChildren) this.statement(node);
@@ -63,7 +68,8 @@ export class EvidPostgresqlFileScanner {
   /**
    * Dispatches supported DDL statements and rejects all other statement forms.
    *
-   * The declared boundary is intentionally narrow because migrations require stateful evaluation.
+   * The declared boundary is intentionally narrow because migrations require
+   * stateful evaluation.
    */
   private statement(node: EvidNode): void {
     if (this.commentNode(node)) return;
@@ -95,16 +101,20 @@ export class EvidPostgresqlFileScanner {
   }
 
   /**
-   * Publishes tables only when columns and a schema-qualified owner are explicit.
+   * Publishes tables only when columns and a schema-qualified owner are
+   * explicit.
    *
-   * Inferred schemas and search-path-dependent identities cannot form stable Evid units.
+   * Inferred schemas and search-path-dependent identities cannot form stable
+   * Evid units.
    */
   private table(node: EvidNode): void {
     const reference = node.namedChildren.find(
       (child) => child.type === "object_reference",
     );
     const identity =
-      reference === undefined ? undefined : EvidPostgresqlIdentity.path(reference);
+      reference === undefined
+        ? undefined
+        : EvidPostgresqlIdentity.path(reference);
     const columns = node.namedChildren.find(
       (child) => child.type === "column_definitions",
     );
@@ -145,9 +155,11 @@ export class EvidPostgresqlFileScanner {
   }
 
   /**
-   * Publishes a column while keeping foreign-key relations separately selectable.
+   * Publishes a column while keeping foreign-key relations separately
+   * selectable.
    *
-   * A column belongs to its table, whereas a relation has its own semantic identity.
+   * A column belongs to its table, whereas a relation has its own semantic
+   * identity.
    */
   private column(node: EvidNode, table: IEvidSqlDeclaration): void {
     const nameNode = node.childForFieldName("name");
@@ -188,9 +200,11 @@ export class EvidPostgresqlFileScanner {
   }
 
   /**
-   * Processes constraints as table semantics unless they declare a foreign-key relation.
+   * Processes constraints as table semantics unless they declare a foreign-key
+   * relation.
    *
-   * Unsupported dialect-specific keys and indexes are diagnosed before inventory materialization.
+   * Unsupported dialect-specific keys and indexes are diagnosed before
+   * inventory materialization.
    */
   private constraint(
     node: EvidNode,
@@ -248,7 +262,8 @@ export class EvidPostgresqlFileScanner {
   /**
    * Publishes a foreign key using stable identities for composite endpoints.
    *
-   * Anonymous constraints must retain endpoint meaning without depending on statement order.
+   * Anonymous constraints must retain endpoint meaning without depending on
+   * statement order.
    */
   private relation(
     node: EvidNode,
@@ -296,7 +311,8 @@ export class EvidPostgresqlFileScanner {
   /**
    * Extracts supported additive ALTER TABLE declarations.
    *
-   * Destructive or stateful migrations require database history and are rejected by this snapshot scanner.
+   * Destructive or stateful migrations require database history and are
+   * rejected by this snapshot scanner.
    */
   private alter(node: EvidNode): void {
     const target = node.namedChildren.find(
@@ -386,9 +402,11 @@ export class EvidPostgresqlFileScanner {
   }
 
   /**
-   * Attaches supported COMMENT ON TABLE or COLUMN strings to their target identity.
+   * Attaches supported COMMENT ON TABLE or COLUMN strings to their target
+   * identity.
    *
-   * The resulting declaration site resolves against an existing owner after all files are scanned.
+   * The resulting declaration site resolves against an existing owner after all
+   * files are scanned.
    */
   private commentStatement(node: EvidNode): void {
     const column = node.namedChildren.some(
@@ -463,7 +481,8 @@ export class EvidPostgresqlFileScanner {
   /**
    * Creates one physical declaration with a file-independent semantic identity.
    *
-   * Cross-file ALTER and COMMENT sites can therefore merge with the same selected declaration.
+   * Cross-file ALTER and COMMENT sites can therefore merge with the same
+   * selected declaration.
    */
   private declaration(
     node: EvidNode,
@@ -496,9 +515,11 @@ export class EvidPostgresqlFileScanner {
   }
 
   /**
-   * Establishes ownership for adjacent SQL comments before shared annotation parsing.
+   * Establishes ownership for adjacent SQL comments before shared annotation
+   * parsing.
    *
-   * Only standalone runs immediately before a declaration become documentation carriers.
+   * Only standalone runs immediately before a declaration become documentation
+   * carriers.
    */
   private comments(): void {
     const comments = this.session.root.descendantsOfType([
@@ -560,7 +581,8 @@ export class EvidPostgresqlFileScanner {
   /**
    * Identifies parser extras without interpreting their contents as DDL.
    *
-   * Comments and marginalia are handled only by the documentation attachment pass.
+   * Comments and marginalia are handled only by the documentation attachment
+   * pass.
    */
   private commentNode(node: EvidNode): boolean {
     return node.type === "comment" || node.type === "marginalia";
@@ -569,7 +591,8 @@ export class EvidPostgresqlFileScanner {
   /**
    * Marks unsupported surface-changing syntax as explicitly incomplete.
    *
-   * The diagnostic preserves the failure rather than allowing coverage to use fewer obligations.
+   * The diagnostic preserves the failure rather than allowing coverage to use
+   * fewer obligations.
    */
   private problem(node: EvidNode, message: string): void {
     this.output.complete = false;

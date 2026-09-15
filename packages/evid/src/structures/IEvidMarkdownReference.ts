@@ -15,9 +15,9 @@ import type { IEvidReferenceBase } from "./IEvidReferenceBase";
  * this per-host interpretation.
  *
  * @example
- * // With two selected test functions and three checklist headings, each
- * // function owes three answers. Six required answers cannot be pooled into
- * // three citations supplied by only one of the functions.
+ *   // With two selected test functions and three checklist headings, each
+ *   // function owes three answers. Six required answers cannot be pooled into
+ *   // three citations supplied by only one of the functions.
  */
 export interface IEvidMarkdownReference extends IEvidReferenceBase<
   "markdown",
@@ -44,8 +44,8 @@ export interface IEvidMarkdownReference extends IEvidReferenceBase<
    *   other obligation consumes them.
    * - Reject uniqueEvid and singleEvidPerSymbol at configuration time.
    * - Exclusion-carrier globs require noEvidExclude alongside this option.
-   * - With requireReview, each answer is reviewed against that item's fingerprint;
-   *   changing an item expires the answers to it.
+   * - With requireReview, each answer is reviewed against that item's
+   *   fingerprint; changing an item expires the answers to it.
    *
    * @default false
    */

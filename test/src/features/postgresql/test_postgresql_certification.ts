@@ -1,16 +1,15 @@
-import {
-  EvidAccessor,
-  EvidPostgresqlAdapter,
-} from "evid";
+import { EvidAccessor, EvidPostgresqlAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidDatabaseAdapterCertification } from "../../internal/certification/EvidDatabaseAdapterCertification";
 import type { IEvidDatabaseAdapterCertification } from "../../internal/certification/IEvidDatabaseAdapterCertification";
 
-/** Applies the shared database certification contract to PostgreSQL.
+/**
+ * Applies the shared database certification contract to PostgreSQL.
  *
- * The PostgreSQL fixture fixes expected inventory, graph, fingerprint, and mutation behavior.
+ * The PostgreSQL fixture fixes expected inventory, graph, fingerprint, and
+ * mutation behavior.
  *
  * 1. Construct the PostgreSQL certification fixture.
  * 2. Execute the shared database certification suite.

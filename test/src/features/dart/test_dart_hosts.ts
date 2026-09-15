@@ -1,20 +1,23 @@
-import {
-  EvidDartAdapter,
-  EvidFingerprint,
-  EvidInventory,
-} from "evid";
+import { EvidDartAdapter, EvidFingerprint, EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches Dart documentation at source coordinates without accepting inert examples.
+/**
+ * Attaches Dart documentation at source coordinates without accepting inert
+ * examples.
  *
- * Eligible DartDoc can acknowledge declarations and withdraw hierarchy, while fenced, indented, HTML, ordinary-comment, and literal annotations must stay inert.
+ * Eligible DartDoc can acknowledge declarations and withdraw hierarchy, while
+ * fenced, indented, HTML, ordinary-comment, and literal annotations must stay
+ * inert.
  *
- * 1. Extract type and property evidence from CRLF documentation after astral text and verify their UTF-16 mapping.
- * 2. Require a hidden type's descendant to resolve hidden, preserve fingerprints for annotation edits, and change them for semantic edits.
- * 3. Reject every unsupported tag carrier and every supported Dart string delimiter as an annotation host.
+ * 1. Extract type and property evidence from CRLF documentation after astral text
+ *    and verify their UTF-16 mapping.
+ * 2. Require a hidden type's descendant to resolve hidden, preserve fingerprints
+ *    for annotation edits, and change them for semantic edits.
+ * 3. Reject every unsupported tag carrier and every supported Dart string
+ *    delimiter as an annotation host.
  */
 export async function test_dart_hosts(): Promise<void> {
   const content = dedent`

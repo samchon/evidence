@@ -1,21 +1,23 @@
-import {
-  EvidBigQueryAdapter,
-  EvidGraph,
-  EvidTypeScriptAdapter,
-} from "evid";
+import { EvidBigQueryAdapter, EvidGraph, EvidTypeScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Evaluates acknowledgement coverage for each BigQuery model, column, and relation selector.
+/**
+ * Evaluates acknowledgement coverage for each BigQuery model, column, and
+ * relation selector.
  *
- * Both directions of a database-to-TypeScript claim must use the exact selected denominator rather than treating a missing acknowledgement as an empty population.
+ * Both directions of a database-to-TypeScript claim must use the exact selected
+ * denominator rather than treating a missing acknowledgement as an empty
+ * population.
  *
- * 1. Create one schema unit of each selector kind and one TypeScript contract with and without reciprocal evidence.
+ * 1. Create one schema unit of each selector kind and one TypeScript contract with
+ *    and without reciprocal evidence.
  * 2. Evaluate each inventory as both claimant and reference.
- * 3. Require acknowledged graphs to pass and unacknowledged graphs to report every referenced unit as missing.
+ * 3. Require acknowledged graphs to pass and unacknowledged graphs to report every
+ *    referenced unit as missing.
  */
 export async function test_bigquery_graph(): Promise<void> {
   const adapter = new EvidBigQueryAdapter();

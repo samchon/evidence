@@ -1,4 +1,5 @@
-/** Identifier for a language or embedded format still being researched.
+/**
+ * Identifier for a language or embedded format still being researched.
  *
  * Candidate IDs are deliberately outside `EvidProgrammingType`: recording
  * parser availability, grammar provenance, or extraction gaps must not imply

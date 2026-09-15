@@ -25,8 +25,8 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
  *    claim whose off-selector function citation must remain unhosted.
  * 2. Put the broad claim before and after the narrow claim; require exit code one,
  *    one unhosted diagnostic, and the narrow claim's authored index each time.
- * 3. Remove the broad claim and require the same narrow-claim failure, proving
- *    the added claim does not change the original obligation.
+ * 3. Remove the broad claim and require the same narrow-claim failure, proving the
+ *    added claim does not change the original obligation.
  * 4. Add an incomplete sibling claim before the narrow claim; require exit code
  *    two while preserving the narrow claim's unhosted diagnostic and index.
  */

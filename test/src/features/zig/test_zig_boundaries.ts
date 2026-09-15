@@ -2,9 +2,11 @@ import { EvidZigAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Rejects Zig public populations that require compiler evaluation.
+/**
+ * Rejects Zig public populations that require compiler evaluation.
  *
- * Compiler-dependent declarations must remain incomplete while explicit private and local counterparts retain their documented boundaries.
+ * Compiler-dependent declarations must remain incomplete while explicit private
+ * and local counterparts retain their documented boundaries.
  *
  * 1. Analyze compiler-dependent, private, and local declarations.
  * 2. Verify incomplete diagnostics and retained boundary behavior.

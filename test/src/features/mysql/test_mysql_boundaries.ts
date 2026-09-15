@@ -3,9 +3,12 @@ import { TestValidator } from "@nestia/e2e";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Rejects MySQL inputs that could hide part of the selected schema.
+/**
+ * Rejects MySQL inputs that could hide part of the selected schema.
  *
- * Dialect changes, migration state, executable comments, invalid names, and source failures must produce incomplete analysis instead of a smaller success.
+ * Dialect changes, migration state, executable comments, invalid names, and
+ * source failures must produce incomplete analysis instead of a smaller
+ * success.
  *
  * 1. Analyze unsupported and malformed schema variants.
  * 2. Require each result to be incomplete with its boundary diagnostic.
@@ -61,11 +64,14 @@ export async function test_mysql_boundaries(): Promise<void> {
     );
   }
   const failed = await adapter.analyze(
-    EvidTestSourceSnapshot.fail(EvidTestSourceSnapshot.create("unreadable.sql", ""), {
-      code: "path-unreadable",
-      path: "/project/unreadable.sql",
-      message: "Unavailable schema source.",
-    }),
+    EvidTestSourceSnapshot.fail(
+      EvidTestSourceSnapshot.create("unreadable.sql", ""),
+      {
+        code: "path-unreadable",
+        path: "/project/unreadable.sql",
+        message: "Unavailable schema source.",
+      },
+    ),
   );
   TestValidator.equals("source failure is retained", failed.complete, false);
   const extension = await adapter.analyze(

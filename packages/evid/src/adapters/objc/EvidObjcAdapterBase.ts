@@ -21,10 +21,10 @@ import { EvidObjcFileScanner } from "./EvidObjcFileScanner";
 /**
  * Extracts Objective-C public declarations into merged units and comment hosts.
  *
- * Interface, category, and implementation records require a shared ownership model
- * before documentation can be attributed to semantic API subjects. The adapter
- * retains each physical site while normalizing published identities and preserving
- * failures that prevent complete extraction.
+ * Interface, category, and implementation records require a shared ownership
+ * model before documentation can be attributed to semantic API subjects. The
+ * adapter retains each physical site while normalizing published identities and
+ * preserving failures that prevent complete extraction.
  */
 export class EvidObjcAdapterBase implements IEvidAdapter {
   /**
@@ -38,12 +38,11 @@ export class EvidObjcAdapterBase implements IEvidAdapter {
   /**
    * Builds an owned Objective-C inventory from captured source contents.
    *
-   * Unit publication precedes documentation materialization, and source or parser
-   * failures retain incomplete state. The runtime closes after accepted scans settle.
+   * Unit publication precedes documentation materialization, and source or
+   * parser failures retain incomplete state. The runtime closes after accepted
+   * scans settle.
    */
-  public async analyze(
-    snapshot: IEvidSourceSnapshot,
-  ): Promise<IEvidInventory> {
+  public async analyze(snapshot: IEvidSourceSnapshot): Promise<IEvidInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidInventory = {
       schemaVersion: 1,
@@ -87,8 +86,9 @@ export class EvidObjcAdapterBase implements IEvidAdapter {
   /**
    * Extracts declaration records within one borrowed Objective-C parse session.
    *
-   * Failures retain the physical source and parser range when available, marking
-   * the analysis incomplete instead of accepting an empty public surface.
+   * Failures retain the physical source and parser range when available,
+   * marking the analysis incomplete instead of accepting an empty public
+   * surface.
    */
   private async scan(
     parser: EvidParser,
@@ -101,8 +101,7 @@ export class EvidObjcAdapterBase implements IEvidAdapter {
         (session) => new EvidObjcFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError =
-        cause instanceof EvidParserError ? cause : undefined;
+      const parserError = cause instanceof EvidParserError ? cause : undefined;
       return {
         source,
         declarations: [],
@@ -130,7 +129,8 @@ export class EvidObjcAdapterBase implements IEvidAdapter {
   }
 
   /**
-   * Reconciles public interfaces with compatible extension and implementation sites.
+   * Reconciles public interfaces with compatible extension and implementation
+   * sites.
    *
    * The resulting map connects every retained physical declaration to its unit.
    */
@@ -228,7 +228,8 @@ export class EvidObjcAdapterBase implements IEvidAdapter {
   /**
    * Applies merged withdrawals before creating eligible annotation hosts.
    *
-   * Hidden units cannot receive ordinary claim hosts after inheritance is resolved.
+   * Hidden units cannot receive ordinary claim hosts after inheritance is
+   * resolved.
    */
   private materializeDocumentation(
     inventory: IEvidInventory,
@@ -365,7 +366,8 @@ export class EvidObjcAdapterBase implements IEvidAdapter {
   /**
    * Groups carrier attachments by their physical declaration site.
    *
-   * A host can therefore identify all published units attached at one source span.
+   * A host can therefore identify all published units attached at one source
+   * span.
    */
   private attachmentGroups(
     documentation: IEvidObjcDocumentation,
@@ -385,7 +387,8 @@ export class EvidObjcAdapterBase implements IEvidAdapter {
   /**
    * Records supported ownership or an actionable unsupported carrier.
    *
-   * Tagged comments without a supported owner remain visible to the graph reporter.
+   * Tagged comments without a supported owner remain visible to the graph
+   * reporter.
    */
   private host(
     source: IEvidSourceFile,
@@ -431,7 +434,8 @@ export class EvidObjcAdapterBase implements IEvidAdapter {
   /**
    * Recognizes annotations and withdrawals on otherwise unsupported carriers.
    *
-   * Such carriers require a diagnostic instead of silently dropping author intent.
+   * Such carriers require a diagnostic instead of silently dropping author
+   * intent.
    */
   private annotation(
     analysis: IEvidObjcFileAnalysis,
@@ -442,16 +446,17 @@ export class EvidObjcAdapterBase implements IEvidAdapter {
         analysis.source,
         documentation,
         documentation.id,
-      )
-        .text,
+      ).text,
       true,
     );
   }
 
   /**
-   * Detects graph annotations that cannot silently disappear on withdrawn units.
+   * Detects graph annotations that cannot silently disappear on withdrawn
+   * units.
    *
-   * Review and claim tags remain reportable even when their attached unit is hidden.
+   * Review and claim tags remain reportable even when their attached unit is
+   * hidden.
    */
   private claimAnnotation(
     analysis: IEvidObjcFileAnalysis,
@@ -462,8 +467,7 @@ export class EvidObjcAdapterBase implements IEvidAdapter {
         analysis.source,
         documentation,
         documentation.id,
-      )
-        .text,
+      ).text,
       false,
     );
   }
@@ -486,7 +490,8 @@ export class EvidObjcAdapterBase implements IEvidAdapter {
   /**
    * Follows real parent identities when propagating withdrawals.
    *
-   * The visited set prevents malformed ownership cycles from recursing indefinitely.
+   * The visited set prevents malformed ownership cycles from recursing
+   * indefinitely.
    */
   private withdrawn(
     id: string,
@@ -506,7 +511,8 @@ export class EvidObjcAdapterBase implements IEvidAdapter {
   /**
    * Keeps selector kinds and segmented nominal identities unambiguous.
    *
-   * Symbol kind separates otherwise equal Objective-C name paths in the inventory.
+   * Symbol kind separates otherwise equal Objective-C name paths in the
+   * inventory.
    */
   private unitId(declaration: IEvidObjcDeclaration): string {
     return `objc:${declaration.symbol}:${JSON.stringify(declaration.identity)}`;

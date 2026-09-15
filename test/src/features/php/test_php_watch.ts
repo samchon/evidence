@@ -5,9 +5,11 @@ import { join } from "node:path";
 
 import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
-/** Rebuilds PHP coverage after source and configuration changes.
+/**
+ * Rebuilds PHP coverage after source and configuration changes.
  *
- * Watch cycles must replace stale PHP inventories when files are added, malformed, repaired, or selected by a new symbol.
+ * Watch cycles must replace stale PHP inventories when files are added,
+ * malformed, repaired, or selected by a new symbol.
  *
  * 1. Start with covered input and compare each cycle to a fresh check.
  * 2. Add an undocumented declaration, then introduce a syntax failure.

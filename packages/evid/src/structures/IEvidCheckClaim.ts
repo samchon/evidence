@@ -19,7 +19,8 @@ export interface IEvidCheckClaim {
   /**
    * Optional author-supplied label for display.
    *
-   * Omission leaves the numeric claim index as the report's identifying context.
+   * Omission leaves the numeric claim index as the report's identifying
+   * context.
    */
   name?: string;
 
@@ -48,7 +49,8 @@ export interface IEvidCheckClaim {
   /**
    * Coverage results for this claim's planned references.
    *
-   * Repeated references remain separate entries with their own indices and policy.
+   * Repeated references remain separate entries with their own indices and
+   * policy.
    */
   obligations: IEvidCheckObligation[];
 }

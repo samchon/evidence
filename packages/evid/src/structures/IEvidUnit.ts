@@ -6,31 +6,34 @@ import type { IEvidWithdrawal } from "./IEvidWithdrawal";
 /**
  * A semantic declaration that can participate in evidence coverage.
  *
- * Adapters create units for their public declarations, such as a class, database
- * column, Markdown heading, or API operation. Coverage counts these identities,
- * not their exported names: exposing a declaration through two aliases leaves
- * one unit, while overloads merge only when the language establishes one family.
+ * Adapters create units for their public declarations, such as a class,
+ * database column, Markdown heading, or API operation. Coverage counts these
+ * identities, not their exported names: exposing a declaration through two
+ * aliases leaves one unit, while overloads merge only when the language
+ * establishes one family.
  *
- * Ownership, addressing, and source position are separate. `parentId` establishes
- * structural containment; public addresses live in the inventory; `sites` records
- * the physical declarations. Population selection and withdrawal follow parent
- * links, so punctuation in a name cannot manufacture an ancestor.
+ * Ownership, addressing, and source position are separate. `parentId`
+ * establishes structural containment; public addresses live in the inventory;
+ * `sites` records the physical declarations. Population selection and
+ * withdrawal follow parent links, so punctuation in a name cannot manufacture
+ * an ancestor.
  *
- * The same unit can serve as a claim host and as a reference target in different
- * populations. Its review fingerprint belongs to its content and structural
- * subtree, independently of those selections or aliases.
+ * The same unit can serve as a claim host and as a reference target in
+ * different populations. Its review fingerprint belongs to its content and
+ * structural subtree, independently of those selections or aliases.
  *
  * @example
- * // Exporting Client as PublicClient adds an address, not another class unit.
- * // Client.send keeps the same parentId through either exported name.
- * // A member named "send.request" occupies one identity segment, not two.
+ *   // Exporting Client as PublicClient adds an address, not another class unit.
+ *   // Client.send keeps the same parentId through either exported name.
+ *   // A member named "send.request" occupies one identity segment, not two.
  */
 export interface IEvidUnit {
   /**
    * Adapter-established identity of the declaration.
    *
    * Overloads or merged declarations share this ID only when language rules
-   * establish one unit. Public aliases and population selectors never change it.
+   * establish one unit. Public aliases and population selectors never change
+   * it.
    */
   id: string;
 
@@ -46,7 +49,8 @@ export interface IEvidUnit {
    * Artifact language or format that defines this declaration.
    *
    * The discriminator determines the adapter and selector family. It does not
-   * indicate whether a particular population uses the unit as claim or reference.
+   * indicate whether a particular population uses the unit as claim or
+   * reference.
    */
   type: EvidArtifactType;
 
@@ -54,7 +58,8 @@ export interface IEvidUnit {
    * Selector category assigned by the adapter.
    *
    * Configuration uses this category to choose required units. An unselected
-   * parent can remain addressable as a scope without adding to that denominator.
+   * parent can remain addressable as a scope without adding to that
+   * denominator.
    */
   symbol: EvidSymbol;
 
@@ -65,7 +70,7 @@ export interface IEvidUnit {
    * `parentId` remains authoritative for its structural ownership.
    *
    * @example
-   * ["Client", "send.request"] // The last segment is one literal member name.
+   *   ["Client", "send.request"]; // The last segment is one literal member name.
    */
   identity: string[];
 
@@ -90,7 +95,8 @@ export interface IEvidUnit {
    * Physical declarations contributing to this identity.
    *
    * Overloads and merged declarations retain their individual sites for host
-   * ownership checks and fingerprint content, even though coverage counts one unit.
+   * ownership checks and fingerprint content, even though coverage counts one
+   * unit.
    */
   sites: IEvidUnitSite[];
 

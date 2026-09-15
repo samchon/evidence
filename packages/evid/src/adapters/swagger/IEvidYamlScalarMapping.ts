@@ -1,6 +1,7 @@
 import type { IEvidSourceRange } from "../../structures/IEvidSourceRange";
 
-/** Decoded YAML scalar with monotonic positions in its source token.
+/**
+ * Decoded YAML scalar with monotonic positions in its source token.
  *
  * Documentation handling uses the maps to convert decoded annotation offsets
  * back to the UTF-16 positions that users can edit.
@@ -25,8 +26,9 @@ export interface IEvidYamlScalarMapping {
   /**
    * Source start offsets indexed by decoded UTF-16 code unit.
    *
-   * Each entry identifies where the corresponding decoded unit begins, including
-   * escape sequences that occupy a wider physical spelling in the document.
+   * Each entry identifies where the corresponding decoded unit begins,
+   * including escape sequences that occupy a wider physical spelling in the
+   * document.
    */
   offsets: number[];
 

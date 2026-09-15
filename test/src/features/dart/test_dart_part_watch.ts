@@ -5,13 +5,18 @@ import { join } from "node:path";
 
 import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
-/** Recovers a missing generated Dart part and observes its public changes through the library alias.
+/**
+ * Recovers a missing generated Dart part and observes its public changes
+ * through the library alias.
  *
- * The defining library owns its parts, so watch must invalidate and recover the exported surface as a generated part appears and changes.
+ * The defining library owns its parts, so watch must invalidate and recover the
+ * exported surface as a generated part appears and changes.
  *
  * 1. Start a watcher with a library that references an absent generated part.
- * 2. Add the part and require the library alias to expose its selected declaration.
- * 3. Change the generated declaration and require the following watch result to reflect it.
+ * 2. Add the part and require the library alias to expose its selected
+ *    declaration.
+ * 3. Change the generated declaration and require the following watch result to
+ *    reflect it.
  */
 export async function test_dart_part_watch(): Promise<void> {
   await EvidTestFileSystem.experiment(

@@ -14,24 +14,26 @@ import type { IEvidConfigPlan } from "../structures/IEvidConfigPlan";
 /**
  * Loads and validates Evid configuration before artifact I/O begins.
  *
- * JSON is read as data; TypeScript is evaluated through the consumer's ttsx with
- * output isolated from report stdout. Validation covers disabled declarations too.
- * Call load to retain authored configuration or plan to resolve inherited policy
- * and remove inactive populations before source discovery.
+ * JSON is read as data; TypeScript is evaluated through the consumer's ttsx
+ * with output isolated from report stdout. Validation covers disabled
+ * declarations too. Call load to retain authored configuration or plan to
+ * resolve inherited policy and remove inactive populations before source
+ * discovery.
  *
  * @example
- * const plan: IEvidConfigPlan = await EvidConfigLoader.plan(
- *   "./config/evidence.config.ts",
- * );
- * // Population roots are anchored to the resolved configuration file.
+ *   const plan: IEvidConfigPlan = await EvidConfigLoader.plan(
+ *     "./config/evidence.config.ts",
+ *   );
+ *   // Population roots are anchored to the resolved configuration file.
  */
 export namespace EvidConfigLoader {
   /**
    * Loads authored configuration and validates every claim and reference.
    *
-   * JSON data and TypeScript default exports share artifact and shape validation.
-   * Evaluation output goes to stderr, and failures reject rather than returning
-   * partially validated configuration. Inactive declarations are still checked.
+   * JSON data and TypeScript default exports share artifact and shape
+   * validation. Evaluation output goes to stderr, and failures reject rather
+   * than returning partially validated configuration. Inactive declarations are
+   * still checked.
    *
    * @param file Configuration path, relative to the current working directory.
    */
@@ -66,7 +68,8 @@ export namespace EvidConfigLoader {
  * Resolves a supported configuration path to an existing physical file.
  *
  * Both logical and resolved spellings must use a supported format. Evaluation
- * follows the resolved filename, and a symlink to an unsupported target is rejected.
+ * follows the resolved filename, and a symlink to an unsupported target is
+ * rejected.
  */
 async function resolveConfigFile(file: string): Promise<string> {
   EvidConfigFormat.get(file);
@@ -82,11 +85,10 @@ async function resolveConfigFile(file: string): Promise<string> {
  *
  * Artifact identifiers receive a focused certification diagnostic before the
  * generated shape validator handles the remaining contract. JSON BOM removal
- * permits ordinary UTF-8 files without treating their strings as executable imports.
+ * permits ordinary UTF-8 files without treating their strings as executable
+ * imports.
  */
-async function evaluateResolvedConfig(
-  filename: string,
-): Promise<IEvidConfig> {
+async function evaluateResolvedConfig(filename: string): Promise<IEvidConfig> {
   const value: unknown =
     EvidConfigFormat.get(filename) === "json"
       ? JSON.parse((await readFile(filename, "utf8")).replace(/^\uFEFF/u, ""))
@@ -98,8 +100,9 @@ async function evaluateResolvedConfig(
 /**
  * Attributes unsupported artifact identifiers to exact claim/reference paths.
  *
- * This preflight only traverses recognizable containers. General malformed shapes
- * remain the generated validator's responsibility rather than being accepted here.
+ * This preflight only traverses recognizable containers. General malformed
+ * shapes remain the generated validator's responsibility rather than being
+ * accepted here.
  */
 function validateArtifactTypes(value: unknown): void {
   if (!isRecord(value)) return;
@@ -128,28 +131,31 @@ function validateArtifactTypes(value: unknown): void {
 /**
  * Rejects a string discriminator with no shipped certified adapter.
  *
- * Non-string values are left for shape validation so this check reports only the
- * artifact-availability problem it can diagnose with a precise configuration path.
+ * Non-string values are left for shape validation so this check reports only
+ * the artifact-availability problem it can diagnose with a precise
+ * configuration path.
  */
 function validateArtifactType(value: unknown, path: string): void {
-  if (typeof value !== "string" || EvidArtifactTypes.isSupported(value))
-    return;
+  if (typeof value !== "string" || EvidArtifactTypes.isSupported(value)) return;
   throw new Error(
     `Invalid Evid configuration at ${path}: artifact type '${value}' has no certified Evid adapter. Supported types: ${EvidArtifactTypes.supported().join(", ")}.`,
   );
 }
 
 /**
- * Narrows a value enough to inspect named configuration fields during preflight.
+ * Narrows a value enough to inspect named configuration fields during
+ * preflight.
  *
- * This only establishes safe object access; full shape validity is checked by typia.
+ * This only establishes safe object access; full shape validity is checked by
+ * typia.
  */
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
 /**
- * Exposes array entries for artifact preflight without assuming their element shape.
+ * Exposes array entries for artifact preflight without assuming their element
+ * shape.
  *
  * Non-arrays return undefined so single-reference handling or shape validation
  * can decide the appropriate interpretation.
@@ -159,10 +165,12 @@ function unknownArray(value: unknown): unknown[] | undefined {
 }
 
 /**
- * Converts generated shape-validation details into an author-facing configuration error.
+ * Converts generated shape-validation details into an author-facing
+ * configuration error.
  *
  * The message removes the validator's synthetic root name and distinguishes a
- * missing value from a wrong type without serializing arbitrary configuration data.
+ * missing value from a wrong type without serializing arbitrary configuration
+ * data.
  */
 function configurationShapeError(props: TypeGuardError.IProps): Error {
   const path = (props.path ?? "$input").replace(/^\$input\.?/u, "");

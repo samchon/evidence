@@ -5,9 +5,10 @@ import type { EvidReportFormat } from "../typings/EvidReportFormat";
 /**
  * Serializes an evaluated check for terminal users or machine consumers.
  *
- * Both formats read the same report and preserve its diagnostic order. Rendering
- * does not evaluate coverage or change process status, which keeps presentation
- * separate from the check programmer's completeness and severity decisions.
+ * Both formats read the same report and preserve its diagnostic order.
+ * Rendering does not evaluate coverage or change process status, which keeps
+ * presentation separate from the check programmer's completeness and severity
+ * decisions.
  */
 export namespace EvidReporter {
   /**
@@ -78,8 +79,9 @@ function diagnosticLines(
 /**
  * Labels a diagnostic with its authored claim and reference coordinates.
  *
- * Claim names supplement numeric identities. If a reference result is unavailable,
- * the authored index still identifies the boundary without an artifact label.
+ * Claim names supplement numeric identities. If a reference result is
+ * unavailable, the authored index still identifies the boundary without an
+ * artifact label.
  */
 function context(
   report: IEvidCheckReport,

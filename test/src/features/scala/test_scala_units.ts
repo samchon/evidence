@@ -1,10 +1,6 @@
 import typia from "typia";
 import type { IEvidInventory } from "evid";
-import {
-  EvidAccessor,
-  EvidInventory,
-  EvidScalaAdapter,
-} from "evid";
+import { EvidAccessor, EvidInventory, EvidScalaAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
@@ -12,11 +8,16 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 /**
  * Extracts independent public Scala 2 and Scala 3 units.
  *
- * The combined snapshots exercise case classes, constructors, companions, visibility modifiers, overloads, aliases, givens, extensions, enums, destructuring, and file aliases.
+ * The combined snapshots exercise case classes, constructors, companions,
+ * visibility modifiers, overloads, aliases, givens, extensions, enums,
+ * destructuring, and file aliases.
  *
- * 1. Analyze both sources and verify the exact symbol-qualified public identity inventory without diagnostics.
- * 2. Verify overload families retain both source sites and private or local forms do not enter the public surface.
- * 3. Resolve a file alias and a synthetic case-class apply target, then verify serialization preserves the inventory.
+ * 1. Analyze both sources and verify the exact symbol-qualified public identity
+ *    inventory without diagnostics.
+ * 2. Verify overload families retain both source sites and private or local forms
+ *    do not enter the public surface.
+ * 3. Resolve a file alias and a synthetic case-class apply target, then verify
+ *    serialization preserves the inventory.
  */
 export async function test_scala_units(): Promise<void> {
   const inventory = await new EvidScalaAdapter().analyze(

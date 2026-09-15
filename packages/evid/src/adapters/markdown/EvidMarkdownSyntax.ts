@@ -3,7 +3,8 @@ import type { IEvidMarkdownFence } from "./IEvidMarkdownFence";
 import type { IEvidMarkdownHeading } from "./IEvidMarkdownHeading";
 
 /**
- * Markdown syntax shared by unit materialization and unreadable-tag diagnostics.
+ * Markdown syntax shared by unit materialization and unreadable-tag
+ * diagnostics.
  *
  * The Markdown adapter uses these lexical helpers before it creates units or
  * reports annotations that appear in non-readable source regions.
@@ -45,7 +46,8 @@ export namespace EvidMarkdownSyntax {
    * Parses one supported ATX heading and its stable anchor identity.
    *
    * Explicit `{#anchor}` suffixes win over generated slugs. Unsupported depth,
-   * indentation, or missing marker separation leaves the line as ordinary prose.
+   * indentation, or missing marker separation leaves the line as ordinary
+   * prose.
    */
   export function heading(line: string): IEvidMarkdownHeading | undefined {
     let cursor = 0;
@@ -83,7 +85,8 @@ export namespace EvidMarkdownSyntax {
    * Derives Evid's deterministic anchor for an unanchored heading title.
    *
    * Letters, numbers, and underscores remain significant; punctuation and
-   * whitespace collapse only into the hyphen separators admitted by this adapter.
+   * whitespace collapse only into the hyphen separators admitted by this
+   * adapter.
    */
   export function slug(title: string): string {
     let output = "";
@@ -158,8 +161,9 @@ export namespace EvidMarkdownSyntax {
   /**
    * Reports whether a column lies inside a closed backtick code span.
    *
-   * Annotation scanning uses this result to reject tags in inline examples while
-   * ignoring unmatched delimiters that do not establish a Markdown code region.
+   * Annotation scanning uses this result to reject tags in inline examples
+   * while ignoring unmatched delimiters that do not establish a Markdown code
+   * region.
    */
   export function inlineCode(line: string, column: number): boolean {
     let cursor = 0;
@@ -204,8 +208,8 @@ export namespace EvidMarkdownSyntax {
   /**
    * Maps one supported ATX depth to its public Markdown selector.
    *
-   * Only headings that Evid materializes as units have selectors; other
-   * depths fail here instead of silently receiving a public symbol.
+   * Only headings that Evid materializes as units have selectors; other depths
+   * fail here instead of silently receiving a public symbol.
    */
   export function symbol(level: number): EvidMarkdownSymbol {
     switch (level) {

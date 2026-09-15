@@ -3,10 +3,12 @@ import type { IEvidSourceRange } from "../../structures/IEvidSourceRange";
 import type { IEvidJavaDocumentationAttachment } from "./IEvidJavaDocumentationAttachment";
 
 /**
- * Retains a Javadoc carrier and its scanner-established declaration attachments.
+ * Retains a Javadoc carrier and its scanner-established declaration
+ * attachments.
  *
- * EvidJavaAdapterBase consumes these physical records after scanning to create evidence
- * hosts and diagnose unsupported annotations without reparsing comments.
+ * EvidJavaAdapterBase consumes these physical records after scanning to create
+ * evidence hosts and diagnose unsupported annotations without reparsing
+ * comments.
  */
 export interface IEvidJavaDocumentation {
   /**

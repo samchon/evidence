@@ -4,9 +4,9 @@ import type { IEvidSupportedLanguage } from "./IEvidSupportedLanguage";
 /**
  * Versioned catalog of certified programming and database adapter capabilities.
  *
- * This report requires no project analysis or grammar initialization. It excludes
- * grammar-only candidates and exposes each shipped adapter's selectors, public
- * surface, documentation forms, and unsupported boundaries.
+ * This report requires no project analysis or grammar initialization. It
+ * excludes grammar-only candidates and exposes each shipped adapter's
+ * selectors, public surface, documentation forms, and unsupported boundaries.
  */
 export interface IEvidLanguagesReport {
   /**
@@ -31,12 +31,11 @@ export interface IEvidLanguagesReport {
   total: number;
 
   /**
-   * Supported programming and database families with required adapter contracts.
+   * Supported programming and database families with required adapter
+   * contracts.
    *
    * Each entry distinguishes filename-based grammar selection from semantic
    * extraction capabilities.
    */
-  languages: (
-    IEvidSupportedLanguage | IEvidSupportedDatabaseLanguage
-  )[];
+  languages: (IEvidSupportedLanguage | IEvidSupportedDatabaseLanguage)[];
 }

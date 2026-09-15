@@ -24,7 +24,8 @@ export interface IEvidCheckReport {
   /**
    * Operation that produced this report.
    *
-   * This distinguishes check output from query reports and operational failures.
+   * This distinguishes check output from query reports and operational
+   * failures.
    */
   command: "check";
 
@@ -60,8 +61,9 @@ export interface IEvidCheckReport {
   /**
    * Aggregate participation, coverage, and diagnostic counts.
    *
-   * Coverage totals sum active obligations, so a unit required by two references
-   * contributes once to each obligation rather than once to the whole report.
+   * Coverage totals sum active obligations, so a unit required by two
+   * references contributes once to each obligation rather than once to the
+   * whole report.
    */
   counts: IEvidCheckCounts;
 

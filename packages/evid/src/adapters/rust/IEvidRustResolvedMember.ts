@@ -22,17 +22,19 @@ export interface IEvidRustResolvedMember {
   owner: IEvidRustLocatedDeclaration;
 
   /**
-   * Trait-derived segment that distinguishes a trait impl from an inherent impl.
+   * Trait-derived segment that distinguishes a trait impl from an inherent
+   * impl.
    *
    * Omission means the member belongs to an inherent impl.
    */
   qualifier?: string;
 
   /**
-   * Declaration ID of the selected local trait, when the trait resolved locally.
+   * Declaration ID of the selected local trait, when the trait resolved
+   * locally.
    *
-   * Materialization requires that trait to be publicly reachable before exposing
-   * its impl members.
+   * Materialization requires that trait to be publicly reachable before
+   * exposing its impl members.
    */
   localTraitId?: string;
 }

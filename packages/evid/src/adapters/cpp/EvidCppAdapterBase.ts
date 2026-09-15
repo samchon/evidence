@@ -23,12 +23,14 @@ import type { IEvidCppFileAnalysis } from "./IEvidCppFileAnalysis";
 import type { IEvidCppResolvedAlias } from "./IEvidCppResolvedAlias";
 
 /**
- * Reconciles C++ declaration families, public aliases, and documentation ownership.
+ * Reconciles C++ declaration families, public aliases, and documentation
+ * ownership.
  *
  * The scanner records lexical declarations and qualified definitions before the
  * snapshot-wide materializer decides which occurrences belong to one unit.
  * Alias resolution can then project public paths without changing canonical
- * identity. Documentation is attached only after those relationships are known.
+ * identity. Documentation is attached only after those relationships are
+ * known.
  *
  * The pipeline carries conflicts and unsupported source forms into incomplete
  * output. It does not replace C++ lookup, preprocessing, or instantiation with
@@ -38,21 +40,21 @@ export class EvidCppAdapterBase implements IEvidAdapter {
   /**
    * C++ artifact discriminator used by the public adapter.
    *
-   * The configured type selects C++ grammar and ownership policy even for header
-   * extensions also accepted by C; extension overlap does not choose semantics.
+   * The configured type selects C++ grammar and ownership policy even for
+   * header extensions also accepted by C; extension overlap does not choose
+   * semantics.
    */
   public readonly type = "cpp";
 
   /**
    * Builds a C++ inventory from an owned copy of the source snapshot.
    *
-   * Parsing precedes declaration and alias reconciliation, followed by annotation
-   * materialization and common inventory validation. Failures retain diagnostics,
-   * and the invocation's parser closes regardless of the extraction outcome.
+   * Parsing precedes declaration and alias reconciliation, followed by
+   * annotation materialization and common inventory validation. Failures retain
+   * diagnostics, and the invocation's parser closes regardless of the
+   * extraction outcome.
    */
-  public async analyze(
-    snapshot: IEvidSourceSnapshot,
-  ): Promise<IEvidInventory> {
+  public async analyze(snapshot: IEvidSourceSnapshot): Promise<IEvidInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidInventory = {
       schemaVersion: 1,
@@ -104,8 +106,7 @@ export class EvidCppAdapterBase implements IEvidAdapter {
         (session) => new EvidCppFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError =
-        cause instanceof EvidParserError ? cause : undefined;
+      const parserError = cause instanceof EvidParserError ? cause : undefined;
       return {
         source,
         declarations: [],
@@ -620,8 +621,11 @@ export class EvidCppAdapterBase implements IEvidAdapter {
     documentation: IEvidCppDocumentation,
   ): boolean {
     return this.annotationPattern(
-      EvidCppDocumentation.read(analysis.source, documentation, documentation.id)
-        .text,
+      EvidCppDocumentation.read(
+        analysis.source,
+        documentation,
+        documentation.id,
+      ).text,
       true,
     );
   }
@@ -631,8 +635,11 @@ export class EvidCppAdapterBase implements IEvidAdapter {
     documentation: IEvidCppDocumentation,
   ): boolean {
     return this.annotationPattern(
-      EvidCppDocumentation.read(analysis.source, documentation, documentation.id)
-        .text,
+      EvidCppDocumentation.read(
+        analysis.source,
+        documentation,
+        documentation.id,
+      ).text,
       false,
     );
   }

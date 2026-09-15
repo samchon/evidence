@@ -5,8 +5,8 @@ import type { EvidProgrammingSymbol } from "../typings/EvidProgrammingSymbol";
  *
  * This policy checks whether declarations have documentation capable of hosting
  * evidence. It does not judge prose quality or replace the repository's source
- * documentation rules. A narrower selector can require documentation on functions
- * without imposing the same presence check on every public property.
+ * documentation rules. A narrower selector can require documentation on
+ * functions without imposing the same presence check on every public property.
  */
 export interface IEvidDocumentedConfig {
   /**

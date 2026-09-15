@@ -1,19 +1,18 @@
-import {
-  EvidFingerprint,
-  EvidInventory,
-  EvidRubyAdapter,
-} from "evid";
+import { EvidFingerprint, EvidInventory, EvidRubyAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Attaches embedded Ruby RDoc across nested declaration indentation.
+/**
+ * Attaches embedded Ruby RDoc across nested declaration indentation.
  *
- * Column-zero comments respect blank-line and lexical scope boundaries before they can document a member.
+ * Column-zero comments respect blank-line and lexical scope boundaries before
+ * they can document a member.
  *
  * 1. Analyze nested embedded RDoc under LF, CRLF, and tab-indented source.
  * 2. Require tags and reviews to attach to their nested owners, withdrawals to
- *    hide descendants, and metadata-only edits to preserve the ancestor fingerprint.
+ *    hide descendants, and metadata-only edits to preserve the ancestor
+ *    fingerprint.
  * 3. Require blank lines, lexical boundaries, and mismatched indentation to leave
  *    tagged carriers unsupported instead of acknowledging a declaration.
  */

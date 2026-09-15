@@ -9,27 +9,35 @@ import type { IEvidKotlinDocumentationAttachment } from "./IEvidKotlinDocumentat
  * ineligible carrier remains present for a host-level diagnostic.
  */
 export interface IEvidKotlinDocumentation {
-  /** Identifies this physical KDoc or unsupported carrier within the scanned source.
+  /**
+   * Identifies this physical KDoc or unsupported carrier within the scanned
+   * source.
    *
-   * Attachments and host generation use this scanner-local value, which is distinct from a declaration's semantic identity.
+   * Attachments and host generation use this scanner-local value, which is
+   * distinct from a declaration's semantic identity.
    */
   id: string;
 
-  /** Locates the carrier's original half-open UTF-16 source span.
+  /**
+   * Locates the carrier's original half-open UTF-16 source span.
    *
-   * The adapter preserves this range for diagnostics and annotation-range exclusion.
+   * The adapter preserves this range for diagnostics and annotation-range
+   * exclusion.
    */
   range: IEvidSourceRange;
 
-  /** Defines the carrier delimiters and annotation-reading rules.
+  /**
+   * Defines the carrier delimiters and annotation-reading rules.
    *
    * KDoc parsing uses this syntax rather than guessing from raw source text.
    */
   syntax: IEvidCommentSyntax;
 
-  /** Lists declaration sites that accept this carrier as KDoc.
+  /**
+   * Lists declaration sites that accept this carrier as KDoc.
    *
-   * The scanner establishes these source-adjacent attachments before receiver and unit resolution.
+   * The scanner establishes these source-adjacent attachments before receiver
+   * and unit resolution.
    */
   attachments: IEvidKotlinDocumentationAttachment[];
 }

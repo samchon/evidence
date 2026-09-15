@@ -6,13 +6,17 @@ import { dedent } from "@typia/utils";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
- * Partitions Markdown content among file and heading units at real section boundaries.
+ * Partitions Markdown content among file and heading units at real section
+ * boundaries.
  *
  * Evid needs each unit's owned ranges to exclude nested supported sections
- * while retaining deep headings, fenced text, and prose that belongs to the current section.
+ * while retaining deep headings, fenced text, and prose that belongs to the
+ * current section.
  *
- * 1. Analyze file prelude, nested H1-H4 sections, an anchorless heading, a deep heading, and annotations.
+ * 1. Analyze file prelude, nested H1-H4 sections, an anchorless heading, a deep
+ *    heading, and annotations.
  * 2. Verify owned content ranges:
+ *
  *    - The file retains its prelude and the H1 retains its anchorless region.
  *    - The H2 contains only its direct section.
  *    - The H4 retains deep and fenced content but excludes a comment-only line.

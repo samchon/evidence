@@ -4,13 +4,20 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Resolves Dart parts and transitive export aliases while preserving defining-library identity.
+/**
+ * Resolves Dart parts and transitive export aliases while preserving
+ * defining-library identity.
  *
- * A library's parts share visible members and reexports share semantic units, but aliases do not erase defining source ownership or hidden-export boundaries.
+ * A library's parts share visible members and reexports share semantic units,
+ * but aliases do not erase defining source ownership or hidden-export
+ * boundaries.
  *
- * 1. Analyze a library with reciprocal parts, generated part, transitive export, show/hide clauses, and an independent file.
- * 2. Resolve library-visible local, part, generated, and reexported members from every part file.
- * 3. Require the hidden alias to be missing only through the API, retain its defining-source resolution, and record parts as exact dependencies.
+ * 1. Analyze a library with reciprocal parts, generated part, transitive export,
+ *    show/hide clauses, and an independent file.
+ * 2. Resolve library-visible local, part, generated, and reexported members from
+ *    every part file.
+ * 3. Require the hidden alias to be missing only through the API, retain its
+ *    defining-source resolution, and record parts as exact dependencies.
  */
 export async function test_dart_libraries(): Promise<void> {
   const inventory = await new EvidDartAdapter().analyze(
@@ -37,7 +44,10 @@ export async function test_dart_libraries(): Promise<void> {
         "src/generated.g.dart",
         "part of app.api; final generated = 1;",
       ),
-      EvidTestSourceSnapshot.create("src/bridge.dart", "export 'external.dart';"),
+      EvidTestSourceSnapshot.create(
+        "src/bridge.dart",
+        "export 'external.dart';",
+      ),
       EvidTestSourceSnapshot.create(
         "src/external.dart",
         "class Exported { int value = 2; } final excluded = 1;",

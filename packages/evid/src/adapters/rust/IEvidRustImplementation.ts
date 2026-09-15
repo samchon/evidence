@@ -1,8 +1,9 @@
 /**
  * Describes a Rust impl block before its local nominal owner is resolved.
  *
- * The scanner records source-level paths; EvidRustModuleResolver resolves them in
- * the containing module and assigns member identities to the selected owner.
+ * The scanner records source-level paths; EvidRustModuleResolver resolves them
+ * in the containing module and assigns member identities to the selected
+ * owner.
  */
 export interface IEvidRustImplementation {
   /**
@@ -22,7 +23,8 @@ export interface IEvidRustImplementation {
   /**
    * Source path naming the implemented nominal type.
    *
-   * It must resolve to one selected local struct or enum before members publish.
+   * It must resolve to one selected local struct or enum before members
+   * publish.
    */
   ownerPath: string[];
 

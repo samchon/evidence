@@ -1,15 +1,14 @@
-import {
-  EvidLanguageRegistry,
-  EvidObjcAdapter,
-} from "evid";
+import { EvidLanguageRegistry, EvidObjcAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Rejects Objective-C inputs with unsupported public surfaces.
+/**
+ * Rejects Objective-C inputs with unsupported public surfaces.
  *
- * Preprocessing, Objective-C++, aliases, C declarations, malformed syntax, and failed snapshots must not silently produce smaller inventories.
+ * Preprocessing, Objective-C++, aliases, C declarations, malformed syntax, and
+ * failed snapshots must not silently produce smaller inventories.
  *
  * 1. Analyze each unsupported or malformed source form.
  * 2. Require incomplete status and actionable diagnostics.
@@ -69,7 +68,10 @@ export async function test_objc_boundaries(): Promise<void> {
     );
   }
   const overlap = await adapter.analyze(
-    EvidTestSourceSnapshot.create("src/Contract.mm", "@interface Contract\n@end\n"),
+    EvidTestSourceSnapshot.create(
+      "src/Contract.mm",
+      "@interface Contract\n@end\n",
+    ),
   );
   TestValidator.equals(
     "Objective-C++ explicitly unsupported",
@@ -102,8 +104,14 @@ export async function test_objc_boundaries(): Promise<void> {
   );
   const conflicting = await adapter.analyze(
     EvidTestSourceSnapshot.combine([
-      EvidTestSourceSnapshot.create("src/First.h", "@interface Conflict\n@end\n"),
-      EvidTestSourceSnapshot.create("src/Second.h", "@interface Conflict\n@end\n"),
+      EvidTestSourceSnapshot.create(
+        "src/First.h",
+        "@interface Conflict\n@end\n",
+      ),
+      EvidTestSourceSnapshot.create(
+        "src/Second.h",
+        "@interface Conflict\n@end\n",
+      ),
     ]),
   );
   TestValidator.equals(

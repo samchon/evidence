@@ -1,19 +1,18 @@
 import { EvidAccessor, EvidSqlAdapter } from "evid";
-import type {
-  EvidDatabaseSymbol,
-  IEvidWithdrawal,
-} from "evid";
+import type { EvidDatabaseSymbol, IEvidWithdrawal } from "evid";
 import { dedent } from "@typia/utils";
 import type { IEvidDatabaseAdapterCertification } from "../../internal/certification/IEvidDatabaseAdapterCertification";
 import type { IEvidDatabaseAdapterCertificationUnit } from "../../internal/certification/IEvidDatabaseAdapterCertificationUnit";
 
-/** Defines the portable SQL contract for shared database certification.
+/**
+ * Defines the portable SQL contract for shared database certification.
  *
  * This fixture keeps expected declarations, diagnostics, and fingerprint
  * behavior independent of the SQL scanner output under test.
  */
 export namespace SqlCertificationFixture {
-  /** Creates the complete portable SQL adapter certification fixture.
+  /**
+   * Creates the complete portable SQL adapter certification fixture.
    *
    * Shared certification uses its model, column, relation, withdrawal, failure,
    * and fingerprint expectations to verify common database behavior.
@@ -96,7 +95,8 @@ export namespace SqlCertificationFixture {
       },
     };
 
-    /** Creates one contract-defined unit with its canonical source address.
+    /**
+     * Creates one contract-defined unit with its canonical source address.
      *
      * A supplied parent becomes the explicit model owner; omission preserves a
      * top-level model record.

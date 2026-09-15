@@ -4,14 +4,17 @@ import type { IEvidKotlinResolvedType } from "./IEvidKotlinResolvedType";
 import type { IEvidKotlinTypeReference } from "./IEvidKotlinTypeReference";
 
 /**
- * Resolves explicit nominal receiver names and selected aliases without compiler execution.
+ * Resolves explicit nominal receiver names and selected aliases without
+ * compiler execution.
  *
  * Extension members must acquire the identity of their receiver type, but the
- * resolver stays within selected source and reports paths needing compiler lookup.
+ * resolver stays within selected source and reports paths needing compiler
+ * lookup.
  */
 export namespace EvidKotlinReceivers {
   /**
-   * Unifies equivalent extension sites before semantic units and addresses are materialized.
+   * Unifies equivalent extension sites before semantic units and addresses are
+   * materialized.
    *
    * Resolution happens before publication so aliases and nullable spellings do
    * not create separate units for methods on the same public nominal receiver.
@@ -58,10 +61,12 @@ export namespace EvidKotlinReceivers {
   }
 
   /**
-   * Resolves lexical candidates and expands selected alias chains with cycle detection.
+   * Resolves lexical candidates and expands selected alias chains with cycle
+   * detection.
    *
-   * A receiver must identify exactly one selected nominal declaration; ambiguity,
-   * cycles, and file-private visibility outside the declaring file remain unresolved.
+   * A receiver must identify exactly one selected nominal declaration;
+   * ambiguity, cycles, and file-private visibility outside the declaring file
+   * remain unresolved.
    */
   function lookup(
     reference: IEvidKotlinTypeReference,
@@ -106,7 +111,8 @@ export namespace EvidKotlinReceivers {
   }
 
   /**
-   * Retains literal Kotlin identifier boundaries inside the receiver address segment.
+   * Retains literal Kotlin identifier boundaries inside the receiver address
+   * segment.
    *
    * Non-identifier names use Kotlin backticks so punctuation cannot be mistaken
    * for a separator when the resolved receiver spelling is published.

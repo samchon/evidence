@@ -5,9 +5,11 @@ import { join } from "node:path";
 
 import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
-/** Rebuilds Swift coverage through watch changes.
+/**
+ * Rebuilds Swift coverage through watch changes.
  *
- * New files, syntax failure, repair, and selector changes must replace stale inventory.
+ * New files, syntax failure, repair, and selector changes must replace stale
+ * inventory.
  *
  * 1. Compare every cycle to a fresh check.
  * 2. Verify failure, incompleteness, and recovery transitions.

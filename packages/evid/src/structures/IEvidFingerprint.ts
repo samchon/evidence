@@ -14,16 +14,16 @@ export interface IEvidFingerprint {
   /**
    * Version of the fingerprint construction algorithm.
    *
-   * This identifies normalization and scope semantics for the token, independently
-   * of the inventory schema version or parser grammar revision.
+   * This identifies normalization and scope semantics for the token,
+   * independently of the inventory schema version or parser grammar revision.
    */
   version: number;
 
   /**
    * Semantic identity at the root of the cited scope.
    *
-   * Aliases resolve to this same unit before fingerprinting. Reference selectors
-   * do not change which identity owns the token.
+   * Aliases resolve to this same unit before fingerprinting. Reference
+   * selectors do not change which identity owns the token.
    */
   unitId: string;
 
@@ -39,7 +39,8 @@ export interface IEvidFingerprint {
    * Digest combining the root unit with its complete structural subtree.
    *
    * The scope follows explicit ownership and does not shrink to a reference's
-   * selected kinds. A descendant edit can therefore expire an aggregate review.
+   * selected kinds. A descendant edit can therefore expire an aggregate
+   * review.
    */
   scopeDigest: string;
 

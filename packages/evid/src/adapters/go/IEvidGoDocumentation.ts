@@ -5,8 +5,9 @@ import type { IEvidGoDocumentationAttachment } from "./IEvidGoDocumentationAttac
 /**
  * Retains a Go documentation carrier and its scanner-established attachments.
  *
- * EvidGoAdapterBase reads these records after parsing closes to create documentation
- * hosts and report unsupported annotations without reinterpreting the source.
+ * EvidGoAdapterBase reads these records after parsing closes to create
+ * documentation hosts and report unsupported annotations without reinterpreting
+ * the source.
  */
 export interface IEvidGoDocumentation {
   /**
@@ -33,7 +34,8 @@ export interface IEvidGoDocumentation {
   /**
    * Declaration sites accepted as the comment run's direct owners.
    *
-   * Package reconciliation does not attach it to same-named declarations elsewhere.
+   * Package reconciliation does not attach it to same-named declarations
+   * elsewhere.
    */
   attachments: IEvidGoDocumentationAttachment[];
 }

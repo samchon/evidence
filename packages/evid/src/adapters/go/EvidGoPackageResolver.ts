@@ -8,9 +8,9 @@ import type { IEvidGoMaterializedDeclaration } from "./IEvidGoMaterializedDeclar
 /**
  * Reconciles selected Go files into package-wide Evid units and addresses.
  *
- * EvidGoAdapterBase supplies one analysis per source file because receiver methods may
- * depend on types in another file; this resolver restores Go's package boundary
- * before the shared inventory is published.
+ * EvidGoAdapterBase supplies one analysis per source file because receiver
+ * methods may depend on types in another file; this resolver restores Go's
+ * package boundary before the shared inventory is published.
  */
 export class EvidGoPackageResolver {
   /**
@@ -44,7 +44,8 @@ export class EvidGoPackageResolver {
   private readonly reported = new Set<string>();
 
   /**
-   * Creates a resolver for the selected Go file analyses and destination inventory.
+   * Creates a resolver for the selected Go file analyses and destination
+   * inventory.
    *
    * The analyses remain immutable input; published units, addresses, and
    * diagnostics are added to the provided inventory during {@link publish}.
@@ -53,14 +54,17 @@ export class EvidGoPackageResolver {
     /**
      * File-local extractions selected for this adapter pass.
      *
-     * Their directory and package names establish the package groups to resolve.
+     * Their directory and package names establish the package groups to
+     * resolve.
      */
     private readonly analyses: IEvidGoFileAnalysis[],
 
     /**
-     * Shared inventory that receives resolved units and reconciliation diagnostics.
+     * Shared inventory that receives resolved units and reconciliation
+     * diagnostics.
      *
-     * Its completeness flag is cleared whenever package resolution finds an error.
+     * Its completeness flag is cleared whenever package resolution finds an
+     * error.
      */
     private readonly inventory: IEvidInventory,
   ) {}
@@ -68,8 +72,9 @@ export class EvidGoPackageResolver {
   /**
    * Resolves all selected declarations and publishes their package-wide units.
    *
-   * The returned map lets EvidGoAdapterBase associate scanner-local documentation with
-   * the unit ID that survived receiver and package-boundary reconciliation.
+   * The returned map lets EvidGoAdapterBase associate scanner-local
+   * documentation with the unit ID that survived receiver and package-boundary
+   * reconciliation.
    *
    * @returns Scanner-local declaration IDs mapped to their published unit IDs.
    */
@@ -129,10 +134,12 @@ export class EvidGoPackageResolver {
   }
 
   /**
-   * Adds one declaration to its resolved unit and publishes its public addresses.
+   * Adds one declaration to its resolved unit and publishes its public
+   * addresses.
    *
    * Compatible physical declarations contribute sites to one unit; conflicting
-   * declarations remain visible through diagnostics instead of being discarded.
+   * declarations remain visible through diagnostics instead of being
+   * discarded.
    */
   private materialize(
     entry: IEvidGoMaterializedDeclaration,
@@ -193,7 +200,8 @@ export class EvidGoPackageResolver {
   }
 
   /**
-   * Emits each configured source address that can publicly name a resolved unit.
+   * Emits each configured source address that can publicly name a resolved
+   * unit.
    *
    * Member addresses inherit paths from both their own file and selected owner
    * files, because either file may be the configured public entry point.
@@ -225,7 +233,8 @@ export class EvidGoPackageResolver {
   }
 
   /**
-   * Verifies that selected files form compatible ordinary and external test packages.
+   * Verifies that selected files form compatible ordinary and external test
+   * packages.
    *
    * Go permits one ordinary package and its matching `_test` package per
    * directory; other combinations make package-wide identity unreliable.
@@ -287,7 +296,10 @@ export class EvidGoPackageResolver {
    * The directory is the Go package boundary, so no unit from this group can be
    * trusted as a single semantic package population.
    */
-  private packageProblem(directory: string, analyses: IEvidGoFileAnalysis[]): void {
+  private packageProblem(
+    directory: string,
+    analyses: IEvidGoFileAnalysis[],
+  ): void {
     const names = Array.from(
       new Set(analyses.map((analysis) => analysis.packageName)),
     )
@@ -303,7 +315,8 @@ export class EvidGoPackageResolver {
   }
 
   /**
-   * Wraps a physical declaration with the package-wide ID it would publish under.
+   * Wraps a physical declaration with the package-wide ID it would publish
+   * under.
    *
    * This transient form keeps source context available while ownership checks
    * determine whether the declaration is eligible for materialization.
@@ -324,7 +337,8 @@ export class EvidGoPackageResolver {
   }
 
   /**
-   * Serializes a stable unit ID from the Go package boundary and semantic identity.
+   * Serializes a stable unit ID from the Go package boundary and semantic
+   * identity.
    *
    * File paths are deliberately absent because declarations in several package
    * files may represent one public unit.
@@ -348,7 +362,8 @@ export class EvidGoPackageResolver {
   }
 
   /**
-   * Produces the normalized package identity shared by compatible file analyses.
+   * Produces the normalized package identity shared by compatible file
+   * analyses.
    *
    * Both directory and package clause are required because either alone can
    * collide across the selected source set.

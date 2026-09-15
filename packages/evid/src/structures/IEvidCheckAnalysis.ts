@@ -6,8 +6,9 @@ import type { IEvidGraphResult } from "./IEvidGraphResult";
  * Captured inputs, graph evaluation, and report from one checker invocation.
  *
  * `EvidChecker.analyze` returns this when callers need queryable context in
- * addition to a check status. List, inspection, and graph queries can explain the
- * same source snapshots without reloading files that may have changed afterward.
+ * addition to a check status. List, inspection, and graph queries can explain
+ * the same source snapshots without reloading files that may have changed
+ * afterward.
  *
  * Each projection has a distinct purpose: graph input retains inventories and
  * policy, graph result retains independent obligations and findings, and report

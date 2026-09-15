@@ -15,7 +15,8 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Resolves root-relative Markdown paths and literal anchors.
+/**
+ * Resolves root-relative Markdown paths and literal anchors.
  *
  * Markdown target paths and anchors must retain their public spelling through
  * normalization and resolution.
@@ -29,7 +30,10 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  */
 export async function test_markdown_target_paths(): Promise<void> {
   const reference = await new EvidMarkdownAdapter().analyze(
-    EvidTestSourceSnapshot.create("docs/spec%value.md", "## Pricing {#price.v2}"),
+    EvidTestSourceSnapshot.create(
+      "docs/spec%value.md",
+      "## Pricing {#price.v2}",
+    ),
   );
   const pricing = requireUnit(reference, "price.v2");
   const claim = await new EvidTypeScriptAdapter().analyze(
@@ -140,10 +144,7 @@ function requireHost(inventory: IEvidInventory, id: string): IEvidHost {
   return host;
 }
 
-function requireUnit(
-  inventory: IEvidInventory,
-  identity: string,
-): IEvidUnit {
+function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.at(-1) === identity,
   );

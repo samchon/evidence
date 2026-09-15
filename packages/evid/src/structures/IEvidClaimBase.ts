@@ -16,16 +16,16 @@ import type { IEvidReference } from "./IEvidReference";
  * supported selector vocabulary without adding a separate language option.
  *
  * @example
- * const claim: IEvidClaimBase<"typescript", "function"> = {
- *   type: "typescript",
- *   files: ["src/*.ts"],
- *   symbol: "function",
- *   reference: [
- *     { type: "markdown", files: ["requirements.md"] },
- *     { type: "swagger", file: "openapi.json" },
- *   ],
- * };
- * // Both reference populations require independent coverage.
+ *   const claim: IEvidClaimBase<"typescript", "function"> = {
+ *     type: "typescript",
+ *     files: ["src/*.ts"],
+ *     symbol: "function",
+ *     reference: [
+ *       { type: "markdown", files: ["requirements.md"] },
+ *       { type: "swagger", file: "openapi.json" },
+ *     ],
+ *   };
+ *   // Both reference populations require independent coverage.
  */
 export interface IEvidClaimBase<
   Type extends string,
@@ -35,7 +35,8 @@ export interface IEvidClaimBase<
    * Artifact discriminator selecting the claim's extraction rules.
    *
    * This determines which adapter interprets public declarations and eligible
-   * documentation. References can independently select another artifact family.
+   * documentation. References can independently select another artifact
+   * family.
    */
   type: Type;
 
@@ -59,8 +60,8 @@ export interface IEvidClaimBase<
    * Disables the claim without removing its authored configuration.
    *
    * Skip its populations, references, coverage obligations, and watched inputs.
-   * Its shape is still validated so reenabling it cannot reveal ignored malformed
-   * settings that were accepted only because the claim was inactive.
+   * Its shape is still validated so reenabling it cannot reveal ignored
+   * malformed settings that were accepted only because the claim was inactive.
    *
    * @default false
    */
@@ -79,17 +80,20 @@ export interface IEvidClaimBase<
   /**
    * File globs relative to root.
    *
-   * - Evaluate left to right: "!" removes matches; later positives may re-include.
-   *   At least one positive pattern is required.
+   * - Evaluate left to right: "!" removes matches; later positives may
+   *   re-include. At least one positive pattern is required.
    * - "*" matches within one path segment, "**" crosses segments, and "?" matches
-   *   one character. Both path separators are accepted; identity is case-sensitive.
+   *   one character. Both path separators are accepted; identity is
+   *   case-sensitive.
    * - A bare directory does not include its children; use "src/**".
-   * - Resolved patterns define watched inputs, including files outside the project.
+   * - Resolved patterns define watched inputs, including files outside the
+   *   project.
    */
   files: string[];
 
   /**
-   * Symbol kinds eligible to host evidence; accepts one kind or a nonempty array.
+   * Symbol kinds eligible to host evidence; accepts one kind or a nonempty
+   * array.
    *
    * Omit to select every supported kind for the artifact:
    *
@@ -116,9 +120,10 @@ export interface IEvidClaimBase<
   /**
    * One reference or a nonempty array of independent evidence requirements.
    *
-   * Every claim may reference any artifact family. Each reference requires complete
-   * coverage independently, including repeated entries selecting the same files.
-   * An acknowledgement accepted under one policy does not bypass another policy.
+   * Every claim may reference any artifact family. Each reference requires
+   * complete coverage independently, including repeated entries selecting the
+   * same files. An acknowledgement accepted under one policy does not bypass
+   * another policy.
    */
   reference: IEvidReference | IEvidReference[];
 }

@@ -5,11 +5,14 @@ import { join } from "node:path";
 
 import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
-/** Prevents Lua from passing through an empty default type selector.
+/**
+ * Prevents Lua from passing through an empty default type selector.
  *
- * A language without type units must retain an explicit graph obligation instead of treating an empty selector as coverage.
+ * A language without type units must retain an explicit graph obligation
+ * instead of treating an empty selector as coverage.
  *
- * 1. Configure a default type reference for Lua. 2. Run graph evaluation. 3. Require the empty selection to fail visibly.
+ * 1. Configure a default type reference for Lua. 2. Run graph evaluation. 3.
+ *    Require the empty selection to fail visibly.
  */
 export async function test_lua_defaults(): Promise<void> {
   await EvidTestFileSystem.experiment(

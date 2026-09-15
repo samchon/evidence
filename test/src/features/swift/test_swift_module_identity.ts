@@ -3,7 +3,8 @@ import { TestValidator } from "@nestia/e2e";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Keeps equal Swift names independent across configured module roots.
+/**
+ * Keeps equal Swift names independent across configured module roots.
  *
  * Module-root identity prevents equal declarations from sharing an address.
  *

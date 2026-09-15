@@ -4,12 +4,17 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Merges C# partial declarations only inside one configured snapshot root.
+/**
+ * Merges C# partial declarations only inside one configured snapshot root.
  *
- * Parts of one public type contribute a single selected hierarchy, while equal source-relative names in unrelated configured roots must remain different compilation identities.
+ * Parts of one public type contribute a single selected hierarchy, while equal
+ * source-relative names in unrelated configured roots must remain different
+ * compilation identities.
  *
- * 1. Analyze two parts of Shop.Sale containing ordinary, partial property, and partial indexer members.
- * 2. Require the merged type to include members from both files and two sites for each partial member.
+ * 1. Analyze two parts of Shop.Sale containing ordinary, partial property, and
+ *    partial indexer members.
+ * 2. Require the merged type to include members from both files and two sites for
+ *    each partial member.
  * 3. Analyze Sale.cs under two distinct roots and require distinct unit IDs.
  */
 export async function test_csharp_partials(): Promise<void> {

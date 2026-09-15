@@ -9,9 +9,11 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 import { EvidTestParserAssets } from "../../internal/EvidTestParserAssets";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Loads the configured SQL grammar and preserves offline adapter analysis.
+/**
+ * Loads the configured SQL grammar and preserves offline adapter analysis.
  *
- * Cold acquisition must request only SQL parser assets, and the warmed cache must produce the same complete inventory.
+ * Cold acquisition must request only SQL parser assets, and the warmed cache
+ * must produce the same complete inventory.
  *
  * 1. Analyze SQL source cold while recording asset requests.
  * 2. Verify complete extraction and SQL-only parser state.

@@ -4,8 +4,8 @@ import type { EvidCommandExitCode } from "../typings/EvidCommandExitCode";
  * Buffered output and process status returned by command execution.
  *
  * The CLI boundary writes these strings to their respective streams. Keeping
- * execution separate from process I/O also lets callers inspect command behavior
- * without replacing global streams or spawning another process.
+ * execution separate from process I/O also lets callers inspect command
+ * behavior without replacing global streams or spawning another process.
  */
 export interface IEvidCommandResult {
   /**
@@ -19,8 +19,8 @@ export interface IEvidCommandResult {
   /**
    * Content prepared for the standard output stream.
    *
-   * The string already includes its intended formatting and line endings; it may
-   * be empty when output was written to a requested file.
+   * The string already includes its intended formatting and line endings; it
+   * may be empty when output was written to a requested file.
    */
   stdout: string;
 

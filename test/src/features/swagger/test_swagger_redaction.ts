@@ -1,8 +1,4 @@
-import {
-  EvidCommand,
-  EvidSwaggerAdapter,
-  EvidWatcher,
-} from "evid";
+import { EvidCommand, EvidSwaggerAdapter, EvidWatcher } from "evid";
 import type {
   EvidWatchCycle,
   IEvidCommandResult,
@@ -38,16 +34,17 @@ const TOKEN: string = "fixture-token";
  * through JSON, text, query, or watch serialization.
  *
  * 1. Load credential-bearing HTTP, fragmented, unsupported-protocol, padded,
- *    malformed, repeated-userinfo, and percent-encoded URLs through the adapter.
- * 2. Require every failure to remain incomplete and actionable while retaining
- *    a safe origin/path label and excluding userinfo and query values from the
+ *    malformed, repeated-userinfo, and percent-encoded URLs through the
+ *    adapter.
+ * 2. Require every failure to remain incomplete and actionable while retaining a
+ *    safe origin/path label and excluding userinfo and query values from the
  *    entire serialized inventory.
- * 3. Load an ordinary local filename containing query punctuation and require
- *    its diagnostic spelling to remain intact rather than being treated as URL
+ * 3. Load an ordinary local filename containing query punctuation and require its
+ *    diagnostic spelling to remain intact rather than being treated as URL
  *    credentials.
  * 4. Run the deterministic credential-construction failure through check JSON,
- *    check text, and list JSON command paths; require exit code two and no secret
- *    in either output channel.
+ *    check text, and list JSON command paths; require exit code two and no
+ *    secret in either output channel.
  * 5. Publish the first watch cycle for the same config and require the serialized
  *    cycle and active dependencies to contain no credential or query value.
  */

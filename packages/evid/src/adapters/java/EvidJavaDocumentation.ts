@@ -8,14 +8,16 @@ import type { IEvidJavaDocumentation } from "./IEvidJavaDocumentation";
  * Reads Javadoc while masking inline and preformatted code examples.
  *
  * The adapter preserves original source coordinates while removing example text
- * from tag parsing, so code-looking annotations cannot create evidence records.
+ * from tag parsing, so code-looking annotations cannot create evidence
+ * records.
  */
 export namespace EvidJavaDocumentation {
   /**
    * Maps one Java documentation carrier and removes its code examples.
    *
-   * Javadoc applies native inline-tag precedence before HTML pairing. Other Java
-   * comment forms retain their shared mapping because they do not own this syntax.
+   * Javadoc applies native inline-tag precedence before HTML pairing. Other
+   * Java comment forms retain their shared mapping because they do not own this
+   * syntax.
    */
   export function read(
     source: IEvidSourceFile,

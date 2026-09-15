@@ -20,12 +20,14 @@ import type { IEvidRubyFileAnalysis } from "./IEvidRubyFileAnalysis";
 import { EvidRubyFileScanner } from "./EvidRubyFileScanner";
 
 /**
- * Extracts Ruby public declarations while merging reopened structural identities.
+ * Extracts Ruby public declarations while merging reopened structural
+ * identities.
  *
- * File scans retain visibility and owner paths for classes, modules, and members.
- * Materialization groups compatible declarations before attaching documentation,
- * so reopened sites share semantic identity while keeping their physical origins
- * and withdrawal causes. Unsupported analysis remains visible as incompleteness.
+ * File scans retain visibility and owner paths for classes, modules, and
+ * members. Materialization groups compatible declarations before attaching
+ * documentation, so reopened sites share semantic identity while keeping their
+ * physical origins and withdrawal causes. Unsupported analysis remains visible
+ * as incompleteness.
  */
 export class EvidRubyAdapterBase implements IEvidAdapter {
   /**
@@ -38,12 +40,11 @@ export class EvidRubyAdapterBase implements IEvidAdapter {
   /**
    * Builds a normalized Ruby inventory from an owned copy of the snapshot.
    *
-   * Public identity groups are established before comment hosts are materialized.
-   * Source and scan diagnostics are retained, and parser cleanup runs on every exit.
+   * Public identity groups are established before comment hosts are
+   * materialized. Source and scan diagnostics are retained, and parser cleanup
+   * runs on every exit.
    */
-  public async analyze(
-    snapshot: IEvidSourceSnapshot,
-  ): Promise<IEvidInventory> {
+  public async analyze(snapshot: IEvidSourceSnapshot): Promise<IEvidInventory> {
     const input = structuredClone(typia.assert(snapshot));
     const inventory: IEvidInventory = {
       schemaVersion: 1,
@@ -85,7 +86,8 @@ export class EvidRubyAdapterBase implements IEvidAdapter {
   }
 
   /**
-   * Copies one Ruby file's declaration and comment records out of its parse session.
+   * Copies one Ruby file's declaration and comment records out of its parse
+   * session.
    *
    * Syntax or acquisition failure yields an incomplete analysis with a concrete
    * source diagnostic rather than a successful empty declaration list.
@@ -101,8 +103,7 @@ export class EvidRubyAdapterBase implements IEvidAdapter {
         (session) => new EvidRubyFileScanner(session, source).scan(),
       );
     } catch (cause) {
-      const parserError =
-        cause instanceof EvidParserError ? cause : undefined;
+      const parserError = cause instanceof EvidParserError ? cause : undefined;
       return {
         source,
         declarations: [],
@@ -133,7 +134,8 @@ export class EvidRubyAdapterBase implements IEvidAdapter {
    * Merges Ruby declaration groups and publishes their public owner hierarchy.
    *
    * Type groups are considered from outer to inner ownership before members,
-   * preventing a child of an unpublished owner from becoming a free-standing API.
+   * preventing a child of an unpublished owner from becoming a free-standing
+   * API.
    */
   private materializeUnits(
     inventory: IEvidInventory,

@@ -13,8 +13,9 @@ export interface IEvidResolution {
   /**
    * Visibility and uniqueness outcome of the address lookup.
    *
-   * Missing means no matching scope was found in a complete inventory; incomplete
-   * means the available candidates cannot establish a trustworthy answer.
+   * Missing means no matching scope was found in a complete inventory;
+   * incomplete means the available candidates cannot establish a trustworthy
+   * answer.
    */
   status: "resolved" | "ambiguous" | "hidden" | "missing" | "incomplete";
 

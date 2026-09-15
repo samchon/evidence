@@ -4,9 +4,11 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Classifies JavaScript declarations, public members, and literal names.
+/**
+ * Classifies JavaScript declarations, public members, and literal names.
  *
- * The public denominator preserves member ownership and literal accessor segments.
+ * The public denominator preserves member ownership and literal accessor
+ * segments.
  *
  * 1. Analyze exported declarations and members.
  * 2. Compare identities and symbols.

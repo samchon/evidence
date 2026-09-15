@@ -1,18 +1,18 @@
-import {
-  EvidAccessor,
-  EvidInventory,
-  EvidLuaAdapter,
-} from "evid";
+import { EvidAccessor, EvidInventory, EvidLuaAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Classifies Lua module ownership, literal aliases, colon methods, scalar copies, and file isolation.
+/**
+ * Classifies Lua module ownership, literal aliases, colon methods, scalar
+ * copies, and file isolation.
  *
- * Module assignment determines public owners while literal names and physical files retain their boundaries.
+ * Module assignment determines public owners while literal names and physical
+ * files retain their boundaries.
  *
- * 1. Analyze module tables and members. 2. Compare symbols and identities. 3. Verify method, alias, copy, and file-isolation behavior.
+ * 1. Analyze module tables and members. 2. Compare symbols and identities. 3.
+ *    Verify method, alias, copy, and file-isolation behavior.
  */
 export async function test_lua_units(): Promise<void> {
   const snapshot = EvidTestSourceSnapshot.create(

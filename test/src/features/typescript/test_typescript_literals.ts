@@ -4,9 +4,12 @@ import { dedent } from "@typia/utils";
 
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Preserves literal TypeScript member segments and default declaration identity.
+/**
+ * Preserves literal TypeScript member segments and default declaration
+ * identity.
  *
- * Punctuated member names stay literal, while each anonymous default declaration receives one public address.
+ * Punctuated member names stay literal, while each anonymous default
+ * declaration receives one public address.
  *
  * 1. Analyze literal members and anonymous defaults.
  * 2. Verify exact identities and resolution behavior.

@@ -6,17 +6,20 @@ import { EvidTestInventory } from "../../internal/EvidTestInventory";
 /**
  * Propagates withdrawal from a merged declaration to its descendants and hosts.
  *
- * A class and interface can contribute sites to one semantic identity. Visibility
- * must consider every merged site; otherwise a public fragment could bypass an
- * internal annotation on another fragment and leave its child API selected.
+ * A class and interface can contribute sites to one semantic identity.
+ * Visibility must consider every merged site; otherwise a public fragment could
+ * bypass an internal annotation on another fragment and leave its child API
+ * selected.
  *
  * 1. Create a class identity with a property and documentation host, then add an
  *    interface site carrying an internal withdrawal on the same identity.
  * 2. Merge the inventories and select the parent and child:
+ *
  *    - Analysis remains complete and both declaration sites remain retained.
  *    - Neither withdrawn unit nor its documentation host remains eligible.
  * 3. Resolve the child's public address and require hidden status with the
- *    inherited internal directive, preserving the cause instead of reporting missing.
+ *    inherited internal directive, preserving the cause instead of reporting
+ *    missing.
  */
 export async function test_inventory_withdrawal(): Promise<void> {
   const first = EvidTestInventory.create();

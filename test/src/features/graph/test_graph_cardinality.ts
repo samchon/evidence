@@ -8,19 +8,20 @@ import { EvidTestInventory } from "../../internal/EvidTestInventory";
  * Applies positive-evidence cardinality to semantic units and hosts.
  *
  * Physical documentation fragments and repeated citations must not inflate
- * cardinality. Aggregate scopes expand to selected descendants, while exclusions
- * can satisfy ordinary coverage without becoming positive evidence.
+ * cardinality. Aggregate scopes expand to selected descendants, while
+ * exclusions can satisfy ordinary coverage without becoming positive evidence.
  *
  * 1. Check three claim subjects under singleEvidPerSymbol:
+ *
  *    - An uncited subject reports zero positive units.
  *    - Two comment fragments citing the same unit count once for their shared owner.
  *    - An aggregate citation covering two selected children reports two units.
  * 2. Supply only an exclusion and require ordinary coverage to pass, positive
  *    cardinality to remain zero, and no unique-positive-host finding.
- * 3. Have two semantic hosts cite one reference unit, with a repeated fragment
- *    on one host; compare ordinary and uniqueEvid reference entries.
- * 4. Require exactly one uniqueness finding on the second reference, counting
- *    two semantic hosts rather than three physical citation positions.
+ * 3. Have two semantic hosts cite one reference unit, with a repeated fragment on
+ *    one host; compare ordinary and uniqueEvid reference entries.
+ * 4. Require exactly one uniqueness finding on the second reference, counting two
+ *    semantic hosts rather than three physical citation positions.
  */
 export async function test_graph_cardinality(): Promise<void> {
   const reference = EvidTestInventory.create();

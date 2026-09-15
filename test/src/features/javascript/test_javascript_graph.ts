@@ -11,9 +11,11 @@ import { dedent } from "@typia/utils";
 import { EvidTestGraph } from "../../internal/EvidTestGraph";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Evaluates JavaScript type, function, and property coverage and fingerprints.
+/**
+ * Evaluates JavaScript type, function, and property coverage and fingerprints.
  *
- * Exact host selection governs graph obligations while evidence prose remains outside implementation scope.
+ * Exact host selection governs graph obligations while evidence prose remains
+ * outside implementation scope.
  *
  * 1. Evaluate each symbol kind with and without acknowledgement.
  * 2. Compare missing IDs.
@@ -166,10 +168,7 @@ async function fingerprintInventory(
   );
 }
 
-function requireUnit(
-  inventory: IEvidInventory,
-  name: string,
-): IEvidUnit {
+function requireUnit(inventory: IEvidInventory, name: string): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === name || candidate.identity.at(-1) === name,

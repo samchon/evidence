@@ -2,7 +2,8 @@
  * Parsed request to display command syntax and options.
  *
  * Help is resolved before configuration or project analysis. The parser refuses
- * combining the help flag with other options instead of silently ignoring them.
+ * combining the help flag with other options instead of silently ignoring
+ * them.
  */
 export interface IEvidHelpCommand {
   /**

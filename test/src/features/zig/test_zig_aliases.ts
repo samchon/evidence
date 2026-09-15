@@ -1,15 +1,13 @@
-import {
-  EvidFingerprint,
-  EvidInventory,
-  EvidZigAdapter,
-} from "evid";
+import { EvidFingerprint, EvidInventory, EvidZigAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
-/** Preserves Zig aliases, withdrawals, and copied-value independence.
+/**
+ * Preserves Zig aliases, withdrawals, and copied-value independence.
  *
- * Function aliases share their declaration sites, while copied values and withdrawals retain distinct identity effects.
+ * Function aliases share their declaration sites, while copied values and
+ * withdrawals retain distinct identity effects.
  *
  * 1. Analyze aliases, copied values, and withdrawn declarations.
  * 2. Verify sites, target resolution, and withdrawal behavior.

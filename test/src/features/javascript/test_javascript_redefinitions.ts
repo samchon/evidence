@@ -16,7 +16,8 @@ import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
 
 /**
- * Isolates surviving JavaScript bindings from documentation on replaced definitions.
+ * Isolates surviving JavaScript bindings from documentation on replaced
+ * definitions.
  *
  * JavaScript function declarations and duplicate class members select the last
  * runtime value for a spelling. Merging their sites would let evidence attached
@@ -32,44 +33,43 @@ import { EvidTestSourceSnapshot } from "../../internal/EvidTestSourceSnapshot";
  *    declarations; require runtime initialization and hoisting order to select
  *    the same binding that EvidNode executes.
  * 5. Repeat initialized variables and class fields across symbol kinds; require
- *    the last runtime assignment, account for static fields running after method
- *    installation, and preserve separate instance/prototype slots.
+ *    the last runtime assignment, account for static fields running after
+ *    method installation, and preserve separate instance/prototype slots.
  * 6. Replace supported methods with excluded accessors and reverse that order;
  *    require the final class slot to decide whether a unit remains.
- * 7. Run a replaced-function fixture through EvidChecker and require one
- *    missing unit; remove the dead definition and require the same outcome.
+ * 7. Run a replaced-function fixture through EvidChecker and require one missing
+ *    unit; remove the dead definition and require the same outcome.
  * 8. Attach evidence to the final definition and require recovery to a passing
  *    check.
  */
 export async function test_javascript_redefinitions(): Promise<void> {
-  const repeated: IEvidInventory =
-    await new EvidJavaScriptAdapter().analyze(
-      EvidTestSourceSnapshot.create(
-        "src/redefinitions.cjs",
-        [
-          "/** @evidence rules.md#rule Replaced function. */",
-          "function run() { return 1; }",
-          "function run() { return 2; }",
-          "",
-          "class Service {",
-          "  /** @evidence rules.md#rule Replaced method. */",
-          "  call() { return 1; }",
-          "  call() { return 2; }",
-          "",
-          "  /** @evidence rules.md#rule Replaced field. */",
-          "  value = 1;",
-          "  value = 2;",
-          "",
-          "  /** @evidence rules.md#rule Replaced static method. */",
-          "  static create() { return 1; }",
-          "  static create() { return 2; }",
-          "}",
-          "",
-          "module.exports = { run, Service };",
-          "",
-        ].join("\n"),
-      ),
-    );
+  const repeated: IEvidInventory = await new EvidJavaScriptAdapter().analyze(
+    EvidTestSourceSnapshot.create(
+      "src/redefinitions.cjs",
+      [
+        "/** @evidence rules.md#rule Replaced function. */",
+        "function run() { return 1; }",
+        "function run() { return 2; }",
+        "",
+        "class Service {",
+        "  /** @evidence rules.md#rule Replaced method. */",
+        "  call() { return 1; }",
+        "  call() { return 2; }",
+        "",
+        "  /** @evidence rules.md#rule Replaced field. */",
+        "  value = 1;",
+        "  value = 2;",
+        "",
+        "  /** @evidence rules.md#rule Replaced static method. */",
+        "  static create() { return 1; }",
+        "  static create() { return 2; }",
+        "}",
+        "",
+        "module.exports = { run, Service };",
+        "",
+      ].join("\n"),
+    ),
+  );
 
   const run: IEvidUnit = requireUnit(repeated, "run");
   const call: IEvidUnit = requireUnit(repeated, "Service.prototype.call");
@@ -89,25 +89,21 @@ export async function test_javascript_redefinitions(): Promise<void> {
     );
     TestValidator.predicate(
       `${name} does not inherit replaced evidence`,
-      repeated.declarations.every(
-        (declaration: IEvidDeclaration): boolean => {
-          const host: IEvidHost | undefined = repeated.hosts.find(
-            (candidate: IEvidHost): boolean =>
-              candidate.id === declaration.hostId,
-          );
-          return host === undefined || !host.unitIds.includes(unit.id);
-        },
-      ),
+      repeated.declarations.every((declaration: IEvidDeclaration): boolean => {
+        const host: IEvidHost | undefined = repeated.hosts.find(
+          (candidate: IEvidHost): boolean =>
+            candidate.id === declaration.hostId,
+        );
+        return host === undefined || !host.unitIds.includes(unit.id);
+      }),
     );
   }
 
   const addresses: Map<string, string> = new Map<string, string>(
-    repeated.addresses.map(
-      (address: IEvidPublicAddress): [string, string] => [
-        address.segments.join("."),
-        address.unitId,
-      ],
-    ),
+    repeated.addresses.map((address: IEvidPublicAddress): [string, string] => [
+      address.segments.join("."),
+      address.unitId,
+    ]),
   );
   TestValidator.equals(
     "CommonJS function survivor",
@@ -142,29 +138,28 @@ export async function test_javascript_redefinitions(): Promise<void> {
     ],
   );
 
-  const hoisted: IEvidInventory =
-    await new EvidJavaScriptAdapter().analyze(
-      EvidTestSourceSnapshot.create(
-        "src/hoisting.cjs",
-        [
-          "/** @evidence rules.md#rule Replaced before initializer. */",
-          "function before() { return 'function'; }",
-          "var before = () => 'variable';",
-          "",
-          "var after = () => 'variable';",
-          "/** @evidence rules.md#rule Replaced after initializer. */",
-          "function after() { return 'function'; }",
-          "",
-          "var retainedBefore;",
-          "function retainedBefore() { return 'function'; }",
-          "function retainedAfter() { return 'function'; }",
-          "var retainedAfter;",
-          "",
-          "module.exports = { before, after, retainedBefore, retainedAfter };",
-          "",
-        ].join("\n"),
-      ),
-    );
+  const hoisted: IEvidInventory = await new EvidJavaScriptAdapter().analyze(
+    EvidTestSourceSnapshot.create(
+      "src/hoisting.cjs",
+      [
+        "/** @evidence rules.md#rule Replaced before initializer. */",
+        "function before() { return 'function'; }",
+        "var before = () => 'variable';",
+        "",
+        "var after = () => 'variable';",
+        "/** @evidence rules.md#rule Replaced after initializer. */",
+        "function after() { return 'function'; }",
+        "",
+        "var retainedBefore;",
+        "function retainedBefore() { return 'function'; }",
+        "function retainedAfter() { return 'function'; }",
+        "var retainedAfter;",
+        "",
+        "module.exports = { before, after, retainedBefore, retainedAfter };",
+        "",
+      ].join("\n"),
+    ),
+  );
   TestValidator.equals(
     "initialized var bindings replace hoisted functions",
     hoisted.units
@@ -197,22 +192,21 @@ export async function test_javascript_redefinitions(): Promise<void> {
     ["unsupported-annotation-host", "unsupported-annotation-host"],
   );
 
-  const initialized: IEvidInventory =
-    await new EvidJavaScriptAdapter().analyze(
-      EvidTestSourceSnapshot.create(
-        "src/initialized.cjs",
-        [
-          "/** @evidence rules.md#rule Replaced initializer. */",
-          "var repeated = 1;",
-          "var repeated = 2;",
-          "var repeated;",
-          "/** @evidence rules.md#rule Replaced same-statement initializer. */",
-          "var combined = 1, combined = 2;",
-          "module.exports = { repeated, combined };",
-          "",
-        ].join("\n"),
-      ),
-    );
+  const initialized: IEvidInventory = await new EvidJavaScriptAdapter().analyze(
+    EvidTestSourceSnapshot.create(
+      "src/initialized.cjs",
+      [
+        "/** @evidence rules.md#rule Replaced initializer. */",
+        "var repeated = 1;",
+        "var repeated = 2;",
+        "var repeated;",
+        "/** @evidence rules.md#rule Replaced same-statement initializer. */",
+        "var combined = 1, combined = 2;",
+        "module.exports = { repeated, combined };",
+        "",
+      ].join("\n"),
+    ),
+  );
   const initializedNames: string[] = ["repeated", "combined"];
   for (const name of initializedNames)
     TestValidator.equals(
@@ -350,8 +344,7 @@ export async function test_javascript_redefinitions(): Promise<void> {
     },
     async (directory: string): Promise<void> => {
       const config: string = join(directory, "evid.json");
-      const withHistory: IEvidCheckReport =
-        await EvidChecker.check(config);
+      const withHistory: IEvidCheckReport = await EvidChecker.check(config);
       TestValidator.equals(
         "replaced evidence cannot cover",
         withHistory.exitCode,
@@ -364,8 +357,7 @@ export async function test_javascript_redefinitions(): Promise<void> {
       );
 
       await EvidTestFileSystem.save(directory, { "contract.cjs": survivor });
-      const withoutHistory: IEvidCheckReport =
-        await EvidChecker.check(config);
+      const withoutHistory: IEvidCheckReport = await EvidChecker.check(config);
       TestValidator.equals(
         "removing dead history keeps outcome",
         withoutHistory.exitCode,
@@ -380,8 +372,7 @@ export async function test_javascript_redefinitions(): Promise<void> {
       await EvidTestFileSystem.save(directory, {
         "contract.cjs": `/** @evidence rules.md#rule Current implementation. */\n${survivor}`,
       });
-      const recovered: IEvidCheckReport =
-        await EvidChecker.check(config);
+      const recovered: IEvidCheckReport = await EvidChecker.check(config);
       TestValidator.equals(
         "current evidence recovers coverage",
         recovered.exitCode,
@@ -399,13 +390,11 @@ export async function test_javascript_redefinitions(): Promise<void> {
 /**
  * Requires one JavaScript declaration with the requested semantic identity.
  *
- * Each fixture spelling has one effective runtime value, so absence or duplicate
- * units indicates that replacement selection did not match JavaScript execution.
+ * Each fixture spelling has one effective runtime value, so absence or
+ * duplicate units indicates that replacement selection did not match JavaScript
+ * execution.
  */
-function requireUnit(
-  inventory: IEvidInventory,
-  identity: string,
-): IEvidUnit {
+function requireUnit(inventory: IEvidInventory, identity: string): IEvidUnit {
   const units: IEvidUnit[] = inventory.units.filter(
     (unit: IEvidUnit): boolean => unit.identity.join(".") === identity,
   );

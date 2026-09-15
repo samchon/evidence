@@ -5,11 +5,14 @@ import { join } from "node:path";
 
 import { EvidTestFileSystem } from "../../internal/EvidTestFileSystem";
 
-/** Rebuilds the BigQuery population as watched schema files change.
+/**
+ * Rebuilds the BigQuery population as watched schema files change.
  *
- * Watch must publish new declarations, report malformed source without silently shrinking coverage, and recover when the schema is repaired.
+ * Watch must publish new declarations, report malformed source without silently
+ * shrinking coverage, and recover when the schema is repaired.
  *
- * 1. Start a watched project and add a schema file that contributes a selected table.
+ * 1. Start a watched project and add a schema file that contributes a selected
+ *    table.
  * 2. Replace its source with malformed SQL and require an incomplete report.
  * 3. Repair the schema and require the expected population to return.
  */
