@@ -1,8 +1,8 @@
 import {
-  EvidenceAccessor,
-  EvidenceInventory,
-  EvidenceLuaAdapter,
-} from "@wrtnlabs/evidence";
+  EvidAccessor,
+  EvidInventory,
+  EvidLuaAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -31,13 +31,13 @@ export async function test_lua_units(): Promise<void> {
   `,
     ["src/contract.lua", "alias/contract.lua"],
   );
-  const inventory = await new EvidenceLuaAdapter().analyze(snapshot);
+  const inventory = await new EvidLuaAdapter().analyze(snapshot);
 
   TestValidator.equals("static module complete", inventory.diagnostics, []);
   TestValidator.equals(
     "exact public denominator",
     inventory.units
-      .map((unit) => `${unit.symbol}:${EvidenceAccessor.format(unit.identity)}`)
+      .map((unit) => `${unit.symbol}:${EvidAccessor.format(unit.identity)}`)
       .sort((left, right) => left.localeCompare(right)),
     [
       "property:module",
@@ -51,7 +51,7 @@ export async function test_lua_units(): Promise<void> {
     ].sort((left, right) => left.localeCompare(right)),
   );
   const selected = inventory.units.map((unit) => unit.id);
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   const primary = graph.resolve(
     { file: "/project/src/contract.lua", segments: ["module", "run"] },
     selected,
@@ -84,7 +84,7 @@ export async function test_lua_units(): Promise<void> {
     ).status,
     "missing",
   );
-  const files = await new EvidenceLuaAdapter().analyze(
+  const files = await new EvidLuaAdapter().analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create("first.lua", "function run() end"),
       TestSourceSnapshot.create("second.lua", "function run() end"),
@@ -95,7 +95,7 @@ export async function test_lua_units(): Promise<void> {
     new Set(files.units.map((unit) => unit.id)).size,
     2,
   );
-  const longKey = await new EvidenceLuaAdapter().analyze(
+  const longKey = await new EvidLuaAdapter().analyze(
     TestSourceSnapshot.create(
       "long.lua",
       "return { [ [=[\rname\n\rpart]=] ] = 1 }",

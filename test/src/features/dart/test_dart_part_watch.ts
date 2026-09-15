@@ -1,4 +1,4 @@
-import { EvidenceChecker, EvidenceWatcher } from "@wrtnlabs/evidence";
+import { EvidChecker, EvidWatcher } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
@@ -17,18 +17,18 @@ export async function test_dart_part_watch(): Promise<void> {
   await TestFileSystem.experiment(
     "dart-part-watch",
     {
-      "evidence.config.ts": dedent`
+      "evid.config.ts": dedent`
       export default { claims: [{ type: "typescript", files: ["claim.ts"], reference: { type: "dart", files: ["contracts/*.dart"], symbol: "property" } }] };
     `,
       "claim.ts": dedent`
-      /** @evidence ./contracts/api.dart#Model.value Verifies the public value. */
+      /** @evid ./contracts/api.dart#Model.value Verifies the public value. */
       export function claim() {}
     `,
       "contracts/api.dart": "part 'model.g.dart';",
     },
     async (directory) => {
-      const config = join(directory, "evidence.config.ts");
-      const watcher = new EvidenceWatcher(config, {
+      const config = join(directory, "evid.config.ts");
+      const watcher = new EvidWatcher(config, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
       });
@@ -38,7 +38,7 @@ export async function test_dart_part_watch(): Promise<void> {
           TestValidator.equals(
             `fresh part cycle ${cycle.cycle}`,
             cycle.report,
-            await EvidenceChecker.check(config),
+            await EvidChecker.check(config),
           );
           if (cycle.cycle === 1) {
             TestValidator.equals(

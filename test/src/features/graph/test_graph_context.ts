@@ -1,5 +1,5 @@
-import { EvidenceGraph } from "@wrtnlabs/evidence";
-import type { IEvidenceGraphInput } from "@wrtnlabs/evidence";
+import { EvidGraph } from "evid";
+import type { IEvidGraphInput } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { TestGraph } from "../../internal/TestGraph";
@@ -52,23 +52,23 @@ export async function test_graph_context(): Promise<void> {
     "type",
     "export class Box { value = 1; }",
   );
-  const input: IEvidenceGraphInput = {
+  const input: IEvidGraphInput = {
     claims: [
       {
         severity: "error",
         inventory,
         unitIds: [unit.id],
-        references: [false, true].map((noEvidenceExclude) => ({
+        references: [false, true].map((noEvidExclude) => ({
           severity: "error",
           inventory: reference,
           unitIds: [target.id],
           resolutions: [TestGraph.resolved(exclusion, target)],
-          noEvidenceExclude,
+          noEvidExclude,
         })),
       },
     ],
   };
-  const graph = new EvidenceGraph(input);
+  const graph = new EvidGraph(input);
   const first = graph.evaluate();
   const baseline = structuredClone(first);
 
@@ -97,7 +97,7 @@ export async function test_graph_context(): Promise<void> {
   TestValidator.equals("fresh graph evaluation", graph.evaluate(), baseline);
   TestValidator.equals(
     "separate empty graph",
-    new EvidenceGraph(input).evaluate(),
+    new EvidGraph(input).evaluate(),
     { success: true, claims: [], diagnostics: [] },
   );
 }

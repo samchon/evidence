@@ -1,4 +1,4 @@
-import { EvidenceTypeScriptAdapter } from "@wrtnlabs/evidence";
+import { EvidTypeScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -13,7 +13,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Require strings containing tags to remain inert.
  */
 export async function test_typescript_failures(): Promise<void> {
-  const adapter = new EvidenceTypeScriptAdapter();
+  const adapter = new EvidTypeScriptAdapter();
 
   const malformed = await adapter.analyze(
     TestSourceSnapshot.create("src/broken.ts", "export interface Broken {"),
@@ -140,7 +140,7 @@ export async function test_typescript_failures(): Promise<void> {
       "src/view.tsx",
       dedent`
         export const View = () => (
-          <div>{"@evidence docs/spec.md#fake This is JSX text."}</div>
+          <div>{"@evid docs/spec.md#fake This is JSX text."}</div>
         );
       `,
     ),

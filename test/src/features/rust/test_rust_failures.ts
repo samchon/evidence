@@ -1,5 +1,5 @@
-import { EvidenceRustAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidRustAdapter } from "evid";
+import type { IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -15,7 +15,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *    diagnostic instead of publishing a reduced population.
  */
 export async function test_rust_failures(): Promise<void> {
-  const adapter = new EvidenceRustAdapter();
+  const adapter = new EvidRustAdapter();
 
   // File modules must have exactly one selected conventional source.
   const missing = await adapter.analyze(
@@ -300,6 +300,6 @@ export async function test_rust_failures(): Promise<void> {
   );
 }
 
-function hasCode(inventory: IEvidenceInventory, code: string): boolean {
+function hasCode(inventory: IEvidInventory, code: string): boolean {
   return inventory.diagnostics.some((diagnostic) => diagnostic.code === code);
 }

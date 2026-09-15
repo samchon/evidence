@@ -1,4 +1,4 @@
-import { EvidenceInventory, EvidenceJavaAdapter } from "@wrtnlabs/evidence";
+import { EvidInventory, EvidJavaAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -13,58 +13,58 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Require inert Java carriers to report diagnostics.
  */
 export async function test_java_hosts(): Promise<void> {
-  const inventory = await new EvidenceJavaAdapter().analyze(
+  const inventory = await new EvidJavaAdapter().analyze(
     TestSourceSnapshot.create(
       "src/Contracts.java",
       dedent`
         /**
-         * @evidence docs/requirements.md#type Implements the public type.
-         * {@code @evidence docs/requirements.md#inline This example is inert.}
+         * @evid docs/requirements.md#type Implements the public type.
+         * {@code @evid docs/requirements.md#inline This example is inert.}
          * <pre>
-         * @evidence docs/requirements.md#preformatted This example is inert.
+         * @evid docs/requirements.md#preformatted This example is inert.
          * </pre>
          * <code>
-         * @evidence docs/requirements.md#html-code This example is inert.
+         * @evid docs/requirements.md#html-code This example is inert.
          * </code>
          */
         @Deprecated
         public class Contracts {
-            /** @evidence docs/requirements.md#fields Implements both constants. */
+            /** @evid docs/requirements.md#fields Implements both constants. */
             public static final int FIRST = 1, SECOND = 2;
 
-            /** @evidence docs/requirements.md#method Implements the first overload. */
+            /** @evid docs/requirements.md#method Implements the first overload. */
             public void calculate() {}
 
-            /** @evidence docs/requirements.md#method Implements the second overload. */
+            /** @evid docs/requirements.md#method Implements the second overload. */
             @Deprecated
             public void calculate(int value) {}
 
-            // @evidence docs/requirements.md#ordinary Ordinary comments are unsupported.
+            // @evid docs/requirements.md#ordinary Ordinary comments are unsupported.
             public void ordinary() {}
 
             public void literals() {
-                String text = "@evidence docs/requirements.md#string Strings are unsupported.";
+                String text = "@evid docs/requirements.md#string Strings are unsupported.";
                 String block = """
-                    @evidence docs/requirements.md#text-block Text blocks are unsupported.
+                    @evid docs/requirements.md#text-block Text blocks are unsupported.
                     """;
             }
 
             public enum State {
-                /** @evidence docs/requirements.md#constant Implements the enum constant. */
+                /** @evid docs/requirements.md#constant Implements the enum constant. */
                 READY
             }
 
             public @interface Label {
-                /** @evidence docs/requirements.md#element Implements the annotation element. */
+                /** @evid docs/requirements.md#element Implements the annotation element. */
                 String value();
             }
 
             public record Point(
-                /** @evidence docs/requirements.md#component Implements the record component. */
+                /** @evid docs/requirements.md#component Implements the record component. */
                 int x
             ) {}
 
-            /** @evidence docs/requirements.md#unpublished Cannot attach to a private member. */
+            /** @evid docs/requirements.md#unpublished Cannot attach to a private member. */
             private void unpublished() {}
         }
       `,
@@ -109,7 +109,7 @@ export async function test_java_hosts(): Promise<void> {
     4,
   );
 
-  const withdrawn = await new EvidenceJavaAdapter().analyze(
+  const withdrawn = await new EvidJavaAdapter().analyze(
     TestSourceSnapshot.create(
       "src/Hidden.java",
       dedent`
@@ -130,7 +130,7 @@ export async function test_java_hosts(): Promise<void> {
       ` + "\n",
     ),
   );
-  const population = new EvidenceInventory([withdrawn]).select(
+  const population = new EvidInventory([withdrawn]).select(
     withdrawn.units.map((unit) => unit.id),
   );
   TestValidator.equals(

@@ -1,17 +1,17 @@
 ---
 name: project
-description: Defines the Evidence workspace, current implementation status, product boundaries, dependencies, and canonical commands. Use when starting repository work or changing package architecture.
+description: Defines the Evid workspace, current implementation status, product boundaries, dependencies, and canonical commands. Use when starting repository work or changing package architecture.
 ---
 
 # Project
 
 ## Product
 
-`@wrtnlabs/evidence` enforces explicit acknowledgements between specifications, skills, public declarations, and tests. Public configuration types follow `@ttsc/evidence`: Config, Claim, Reference, shared bases, and artifact selectors. Use `Programming` and `Database` for type families. The `type` discriminator names the source language, such as `typescript`, `cpp`, `rust`, `prisma`, `sql`, or `dbml`; do not add a separate `language` setting. Files are selected directly with globs.
+`evid` enforces explicit acknowledgements between specifications, skills, public declarations, and tests. Public configuration types follow `@ttsc/evidence`: Config, Claim, Reference, shared bases, and artifact selectors. Use `Programming` and `Database` for type families. The `type` discriminator names the source language, such as `typescript`, `cpp`, `rust`, `prisma`, `sql`, or `dbml`; do not add a separate `language` setting. Files are selected directly with globs.
 
-Keep programming and database language identifiers in `EvidenceProgrammingType` and `EvidenceDatabaseType`. Database languages share one Claim and one Reference interface. Use `model`, `column`, and `relation` as the common database selectors, and `type`, `function`, and `property` for programming declarations. Classes belong to `type`.
+Keep programming and database language identifiers in `EvidProgrammingType` and `EvidDatabaseType`. Database languages share one Claim and one Reference interface. Use `model`, `column`, and `relation` as the common database selectors, and `type`, `function`, and `property` for programming declarations. Classes belong to `type`.
 
-The [roadmap](https://github.com/wrtnlabs/evidence/issues/31) owns execution order. Follow the [issue campaign skill](../issue-campaign/SKILL.md) when changing issue handoffs or implementation ordering.
+The [roadmap](https://github.com/wrtnlabs/evid/issues/31) owns execution order. Follow the [issue campaign skill](../issue-campaign/SKILL.md) when changing issue handoffs or implementation ordering.
 
 ## Layout
 
@@ -42,15 +42,15 @@ The [roadmap](https://github.com/wrtnlabs/evidence/issues/31) owns execution ord
 
 ## Dependencies And Distribution
 
-Use the root `packageManager` version. Keep `pnpm-workspace.yaml` to package globs and family catalogs: `samchon`, `typescript`, `tree-sitter`, and `utils`. Dependency and peer versions belong there; package manifests use named `catalog:<family>` or `workspace:` references. Do not add pnpm policy options. Consumers explicitly install `typescript`, `ttsc`, and `@wrtnlabs/evidence`; the first two remain required peers. `ttsx` is an executable in `ttsc`, not another dependency. `@ttsc/lint` is a development dependency. Each package and the test workspace have their own `lint.config.ts` extending `config/lint.config.ts`; keep shared rules in that common file.
+Use the root `packageManager` version. Keep `pnpm-workspace.yaml` to package globs and family catalogs: `samchon`, `typescript`, `tree-sitter`, and `utils`. Dependency and peer versions belong there; package manifests use named `catalog:<family>` or `workspace:` references. Do not add pnpm policy options. Consumers explicitly install `typescript`, `ttsc`, and `evid`; the first two remain required peers. `ttsx` is an executable in `ttsc`, not another dependency. `@ttsc/lint` is a development dependency. Each package and the test workspace have their own `lint.config.ts` extending `config/lint.config.ts`; keep shared rules in that common file.
 
 Use `typia` for runtime type checks and `@typia/utils` for `dedent`. Keep both in the `samchon` catalog. Register the development-only `@ttsc/evidence` contributor in each project's lint config and enable `evidence/singular` at error severity in the shared rules.
 
 Keep compiler dependencies in the workspaces that use them, including `config` for its typed lint configuration. The repository root only needs the formatter. Build scripts invoke `ttsc` with its default `tsconfig.json`; shared compiler settings do not declare plugins already discovered from package dependencies.
 
-`EvidenceParser` uses official `web-tree-sitter` and automatically downloaded, checksum-verified upstream grammars. A language needs an adapter and certification as well as a grammar. Read [the domain skill](evidence/SKILL.md) for the completeness boundary and the [adapter onboarding guide](evidence/adapter-onboarding.md) for grammar acquisition and manifest maintenance. Keep language WASM out of the repository and package allowlist.
+`EvidParser` uses official `web-tree-sitter` and automatically downloaded, checksum-verified upstream grammars. A language needs an adapter and certification as well as a grammar. Read [the domain skill](evidence/SKILL.md) for the completeness boundary and the [adapter onboarding guide](evidence/adapter-onboarding.md) for grammar acquisition and manifest maintenance. Keep language WASM out of the repository and package allowlist.
 
-Adapters implement `IEvidenceAdapter` and return serializable inventories. `EvidenceInventory` reconciles identities, validates ownership, and projects independent populations. `EvidenceTagParser` consumes mapped documentation after the adapter establishes attachment. Follow the [adapter onboarding guide](evidence/adapter-onboarding.md) for certification and distribution gates and the [adapter inventory guide](evidence/adapter-inventories.md) for extraction and host records.
+Adapters implement `IEvidAdapter` and return serializable inventories. `EvidInventory` reconciles identities, validates ownership, and projects independent populations. `EvidTagParser` consumes mapped documentation after the adapter establishes attachment. Follow the [adapter onboarding guide](evidence/adapter-onboarding.md) for certification and distribution gates and the [adapter inventory guide](evidence/adapter-inventories.md) for extraction and host records.
 
 Use CommonJS; do not add `type: "module"` or an unsupported Node engine constraint. Workspace `main` and `exports` point directly to `./src/index.ts`. JavaScript entry points, declaration paths, and the installed CLI bin belong only in `publishConfig`. Compiled package files go to ignored `lib` directories. Follow [development](../development/SKILL.md) for inert entry points, TypeScript execution, and maintenance scripts, and [documentation](../documentation/SKILL.md#readers-and-ownership) for authoritative README/LICENSE ownership.
 

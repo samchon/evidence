@@ -1,8 +1,8 @@
-import { EvidenceAccessor, EvidenceBigQueryAdapter } from "@wrtnlabs/evidence";
+import { EvidAccessor, EvidBigQueryAdapter } from "evid";
 import type {
-  EvidenceDatabaseSymbol,
-  IEvidenceWithdrawal,
-} from "@wrtnlabs/evidence";
+  EvidDatabaseSymbol,
+  IEvidWithdrawal,
+} from "evid";
 import { dedent } from "@typia/utils";
 
 import type { IDatabaseAdapterCertification } from "../../internal/certification/IDatabaseAdapterCertification";
@@ -30,21 +30,21 @@ export namespace BigQueryCertificationFixture {
     ];
     return {
       type: "bigquery",
-      adapter: new EvidenceBigQueryAdapter(),
+      adapter: new EvidBigQueryAdapter(),
       sources: [
         {
           file,
           content: dedent`
         -- 😀 Schema
-        -- @evidence docs/requirements.md#model Implements the certified model.
+        -- @evid docs/requirements.md#model Implements the certified model.
         CREATE TABLE \`project.dataset.child\` (
           -- 😀 Identity
-          -- @evidence docs/requirements.md#column Implements the certified column.
+          -- @evid docs/requirements.md#column Implements the certified column.
           id INT64,
           -- @internal Retired field.
           legacy STRING,
           -- 😀 Relationship
-          -- @evidence docs/requirements.md#relation Implements the certified relation.
+          -- @evid docs/requirements.md#relation Implements the certified relation.
           CONSTRAINT parent_key FOREIGN KEY (id) REFERENCES project.dataset.parent (id) NOT ENFORCED
         );
       `,
@@ -84,9 +84,9 @@ export namespace BigQueryCertificationFixture {
         source: {
           file,
           content: dedent`
-        -- @evidence docs/requirements.md#attached Attached table documentation.
-        CREATE TABLE ds.example (value STRING DEFAULT '@evidence docs/requirements.md#literal Inert SQL literal.');
-        -- @evidence docs/requirements.md#orphan Detached comment.
+        -- @evid docs/requirements.md#attached Attached table documentation.
+        CREATE TABLE ds.example (value STRING DEFAULT '@evid docs/requirements.md#literal Inert SQL literal.');
+        -- @evid docs/requirements.md#orphan Detached comment.
       `,
         },
         attachedTarget: "docs/requirements.md#attached",
@@ -107,16 +107,16 @@ export namespace BigQueryCertificationFixture {
      * assigns non-model records to the fixture's certified model owner.
      */
     function unit(
-      symbol: EvidenceDatabaseSymbol,
+      symbol: EvidDatabaseSymbol,
       identity: string[],
-      withdrawals?: IEvidenceWithdrawal["tag"][],
+      withdrawals?: IEvidWithdrawal["tag"][],
     ): IDatabaseAdapterCertificationUnit {
       return {
-        key: `${symbol}:${EvidenceAccessor.format(identity)}`,
+        key: `${symbol}:${EvidAccessor.format(identity)}`,
         symbol,
         identity,
         sites: 1,
-        addresses: [{ file, accessor: EvidenceAccessor.format(identity) }],
+        addresses: [{ file, accessor: EvidAccessor.format(identity) }],
         withdrawals: withdrawals ?? [],
         ...(symbol === "model"
           ? {}

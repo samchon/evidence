@@ -1,4 +1,4 @@
-import { EvidenceMysqlAdapter } from "@wrtnlabs/evidence";
+import { EvidMysqlAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -12,7 +12,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Verify failed snapshots and wrong extensions remain incomplete.
  */
 export async function test_mysql_boundaries(): Promise<void> {
-  const adapter = new EvidenceMysqlAdapter();
+  const adapter = new EvidMysqlAdapter();
   for (const source of [
     "CREATE TABLE broken (id INT;",
     "CREATE TABLE t (id INT); ALTER TABLE t ADD COLUMN added INT;",

@@ -1,7 +1,7 @@
 import {
-  EvidenceLanguageRegistry,
-  EvidencePythonAdapter,
-} from "@wrtnlabs/evidence";
+  EvidLanguageRegistry,
+  EvidPythonAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -17,7 +17,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Verify hidden and local declarations are excluded while class and instance members retain separate addresses.
  */
 export async function test_python_units(): Promise<void> {
-  const language = EvidenceLanguageRegistry.list().find(
+  const language = EvidLanguageRegistry.list().find(
     (entry) => entry.type === "python",
   );
   if (language === undefined)
@@ -25,10 +25,10 @@ export async function test_python_units(): Promise<void> {
   TestValidator.equals(
     "certified Python adapter",
     language.adapter?.entry,
-    "EvidencePythonAdapter",
+    "EvidPythonAdapter",
   );
 
-  const inventory = await new EvidencePythonAdapter().analyze(
+  const inventory = await new EvidPythonAdapter().analyze(
     TestSourceSnapshot.create(
       "src/sale.py",
       dedent`

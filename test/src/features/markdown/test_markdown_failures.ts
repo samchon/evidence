@@ -1,4 +1,4 @@
-import { EvidenceMarkdownAdapter } from "@wrtnlabs/evidence";
+import { EvidMarkdownAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -16,7 +16,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Combine a failed source snapshot with malformed heading syntax and require incomplete status with both diagnostic classes.
  */
 export async function test_markdown_failures(): Promise<void> {
-  const adapter = new EvidenceMarkdownAdapter();
+  const adapter = new EvidMarkdownAdapter();
 
   const whitespace = await adapter.analyze(
     TestSourceSnapshot.create("docs/space name.md", "# Contract"),

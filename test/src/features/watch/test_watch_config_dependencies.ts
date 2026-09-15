@@ -1,16 +1,16 @@
 import { TestValidator } from "@nestia/e2e";
-import { EvidenceConfigLoader } from "@wrtnlabs/evidence";
+import { EvidConfigLoader } from "evid";
 import type {
-  IEvidenceConfig,
-  IEvidenceSourceDependency,
-} from "@wrtnlabs/evidence";
+  IEvidConfig,
+  IEvidSourceDependency,
+} from "evid";
 import { dedent } from "@typia/utils";
 import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import { ConfigDependencyScanner } from "../../../../packages/evidence/src/internal/ConfigDependencyScanner";
+import { EvidConfigDependencyScanner } from "../../../../packages/evidence/src/internal/EvidConfigDependencyScanner";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
 /**
@@ -26,7 +26,7 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  *    publishing a watch set that could miss a future configuration change.
  * 4. Execute and scan an ESM import with query and fragment components; require
  *    its physical target, rather than the URL-qualified spelling, to be watched.
- * 5. Require Node and the scanner to reject a CommonJS `require()` of an absolute
+ * 5. Require EvidNode and the scanner to reject a CommonJS `require()` of an absolute
  *    file URL while preserving ordinary import-mode file URL support.
  * 6. Execute configs with nested lexical bindings named `require`; require the
  *    scanner to omit their calls while retaining unshadowed calls across static
@@ -51,7 +51,7 @@ export async function test_watch_config_dependencies(): Promise<void> {
     {
       "helper.ts": `export const files = ["src/**/*.ts"];\n`,
       "package.json": JSON.stringify({ type: "commonjs" }),
-      "evidence.config.ts": dedent`
+      "evid.config.ts": dedent`
         import { files } from "./helper";
 
         export default { claims: [], files };
@@ -59,14 +59,14 @@ export async function test_watch_config_dependencies(): Promise<void> {
     },
     async (directory: string): Promise<void> => {
       // Static local imports contribute their exact resolved source file.
-      const scanner: ConfigDependencyScanner = new ConfigDependencyScanner(
-        join(directory, "evidence.config.ts"),
+      const scanner: EvidConfigDependencyScanner = new EvidConfigDependencyScanner(
+        join(directory, "evid.config.ts"),
       );
-      const dependencies: IEvidenceSourceDependency[] = await scanner.scan();
+      const dependencies: IEvidSourceDependency[] = await scanner.scan();
       TestValidator.predicate(
         "static helper discovered",
         dependencies.some(
-          (dependency: IEvidenceSourceDependency): boolean =>
+          (dependency: IEvidSourceDependency): boolean =>
             dependency.path.replaceAll("\\", "/") ===
             join(directory, "helper.ts").replaceAll("\\", "/"),
         ),
@@ -74,7 +74,7 @@ export async function test_watch_config_dependencies(): Promise<void> {
       TestValidator.predicate(
         "module scope discovered",
         dependencies.some(
-          (dependency: IEvidenceSourceDependency): boolean =>
+          (dependency: IEvidSourceDependency): boolean =>
             dependency.path.replaceAll("\\", "/") ===
             join(directory, "package.json").replaceAll("\\", "/"),
         ),
@@ -82,7 +82,7 @@ export async function test_watch_config_dependencies(): Promise<void> {
 
       // A computed runtime dependency cannot silently produce an incomplete watch set.
       await TestFileSystem.save(directory, {
-        "evidence.config.ts": dedent`
+        "evid.config.ts": dedent`
           const specifier = "./helper";
           const settings = require(specifier);
 
@@ -90,8 +90,8 @@ export async function test_watch_config_dependencies(): Promise<void> {
         `,
       });
       await TestValidator.error("computed config dependency", async () => {
-        await new ConfigDependencyScanner(
-          join(directory, "evidence.config.ts"),
+        await new EvidConfigDependencyScanner(
+          join(directory, "evid.config.ts"),
         ).scan();
       });
 
@@ -104,18 +104,18 @@ export async function test_watch_config_dependencies(): Promise<void> {
       });
       const qualifiedFile: string = join(directory, "qualified.mjs");
       TestValidator.equals(
-        "Node resolves URL-qualified ESM dependency",
+        "EvidNode resolves URL-qualified ESM dependency",
         execFileSync(process.execPath, [qualifiedFile], {
           encoding: "utf8",
         }).trim(),
         "qualified",
       );
-      const qualifiedDependencies: IEvidenceSourceDependency[] =
-        await new ConfigDependencyScanner(qualifiedFile).scan();
+      const qualifiedDependencies: IEvidSourceDependency[] =
+        await new EvidConfigDependencyScanner(qualifiedFile).scan();
       TestValidator.predicate(
         "scanner watches URL-qualified ESM target",
         qualifiedDependencies.some(
-          (dependency: IEvidenceSourceDependency): boolean =>
+          (dependency: IEvidSourceDependency): boolean =>
             dependency.path.replaceAll("\\", "/") ===
             join(directory, "qualified-target.mjs").replaceAll("\\", "/"),
         ),
@@ -129,7 +129,7 @@ export async function test_watch_config_dependencies(): Promise<void> {
         "import-file-url.mjs": `import value from ${JSON.stringify(targetUrl)}; console.log(value);\n`,
       });
       const requireFileUrl: string = join(directory, "require-file-url.cjs");
-      TestValidator.error("Node rejects CommonJS file URL", (): unknown =>
+      TestValidator.error("EvidNode rejects CommonJS file URL", (): unknown =>
         execFileSync(process.execPath, [requireFileUrl], {
           stdio: ["ignore", "pipe", "ignore"],
         }),
@@ -137,23 +137,23 @@ export async function test_watch_config_dependencies(): Promise<void> {
       await TestValidator.error(
         "scanner rejects CommonJS file URL",
         async () => {
-          await new ConfigDependencyScanner(requireFileUrl).scan();
+          await new EvidConfigDependencyScanner(requireFileUrl).scan();
         },
       );
       const importFileUrl: string = join(directory, "import-file-url.mjs");
       TestValidator.equals(
-        "Node accepts imported file URL",
+        "EvidNode accepts imported file URL",
         execFileSync(process.execPath, [importFileUrl], {
           encoding: "utf8",
         }).trim(),
         "qualified",
       );
-      const fileUrlDependencies: IEvidenceSourceDependency[] =
-        await new ConfigDependencyScanner(importFileUrl).scan();
+      const fileUrlDependencies: IEvidSourceDependency[] =
+        await new EvidConfigDependencyScanner(importFileUrl).scan();
       TestValidator.predicate(
         "scanner watches imported file URL",
         fileUrlDependencies.some(
-          (dependency: IEvidenceSourceDependency): boolean =>
+          (dependency: IEvidSourceDependency): boolean =>
             dependency.path.replaceAll("\\", "/") ===
             join(directory, "qualified-target.mjs").replaceAll("\\", "/"),
         ),
@@ -228,12 +228,12 @@ export async function test_watch_config_dependencies(): Promise<void> {
       execFileSync(process.execPath, [shadowedFile], {
         stdio: ["ignore", "pipe", "ignore"],
       });
-      const shadowedDependencies: IEvidenceSourceDependency[] =
-        await new ConfigDependencyScanner(shadowedFile).scan();
+      const shadowedDependencies: IEvidSourceDependency[] =
+        await new EvidConfigDependencyScanner(shadowedFile).scan();
       TestValidator.predicate(
         "unshadowed CommonJS dependency retained",
         shadowedDependencies.some(
-          (dependency: IEvidenceSourceDependency): boolean =>
+          (dependency: IEvidSourceDependency): boolean =>
             dependency.path.replaceAll("\\", "/") ===
             join(directory, "outer.cjs").replaceAll("\\", "/"),
         ),
@@ -241,7 +241,7 @@ export async function test_watch_config_dependencies(): Promise<void> {
       TestValidator.equals(
         "shadowed CommonJS calls omitted",
         shadowedDependencies.some(
-          (dependency: IEvidenceSourceDependency): boolean =>
+          (dependency: IEvidSourceDependency): boolean =>
             dependency.path.includes("missing-"),
         ),
         false,
@@ -249,7 +249,7 @@ export async function test_watch_config_dependencies(): Promise<void> {
       TestValidator.predicate(
         "strict block function stays lexical",
         shadowedDependencies.some(
-          (dependency: IEvidenceSourceDependency): boolean =>
+          (dependency: IEvidSourceDependency): boolean =>
             dependency.path.replaceAll("\\", "/") ===
             join(directory, "strict.cjs").replaceAll("\\", "/"),
         ),
@@ -291,18 +291,18 @@ export async function test_watch_config_dependencies(): Promise<void> {
         await TestValidator.error(
           `${filename} computed first argument`,
           async (): Promise<void> => {
-            await new ConfigDependencyScanner(join(directory, filename)).scan();
+            await new EvidConfigDependencyScanner(join(directory, filename)).scan();
           },
         );
-      const literalDependencies: IEvidenceSourceDependency[] =
-        await new ConfigDependencyScanner(
+      const literalDependencies: IEvidSourceDependency[] =
+        await new EvidConfigDependencyScanner(
           join(directory, "literal-first.cjs"),
         ).scan();
       TestValidator.predicate(
         "literal first arguments retained",
         ["outer.cjs", "strict.cjs"].every((filename: string): boolean =>
           literalDependencies.some(
-            (dependency: IEvidenceSourceDependency): boolean =>
+            (dependency: IEvidSourceDependency): boolean =>
               dependency.path.replaceAll("\\", "/") ===
               join(directory, filename).replaceAll("\\", "/"),
           ),
@@ -311,7 +311,7 @@ export async function test_watch_config_dependencies(): Promise<void> {
       TestValidator.equals(
         "later literals are not dependencies",
         literalDependencies.some(
-          (dependency: IEvidenceSourceDependency): boolean =>
+          (dependency: IEvidSourceDependency): boolean =>
             dependency.path.includes("missing-later-literal"),
         ),
         false,
@@ -322,7 +322,7 @@ export async function test_watch_config_dependencies(): Promise<void> {
         "transparent-require.cjs",
       );
       TestValidator.equals(
-        "Node executes parenthesized CommonJS loader",
+        "EvidNode executes parenthesized CommonJS loader",
         execFileSync(process.execPath, [transparentFile], {
           encoding: "utf8",
         }).trim(),
@@ -332,12 +332,12 @@ export async function test_watch_config_dependencies(): Promise<void> {
         "transparent-require.cjs",
         "transparent-require.cts",
       ]) {
-        const transparentDependencies: IEvidenceSourceDependency[] =
-          await new ConfigDependencyScanner(join(directory, filename)).scan();
+        const transparentDependencies: IEvidSourceDependency[] =
+          await new EvidConfigDependencyScanner(join(directory, filename)).scan();
         TestValidator.predicate(
           `${filename} transparent loader discovered`,
           transparentDependencies.some(
-            (dependency: IEvidenceSourceDependency): boolean =>
+            (dependency: IEvidSourceDependency): boolean =>
               dependency.path.replaceAll("\\", "/") ===
               join(directory, "outer.cjs").replaceAll("\\", "/"),
           ),
@@ -346,7 +346,7 @@ export async function test_watch_config_dependencies(): Promise<void> {
       await TestValidator.error(
         "parenthesized loader keeps computed-argument rejection",
         async (): Promise<void> => {
-          await new ConfigDependencyScanner(
+          await new EvidConfigDependencyScanner(
             join(directory, "transparent-computed.cjs"),
           ).scan();
         },
@@ -361,18 +361,18 @@ export async function test_watch_config_dependencies(): Promise<void> {
       });
       const shadowedImportFile: string = join(directory, "shadowed-import.mjs");
       TestValidator.equals(
-        "Node calls imported require binding",
+        "EvidNode calls imported require binding",
         execFileSync(process.execPath, [shadowedImportFile], {
           encoding: "utf8",
         }).trim(),
         "local",
       );
-      const importDependencies: IEvidenceSourceDependency[] =
-        await new ConfigDependencyScanner(shadowedImportFile).scan();
+      const importDependencies: IEvidSourceDependency[] =
+        await new EvidConfigDependencyScanner(shadowedImportFile).scan();
       TestValidator.predicate(
         "import source retained",
         importDependencies.some(
-          (dependency: IEvidenceSourceDependency): boolean =>
+          (dependency: IEvidSourceDependency): boolean =>
             dependency.path.replaceAll("\\", "/") ===
             join(directory, "loader.mjs").replaceAll("\\", "/"),
         ),
@@ -380,7 +380,7 @@ export async function test_watch_config_dependencies(): Promise<void> {
       TestValidator.equals(
         "imported require call omitted",
         importDependencies.some(
-          (dependency: IEvidenceSourceDependency): boolean =>
+          (dependency: IEvidSourceDependency): boolean =>
             dependency.path.includes("missing-import"),
         ),
         false,
@@ -393,14 +393,14 @@ export async function test_watch_config_dependencies(): Promise<void> {
           export = {};
         `,
       });
-      const ambientDependencies: IEvidenceSourceDependency[] =
-        await new ConfigDependencyScanner(
+      const ambientDependencies: IEvidSourceDependency[] =
+        await new EvidConfigDependencyScanner(
           join(directory, "ambient.cts"),
         ).scan();
       TestValidator.predicate(
         "ambient declaration leaves runtime require visible",
         ambientDependencies.some(
-          (dependency: IEvidenceSourceDependency): boolean =>
+          (dependency: IEvidSourceDependency): boolean =>
             dependency.path.replaceAll("\\", "/") ===
             join(directory, "outer.cjs").replaceAll("\\", "/"),
         ),
@@ -426,30 +426,30 @@ export async function test_watch_config_dependencies(): Promise<void> {
       });
       const hashbangFile: string = join(directory, "hashbang-strict.cjs");
       TestValidator.equals(
-        "Node preserves strict directive after hashbang",
+        "EvidNode preserves strict directive after hashbang",
         execFileSync(process.execPath, [hashbangFile], {
           encoding: "utf8",
         }).trim(),
         "strict",
       );
-      const hashbangDependencies: IEvidenceSourceDependency[] =
-        await new ConfigDependencyScanner(hashbangFile).scan();
+      const hashbangDependencies: IEvidSourceDependency[] =
+        await new EvidConfigDependencyScanner(hashbangFile).scan();
       TestValidator.predicate(
         "hashbang strict dependency retained",
         hashbangDependencies.some(
-          (dependency: IEvidenceSourceDependency): boolean =>
+          (dependency: IEvidSourceDependency): boolean =>
             dependency.path.replaceAll("\\", "/") ===
             join(directory, "strict.cjs").replaceAll("\\", "/"),
         ),
       );
-      const sloppyHashbangDependencies: IEvidenceSourceDependency[] =
-        await new ConfigDependencyScanner(
+      const sloppyHashbangDependencies: IEvidSourceDependency[] =
+        await new EvidConfigDependencyScanner(
           join(directory, "hashbang-sloppy.cjs"),
         ).scan();
       TestValidator.equals(
         "sloppy hashbang keeps Annex B shadow",
         sloppyHashbangDependencies.some(
-          (dependency: IEvidenceSourceDependency): boolean =>
+          (dependency: IEvidSourceDependency): boolean =>
             dependency.path.includes("missing-hashbang-annex-b"),
         ),
         false,
@@ -469,7 +469,7 @@ export async function test_watch_config_dependencies(): Promise<void> {
       await TestFileSystem.save(directory, {
         "data-target.mjs": `globalThis.__evidenceDataTarget = true;\n`,
         "data-config.mts": dedent`
-          // @ts-expect-error Node resolves the literal data module at runtime.
+          // @ts-expect-error EvidNode resolves the literal data module at runtime.
           await import(${JSON.stringify(`${nestedDataModule}#section`)});
 
           export default {
@@ -488,19 +488,19 @@ export async function test_watch_config_dependencies(): Promise<void> {
         "data-require.cjs": `require("data:text/javascript,export default 1");\n`,
       });
       const dataConfig: string = join(directory, "data-config.mts");
-      const loadedDataConfig: IEvidenceConfig =
-        await EvidenceConfigLoader.load(dataConfig);
+      const loadedDataConfig: IEvidConfig =
+        await EvidConfigLoader.load(dataConfig);
       TestValidator.equals(
         "data URL config evaluates",
         loadedDataConfig.claims.length,
         1,
       );
-      const dataDependencies: IEvidenceSourceDependency[] =
-        await new ConfigDependencyScanner(dataConfig).scan();
+      const dataDependencies: IEvidSourceDependency[] =
+        await new EvidConfigDependencyScanner(dataConfig).scan();
       TestValidator.equals(
         "data URL adds no filesystem dependency",
         dataDependencies.some(
-          (dependency: IEvidenceSourceDependency): boolean =>
+          (dependency: IEvidSourceDependency): boolean =>
             dependency.path.includes("data:text"),
         ),
         false,
@@ -508,19 +508,19 @@ export async function test_watch_config_dependencies(): Promise<void> {
       TestValidator.predicate(
         "nested base64 data URL retains absolute file dependency",
         dataDependencies.some(
-          (dependency: IEvidenceSourceDependency): boolean =>
+          (dependency: IEvidSourceDependency): boolean =>
             dependency.path.replaceAll("\\", "/") ===
             dataTarget.replaceAll("\\", "/"),
         ),
       );
-      const leafDependencies: IEvidenceSourceDependency[] =
-        await new ConfigDependencyScanner(
+      const leafDependencies: IEvidSourceDependency[] =
+        await new EvidConfigDependencyScanner(
           join(directory, "data-leaves.mjs"),
         ).scan();
       TestValidator.equals(
         "JSON and Wasm data URLs are dependency leaves",
         leafDependencies.some(
-          (dependency: IEvidenceSourceDependency): boolean =>
+          (dependency: IEvidSourceDependency): boolean =>
             dependency.path.includes("data:"),
         ),
         false,
@@ -529,7 +529,7 @@ export async function test_watch_config_dependencies(): Promise<void> {
         await TestValidator.error(
           `${filename} invalid data loader boundary`,
           async (): Promise<void> => {
-            await new ConfigDependencyScanner(join(directory, filename)).scan();
+            await new EvidConfigDependencyScanner(join(directory, filename)).scan();
           },
         );
     },

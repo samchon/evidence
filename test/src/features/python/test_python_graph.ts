@@ -1,10 +1,10 @@
 import {
-  EvidenceFingerprint,
-  EvidenceGraph,
-  EvidenceMarkdownAdapter,
-  EvidencePythonAdapter,
-} from "@wrtnlabs/evidence";
-import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidGraph,
+  EvidMarkdownAdapter,
+  EvidPythonAdapter,
+} from "evid";
+import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -21,7 +21,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Compare function fingerprints after metadata-only and implementation-body edits, preserving the former and changing the latter.
  */
 export async function test_python_graph(): Promise<void> {
-  const requirements = await new EvidenceMarkdownAdapter().analyze(
+  const requirements = await new EvidMarkdownAdapter().analyze(
     TestSourceSnapshot.create(
       "docs/requirements.md",
       dedent`
@@ -39,19 +39,19 @@ export async function test_python_graph(): Promise<void> {
       `,
     ),
   );
-  const implementation = await new EvidencePythonAdapter().analyze(
+  const implementation = await new EvidPythonAdapter().analyze(
     TestSourceSnapshot.create(
       "src/contracts.py",
       dedent`
-        # @evidence docs/requirements.md#service Implements the public type.
+        # @evid docs/requirements.md#service Implements the public type.
         class Service:
             pass
 
         def run():
-            """@evidence docs/requirements.md#run Implements the operation."""
+            """@evid docs/requirements.md#run Implements the operation."""
             return 1
 
-        # @evidence docs/requirements.md#value Implements the public value.
+        # @evid docs/requirements.md#value Implements the public value.
         value = 1
       `,
     ),
@@ -67,7 +67,7 @@ export async function test_python_graph(): Promise<void> {
     requireUnit(implementation, "value"),
   ];
 
-  const complete = EvidenceGraph.evaluate({
+  const complete = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -97,7 +97,7 @@ export async function test_python_graph(): Promise<void> {
     missing.declarations = missing.declarations.filter(
       (declaration) => !declaration.target.endsWith(`#${anchor}`),
     );
-    const partial = EvidenceGraph.evaluate({
+    const partial = EvidGraph.evaluate({
       claims: [
         {
           severity: "error",
@@ -143,26 +143,26 @@ export async function test_python_graph(): Promise<void> {
 
   TestValidator.equals(
     "Python evidence metadata preserves fingerprint",
-    EvidenceFingerprint.inspect(original, originalUnit.id).fingerprint,
-    EvidenceFingerprint.inspect(editedReason, reasonUnit.id).fingerprint,
+    EvidFingerprint.inspect(original, originalUnit.id).fingerprint,
+    EvidFingerprint.inspect(editedReason, reasonUnit.id).fingerprint,
   );
   TestValidator.notEquals(
     "Python implementation moves fingerprint",
-    EvidenceFingerprint.inspect(original, originalUnit.id).fingerprint,
-    EvidenceFingerprint.inspect(editedBody, bodyUnit.id).fingerprint,
+    EvidFingerprint.inspect(original, originalUnit.id).fingerprint,
+    EvidFingerprint.inspect(editedBody, bodyUnit.id).fingerprint,
   );
 }
 
 async function fingerprintInventory(
   reason: string,
   statement: string,
-): Promise<IEvidenceInventory> {
-  return new EvidencePythonAdapter().analyze(
+): Promise<IEvidInventory> {
+  return new EvidPythonAdapter().analyze(
     TestSourceSnapshot.create(
       "src/fingerprint.py",
       dedent`
         def run():
-            """@evidence docs/requirements.md#run ${reason}"""
+            """@evid docs/requirements.md#run ${reason}"""
             ${statement}
       `,
     ),
@@ -170,9 +170,9 @@ async function fingerprintInventory(
 }
 
 function requireUnit(
-  inventory: IEvidenceInventory,
+  inventory: IEvidInventory,
   name: string,
-): IEvidenceUnit {
+): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === name || candidate.identity.at(-1) === name,

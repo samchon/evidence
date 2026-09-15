@@ -1,16 +1,16 @@
-import type { IEvidenceGrammar } from "@wrtnlabs/evidence";
+import type { IEvidGrammar } from "evid";
 import { randomUUID } from "node:crypto";
 import { resolve } from "node:path";
 
-import { TreeSitterAssets } from "../../../packages/evidence/src/internal/TreeSitterAssets";
-import { TreeSitterAssetScope } from "../../../packages/evidence/src/internal/TreeSitterAssetScope";
+import { EvidTreeSitterAssets } from "../../../packages/evidence/src/internal/EvidTreeSitterAssets";
+import { EvidTreeSitterAssetScope } from "../../../packages/evidence/src/internal/EvidTreeSitterAssetScope";
 import { TestFileSystem } from "./TestFileSystem";
 
 /** Acquires real pinned test grammars automatically while isolating each suite's runtime cache. */
 export namespace TestParserAssets {
   /** Reuses a contributor/CI fixture cache independently of the acquisition scenario under test. */
-  export async function bytes(grammar: IEvidenceGrammar): Promise<Uint8Array> {
-    return TreeSitterAssetScope.run(
+  export async function bytes(grammar: IEvidGrammar): Promise<Uint8Array> {
+    return EvidTreeSitterAssetScope.run(
       {
         cacheDirectory: resolve(__dirname, "../../.tmp/parser-fixtures"),
         fetch: globalThis.fetch,
@@ -19,13 +19,13 @@ export namespace TestParserAssets {
         signal: undefined,
         progress: undefined,
       },
-      async () => new TreeSitterAssets().bytes(grammar),
+      async () => new EvidTreeSitterAssets().bytes(grammar),
     );
   }
 
   /** Creates a disposable runtime cache and supplies only catalog-pinned bytes as its controlled transport. */
   export async function run<T>(closure: () => Promise<T>): Promise<T> {
-    const grammars = await new TreeSitterAssets().list();
+    const grammars = await new EvidTreeSitterAssets().list();
     const files = new Map(
       grammars.map((grammar) => [grammar.wasm.url, grammar]),
     );
@@ -50,7 +50,7 @@ export namespace TestParserAssets {
         );
         for (const key of previous.keys()) process.env[key] = cacheDirectory;
         try {
-          return await TreeSitterAssetScope.run(
+          return await EvidTreeSitterAssetScope.run(
             { cacheDirectory, fetch: fetchFixture },
             closure,
           );

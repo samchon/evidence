@@ -1,4 +1,4 @@
-import { EvidenceInventory, EvidenceRubyAdapter } from "@wrtnlabs/evidence";
+import { EvidInventory, EvidRubyAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -15,43 +15,43 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Require all unsupported annotation carriers to remain diagnosable.
  */
 export async function test_ruby_hosts(): Promise<void> {
-  const inventory = await new EvidenceRubyAdapter().analyze(
+  const inventory = await new EvidRubyAdapter().analyze(
     TestSourceSnapshot.create(
       "lib/contracts.rb",
       dedent`
-        # @evidence docs/requirements.md#type Implements the class.
+        # @evid docs/requirements.md#type Implements the class.
         class Contracts
-          # @evidence docs/requirements.md#method Implements the method.
+          # @evid docs/requirements.md#method Implements the method.
           def run
-            # @evidence docs/requirements.md#body Body comments are unsupported.
-            text = "@evidence docs/requirements.md#string Strings are unsupported."
+            # @evid docs/requirements.md#body Body comments are unsupported.
+            text = "@evid docs/requirements.md#string Strings are unsupported."
             heredoc = <<~DOC
-              @evidence docs/requirements.md#heredoc Heredocs are unsupported.
+              @evid docs/requirements.md#heredoc Heredocs are unsupported.
             DOC
             [text, heredoc]
           end
 
-          # @evidence docs/requirements.md#attributes Implements both attributes.
+          # @evid docs/requirements.md#attributes Implements both attributes.
           attr_reader :first, :second
 
           private
-          # @evidence docs/requirements.md#private Private methods are unsupported.
+          # @evid docs/requirements.md#private Private methods are unsupported.
           def hidden; end
 
-          # @evidence docs/requirements.md#detached Detached comments are unsupported.
+          # @evid docs/requirements.md#detached Detached comments are unsupported.
 
           def detached; end
         end
 
         =begin
-        @evidence docs/requirements.md#embedded Implements embedded RDoc.
+        @evid docs/requirements.md#embedded Implements embedded RDoc.
         =end
         class Embedded; end
 
-        value = 1 # @evidence docs/requirements.md#inline Inline comments are unsupported.
+        value = 1 # @evid docs/requirements.md#inline Inline comments are unsupported.
                   class Aligned; end
 
-        # @evidence docs/requirements.md#trailing Trailing comments are unsupported.
+        # @evid docs/requirements.md#trailing Trailing comments are unsupported.
       `,
     ),
   );
@@ -90,7 +90,7 @@ export async function test_ruby_hosts(): Promise<void> {
     7,
   );
 
-  const withdrawn = await new EvidenceRubyAdapter().analyze(
+  const withdrawn = await new EvidRubyAdapter().analyze(
     TestSourceSnapshot.create(
       "lib/hidden.rb",
       dedent`
@@ -101,7 +101,7 @@ export async function test_ruby_hosts(): Promise<void> {
       `,
     ),
   );
-  const population = new EvidenceInventory([withdrawn]).select(
+  const population = new EvidInventory([withdrawn]).select(
     withdrawn.units.map((unit) => unit.id),
   );
   TestValidator.equals(

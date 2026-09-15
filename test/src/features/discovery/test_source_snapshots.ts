@@ -1,10 +1,10 @@
-import { EvidenceSourceLoader } from "@wrtnlabs/evidence";
+import { EvidSourceLoader } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { SourcePath } from "../../../../packages/evidence/src/internal/SourcePath";
+import { EvidSourcePath } from "../../../../packages/evidence/src/internal/EvidSourcePath";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
 /**
@@ -35,7 +35,7 @@ export async function test_source_snapshots(): Promise<void> {
   await TestFileSystem.experiment(
     location,
     {
-      "project/evidence.config.ts": "export default {};",
+      "project/evid.config.ts": "export default {};",
       "shared/z-document.md": content,
       "shared/a.md": "# A",
       "shared/private/hidden.md": "# Hidden",
@@ -44,14 +44,14 @@ export async function test_source_snapshots(): Promise<void> {
     },
     async (directory) => {
       // Relative and absolute population roots select the same files from a nested config.
-      const config = join(directory, "project/evidence.config.ts");
+      const config = join(directory, "project/evid.config.ts");
       const files = ["**/*.md", "!private/**", "private/public.md"];
 
-      const relative = await EvidenceSourceLoader.glob(config, {
+      const relative = await EvidSourceLoader.glob(config, {
         root: "../shared",
         files,
       });
-      const absolute = await EvidenceSourceLoader.glob(config, {
+      const absolute = await EvidSourceLoader.glob(config, {
         root: join(directory, "shared"),
         files,
       });
@@ -83,7 +83,7 @@ export async function test_source_snapshots(): Promise<void> {
         "root tracks new matches",
         relative.dependencies.some(
           (dependency) =>
-            dependency.path === SourcePath.slash(join(directory, "shared")) &&
+            dependency.path === EvidSourcePath.slash(join(directory, "shared")) &&
             dependency.recursive,
         ),
       );
@@ -94,7 +94,7 @@ export async function test_source_snapshots(): Promise<void> {
       );
       await TestFileSystem.save(directory, { "shared/a.md": "# Changed" });
 
-      const changed = await EvidenceSourceLoader.file(config, "../shared/a.md");
+      const changed = await EvidSourceLoader.file(config, "../shared/a.md");
 
       TestValidator.predicate("exact local file", changed.complete);
       TestValidator.notEquals(
@@ -111,7 +111,7 @@ export async function test_source_snapshots(): Promise<void> {
       );
 
       // Discovery retains unknown extensions for explicit adapter acceptance or rejection.
-      const unclassified = await EvidenceSourceLoader.glob(config, {
+      const unclassified = await EvidSourceLoader.glob(config, {
         root: "../shared",
         files: ["*.unknown"],
       });

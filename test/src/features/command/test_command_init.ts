@@ -1,4 +1,4 @@
-import { EvidenceCommand, EvidenceConfigLoader } from "@wrtnlabs/evidence";
+import { EvidCommand, EvidConfigLoader } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { readFile, readdir } from "node:fs/promises";
@@ -23,7 +23,7 @@ export async function test_command_init(): Promise<void> {
   const location = join(__dirname, `init ${randomUUID()}`);
   await TestFileSystem.experiment(location, {}, async (directory) => {
     // Custom paths resolve from --cwd and create only the requested config.
-    const created = await EvidenceCommand.run(
+    const created = await EvidCommand.run(
       ["init", "--config", "custom.config.ts"],
       directory,
     );
@@ -32,7 +32,7 @@ export async function test_command_init(): Promise<void> {
 
     const file = join(directory, "custom.config.ts");
     const source = await readFile(file, "utf8");
-    await EvidenceConfigLoader.load(file);
+    await EvidConfigLoader.load(file);
     TestValidator.equals(
       "only requested config created",
       await readdir(directory),
@@ -40,7 +40,7 @@ export async function test_command_init(): Promise<void> {
     );
 
     // A second initialization preserves the exact authored file.
-    const refused = await EvidenceCommand.run(
+    const refused = await EvidCommand.run(
       ["init", "--config", "custom.config.ts"],
       directory,
     );

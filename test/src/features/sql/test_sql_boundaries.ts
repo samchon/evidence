@@ -1,4 +1,4 @@
-import { EvidenceSqlAdapter } from "@wrtnlabs/evidence";
+import { EvidSqlAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
@@ -11,7 +11,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Verify an understood empty schema remains complete without fabricated units.
  */
 export async function test_sql_boundaries(): Promise<void> {
-  const adapter = new EvidenceSqlAdapter();
+  const adapter = new EvidSqlAdapter();
   for (const content of [
     "CREATE TABLE account (id INTEGER DEFAULT nextval('sequence'));",
     "CREATE TABLE account (id INTEGER, UNIQUE INDEX named (id));",

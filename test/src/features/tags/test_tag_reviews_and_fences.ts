@@ -1,5 +1,5 @@
-import { EvidenceTagParser } from "@wrtnlabs/evidence";
-import type { IEvidenceDiagnostic } from "@wrtnlabs/evidence";
+import { EvidTagParser } from "evid";
+import type { IEvidDiagnostic } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -28,34 +28,34 @@ export async function test_tag_reviews_and_fences(): Promise<void> {
     /**
      * A sentence mentioning @internal is ordinary prose.
      * ~~~~typescript
-     * @evidence ../fake.ts#fake This is only an example.
+     * @evid ../fake.ts#fake This is only an example.
      * @hidden
      * ~~~
-     * @evidence ../still-fenced.ts#fake The short delimiter did not close the fence.
+     * @evid ../still-fenced.ts#fake The short delimiter did not close the fence.
      * ~~~~
      *    \`\`\`typescript
-     * @evidence ../three-column.ts#fake This is another example.
+     * @evid ../three-column.ts#fake This is another example.
      *    \`\`\`
      *     \`\`\` literal indented delimiter
-     * @evidence ../real.ts#run Implements the requirement.
+     * @evid ../real.ts#run Implements the requirement.
      * Continues on the next line.
-     * @evidenceReview ../real.ts#run #a3f9c1d Verified the implementation.
-     * @evidenceExclude docs/spec.md#unused This part does not apply.
-     * @evidenceExcludeReview docs/spec.md#unused #req-scope describes the reviewed boundary.
-     * @evidenceReviewed ../fake.ts#fake This is another tag.
-     * @evidence ../before-fence.ts#run Keeps only this prose.
+     * @evidReview ../real.ts#run #a3f9c1d Verified the implementation.
+     * @evidExclude docs/spec.md#unused This part does not apply.
+     * @evidExcludeReview docs/spec.md#unused #req-scope describes the reviewed boundary.
+     * @evidReviewed ../fake.ts#fake This is another tag.
+     * @evid ../before-fence.ts#run Keeps only this prose.
      * ~~~text
      * This fenced example is not part of the reason.
      * ~~~
-     * @evidence ../missing-reason.ts#run
+     * @evid ../missing-reason.ts#run
      * ~~~text
      * This fenced example cannot supply a reason.
      * ~~~
      * \`\`\`typescript
-     * @evidence ../unclosed.ts#fake This remains fenced through the host end.
+     * @evid ../unclosed.ts#fake This remains fenced through the host end.
      */
   `);
-  const result = EvidenceTagParser.parse(
+  const result = EvidTagParser.parse(
     fixture.content,
     fixture.host,
     fixture.documentation,
@@ -97,7 +97,7 @@ export async function test_tag_reviews_and_fences(): Promise<void> {
   TestValidator.equals(
     "fence cannot supply a reason",
     result.diagnostics.map(
-      (diagnostic: IEvidenceDiagnostic): string => diagnostic.code,
+      (diagnostic: IEvidDiagnostic): string => diagnostic.code,
     ),
     ["missing-evidence-reason"],
   );

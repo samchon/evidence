@@ -1,4 +1,4 @@
-import { EvidenceSqliteAdapter } from "@wrtnlabs/evidence";
+import { EvidSqliteAdapter } from "evid";
 import { dedent } from "@typia/utils";
 
 import { DatabaseAdapterCertification } from "../../internal/certification/DatabaseAdapterCertification";
@@ -15,17 +15,17 @@ import type { IDatabaseAdapterCertification } from "../../internal/certification
 export async function test_sqlite_certification(): Promise<void> {
   const fixture: IDatabaseAdapterCertification = {
     type: "sqlite",
-    adapter: new EvidenceSqliteAdapter(),
+    adapter: new EvidSqliteAdapter(),
     sources: [
       {
         file: "schema.sql",
         content: dedent`
       -- SQLite 계약 😀
-      -- @evidence docs/requirements.md#model Describes the table.
+      -- @evid docs/requirements.md#model Describes the table.
       CREATE TABLE Account (
-        -- @evidence docs/requirements.md#column Describes the owner.
+        -- @evid docs/requirements.md#column Describes the owner.
         owner INTEGER DEFAULT 1,
-        -- @evidence docs/requirements.md#relation Describes the foreign key.
+        -- @evid docs/requirements.md#relation Describes the foreign key.
         CONSTRAINT owner_link FOREIGN KEY (owner) REFERENCES Owners(id)
       );
     `,
@@ -111,9 +111,9 @@ export async function test_sqlite_certification(): Promise<void> {
       source: {
         file: "schema.sql",
         content: dedent`
-      -- @evidence docs/requirements.md#attached Real documentation.
-      CREATE TABLE Plain (text_value TEXT DEFAULT '@evidence docs/requirements.md#literal Inert text.');
-      -- @evidence docs/requirements.md#detached Detached comment.
+      -- @evid docs/requirements.md#attached Real documentation.
+      CREATE TABLE Plain (text_value TEXT DEFAULT '@evid docs/requirements.md#literal Inert text.');
+      -- @evid docs/requirements.md#detached Detached comment.
     `,
       },
       attachedTarget: "docs/requirements.md#attached",

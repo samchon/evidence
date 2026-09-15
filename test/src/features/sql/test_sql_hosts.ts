@@ -1,9 +1,9 @@
 import {
-  EvidenceAccessor,
-  EvidenceFingerprint,
-  EvidenceInventory,
-  EvidenceSqlAdapter,
-} from "@wrtnlabs/evidence";
+  EvidAccessor,
+  EvidFingerprint,
+  EvidInventory,
+  EvidSqlAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -19,24 +19,24 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_sql_hosts(): Promise<void> {
   const source = dedent`
     /* 문서 🧪
-     * @evidence docs/spec.md#table Documents the literal table.
+     * @evid docs/spec.md#table Documents the literal table.
      * \`\`\`sql
-     * @evidence docs/spec.md#fence An inert example.
+     * @evid docs/spec.md#fence An inert example.
      * \`\`\`
-     * <pre>@evidence docs/spec.md#html An inert example.</pre>
+     * <pre>@evid docs/spec.md#html An inert example.</pre>
      */
     CREATE TABLE "schema.dot"."Table Name" (
       -- 검증 🧪
-      -- @evidenceReview docs/spec.md#column This is only a review.
+      -- @evidReview docs/spec.md#column This is only a review.
       "literal.column" INTEGER REFERENCES parent(id),
       -- @hidden Retired declared column.
       old INTEGER,
-      value VARCHAR(100) DEFAULT '@evidence docs/spec.md#string This is inert.'
+      value VARCHAR(100) DEFAULT '@evid docs/spec.md#string This is inert.'
     );
     -- @internal Entire retired model.
     CREATE TABLE retired (id INTEGER);
   `.replaceAll("\n", "\r\n");
-  const adapter = new EvidenceSqlAdapter();
+  const adapter = new EvidSqlAdapter();
   const inventory = await adapter.analyze(
     TestSourceSnapshot.create("schema.sql", source),
   );
@@ -61,7 +61,7 @@ export async function test_sql_hosts(): Promise<void> {
   TestValidator.equals(
     "original UTF-16 tag offset",
     declaration.location.range.start.offset,
-    source.indexOf("@evidence docs/spec.md#table"),
+    source.indexOf("@evid docs/spec.md#table"),
   );
   TestValidator.equals(
     "CRLF source line",
@@ -77,7 +77,7 @@ export async function test_sql_hosts(): Promise<void> {
     "literal dotted segments survive",
     inventory.addresses.some(
       (address) =>
-        EvidenceAccessor.format(address.segments) ===
+        EvidAccessor.format(address.segments) ===
         '["schema.dot"]["Table Name"]["literal.column"]',
     ),
   );
@@ -111,8 +111,8 @@ export async function test_sql_hosts(): Promise<void> {
   if (original === undefined) throw new Error("Missing model.");
   TestValidator.equals(
     "annotation reason leaves model fingerprint stable",
-    EvidenceFingerprint.inspect(inventory, original.id).fingerprint,
-    EvidenceFingerprint.inspect(updated, original.id).fingerprint,
+    EvidFingerprint.inspect(inventory, original.id).fingerprint,
+    EvidFingerprint.inspect(updated, original.id).fingerprint,
   );
 
   const aliasSnapshot = TestSourceSnapshot.create(
@@ -131,7 +131,7 @@ export async function test_sql_hosts(): Promise<void> {
   const aliases = await adapter.analyze(aliasSnapshot);
   const model = aliases.units.find((unit) => unit.symbol === "model");
   if (model === undefined) throw new Error("Missing alias model.");
-  const index = new EvidenceInventory([aliases]);
+  const index = new EvidInventory([aliases]);
   for (const origin of file.addresses)
     TestValidator.equals(
       "logical file aliases resolve one schema identity",

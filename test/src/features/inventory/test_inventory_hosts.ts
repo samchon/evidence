@@ -1,4 +1,4 @@
-import { EvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { TestInventory } from "../../internal/TestInventory";
@@ -53,7 +53,7 @@ export async function test_inventory_hosts(): Promise<void> {
     "/** Shared documentation. */",
   );
 
-  const population = new EvidenceInventory([input]).select(["first", "second"]);
+  const population = new EvidInventory([input]).select(["first", "second"]);
 
   TestValidator.predicate("shared site is valid", population.complete);
   TestValidator.equals("one physical host", population.hosts.length, 1);
@@ -79,7 +79,7 @@ export async function test_inventory_hosts(): Promise<void> {
   const host = input.hosts[0];
   if (host === undefined) throw new Error("Missing fixture host.");
   host.siteId = "unowned-site";
-  const broken = new EvidenceInventory([input]).snapshot();
+  const broken = new EvidInventory([input]).snapshot();
   TestValidator.predicate("wrong ownership fails analysis", !broken.complete);
   TestValidator.predicate(
     "ownership cause remains visible",
@@ -102,6 +102,6 @@ export async function test_inventory_hosts(): Promise<void> {
   });
   TestValidator.predicate(
     "unsupported host cannot supply evidence",
-    !new EvidenceInventory([input]).snapshot().complete,
+    !new EvidInventory([input]).snapshot().complete,
   );
 }

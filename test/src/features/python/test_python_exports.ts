@@ -1,5 +1,5 @@
-import { EvidencePythonAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidPythonAdapter } from "evid";
+import type { IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -15,7 +15,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Analyze a mutually importing pair and verify its finite exported address set completes without diagnostics.
  */
 export async function test_python_exports(): Promise<void> {
-  const adapter = new EvidencePythonAdapter();
+  const adapter = new EvidPythonAdapter();
   const inventory = await adapter.analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create(
@@ -143,7 +143,7 @@ export async function test_python_exports(): Promise<void> {
   TestValidator.equals("complete Python cycle", cycle.diagnostics, []);
 }
 
-function addresses(inventory: IEvidenceInventory, file: string): string[] {
+function addresses(inventory: IEvidInventory, file: string): string[] {
   return inventory.addresses
     .filter((address) => address.file === file)
     .map((address) => address.segments.join("."))

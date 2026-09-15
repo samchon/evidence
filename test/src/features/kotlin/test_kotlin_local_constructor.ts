@@ -1,4 +1,4 @@
-import { EvidenceKotlinAdapter } from "@wrtnlabs/evidence";
+import { EvidKotlinAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -11,7 +11,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 1. Analyze constructor defaults with local parameters. 2. Compare selected properties. 3. Require local names to stay absent.
  */
 export async function test_kotlin_local_constructor(): Promise<void> {
-  const inventory = await new EvidenceKotlinAdapter().analyze(
+  const inventory = await new EvidKotlinAdapter().analyze(
     TestSourceSnapshot.create(
       "src/Container.kt",
       dedent`

@@ -1,14 +1,14 @@
 import type {
-  EvidenceSymbol,
-  IEvidenceHost,
-  IEvidenceInventory,
-  IEvidenceSourceRange,
-  IEvidenceUnit,
-} from "@wrtnlabs/evidence";
+  EvidSymbol,
+  IEvidHost,
+  IEvidInventory,
+  IEvidSourceRange,
+  IEvidUnit,
+} from "evid";
 import { dedent } from "@typia/utils";
 import { createHash } from "node:crypto";
 
-import { SourceText } from "../../../packages/evidence/src/internal/SourceText";
+import { EvidSourceText } from "../../../packages/evidence/src/internal/EvidSourceText";
 
 /**
  * Builds explicit adapter records independently of language extraction.
@@ -23,7 +23,7 @@ export namespace TestInventory {
    * Callers add units and hosts directly while the source retains distinct
    * physical, review-fingerprint, and public-address identities.
    */
-  export function create(): IEvidenceInventory {
+  export function create(): IEvidInventory {
     const content = dedent`
       /** Shared documentation. */
       export const first = 1, second = 2;
@@ -69,15 +69,15 @@ export namespace TestInventory {
    * graph record at an unrelated offset.
    */
   export function range(
-    inventory: IEvidenceInventory,
+    inventory: IEvidInventory,
     fragment: string,
-  ): IEvidenceSourceRange {
+  ): IEvidSourceRange {
     const source = inventory.sources[0];
     if (source === undefined) throw new Error("The fixture has no source.");
     const start = source.content.indexOf(fragment);
     if (start < 0)
       throw new Error("The fixture source does not contain: " + fragment);
-    return new SourceText(source.content).range(start, start + fragment.length);
+    return new EvidSourceText(source.content).range(start, start + fragment.length);
   }
 
   /**
@@ -87,15 +87,15 @@ export namespace TestInventory {
    * graph tests isolate ownership from adapter-specific extraction behavior.
    */
   export function unit(
-    inventory: IEvidenceInventory,
+    inventory: IEvidInventory,
     id: string,
     identity: string[],
-    symbol: EvidenceSymbol,
+    symbol: EvidSymbol,
     fragment: string,
     parentId?: string,
-  ): IEvidenceUnit {
+  ): IEvidUnit {
     const span = range(inventory, fragment);
-    const unit: IEvidenceUnit = {
+    const unit: IEvidUnit = {
       id,
       type: "typescript",
       symbol,
@@ -128,13 +128,13 @@ export namespace TestInventory {
    * checklist behavior can be exercised without inferred attachment rules.
    */
   export function host(
-    inventory: IEvidenceInventory,
+    inventory: IEvidInventory,
     id: string,
     siteId: string,
     unitIds: string[],
     fragment: string,
-  ): IEvidenceHost {
-    const host: IEvidenceHost = {
+  ): IEvidHost {
+    const host: IEvidHost = {
       id,
       file: "/project/source.ts",
       range: range(inventory, fragment),

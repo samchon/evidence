@@ -1,7 +1,7 @@
-import { EvidenceLuaAdapter, EvidenceParser } from "@wrtnlabs/evidence";
+import { EvidLuaAdapter, EvidParser } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TreeSitterAssetScope } from "../../../../packages/evidence/src/internal/TreeSitterAssetScope";
+import { EvidTreeSitterAssetScope } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssetScope";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestParserAssets } from "../../internal/TestParserAssets";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -13,7 +13,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 1. Fetch the Lua grammar and analyze source. 2. Reanalyze offline from cache. 3. Compare the complete inventories.
  */
 export async function test_lua_acquisition(): Promise<void> {
-  const parser = new EvidenceParser();
+  const parser = new EvidParser();
   const grammar = (await parser.grammars()).find((item) => item.id === "lua");
   await parser.close();
   if (grammar === undefined) throw new Error("Pinned Lua grammar is missing.");
@@ -27,7 +27,7 @@ export async function test_lua_acquisition(): Promise<void> {
     {},
     async (cacheDirectory) => {
       const requests: string[] = [];
-      const cold = await TreeSitterAssetScope.run(
+      const cold = await EvidTreeSitterAssetScope.run(
         {
           cacheDirectory,
           fetch: async (input) => {
@@ -35,7 +35,7 @@ export async function test_lua_acquisition(): Promise<void> {
             return new Response(pinned);
           },
         },
-        async () => new EvidenceLuaAdapter().analyze(snapshot),
+        async () => new EvidLuaAdapter().analyze(snapshot),
       );
 
       TestValidator.equals("only selected Lua variant transfers", requests, [
@@ -43,7 +43,7 @@ export async function test_lua_acquisition(): Promise<void> {
       ]);
       TestValidator.equals("cold full public inventory", cold.units.length, 3);
       TestValidator.equals("cold inventory complete", cold.complete, true);
-      const warm = await TreeSitterAssetScope.run(
+      const warm = await EvidTreeSitterAssetScope.run(
         {
           cacheDirectory,
           attempts: 1,
@@ -51,7 +51,7 @@ export async function test_lua_acquisition(): Promise<void> {
             throw new Error("offline");
           },
         },
-        async () => new EvidenceLuaAdapter().analyze(snapshot),
+        async () => new EvidLuaAdapter().analyze(snapshot),
       );
       TestValidator.equals("warm offline inventory is equivalent", warm, cold);
     },

@@ -1,5 +1,5 @@
-import { EvidenceQuery } from "@wrtnlabs/evidence";
-import type { IEvidenceCheckAnalysis } from "@wrtnlabs/evidence";
+import { EvidQuery } from "evid";
+import type { IEvidCheckAnalysis } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
@@ -32,7 +32,7 @@ export async function test_query_inspection_states(): Promise<void> {
       const target = requireReviewedTarget(analysis, directory);
 
       // The inspection pairs the authored stale hash with the current requested hash.
-      const inspected = await EvidenceQuery.inspect(
+      const inspected = await EvidQuery.inspect(
         analysis,
         directory,
         target,
@@ -93,7 +93,7 @@ export async function test_query_inspection_states(): Promise<void> {
           .map((address) => ({ ...address, unitId: duplicate.id })),
       );
       requireReference(ambiguous).unitIds.push(duplicate.id);
-      const collision = await EvidenceQuery.inspect(
+      const collision = await EvidQuery.inspect(
         ambiguous,
         directory,
         target,
@@ -121,7 +121,7 @@ export async function test_query_inspection_states(): Promise<void> {
           range: hiddenSite.range,
         },
       });
-      const withdrawn = await EvidenceQuery.inspect(hidden, directory, target);
+      const withdrawn = await EvidQuery.inspect(hidden, directory, target);
       TestValidator.equals(
         "hidden status",
         referenceInspection(withdrawn)?.status,
@@ -131,7 +131,7 @@ export async function test_query_inspection_states(): Promise<void> {
 
       const incomplete = structuredClone(analysis);
       requireReferenceInventory(incomplete).complete = false;
-      const interrupted = await EvidenceQuery.inspect(
+      const interrupted = await EvidQuery.inspect(
         incomplete,
         directory,
         target,
@@ -147,9 +147,9 @@ export async function test_query_inspection_states(): Promise<void> {
 }
 
 function referenceInspection(
-  report: Awaited<ReturnType<typeof EvidenceQuery.inspect>>,
+  report: Awaited<ReturnType<typeof EvidQuery.inspect>>,
 ):
-  | Awaited<ReturnType<typeof EvidenceQuery.inspect>>["inspections"][number]
+  | Awaited<ReturnType<typeof EvidQuery.inspect>>["inspections"][number]
   | undefined {
   return report.inspections.find(
     (inspection) => inspection.scope.role === "reference",
@@ -157,10 +157,10 @@ function referenceInspection(
 }
 
 function requireReviewedTarget(
-  analysis: IEvidenceCheckAnalysis,
+  analysis: IEvidCheckAnalysis,
   directory: string,
 ): string {
-  const item = EvidenceQuery.list(analysis, directory).items.find(
+  const item = EvidQuery.list(analysis, directory).items.find(
     (candidate) =>
       candidate.scope.role === "reference" &&
       candidate.name === "member.with.dots" &&
@@ -173,8 +173,8 @@ function requireReviewedTarget(
 }
 
 function requireReference(
-  analysis: IEvidenceCheckAnalysis,
-): IEvidenceCheckAnalysis["graphInput"]["claims"][number]["references"][number] {
+  analysis: IEvidCheckAnalysis,
+): IEvidCheckAnalysis["graphInput"]["claims"][number]["references"][number] {
   const claim = analysis.graphInput.claims[0];
   if (claim === undefined) throw new Error("Missing query claim.");
   const reference = claim.references[0];
@@ -183,7 +183,7 @@ function requireReference(
 }
 
 function requireReferenceInventory(
-  analysis: IEvidenceCheckAnalysis,
-): IEvidenceCheckAnalysis["graphInput"]["claims"][number]["references"][number]["inventory"] {
+  analysis: IEvidCheckAnalysis,
+): IEvidCheckAnalysis["graphInput"]["claims"][number]["references"][number]["inventory"] {
   return requireReference(analysis).inventory;
 }

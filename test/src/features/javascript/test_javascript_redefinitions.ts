@@ -1,13 +1,13 @@
-import { EvidenceChecker, EvidenceJavaScriptAdapter } from "@wrtnlabs/evidence";
+import { EvidChecker, EvidJavaScriptAdapter } from "evid";
 import type {
-  IEvidenceCheckReport,
-  IEvidenceDeclaration,
-  IEvidenceDiagnostic,
-  IEvidenceHost,
-  IEvidenceInventory,
-  IEvidencePublicAddress,
-  IEvidenceUnit,
-} from "@wrtnlabs/evidence";
+  IEvidCheckReport,
+  IEvidDeclaration,
+  IEvidDiagnostic,
+  IEvidHost,
+  IEvidInventory,
+  IEvidPublicAddress,
+  IEvidUnit,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
@@ -30,37 +30,37 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *    public address to resolve to the surviving unit IDs.
  * 4. Mix function declarations with initialized and uninitialized `var`
  *    declarations; require runtime initialization and hoisting order to select
- *    the same binding that Node executes.
+ *    the same binding that EvidNode executes.
  * 5. Repeat initialized variables and class fields across symbol kinds; require
  *    the last runtime assignment, account for static fields running after method
  *    installation, and preserve separate instance/prototype slots.
  * 6. Replace supported methods with excluded accessors and reverse that order;
  *    require the final class slot to decide whether a unit remains.
- * 7. Run a replaced-function fixture through EvidenceChecker and require one
+ * 7. Run a replaced-function fixture through EvidChecker and require one
  *    missing unit; remove the dead definition and require the same outcome.
  * 8. Attach evidence to the final definition and require recovery to a passing
  *    check.
  */
 export async function test_javascript_redefinitions(): Promise<void> {
-  const repeated: IEvidenceInventory =
-    await new EvidenceJavaScriptAdapter().analyze(
+  const repeated: IEvidInventory =
+    await new EvidJavaScriptAdapter().analyze(
       TestSourceSnapshot.create(
         "src/redefinitions.cjs",
         [
-          "/** @evidence rules.md#rule Replaced function. */",
+          "/** @evid rules.md#rule Replaced function. */",
           "function run() { return 1; }",
           "function run() { return 2; }",
           "",
           "class Service {",
-          "  /** @evidence rules.md#rule Replaced method. */",
+          "  /** @evid rules.md#rule Replaced method. */",
           "  call() { return 1; }",
           "  call() { return 2; }",
           "",
-          "  /** @evidence rules.md#rule Replaced field. */",
+          "  /** @evid rules.md#rule Replaced field. */",
           "  value = 1;",
           "  value = 2;",
           "",
-          "  /** @evidence rules.md#rule Replaced static method. */",
+          "  /** @evid rules.md#rule Replaced static method. */",
           "  static create() { return 1; }",
           "  static create() { return 2; }",
           "}",
@@ -71,11 +71,11 @@ export async function test_javascript_redefinitions(): Promise<void> {
       ),
     );
 
-  const run: IEvidenceUnit = requireUnit(repeated, "run");
-  const call: IEvidenceUnit = requireUnit(repeated, "Service.prototype.call");
-  const value: IEvidenceUnit = requireUnit(repeated, "Service.prototype.value");
-  const create: IEvidenceUnit = requireUnit(repeated, "Service.create");
-  const namedUnits: Array<readonly [string, IEvidenceUnit]> = [
+  const run: IEvidUnit = requireUnit(repeated, "run");
+  const call: IEvidUnit = requireUnit(repeated, "Service.prototype.call");
+  const value: IEvidUnit = requireUnit(repeated, "Service.prototype.value");
+  const create: IEvidUnit = requireUnit(repeated, "Service.create");
+  const namedUnits: Array<readonly [string, IEvidUnit]> = [
     ["run", run],
     ["call", call],
     ["value", value],
@@ -90,9 +90,9 @@ export async function test_javascript_redefinitions(): Promise<void> {
     TestValidator.predicate(
       `${name} does not inherit replaced evidence`,
       repeated.declarations.every(
-        (declaration: IEvidenceDeclaration): boolean => {
-          const host: IEvidenceHost | undefined = repeated.hosts.find(
-            (candidate: IEvidenceHost): boolean =>
+        (declaration: IEvidDeclaration): boolean => {
+          const host: IEvidHost | undefined = repeated.hosts.find(
+            (candidate: IEvidHost): boolean =>
               candidate.id === declaration.hostId,
           );
           return host === undefined || !host.unitIds.includes(unit.id);
@@ -103,7 +103,7 @@ export async function test_javascript_redefinitions(): Promise<void> {
 
   const addresses: Map<string, string> = new Map<string, string>(
     repeated.addresses.map(
-      (address: IEvidencePublicAddress): [string, string] => [
+      (address: IEvidPublicAddress): [string, string] => [
         address.segments.join("."),
         address.unitId,
       ],
@@ -132,7 +132,7 @@ export async function test_javascript_redefinitions(): Promise<void> {
   TestValidator.equals(
     "obsolete evidence is rejected explicitly",
     repeated.diagnostics.map(
-      (diagnostic: IEvidenceDiagnostic): string => diagnostic.code,
+      (diagnostic: IEvidDiagnostic): string => diagnostic.code,
     ),
     [
       "unsupported-annotation-host",
@@ -142,17 +142,17 @@ export async function test_javascript_redefinitions(): Promise<void> {
     ],
   );
 
-  const hoisted: IEvidenceInventory =
-    await new EvidenceJavaScriptAdapter().analyze(
+  const hoisted: IEvidInventory =
+    await new EvidJavaScriptAdapter().analyze(
       TestSourceSnapshot.create(
         "src/hoisting.cjs",
         [
-          "/** @evidence rules.md#rule Replaced before initializer. */",
+          "/** @evid rules.md#rule Replaced before initializer. */",
           "function before() { return 'function'; }",
           "var before = () => 'variable';",
           "",
           "var after = () => 'variable';",
-          "/** @evidence rules.md#rule Replaced after initializer. */",
+          "/** @evid rules.md#rule Replaced after initializer. */",
           "function after() { return 'function'; }",
           "",
           "var retainedBefore;",
@@ -168,10 +168,10 @@ export async function test_javascript_redefinitions(): Promise<void> {
   TestValidator.equals(
     "initialized var bindings replace hoisted functions",
     hoisted.units
-      .filter((unit: IEvidenceUnit): boolean =>
+      .filter((unit: IEvidUnit): boolean =>
         ["before", "after"].includes(unit.name),
       )
-      .map((unit: IEvidenceUnit): string => `${unit.symbol}:${unit.name}`)
+      .map((unit: IEvidUnit): string => `${unit.symbol}:${unit.name}`)
       .sort((left: string, right: string): number =>
         left.localeCompare(right, "en"),
       ),
@@ -180,10 +180,10 @@ export async function test_javascript_redefinitions(): Promise<void> {
   TestValidator.equals(
     "uninitialized var declarations preserve hoisted functions",
     hoisted.units
-      .filter((unit: IEvidenceUnit): boolean =>
+      .filter((unit: IEvidUnit): boolean =>
         ["retainedBefore", "retainedAfter"].includes(unit.name),
       )
-      .map((unit: IEvidenceUnit): string => `${unit.symbol}:${unit.name}`)
+      .map((unit: IEvidUnit): string => `${unit.symbol}:${unit.name}`)
       .sort((left: string, right: string): number =>
         left.localeCompare(right, "en"),
       ),
@@ -192,21 +192,21 @@ export async function test_javascript_redefinitions(): Promise<void> {
   TestValidator.equals(
     "replaced cross-kind evidence is rejected",
     hoisted.diagnostics.map(
-      (diagnostic: IEvidenceDiagnostic): string => diagnostic.code,
+      (diagnostic: IEvidDiagnostic): string => diagnostic.code,
     ),
     ["unsupported-annotation-host", "unsupported-annotation-host"],
   );
 
-  const initialized: IEvidenceInventory =
-    await new EvidenceJavaScriptAdapter().analyze(
+  const initialized: IEvidInventory =
+    await new EvidJavaScriptAdapter().analyze(
       TestSourceSnapshot.create(
         "src/initialized.cjs",
         [
-          "/** @evidence rules.md#rule Replaced initializer. */",
+          "/** @evid rules.md#rule Replaced initializer. */",
           "var repeated = 1;",
           "var repeated = 2;",
           "var repeated;",
-          "/** @evidence rules.md#rule Replaced same-statement initializer. */",
+          "/** @evid rules.md#rule Replaced same-statement initializer. */",
           "var combined = 1, combined = 2;",
           "module.exports = { repeated, combined };",
           "",
@@ -223,24 +223,24 @@ export async function test_javascript_redefinitions(): Promise<void> {
   TestValidator.equals(
     "obsolete variable evidence is rejected",
     initialized.diagnostics.map(
-      (diagnostic: IEvidenceDiagnostic): string => diagnostic.code,
+      (diagnostic: IEvidDiagnostic): string => diagnostic.code,
     ),
     ["unsupported-annotation-host"],
   );
 
-  const crossKindMembers: IEvidenceInventory =
-    await new EvidenceJavaScriptAdapter().analyze(
+  const crossKindMembers: IEvidInventory =
+    await new EvidJavaScriptAdapter().analyze(
       TestSourceSnapshot.create(
         "src/member-kinds.cjs",
         [
           "class Mixed {",
-          "  /** @evidence rules.md#rule Replaced static function field. */",
+          "  /** @evid rules.md#rule Replaced static function field. */",
           "  static value = () => 1;",
           "  static value = 2;",
-          "  /** @evidence rules.md#rule Replaced static property field. */",
+          "  /** @evid rules.md#rule Replaced static property field. */",
           "  static execute = 1;",
           "  static execute() {}",
-          "  /** @evidence rules.md#rule Replaced instance function field. */",
+          "  /** @evid rules.md#rule Replaced instance function field. */",
           "  handler = () => 1;",
           "  handler = 2;",
           "  invoke() {}",
@@ -269,7 +269,7 @@ export async function test_javascript_redefinitions(): Promise<void> {
   TestValidator.equals(
     "prototype method and instance field coexist",
     crossKindMembers.units.filter(
-      (unit: IEvidenceUnit): boolean =>
+      (unit: IEvidUnit): boolean =>
         unit.identity.join(".") === "Mixed.prototype.invoke",
     ).length,
     2,
@@ -277,21 +277,21 @@ export async function test_javascript_redefinitions(): Promise<void> {
   TestValidator.equals(
     "obsolete class-member evidence is rejected",
     crossKindMembers.diagnostics.map(
-      (diagnostic: IEvidenceDiagnostic): string => diagnostic.code,
+      (diagnostic: IEvidDiagnostic): string => diagnostic.code,
     ),
     ["unsupported-annotation-host", "unsupported-annotation-host"],
   );
 
-  const accessorSlots: IEvidenceInventory =
-    await new EvidenceJavaScriptAdapter().analyze(
+  const accessorSlots: IEvidInventory =
+    await new EvidJavaScriptAdapter().analyze(
       TestSourceSnapshot.create(
         "src/accessor-slots.cjs",
         [
           "class Accessors {",
-          "  /** @evidence rules.md#rule Replaced static method. */",
+          "  /** @evid rules.md#rule Replaced static method. */",
           "  static hidden() {}",
           "  static get hidden() { return 1; }",
-          "  /** @evidence rules.md#rule Replaced instance method. */",
+          "  /** @evid rules.md#rule Replaced instance method. */",
           "  visible() {}",
           "  get visible() { return 1; }",
           "  static get restored() { return 1; }",
@@ -305,7 +305,7 @@ export async function test_javascript_redefinitions(): Promise<void> {
   TestValidator.predicate(
     "final accessors remove replaced method units",
     accessorSlots.units.every(
-      (unit: IEvidenceUnit): boolean =>
+      (unit: IEvidUnit): boolean =>
         unit.name !== "hidden" && unit.name !== "visible",
     ),
   );
@@ -317,7 +317,7 @@ export async function test_javascript_redefinitions(): Promise<void> {
   TestValidator.equals(
     "replaced method documentation remains unsupported",
     accessorSlots.diagnostics.map(
-      (diagnostic: IEvidenceDiagnostic): string => diagnostic.code,
+      (diagnostic: IEvidDiagnostic): string => diagnostic.code,
     ),
     ["unsupported-annotation-host", "unsupported-annotation-host"],
   );
@@ -331,7 +331,7 @@ export async function test_javascript_redefinitions(): Promise<void> {
   await TestFileSystem.experiment(
     location,
     {
-      "evidence.json": JSON.stringify({
+      "evid.json": JSON.stringify({
         claims: [
           {
             type: "javascript",
@@ -345,13 +345,13 @@ export async function test_javascript_redefinitions(): Promise<void> {
           },
         ],
       }),
-      "contract.cjs": `/** @evidence rules.md#rule Replaced implementation. */\nfunction run() { return 1; }\n${survivor}`,
+      "contract.cjs": `/** @evid rules.md#rule Replaced implementation. */\nfunction run() { return 1; }\n${survivor}`,
       "rules.md": "# Rule {#rule}\n\nDo the work.\n",
     },
     async (directory: string): Promise<void> => {
-      const config: string = join(directory, "evidence.json");
-      const withHistory: IEvidenceCheckReport =
-        await EvidenceChecker.check(config);
+      const config: string = join(directory, "evid.json");
+      const withHistory: IEvidCheckReport =
+        await EvidChecker.check(config);
       TestValidator.equals(
         "replaced evidence cannot cover",
         withHistory.exitCode,
@@ -364,8 +364,8 @@ export async function test_javascript_redefinitions(): Promise<void> {
       );
 
       await TestFileSystem.save(directory, { "contract.cjs": survivor });
-      const withoutHistory: IEvidenceCheckReport =
-        await EvidenceChecker.check(config);
+      const withoutHistory: IEvidCheckReport =
+        await EvidChecker.check(config);
       TestValidator.equals(
         "removing dead history keeps outcome",
         withoutHistory.exitCode,
@@ -378,10 +378,10 @@ export async function test_javascript_redefinitions(): Promise<void> {
       );
 
       await TestFileSystem.save(directory, {
-        "contract.cjs": `/** @evidence rules.md#rule Current implementation. */\n${survivor}`,
+        "contract.cjs": `/** @evid rules.md#rule Current implementation. */\n${survivor}`,
       });
-      const recovered: IEvidenceCheckReport =
-        await EvidenceChecker.check(config);
+      const recovered: IEvidCheckReport =
+        await EvidChecker.check(config);
       TestValidator.equals(
         "current evidence recovers coverage",
         recovered.exitCode,
@@ -403,13 +403,13 @@ export async function test_javascript_redefinitions(): Promise<void> {
  * units indicates that replacement selection did not match JavaScript execution.
  */
 function requireUnit(
-  inventory: IEvidenceInventory,
+  inventory: IEvidInventory,
   identity: string,
-): IEvidenceUnit {
-  const units: IEvidenceUnit[] = inventory.units.filter(
-    (unit: IEvidenceUnit): boolean => unit.identity.join(".") === identity,
+): IEvidUnit {
+  const units: IEvidUnit[] = inventory.units.filter(
+    (unit: IEvidUnit): boolean => unit.identity.join(".") === identity,
   );
-  const unit: IEvidenceUnit | undefined = units[0];
+  const unit: IEvidUnit | undefined = units[0];
   if (units.length !== 1 || unit === undefined)
     throw new Error(`Expected one JavaScript unit named ${identity}.`);
   return unit;

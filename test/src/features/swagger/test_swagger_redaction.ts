@@ -1,14 +1,14 @@
 import {
-  EvidenceCommand,
-  EvidenceSwaggerAdapter,
-  EvidenceWatcher,
-} from "@wrtnlabs/evidence";
+  EvidCommand,
+  EvidSwaggerAdapter,
+  EvidWatcher,
+} from "evid";
 import type {
-  EvidenceWatchCycle,
-  IEvidenceCommandResult,
-  IEvidenceDiagnostic,
-  IEvidenceInventory,
-} from "@wrtnlabs/evidence";
+  EvidWatchCycle,
+  IEvidCommandResult,
+  IEvidDiagnostic,
+  IEvidInventory,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
@@ -52,8 +52,8 @@ const TOKEN: string = "fixture-token";
  *    cycle and active dependencies to contain no credential or query value.
  */
 export async function test_swagger_redaction(): Promise<void> {
-  const adapter: EvidenceSwaggerAdapter = new EvidenceSwaggerAdapter();
-  const config: string = join(__dirname, "evidence.config.ts");
+  const adapter: EvidSwaggerAdapter = new EvidSwaggerAdapter();
+  const config: string = join(__dirname, "evid.config.ts");
   const secretSources: string[] = [
     `https://user:${PASSWORD}@example.invalid/schema?token=${TOKEN}`,
     `https://user:${PASSWORD}@example.invalid/schema?token=${TOKEN}#fragment`,
@@ -67,7 +67,7 @@ export async function test_swagger_redaction(): Promise<void> {
   for (let index: number = 0; index < secretSources.length; ++index) {
     const source: string | undefined = secretSources[index];
     if (source === undefined) continue;
-    const failure: IEvidenceInventory = await adapter.load(config, source);
+    const failure: IEvidInventory = await adapter.load(config, source);
     const serialized: string = JSON.stringify(failure);
     TestValidator.equals(
       `remote failure ${index} incomplete`,
@@ -76,7 +76,7 @@ export async function test_swagger_redaction(): Promise<void> {
     );
     TestValidator.predicate(
       `remote failure ${index} retains safe source context`,
-      failure.diagnostics.some((diagnostic: IEvidenceDiagnostic): boolean => {
+      failure.diagnostics.some((diagnostic: IEvidDiagnostic): boolean => {
         const file: string | undefined = diagnostic.location?.file;
         return file !== undefined && file.includes("://");
       }),
@@ -85,7 +85,7 @@ export async function test_swagger_redaction(): Promise<void> {
   }
 
   const local: string = `local?token=${TOKEN}.yaml`;
-  const localFailure: IEvidenceInventory = await adapter.load(config, local);
+  const localFailure: IEvidInventory = await adapter.load(config, local);
   TestValidator.predicate(
     "local punctuation remains literal",
     JSON.stringify(localFailure).includes(local),
@@ -96,7 +96,7 @@ export async function test_swagger_redaction(): Promise<void> {
   await TestFileSystem.experiment(
     location,
     {
-      "evidence.json": JSON.stringify({
+      "evid.json": JSON.stringify({
         claims: [
           {
             type: "markdown",
@@ -108,29 +108,29 @@ export async function test_swagger_redaction(): Promise<void> {
       "rules.md": `# Rule {#rule}\n\nDo the work.\n`,
     },
     async (directory: string): Promise<void> => {
-      const json: IEvidenceCommandResult = await EvidenceCommand.run(
-        ["check", "--config", "evidence.json", "--format", "json"],
+      const json: IEvidCommandResult = await EvidCommand.run(
+        ["check", "--config", "evid.json", "--format", "json"],
         directory,
       );
-      const text: IEvidenceCommandResult = await EvidenceCommand.run(
-        ["check", "--config", "evidence.json", "--format", "text"],
+      const text: IEvidCommandResult = await EvidCommand.run(
+        ["check", "--config", "evid.json", "--format", "text"],
         directory,
       );
-      const query: IEvidenceCommandResult = await EvidenceCommand.run(
-        ["list", "--config", "evidence.json", "--format", "json"],
+      const query: IEvidCommandResult = await EvidCommand.run(
+        ["list", "--config", "evid.json", "--format", "json"],
         directory,
       );
-      const results: IEvidenceCommandResult[] = [json, text, query];
+      const results: IEvidCommandResult[] = [json, text, query];
       for (const result of results) {
         TestValidator.equals("remote failure command exit", result.exitCode, 2);
         assertRedacted("public command", result.stdout + result.stderr);
       }
 
-      const watcher: EvidenceWatcher = new EvidenceWatcher(
-        join(directory, "evidence.json"),
+      const watcher: EvidWatcher = new EvidWatcher(
+        join(directory, "evid.json"),
         { pollIntervalMilliseconds: 20, debounceMilliseconds: 20 },
       );
-      await watcher.watch(async (cycle: EvidenceWatchCycle): Promise<void> => {
+      await watcher.watch(async (cycle: EvidWatchCycle): Promise<void> => {
         assertRedacted(
           "watch cycle",
           JSON.stringify({ cycle, dependencies: watcher.dependencies() }),

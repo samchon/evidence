@@ -1,4 +1,4 @@
-import { EvidenceBigQueryAdapter } from "@wrtnlabs/evidence";
+import { EvidBigQueryAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -13,7 +13,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Require a withdrawn nested member to remain excluded from the selected hierarchy.
  */
 export async function test_bigquery_ownership(): Promise<void> {
-  const adapter = new EvidenceBigQueryAdapter();
+  const adapter = new EvidBigQueryAdapter();
   const first = "FOREIGN KEY (ID) REFERENCES ds.Parent (id) NOT ENFORCED";
   const second = "FOREIGN KEY (id) REFERENCES ds.parent (id) NOT ENFORCED";
   const source = dedent`
@@ -88,7 +88,7 @@ export async function test_bigquery_ownership(): Promise<void> {
       "inline.sql",
       dedent`
     CREATE TABLE ds.inline_key (
-      /* @evidence ./spec.ts#contract Documents the field and its declared key. */
+      /* @evid ./spec.ts#contract Documents the field and its declared key. */
       id INT64 REFERENCES ds.parent (id) NOT ENFORCED
     );
   `,

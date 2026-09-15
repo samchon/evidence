@@ -1,4 +1,4 @@
-import { EvidenceRustAdapter } from "@wrtnlabs/evidence";
+import { EvidRustAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -16,7 +16,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *    methods remain distinct units.
  */
 export async function test_rust_targets(): Promise<void> {
-  const adapter = new EvidenceRustAdapter();
+  const adapter = new EvidRustAdapter();
 
   // The reference exposes one owner through its module path, declaration file, and alias.
   const reference = await adapter.analyze(
@@ -55,14 +55,14 @@ export async function test_rust_targets(): Promise<void> {
     TestSourceSnapshot.create(
       "test/sale_test.rs",
       dedent`
-        /// @evidence ../src/lib.rs#sale.Sale Verifies the module path.
-        /// @evidence ../src/lib.rs#PublicSale Verifies the public alias.
-        /// @evidence ../src/sale.rs#Sale Verifies the declaration file.
-        /// @evidence ../src/sale.rs#Sale.total Verifies the public field.
-        /// @evidence ../src/lib.rs#PublicSale.total Verifies an alias-owned field.
-        /// @evidence ../src/lib.rs#sale.Sale.calculate Verifies the inherent method.
-        /// @evidence ../src/sale.rs#Sale.run Verifies the colliding inherent method.
-        /// @evidence ../src/sale.rs#Sale["impl crate::Service"].run Verifies the trait method.
+        /// @evid ../src/lib.rs#sale.Sale Verifies the module path.
+        /// @evid ../src/lib.rs#PublicSale Verifies the public alias.
+        /// @evid ../src/sale.rs#Sale Verifies the declaration file.
+        /// @evid ../src/sale.rs#Sale.total Verifies the public field.
+        /// @evid ../src/lib.rs#PublicSale.total Verifies an alias-owned field.
+        /// @evid ../src/lib.rs#sale.Sale.calculate Verifies the inherent method.
+        /// @evid ../src/sale.rs#Sale.run Verifies the colliding inherent method.
+        /// @evid ../src/sale.rs#Sale["impl crate::Service"].run Verifies the trait method.
         pub fn verify() {}
       `,
     ),

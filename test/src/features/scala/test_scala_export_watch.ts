@@ -1,4 +1,4 @@
-﻿import { EvidenceChecker, EvidenceWatcher } from "@wrtnlabs/evidence";
+﻿import { EvidChecker, EvidWatcher } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
@@ -17,19 +17,19 @@ export async function test_scala_export_watch(): Promise<void> {
   await TestFileSystem.experiment(
     "scala-export-watch",
     {
-      "evidence.config.ts": dedent`
+      "evid.config.ts": dedent`
       export default { claims: [{ type: "typescript", files: ["claims.ts"], reference: { type: "scala", files: ["contracts/*.scala"], symbol: "property" } }] };
     `,
       "claims.ts": dedent`
-      /** @evidence ./contracts/Forward.scala#["object Forward"].value Verifies the exported property. */
+      /** @evid ./contracts/Forward.scala#["object Forward"].value Verifies the exported property. */
       export function claim() {}
     `,
       "contracts/Forward.scala": "object Forward { export Origin.value }",
       "contracts/Origin.scala": "object Origin { val value = 1 }",
     },
     async (directory) => {
-      const file = join(directory, "evidence.config.ts");
-      const watcher = new EvidenceWatcher(file, {
+      const file = join(directory, "evid.config.ts");
+      const watcher = new EvidWatcher(file, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
       });
@@ -39,7 +39,7 @@ export async function test_scala_export_watch(): Promise<void> {
           TestValidator.equals(
             `fresh export cycle ${cycle.cycle}`,
             cycle.report,
-            await EvidenceChecker.check(file),
+            await EvidChecker.check(file),
           );
           if (cycle.cycle === 1) {
             TestValidator.equals(

@@ -1,4 +1,4 @@
-import { EvidenceJavaScriptAdapter } from "@wrtnlabs/evidence";
+import { EvidJavaScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -14,27 +14,27 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_javascript_hosts(): Promise<void> {
   const content = dedent`
-    /** @evidence docs/spec.md#service Implements the service contract. */
+    /** @evid docs/spec.md#service Implements the service contract. */
     export class Service {
-      /** @evidence docs/spec.md#run Implements the operation. */
+      /** @evid docs/spec.md#run Implements the operation. */
       run() {}
     }
 
-    /** @evidence docs/spec.md#view Implements the view. */
+    /** @evid docs/spec.md#view Implements the view. */
     export const View = () => (
       <section>
-        @evidence docs/spec.md#jsx This JSX text is not documentation.
+        @evid docs/spec.md#jsx This JSX text is not documentation.
       </section>
     );
 
-    export const template = \`@evidence docs/spec.md#template Not documentation.\`;
-    export const expression = /@evidence[^#]+#regex/;
-    export const text = "@evidence docs/spec.md#string Not documentation.";
+    export const template = \`@evid docs/spec.md#template Not documentation.\`;
+    export const expression = /@evid[^#]+#regex/;
+    export const text = "@evid docs/spec.md#string Not documentation.";
 
-    // @evidence docs/spec.md#line A line comment is not JSDoc.
+    // @evid docs/spec.md#line A line comment is not JSDoc.
     export const unsupported = 1;
   `;
-  const inventory = await new EvidenceJavaScriptAdapter().analyze(
+  const inventory = await new EvidJavaScriptAdapter().analyze(
     TestSourceSnapshot.create("src/view.mjs", content),
   );
 

@@ -1,4 +1,4 @@
-import { EvidenceGoAdapter } from "@wrtnlabs/evidence";
+import { EvidGoAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -14,7 +14,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Require wrong owner or file paths to remain unresolved.
  */
 export async function test_go_targets(): Promise<void> {
-  const adapter = new EvidenceGoAdapter();
+  const adapter = new EvidGoAdapter();
   const reference = await adapter.analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create(
@@ -49,11 +49,11 @@ export async function test_go_targets(): Promise<void> {
       dedent`
         package shop_test
 
-        // @evidence ../src/sale.go#Sale Verifies the type.
-        // @evidence ../src/sale.go#Sale.Total Verifies the field.
-        // @evidence ../src/sale.go#Sale.Calculate Verifies the owner-file method alias.
-        // @evidence ../src/methods.go#Sale.Calculate Verifies the declaration-file method.
-        // @evidence ../src/methods.go#Add Verifies the function.
+        // @evid ../src/sale.go#Sale Verifies the type.
+        // @evid ../src/sale.go#Sale.Total Verifies the field.
+        // @evid ../src/sale.go#Sale.Calculate Verifies the owner-file method alias.
+        // @evid ../src/methods.go#Sale.Calculate Verifies the declaration-file method.
+        // @evid ../src/methods.go#Add Verifies the function.
         func Verify() {}
       `,
     ),

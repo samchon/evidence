@@ -1,8 +1,8 @@
 import {
-  EvidenceGoAdapter,
-  EvidenceLanguageRegistry,
-} from "@wrtnlabs/evidence";
-import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+  EvidGoAdapter,
+  EvidLanguageRegistry,
+} from "evid";
+import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -17,17 +17,17 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Verify embedded and receiver members retain owners.
  */
 export async function test_go_units(): Promise<void> {
-  const language = EvidenceLanguageRegistry.list().find(
+  const language = EvidLanguageRegistry.list().find(
     (entry) => entry.type === "go",
   );
   if (language === undefined) throw new Error("Missing Go language metadata.");
   TestValidator.equals(
     "certified Go adapter",
     language.adapter?.entry,
-    "EvidenceGoAdapter",
+    "EvidGoAdapter",
   );
 
-  const inventory = await new EvidenceGoAdapter().analyze(
+  const inventory = await new EvidGoAdapter().analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create(
         "shop/sale.go",
@@ -160,9 +160,9 @@ export async function test_go_units(): Promise<void> {
 }
 
 function requireUnit(
-  inventory: IEvidenceInventory,
+  inventory: IEvidInventory,
   name: string,
-): IEvidenceUnit {
+): IEvidUnit {
   const unit = inventory.units.find((candidate) => candidate.name === name);
   if (unit === undefined) throw new Error(`Missing Go unit: ${name}`);
   return unit;

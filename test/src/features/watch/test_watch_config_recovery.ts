@@ -1,4 +1,4 @@
-import { EvidenceChecker, EvidenceWatcher } from "@wrtnlabs/evidence";
+import { EvidChecker, EvidWatcher } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
@@ -26,15 +26,15 @@ export async function test_watch_config_recovery(): Promise<void> {
   await TestFileSystem.experiment(
     location,
     {
-      "evidence.config.ts": config(),
+      "evid.config.ts": config(),
       "helpers/settings.ts": settings("src"),
       "docs/requirements.md": requirement(),
       "src/implementation.ts": implementation(),
     },
     async (directory) => {
-      const configFile = join(directory, "evidence.config.ts");
+      const configFile = join(directory, "evid.config.ts");
       const helper = join(directory, "helpers", "settings.ts");
-      const watcher = new EvidenceWatcher(configFile, {
+      const watcher = new EvidWatcher(configFile, {
         pollIntervalMilliseconds: 20,
         debounceMilliseconds: 20,
       });
@@ -81,7 +81,7 @@ export async function test_watch_config_recovery(): Promise<void> {
         TestValidator.equals(
           `fresh config report ${cycle.cycle}`,
           cycle.report,
-          await EvidenceChecker.check(configFile),
+          await EvidChecker.check(configFile),
         );
         if (cycle.cycle === 3) {
           TestValidator.equals(
@@ -107,7 +107,7 @@ export async function test_watch_config_recovery(): Promise<void> {
 function config(): string {
   return dedent`
     import { files, root } from "./helpers/settings";
-    import type { IEvidenceConfig } from "@wrtnlabs/evidence";
+    import type { IEvidConfig } from "evid";
 
     export default {
       claims: [
@@ -134,7 +134,7 @@ function config(): string {
           },
         },
       ],
-    } satisfies IEvidenceConfig;
+    } satisfies IEvidConfig;
   `;
 }
 
@@ -155,7 +155,7 @@ function requirement(): string {
 
 function implementation(): string {
   return dedent`
-    /** @evidence docs/requirements.md#pricing Implements pricing. */
+    /** @evid docs/requirements.md#pricing Implements pricing. */
     export function calculate(): number {
       return 1;
     }

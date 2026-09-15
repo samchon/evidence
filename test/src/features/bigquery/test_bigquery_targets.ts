@@ -1,7 +1,7 @@
 import {
-  EvidenceBigQueryAdapter,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
+  EvidBigQueryAdapter,
+  EvidTypeScriptAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -17,7 +17,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Require exact paths to resolve while flattened or otherwise invalid paths retain their failure status.
  */
 export async function test_bigquery_targets(): Promise<void> {
-  const reference = await new EvidenceBigQueryAdapter().analyze(
+  const reference = await new EvidBigQueryAdapter().analyze(
     TestSourceSnapshot.create(
       "schema.sql",
       dedent`
@@ -26,15 +26,15 @@ export async function test_bigquery_targets(): Promise<void> {
       ["schema.sql", "alias.sql"],
     ),
   );
-  const claims = await new EvidenceTypeScriptAdapter().analyze(
+  const claims = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "claims.ts",
       dedent`
-    /** @evidence ./schema.sql#["acme-prod"].dataset.orders["display name"] Cites the literal field. */
+    /** @evid ./schema.sql#["acme-prod"].dataset.orders["display name"] Cites the literal field. */
     export function original() {}
-    /** @evidence ./alias.sql#["acme-prod"].dataset.orders["display name"] Cites the file alias. */
+    /** @evid ./alias.sql#["acme-prod"].dataset.orders["display name"] Cites the file alias. */
     export function alias() {}
-    /** @evidence ./schema.sql#["acme-prod"].dataset.orders.missing Names no declared field. */
+    /** @evid ./schema.sql#["acme-prod"].dataset.orders.missing Names no declared field. */
     export function missing() {}
   `,
     ),

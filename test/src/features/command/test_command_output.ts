@@ -1,4 +1,4 @@
-import { EvidenceCommand } from "@wrtnlabs/evidence";
+import { EvidCommand } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
@@ -28,8 +28,8 @@ export async function test_command_output(): Promise<void> {
     { "nested/.keep": "" },
     async (directory) => {
       // Help and version never need a configuration in the selected working directory.
-      const help = await EvidenceCommand.run(["--help"], directory);
-      const version = await EvidenceCommand.run(["--version"], directory);
+      const help = await EvidCommand.run(["--help"], directory);
+      const version = await EvidCommand.run(["--version"], directory);
       TestValidator.equals("help exit", help.exitCode, 0);
       TestValidator.predicate(
         "help usage",
@@ -42,7 +42,7 @@ export async function test_command_output(): Promise<void> {
       );
 
       // A missing config becomes a clean versioned JSON failure on stdout.
-      const missing = await EvidenceCommand.run(
+      const missing = await EvidCommand.run(
         [
           "--cwd",
           "nested",
@@ -53,7 +53,7 @@ export async function test_command_output(): Promise<void> {
         ],
         directory,
       );
-      const explicit = await EvidenceCommand.run(
+      const explicit = await EvidCommand.run(
         [
           "check",
           "--cwd",
@@ -87,15 +87,15 @@ export async function test_command_output(): Promise<void> {
       );
 
       // Buffered embedding directs infinite watch use to the public streaming API.
-      const watch = await EvidenceCommand.run(["--watch"], directory);
+      const watch = await EvidCommand.run(["--watch"], directory);
       TestValidator.equals("buffered watch exit", watch.exitCode, 2);
       TestValidator.predicate(
         "buffered watch guidance",
-        watch.stderr.includes("Use EvidenceWatcher for embedding"),
+        watch.stderr.includes("Use EvidWatcher for embedding"),
       );
 
       // A destination that is itself a directory reports its failed write on stderr.
-      const unwritable = await EvidenceCommand.run(
+      const unwritable = await EvidCommand.run(
         ["--config", "missing.config.ts", "--output", ".", "--format", "json"],
         directory,
       );
@@ -103,7 +103,7 @@ export async function test_command_output(): Promise<void> {
       TestValidator.equals("output failure stdout", unwritable.stdout, "");
       TestValidator.predicate(
         "output failure diagnostic",
-        unwritable.stderr.includes("Could not write Evidence report"),
+        unwritable.stderr.includes("Could not write Evid report"),
       );
     },
   );

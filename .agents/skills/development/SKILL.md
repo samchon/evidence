@@ -1,6 +1,6 @@
 ---
 name: development
-description: Defines Evidence implementation, testing, validation, and change-integrity rules. Use before modifying source, tests, package wiring, workflows, or generated artifacts.
+description: Defines Evid implementation, testing, validation, and change-integrity rules. Use before modifying source, tests, package wiring, workflows, or generated artifacts.
 ---
 
 # Development
@@ -14,7 +14,7 @@ Read the project skill and inspect a nearby peer before introducing a new file o
 - Keep implementation and tests in TypeScript and execute TypeScript with `ttsx`. Keep `scripts` as plain CommonJS JavaScript executed with Node, without a tsconfig or lint.config in that directory.
 - Declare named functions with `function`, including `export async function` for asynchronous public functions. Use asynchronous filesystem and process APIs when available; keep pure computation synchronous.
 - Delegate runtime type checks to `typia` instead of hand-written shape validators. Test project logic, not `typia.assert` or other dependency validators.
-- Base Evidence types on `D:/github/samchon/ttsc/packages/evidence` and its existing contracts. Follow its named base-interface and artifact-specific interface structure. Every object shape must have its own named interface in a separate file. Anonymous object type literals are forbidden without exception, including union members, intersections, property/parameter/return annotations, generic arguments, and assertions. Union aliases reference named object types; never inline an object shape to shorten a declaration.
+- Base Evid types on `D:/github/samchon/ttsc/packages/evidence` and its existing contracts. Follow its named base-interface and artifact-specific interface structure. Every object shape must have its own named interface in a separate file. Anonymous object type literals are forbidden without exception, including union members, intersections, property/parameter/return annotations, generic arguments, and assertions. Union aliases reference named object types; never inline an object shape to shorten a declaration.
 - Run compilation through `ttsc`. Each package and the test workspace extend `config/lint.config.ts` from their own lint configuration. Keep enabled rules at error severity across implementation and tests; fix violations instead of weakening the configuration to pass a build.
 - Keep executable files small and free of reusable logic. Public imports must not start the CLI, scan a project, or evaluate configuration.
 - Use upstream grammars through the common adapter contract. Do not fork the parser engine or import a language compiler just to cover an unsupported syntax case without a product decision.
@@ -29,10 +29,10 @@ Annotate variable bindings, class fields, parameters, and return values, includi
 Annotate destructured bindings with the value's contract. A `for...of` binding cannot carry a TypeScript annotation, so explicitly type its iterable or producer. Catch values remain `unknown` until narrowed.
 
 ```ts
-const inventory: IEvidenceInventory = index.snapshot();
-const units: IEvidenceUnit[] = inventory.units;
+const inventory: IEvidInventory = index.snapshot();
+const units: IEvidUnit[] = inventory.units;
 const selected: string[] = units.map(
-  (unit: IEvidenceUnit): string => unit.id,
+  (unit: IEvidUnit): string => unit.id,
 );
 for (const unit of units) {
   const name: string = unit.name;

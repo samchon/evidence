@@ -1,8 +1,8 @@
 import {
-  EvidenceBigQueryAdapter,
-  EvidenceGraph,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
+  EvidBigQueryAdapter,
+  EvidGraph,
+  EvidTypeScriptAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -18,7 +18,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Require acknowledged graphs to pass and unacknowledged graphs to report every referenced unit as missing.
  */
 export async function test_bigquery_graph(): Promise<void> {
-  const adapter = new EvidenceBigQueryAdapter();
+  const adapter = new EvidBigQueryAdapter();
   for (const symbol of ["model", "column", "relation"] as const) {
     const target =
       symbol === "model"
@@ -28,7 +28,7 @@ export async function test_bigquery_graph(): Promise<void> {
           : "ds.orders.parent_key";
     for (const acknowledged of [true, false]) {
       const annotation = acknowledged
-        ? "@evidence ./contract.ts#contract Matches the declared contract."
+        ? "@evid ./contract.ts#contract Matches the declared contract."
         : "No acknowledgement.";
       const inventory = await adapter.analyze(
         TestSourceSnapshot.create(
@@ -44,11 +44,11 @@ export async function test_bigquery_graph(): Promise<void> {
       `,
         ),
       );
-      const contract = await new EvidenceTypeScriptAdapter().analyze(
+      const contract = await new EvidTypeScriptAdapter().analyze(
         TestSourceSnapshot.create(
           "contract.ts",
           dedent`
-        /** ${acknowledged ? `@evidence ./schema.sql#${target} Implements the schema declaration.` : "No acknowledgement."} */
+        /** ${acknowledged ? `@evid ./schema.sql#${target} Implements the schema declaration.` : "No acknowledgement."} */
         export function contract() {}
       `,
         ),
@@ -68,7 +68,7 @@ export async function test_bigquery_graph(): Promise<void> {
         const reference = claimRole ? contract : inventory;
         const claimIds = claimRole ? ids : contractIds;
         const referenceIds = claimRole ? contractIds : ids;
-        const graph = EvidenceGraph.evaluate({
+        const graph = EvidGraph.evaluate({
           claims: [
             {
               severity: "error",

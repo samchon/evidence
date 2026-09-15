@@ -1,4 +1,4 @@
-import { EvidencePostgresqlAdapter } from "@wrtnlabs/evidence";
+import { EvidPostgresqlAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -12,7 +12,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Verify wrong extensions and failed sources cannot pass.
  */
 export async function test_postgresql_boundaries(): Promise<void> {
-  const adapter = new EvidencePostgresqlAdapter();
+  const adapter = new EvidPostgresqlAdapter();
   for (const source of [
     "CREATE TABLE Item (id integer);",
     "CREATE SCHEMA `app`;",

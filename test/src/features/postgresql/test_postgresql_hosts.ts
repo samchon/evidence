@@ -1,8 +1,8 @@
 import {
-  EvidenceFingerprint,
-  EvidenceInventory,
-  EvidencePostgresqlAdapter,
-} from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidInventory,
+  EvidPostgresqlAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -19,25 +19,25 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_postgresql_hosts(): Promise<void> {
   const source = dedent`
     -- Documentation 🐘
-    -- @evidence spec.md#table Describes the table.
+    -- @evid spec.md#table Describes the table.
     CREATE TABLE app.Item (
-      /* @evidence spec.md#id Describes the identifier. */
+      /* @evid spec.md#id Describes the identifier. */
       id integer PRIMARY KEY,
-      value text DEFAULT '@evidence spec.md#string Inert value.'
+      value text DEFAULT '@evid spec.md#string Inert value.'
     );
     COMMENT ON COLUMN app.Item.value IS 'Unicode 🐘 and it''s mapped.
-    @evidence spec.md#value Describes the value.';
+    @evid spec.md#value Describes the value.';
     -- @internal Hidden schema table.
     CREATE TABLE app.Hidden (secret integer);
     /*
      * Examples:
      * ~~~sql
-     * @evidence spec.md#example Inert example.
+     * @evid spec.md#example Inert example.
      * ~~~
      */
     CREATE TABLE app.Example (id integer);
   `.replaceAll("\n", "\r\n");
-  const adapter = new EvidencePostgresqlAdapter();
+  const adapter = new EvidPostgresqlAdapter();
   const inventory = await adapter.analyze(
     TestSourceSnapshot.create("schema.sql", source),
   );
@@ -60,12 +60,12 @@ export async function test_postgresql_hosts(): Promise<void> {
     TestValidator.equals(
       "original UTF-16 annotation position",
       range.start.offset,
-      source.indexOf(`@evidence ${declaration.target}`),
+      source.indexOf(`@evid ${declaration.target}`),
     );
   }
   TestValidator.equals(
     "withdrawn descendant target",
-    new EvidenceInventory([inventory]).resolve(
+    new EvidInventory([inventory]).resolve(
       { file: "/project/schema.sql", segments: ["app", "hidden", "secret"] },
       inventory.units.map((unit) => unit.id),
     ).status,
@@ -83,8 +83,8 @@ export async function test_postgresql_hosts(): Promise<void> {
   );
   TestValidator.equals(
     "annotation-only COMMENT edit preserves review",
-    EvidenceFingerprint.inspect(inventory, table.id).fingerprint,
-    EvidenceFingerprint.inspect(rewritten, table.id).fingerprint,
+    EvidFingerprint.inspect(inventory, table.id).fingerprint,
+    EvidFingerprint.inspect(rewritten, table.id).fingerprint,
   );
   const changed = await adapter.analyze(
     TestSourceSnapshot.create(
@@ -94,8 +94,8 @@ export async function test_postgresql_hosts(): Promise<void> {
   );
   TestValidator.notEquals(
     "column type edit invalidates table review",
-    EvidenceFingerprint.inspect(inventory, table.id).fingerprint,
-    EvidenceFingerprint.inspect(changed, table.id).fingerprint,
+    EvidFingerprint.inspect(inventory, table.id).fingerprint,
+    EvidFingerprint.inspect(changed, table.id).fingerprint,
   );
   const plain = "CREATE TABLE app.Item (id integer);";
   const withoutComment = await adapter.analyze(
@@ -104,13 +104,13 @@ export async function test_postgresql_hosts(): Promise<void> {
   const withComment = await adapter.analyze(
     TestSourceSnapshot.create(
       "comment.sql",
-      `${plain}\nCOMMENT ON TABLE app.Item IS '@evidenceReview spec.md#table Review metadata only.';`,
+      `${plain}\nCOMMENT ON TABLE app.Item IS '@evidReview spec.md#table Review metadata only.';`,
     ),
   );
   TestValidator.equals(
     "adding COMMENT documentation preserves table fingerprint",
-    EvidenceFingerprint.inspect(withoutComment, table.id).fingerprint,
-    EvidenceFingerprint.inspect(withComment, table.id).fingerprint,
+    EvidFingerprint.inspect(withoutComment, table.id).fingerprint,
+    EvidFingerprint.inspect(withComment, table.id).fingerprint,
   );
   TestValidator.equals(
     "COMMENT review never acknowledges",
@@ -125,7 +125,7 @@ export async function test_postgresql_hosts(): Promise<void> {
   const trailing = await adapter.analyze(
     TestSourceSnapshot.create(
       "trailing.sql",
-      "CREATE TABLE app.Item (id integer); -- @evidence spec.md#trailing No next owner.\nCREATE TABLE app.Other (id integer);",
+      "CREATE TABLE app.Item (id integer); -- @evid spec.md#trailing No next owner.\nCREATE TABLE app.Other (id integer);",
     ),
   );
   TestValidator.equals(
@@ -136,7 +136,7 @@ export async function test_postgresql_hosts(): Promise<void> {
   const leading = await adapter.analyze(
     TestSourceSnapshot.create(
       "leading.sql",
-      "CREATE TABLE app.Item (id integer); -- A trailing comment.\n-- @evidence spec.md#leading Documents the next table.\nCREATE TABLE app.Other (id integer);",
+      "CREATE TABLE app.Item (id integer); -- A trailing comment.\n-- @evid spec.md#leading Documents the next table.\nCREATE TABLE app.Other (id integer);",
     ),
   );
   TestValidator.equals(
@@ -147,7 +147,7 @@ export async function test_postgresql_hosts(): Promise<void> {
   const separated = await adapter.analyze(
     TestSourceSnapshot.create(
       "separated.sql",
-      "-- @evidence spec.md#separated No adjacent owner.\n\nCREATE TABLE app.Item (id integer);",
+      "-- @evid spec.md#separated No adjacent owner.\n\nCREATE TABLE app.Item (id integer);",
     ),
   );
   TestValidator.equals(
@@ -158,7 +158,7 @@ export async function test_postgresql_hosts(): Promise<void> {
   const unattached = await adapter.analyze(
     TestSourceSnapshot.create(
       "schema.sql",
-      "CREATE TABLE app.Item (id integer);\n-- @evidence spec.md#lost No owner.\n",
+      "CREATE TABLE app.Item (id integer);\n-- @evid spec.md#lost No owner.\n",
     ),
   );
   TestValidator.equals(

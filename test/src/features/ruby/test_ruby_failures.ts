@@ -1,4 +1,4 @@
-import { EvidenceRubyAdapter } from "@wrtnlabs/evidence";
+import { EvidRubyAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -15,7 +15,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *    remain in the Ruby inventory.
  */
 export async function test_ruby_failures(): Promise<void> {
-  const dynamic = await new EvidenceRubyAdapter().analyze(
+  const dynamic = await new EvidRubyAdapter().analyze(
     TestSourceSnapshot.create(
       "lib/dynamic.rb",
       dedent`
@@ -72,7 +72,7 @@ export async function test_ruby_failures(): Promise<void> {
   ])
     TestValidator.predicate(`Ruby failure ${code}`, codes.has(code));
 
-  const malformed = await new EvidenceRubyAdapter().analyze(
+  const malformed = await new EvidRubyAdapter().analyze(
     TestSourceSnapshot.create("lib/broken.rb", "module Broken\n"),
   );
   TestValidator.equals("malformed Ruby inventory", malformed.complete, false);
@@ -83,7 +83,7 @@ export async function test_ruby_failures(): Promise<void> {
     ),
   );
 
-  const sourceFailure = await new EvidenceRubyAdapter().analyze(
+  const sourceFailure = await new EvidRubyAdapter().analyze(
     TestSourceSnapshot.fail(
       TestSourceSnapshot.create("lib/source.rb", "VALUE = 1\n"),
       {

@@ -1,4 +1,4 @@
-import { EvidenceChecker, EvidenceConfigLoader } from "@wrtnlabs/evidence";
+import { EvidChecker, EvidConfigLoader } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
@@ -26,7 +26,7 @@ export async function test_checker_context(): Promise<void> {
   await TestFileSystem.experiment(
     join(__dirname, `checker context ${randomUUID()}`),
     {
-      "evidence.config.ts": dedent`
+      "evid.config.ts": dedent`
         export default {
           claims: [{
             type: "typescript", files: ["implementation.ts"], symbol: "function",
@@ -36,14 +36,14 @@ export async function test_checker_context(): Promise<void> {
       `,
       "spec.md": "## Feature {#feature}\n\nRequired behavior.\n",
       "implementation.ts": dedent`
-        /** @evidence spec.md#feature Implements the required behavior. */
+        /** @evid spec.md#feature Implements the required behavior. */
         export function implementation(): void {}
       `,
     },
     async (directory) => {
-      const configFile = join(directory, "evidence.config.ts");
-      const checker = new EvidenceChecker(configFile);
-      const plan = await EvidenceConfigLoader.plan(configFile);
+      const configFile = join(directory, "evid.config.ts");
+      const checker = new EvidChecker(configFile);
+      const plan = await EvidConfigLoader.plan(configFile);
       const invalid = structuredClone(plan);
       const invalidClaim = invalid.claims[0];
       const reference =

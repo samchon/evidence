@@ -1,13 +1,13 @@
 import {
-  EvidenceFingerprint,
-  EvidenceGraph,
-  EvidenceMarkdownAdapter,
-  EvidencePythonAdapter,
-} from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidGraph,
+  EvidMarkdownAdapter,
+  EvidPythonAdapter,
+} from "evid";
 import type {
-  IEvidenceInventory,
-  IEvidenceGraphResult,
-} from "@wrtnlabs/evidence";
+  IEvidInventory,
+  IEvidGraphResult,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -24,7 +24,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Remove the acknowledgement and verify the exact requirement becomes missing, then compare all subtree fingerprints after metadata and member-body edits.
  */
 export async function test_python_leading_comment_graph(): Promise<void> {
-  const reference = await new EvidenceMarkdownAdapter().analyze(
+  const reference = await new EvidMarkdownAdapter().analyze(
     TestSourceSnapshot.create(
       "docs/spec.md",
       "## Title {#title}\n\nRequires a title.\n",
@@ -33,10 +33,10 @@ export async function test_python_leading_comment_graph(): Promise<void> {
   const source = dedent`
     class Sale:
         class Create:
-            # @evidence docs/spec.md#title Implements title.
+            # @evid docs/spec.md#title Implements title.
             title = ""
   `;
-  const adapter = new EvidencePythonAdapter();
+  const adapter = new EvidPythonAdapter();
   const baseline = await adapter.analyze(
     TestSourceSnapshot.create("src/sale.py", source),
   );
@@ -55,7 +55,7 @@ export async function test_python_leading_comment_graph(): Promise<void> {
   const removed = await adapter.analyze(
     TestSourceSnapshot.create(
       "src/sale.py",
-      source.replace(/^[ \t]*# @evidence[^\n]*\n/mu, ""),
+      source.replace(/^[ \t]*# @evid[^\n]*\n/mu, ""),
     ),
   );
 
@@ -82,13 +82,13 @@ export async function test_python_leading_comment_graph(): Promise<void> {
   for (const unit of baseline.units) {
     TestValidator.equals(
       "annotation edits preserve the subtree fingerprint",
-      EvidenceFingerprint.inspect(baseline, unit.id).fingerprint,
-      EvidenceFingerprint.inspect(edited, unit.id).fingerprint,
+      EvidFingerprint.inspect(baseline, unit.id).fingerprint,
+      EvidFingerprint.inspect(edited, unit.id).fingerprint,
     );
     TestValidator.notEquals(
       "member content changes its ancestors",
-      EvidenceFingerprint.inspect(baseline, unit.id).fingerprint,
-      EvidenceFingerprint.inspect(changed, unit.id).fingerprint,
+      EvidFingerprint.inspect(baseline, unit.id).fingerprint,
+      EvidFingerprint.inspect(changed, unit.id).fingerprint,
     );
   }
 }
@@ -99,13 +99,13 @@ export async function test_python_leading_comment_graph(): Promise<void> {
  * the scenario cannot pass through an unacknowledged Python declaration.
  */
 async function evaluate(
-  claim: IEvidenceInventory,
-  reference: IEvidenceInventory,
-): Promise<IEvidenceGraphResult> {
+  claim: IEvidInventory,
+  reference: IEvidInventory,
+): Promise<IEvidGraphResult> {
   const selected = reference.units
     .filter((unit) => unit.symbol === "h2")
     .map((unit) => unit.id);
-  return EvidenceGraph.evaluate({
+  return EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -118,7 +118,7 @@ async function evaluate(
             severity: "error",
             inventory: reference,
             unitIds: selected,
-            singleEvidencePerSymbol: true,
+            singleEvidPerSymbol: true,
             resolutions: await TestGraph.resolveDeclarations(
               claim,
               reference,

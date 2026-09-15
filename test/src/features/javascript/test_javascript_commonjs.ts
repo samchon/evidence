@@ -1,4 +1,4 @@
-import { EvidenceJavaScriptAdapter } from "@wrtnlabs/evidence";
+import { EvidJavaScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -13,11 +13,11 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Require unsupported dynamic exports to remain incomplete.
  */
 export async function test_javascript_commonjs(): Promise<void> {
-  const inventory = await new EvidenceJavaScriptAdapter().analyze(
+  const inventory = await new EvidJavaScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/contracts.cjs",
       dedent`
-        /** @evidence docs/spec.md#run Implements the CommonJS function. */
+        /** @evid docs/spec.md#run Implements the CommonJS function. */
         function run() {}
         class Service { execute() {} }
         const value = 1;
@@ -62,7 +62,7 @@ export async function test_javascript_commonjs(): Promise<void> {
   );
 
   // Replacing the module with one local declaration exposes that declaration as default.
-  const replaced = await new EvidenceJavaScriptAdapter().analyze(
+  const replaced = await new EvidJavaScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/default.cjs",
       dedent`
@@ -84,7 +84,7 @@ export async function test_javascript_commonjs(): Promise<void> {
     [],
   );
 
-  const noOp = await new EvidenceJavaScriptAdapter().analyze(
+  const noOp = await new EvidJavaScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/no-op.cjs",
       dedent`

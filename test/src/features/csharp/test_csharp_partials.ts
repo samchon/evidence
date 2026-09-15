@@ -1,4 +1,4 @@
-import { EvidenceCSharpAdapter } from "@wrtnlabs/evidence";
+import { EvidCSharpAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -13,7 +13,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Analyze Sale.cs under two distinct roots and require distinct unit IDs.
  */
 export async function test_csharp_partials(): Promise<void> {
-  const adapter = new EvidenceCSharpAdapter();
+  const adapter = new EvidCSharpAdapter();
 
   // Accessibility declared on one part applies to members selected from every part.
   const partial = await adapter.analyze(

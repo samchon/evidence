@@ -1,8 +1,8 @@
-import { EvidenceChecker, EvidenceWatcher } from "@wrtnlabs/evidence";
+import { EvidChecker, EvidWatcher } from "evid";
 import type {
-  EvidenceWatchCycle,
-  IEvidenceSourceDependency,
-} from "@wrtnlabs/evidence";
+  EvidWatchCycle,
+  IEvidSourceDependency,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
@@ -38,7 +38,7 @@ export async function test_watch_package_conditions(): Promise<void> {
     location,
     {
       "package.json": JSON.stringify({ type: "module" }),
-      "evidence.config.ts": `import settings from "fixture-settings";\nexport default settings;\n`,
+      "evid.config.ts": `import settings from "fixture-settings";\nexport default settings;\n`,
       "docs/requirements.md": `## Package entry {#package-entry}\n\nThe selected implementation must acknowledge this requirement.\n`,
       "src-covered/implementation.ts": implementation(true),
       "src-uncovered/implementation.ts": implementation(false),
@@ -51,7 +51,7 @@ export async function test_watch_package_conditions(): Promise<void> {
       "node_modules/fixture-settings/unused.cjs": `module.exports = ${settingsObject("src-uncovered")};\n`,
     },
     async (directory: string): Promise<void> => {
-      const configFile: string = join(directory, "evidence.config.ts");
+      const configFile: string = join(directory, "evid.config.ts");
       const entry: string = join(
         directory,
         "node_modules/fixture-settings/entry.js",
@@ -64,15 +64,15 @@ export async function test_watch_package_conditions(): Promise<void> {
         directory,
         "node_modules/fixture-settings/unused.cjs",
       ).replaceAll("\\", "/");
-      const watcher: EvidenceWatcher = new EvidenceWatcher(configFile, {
+      const watcher: EvidWatcher = new EvidWatcher(configFile, {
         pollIntervalMilliseconds: 20,
         debounceMilliseconds: 20,
       });
 
-      await watcher.watch(async (cycle: EvidenceWatchCycle): Promise<void> => {
+      await watcher.watch(async (cycle: EvidWatchCycle): Promise<void> => {
         const dependencies: string[] = watcher
           .dependencies()
-          .map((dependency: IEvidenceSourceDependency): string =>
+          .map((dependency: IEvidSourceDependency): string =>
             dependency.path.replaceAll("\\", "/"),
           );
         if (cycle.cycle === 1) {
@@ -97,7 +97,7 @@ export async function test_watch_package_conditions(): Promise<void> {
           TestValidator.equals(
             "edited entry matches fresh check",
             cycle.report,
-            await EvidenceChecker.check(configFile),
+            await EvidChecker.check(configFile),
           );
           TestValidator.predicate(
             "edited entry expires success",
@@ -115,7 +115,7 @@ export async function test_watch_package_conditions(): Promise<void> {
           TestValidator.equals(
             "repointed entry matches fresh check",
             cycle.report,
-            await EvidenceChecker.check(configFile),
+            await EvidChecker.check(configFile),
           );
           TestValidator.predicate(
             "repointed import entry succeeds",
@@ -147,7 +147,7 @@ export async function test_watch_package_conditions(): Promise<void> {
         TestValidator.equals(
           "repaired entry matches fresh check",
           cycle.report,
-          await EvidenceChecker.check(configFile),
+          await EvidChecker.check(configFile),
         );
         TestValidator.predicate(
           "repaired import entry succeeds",
@@ -188,7 +188,7 @@ function settings(root: string): string {
 }
 
 /**
- * Serializes the Evidence configuration selected by the package entry.
+ * Serializes the Evid configuration selected by the package entry.
  *
  * The root identifies which fixture source the programming claim observes while
  * all other policy remains fixed.
@@ -229,7 +229,7 @@ function declaration(): string {
  */
 function implementation(covered: boolean): string {
   const documentation: string = covered
-    ? `/** @evidence docs/requirements.md#package-entry Implements the selected package contract. */\n`
+    ? `/** @evid docs/requirements.md#package-entry Implements the selected package contract. */\n`
     : "";
   return `${documentation}export function selected(): number { return 1; }\n`;
 }

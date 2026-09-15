@@ -1,5 +1,5 @@
-import { EvidenceMarkdownAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceDiagnostic } from "@wrtnlabs/evidence";
+import { EvidMarkdownAdapter } from "evid";
+import type { IEvidDiagnostic } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -10,34 +10,34 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *
  * Markdown comments are the supported annotation host. Rendered text, lists,
  * quotes, code blocks, `<pre>` content, and MDX template text must not silently
- * become Evidence declarations.
+ * become Evid declarations.
  *
  * 1. Analyze a document that places tag syntax in rendered prose and code-like regions.
  * 2. Require one unsupported-host diagnostic for each rendered tag line, at its source line.
  * 3. Verify that prose mentions and code examples add no declarations or diagnostics.
- * 4. Verify that the HTML comment still produces its real Evidence target.
+ * 4. Verify that the HTML comment still produces its real Evid target.
  */
 export async function test_markdown_prose_tags(): Promise<void> {
   const content = dedent`
     # Guide
-    @evidence docs/spec.md#plain Rendered prose.
-    - @evidenceExclude docs/spec.md#bullet Rendered list prose.
-    > @evidenceReview docs/spec.md#quote Rendered quote prose.
+    @evid docs/spec.md#plain Rendered prose.
+    - @evidExclude docs/spec.md#bullet Rendered list prose.
+    > @evidReview docs/spec.md#quote Rendered quote prose.
     1. @link ../source.ts#run Rendered numbered prose.
-    This sentence mentions @evidence without starting an annotation.
-        @evidence docs/fake.md#indent This is indented code.
+    This sentence mentions @evid without starting an annotation.
+        @evid docs/fake.md#indent This is indented code.
     ~~~markdown
-    @evidence docs/fake.md#fence This is fenced code.
+    @evid docs/fake.md#fence This is fenced code.
     ~~~
     <pre>
-    @evidence docs/fake.md#pre This is rendered code.
+    @evid docs/fake.md#pre This is rendered code.
     </pre>
     const example={\`
-    @evidence docs/fake.md#mdx This is rendered code.
+    @evid docs/fake.md#mdx This is rendered code.
     \`}
-    <!-- @evidence docs/spec.md#real Supplies real evidence. -->
+    <!-- @evid docs/spec.md#real Supplies real evidence. -->
   `;
-  const inventory = await new EvidenceMarkdownAdapter().analyze(
+  const inventory = await new EvidMarkdownAdapter().analyze(
     TestSourceSnapshot.create("guide.md", content),
   );
 
@@ -63,7 +63,7 @@ export async function test_markdown_prose_tags(): Promise<void> {
   );
 }
 
-function line(diagnostic: IEvidenceDiagnostic): number {
+function line(diagnostic: IEvidDiagnostic): number {
   const location = diagnostic.location;
   if (location === undefined || location.range === undefined)
     throw new Error(`Markdown diagnostic ${diagnostic.code} has no range.`);

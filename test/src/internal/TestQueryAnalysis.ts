@@ -1,9 +1,9 @@
-import { EvidenceChecker } from "@wrtnlabs/evidence";
+import { EvidChecker } from "evid";
 import type {
-  IEvidenceCheckAnalysis,
-  IEvidenceConfigPlan,
-  IEvidenceConfigPlanReference,
-} from "@wrtnlabs/evidence";
+  IEvidCheckAnalysis,
+  IEvidConfigPlan,
+  IEvidConfigPlanReference,
+} from "evid";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
 
@@ -11,7 +11,7 @@ import { join } from "node:path";
 export namespace TestQueryAnalysis {
   export function records(): Record<string, string> {
     return {
-      "evidence.config.ts": dedent`
+      "evid.config.ts": dedent`
         export default {
           severity: "error",
           claims: [
@@ -48,9 +48,9 @@ export namespace TestQueryAnalysis {
       `,
       "src/implementation.ts": dedent`
         /**
-         * @evidence ../contracts/shared.ts#Contract["member.with.dots"] Implements the shared contract.
-         * @evidenceExclude ../contracts/other.ts#Contract["member.with.dots"] The numeric variant is intentionally separate.
-         * @evidenceReview ../contracts/shared.ts#Contract["member.with.dots"] #0000000 Reviewed the previous contract.
+         * @evid ../contracts/shared.ts#Contract["member.with.dots"] Implements the shared contract.
+         * @evidExclude ../contracts/other.ts#Contract["member.with.dots"] The numeric variant is intentionally separate.
+         * @evidReview ../contracts/shared.ts#Contract["member.with.dots"] #0000000 Reviewed the previous contract.
          */
         export function implementation(): void {}
       `,
@@ -60,17 +60,17 @@ export namespace TestQueryAnalysis {
   export async function analyze(
     directory: string,
     referenceCount: number = 1,
-  ): Promise<IEvidenceCheckAnalysis> {
-    return EvidenceChecker.evaluate(plan(directory, referenceCount));
+  ): Promise<IEvidCheckAnalysis> {
+    return EvidChecker.evaluate(plan(directory, referenceCount));
   }
 }
 
-function plan(directory: string, referenceCount: number): IEvidenceConfigPlan {
+function plan(directory: string, referenceCount: number): IEvidConfigPlan {
   const references = Array.from({ length: referenceCount }, (_, index) =>
     reference(index + 4),
   );
   return {
-    configFile: join(directory, "evidence.config.ts"),
+    configFile: join(directory, "evid.config.ts"),
     claims: [
       {
         index: 2,
@@ -89,7 +89,7 @@ function plan(directory: string, referenceCount: number): IEvidenceConfigPlan {
   };
 }
 
-function reference(index: number): IEvidenceConfigPlanReference {
+function reference(index: number): IEvidConfigPlanReference {
   return {
     index,
     population: {

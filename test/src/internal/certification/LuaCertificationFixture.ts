@@ -1,4 +1,4 @@
-import { EvidenceLuaAdapter } from "@wrtnlabs/evidence";
+import { EvidLuaAdapter } from "evid";
 import { dedent } from "@typia/utils";
 
 import type { IAdapterCertification } from "./IAdapterCertification";
@@ -10,19 +10,19 @@ export namespace LuaCertificationFixture {
     const file = "src/contract.lua";
     return {
       type: "lua",
-      adapter: new EvidenceLuaAdapter(),
+      adapter: new EvidLuaAdapter(),
       sources: [
         {
           file,
           content: dedent`
       --- 계약 📘
-      --- @evidence docs/requirements.md#module Implements the module.
+      --- @evid docs/requirements.md#module Implements the module.
       local M = {
         --- 실행
-        --- @evidence docs/requirements.md#function Implements the certified function.
+        --- @evid docs/requirements.md#function Implements the certified function.
         run = function() return 1 end,
         --- 값
-        --- @evidence docs/requirements.md#property Implements the property.
+        --- @evid docs/requirements.md#property Implements the property.
         value = 1,
         --- @internal Retired public contract.
         legacy = 0,
@@ -101,10 +101,10 @@ export namespace LuaCertificationFixture {
         source: {
           file,
           content: dedent`
-        --- @evidence docs/requirements.md#attached Attached documentation.
+        --- @evid docs/requirements.md#attached Attached documentation.
         function run()
-          -- @evidence docs/requirements.md#comment Body comments are inert.
-          return "@evidence docs/requirements.md#literal Literal text is inert."
+          -- @evid docs/requirements.md#comment Body comments are inert.
+          return "@evid docs/requirements.md#literal Literal text is inert."
         end
       `,
         },

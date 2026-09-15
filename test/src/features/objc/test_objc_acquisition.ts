@@ -1,9 +1,9 @@
-import { EvidenceObjcAdapter } from "@wrtnlabs/evidence";
+import { EvidObjcAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TreeSitterAssets } from "../../../../packages/evidence/src/internal/TreeSitterAssets";
-import { TreeSitterAssetScope } from "../../../../packages/evidence/src/internal/TreeSitterAssetScope";
+import { EvidTreeSitterAssets } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssets";
+import { EvidTreeSitterAssetScope } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssetScope";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestParserAssets } from "../../internal/TestParserAssets";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -17,7 +17,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Repeat offline and require an equivalent warm result.
  */
 export async function test_objc_acquisition(): Promise<void> {
-  const grammar = await new TreeSitterAssets().grammar("objc");
+  const grammar = await new EvidTreeSitterAssets().grammar("objc");
   const bytes = Uint8Array.from(await TestParserAssets.bytes(grammar));
   const snapshot = TestSourceSnapshot.create(
     "src/Contract.h",
@@ -34,7 +34,7 @@ export async function test_objc_acquisition(): Promise<void> {
     {},
     async (cacheDirectory) => {
       const requests: string[] = [];
-      const cold = await TreeSitterAssetScope.run(
+      const cold = await EvidTreeSitterAssetScope.run(
         {
           cacheDirectory,
           fetch: async (input) => {
@@ -42,13 +42,13 @@ export async function test_objc_acquisition(): Promise<void> {
             return new Response(bytes);
           },
         },
-        async () => new EvidenceObjcAdapter().analyze(snapshot),
+        async () => new EvidObjcAdapter().analyze(snapshot),
       );
       TestValidator.equals("only necessary grammar is acquired", requests, [
         grammar.wasm.url,
       ]);
       TestValidator.equals("cold analysis is complete", cold.complete, true);
-      const warm = await TreeSitterAssetScope.run(
+      const warm = await EvidTreeSitterAssetScope.run(
         {
           cacheDirectory,
           attempts: 1,
@@ -56,7 +56,7 @@ export async function test_objc_acquisition(): Promise<void> {
             throw new Error("offline");
           },
         },
-        async () => new EvidenceObjcAdapter().analyze(snapshot),
+        async () => new EvidObjcAdapter().analyze(snapshot),
       );
       TestValidator.equals(
         "warm offline inventory matches cold run",

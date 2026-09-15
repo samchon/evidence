@@ -1,10 +1,10 @@
-import { EvidenceSourceLoader } from "@wrtnlabs/evidence";
+import { EvidSourceLoader } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { SourcePath } from "../../../../packages/evidence/src/internal/SourcePath";
+import { EvidSourcePath } from "../../../../packages/evidence/src/internal/EvidSourcePath";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
 /**
@@ -30,17 +30,17 @@ export async function test_source_failures(): Promise<void> {
     location,
     { "docs/valid.md": "# Valid", "root-file": "Not a directory" },
     async (directory) => {
-      const config = join(directory, "evidence.config.ts");
+      const config = join(directory, "evid.config.ts");
 
       // A complete empty glob is different from a root that could not be loaded.
-      const empty = await EvidenceSourceLoader.glob(config, {
+      const empty = await EvidSourceLoader.glob(config, {
         files: ["absent/**/*.md"],
       });
-      const missingRoot = await EvidenceSourceLoader.glob(config, {
+      const missingRoot = await EvidSourceLoader.glob(config, {
         root: "missing",
         files: ["docs/*.md"],
       });
-      const occupiedRoot = await EvidenceSourceLoader.glob(config, {
+      const occupiedRoot = await EvidSourceLoader.glob(config, {
         root: "root-file",
         files: ["**/*.md"],
       });
@@ -62,17 +62,17 @@ export async function test_source_failures(): Promise<void> {
         "missing root remains watched",
         missingRoot.dependencies.some(
           (dependency) =>
-            dependency.path === SourcePath.slash(join(directory, "missing")) &&
+            dependency.path === EvidSourcePath.slash(join(directory, "missing")) &&
             dependency.recursive,
         ),
       );
 
       // Exact files diagnose absence and directories rather than returning an empty success.
-      const missingFile = await EvidenceSourceLoader.file(
+      const missingFile = await EvidSourceLoader.file(
         config,
         "docs/missing.md",
       );
-      const directoryFile = await EvidenceSourceLoader.file(config, "docs");
+      const directoryFile = await EvidSourceLoader.file(config, "docs");
 
       TestValidator.predicate(
         "missing exact file fails",
@@ -90,7 +90,7 @@ export async function test_source_failures(): Promise<void> {
         Buffer.from([0xc3, 0x28]),
       );
 
-      const malformed = await EvidenceSourceLoader.glob(config, {
+      const malformed = await EvidSourceLoader.glob(config, {
         files: ["docs/*.md"],
       });
 
@@ -109,7 +109,7 @@ export async function test_source_failures(): Promise<void> {
       );
 
       // Excluded files are not opened, so excluded malformed bytes do not poison discovery.
-      const excluded = await EvidenceSourceLoader.glob(config, {
+      const excluded = await EvidSourceLoader.glob(config, {
         files: ["docs/*.md", "!docs/invalid.md"],
       });
 

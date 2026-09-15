@@ -1,4 +1,4 @@
-import { EvidenceParser } from "@wrtnlabs/evidence";
+import { EvidParser } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -192,7 +192,7 @@ export async function test_parser_grammars(): Promise<void> {
       query: "(class name: (constant) @name)",
     },
   ];
-  const parser = new EvidenceParser();
+  const parser = new EvidParser();
 
   try {
     TestValidator.equals(

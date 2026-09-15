@@ -1,5 +1,5 @@
-import { EvidenceRubyAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+import { EvidRubyAdapter } from "evid";
+import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -15,7 +15,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *    replacements; require incompleteness, every conflict code, and both method sites.
  */
 export async function test_ruby_definitions(): Promise<void> {
-  const compatible = await new EvidenceRubyAdapter().analyze(
+  const compatible = await new EvidRubyAdapter().analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create(
         "lib/shop/sale.rb",
@@ -51,7 +51,7 @@ export async function test_ruby_definitions(): Promise<void> {
     2,
   );
 
-  const conflicting = await new EvidenceRubyAdapter().analyze(
+  const conflicting = await new EvidRubyAdapter().analyze(
     TestSourceSnapshot.create(
       "lib/conflicts.rb",
       dedent`
@@ -108,9 +108,9 @@ export async function test_ruby_definitions(): Promise<void> {
 }
 
 function requireUnit(
-  inventory: IEvidenceInventory,
+  inventory: IEvidInventory,
   identity: string,
-): IEvidenceUnit {
+): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.join(".") === identity,
   );

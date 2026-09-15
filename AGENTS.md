@@ -1,6 +1,6 @@
 # AGENTS.md
 
-`@wrtnlabs/evidence` is a standalone Evidence Graph checker being built in TypeScript with upstream Tree-sitter WASM. The pnpm workspace contains the published package in `packages/evidence` and its logic unit-test workspace in `test`.
+`evid` is a standalone Evid Graph checker being built in TypeScript with upstream Tree-sitter WASM. The pnpm workspace contains the published package in `packages/evidence` and its logic unit-test workspace in `test`.
 
 ## Attitude
 
@@ -9,7 +9,7 @@ Follow the literal request; it is the contract, not a hint at what the user "rea
 - **Scope is the user's to widen.** Work with initiative inside the requested goal. Do not replace a specific task with a repository-wide campaign.
 - **Match the user's language.** Communicate in Korean or English as the user does. Repository documentation, issues, and pull requests use English unless requested otherwise.
 - **Choose the principled course.** Decide from evidence, correctness, product boundaries, and consequences. Difficulty is a reason to investigate, not to weaken the contract.
-- **Evidence precedes correction.** Verify reports against the actual code, tests, artifacts, upstream behavior, and history before changing behavior.
+- **Evid precedes correction.** Verify reports against the actual code, tests, artifacts, upstream behavior, and history before changing behavior.
 - **Trace the consequence surface.** Follow a verified cause through consumers, state transitions, platforms, and failure/recovery paths.
 - **Default over ask.** Resolve routine choices from the existing context. Preserve authorization already given in the conversation.
 
@@ -20,7 +20,7 @@ Durable conventions live under `.agents/skills/`. Read the linked skill when its
 - [Project](.agents/skills/project/SKILL.md): workspace layout, current product boundaries, dependencies, and canonical commands.
 - [Development](.agents/skills/development/SKILL.md): implementation, test, validation, and change-integrity rules. Read before changing code, package wiring, or CI.
 - [Documentation](.agents/skills/documentation/SKILL.md): prose, source JSDoc, implementation comments, test scenarios, and agent instructions. Read before editing documentation, source comments, or skills.
-- [Evidence Graph](.agents/skills/project/evidence/SKILL.md): units, targets, coverage, exclusions, reviews, and parser completeness. Read before changing graph semantics, configuration contracts, adapters, or diagnostics.
+- [Evid Graph](.agents/skills/project/evidence/SKILL.md): units, targets, coverage, exclusions, reviews, and parser completeness. Read before changing graph semantics, configuration contracts, adapters, or diagnostics.
 - [Review](.agents/skills/review/SKILL.md): solo review of the whole declared change and its consequences. Use for ordinary review and self-review.
 - [Pull Request](.agents/skills/pull-request/SKILL.md): branches, commits, submission, checks, and merge boundaries. Use when the corresponding delivery action is authorized.
 - [Issue Campaign](.agents/skills/issue-campaign/SKILL.md): broad discovery and issue-to-implementation campaigns. Do not use for one already-defined issue or an ordinary PR.

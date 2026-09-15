@@ -1,4 +1,4 @@
-import { EvidenceChecker } from "@wrtnlabs/evidence";
+import { EvidChecker } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
@@ -19,26 +19,26 @@ export async function test_mysql_graph(): Promise<void> {
       await TestFileSystem.experiment(
         `mysql-graph-${symbol}-${mysqlClaims}`,
         {
-          "evidence.config.ts": mysqlClaims
+          "evid.config.ts": mysqlClaims
             ? `export default { claims: [{ type: "mysql", files: ["schema.sql"], symbol: "${symbol}", reference: { type: "typescript", files: ["contract.ts"], symbol: "function" } }] };`
             : `export default { claims: [{ type: "typescript", files: ["contract.ts"], symbol: "function", reference: { type: "mysql", files: ["schema.sql"], symbol: "${symbol}" } }] };`,
           "schema.sql": dedent`
-            ${mysqlClaims && symbol === "model" ? "/** @evidence ./contract.ts#run Verifies the model. */" : ""}
+            ${mysqlClaims && symbol === "model" ? "/** @evid ./contract.ts#run Verifies the model. */" : ""}
             CREATE TABLE Child (
-              ${mysqlClaims && symbol === "column" ? "/** @evidence ./contract.ts#run Verifies the column. */" : ""}
+              ${mysqlClaims && symbol === "column" ? "/** @evid ./contract.ts#run Verifies the column. */" : ""}
               parent_id INT,
-              ${mysqlClaims && symbol === "relation" ? "/** @evidence ./contract.ts#run Verifies the relation. */" : ""}
+              ${mysqlClaims && symbol === "relation" ? "/** @evid ./contract.ts#run Verifies the relation. */" : ""}
               FOREIGN KEY parent_fk (parent_id) REFERENCES Parent (id)
             );
           `,
           "contract.ts": dedent`
-            /** @evidence ./schema.sql#Child Verifies the schema. */
+            /** @evid ./schema.sql#Child Verifies the schema. */
             export function run() {}
           `,
         },
         async (directory) => {
-          const config = join(directory, "evidence.config.ts");
-          const complete = await EvidenceChecker.check(config);
+          const config = join(directory, "evid.config.ts");
+          const complete = await EvidChecker.check(config);
 
           TestValidator.equals(
             `${symbol} role ${mysqlClaims} passes`,
@@ -54,7 +54,7 @@ export async function test_mysql_graph(): Promise<void> {
                 }
               : { "contract.ts": "export function run() {}" },
           );
-          const missing = await EvidenceChecker.check(config);
+          const missing = await EvidChecker.check(config);
           TestValidator.equals(
             `${symbol} role ${mysqlClaims} missing evidence fails`,
             missing.success,

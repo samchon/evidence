@@ -1,8 +1,8 @@
 import {
-  EvidenceFingerprint,
-  EvidenceInventory,
-  EvidenceZigAdapter,
-} from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidInventory,
+  EvidZigAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -16,16 +16,16 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_zig_aliases(): Promise<void> {
   const content = dedent`
-    /// @evidence docs/spec.md#run Implements the function.
+    /// @evid docs/spec.md#run Implements the function.
     fn local() i32 { return 1; }
-    /// @evidence docs/spec.md#run Exposes the function.
+    /// @evid docs/spec.md#run Exposes the function.
     pub const run = local;
     pub const renamed = run;
     const scalar = 1;
     pub const first = scalar;
     pub const second = first;
   `;
-  const adapter = new EvidenceZigAdapter();
+  const adapter = new EvidZigAdapter();
   const inventory = await adapter.analyze(
     TestSourceSnapshot.create("src/Aliases.zig", content),
   );
@@ -73,13 +73,13 @@ export async function test_zig_aliases(): Promise<void> {
   );
   TestValidator.equals(
     "alias documentation preserves canonical fingerprint",
-    EvidenceFingerprint.inspect(annotation, callable.id).fingerprint,
-    EvidenceFingerprint.inspect(inventory, callable.id).fingerprint,
+    EvidFingerprint.inspect(annotation, callable.id).fingerprint,
+    EvidFingerprint.inspect(inventory, callable.id).fingerprint,
   );
   TestValidator.notEquals(
     "private implementation edit invalidates exposed fingerprint",
-    EvidenceFingerprint.inspect(semantic, callable.id).fingerprint,
-    EvidenceFingerprint.inspect(inventory, callable.id).fingerprint,
+    EvidFingerprint.inspect(semantic, callable.id).fingerprint,
+    EvidFingerprint.inspect(inventory, callable.id).fingerprint,
   );
 
   const withdrawn = await adapter.analyze(
@@ -87,16 +87,16 @@ export async function test_zig_aliases(): Promise<void> {
       "src/Aliases.zig",
       content
         .replace(
-          "/// @evidence docs/spec.md#run Implements the function.\n",
+          "/// @evid docs/spec.md#run Implements the function.\n",
           "",
         )
         .replace(
-          "/// @evidence docs/spec.md#run Exposes the function.",
+          "/// @evid docs/spec.md#run Exposes the function.",
           "/// @internal Withdraws all public aliases.",
         ),
     ),
   );
-  const graph = new EvidenceInventory([withdrawn]);
+  const graph = new EvidInventory([withdrawn]);
   for (const name of ["run", "renamed"])
     TestValidator.equals(
       `withdrawal reaches ${name}`,

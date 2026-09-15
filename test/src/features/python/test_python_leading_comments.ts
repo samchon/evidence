@@ -1,4 +1,4 @@
-import { EvidenceInventory, EvidencePythonAdapter } from "@wrtnlabs/evidence";
+import { EvidInventory, EvidPythonAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -17,22 +17,22 @@ export async function test_python_leading_comments(): Promise<void> {
   const source = dedent`
     class Sale:
         # 상품 생성 계약.
-        # @evidence docs/spec.md#create Defines creation.
+        # @evid docs/spec.md#create Defines creation.
         class Create:
             # 상품명 계약.
-            # @evidence docs/spec.md#title Implements title.
-            # @evidenceReview docs/spec.md#title #abcdef0 Checked title.
+            # @evid docs/spec.md#title Implements title.
+            # @evidReview docs/spec.md#title #abcdef0 Checked title.
             title = ""
 
     class Methods:
-        # @evidence docs/spec.md#method Implements creation.
+        # @evid docs/spec.md#method Implements creation.
         @staticmethod
         def create():
             return None
 
     class Instance:
         def __init__(self):
-            # @evidence docs/spec.md#field Implements the instance field.
+            # @evid docs/spec.md#field Implements the instance field.
             self.title = ""
 
     class Hidden:
@@ -47,7 +47,7 @@ export async function test_python_leading_comments(): Promise<void> {
     source.replaceAll("\n", "\r\n"),
     source.replaceAll("    ", "\t"),
   ]) {
-    const inventory = await new EvidencePythonAdapter().analyze(
+    const inventory = await new EvidPythonAdapter().analyze(
       TestSourceSnapshot.create("src/sale.py", content),
     );
     const units = new Map(
@@ -80,7 +80,7 @@ export async function test_python_leading_comments(): Promise<void> {
         (declaration) => declaration.target === "docs/spec.md#title",
       )?.hostId,
     );
-    const population = new EvidenceInventory([inventory]).select(
+    const population = new EvidInventory([inventory]).select(
       inventory.units.map((unit) => unit.id),
     );
     TestValidator.equals(
@@ -102,7 +102,7 @@ export async function test_python_leading_comments(): Promise<void> {
       TestValidator.equals(
         "mapped tag offset",
         range === undefined ? undefined : range.start.offset,
-        content.indexOf(`@evidence ${declaration.target}`),
+        content.indexOf(`@evid ${declaration.target}`),
       );
     }
   }

@@ -1,5 +1,5 @@
-import { EvidenceGraph, EvidenceSwaggerAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidGraph, EvidSwaggerAdapter } from "evid";
+import type { IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
@@ -17,7 +17,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Repair the document and require graph recovery.
  */
 export async function test_swagger_failures(): Promise<void> {
-  const adapter = new EvidenceSwaggerAdapter();
+  const adapter = new EvidSwaggerAdapter();
   const malformed = await adapter.analyze(
     TestSourceSnapshot.create("malformed.yaml", "openapi: ["),
   );
@@ -83,7 +83,7 @@ export async function test_swagger_failures(): Promise<void> {
   );
 
   // An incomplete Swagger claim stays active instead of passing as an empty population.
-  const graph = EvidenceGraph.evaluate({
+  const graph = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -121,8 +121,8 @@ export async function test_swagger_failures(): Promise<void> {
 
   const location = join(__dirname, "failures-" + randomUUID());
   await TestFileSystem.experiment(location, {}, async (directory) => {
-    const config = join(directory, "evidence.config.ts");
-    const failures: IEvidenceInventory[] = await Promise.all([
+    const config = join(directory, "evid.config.ts");
+    const failures: IEvidInventory[] = await Promise.all([
       adapter.load(config, "missing.yaml"),
       adapter.load(config, "C:drive-relative.yaml"),
       adapter.load(config, "file:///tmp/openapi.yaml"),
@@ -147,7 +147,7 @@ export async function test_swagger_failures(): Promise<void> {
   });
 }
 
-function rejected(name: string, inventory: IEvidenceInventory): void {
+function rejected(name: string, inventory: IEvidInventory): void {
   TestValidator.equals(
     `${name} document is incomplete`,
     inventory.complete,

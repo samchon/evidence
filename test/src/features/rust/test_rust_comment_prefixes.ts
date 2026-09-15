@@ -1,8 +1,8 @@
 import {
-  EvidenceFingerprint,
-  EvidenceInventory,
-  EvidenceRustAdapter,
-} from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidInventory,
+  EvidRustAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -19,13 +19,13 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_rust_comment_prefixes(): Promise<void> {
   const source = dedent`
     /// 계약 🦀
-    /// @evidence docs/spec.md#type Implements the type.
+    /// @evid docs/spec.md#type Implements the type.
     // Ordinary whitespace between the documentation and the declaration.
     #[deprecated]
     /* Another whitespace comment. */
     pub struct Sale {
-      #[doc = "@evidence docs/spec.md#field Implements the field."]
-      // @evidence docs/spec.md#unsupported This ordinary comment is unsupported.
+      #[doc = "@evid docs/spec.md#field Implements the field."]
+      // @evid docs/spec.md#unsupported This ordinary comment is unsupported.
       pub title: i32,
     }
     /// @internal Withdraws the nested owner.
@@ -34,12 +34,12 @@ export async function test_rust_comment_prefixes(): Promise<void> {
       pub struct Child;
     }
     pub mod container {
-      //! @evidence docs/spec.md#module Documents the module itself.
+      //! @evid docs/spec.md#module Documents the module itself.
       // Inner documentation must never move to the following child.
       pub struct Child;
     }
   `;
-  const adapter = new EvidenceRustAdapter();
+  const adapter = new EvidRustAdapter();
   for (const content of [source, source.replaceAll("\n", "\r\n")]) {
     const inventory = await adapter.analyze(
       TestSourceSnapshot.create("src/lib.rs", content),
@@ -75,7 +75,7 @@ export async function test_rust_comment_prefixes(): Promise<void> {
     );
     TestValidator.equals(
       "withdrawal crosses ordinary comments",
-      new EvidenceInventory([inventory])
+      new EvidInventory([inventory])
         .select(inventory.units.map((unit) => unit.id))
         .hidden.map((unit) => unit.identity.join("."))
         .sort((a, b) => a.localeCompare(b)),
@@ -85,7 +85,7 @@ export async function test_rust_comment_prefixes(): Promise<void> {
       TestValidator.equals(
         "original tag offset",
         item.location.range?.start?.offset,
-        content.indexOf(`@evidence ${item.target}`),
+        content.indexOf(`@evid ${item.target}`),
       );
 
     const edited = await adapter.analyze(
@@ -107,13 +107,13 @@ export async function test_rust_comment_prefixes(): Promise<void> {
     if (sale === undefined) throw new Error("Missing Sale.");
     TestValidator.equals(
       "annotation changes preserve ancestor reviews",
-      EvidenceFingerprint.inspect(inventory, sale.id).fingerprint,
-      EvidenceFingerprint.inspect(edited, sale.id).fingerprint,
+      EvidFingerprint.inspect(inventory, sale.id).fingerprint,
+      EvidFingerprint.inspect(edited, sale.id).fingerprint,
     );
     TestValidator.notEquals(
       "attributes remain semantic content",
-      EvidenceFingerprint.inspect(inventory, sale.id).fingerprint,
-      EvidenceFingerprint.inspect(changed, sale.id).fingerprint,
+      EvidFingerprint.inspect(inventory, sale.id).fingerprint,
+      EvidFingerprint.inspect(changed, sale.id).fingerprint,
     );
   }
 

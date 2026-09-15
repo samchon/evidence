@@ -1,5 +1,5 @@
-import { EvidenceFingerprint, EvidencePhpAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidFingerprint, EvidPhpAdapter } from "evid";
+import type { IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -34,7 +34,7 @@ export async function test_php_fingerprints(): Promise<void> {
   const annotation = await analyze(
     content.replace(
       "Shared documentation.",
-      "@evidenceReview ./requirements.md#value Annotation edit.",
+      "@evidReview ./requirements.md#value Annotation edit.",
     ),
   );
 
@@ -80,8 +80,8 @@ export async function test_php_fingerprints(): Promise<void> {
  * Each caller receives a fresh inventory so a single textual mutation cannot
  * share parser or inventory state with the baseline revision.
  */
-async function analyze(content: string): Promise<IEvidenceInventory> {
-  return new EvidencePhpAdapter().analyze(
+async function analyze(content: string): Promise<IEvidInventory> {
+  return new EvidPhpAdapter().analyze(
     TestSourceSnapshot.create("src/contract.php", content),
   );
 }
@@ -91,8 +91,8 @@ async function analyze(content: string): Promise<IEvidenceInventory> {
  * A missing name fails the scenario immediately because the comparison cannot
  * establish fingerprint behavior without its intended semantic unit.
  */
-function fingerprint(inventory: IEvidenceInventory, name: string): string {
+function fingerprint(inventory: IEvidInventory, name: string): string {
   const unit = inventory.units.find((item) => item.name === name);
   if (unit === undefined) throw new Error(`Missing PHP unit ${name}`);
-  return EvidenceFingerprint.inspect(inventory, unit.id).fingerprint;
+  return EvidFingerprint.inspect(inventory, unit.id).fingerprint;
 }

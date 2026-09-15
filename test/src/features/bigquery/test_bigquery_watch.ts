@@ -1,4 +1,4 @@
-import { EvidenceChecker, EvidenceWatcher } from "@wrtnlabs/evidence";
+import { EvidChecker, EvidWatcher } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
@@ -17,18 +17,18 @@ export async function test_bigquery_watch(): Promise<void> {
   await TestFileSystem.experiment(
     "bigquery-watch",
     {
-      "evidence.config.ts": dedent`
+      "evid.config.ts": dedent`
       export default { claims: [{ type: "typescript", files: ["claim.ts"], reference: { type: "bigquery", files: ["schema/*.sql"], symbol: "column" } }] };
     `,
       "claim.ts": dedent`
-      /** @evidence ./schema/orders.sql#ds.orders Implements the table. */
+      /** @evid ./schema/orders.sql#ds.orders Implements the table. */
       export function claim() {}
     `,
       "schema/orders.sql": "CREATE TABLE ds.orders (id INT64);",
     },
     async (directory) => {
-      const config = join(directory, "evidence.config.ts");
-      const watcher = new EvidenceWatcher(config, {
+      const config = join(directory, "evid.config.ts");
+      const watcher = new EvidWatcher(config, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
       });
@@ -38,7 +38,7 @@ export async function test_bigquery_watch(): Promise<void> {
           TestValidator.equals(
             `fresh BigQuery cycle ${cycle.cycle}`,
             cycle.report,
-            await EvidenceChecker.check(config),
+            await EvidChecker.check(config),
           );
           if (cycle.cycle === 1) {
             TestValidator.equals("initial coverage", cycle.success, true);

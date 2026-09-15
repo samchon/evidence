@@ -1,17 +1,17 @@
-import { EvidenceParserError } from "@wrtnlabs/evidence";
-import type { EvidenceParserErrorCode } from "@wrtnlabs/evidence";
+import { EvidParserError } from "evid";
+import type { EvidParserErrorCode } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 /** Requires the precise analysis failure, rather than accepting an unrelated exception. */
 export namespace TestParserError {
   export async function expect(
-    code: EvidenceParserErrorCode,
+    code: EvidParserErrorCode,
     closure: () => unknown,
-  ): Promise<EvidenceParserError> {
+  ): Promise<EvidParserError> {
     try {
       await closure();
     } catch (error) {
-      if (!(error instanceof EvidenceParserError)) throw error;
+      if (!(error instanceof EvidParserError)) throw error;
       TestValidator.equals("parser diagnostic", error.code, code);
       return error;
     }

@@ -1,4 +1,4 @@
-import { EvidenceCAdapter, EvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidCAdapter, EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -13,52 +13,52 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Require tag-bearing inert carriers to produce unsupported-host diagnostics.
  */
 export async function test_c_hosts(): Promise<void> {
-  const inventory = await new EvidenceCAdapter().analyze(
+  const inventory = await new EvidCAdapter().analyze(
     TestSourceSnapshot.create(
       "src/contracts.c",
       dedent`
         /**
-         * @evidence docs/requirements.md#type Implements the aggregate.
+         * @evid docs/requirements.md#type Implements the aggregate.
          * @code
-         * @evidence docs/requirements.md#code Doxygen source is inert.
+         * @evid docs/requirements.md#code Doxygen source is inert.
          * @endcode
-         * <pre>@evidence docs/requirements.md#pre Preformatted text is inert.</pre>
+         * <pre>@evid docs/requirements.md#pre Preformatted text is inert.</pre>
          */
         struct Contracts {
-            /// @evidence docs/requirements.md#field Implements the field.
+            /// @evid docs/requirements.md#field Implements the field.
             int value;
         };
 
-        /// @evidence docs/requirements.md#function Implements the function.
+        /// @evid docs/requirements.md#function Implements the function.
         int run(void) {
-            /** @evidence docs/requirements.md#body Body documentation is unsupported. */
-            const char *text = "@evidence docs/requirements.md#string Strings are unsupported.";
+            /** @evid docs/requirements.md#body Body documentation is unsupported. */
+            const char *text = "@evid docs/requirements.md#string Strings are unsupported.";
             return text[0];
         }
 
-        int first, second; ///< @evidence docs/requirements.md#trailing Implements both objects.
+        int first, second; ///< @evid docs/requirements.md#trailing Implements both objects.
 
         enum Result {
-            SUCCESS, /**< @evidence docs/requirements.md#enumerator Implements the enumerator. */
+            SUCCESS, /**< @evid docs/requirements.md#enumerator Implements the enumerator. */
             FAILURE,
         };
 
-        // @evidence docs/requirements.md#ordinary Ordinary comments are unsupported.
+        // @evid docs/requirements.md#ordinary Ordinary comments are unsupported.
         int ordinary;
 
         /*
-         * @evidence docs/requirements.md#ordinary-block Ordinary block comments are unsupported.
+         * @evid docs/requirements.md#ordinary-block Ordinary block comments are unsupported.
          */
         int ordinary_block;
 
-        /** @evidence docs/requirements.md#static Static declarations are unsupported. */
+        /** @evid docs/requirements.md#static Static declarations are unsupported. */
         static int hidden;
 
-        /** @evidence docs/requirements.md#detached Detached Doxygen is unsupported. */
+        /** @evid docs/requirements.md#detached Detached Doxygen is unsupported. */
 
         int detached;
 
-        /** @evidence docs/requirements.md#directive A directive breaks attachment. */
+        /** @evid docs/requirements.md#directive A directive breaks attachment. */
         #define CONTRACT_VALUE 1
         int after_directive;
       `,
@@ -101,7 +101,7 @@ export async function test_c_hosts(): Promise<void> {
     7,
   );
 
-  const withdrawn = await new EvidenceCAdapter().analyze(
+  const withdrawn = await new EvidCAdapter().analyze(
     TestSourceSnapshot.create(
       "include/hidden.h",
       dedent`
@@ -114,7 +114,7 @@ export async function test_c_hosts(): Promise<void> {
       `,
     ),
   );
-  const population = new EvidenceInventory([withdrawn]).select(
+  const population = new EvidInventory([withdrawn]).select(
     withdrawn.units.map((unit) => unit.id),
   );
   TestValidator.equals(

@@ -1,4 +1,4 @@
-import { EvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { TestInventory } from "../../internal/TestInventory";
@@ -48,8 +48,8 @@ export async function test_inventory_physical_aliases(): Promise<void> {
   for (const host of second.hosts) host.file = alias;
   for (const address of second.addresses) address.file = alias;
 
-  const forward = new EvidenceInventory([first, second]);
-  const reverse = new EvidenceInventory([second, first]);
+  const forward = new EvidInventory([first, second]);
+  const reverse = new EvidInventory([second, first]);
 
   TestValidator.predicate(
     "physical aliases remain complete",
@@ -93,6 +93,6 @@ export async function test_inventory_physical_aliases(): Promise<void> {
   for (const source of replaced.sources) source.id = "replacement-inode";
   TestValidator.predicate(
     "conflicting physical identity fails",
-    !new EvidenceInventory([first, replaced]).snapshot().complete,
+    !new EvidInventory([first, replaced]).snapshot().complete,
   );
 }

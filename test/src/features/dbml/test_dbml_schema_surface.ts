@@ -1,8 +1,8 @@
 ﻿import {
-  EvidenceDbmlAdapter,
-  EvidenceInventory,
-  EvidenceFingerprint,
-} from "@wrtnlabs/evidence";
+  EvidDbmlAdapter,
+  EvidInventory,
+  EvidFingerprint,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -30,7 +30,7 @@ export async function test_dbml_schema_surface(): Promise<void> {
       user_id int [ref: > U.id]
       tenant int
       state state
-      "display.name😀" varchar(120) [note: '😀\\n@evidence ../spec.md#display Preserves a literal column name.']
+      "display.name😀" varchar(120) [note: '😀\\n@evid ../spec.md#display Preserves a literal column name.']
       Note: 'Post storage.'
     }
     Table profiles {
@@ -43,7 +43,7 @@ export async function test_dbml_schema_surface(): Promise<void> {
     Ref pair: U.id - profiles.user_id
     Ref network: U.id <> posts.user_id
   `.replace(/\n/gu, "\r\n");
-  const inventory = await new EvidenceDbmlAdapter().analyze(
+  const inventory = await new EvidDbmlAdapter().analyze(
     TestSourceSnapshot.create("schema/main.dbml", source),
   );
 
@@ -161,14 +161,14 @@ export async function test_dbml_schema_surface(): Promise<void> {
       JSON.stringify(left).localeCompare(JSON.stringify(right), "en"),
     ),
   );
-  const canonical = new EvidenceInventory([inventory]).resolve(
+  const canonical = new EvidInventory([inventory]).resolve(
     {
       file: "/project/schema/main.dbml",
       segments: ["core", "users", "id"],
     },
     inventory.units.map((unit) => unit.id),
   );
-  const alias = new EvidenceInventory([inventory]).resolve(
+  const alias = new EvidInventory([inventory]).resolve(
     {
       file: "/project/schema/main.dbml",
       segments: ["U", "id"],
@@ -191,7 +191,7 @@ export async function test_dbml_schema_surface(): Promise<void> {
   TestValidator.equals(
     "Unicode UTF16 annotation start",
     annotation.location.range.start.offset,
-    source.indexOf("@evidence"),
+    source.indexOf("@evid"),
   );
   const literal = inventory.units.find(
     (unit) => unit.identity.at(-1) === "display.name😀",
@@ -215,12 +215,12 @@ export async function test_dbml_schema_surface(): Promise<void> {
     3,
   );
 
-  const revised = await new EvidenceDbmlAdapter().analyze(
+  const revised = await new EvidDbmlAdapter().analyze(
     TestSourceSnapshot.create(
       "schema/main.dbml",
       source.replace(
         "Post storage.",
-        "Post storage.\\n@evidenceReview ../spec.md#display Reviewed storage semantics.",
+        "Post storage.\\n@evidReview ../spec.md#display Reviewed storage semantics.",
       ),
     ),
   );
@@ -239,7 +239,7 @@ export async function test_dbml_schema_surface(): Promise<void> {
     throw new Error("DBML posts table is absent.");
   TestValidator.equals(
     "review-only note edit preserves subtree fingerprint",
-    EvidenceFingerprint.inspect(inventory, originalTable.id).fingerprint,
-    EvidenceFingerprint.inspect(revised, revisedTable.id).fingerprint,
+    EvidFingerprint.inspect(inventory, originalTable.id).fingerprint,
+    EvidFingerprint.inspect(revised, revisedTable.id).fingerprint,
   );
 }

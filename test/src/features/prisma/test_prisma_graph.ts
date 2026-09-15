@@ -1,17 +1,17 @@
 import {
-  EvidenceFingerprint,
-  EvidenceGraph,
-  EvidenceMarkdownAdapter,
-  EvidencePrismaAdapter,
-  EvidenceTargetResolver,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidGraph,
+  EvidMarkdownAdapter,
+  EvidPrismaAdapter,
+  EvidTargetResolver,
+  EvidTypeScriptAdapter,
+} from "evid";
 import type {
-  IEvidenceDeclaration,
-  IEvidenceHost,
-  IEvidenceInventory,
-  IEvidenceUnit,
-} from "@wrtnlabs/evidence";
+  IEvidDeclaration,
+  IEvidHost,
+  IEvidInventory,
+  IEvidUnit,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -27,7 +27,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Verify graph status and diagnostics for each case.
  */
 export async function test_prisma_graph(): Promise<void> {
-  const specification = await new EvidenceMarkdownAdapter().analyze(
+  const specification = await new EvidMarkdownAdapter().analyze(
     TestSourceSnapshot.create(
       "docs/spec.md",
       dedent`
@@ -43,17 +43,17 @@ export async function test_prisma_graph(): Promise<void> {
   );
   const pricing = requireUnit(specification, "pricing");
   const sellers = requireUnit(specification, "sellers");
-  const pricingFingerprint = EvidenceFingerprint.inspect(
+  const pricingFingerprint = EvidFingerprint.inspect(
     specification,
     pricing.id,
   ).fingerprint;
-  const sellersFingerprint = EvidenceFingerprint.inspect(
+  const sellersFingerprint = EvidFingerprint.inspect(
     specification,
     sellers.id,
   ).fingerprint;
 
   // Prisma claims the persisted model and excludes an external responsibility in a ledger.
-  const prisma = await new EvidencePrismaAdapter().analyze(
+  const prisma = await new EvidPrismaAdapter().analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create(
         "prisma/schema.prisma",
@@ -62,8 +62,8 @@ export async function test_prisma_graph(): Promise<void> {
             provider = "postgresql"
           }
 
-          /// @evidence docs/spec.md#pricing The model persists the requested price.
-          /// @evidenceReview docs/spec.md#pricing #${pricingFingerprint} Read the pricing requirement and checked the stored fields.
+          /// @evid docs/spec.md#pricing The model persists the requested price.
+          /// @evidReview docs/spec.md#pricing #${pricingFingerprint} Read the pricing requirement and checked the stored fields.
           model Sale {
             id    String @id
             price Int
@@ -77,33 +77,33 @@ export async function test_prisma_graph(): Promise<void> {
       TestSourceSnapshot.create(
         "prisma/exclusions.schema",
         dedent`
-          /// @evidenceExclude docs/spec.md#sellers Authentication owns seller identity.
-          /// @evidenceExcludeReview docs/spec.md#sellers #${sellersFingerprint} Read the ownership boundary and confirmed the exclusion.
+          /// @evidExclude docs/spec.md#sellers Authentication owns seller identity.
+          /// @evidExcludeReview docs/spec.md#sellers #${sellersFingerprint} Read the ownership boundary and confirmed the exclusion.
         `,
       ),
     ]),
   );
   const sale = requireUnit(prisma, "prisma:Sale");
   const seller = requireUnit(prisma, "prisma:Seller");
-  const saleFingerprint = EvidenceFingerprint.inspect(
+  const saleFingerprint = EvidFingerprint.inspect(
     prisma,
     sale.id,
   ).fingerprint;
-  const sellerFingerprint = EvidenceFingerprint.inspect(
+  const sellerFingerprint = EvidFingerprint.inspect(
     prisma,
     seller.id,
   ).fingerprint;
 
   // TypeScript then cites the file-independent Prisma model targets.
-  const contract = await new EvidenceTypeScriptAdapter().analyze(
+  const contract = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/contracts.ts",
       dedent`
         /**
-         * @evidence prisma:Sale Exposes the persisted sale model.
-         * @evidenceReview prisma:Sale #${saleFingerprint} Read the model and its stored fields.
-         * @evidence prisma:Seller Exposes the persisted seller model.
-         * @evidenceReview prisma:Seller #${sellerFingerprint} Read the seller identity contract.
+         * @evid prisma:Sale Exposes the persisted sale model.
+         * @evidReview prisma:Sale #${saleFingerprint} Read the model and its stored fields.
+         * @evid prisma:Seller Exposes the persisted seller model.
+         * @evidReview prisma:Seller #${sellerFingerprint} Read the seller identity contract.
          */
         export interface ISaleContract {}
       `,
@@ -111,7 +111,7 @@ export async function test_prisma_graph(): Promise<void> {
   );
   const contractUnit = requireUnit(contract, "ISaleContract");
 
-  const graph = EvidenceGraph.evaluate({
+  const graph = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -172,19 +172,19 @@ export async function test_prisma_graph(): Promise<void> {
   );
 
   // Prisma target syntax and selected-member lookup remain distinct failures.
-  const malformedClaim = await new EvidenceTypeScriptAdapter().analyze(
+  const malformedClaim = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/failures.ts",
       dedent`
-        /** @evidence prisma:Sale..price Contains an empty member segment. */
+        /** @evid prisma:Sale..price Contains an empty member segment. */
         export function malformed(): void {}
 
-        /** @evidence prisma:Sale.absent Names no parsed member. */
+        /** @evid prisma:Sale.absent Names no parsed member. */
         export function missing(): void {}
       `,
     ),
   );
-  const resolver = new EvidenceTargetResolver([prisma]);
+  const resolver = new EvidTargetResolver([prisma]);
   const malformed = requireDeclaration(malformedClaim, "prisma:Sale..price");
   const missing = requireDeclaration(malformedClaim, "prisma:Sale.absent");
   const ids = prisma.units.map((unit) => unit.id);
@@ -225,9 +225,9 @@ export async function test_prisma_graph(): Promise<void> {
 }
 
 function requireUnit(
-  inventory: IEvidenceInventory,
+  inventory: IEvidInventory,
   identity: string,
-): IEvidenceUnit {
+): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.id === identity || candidate.identity.at(-1) === identity,
@@ -238,9 +238,9 @@ function requireUnit(
 }
 
 function requireDeclaration(
-  inventory: IEvidenceInventory,
+  inventory: IEvidInventory,
   target: string,
-): IEvidenceDeclaration {
+): IEvidDeclaration {
   const declaration = inventory.declarations.find(
     (candidate) => candidate.target === target,
   );
@@ -250,9 +250,9 @@ function requireDeclaration(
 }
 
 function requireHost(
-  inventory: IEvidenceInventory,
-  declaration: IEvidenceDeclaration,
-): IEvidenceHost {
+  inventory: IEvidInventory,
+  declaration: IEvidDeclaration,
+): IEvidHost {
   const host = inventory.hosts.find(
     (candidate) => candidate.id === declaration.hostId,
   );

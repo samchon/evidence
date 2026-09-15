@@ -1,12 +1,12 @@
 ﻿import {
-  EvidenceDbmlAdapter,
-  EvidenceParser,
-  EvidenceParserError,
-} from "@wrtnlabs/evidence";
+  EvidDbmlAdapter,
+  EvidParser,
+  EvidParserError,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
-import { TreeSitterAssetScope } from "../../../../packages/evidence/src/internal/TreeSitterAssetScope";
+import { EvidTreeSitterAssetScope } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssetScope";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestParserAssets } from "../../internal/TestParserAssets";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -20,7 +20,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Issue an invalid DBML query and require the parser to retain its query-invalid provenance.
  */
 export async function test_dbml_parser_acquisition(): Promise<void> {
-  const parser = new EvidenceParser();
+  const parser = new EvidParser();
   const grammar = (await parser.grammars()).find(
     (entry) => entry.id === "dbml",
   );
@@ -38,7 +38,7 @@ export async function test_dbml_parser_acquisition(): Promise<void> {
     {},
     async (cacheDirectory) => {
       const requested: string[] = [];
-      const cold = await TreeSitterAssetScope.run(
+      const cold = await EvidTreeSitterAssetScope.run(
         {
           cacheDirectory,
           fetch: async (input) => {
@@ -49,7 +49,7 @@ export async function test_dbml_parser_acquisition(): Promise<void> {
             );
           },
         },
-        async () => new EvidenceDbmlAdapter().analyze(source),
+        async () => new EvidDbmlAdapter().analyze(source),
       );
       TestValidator.equals("only selected DBML variant acquired", requested, [
         grammar.wasm.url,
@@ -59,14 +59,14 @@ export async function test_dbml_parser_acquisition(): Promise<void> {
         cold.diagnostics,
         [],
       );
-      const warm = await TreeSitterAssetScope.run(
+      const warm = await EvidTreeSitterAssetScope.run(
         {
           cacheDirectory,
           fetch: async () => {
             throw new Error("Offline: no network transport.");
           },
         },
-        async () => new EvidenceDbmlAdapter().analyze(source),
+        async () => new EvidDbmlAdapter().analyze(source),
       );
       TestValidator.equals(
         "offline warm inventory equals cold inventory",
@@ -79,8 +79,8 @@ export async function test_dbml_parser_acquisition(): Promise<void> {
         cold.units.length,
         5,
       );
-      await TreeSitterAssetScope.run({ cacheDirectory }, async () => {
-        const queryParser = new EvidenceParser();
+      await EvidTreeSitterAssetScope.run({ cacheDirectory }, async () => {
+        const queryParser = new EvidParser();
         try {
           let code: string | undefined;
           try {
@@ -93,7 +93,7 @@ export async function test_dbml_parser_acquisition(): Promise<void> {
               (session) => session.captures("(not_a_dbml_node) @missing"),
             );
           } catch (cause) {
-            if (!(cause instanceof EvidenceParserError)) throw cause;
+            if (!(cause instanceof EvidParserError)) throw cause;
             code = cause.code;
           }
           TestValidator.equals(

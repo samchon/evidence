@@ -1,4 +1,4 @@
-import { EvidenceDartAdapter, EvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidDartAdapter, EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -13,7 +13,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Require the hidden alias to be missing only through the API, retain its defining-source resolution, and record parts as exact dependencies.
  */
 export async function test_dart_libraries(): Promise<void> {
-  const inventory = await new EvidenceDartAdapter().analyze(
+  const inventory = await new EvidDartAdapter().analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create(
         "src/api.dart",
@@ -52,7 +52,7 @@ export async function test_dart_libraries(): Promise<void> {
     inventory.units.filter((unit) => unit.name === "Model").length,
     2,
   );
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   const ids = inventory.units.map((unit) => unit.id);
   for (const file of ["api.dart", "models.dart", "generated.g.dart"])
     for (const segments of [

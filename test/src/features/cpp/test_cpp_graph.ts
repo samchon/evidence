@@ -1,10 +1,10 @@
 import {
-  EvidenceCppAdapter,
-  EvidenceFingerprint,
-  EvidenceGraph,
-  EvidenceMarkdownAdapter,
-} from "@wrtnlabs/evidence";
-import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+  EvidCppAdapter,
+  EvidFingerprint,
+  EvidGraph,
+  EvidMarkdownAdapter,
+} from "evid";
+import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -20,7 +20,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Verify a prose-only evidence change leaves the selected unit fingerprint stable.
  */
 export async function test_cpp_graph(): Promise<void> {
-  const requirements = await new EvidenceMarkdownAdapter().analyze(
+  const requirements = await new EvidMarkdownAdapter().analyze(
     TestSourceSnapshot.create(
       "docs/requirements.md",
       dedent`
@@ -38,18 +38,18 @@ export async function test_cpp_graph(): Promise<void> {
       `,
     ),
   );
-  const implementation = await new EvidenceCppAdapter().analyze(
+  const implementation = await new EvidCppAdapter().analyze(
     TestSourceSnapshot.create(
       "src/contracts.cpp",
       dedent`
-        /** @evidence docs/requirements.md#sale Implements the sale type. */
+        /** @evid docs/requirements.md#sale Implements the sale type. */
         class Sale {
         public:
-            /** @evidence docs/requirements.md#total Implements the total. */
+            /** @evid docs/requirements.md#total Implements the total. */
             int total;
         };
 
-        /** @evidence docs/requirements.md#run Implements the operation. */
+        /** @evid docs/requirements.md#run Implements the operation. */
         int run() { return 1; }
       `,
     ),
@@ -65,7 +65,7 @@ export async function test_cpp_graph(): Promise<void> {
     requireUnit(implementation, "total"),
   ];
 
-  const complete = EvidenceGraph.evaluate({
+  const complete = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -95,7 +95,7 @@ export async function test_cpp_graph(): Promise<void> {
     missing.declarations = missing.declarations.filter(
       (declaration) => !declaration.target.endsWith(`#${anchor}`),
     );
-    const partial = EvidenceGraph.evaluate({
+    const partial = EvidGraph.evaluate({
       claims: [
         {
           severity: "error",
@@ -140,13 +140,13 @@ export async function test_cpp_graph(): Promise<void> {
   const bodyUnit = requireUnit(editedBody, "run");
   TestValidator.equals(
     "C++ evidence metadata preserves fingerprint",
-    EvidenceFingerprint.inspect(original, originalUnit.id).fingerprint,
-    EvidenceFingerprint.inspect(editedReason, reasonUnit.id).fingerprint,
+    EvidFingerprint.inspect(original, originalUnit.id).fingerprint,
+    EvidFingerprint.inspect(editedReason, reasonUnit.id).fingerprint,
   );
   TestValidator.notEquals(
     "C++ implementation moves fingerprint",
-    EvidenceFingerprint.inspect(original, originalUnit.id).fingerprint,
-    EvidenceFingerprint.inspect(editedBody, bodyUnit.id).fingerprint,
+    EvidFingerprint.inspect(original, originalUnit.id).fingerprint,
+    EvidFingerprint.inspect(editedBody, bodyUnit.id).fingerprint,
   );
 
   // Shared declaration text belongs to each object, while initializers stay local.
@@ -156,28 +156,28 @@ export async function test_cpp_graph(): Promise<void> {
   const firstEdited = requireUnit(objectsEdited, "first");
   TestValidator.equals(
     "C++ sibling object fingerprint isolation",
-    EvidenceFingerprint.inspect(objectsOriginal, firstOriginal.id).fingerprint,
-    EvidenceFingerprint.inspect(objectsEdited, firstEdited.id).fingerprint,
+    EvidFingerprint.inspect(objectsOriginal, firstOriginal.id).fingerprint,
+    EvidFingerprint.inspect(objectsEdited, firstEdited.id).fingerprint,
   );
 }
 
 async function fingerprintInventory(
   reason: string,
   statement: string,
-): Promise<IEvidenceInventory> {
-  return new EvidenceCppAdapter().analyze(
+): Promise<IEvidInventory> {
+  return new EvidCppAdapter().analyze(
     TestSourceSnapshot.create(
       "src/fingerprint.cpp",
       dedent`
-        /** @evidence docs/requirements.md#run ${reason} */
+        /** @evid docs/requirements.md#run ${reason} */
         int run() { ${statement} }
       `,
     ),
   );
 }
 
-async function objectInventory(second: string): Promise<IEvidenceInventory> {
-  return new EvidenceCppAdapter().analyze(
+async function objectInventory(second: string): Promise<IEvidInventory> {
+  return new EvidCppAdapter().analyze(
     TestSourceSnapshot.create(
       "src/objects.cpp",
       `int first = 1, second = ${second};\n`,
@@ -186,9 +186,9 @@ async function objectInventory(second: string): Promise<IEvidenceInventory> {
 }
 
 function requireUnit(
-  inventory: IEvidenceInventory,
+  inventory: IEvidInventory,
   name: string,
-): IEvidenceUnit {
+): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === name || candidate.identity.at(-1) === name,

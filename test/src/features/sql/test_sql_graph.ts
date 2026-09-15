@@ -1,4 +1,4 @@
-import { EvidenceAccessor, EvidenceChecker } from "@wrtnlabs/evidence";
+import { EvidAccessor, EvidChecker } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
@@ -14,11 +14,11 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  */
 export async function test_sql_graph(): Promise<void> {
   const schema = dedent`
-    -- @evidence ./requirement.ts#requirement Verifies the table.
+    -- @evid ./requirement.ts#requirement Verifies the table.
     CREATE TABLE account (
-      -- @evidence ./requirement.ts#requirement Verifies the column.
+      -- @evid ./requirement.ts#requirement Verifies the column.
       id INTEGER,
-      -- @evidence ./requirement.ts#requirement Verifies the relation.
+      -- @evid ./requirement.ts#requirement Verifies the relation.
       FOREIGN KEY (id) REFERENCES parent(id)
     );
   `;
@@ -32,7 +32,7 @@ export async function test_sql_graph(): Promise<void> {
             ? "ACCOUNT"
             : symbol === "column"
               ? "ACCOUNT.ID"
-              : EvidenceAccessor.format([
+              : EvidAccessor.format([
                   "ACCOUNT",
                   'foreign-key:["ID"]->["PARENT"](["ID"])',
                 ]);
@@ -41,25 +41,25 @@ export async function test_sql_graph(): Promise<void> {
             await TestFileSystem.save(directory, {
               "schema.sql":
                 role === "claim" && acknowledged
-                  ? schema.replace(/^.*@evidence.*$/gmu, (line) =>
+                  ? schema.replace(/^.*@evid.*$/gmu, (line) =>
                       line.includes(
                         `Verifies the ${symbol === "model" ? "table" : symbol}.`,
                       )
                         ? line
                         : "",
                     )
-                  : schema.replace(/^.*@evidence.*$/gmu, ""),
+                  : schema.replace(/^.*@evid.*$/gmu, ""),
               "requirement.ts":
                 role === "reference" && acknowledged
-                  ? `/** @evidence ./schema.sql#${accessor} Verifies the selected database surface. */\nexport const requirement = 1;`
+                  ? `/** @evid ./schema.sql#${accessor} Verifies the selected database surface. */\nexport const requirement = 1;`
                   : "export const requirement = 1;",
-              "evidence.config.ts":
+              "evid.config.ts":
                 role === "claim"
                   ? `export default { claims: [{ type: "sql", files: ["schema.sql"], symbol: "${symbol}", reference: { type: "typescript", files: ["requirement.ts"], symbol: "property" } }] };`
                   : `export default { claims: [{ type: "typescript", files: ["requirement.ts"], symbol: "property", reference: { type: "sql", files: ["schema.sql"], symbol: "${symbol}" } }] };`,
             });
-            const result = await EvidenceChecker.check(
-              join(directory, "evidence.config.ts"),
+            const result = await EvidChecker.check(
+              join(directory, "evid.config.ts"),
             );
             TestValidator.equals(
               `${symbol} ${role} acknowledged=${acknowledged}`,

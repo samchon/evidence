@@ -1,13 +1,13 @@
 import type {
-  EvidenceProgrammingSymbol,
-  EvidenceDatabaseSymbol,
-  IEvidenceWithdrawal,
-} from "@wrtnlabs/evidence";
+  EvidProgrammingSymbol,
+  EvidDatabaseSymbol,
+  IEvidWithdrawal,
+} from "evid";
 import type { IAdapterCertificationAddress } from "./IAdapterCertificationAddress";
 
 /** Exact semantic identity, ownership, sites, addresses, and withdrawal state. */
 export interface IAdapterCertificationUnitBase<
-  TSymbol extends EvidenceProgrammingSymbol | EvidenceDatabaseSymbol,
+  TSymbol extends EvidProgrammingSymbol | EvidDatabaseSymbol,
 > {
   /** Selector-qualified identity used in assertions. */
   key: string;
@@ -28,5 +28,5 @@ export interface IAdapterCertificationUnitBase<
   addresses: IAdapterCertificationAddress[];
 
   /** Explicit visibility withdrawals. */
-  withdrawals: IEvidenceWithdrawal["tag"][];
+  withdrawals: IEvidWithdrawal["tag"][];
 }

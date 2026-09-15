@@ -1,5 +1,5 @@
-import { EvidenceCppAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidCppAdapter } from "evid";
+import type { IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -14,7 +14,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Require diagnostics to describe the rejected condition.
  */
 export async function test_cpp_failures(): Promise<void> {
-  const adapter = new EvidenceCppAdapter();
+  const adapter = new EvidCppAdapter();
 
   // Conditional branches cannot be combined into one declared population.
   const conditional = await adapter.analyze(
@@ -310,6 +310,6 @@ export async function test_cpp_failures(): Promise<void> {
   );
 }
 
-function hasCode(inventory: IEvidenceInventory, code: string): boolean {
+function hasCode(inventory: IEvidInventory, code: string): boolean {
   return inventory.diagnostics.some((diagnostic) => diagnostic.code === code);
 }

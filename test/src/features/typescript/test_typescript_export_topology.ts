@@ -1,5 +1,5 @@
-import { EvidenceTypeScriptAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidTypeScriptAdapter } from "evid";
+import type { IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -13,7 +13,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 2. Verify public results and incomplete or ambiguous boundaries.
  */
 export async function test_typescript_export_topology(): Promise<void> {
-  const adapter = new EvidenceTypeScriptAdapter();
+  const adapter = new EvidTypeScriptAdapter();
 
   // A type-only mark must survive every barrel above the edge that introduced it.
   const typeOnly = await adapter.analyze(
@@ -182,7 +182,7 @@ export async function test_typescript_export_topology(): Promise<void> {
   );
 }
 
-function addresses(inventory: IEvidenceInventory, file: string): string[] {
+function addresses(inventory: IEvidInventory, file: string): string[] {
   return inventory.addresses
     .filter((address) => address.file === file)
     .map((address) => address.segments.join("."))

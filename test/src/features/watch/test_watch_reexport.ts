@@ -1,4 +1,4 @@
-import { EvidenceChecker, EvidenceWatcher } from "@wrtnlabs/evidence";
+import { EvidChecker, EvidWatcher } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
@@ -26,7 +26,7 @@ export async function test_watch_reexport(): Promise<void> {
   await TestFileSystem.experiment(
     location,
     {
-      "evidence.config.ts": dedent`
+      "evid.config.ts": dedent`
         export default {
           claims: [
             {
@@ -51,8 +51,8 @@ export async function test_watch_reexport(): Promise<void> {
       "src/implementation.ts": implementation(),
     },
     async (directory) => {
-      const configFile = join(directory, "evidence.config.ts");
-      const watcher = new EvidenceWatcher(configFile, {
+      const configFile = join(directory, "evid.config.ts");
+      const watcher = new EvidWatcher(configFile, {
         pollIntervalMilliseconds: 20,
         debounceMilliseconds: 20,
       });
@@ -63,7 +63,7 @@ export async function test_watch_reexport(): Promise<void> {
         TestValidator.equals(
           `fresh reexport report ${cycle.cycle}`,
           cycle.report,
-          await EvidenceChecker.check(configFile),
+          await EvidChecker.check(configFile),
         );
 
         // The barrel alias changes the public target without changing its source type.
@@ -102,7 +102,7 @@ export async function test_watch_reexport(): Promise<void> {
 
 function implementation(): string {
   return dedent`
-    /** @evidence ../contracts/barrel.ts#Contract Implements the contract. */
+    /** @evid ../contracts/barrel.ts#Contract Implements the contract. */
     export function calculate(): number {
       return 1;
     }

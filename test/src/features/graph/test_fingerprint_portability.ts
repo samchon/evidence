@@ -1,15 +1,15 @@
 import {
-  EvidenceFingerprint,
-  EvidenceMarkdownAdapter,
-  EvidenceSourceLoader,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidMarkdownAdapter,
+  EvidSourceLoader,
+  EvidTypeScriptAdapter,
+} from "evid";
 import type {
-  IEvidenceInventory,
-  IEvidenceSourceFile,
-  IEvidenceSourceSnapshot,
-  IEvidenceUnit,
-} from "@wrtnlabs/evidence";
+  IEvidInventory,
+  IEvidSourceFile,
+  IEvidSourceSnapshot,
+  IEvidUnit,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { rename, rm } from "node:fs/promises";
@@ -46,37 +46,37 @@ export async function test_fingerprint_portability(): Promise<void> {
   await TestFileSystem.experiment(
     location,
     {
-      "checkout-a/evidence.config.ts": `export default {};\n`,
+      "checkout-a/evid.config.ts": `export default {};\n`,
       "checkout-a/rules.md": content,
-      "checkout-b/evidence.config.ts": `export default {};\n`,
+      "checkout-b/evid.config.ts": `export default {};\n`,
       "checkout-b/rules.md": content,
-      "checkout-crlf/evidence.config.ts": `export default {};\r\n`,
+      "checkout-crlf/evid.config.ts": `export default {};\r\n`,
       "checkout-crlf/rules.md": content.replaceAll("\n", "\r\n"),
     },
     async (directory: string): Promise<void> => {
       const firstConfig: string = join(
         directory,
-        "checkout-a/evidence.config.ts",
+        "checkout-a/evid.config.ts",
       );
       const secondConfig: string = join(
         directory,
-        "checkout-b/evidence.config.ts",
+        "checkout-b/evid.config.ts",
       );
       const crlfConfig: string = join(
         directory,
-        "checkout-crlf/evidence.config.ts",
+        "checkout-crlf/evid.config.ts",
       );
-      const firstSnapshot: IEvidenceSourceSnapshot =
-        await EvidenceSourceLoader.glob(firstConfig, { files: ["rules.md"] });
-      const secondSnapshot: IEvidenceSourceSnapshot =
-        await EvidenceSourceLoader.glob(secondConfig, { files: ["rules.md"] });
-      const firstInventory: IEvidenceInventory =
-        await new EvidenceMarkdownAdapter().analyze(firstSnapshot);
-      const secondInventory: IEvidenceInventory =
-        await new EvidenceMarkdownAdapter().analyze(secondSnapshot);
-      const firstUnit: IEvidenceUnit = rule(firstInventory);
-      const secondUnit: IEvidenceUnit = rule(secondInventory);
-      const baseline: string = EvidenceFingerprint.inspect(
+      const firstSnapshot: IEvidSourceSnapshot =
+        await EvidSourceLoader.glob(firstConfig, { files: ["rules.md"] });
+      const secondSnapshot: IEvidSourceSnapshot =
+        await EvidSourceLoader.glob(secondConfig, { files: ["rules.md"] });
+      const firstInventory: IEvidInventory =
+        await new EvidMarkdownAdapter().analyze(firstSnapshot);
+      const secondInventory: IEvidInventory =
+        await new EvidMarkdownAdapter().analyze(secondSnapshot);
+      const firstUnit: IEvidUnit = rule(firstInventory);
+      const secondUnit: IEvidUnit = rule(secondInventory);
+      const baseline: string = EvidFingerprint.inspect(
         firstInventory,
         firstUnit.id,
       ).fingerprint;
@@ -88,7 +88,7 @@ export async function test_fingerprint_portability(): Promise<void> {
       );
       TestValidator.equals(
         "independent checkout fingerprint",
-        EvidenceFingerprint.inspect(secondInventory, secondUnit.id).fingerprint,
+        EvidFingerprint.inspect(secondInventory, secondUnit.id).fingerprint,
         baseline,
       );
 
@@ -101,10 +101,10 @@ export async function test_fingerprint_portability(): Promise<void> {
       await rename(active, retired);
       await rename(replacement, active);
       await rm(retired);
-      const replacedSnapshot: IEvidenceSourceSnapshot =
-        await EvidenceSourceLoader.glob(firstConfig, { files: ["rules.md"] });
-      const replacedInventory: IEvidenceInventory =
-        await new EvidenceMarkdownAdapter().analyze(replacedSnapshot);
+      const replacedSnapshot: IEvidSourceSnapshot =
+        await EvidSourceLoader.glob(firstConfig, { files: ["rules.md"] });
+      const replacedInventory: IEvidInventory =
+        await new EvidMarkdownAdapter().analyze(replacedSnapshot);
       TestValidator.notEquals(
         "replacement changes snapshot identity",
         replacedSnapshot.files[0]?.id,
@@ -112,7 +112,7 @@ export async function test_fingerprint_portability(): Promise<void> {
       );
       TestValidator.equals(
         "identical replacement fingerprint",
-        EvidenceFingerprint.inspect(
+        EvidFingerprint.inspect(
           replacedInventory,
           rule(replacedInventory).id,
         ).fingerprint,
@@ -122,24 +122,24 @@ export async function test_fingerprint_portability(): Promise<void> {
       await TestFileSystem.save(directory, {
         "checkout-a/rules.md": content.replace("Do the work.", "Do more work."),
       });
-      const changedSnapshot: IEvidenceSourceSnapshot =
-        await EvidenceSourceLoader.glob(firstConfig, { files: ["rules.md"] });
-      const changedInventory: IEvidenceInventory =
-        await new EvidenceMarkdownAdapter().analyze(changedSnapshot);
+      const changedSnapshot: IEvidSourceSnapshot =
+        await EvidSourceLoader.glob(firstConfig, { files: ["rules.md"] });
+      const changedInventory: IEvidInventory =
+        await new EvidMarkdownAdapter().analyze(changedSnapshot);
       TestValidator.notEquals(
         "semantic edit expires portable fingerprint",
-        EvidenceFingerprint.inspect(changedInventory, rule(changedInventory).id)
+        EvidFingerprint.inspect(changedInventory, rule(changedInventory).id)
           .fingerprint,
         baseline,
       );
 
-      const crlfSnapshot: IEvidenceSourceSnapshot =
-        await EvidenceSourceLoader.glob(crlfConfig, { files: ["rules.md"] });
-      const crlfInventory: IEvidenceInventory =
-        await new EvidenceMarkdownAdapter().analyze(crlfSnapshot);
+      const crlfSnapshot: IEvidSourceSnapshot =
+        await EvidSourceLoader.glob(crlfConfig, { files: ["rules.md"] });
+      const crlfInventory: IEvidInventory =
+        await new EvidMarkdownAdapter().analyze(crlfSnapshot);
       TestValidator.equals(
         "line-ending portable fingerprint",
-        EvidenceFingerprint.inspect(crlfInventory, rule(crlfInventory).id)
+        EvidFingerprint.inspect(crlfInventory, rule(crlfInventory).id)
           .fingerprint,
         baseline,
       );
@@ -147,19 +147,19 @@ export async function test_fingerprint_portability(): Promise<void> {
       await TestFileSystem.save(directory, {
         "checkout-b/other.md": content,
       });
-      const distinctSnapshot: IEvidenceSourceSnapshot =
-        await EvidenceSourceLoader.glob(secondConfig, {
+      const distinctSnapshot: IEvidSourceSnapshot =
+        await EvidSourceLoader.glob(secondConfig, {
           files: ["rules.md", "other.md"],
         });
-      const distinctInventory: IEvidenceInventory =
-        await new EvidenceMarkdownAdapter().analyze(distinctSnapshot);
+      const distinctInventory: IEvidInventory =
+        await new EvidMarkdownAdapter().analyze(distinctSnapshot);
       const distinct: string[] = distinctInventory.units
         .filter(
-          (unit: IEvidenceUnit): boolean => unit.identity.at(-1) === "rule",
+          (unit: IEvidUnit): boolean => unit.identity.at(-1) === "rule",
         )
         .map(
-          (unit: IEvidenceUnit): string =>
-            EvidenceFingerprint.inspect(distinctInventory, unit.id).fingerprint,
+          (unit: IEvidUnit): string =>
+            EvidFingerprint.inspect(distinctInventory, unit.id).fingerprint,
         );
       TestValidator.equals(
         "different declaring paths remain distinct",
@@ -169,33 +169,33 @@ export async function test_fingerprint_portability(): Promise<void> {
     },
   );
 
-  const targetSnapshot: IEvidenceSourceSnapshot = TestSourceSnapshot.create(
+  const targetSnapshot: IEvidSourceSnapshot = TestSourceSnapshot.create(
     "target.ts",
     "export interface Rule { value: string; }\n",
   );
-  const targetSource: IEvidenceSourceFile | undefined = targetSnapshot.files[0];
+  const targetSource: IEvidSourceFile | undefined = targetSnapshot.files[0];
   if (targetSource === undefined)
     throw new Error("Target portability snapshot is empty.");
   targetSource.id = "source:ab";
-  const unrelatedSnapshot: IEvidenceSourceSnapshot = TestSourceSnapshot.create(
+  const unrelatedSnapshot: IEvidSourceSnapshot = TestSourceSnapshot.create(
     "unrelated/with-a-longer-physical-path.ts",
     "export interface Noise { value: string; }\n",
   );
-  const unrelatedSource: IEvidenceSourceFile | undefined =
+  const unrelatedSource: IEvidSourceFile | undefined =
     unrelatedSnapshot.files[0];
   if (unrelatedSource === undefined)
     throw new Error("Unrelated portability snapshot is empty.");
   unrelatedSource.id = "source:a";
 
-  const adapter: EvidenceTypeScriptAdapter = new EvidenceTypeScriptAdapter();
-  const isolated: IEvidenceInventory = await adapter.analyze(targetSnapshot);
-  const combined: IEvidenceInventory = await adapter.analyze(
+  const adapter: EvidTypeScriptAdapter = new EvidTypeScriptAdapter();
+  const isolated: IEvidInventory = await adapter.analyze(targetSnapshot);
+  const combined: IEvidInventory = await adapter.analyze(
     TestSourceSnapshot.combine([unrelatedSnapshot, targetSnapshot]),
   );
   TestValidator.equals(
     "prefixing source identity does not change fingerprint",
-    EvidenceFingerprint.inspect(combined, typedRule(combined).id).fingerprint,
-    EvidenceFingerprint.inspect(isolated, typedRule(isolated).id).fingerprint,
+    EvidFingerprint.inspect(combined, typedRule(combined).id).fingerprint,
+    EvidFingerprint.inspect(isolated, typedRule(isolated).id).fingerprint,
   );
 }
 
@@ -205,11 +205,11 @@ export async function test_fingerprint_portability(): Promise<void> {
  * Failing on absence or duplication prevents a loader/parser regression from
  * being mistaken for a fingerprint result.
  */
-function rule(inventory: IEvidenceInventory): IEvidenceUnit {
-  const units: IEvidenceUnit[] = inventory.units.filter(
-    (unit: IEvidenceUnit): boolean => unit.identity.at(-1) === "rule",
+function rule(inventory: IEvidInventory): IEvidUnit {
+  const units: IEvidUnit[] = inventory.units.filter(
+    (unit: IEvidUnit): boolean => unit.identity.at(-1) === "rule",
   );
-  const unit: IEvidenceUnit | undefined = units[0];
+  const unit: IEvidUnit | undefined = units[0];
   if (units.length !== 1 || unit === undefined)
     throw new Error("Expected exactly one anchored rule heading.");
   return unit;
@@ -221,12 +221,12 @@ function rule(inventory: IEvidenceInventory): IEvidenceUnit {
  * Selecting by its segmented identity keeps an unrelated declaration from
  * influencing which fingerprint the assertion compares.
  */
-function typedRule(inventory: IEvidenceInventory): IEvidenceUnit {
-  const units: IEvidenceUnit[] = inventory.units.filter(
-    (unit: IEvidenceUnit): boolean =>
+function typedRule(inventory: IEvidInventory): IEvidUnit {
+  const units: IEvidUnit[] = inventory.units.filter(
+    (unit: IEvidUnit): boolean =>
       unit.symbol === "type" && unit.identity.join(".") === "Rule",
   );
-  const unit: IEvidenceUnit | undefined = units[0];
+  const unit: IEvidUnit | undefined = units[0];
   if (units.length !== 1 || unit === undefined)
     throw new Error("Expected exactly one TypeScript Rule interface.");
   return unit;

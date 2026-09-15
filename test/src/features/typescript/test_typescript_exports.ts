@@ -1,5 +1,5 @@
-import { EvidenceTypeScriptAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidTypeScriptAdapter } from "evid";
+import type { IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -49,7 +49,7 @@ export async function test_typescript_exports(): Promise<void> {
       `,
     ),
   ]);
-  const inventory = await new EvidenceTypeScriptAdapter().analyze(snapshot);
+  const inventory = await new EvidTypeScriptAdapter().analyze(snapshot);
   const index = addresses(inventory, "/project/src/index.ts");
 
   TestValidator.equals("public barrel addresses", index, [
@@ -95,7 +95,7 @@ export async function test_typescript_exports(): Promise<void> {
   TestValidator.equals("complete export traversal", inventory.diagnostics, []);
 
   // Drive-letter paths must stay absolute while resolving relative reexports.
-  const windows = await new EvidenceTypeScriptAdapter().analyze(
+  const windows = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create(
         "src/Windows-Dependency.ts",
@@ -119,7 +119,7 @@ export async function test_typescript_exports(): Promise<void> {
   TestValidator.equals("complete Windows traversal", windows.diagnostics, []);
 }
 
-function addresses(inventory: IEvidenceInventory, file: string): string[] {
+function addresses(inventory: IEvidInventory, file: string): string[] {
   return inventory.addresses
     .filter((address) => address.file === file)
     .map((address) => address.segments.join("."))

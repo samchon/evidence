@@ -1,4 +1,4 @@
-import { EvidenceCAdapter } from "@wrtnlabs/evidence";
+import { EvidCAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -13,7 +13,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Require declarations from different files to remain distinct.
  */
 export async function test_c_boundaries(): Promise<void> {
-  const inventory = await new EvidenceCAdapter().analyze(
+  const inventory = await new EvidCAdapter().analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create(
         "include/contracts.h",

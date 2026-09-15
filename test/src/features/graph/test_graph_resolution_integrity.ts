@@ -1,4 +1,4 @@
-import { EvidenceGraph } from "@wrtnlabs/evidence";
+import { EvidGraph } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { TestGraph } from "../../internal/TestGraph";
@@ -58,7 +58,7 @@ export async function test_graph_resolution_integrity(): Promise<void> {
   );
 
   // Two different answers for one declaration invalidate the materialized mapping.
-  const conflicting = EvidenceGraph.evaluate({
+  const conflicting = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -93,7 +93,7 @@ export async function test_graph_resolution_integrity(): Promise<void> {
   // A mapping for no declaration in the claim cannot become an evidence edge.
   const orphan = TestGraph.resolved(declaration, target);
   orphan.declarationId = "orphan";
-  const orphaned = EvidenceGraph.evaluate({
+  const orphaned = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -123,7 +123,7 @@ export async function test_graph_resolution_integrity(): Promise<void> {
   );
 
   // A semantic identity outside the selected reference scopes is refused even when resolved.
-  const outside = EvidenceGraph.evaluate({
+  const outside = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -160,7 +160,7 @@ export async function test_graph_resolution_integrity(): Promise<void> {
  * asserting that the mapping did not contribute coverage.
  */
 function count(
-  result: ReturnType<typeof EvidenceGraph.evaluate>,
+  result: ReturnType<typeof EvidGraph.evaluate>,
   code: string,
 ): number {
   return result.diagnostics.filter((diagnostic) => diagnostic.code === code)

@@ -1,4 +1,4 @@
-import { EvidenceKotlinAdapter } from "@wrtnlabs/evidence";
+import { EvidKotlinAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -33,7 +33,7 @@ export async function test_kotlin_receiver_identity(): Promise<void> {
     `,
     ),
   ]);
-  const inventory = await new EvidenceKotlinAdapter().analyze(snapshot);
+  const inventory = await new EvidKotlinAdapter().analyze(snapshot);
 
   TestValidator.equals("resolved nominal receivers", inventory.diagnostics, []);
   const functions = inventory.units.filter(
@@ -54,7 +54,7 @@ export async function test_kotlin_receiver_identity(): Promise<void> {
   );
 
   // Same-spelled private aliases belong to their own file even inside one package.
-  const privateAliases = await new EvidenceKotlinAdapter().analyze(
+  const privateAliases = await new EvidKotlinAdapter().analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create(
         "src/Text.kt",
@@ -78,7 +78,7 @@ export async function test_kotlin_receiver_identity(): Promise<void> {
       .sort((a, b) => String(a).localeCompare(String(b))),
     ["extension(kotlin.Int)", "extension(kotlin.String)"],
   );
-  const inaccessible = await new EvidenceKotlinAdapter().analyze(
+  const inaccessible = await new EvidKotlinAdapter().analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create(
         "src/Private.kt",

@@ -1,4 +1,4 @@
-import { EvidencePhpAdapter } from "@wrtnlabs/evidence";
+import { EvidPhpAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -19,35 +19,35 @@ export async function test_php_hosts(): Promise<void> {
     /**
      * Public contract.
      * <code>
-     * @evidence ignored.md#html Example.
+     * @evid ignored.md#html Example.
      * </code>
      * \`\`\`php
-     * @evidence ignored.md#fence Fenced example.
+     * @evid ignored.md#fence Fenced example.
      * \`\`\`
      *
-     *     @evidence ignored.md#indent Indented example.
+     *     @evid ignored.md#indent Indented example.
      *
-     * @evidence requirement.md#contract Actual acknowledgement.
+     * @evid requirement.md#contract Actual acknowledgement.
      */
     #[Deprecated]
     class Contract {
-      /** @evidence requirement.md#values Shared property documentation. */
+      /** @evid requirement.md#values Shared property documentation. */
       public int $first = 1, $second = 2;
       /** @internal Retired subtree. */
       public function legacy() {}
-      /** @evidence requirement.md#private Private annotation cannot attach. */
+      /** @evid requirement.md#private Private annotation cannot attach. */
       private function hidden() {}
       public function ordinary() {
-        // @evidence ignored.md#line Ordinary comment.
-        return '@evidence ignored.md#string Inert literal.';
+        // @evid ignored.md#line Ordinary comment.
+        return '@evid ignored.md#string Inert literal.';
       }
     }
-    /** @evidence requirement.md#detached Detached PHPDoc. */
+    /** @evid requirement.md#detached Detached PHPDoc. */
     $local = 1;
     /** @hidden Hidden type subtree. */
     class Hidden { public function child() {} }
   `.replaceAll("\n", "\r\n");
-  const inventory = await new EvidencePhpAdapter().analyze(
+  const inventory = await new EvidPhpAdapter().analyze(
     TestSourceSnapshot.create("src/hosts.php", content),
   );
 

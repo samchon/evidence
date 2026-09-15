@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { readdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { TreeSitterAssets } from "../../../../packages/evidence/src/internal/TreeSitterAssets";
+import { EvidTreeSitterAssets } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssets";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestParserError } from "../../internal/TestParserError";
 
@@ -26,14 +26,14 @@ import { TestParserError } from "../../internal/TestParserError";
  *    reuse afterward, and no transient files beside the verified cache entry.
  */
 export async function test_parser_assets(): Promise<void> {
-  const original = new TreeSitterAssets();
+  const original = new EvidTreeSitterAssets();
   const grammar = await original.grammar("python");
   const pinned = Uint8Array.from(await TestParserAssets.bytes(grammar));
   const directory = join(__dirname, "assets-" + randomUUID());
 
   await TestFileSystem.experiment(directory, {}, async (location) => {
     const requests: string[] = [];
-    const assets = new TreeSitterAssets({
+    const assets = new EvidTreeSitterAssets({
       cacheDirectory: location,
       fetch: async (input) => {
         requests.push(String(input));
@@ -58,7 +58,7 @@ export async function test_parser_assets(): Promise<void> {
     );
 
     // A separate resolver performs no request with verified cache bytes, including no HEAD.
-    const offline = new TreeSitterAssets({
+    const offline = new EvidTreeSitterAssets({
       cacheDirectory: location,
       attempts: 1,
       fetch: async () => {

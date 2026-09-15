@@ -1,8 +1,8 @@
 import {
-  EvidenceAccessor,
-  EvidenceInventory,
-  EvidenceObjcAdapter,
-} from "@wrtnlabs/evidence";
+  EvidAccessor,
+  EvidInventory,
+  EvidObjcAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -17,7 +17,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Require diagnostics-free complete extraction.
  */
 export async function test_objc_units(): Promise<void> {
-  const inventory = await new EvidenceObjcAdapter().analyze(
+  const inventory = await new EvidObjcAdapter().analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create(
         "src/Widget.h",
@@ -81,7 +81,7 @@ export async function test_objc_units(): Promise<void> {
   TestValidator.equals(
     "exact public surface",
     inventory.units
-      .map((unit) => `${unit.symbol}:${EvidenceAccessor.format(unit.identity)}`)
+      .map((unit) => `${unit.symbol}:${EvidAccessor.format(unit.identity)}`)
       .sort((left, right) => left.localeCompare(right)),
     [
       "type:Widget",
@@ -118,7 +118,7 @@ export async function test_objc_units(): Promise<void> {
     method.parentId,
     widget.id,
   );
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   const selected = inventory.units.map((unit) => unit.id);
   for (const file of [
     "/project/src/Widget.h",

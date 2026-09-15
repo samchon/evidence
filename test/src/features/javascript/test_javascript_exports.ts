@@ -1,5 +1,5 @@
-import { EvidenceJavaScriptAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidJavaScriptAdapter } from "evid";
+import type { IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -14,7 +14,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Verify shadowing and cycles do not merge distinct owners.
  */
 export async function test_javascript_exports(): Promise<void> {
-  const adapter = new EvidenceJavaScriptAdapter();
+  const adapter = new EvidJavaScriptAdapter();
   const inventory = await adapter.analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create(
@@ -113,7 +113,7 @@ export async function test_javascript_exports(): Promise<void> {
   TestValidator.equals("complete JavaScript cycle", cycle.diagnostics, []);
 }
 
-function addresses(inventory: IEvidenceInventory): string[] {
+function addresses(inventory: IEvidInventory): string[] {
   return inventory.addresses
     .filter((address) => address.file === "/project/src/index.mjs")
     .map((address) => address.segments.join("."))

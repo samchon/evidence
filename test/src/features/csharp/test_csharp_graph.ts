@@ -1,10 +1,10 @@
 import {
-  EvidenceCSharpAdapter,
-  EvidenceFingerprint,
-  EvidenceGraph,
-  EvidenceMarkdownAdapter,
-} from "@wrtnlabs/evidence";
-import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+  EvidCSharpAdapter,
+  EvidFingerprint,
+  EvidGraph,
+  EvidMarkdownAdapter,
+} from "evid";
+import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -20,7 +20,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Edit evidence prose without changing code and require the implementation fingerprint to remain stable.
  */
 export async function test_csharp_graph(): Promise<void> {
-  const requirements = await new EvidenceMarkdownAdapter().analyze(
+  const requirements = await new EvidMarkdownAdapter().analyze(
     TestSourceSnapshot.create(
       "docs/requirements.md",
       dedent`
@@ -38,20 +38,20 @@ export async function test_csharp_graph(): Promise<void> {
       `,
     ),
   );
-  const implementation = await new EvidenceCSharpAdapter().analyze(
+  const implementation = await new EvidCSharpAdapter().analyze(
     TestSourceSnapshot.create(
       "src/Contracts.cs",
       dedent`
-        /// @evidence docs/requirements.md#service Implements the public type.
+        /// @evid docs/requirements.md#service Implements the public type.
         public partial class Contracts
         {
-            /// @evidence docs/requirements.md#run Implements the operation.
+            /// @evid docs/requirements.md#run Implements the operation.
             public void Run() { }
         }
 
         partial class Contracts
         {
-            /// @evidence docs/requirements.md#value Implements the public value.
+            /// @evid docs/requirements.md#value Implements the public value.
             public int Value { get; set; }
         }
       `,
@@ -68,7 +68,7 @@ export async function test_csharp_graph(): Promise<void> {
     requireUnit(implementation, "Value"),
   ];
 
-  const complete = EvidenceGraph.evaluate({
+  const complete = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -98,7 +98,7 @@ export async function test_csharp_graph(): Promise<void> {
     missing.declarations = missing.declarations.filter(
       (declaration) => !declaration.target.endsWith(`#${anchor}`),
     );
-    const partial = EvidenceGraph.evaluate({
+    const partial = EvidGraph.evaluate({
       claims: [
         {
           severity: "error",
@@ -144,27 +144,27 @@ export async function test_csharp_graph(): Promise<void> {
 
   TestValidator.equals(
     "C# evidence metadata preserves fingerprint",
-    EvidenceFingerprint.inspect(original, originalUnit.id).fingerprint,
-    EvidenceFingerprint.inspect(editedReason, reasonUnit.id).fingerprint,
+    EvidFingerprint.inspect(original, originalUnit.id).fingerprint,
+    EvidFingerprint.inspect(editedReason, reasonUnit.id).fingerprint,
   );
   TestValidator.notEquals(
     "C# implementation moves fingerprint",
-    EvidenceFingerprint.inspect(original, originalUnit.id).fingerprint,
-    EvidenceFingerprint.inspect(editedBody, bodyUnit.id).fingerprint,
+    EvidFingerprint.inspect(original, originalUnit.id).fingerprint,
+    EvidFingerprint.inspect(editedBody, bodyUnit.id).fingerprint,
   );
 }
 
 async function fingerprintInventory(
   reason: string,
   statement: string,
-): Promise<IEvidenceInventory> {
-  return new EvidenceCSharpAdapter().analyze(
+): Promise<IEvidInventory> {
+  return new EvidCSharpAdapter().analyze(
     TestSourceSnapshot.create(
       "src/Fingerprint.cs",
       dedent`
         public class Fingerprint
         {
-            /// @evidence ../docs/requirements.md#run ${reason}
+            /// @evid ../docs/requirements.md#run ${reason}
             public int Run()
             {
                 ${statement}
@@ -176,9 +176,9 @@ async function fingerprintInventory(
 }
 
 function requireUnit(
-  inventory: IEvidenceInventory,
+  inventory: IEvidInventory,
   name: string,
-): IEvidenceUnit {
+): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === name || candidate.identity.at(-1) === name,

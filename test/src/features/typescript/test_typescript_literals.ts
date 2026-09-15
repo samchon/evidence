@@ -1,4 +1,4 @@
-import { EvidenceTypeScriptAdapter } from "@wrtnlabs/evidence";
+import { EvidTypeScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -40,7 +40,7 @@ export async function test_typescript_literals(): Promise<void> {
       "export default function (): void {}",
     ),
   ]);
-  const inventory = await new EvidenceTypeScriptAdapter().analyze(snapshot);
+  const inventory = await new EvidTypeScriptAdapter().analyze(snapshot);
 
   TestValidator.equals(
     "literal member segments",

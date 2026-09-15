@@ -1,25 +1,25 @@
-import { EvidenceDocumentation } from "@wrtnlabs/evidence";
-import type { IEvidenceCommentSyntax, IEvidenceHost } from "@wrtnlabs/evidence";
-import { SourceText } from "../../../packages/evidence/src/internal/SourceText";
+import { EvidDocumentation } from "evid";
+import type { IEvidCommentSyntax, IEvidHost } from "evid";
+import { EvidSourceText } from "../../../packages/evidence/src/internal/EvidSourceText";
 import type { ITestDocumentation } from "./ITestDocumentation";
 
 /** Supplies explicit comment classification to the shared parser without scanning arbitrary source. */
 export namespace TestDocumentation {
   export function create(
     comment: string,
-    syntax: IEvidenceCommentSyntax = {
+    syntax: IEvidCommentSyntax = {
       opening: "/**",
       closing: "*/",
       linePrefix: "*",
       tagBoundaries: true,
       allowWithdrawal: true,
     },
-    attachment: IEvidenceHost["attachment"] = "attached",
+    attachment: IEvidHost["attachment"] = "attached",
   ): ITestDocumentation {
     const content = "// 앞줄 😀\r\n" + comment + "\nexport const example = 0;";
     const start = content.indexOf(comment);
-    const range = new SourceText(content).range(start, start + comment.length);
-    const host: IEvidenceHost = {
+    const range = new EvidSourceText(content).range(start, start + comment.length);
+    const host: IEvidHost = {
       id: "host",
       file: "/project/example.ts",
       range,
@@ -30,7 +30,7 @@ export namespace TestDocumentation {
     return {
       content,
       host,
-      documentation: EvidenceDocumentation.read(
+      documentation: EvidDocumentation.read(
         content,
         host.id,
         range,

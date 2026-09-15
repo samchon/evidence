@@ -1,8 +1,8 @@
 # Programming adapter onboarding
 
-A programming language becomes supported only when its adapter can establish a complete declared public surface. A grammar proves that Evidence can parse syntax. Certification additionally proves semantic unit identity, visibility, ownership, target spelling, documentation attachment, graph coverage, and conservative failure behavior.
+A programming language becomes supported only when its adapter can establish a complete declared public surface. A grammar proves that Evid can parse syntax. Certification additionally proves semantic unit identity, visibility, ownership, target spelling, documentation attachment, graph coverage, and conservative failure behavior.
 
-The common graph consumes `IEvidenceInventory` and does not contain language-specific rules. Add support through the language registry, the pinned grammar manifest, one `IEvidenceAdapter`, and the shared certification fixtures. Do not change coverage policy to compensate for missing extraction.
+The common graph consumes `IEvidInventory` and does not contain language-specific rules. Add support through the language registry, the pinned grammar manifest, one `IEvidAdapter`, and the shared certification fixtures. Do not change coverage policy to compensate for missing extraction.
 
 ## 1. Select and pin the grammar
 
@@ -11,10 +11,10 @@ Choose an upstream Tree-sitter grammar that is maintained, has a usable license,
 - Record the repository, release or commit, WASM URL, SHA-256 digest, byte size, license URL, license digest, and license size in `packages/evidence/src/internal/parser-grammars.json`.
 - Prefer an upstream release asset. If upstream does not publish WASM, add a recipe to `scripts/parser-builds.json` and publish the reproducibly built artifact through the `parser-wasm` workflow.
 - Do not commit WASM or license bytes; the runtime downloads and verifies them on first use.
-- Add the grammar ID and its exact extensions or special filenames to `EvidenceLanguageRegistry`.
-- Keep multiple syntax variants, such as TypeScript and TSX, under one programming-language entry when they share one Evidence surface contract.
+- Add the grammar ID and its exact extensions or special filenames to `EvidLanguageRegistry`.
+- Keep multiple syntax variants, such as TypeScript and TSX, under one programming-language entry when they share one Evid surface contract.
 
-Follow [parser assets](#parser-assets) below for acquisition, checksum, and build rules. A normal `@wrtnlabs/evidence` package update ships new certified grammar support; consumers do not install a separate grammar package or language plugin.
+Follow [parser assets](#parser-assets) below for acquisition, checksum, and build rules. A normal `evid` package update ships new certified grammar support; consumers do not install a separate grammar package or language plugin.
 
 ## 2. Define the declared public surface
 
@@ -45,11 +45,11 @@ Define:
 - documentation examples and arbitrary strings or comments that must remain inert;
 - `@internal`, `@hidden`, and `@ignore` propagation across merged identities and descendants.
 
-Use `EvidenceDocumentation` and `EvidenceTagParser` only after the adapter has classified the documentation span and established its semantic host. Preserve original UTF-16 offsets and one-based line and column coordinates.
+Use `EvidDocumentation` and `EvidTagParser` only after the adapter has classified the documentation span and established its semantic host. Preserve original UTF-16 offsets and one-based line and column coordinates.
 
 ## 4. Implement the typed adapter
 
-Implement `IEvidenceAdapter.analyze(snapshot)` and return a serializable `IEvidenceInventory`. Keep parser sessions bounded to the callback, copy all needed values from Tree-sitter nodes, and release runtime resources through the common parser.
+Implement `IEvidAdapter.analyze(snapshot)` and return a serializable `IEvidInventory`. Keep parser sessions bounded to the callback, copy all needed values from Tree-sitter nodes, and release runtime resources through the common parser.
 
 Every object shape has a named interface in its own file. Keep reusable scanner and resolver logic outside the adapter entry class. Use named functions and asynchronous APIs where I/O or parser work permits them.
 
@@ -89,7 +89,7 @@ The distribution certification checks that:
 - every grammar selected by those entries exists in the pinned manifest;
 - every manifest record passes `TreeSitterAssets` validation of its provenance paths and HTTPS asset URLs;
 - every pinned grammar is acquired at its declared size and digest into the test fixture cache;
-- every pinned grammar parses a real declaration through `EvidenceParser` in `test_parser_grammars`.
+- every pinned grammar parses a real declaration through `EvidParser` in `test_parser_grammars`.
 
 Inspect package metadata and preparation scripts directly. Do not add tarball installation, packed-consumer, or CLI subprocess tests.
 
@@ -107,11 +107,11 @@ pnpm check:format
 
 Count each concept separately:
 
-- **Programming languages:** entries returned by `EvidenceLanguageRegistry.list()` that have certified adapters; `evidence languages` renders the current set.
+- **Programming languages:** entries returned by `EvidLanguageRegistry.list()` that have certified adapters; `evidence languages` renders the current set.
 - **Pinned grammar variants:** unique grammar IDs across the registry entries. TypeScript and TSX use separate grammars; JSX shares the JavaScript grammar.
-- **Database schema languages:** entries returned by `EvidenceLanguageRegistry.databases()` plus the Prisma parser. They share the `model`, `column`, and `relation` symbols and are counted separately from programming languages.
-- **Artifact formats:** Markdown and Swagger/OpenAPI are two additional non-programming Evidence families. They are not included in either language count.
-- **Candidates:** researched entries returned by `EvidenceLanguageRegistry.candidates()`. They are excluded from supported counts until their adapters pass this process. The registry record is the checked candidate matrix; a candidate is not supported because a grammar exists or parses a fixture.
+- **Database schema languages:** entries returned by `EvidLanguageRegistry.databases()` plus the Prisma parser. They share the `model`, `column`, and `relation` symbols and are counted separately from programming languages.
+- **Artifact formats:** Markdown and Swagger/OpenAPI are two additional non-programming Evid families. They are not included in either language count.
+- **Candidates:** researched entries returned by `EvidLanguageRegistry.candidates()`. They are excluded from supported counts until their adapters pass this process. The registry record is the checked candidate matrix; a candidate is not supported because a grammar exists or parses a fixture.
 
 ## Parser assets
 
@@ -133,7 +133,7 @@ Logic tests obtain the real pinned grammars into the gitignored `test/.tmp/parse
 
 1. Choose an upstream release that publishes a WASM asset compatible with the pinned `web-tree-sitter` ABI, and resolve its tag to a full source commit. If upstream publishes no WASM, add a recipe to `scripts/parser-builds.json` and let the `parser-wasm` workflow build, verify, and publish it as described below.
 2. Obtain the WASM and the license at that commit. Record both files' byte lengths and SHA-256 digests, the download URLs, the repository, the version, and the commit as one record in the manifest. Register a record only alongside its implemented, certified adapter.
-3. Add the grammar ID and its exact extensions or special filenames to `EvidenceLanguageRegistry`.
+3. Add the grammar ID and its exact extensions or special filenames to `EvidLanguageRegistry`.
 4. Add a real declaration fixture to `test_parser_grammars` and run the parser logic tests through the test workspace: `pnpm start --include parser`.
 5. Review successful linking, parsing, query captures, Unicode coordinates, and external-scanner behavior with the installed binding. Matching ABI versions alone do not prove compatibility.
 

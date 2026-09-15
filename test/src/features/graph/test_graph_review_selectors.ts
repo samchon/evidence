@@ -1,14 +1,14 @@
 import {
-  EvidenceFingerprint,
-  EvidenceGraph,
-  EvidenceMarkdownAdapter,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidGraph,
+  EvidMarkdownAdapter,
+  EvidTypeScriptAdapter,
+} from "evid";
 import type {
-  IEvidenceGraphReference,
-  IEvidenceInventory,
-  IEvidenceUnit,
-} from "@wrtnlabs/evidence";
+  IEvidGraphReference,
+  IEvidInventory,
+  IEvidUnit,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -31,7 +31,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *    the same expected pricing fingerprint.
  */
 export async function test_graph_review_selectors(): Promise<void> {
-  const requirements = await new EvidenceMarkdownAdapter().analyze(
+  const requirements = await new EvidMarkdownAdapter().analyze(
     TestSourceSnapshot.create(
       "docs/spec.md",
       dedent`
@@ -48,24 +48,24 @@ export async function test_graph_review_selectors(): Promise<void> {
   );
   const pricing = requireUnit(requirements, "pricing");
   const coupons = requireUnit(requirements, "coupons");
-  const expected = EvidenceFingerprint.inspect(
+  const expected = EvidFingerprint.inspect(
     requirements,
     pricing.id,
   ).fingerprint;
-  const claim = await new EvidenceTypeScriptAdapter().analyze(
+  const claim = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/sale.ts",
       dedent`
         /**
-         * @evidence docs/spec.md#pricing Implements the whole pricing scope.
-         * @evidenceReview requirements/spec.md#pricing #${expected} Read the pricing and coupon rules.
+         * @evid docs/spec.md#pricing Implements the whole pricing scope.
+         * @evidReview requirements/spec.md#pricing #${expected} Read the pricing and coupon rules.
          */
         export function price(): void {}
       `,
     ),
   );
   const price = requireUnit(claim, "price");
-  const references: IEvidenceGraphReference[] = [];
+  const references: IEvidGraphReference[] = [];
   for (const unitIds of [[pricing.id], [coupons.id]])
     references.push({
       severity: "error",
@@ -83,7 +83,7 @@ export async function test_graph_review_selectors(): Promise<void> {
       ),
       requireReview: true,
     });
-  const result = EvidenceGraph.evaluate({
+  const result = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -112,9 +112,9 @@ export async function test_graph_review_selectors(): Promise<void> {
 }
 
 function requireUnit(
-  inventory: IEvidenceInventory,
+  inventory: IEvidInventory,
   identity: string,
-): IEvidenceUnit {
+): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === identity || candidate.identity.at(-1) === identity,

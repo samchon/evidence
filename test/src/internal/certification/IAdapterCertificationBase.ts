@@ -1,10 +1,10 @@
 import type {
-  EvidenceProgrammingType,
-  EvidenceDatabaseType,
-  EvidenceProgrammingSymbol,
-  EvidenceDatabaseSymbol,
-  IEvidenceAdapter,
-} from "@wrtnlabs/evidence";
+  EvidProgrammingType,
+  EvidDatabaseType,
+  EvidProgrammingSymbol,
+  EvidDatabaseSymbol,
+  IEvidAdapter,
+} from "evid";
 import type { IAdapterCertificationFailure } from "./IAdapterCertificationFailure";
 import type { IAdapterCertificationFalsePositive } from "./IAdapterCertificationFalsePositive";
 import type { IAdapterCertificationHost } from "./IAdapterCertificationHost";
@@ -15,14 +15,14 @@ import type { IAdapterCertificationUnitBase } from "./IAdapterCertificationUnitB
 
 /** Complete executable contract required before an adapter is certified. */
 export interface IAdapterCertificationBase<
-  TType extends EvidenceProgrammingType | EvidenceDatabaseType,
-  TSymbol extends EvidenceProgrammingSymbol | EvidenceDatabaseSymbol,
+  TType extends EvidProgrammingType | EvidDatabaseType,
+  TSymbol extends EvidProgrammingSymbol | EvidDatabaseSymbol,
 > {
   /** Explicit language under certification. */
   type: TType;
 
   /** Concrete adapter being certified. */
-  adapter: IEvidenceAdapter;
+  adapter: IEvidAdapter;
 
   /** Declared source fixtures. */
   sources: IAdapterCertificationSource[];

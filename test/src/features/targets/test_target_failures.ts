@@ -1,11 +1,11 @@
 import {
-  EvidenceTargetResolver,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
+  EvidTargetResolver,
+  EvidTypeScriptAdapter,
+} from "evid";
 import type {
-  IEvidenceHost,
-  IEvidenceTargetStatement,
-} from "@wrtnlabs/evidence";
+  IEvidHost,
+  IEvidTargetStatement,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
@@ -36,7 +36,7 @@ export async function test_target_failures(): Promise<void> {
     async (directory) => {
       const root = directory.replaceAll("\\", "/");
       const host = createHost(root + "/docs/review.md");
-      const selected = await new EvidenceTypeScriptAdapter().analyze(
+      const selected = await new EvidTypeScriptAdapter().analyze(
         TestSourceSnapshot.create(
           "src/selected.ts",
           "export const value = 1;",
@@ -44,7 +44,7 @@ export async function test_target_failures(): Promise<void> {
           root,
         ),
       );
-      const resolver = new EvidenceTargetResolver([selected]);
+      const resolver = new EvidTargetResolver([selected]);
       const ids = selected.units.map((unit) => unit.id);
 
       // Filesystem existence distinguishes a wrong selection from a missing path.
@@ -114,13 +114,13 @@ export async function test_target_failures(): Promise<void> {
   );
 
   // Withdrawn declarations retain their identity and withdrawal cause.
-  const hiddenInventory = await new EvidenceTypeScriptAdapter().analyze(
+  const hiddenInventory = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/hidden.ts",
       "/** @internal */\nexport function hidden(): void {}",
     ),
   );
-  const hiddenResolver = new EvidenceTargetResolver([hiddenInventory]);
+  const hiddenResolver = new EvidTargetResolver([hiddenInventory]);
   const hidden = await hiddenResolver.resolve(
     createStatement("../src/hidden.ts#hidden", "/project"),
     createHost("/project/docs/review.md"),
@@ -135,7 +135,7 @@ export async function test_target_failures(): Promise<void> {
   );
 
   // Competing star exports remain ambiguous instead of choosing scan order.
-  const ambiguousInventory = await new EvidenceTypeScriptAdapter().analyze(
+  const ambiguousInventory = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create("src/a.ts", "export const value = 1;"),
       TestSourceSnapshot.create("src/b.ts", "export const value = 2;"),
@@ -145,7 +145,7 @@ export async function test_target_failures(): Promise<void> {
       ),
     ]),
   );
-  const ambiguous = await new EvidenceTargetResolver([
+  const ambiguous = await new EvidTargetResolver([
     ambiguousInventory,
   ]).resolve(
     createStatement("../src/index.ts#value", "/project"),
@@ -156,7 +156,7 @@ export async function test_target_failures(): Promise<void> {
   TestValidator.equals("ambiguous address", ambiguous.status, "ambiguous");
 
   // Any export-analysis failure prevents an otherwise valid address from covering.
-  const incompleteInventory = await new EvidenceTypeScriptAdapter().analyze(
+  const incompleteInventory = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create("src/value.ts", "export const value = 1;"),
       TestSourceSnapshot.create(
@@ -165,14 +165,14 @@ export async function test_target_failures(): Promise<void> {
       ),
     ]),
   );
-  const incomplete = await new EvidenceTargetResolver([
+  const incomplete = await new EvidTargetResolver([
     incompleteInventory,
   ]).resolve(
     createStatement("../src/index.ts#value", "/project"),
     createHost("/project/docs/review.md"),
     incompleteInventory.units.map((unit) => unit.id),
   );
-  const incompleteMissing = await new EvidenceTargetResolver([
+  const incompleteMissing = await new EvidTargetResolver([
     incompleteInventory,
   ]).resolve(
     createStatement("../src/absent.ts#value", "/project"),
@@ -198,7 +198,7 @@ export async function test_target_failures(): Promise<void> {
   );
 }
 
-function createHost(file: string): IEvidenceHost {
+function createHost(file: string): IEvidHost {
   return {
     id: "claim-host",
     file,
@@ -216,7 +216,7 @@ function createHost(file: string): IEvidenceHost {
 function createStatement(
   target: string,
   root: string,
-): IEvidenceTargetStatement {
+): IEvidTargetStatement {
   return {
     hostId: "claim-host",
     target,

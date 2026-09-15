@@ -1,4 +1,4 @@
-import { EvidenceInventory, EvidenceRustAdapter } from "@wrtnlabs/evidence";
+import { EvidInventory, EvidRustAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -15,23 +15,23 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *    withdrawal to hide a documented module hierarchy.
  */
 export async function test_rust_hosts(): Promise<void> {
-  const inventory = await new EvidenceRustAdapter().analyze(
+  const inventory = await new EvidRustAdapter().analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create("src/lib.rs", "pub mod api;\n"),
       TestSourceSnapshot.create(
         "src/api.rs",
         dedent`
-          //! @evidence docs/requirements.md#module Implements the module.
+          //! @evid docs/requirements.md#module Implements the module.
 
           /**
-           * @evidence docs/requirements.md#record Implements the record.
+           * @evid docs/requirements.md#record Implements the record.
            */
           pub struct Record {
-              /// @evidence docs/requirements.md#field Implements the field.
+              /// @evid docs/requirements.md#field Implements the field.
               pub value: i32,
           }
 
-          #[doc = "@evidence docs/requirements.md#alias Implements the alias."]
+          #[doc = "@evid docs/requirements.md#alias Implements the alias."]
           pub type Alias = Record;
 
           #[doc(hidden)]
@@ -39,28 +39,28 @@ export async function test_rust_hosts(): Promise<void> {
           pub struct RustdocMetadata;
 
           pub trait Service {
-              /// @evidence docs/requirements.md#trait-method Implements the trait method.
+              /// @evid docs/requirements.md#trait-method Implements the trait method.
               fn run(&self);
           }
 
           impl Record {
-              /// @evidence docs/requirements.md#method Implements the method.
+              /// @evid docs/requirements.md#method Implements the method.
               pub fn calculate(&self) {}
           }
 
-          // @evidence docs/requirements.md#ordinary Ordinary comments are unsupported.
+          // @evid docs/requirements.md#ordinary Ordinary comments are unsupported.
           pub fn Ordinary() {}
 
-          //// @evidence docs/requirements.md#four-slashes Four slashes are not Rust documentation.
+          //// @evid docs/requirements.md#four-slashes Four slashes are not Rust documentation.
           pub fn FourSlashes() {}
 
           pub fn Unsupported() {
-              // @evidence docs/requirements.md#body Body comments are unsupported.
-              let interpreted = "@evidence docs/requirements.md#string Interpreted strings are unsupported.";
-              let raw = r#"@evidence docs/requirements.md#raw Raw strings are unsupported."#;
+              // @evid docs/requirements.md#body Body comments are unsupported.
+              let interpreted = "@evid docs/requirements.md#string Interpreted strings are unsupported.";
+              let raw = r#"@evid docs/requirements.md#raw Raw strings are unsupported."#;
           }
 
-          // @evidence docs/requirements.md#commented Commented declarations are unsupported.
+          // @evid docs/requirements.md#commented Commented declarations are unsupported.
           // pub fn Commented() {}
         `,
       ),
@@ -99,7 +99,7 @@ export async function test_rust_hosts(): Promise<void> {
     [],
   );
 
-  const withdrawn = await new EvidenceRustAdapter().analyze(
+  const withdrawn = await new EvidRustAdapter().analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create("src/lib.rs", "pub mod hidden;\n"),
       TestSourceSnapshot.create(
@@ -114,7 +114,7 @@ export async function test_rust_hosts(): Promise<void> {
       ),
     ]),
   );
-  const population = new EvidenceInventory([withdrawn]).select(
+  const population = new EvidInventory([withdrawn]).select(
     withdrawn.units.map((unit) => unit.id),
   );
   TestValidator.equals(

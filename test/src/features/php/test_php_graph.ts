@@ -1,8 +1,8 @@
 import {
-  EvidenceGraph,
-  EvidencePhpAdapter,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
+  EvidGraph,
+  EvidPhpAdapter,
+  EvidTypeScriptAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -18,7 +18,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Verify review-only references remain missing.
  */
 export async function test_php_graph(): Promise<void> {
-  const reference = await new EvidencePhpAdapter().analyze(
+  const reference = await new EvidPhpAdapter().analyze(
     TestSourceSnapshot.create(
       "src/Contract.php",
       dedent`
@@ -29,15 +29,15 @@ export async function test_php_graph(): Promise<void> {
   `,
     ),
   );
-  const claims = await new EvidenceTypeScriptAdapter().analyze(
+  const claims = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/Claims.ts",
       dedent`
-    /** @evidence ./Contract.php#Contract Verifies the type. */
+    /** @evid ./Contract.php#Contract Verifies the type. */
     export class TypeClaim {}
-    /** @evidence ./Contract.php#run Verifies the operation. */
+    /** @evid ./Contract.php#run Verifies the operation. */
     export function runClaim() {}
-    /** @evidence ./Contract.php#value Verifies the value. */
+    /** @evid ./Contract.php#value Verifies the value. */
     export const valueClaim = 1;
   `,
     ),
@@ -66,7 +66,7 @@ export async function test_php_graph(): Promise<void> {
             ),
           )
         : [];
-      const graph = EvidenceGraph.evaluate({
+      const graph = EvidGraph.evaluate({
         claims: [
           {
             severity: "error",
@@ -99,12 +99,12 @@ export async function test_php_graph(): Promise<void> {
       );
     }
   }
-  const review = await new EvidencePhpAdapter().analyze(
+  const review = await new EvidPhpAdapter().analyze(
     TestSourceSnapshot.create(
       "src/Review.php",
       dedent`
     <?php
-    /** @evidenceReview ./Contract.php#run Reviewed without an acknowledgement. */
+    /** @evidReview ./Contract.php#run Reviewed without an acknowledgement. */
     function review() { return 1; }
   `,
     ),
@@ -118,7 +118,7 @@ export async function test_php_graph(): Promise<void> {
   const functions = reference.units
     .filter((unit) => unit.symbol === "function")
     .map((unit) => unit.id);
-  const graph = EvidenceGraph.evaluate({
+  const graph = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",

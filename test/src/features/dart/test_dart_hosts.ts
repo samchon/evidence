@@ -1,8 +1,8 @@
 import {
-  EvidenceDartAdapter,
-  EvidenceFingerprint,
-  EvidenceInventory,
-} from "@wrtnlabs/evidence";
+  EvidDartAdapter,
+  EvidFingerprint,
+  EvidInventory,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -19,10 +19,10 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_dart_hosts(): Promise<void> {
   const content = dedent`
     /// Contract 한글 😀
-    /// @evidence docs/spec.md#type Implements the contract.
+    /// @evid docs/spec.md#type Implements the contract.
     @Deprecated('legacy')
     class Contract {
-      /** @evidence docs/spec.md#property Implements the value. */
+      /** @evid docs/spec.md#property Implements the value. */
       int value = 1;
       /// @internal Retired operation.
       int retired() => 0;
@@ -31,14 +31,14 @@ export async function test_dart_hosts(): Promise<void> {
     class Retired { int child = 1; }
     /// Examples:
     /// ~~~dart
-    /// @evidence docs/spec.md#fence Inert example.
+    /// @evid docs/spec.md#fence Inert example.
     /// ~~~
     ///
-    ///     @evidence docs/spec.md#indent Inert example.
-    /// <code>@evidence docs/spec.md#html Inert example.</code>
+    ///     @evid docs/spec.md#indent Inert example.
+    /// <code>@evid docs/spec.md#html Inert example.</code>
     int sample() => 1;
   `.replaceAll("\n", "\r\n");
-  const adapter = new EvidenceDartAdapter();
+  const adapter = new EvidDartAdapter();
   const inventory = await adapter.analyze(
     TestSourceSnapshot.create("src/contract.dart", content),
   );
@@ -56,14 +56,14 @@ export async function test_dart_hosts(): Promise<void> {
   TestValidator.equals(
     "UTF-16 offset after astral text",
     inventory.declarations[0]?.location?.range?.start?.offset,
-    content.indexOf("@evidence"),
+    content.indexOf("@evid"),
   );
   TestValidator.equals(
     "CRLF line mapping",
     inventory.declarations[0]?.location?.range?.start?.line,
     2,
   );
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   TestValidator.equals(
     "withdrawal reaches descendants",
     graph.resolve(
@@ -91,13 +91,13 @@ export async function test_dart_hosts(): Promise<void> {
   );
   TestValidator.equals(
     "annotation-only edit preserves ancestor fingerprint",
-    EvidenceFingerprint.inspect(inventory, contract.id).fingerprint,
-    EvidenceFingerprint.inspect(annotation, contract.id).fingerprint,
+    EvidFingerprint.inspect(inventory, contract.id).fingerprint,
+    EvidFingerprint.inspect(annotation, contract.id).fingerprint,
   );
   TestValidator.notEquals(
     "semantic edit invalidates fingerprint",
-    EvidenceFingerprint.inspect(inventory, contract.id).fingerprint,
-    EvidenceFingerprint.inspect(changed, contract.id).fingerprint,
+    EvidFingerprint.inspect(inventory, contract.id).fingerprint,
+    EvidFingerprint.inspect(changed, contract.id).fingerprint,
   );
   for (const tag of [
     "evidence",
@@ -138,7 +138,7 @@ export async function test_dart_hosts(): Promise<void> {
     const unsupported = await adapter.analyze(
       TestSourceSnapshot.create(
         "src/literal.dart",
-        `final text = ${delimiter}@evidence docs/spec.md#type Inert literal.${closing};`,
+        `final text = ${delimiter}@evid docs/spec.md#type Inert literal.${closing};`,
       ),
     );
     TestValidator.equals(

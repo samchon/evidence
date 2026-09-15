@@ -1,5 +1,5 @@
-import { EvidenceCAdapter } from "@wrtnlabs/evidence";
-import type { EvidenceTargetResolutionStatus } from "@wrtnlabs/evidence";
+import { EvidCAdapter } from "evid";
+import type { EvidTargetResolutionStatus } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -8,7 +8,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 interface ICTargetStatus {
   target: string | undefined;
-  status: EvidenceTargetResolutionStatus;
+  status: EvidTargetResolutionStatus;
 }
 
 /** Resolves C tags, typedef aliases, and aggregate members to their declared owners.
@@ -20,7 +20,7 @@ interface ICTargetStatus {
  * 3. Require valid targets to resolve and invalid or ambiguous forms to keep their reported status.
  */
 export async function test_c_targets(): Promise<void> {
-  const adapter = new EvidenceCAdapter();
+  const adapter = new EvidCAdapter();
   const reference = await adapter.analyze(
     TestSourceSnapshot.create(
       "include/models.h",
@@ -50,16 +50,16 @@ export async function test_c_targets(): Promise<void> {
       "test/verify.c",
       dedent`
         /**
-         * @evidence ../include/models.h#["struct Sale"] Verifies the exact tag.
-         * @evidence ../include/models.h#Sale Verifies the typedef alias.
-         * @evidence ../include/models.h#Sale.total Verifies its field.
-         * @evidence ../include/models.h#Payload Verifies a safe tag alias.
-         * @evidence ../include/models.h#Payload.number Verifies its field alias.
-         * @evidence ../include/models.h#Later.value Verifies a typedef declared after its tag definition.
-         * @evidence ../include/models.h#["struct Collision"] Verifies the exact colliding tag.
-         * @evidence ../include/models.h#["struct Collision"].member Verifies its exact field.
-         * @evidence ../include/models.h#Collision Verifies the ordinary object.
-         * @evidence ../include/models.h#Collision.member Cannot cross into a suppressed tag alias.
+         * @evid ../include/models.h#["struct Sale"] Verifies the exact tag.
+         * @evid ../include/models.h#Sale Verifies the typedef alias.
+         * @evid ../include/models.h#Sale.total Verifies its field.
+         * @evid ../include/models.h#Payload Verifies a safe tag alias.
+         * @evid ../include/models.h#Payload.number Verifies its field alias.
+         * @evid ../include/models.h#Later.value Verifies a typedef declared after its tag definition.
+         * @evid ../include/models.h#["struct Collision"] Verifies the exact colliding tag.
+         * @evid ../include/models.h#["struct Collision"].member Verifies its exact field.
+         * @evid ../include/models.h#Collision Verifies the ordinary object.
+         * @evid ../include/models.h#Collision.member Cannot cross into a suppressed tag alias.
          */
         void verify(void) {}
       `,

@@ -1,10 +1,10 @@
 import {
-  EvidenceAccessor,
-  EvidenceGraph,
-  EvidenceMarkdownAdapter,
-  EvidenceSqliteAdapter,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
+  EvidAccessor,
+  EvidGraph,
+  EvidMarkdownAdapter,
+  EvidSqliteAdapter,
+  EvidTypeScriptAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -20,21 +20,21 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Verify review-only resolutions leave coverage missing.
  */
 export async function test_sqlite_graph(): Promise<void> {
-  const schema = await new EvidenceSqliteAdapter().analyze(
+  const schema = await new EvidSqliteAdapter().analyze(
     TestSourceSnapshot.create(
       "schema.sql",
       dedent`
-    -- @evidence docs.md#model Implements the model.
+    -- @evid docs.md#model Implements the model.
     CREATE TABLE Account (
-      -- @evidence docs.md#column Implements the column.
+      -- @evid docs.md#column Implements the column.
       owner INTEGER,
-      -- @evidence docs.md#relation Implements the relation.
+      -- @evid docs.md#relation Implements the relation.
       CONSTRAINT owner_link FOREIGN KEY (owner) REFERENCES Owners(id)
     );
   `,
     ),
   );
-  const markdown = await new EvidenceMarkdownAdapter().analyze(
+  const markdown = await new EvidMarkdownAdapter().analyze(
     TestSourceSnapshot.create(
       "docs.md",
       "## model\n\n## column\n\n## relation\n",
@@ -49,10 +49,10 @@ export async function test_sqlite_graph(): Promise<void> {
       (address) => address.unitId === units[0]?.id,
     );
     if (target === undefined) throw new Error(`Missing ${symbol} address.`);
-    const claim = await new EvidenceTypeScriptAdapter().analyze(
+    const claim = await new EvidTypeScriptAdapter().analyze(
       TestSourceSnapshot.create(
         "claim.ts",
-        `/** @evidence ./schema.sql#${EvidenceAccessor.format(target.segments)} Verifies this database declaration. */\nexport function verify() {}\n`,
+        `/** @evid ./schema.sql#${EvidAccessor.format(target.segments)} Verifies this database declaration. */\nexport function verify() {}\n`,
       ),
     );
 
@@ -60,7 +60,7 @@ export async function test_sqlite_graph(): Promise<void> {
       // SQLite is a reference; every undocumented selected declaration remains obligatory.
       const source = structuredClone(claim);
       if (!positive) source.declarations = [];
-      const graph = EvidenceGraph.evaluate({
+      const graph = EvidGraph.evaluate({
         claims: [
           {
             severity: "error",
@@ -102,7 +102,7 @@ export async function test_sqlite_graph(): Promise<void> {
       const referenceIds = markdown.units
         .filter((unit) => unit.identity.at(-1) === symbol)
         .map((unit) => unit.id);
-      const reverse = EvidenceGraph.evaluate({
+      const reverse = EvidGraph.evaluate({
         claims: [
           {
             severity: "error",
@@ -136,10 +136,10 @@ export async function test_sqlite_graph(): Promise<void> {
     }
   }
 
-  const review = await new EvidenceSqliteAdapter().analyze(
+  const review = await new EvidSqliteAdapter().analyze(
     TestSourceSnapshot.create(
       "review.sql",
-      "-- @evidenceReview ./schema.sql#Account Reviewed without evidence.\nCREATE TABLE Reviewed (id INTEGER);",
+      "-- @evidReview ./schema.sql#Account Reviewed without evidence.\nCREATE TABLE Reviewed (id INTEGER);",
     ),
   );
   TestValidator.equals(
@@ -155,7 +155,7 @@ export async function test_sqlite_graph(): Promise<void> {
   const selected = schema.units
     .filter((unit) => unit.symbol === "model")
     .map((unit) => unit.id);
-  const graph = EvidenceGraph.evaluate({
+  const graph = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",

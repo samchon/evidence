@@ -1,4 +1,4 @@
-import { EvidenceTypeScriptAdapter } from "@wrtnlabs/evidence";
+import { EvidTypeScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -24,7 +24,7 @@ export async function test_typescript_root_boundary(): Promise<void> {
     "export const value = 1;",
   );
 
-  const logical = await new EvidenceTypeScriptAdapter().analyze(
+  const logical = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.combine([inside, outside]),
   );
 
@@ -54,7 +54,7 @@ export async function test_typescript_root_boundary(): Promise<void> {
     throw new Error("Missing linked source fixture.");
   linkedSource.physicalPath = "/outside/value.ts";
 
-  const physical = await new EvidenceTypeScriptAdapter().analyze(
+  const physical = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.combine([linkedInside, linkedOutside]),
   );
 

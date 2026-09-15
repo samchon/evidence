@@ -1,6 +1,6 @@
 ---
 name: review
-description: Defines solo Evidence self-review and ordinary code review across the complete declared change. Use before submitting a PR or when reviewing code; explicit parallel reviews use the multi-agent skill.
+description: Defines solo Evid self-review and ordinary code review across the complete declared change. Use before submitting a PR or when reviewing code; explicit parallel reviews use the multi-agent skill.
 ---
 
 # Review
@@ -13,7 +13,7 @@ Treat suspected defects as hypotheses. Verify them against the actual behavior a
 
 Complete a review round before repairing its findings. Collect the supported findings, fix them together, and review the complete resulting diff again. A clean result needs a full pass with no remaining verified defect; rereading only the latest correction does not cover the integrated change.
 
-## Evidence-Specific Questions
+## Evid-Specific Questions
 
 - Can loading or extraction fail while a check still reports success?
 - Can aliases, merged declarations, or host positions duplicate or lose an obligation?

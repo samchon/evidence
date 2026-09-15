@@ -1,8 +1,8 @@
 import {
-  EvidenceFingerprint,
-  EvidenceInventory,
-  EvidenceObjcAdapter,
-} from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidInventory,
+  EvidObjcAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -17,7 +17,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Require conflicting duplicate definitions to remain incomplete.
  */
 export async function test_objc_merges(): Promise<void> {
-  const adapter = new EvidenceObjcAdapter();
+  const adapter = new EvidObjcAdapter();
   const header = TestSourceSnapshot.create(
     "src/Contract.h",
     dedent`
@@ -49,7 +49,7 @@ export async function test_objc_merges(): Promise<void> {
     original.diagnostics,
     [],
   );
-  const graph = new EvidenceInventory([original]);
+  const graph = new EvidInventory([original]);
   const ids = original.units.map((unit) => unit.id);
   for (const segment of ["class:value", "+value", "stored", "-:next:"])
     TestValidator.equals(
@@ -78,8 +78,8 @@ export async function test_objc_merges(): Promise<void> {
   );
   TestValidator.notEquals(
     "backing implementation changes property fingerprint",
-    EvidenceFingerprint.inspect(original, stored.id).fingerprint,
-    EvidenceFingerprint.inspect(changed, stored.id).fingerprint,
+    EvidFingerprint.inspect(original, stored.id).fingerprint,
+    EvidFingerprint.inspect(changed, stored.id).fingerprint,
   );
 
   const duplicate = await adapter.analyze(

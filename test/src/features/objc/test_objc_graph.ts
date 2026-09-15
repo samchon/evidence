@@ -1,8 +1,8 @@
 import {
-  EvidenceGraph,
-  EvidenceObjcAdapter,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
+  EvidGraph,
+  EvidObjcAdapter,
+  EvidTypeScriptAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -11,14 +11,14 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Evaluates every selected Objective-C declaration as a graph reference.
  *
- * Evidence covers selected units, whereas reviews remain recorded without satisfying missing obligations.
+ * Evid covers selected units, whereas reviews remain recorded without satisfying missing obligations.
  *
  * 1. Extract Objective-C units and TypeScript claims for each selector.
  * 2. Evaluate covered and undocumented selector populations.
  * 3. Verify a review-only reference stays missing.
  */
 export async function test_objc_graph(): Promise<void> {
-  const reference = await new EvidenceObjcAdapter().analyze(
+  const reference = await new EvidObjcAdapter().analyze(
     TestSourceSnapshot.create(
       "src/Contract.h",
       dedent`
@@ -29,15 +29,15 @@ export async function test_objc_graph(): Promise<void> {
   `,
     ),
   );
-  const claims = await new EvidenceTypeScriptAdapter().analyze(
+  const claims = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/Claims.ts",
       dedent`
-    /** @evidence ./Contract.h#Contract Verifies the type. */
+    /** @evid ./Contract.h#Contract Verifies the type. */
     export class TypeClaim {}
-    /** @evidence ./Contract.h#run Verifies the operation. */
+    /** @evid ./Contract.h#run Verifies the operation. */
     export function runClaim() {}
-    /** @evidence ./Contract.h#Contract.value Verifies the value. */
+    /** @evid ./Contract.h#Contract.value Verifies the value. */
     export const valueClaim = 1;
   `,
     ),
@@ -66,7 +66,7 @@ export async function test_objc_graph(): Promise<void> {
             ),
           )
         : [];
-      const graph = EvidenceGraph.evaluate({
+      const graph = EvidGraph.evaluate({
         claims: [
           {
             severity: "error",
@@ -99,11 +99,11 @@ export async function test_objc_graph(): Promise<void> {
       );
     }
   }
-  const review = await new EvidenceObjcAdapter().analyze(
+  const review = await new EvidObjcAdapter().analyze(
     TestSourceSnapshot.create(
       "src/Review.m",
       dedent`
-    /** @evidenceReview ./Contract.h#run Reviewed without an acknowledgement. */
+    /** @evidReview ./Contract.h#run Reviewed without an acknowledgement. */
     int review(void) { return 1; }
   `,
     ),
@@ -117,7 +117,7 @@ export async function test_objc_graph(): Promise<void> {
   const functions = reference.units
     .filter((unit) => unit.symbol === "function")
     .map((unit) => unit.id);
-  const graph = EvidenceGraph.evaluate({
+  const graph = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",

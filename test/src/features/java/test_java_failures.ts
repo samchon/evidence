@@ -1,5 +1,5 @@
-import { EvidenceJavaAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidJavaAdapter } from "evid";
+import type { IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -14,7 +14,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Preserve source-boundary behavior.
  */
 export async function test_java_failures(): Promise<void> {
-  const adapter = new EvidenceJavaAdapter();
+  const adapter = new EvidJavaAdapter();
 
   // Two selected sources cannot own the same package declaration identity.
   const duplicateType = await adapter.analyze(
@@ -132,7 +132,7 @@ export async function test_java_failures(): Promise<void> {
   );
 }
 
-function hasCode(inventory: IEvidenceInventory, code: string): boolean {
+function hasCode(inventory: IEvidInventory, code: string): boolean {
   return inventory.diagnostics.some((diagnostic) => diagnostic.code === code);
 }
 

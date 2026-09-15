@@ -1,6 +1,6 @@
 ---
 name: multi-agent
-description: Defines explicitly requested parallel Evidence review or implementation. Use only when the user asks for a team, parallel work, or multiple agents; ordinary review and issue work remain solo.
+description: Defines explicitly requested parallel Evid review or implementation. Use only when the user asks for a team, parallel work, or multiple agents; ordinary review and issue work remain solo.
 ---
 
 # Multi-Agent Workflows

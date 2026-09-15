@@ -1,23 +1,23 @@
 import {
-  EvidenceBigQueryAdapter,
-  EvidenceChecker,
-  EvidenceMysqlAdapter,
-  EvidencePostgresqlAdapter,
-  EvidenceSqlAdapter,
-  EvidenceSqliteAdapter,
-} from "@wrtnlabs/evidence";
+  EvidBigQueryAdapter,
+  EvidChecker,
+  EvidMysqlAdapter,
+  EvidPostgresqlAdapter,
+  EvidSqlAdapter,
+  EvidSqliteAdapter,
+} from "evid";
 import type {
-  IEvidenceAdapter,
-  IEvidenceCheckReport,
-  IEvidenceDeclaration,
-  IEvidenceInventory,
-  IEvidenceUnit,
-} from "@wrtnlabs/evidence";
+  IEvidAdapter,
+  IEvidCheckReport,
+  IEvidDeclaration,
+  IEvidInventory,
+  IEvidUnit,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { DocumentationExamples } from "../../../../packages/evidence/src/parsers/DocumentationExamples";
+import { EvidDocumentationExamples } from "../../../../packages/evidence/src/parsers/EvidDocumentationExamples";
 import { AdapterCertification } from "../../internal/certification/AdapterCertification";
 import { AdapterCertificationFixtures } from "../../internal/certification/AdapterCertificationFixtures";
 import type { IAdapterCertification } from "../../internal/certification/IAdapterCertification";
@@ -88,7 +88,7 @@ const NATIVE_DOCUMENTATION_TYPES: ReadonlySet<string> = new Set<string>([
  * 9. Apply the same separated-fence and HTML-boundary checks to SQL,
  *    PostgreSQL, MySQL, SQLite, and BigQuery adapters and compare their complete
  *    inventories with an unmodified baseline.
- * 10. Run the combined PHP reproductions through EvidenceChecker and require the
+ * 10. Run the combined PHP reproductions through EvidChecker and require the
  *    real statement after the HTML close to cover its requirement with exit zero.
  * 11. Replace that PHP host with only an acknowledgement inside an unclosed HTML
  *    example and require the checker to report the requirement as uncovered.
@@ -100,7 +100,7 @@ const NATIVE_DOCUMENTATION_TYPES: ReadonlySet<string> = new Set<string>([
  *    regions; require those regions to take precedence, and require unclosed
  *    Doxygen code to keep following fake annotations inert through the host end.
  * 15. Put native opening and closing delimiters in separate Markdown fences;
- *    require those literals not to span across the real Evidence statement.
+ *    require those literals not to span across the real Evid statement.
  */
 export async function test_adapter_documentation_precedence(): Promise<void> {
   for (const certification of AdapterCertificationFixtures.all()) {
@@ -108,12 +108,12 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
       certification,
       separatedFences,
     );
-    const fencedInventory: IEvidenceInventory =
+    const fencedInventory: IEvidInventory =
       await AdapterCertification.analyze(fenced);
     AdapterCertification.assertInventory(fenced, fencedInventory);
 
     for (const mutation of [
-      htmlCommentedEvidence,
+      htmlCommentedEvid,
       fencedHtmlCommentLiteral,
       quotedHtmlCommentLiteral,
     ]) {
@@ -121,7 +121,7 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
         certification,
         mutation,
       );
-      const commentedInventory: IEvidenceInventory =
+      const commentedInventory: IEvidInventory =
         await AdapterCertification.analyze(commented);
       AdapterCertification.assertInventory(commented, commentedInventory);
     }
@@ -131,7 +131,7 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
         certification,
         genuineHtmlExample,
       );
-      const renderedInventory: IEvidenceInventory =
+      const renderedInventory: IEvidInventory =
         await AdapterCertification.analyze(rendered);
       AdapterCertification.assertInventory(rendered, renderedInventory);
 
@@ -140,7 +140,7 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
           certification,
           slashClosedHtmlOpening,
         );
-        const slashClosedInventory: IEvidenceInventory =
+        const slashClosedInventory: IEvidInventory =
           await AdapterCertification.analyze(slashClosed);
         AdapterCertification.assertInventory(slashClosed, slashClosedInventory);
       }
@@ -149,7 +149,7 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
         certification,
         unclosedHtmlExample,
       );
-      const unclosedInventory: IEvidenceInventory =
+      const unclosedInventory: IEvidInventory =
         await AdapterCertification.analyze(unclosed);
       AdapterCertification.assertInventory(unclosed, unclosedInventory);
 
@@ -158,7 +158,7 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
           certification,
           mutation,
         );
-        const indentedHtmlInventory: IEvidenceInventory =
+        const indentedHtmlInventory: IEvidInventory =
           await AdapterCertification.analyze(indentedHtml);
         AdapterCertification.assertInventory(
           indentedHtml,
@@ -170,7 +170,7 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
         certification,
         malformedHtmlClose,
       );
-      const malformedCloseInventory: IEvidenceInventory =
+      const malformedCloseInventory: IEvidInventory =
         await AdapterCertification.analyze(malformedClose);
       AdapterCertification.assertInventory(
         malformedClose,
@@ -181,7 +181,7 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
         certification,
         indentedFenceBeforeHtml,
       );
-      const indentedInventory: IEvidenceInventory =
+      const indentedInventory: IEvidInventory =
         await AdapterCertification.analyze(indented);
       AdapterCertification.assertInventory(indented, indentedInventory);
 
@@ -189,7 +189,7 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
         certification,
         commentedHtmlTags,
       );
-      const commentedTagsInventory: IEvidenceInventory =
+      const commentedTagsInventory: IEvidInventory =
         await AdapterCertification.analyze(commentedTags);
       AdapterCertification.assertInventory(
         commentedTags,
@@ -202,7 +202,7 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
         certification,
         xmlSelfClosingExample,
       );
-      const xmlSelfClosingInventory: IEvidenceInventory =
+      const xmlSelfClosingInventory: IEvidInventory =
         await AdapterCertification.analyze(xmlSelfClosing);
       AdapterCertification.assertInventory(
         xmlSelfClosing,
@@ -216,7 +216,7 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
         (content: string): string =>
           nativeCodePrecedence(certification.type, content),
       );
-      const nativeInventory: IEvidenceInventory =
+      const nativeInventory: IEvidInventory =
         await AdapterCertification.analyze(native);
       AdapterCertification.assertInventory(native, nativeInventory);
 
@@ -225,7 +225,7 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
         (content: string): string =>
           markdownNativeLiteral(certification.type, content),
       );
-      const markdownNativeInventory: IEvidenceInventory =
+      const markdownNativeInventory: IEvidInventory =
         await AdapterCertification.analyze(markdownNative);
       AdapterCertification.assertInventory(
         markdownNative,
@@ -238,7 +238,7 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
         certification,
         unclosedDoxygenCode,
       );
-      const unclosedNativeInventory: IEvidenceInventory =
+      const unclosedNativeInventory: IEvidInventory =
         await AdapterCertification.analyze(unclosedNative);
       AdapterCertification.assertInventory(
         unclosedNative,
@@ -249,74 +249,74 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
 
   const tabIndented: string = [
     "\t<pre>",
-    "@evidence rules.md#rule Real statement.",
+    "@evid rules.md#rule Real statement.",
     "</pre>",
   ].join("\n");
   const tabCharacters: string[] = tabIndented.split("");
-  DocumentationExamples.maskHtml(tabCharacters, tabIndented, ["pre"]);
+  EvidDocumentationExamples.maskHtml(tabCharacters, tabIndented, ["pre"]);
   TestValidator.predicate(
     "tab-indented HTML token stays literal",
-    tabCharacters.join("").includes("@evidence rules.md#rule"),
+    tabCharacters.join("").includes("@evid rules.md#rule"),
   );
 
   const nested: string = [
     "<pre>",
     "<code>",
-    "@evidence rules.md#rendered Fake nested statement.",
+    "@evid rules.md#rendered Fake nested statement.",
     "</pre>",
-    "@evidence rules.md#rule Real statement.",
+    "@evid rules.md#rule Real statement.",
   ].join("\n");
   const nestedCharacters: string[] = nested.split("");
-  DocumentationExamples.maskHtml(nestedCharacters, nested, ["pre", "code"]);
+  EvidDocumentationExamples.maskHtml(nestedCharacters, nested, ["pre", "code"]);
   TestValidator.predicate(
     "outer HTML close ends nested example",
-    !nestedCharacters.join("").includes("@evidence rules.md#rendered") &&
-      nestedCharacters.join("").includes("@evidence rules.md#rule"),
+    !nestedCharacters.join("").includes("@evid rules.md#rendered") &&
+      nestedCharacters.join("").includes("@evid rules.md#rule"),
   );
 
-  const databaseAdapters: IEvidenceAdapter[] = [
-    new EvidenceSqlAdapter(),
-    new EvidencePostgresqlAdapter(),
-    new EvidenceMysqlAdapter(),
-    new EvidenceSqliteAdapter(),
-    new EvidenceBigQueryAdapter(),
+  const databaseAdapters: IEvidAdapter[] = [
+    new EvidSqlAdapter(),
+    new EvidPostgresqlAdapter(),
+    new EvidMysqlAdapter(),
+    new EvidSqliteAdapter(),
+    new EvidBigQueryAdapter(),
   ];
   for (const adapter of databaseAdapters) {
     const source: string = databaseSource(adapter.type);
-    const baseline: IEvidenceInventory = await adapter.analyze(
+    const baseline: IEvidInventory = await adapter.analyze(
       TestSourceSnapshot.create("schema.sql", source),
     );
-    const fenced: IEvidenceInventory = await adapter.analyze(
+    const fenced: IEvidInventory = await adapter.analyze(
       TestSourceSnapshot.create("schema.sql", separatedFences(source)),
     );
-    const rendered: IEvidenceInventory = await adapter.analyze(
+    const rendered: IEvidInventory = await adapter.analyze(
       TestSourceSnapshot.create("schema.sql", genuineHtmlExample(source)),
     );
-    const slashClosed: IEvidenceInventory = await adapter.analyze(
+    const slashClosed: IEvidInventory = await adapter.analyze(
       TestSourceSnapshot.create("schema.sql", slashClosedHtmlOpening(source)),
     );
-    const unclosed: IEvidenceInventory = await adapter.analyze(
+    const unclosed: IEvidInventory = await adapter.analyze(
       TestSourceSnapshot.create("schema.sql", unclosedHtmlExample(source)),
     );
-    const indentedOpening: IEvidenceInventory = await adapter.analyze(
+    const indentedOpening: IEvidInventory = await adapter.analyze(
       TestSourceSnapshot.create("schema.sql", indentedHtmlOpening(source)),
     );
-    const indentedClose: IEvidenceInventory = await adapter.analyze(
+    const indentedClose: IEvidInventory = await adapter.analyze(
       TestSourceSnapshot.create("schema.sql", indentedHtmlClose(source)),
     );
-    const indented: IEvidenceInventory = await adapter.analyze(
+    const indented: IEvidInventory = await adapter.analyze(
       TestSourceSnapshot.create("schema.sql", indentedFenceBeforeHtml(source)),
     );
-    const malformedClose: IEvidenceInventory = await adapter.analyze(
+    const malformedClose: IEvidInventory = await adapter.analyze(
       TestSourceSnapshot.create("schema.sql", malformedHtmlClose(source)),
     );
-    const commented: IEvidenceInventory = await adapter.analyze(
-      TestSourceSnapshot.create("schema.sql", htmlCommentedEvidence(source)),
+    const commented: IEvidInventory = await adapter.analyze(
+      TestSourceSnapshot.create("schema.sql", htmlCommentedEvid(source)),
     );
-    const commentedTags: IEvidenceInventory = await adapter.analyze(
+    const commentedTags: IEvidInventory = await adapter.analyze(
       TestSourceSnapshot.create("schema.sql", commentedHtmlTags(source)),
     );
-    const quotedComment: IEvidenceInventory = await adapter.analyze(
+    const quotedComment: IEvidInventory = await adapter.analyze(
       TestSourceSnapshot.create("schema.sql", quotedHtmlCommentLiteral(source)),
     );
     assertEquivalent(`${adapter.type} fenced examples`, baseline, fenced);
@@ -367,7 +367,7 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
   await TestFileSystem.experiment(
     location,
     {
-      "evidence.json": JSON.stringify({
+      "evid.json": JSON.stringify({
         claims: [
           {
             type: "php",
@@ -389,10 +389,10 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
         " * ````",
         " *     ``` literal indented delimiter",
         " * <pre>",
-        " * @evidence rules.md#rendered Fake rendered statement.",
+        " * @evid rules.md#rendered Fake rendered statement.",
         " * </pre>",
         " *     <code>",
-        " * @evidence rules.md#rule Real acknowledgement.",
+        " * @evid rules.md#rule Real acknowledgement.",
         " * </code>",
         " * `````html",
         " * </pre>",
@@ -404,8 +404,8 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
       "rules.md": `# Rule {#rule}\n\nDo the work.\n`,
     },
     async (directory: string): Promise<void> => {
-      const report: IEvidenceCheckReport = await EvidenceChecker.check(
-        join(directory, "evidence.json"),
+      const report: IEvidCheckReport = await EvidChecker.check(
+        join(directory, "evid.json"),
       );
       TestValidator.equals("PHP fenced HTML checker exit", report.exitCode, 0);
       TestValidator.equals(
@@ -424,14 +424,14 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
           "<?php",
           "/**",
           " * <pre>",
-          " * @evidence rules.md#rule Rendered acknowledgement.",
+          " * @evid rules.md#rule Rendered acknowledgement.",
           " */",
           "function run() {}",
           "",
         ].join("\n"),
       });
-      const unclosed: IEvidenceCheckReport = await EvidenceChecker.check(
-        join(directory, "evidence.json"),
+      const unclosed: IEvidCheckReport = await EvidChecker.check(
+        join(directory, "evid.json"),
       );
       TestValidator.equals(
         "PHP unclosed HTML checker exit",
@@ -449,14 +449,14 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
           "<?php",
           "/**",
           " * <!--",
-          " * @evidence rules.md#rule Commented acknowledgement.",
+          " * @evid rules.md#rule Commented acknowledgement.",
           " */",
           "function run() {}",
           "",
         ].join("\n"),
       });
-      const commented: IEvidenceCheckReport = await EvidenceChecker.check(
-        join(directory, "evidence.json"),
+      const commented: IEvidCheckReport = await EvidChecker.check(
+        join(directory, "evid.json"),
       );
       TestValidator.equals(
         "PHP unclosed HTML comment checker exit",
@@ -470,7 +470,7 @@ export async function test_adapter_documentation_precedence(): Promise<void> {
 /**
  * Builds the database adapter fixture with its dialect-specific qualified name.
  *
- * Every SQL certification keeps the same Evidence carrier while using a table
+ * Every SQL certification keeps the same Evid carrier while using a table
  * spelling that its adapter recognizes as public.
  */
 function databaseSource(type: string): string {
@@ -485,14 +485,14 @@ function databaseSource(type: string): string {
             ? "project.dataset.users"
             : "users";
   return [
-    "-- @evidence rules.md#rule Implements the table.",
+    "-- @evid rules.md#rule Implements the table.",
     `CREATE TABLE ${model} (id INTEGER);`,
     "",
   ].join("\n");
 }
 
 /**
- * Applies one documentation mutation to a certification's unique Evidence host.
+ * Applies one documentation mutation to a certification's unique Evid host.
  *
  * Copying the source records keeps the canonical certification immutable, and a
  * missing or duplicate carrier fails before it can weaken the comparison.
@@ -504,7 +504,7 @@ function mutateCertification(
   let changed: number = 0;
   const sources: IAdapterCertificationSource[] = certification.sources.map(
     (source: IAdapterCertificationSource): IAdapterCertificationSource => {
-      if (changed !== 0 || !source.content.includes("@evidence "))
+      if (changed !== 0 || !source.content.includes("@evid "))
         return source;
       ++changed;
       return { ...source, content: mutation(source.content) };
@@ -524,7 +524,7 @@ function mutateCertification(
  * of crossing visible documentation and consuming the real annotation.
  */
 function separatedFences(content: string): string {
-  return replaceEvidenceLine(content, (prefix: string, line: string): string =>
+  return replaceEvidLine(content, (prefix: string, line: string): string =>
     [
       `${prefix}Literal \`<pre>\` and \`</pre>\` examples.`,
       `${prefix}\`\`\`\`html`,
@@ -535,23 +535,23 @@ function separatedFences(content: string): string {
       `${prefix}</pre>`,
       `${prefix}\`\`\`\`\``,
       `${prefix}\`\`\`\`text`,
-      `${prefix}@evidence rules.md#fenced Fake fenced statement.`,
+      `${prefix}@evid rules.md#fenced Fake fenced statement.`,
       `${prefix}\`\`\`\``,
     ].join("\n"),
   );
 }
 
 /**
- * Places one fake Evidence statement inside a complete HTML example.
+ * Places one fake Evid statement inside a complete HTML example.
  *
  * The original statement remains after the closing tag as the only declaration
  * that may survive certification.
  */
 function genuineHtmlExample(content: string): string {
-  return replaceEvidenceLine(content, (prefix: string, line: string): string =>
+  return replaceEvidLine(content, (prefix: string, line: string): string =>
     [
       `${prefix}<pre class="example">`,
-      `${prefix}@evidence rules.md#rendered Fake rendered statement.`,
+      `${prefix}@evid rules.md#rendered Fake rendered statement.`,
       `${prefix}</pre>`,
       line,
     ].join("\n"),
@@ -565,13 +565,13 @@ function genuineHtmlExample(content: string): string {
  * must remain inert even though the opening text ends in `/>`.
  */
 function slashClosedHtmlOpening(content: string): string {
-  return replaceEvidenceLine(content, (prefix: string, line: string): string =>
+  return replaceEvidLine(content, (prefix: string, line: string): string =>
     [
       `${prefix}<pre />`,
-      `${prefix}@evidence rules.md#rendered Fake spaced-slash statement.`,
+      `${prefix}@evid rules.md#rendered Fake spaced-slash statement.`,
       `${prefix}</pre>`,
       `${prefix}<pre/>`,
-      `${prefix}@evidence rules.md#rendered Fake compact-slash statement.`,
+      `${prefix}@evid rules.md#rendered Fake compact-slash statement.`,
       `${prefix}</pre>`,
       line,
     ].join("\n"),
@@ -586,7 +586,7 @@ function slashClosedHtmlOpening(content: string): string {
  * annotation.
  */
 function xmlSelfClosingExample(content: string): string {
-  return replaceEvidenceLine(content, (prefix: string, line: string): string =>
+  return replaceEvidLine(content, (prefix: string, line: string): string =>
     [
       `${prefix}<code />`,
       `${prefix}<code/>`,
@@ -603,11 +603,11 @@ function xmlSelfClosingExample(content: string): string {
  * appended fake annotation inert without hiding the preceding real one.
  */
 function unclosedHtmlExample(content: string): string {
-  return replaceEvidenceLine(content, (prefix: string, line: string): string =>
+  return replaceEvidLine(content, (prefix: string, line: string): string =>
     [
       line,
       `${prefix}<pre>`,
-      `${prefix}@evidence rules.md#rendered Fake rendered statement.`,
+      `${prefix}@evid rules.md#rendered Fake rendered statement.`,
     ].join("\n"),
   );
 }
@@ -619,7 +619,7 @@ function unclosedHtmlExample(content: string): string {
  * annotation.
  */
 function indentedHtmlOpening(content: string): string {
-  return replaceEvidenceLine(content, (prefix: string, line: string): string =>
+  return replaceEvidLine(content, (prefix: string, line: string): string =>
     [`${prefix}    <pre>`, line, `${prefix}</pre>`].join("\n"),
   );
 }
@@ -631,11 +631,11 @@ function indentedHtmlOpening(content: string): string {
  * hidden until the genuine non-indented closing tag.
  */
 function indentedHtmlClose(content: string): string {
-  return replaceEvidenceLine(content, (prefix: string, line: string): string =>
+  return replaceEvidLine(content, (prefix: string, line: string): string =>
     [
       `${prefix}<pre>`,
       `${prefix}    </pre>`,
-      `${prefix}@evidence rules.md#rendered Fake rendered statement.`,
+      `${prefix}@evid rules.md#rendered Fake rendered statement.`,
       `${prefix}</pre>`,
       line,
     ].join("\n"),
@@ -649,11 +649,11 @@ function indentedHtmlClose(content: string): string {
  * region and real annotation are classified.
  */
 function indentedFenceBeforeHtml(content: string): string {
-  return replaceEvidenceLine(content, (prefix: string, line: string): string =>
+  return replaceEvidLine(content, (prefix: string, line: string): string =>
     [
       `${prefix}    \`\`\` literal indented delimiter`,
       `${prefix}<pre>`,
-      `${prefix}@evidence rules.md#rendered Fake rendered statement.`,
+      `${prefix}@evid rules.md#rendered Fake rendered statement.`,
       `${prefix}</pre>`,
       line,
     ].join("\n"),
@@ -663,16 +663,16 @@ function indentedFenceBeforeHtml(content: string): string {
 /**
  * Inserts an attribute-bearing HTML end tag before the valid close.
  *
- * The malformed tag must not end the example or expose the second fake Evidence
+ * The malformed tag must not end the example or expose the second fake Evid
  * statement.
  */
 function malformedHtmlClose(content: string): string {
-  return replaceEvidenceLine(content, (prefix: string, line: string): string =>
+  return replaceEvidLine(content, (prefix: string, line: string): string =>
     [
       `${prefix}<pre>`,
-      `${prefix}@evidence rules.md#rendered First fake rendered statement.`,
+      `${prefix}@evid rules.md#rendered First fake rendered statement.`,
       `${prefix}</pre class="invalid">`,
-      `${prefix}@evidence rules.md#rendered Second fake rendered statement.`,
+      `${prefix}@evid rules.md#rendered Second fake rendered statement.`,
       `${prefix}</pre>`,
       line,
     ].join("\n"),
@@ -680,16 +680,16 @@ function malformedHtmlClose(content: string): string {
 }
 
 /**
- * Places one fake Evidence statement inside a complete HTML comment.
+ * Places one fake Evid statement inside a complete HTML comment.
  *
  * The original statement follows the comment and remains the only eligible
  * declaration.
  */
-function htmlCommentedEvidence(content: string): string {
-  return replaceEvidenceLine(content, (prefix: string, line: string): string =>
+function htmlCommentedEvid(content: string): string {
+  return replaceEvidLine(content, (prefix: string, line: string): string =>
     [
       `${prefix}<!--`,
-      `${prefix}@evidence rules.md#commented Fake commented statement.`,
+      `${prefix}@evid rules.md#commented Fake commented statement.`,
       `${prefix}-->`,
       line,
     ].join("\n"),
@@ -700,10 +700,10 @@ function htmlCommentedEvidence(content: string): string {
  * Separates HTML comment delimiters into independent Markdown fences.
  *
  * Literal delimiters inside fenced examples cannot pair across the real
- * statement and suppress its Evidence declaration.
+ * statement and suppress its Evid declaration.
  */
 function fencedHtmlCommentLiteral(content: string): string {
-  return replaceEvidenceLine(content, (prefix: string, line: string): string =>
+  return replaceEvidLine(content, (prefix: string, line: string): string =>
     [
       `${prefix}\`\`\`\`html`,
       `${prefix}<!--`,
@@ -720,10 +720,10 @@ function fencedHtmlCommentLiteral(content: string): string {
  * Places a comment-looking marker inside a quoted markup attribute.
  *
  * The complete tag token owns the marker, so it cannot open comment state and
- * hide the real Evidence statement that follows.
+ * hide the real Evid statement that follows.
  */
 function quotedHtmlCommentLiteral(content: string): string {
-  return replaceEvidenceLine(content, (prefix: string, line: string): string =>
+  return replaceEvidLine(content, (prefix: string, line: string): string =>
     [`${prefix}<span title="<!-- literal marker">`, line].join("\n"),
   );
 }
@@ -731,11 +731,11 @@ function quotedHtmlCommentLiteral(content: string): string {
 /**
  * Places literal HTML example boundaries inside separate comments.
  *
- * Comment contents cannot open or close an example around the real Evidence
+ * Comment contents cannot open or close an example around the real Evid
  * statement between them.
  */
 function commentedHtmlTags(content: string): string {
-  return replaceEvidenceLine(content, (prefix: string, line: string): string =>
+  return replaceEvidLine(content, (prefix: string, line: string): string =>
     [`${prefix}<!-- <pre> -->`, line, `${prefix}<!-- </pre> -->`].join("\n"),
   );
 }
@@ -744,10 +744,10 @@ function commentedHtmlTags(content: string): string {
  * Separates literal HTML tags with one adapter-native code syntax.
  *
  * If HTML pairing ignores the native regions, their opening and closing literals
- * cross the real Evidence statement and remove it from the certified inventory.
+ * cross the real Evid statement and remove it from the certified inventory.
  */
 function nativeCodePrecedence(type: string, content: string): string {
-  return replaceEvidenceLine(
+  return replaceEvidLine(
     content,
     (prefix: string, line: string): string => {
       if (type === "c" || type === "cpp")
@@ -776,11 +776,11 @@ function nativeCodePrecedence(type: string, content: string): string {
 /**
  * Separates native documentation delimiters into independent Markdown fences.
  *
- * Literal Doxygen, Javadoc, and Scaladoc openings cannot own the real Evidence
+ * Literal Doxygen, Javadoc, and Scaladoc openings cannot own the real Evid
  * statement before a later fenced closing delimiter.
  */
 function markdownNativeLiteral(type: string, content: string): string {
-  return replaceEvidenceLine(
+  return replaceEvidLine(
     content,
     (prefix: string, line: string): string => {
       let opening: string;
@@ -813,29 +813,29 @@ function markdownNativeLiteral(type: string, content: string): string {
  * Appends a fake statement after an unclosed Doxygen code boundary.
  *
  * The code region owns the remainder of the documentation host, so the injected
- * statement must not become a second Evidence declaration.
+ * statement must not become a second Evid declaration.
  */
 function unclosedDoxygenCode(content: string): string {
-  return replaceEvidenceLine(content, (prefix: string, line: string): string =>
+  return replaceEvidLine(content, (prefix: string, line: string): string =>
     [
       line,
       `${prefix}@code`,
-      `${prefix}@evidence rules.md#native Fake native-code statement.`,
+      `${prefix}@evid rules.md#native Fake native-code statement.`,
     ].join("\n"),
   );
 }
 
 /**
- * Replaces the unique Evidence line while retaining its documentation prefix.
+ * Replaces the unique Evid line while retaining its documentation prefix.
  *
  * Adapter fixtures use different comment delimiters, so mutations receive the
  * exact prefix and complete line rather than assuming one documentation syntax.
  */
-function replaceEvidenceLine(
+function replaceEvidLine(
   content: string,
   replacement: (prefix: string, line: string) => string,
 ): string {
-  const annotation: number = content.indexOf("@evidence ");
+  const annotation: number = content.indexOf("@evid ");
   if (annotation < 0)
     throw new Error("Documentation fixture has no evidence line.");
   const start: number = content.lastIndexOf("\n", annotation) + 1;
@@ -854,8 +854,8 @@ function replaceEvidenceLine(
  */
 function assertEquivalent(
   label: string,
-  baseline: IEvidenceInventory,
-  candidate: IEvidenceInventory,
+  baseline: IEvidInventory,
+  candidate: IEvidInventory,
 ): void {
   if (!candidate.complete)
     throw new Error(
@@ -864,20 +864,20 @@ function assertEquivalent(
   TestValidator.equals(`${label} completeness`, candidate.complete, true);
   TestValidator.equals(
     `${label} units`,
-    candidate.units.map((unit: IEvidenceUnit): string =>
+    candidate.units.map((unit: IEvidUnit): string =>
       JSON.stringify([unit.symbol, unit.identity]),
     ),
-    baseline.units.map((unit: IEvidenceUnit): string =>
+    baseline.units.map((unit: IEvidUnit): string =>
       JSON.stringify([unit.symbol, unit.identity]),
     ),
   );
   TestValidator.equals(
     `${label} declarations`,
     candidate.declarations.map(
-      (declaration: IEvidenceDeclaration): string => declaration.target,
+      (declaration: IEvidDeclaration): string => declaration.target,
     ),
     baseline.declarations.map(
-      (declaration: IEvidenceDeclaration): string => declaration.target,
+      (declaration: IEvidDeclaration): string => declaration.target,
     ),
   );
   TestValidator.equals(`${label} diagnostics`, candidate.diagnostics, []);

@@ -1,9 +1,9 @@
 import {
-  EvidenceFingerprint,
-  EvidenceGraph,
-  EvidenceMarkdownAdapter,
-} from "@wrtnlabs/evidence";
-import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidGraph,
+  EvidMarkdownAdapter,
+} from "evid";
+import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -32,7 +32,7 @@ export async function test_graph_review_self_reference(): Promise<void> {
     `,
   );
   const bareRule = requireUnit(bare, "review-discipline");
-  const expected = EvidenceFingerprint.inspect(bare, bareRule.id).fingerprint;
+  const expected = EvidFingerprint.inspect(bare, bareRule.id).fingerprint;
   const reviewed = await analyze(
     dedent`
       ## Review discipline {#review-discipline}
@@ -40,8 +40,8 @@ export async function test_graph_review_self_reference(): Promise<void> {
       Re-read a cited rule when its content changes.
 
       <!--
-      @evidence ./rules.md#review-discipline Enforces this rule on its own section.
-      @evidenceReview ./rules.md#review-discipline #${expected} Read the section and checked the self-reference.
+      @evid ./rules.md#review-discipline Enforces this rule on its own section.
+      @evidReview ./rules.md#review-discipline #${expected} Read the section and checked the self-reference.
       -->
     `,
   );
@@ -49,11 +49,11 @@ export async function test_graph_review_self_reference(): Promise<void> {
 
   TestValidator.equals(
     "writing review leaves target fingerprint stable",
-    EvidenceFingerprint.inspect(reviewed, reviewedRule.id).fingerprint,
+    EvidFingerprint.inspect(reviewed, reviewedRule.id).fingerprint,
     expected,
   );
 
-  const result = EvidenceGraph.evaluate({
+  const result = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -91,8 +91,8 @@ export async function test_graph_review_self_reference(): Promise<void> {
  * Keeping the file path and document-relative base stable isolates the inserted
  * acknowledgement and review spans from target-resolution or identity changes.
  */
-async function analyze(content: string): Promise<IEvidenceInventory> {
-  return new EvidenceMarkdownAdapter().analyze(
+async function analyze(content: string): Promise<IEvidInventory> {
+  return new EvidMarkdownAdapter().analyze(
     TestSourceSnapshot.create(
       "rules.md",
       content,
@@ -103,9 +103,9 @@ async function analyze(content: string): Promise<IEvidenceInventory> {
 }
 
 function requireUnit(
-  inventory: IEvidenceInventory,
+  inventory: IEvidInventory,
   identity: string,
-): IEvidenceUnit {
+): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.at(-1) === identity,
   );

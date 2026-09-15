@@ -1,9 +1,9 @@
-import { EvidenceTypeScriptAdapter } from "@wrtnlabs/evidence";
+import { EvidTypeScriptAdapter } from "evid";
 import type {
-  IEvidenceInventory,
-  IEvidencePublicAddress,
-  IEvidenceUnit,
-} from "@wrtnlabs/evidence";
+  IEvidInventory,
+  IEvidPublicAddress,
+  IEvidUnit,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -62,7 +62,7 @@ export async function test_typescript_merges(): Promise<void> {
       }
     }
   `;
-  const inventory = await new EvidenceTypeScriptAdapter().analyze(
+  const inventory = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.create("src/merged.ts", content),
   );
 
@@ -110,13 +110,13 @@ export async function test_typescript_merges(): Promise<void> {
   TestValidator.predicate(
     "type-only merge keeps the interface member",
     inventory.addresses.some(
-      (address: IEvidencePublicAddress): boolean =>
+      (address: IEvidPublicAddress): boolean =>
         address.unitId === orderMember.id &&
         address.segments.join(".") === "Order.member",
     ),
   );
 
-  const shoppingSale: IEvidenceUnit = requireUnit(
+  const shoppingSale: IEvidUnit = requireUnit(
     inventory,
     "type",
     "IShoppingSale",
@@ -126,12 +126,12 @@ export async function test_typescript_merges(): Promise<void> {
     shoppingSale.sites.length,
     2,
   );
-  const create: IEvidenceUnit = requireUnit(
+  const create: IEvidUnit = requireUnit(
     inventory,
     "type",
     "IShoppingSale.ICreate",
   );
-  const title: IEvidenceUnit = requireUnit(
+  const title: IEvidUnit = requireUnit(
     inventory,
     "property",
     "IShoppingSale.ICreate.title",
@@ -145,7 +145,7 @@ export async function test_typescript_merges(): Promise<void> {
   TestValidator.predicate(
     "nested namespace type address",
     inventory.addresses.some(
-      (address: IEvidencePublicAddress): boolean =>
+      (address: IEvidPublicAddress): boolean =>
         address.unitId === create.id &&
         address.segments.join(".") === "IShoppingSale.ICreate",
     ),
@@ -153,7 +153,7 @@ export async function test_typescript_merges(): Promise<void> {
   TestValidator.predicate(
     "nested namespace property address",
     inventory.addresses.some(
-      (address: IEvidencePublicAddress): boolean =>
+      (address: IEvidPublicAddress): boolean =>
         address.unitId === title.id &&
         address.segments.join(".") === "IShoppingSale.ICreate.title",
     ),
@@ -168,10 +168,10 @@ export async function test_typescript_merges(): Promise<void> {
  * accidentally inspect a different declaration kind at the same address.
  */
 function requireUnit(
-  inventory: IEvidenceInventory,
-  symbol: IEvidenceUnit["symbol"],
+  inventory: IEvidInventory,
+  symbol: IEvidUnit["symbol"],
   identity: string,
-): IEvidenceUnit {
+): IEvidUnit {
   const unit = inventory.units.find(
     (entry) => entry.symbol === symbol && entry.identity.join(".") === identity,
   );
@@ -186,7 +186,7 @@ function requireUnit(
  * The count exposes duplicate merge records even when a public-address lookup
  * could resolve only the first occurrence.
  */
-function count(inventory: IEvidenceInventory, identity: string): number {
+function count(inventory: IEvidInventory, identity: string): number {
   return inventory.units.filter((unit) => unit.identity.join(".") === identity)
     .length;
 }

@@ -1,7 +1,7 @@
 import {
-  EvidenceAccessor,
-  EvidencePostgresqlAdapter,
-} from "@wrtnlabs/evidence";
+  EvidAccessor,
+  EvidPostgresqlAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -18,20 +18,20 @@ import type { IDatabaseAdapterCertification } from "../../internal/certification
  */
 export async function test_postgresql_certification(): Promise<void> {
   const relation = 'foreign key ["id"] references ["app","parent","id"]';
-  const relationAccessor = EvidenceAccessor.format(["app", "item", relation]);
+  const relationAccessor = EvidAccessor.format(["app", "item", relation]);
   const fixture: IDatabaseAdapterCertification = {
     type: "postgresql",
-    adapter: new EvidencePostgresqlAdapter(),
+    adapter: new EvidPostgresqlAdapter(),
     sources: [
       {
         file: "schema.sql",
         content: dedent`
       -- PostgreSQL 🐘
-      -- @evidence docs/requirements.md#model Describes the table.
+      -- @evid docs/requirements.md#model Describes the table.
       CREATE TABLE app.Item (
-        -- @evidence docs/requirements.md#column Describes the identifier.
+        -- @evid docs/requirements.md#column Describes the identifier.
         id integer,
-        -- @evidence docs/requirements.md#relation Describes the foreign key.
+        -- @evid docs/requirements.md#relation Describes the foreign key.
         FOREIGN KEY (id) REFERENCES app.Parent (id)
       );
     `,
@@ -97,9 +97,9 @@ export async function test_postgresql_certification(): Promise<void> {
         file: "schema.sql",
         content: dedent`
         -- PostgreSQL 🐘
-        -- @evidence docs/requirements.md#attached Describes the table.
-        CREATE TABLE app.Item (value text DEFAULT '@evidence docs/requirements.md#string Inert literal.');
-        -- @evidence docs/requirements.md#unattached No following declaration.
+        -- @evid docs/requirements.md#attached Describes the table.
+        CREATE TABLE app.Item (value text DEFAULT '@evid docs/requirements.md#string Inert literal.');
+        -- @evid docs/requirements.md#unattached No following declaration.
       `,
       },
       attachedTarget: "docs/requirements.md#attached",

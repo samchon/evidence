@@ -1,8 +1,8 @@
 import {
-  EvidenceGraph,
-  EvidenceMatlabAdapter,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
+  EvidGraph,
+  EvidMatlabAdapter,
+  EvidTypeScriptAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -11,7 +11,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Evaluates each selected MATLAB declaration as a required cross-language reference.
  *
- * Evidence and reviews have different graph effects: missing evidence fails coverage, while a review is retained but cannot satisfy it.
+ * Evid and reviews have different graph effects: missing evidence fails coverage, while a review is retained but cannot satisfy it.
  *
  * 1. Extract MATLAB type, function, and property units with TypeScript claims.
  * 2. Evaluate each selector with and without its matching acknowledgement.
@@ -19,7 +19,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 4. Verify a review-only claim leaves its referenced function uncovered.
  */
 export async function test_matlab_graph(): Promise<void> {
-  const reference = await new EvidenceMatlabAdapter().analyze(
+  const reference = await new EvidMatlabAdapter().analyze(
     TestSourceSnapshot.create(
       "src/Contract.m",
       dedent`
@@ -35,15 +35,15 @@ export async function test_matlab_graph(): Promise<void> {
   `.concat("\n"),
     ),
   );
-  const claims = await new EvidenceTypeScriptAdapter().analyze(
+  const claims = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/Claims.ts",
       dedent`
-    /** @evidence ./Contract.m#Contract Verifies the type. */
+    /** @evid ./Contract.m#Contract Verifies the type. */
     export class TypeClaim {}
-    /** @evidence ./Contract.m#Contract.run Verifies the operation. */
+    /** @evid ./Contract.m#Contract.run Verifies the operation. */
     export function runClaim() {}
-    /** @evidence ./Contract.m#Contract.value Verifies the value. */
+    /** @evid ./Contract.m#Contract.value Verifies the value. */
     export const valueClaim = 1;
   `.concat("\n"),
     ),
@@ -72,7 +72,7 @@ export async function test_matlab_graph(): Promise<void> {
             ),
           )
         : [];
-      const graph = EvidenceGraph.evaluate({
+      const graph = EvidGraph.evaluate({
         claims: [
           {
             severity: "error",
@@ -105,12 +105,12 @@ export async function test_matlab_graph(): Promise<void> {
       );
     }
   }
-  const review = await new EvidenceMatlabAdapter().analyze(
+  const review = await new EvidMatlabAdapter().analyze(
     TestSourceSnapshot.create(
       "src/review.m",
       dedent`
     function review()
-      % @evidenceReview ./Contract.m#Contract.run Reviewed without an acknowledgement.
+      % @evidReview ./Contract.m#Contract.run Reviewed without an acknowledgement.
     end
   `.concat("\n"),
     ),
@@ -124,7 +124,7 @@ export async function test_matlab_graph(): Promise<void> {
   const functions = reference.units
     .filter((unit) => unit.symbol === "function")
     .map((unit) => unit.id);
-  const graph = EvidenceGraph.evaluate({
+  const graph = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",

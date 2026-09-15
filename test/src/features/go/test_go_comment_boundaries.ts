@@ -1,15 +1,15 @@
 import {
-  EvidenceFingerprint,
-  EvidenceGoAdapter,
-  EvidenceInventory,
-} from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidGoAdapter,
+  EvidInventory,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Separates trailing Go comments from leading documentation runs.
  *
- * Evidence attaches only to the declaration-leading run despite matching columns.
+ * Evid attaches only to the declaration-leading run despite matching columns.
  *
  * 1. Analyze leading and trailing annotated comments.
  * 2. Compare attached declarations.
@@ -18,14 +18,14 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_go_comment_boundaries(): Promise<void> {
   const source = dedent`
     package sale
-    var Before = 1 // @evidence docs/spec.md#trailing Cannot document After.
+    var Before = 1 // @evid docs/spec.md#trailing Cannot document After.
                    // 한글 🐹
-                   // @evidence docs/spec.md#after Documents After itself.
+                   // @evid docs/spec.md#after Documents After itself.
                    var After = 2
-    var Earlier = 3 /* @evidenceReview docs/spec.md#review Cannot review Later. */
+    var Earlier = 3 /* @evidReview docs/spec.md#review Cannot review Later. */
                     var Later = 4
   `;
-  const adapter = new EvidenceGoAdapter();
+  const adapter = new EvidGoAdapter();
   for (const content of [source, source.replaceAll("\n", "\r\n")]) {
     const inventory = await adapter.analyze(
       TestSourceSnapshot.create("sale/values.go", content),
@@ -61,7 +61,7 @@ export async function test_go_comment_boundaries(): Promise<void> {
     TestValidator.equals(
       "leading tag coordinates",
       inventory.declarations[0]?.location?.range?.start?.offset,
-      content.indexOf("@evidence docs/spec.md#after"),
+      content.indexOf("@evid docs/spec.md#after"),
     );
     const rewritten = await adapter.analyze(
       TestSourceSnapshot.create(
@@ -76,8 +76,8 @@ export async function test_go_comment_boundaries(): Promise<void> {
     if (after === undefined) throw new Error("Missing After.");
     TestValidator.equals(
       "leading metadata does not move fingerprints",
-      EvidenceFingerprint.inspect(inventory, after.id).fingerprint,
-      EvidenceFingerprint.inspect(rewritten, after.id).fingerprint,
+      EvidFingerprint.inspect(inventory, after.id).fingerprint,
+      EvidFingerprint.inspect(rewritten, after.id).fingerprint,
     );
   }
 
@@ -90,7 +90,7 @@ export async function test_go_comment_boundaries(): Promise<void> {
   );
   TestValidator.equals(
     "trailing withdrawal hides no units",
-    new EvidenceInventory([withdrawal]).select(
+    new EvidInventory([withdrawal]).select(
       withdrawal.units.map((unit) => unit.id),
     ).hidden,
     [],
@@ -101,7 +101,7 @@ export async function test_go_comment_boundaries(): Promise<void> {
     const inventory = await adapter.analyze(
       TestSourceSnapshot.create(
         "sale/values.go",
-        `package sale\n/* @evidence docs/spec.md#block Documents the block. */${gap}var Value = 1\n`,
+        `package sale\n/* @evid docs/spec.md#block Documents the block. */${gap}var Value = 1\n`,
       ),
     );
     TestValidator.equals(

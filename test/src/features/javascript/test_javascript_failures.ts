@@ -1,4 +1,4 @@
-import { EvidenceJavaScriptAdapter } from "@wrtnlabs/evidence";
+import { EvidJavaScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -13,7 +13,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Verify no uncertain case passes.
  */
 export async function test_javascript_failures(): Promise<void> {
-  const adapter = new EvidenceJavaScriptAdapter();
+  const adapter = new EvidJavaScriptAdapter();
   await verify(
     adapter,
     "computed CommonJS key",
@@ -167,7 +167,7 @@ export async function test_javascript_failures(): Promise<void> {
 }
 
 async function verify(
-  adapter: EvidenceJavaScriptAdapter,
+  adapter: EvidJavaScriptAdapter,
   label: string,
   code: string,
   content: string,

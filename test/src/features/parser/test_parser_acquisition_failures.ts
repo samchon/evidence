@@ -1,6 +1,6 @@
 import { TestParserAssets } from "../../internal/TestParserAssets";
 import { TestValidator } from "@nestia/e2e";
-import { TreeSitterAssets } from "../../../../packages/evidence/src/internal/TreeSitterAssets";
+import { EvidTreeSitterAssets } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssets";
 import { randomUUID } from "node:crypto";
 import { readdir } from "node:fs/promises";
 import { join } from "node:path";
@@ -25,7 +25,7 @@ import { TestParserError } from "../../internal/TestParserError";
  *    with exactly one additional request.
  */
 export async function test_parser_acquisition_failures(): Promise<void> {
-  const grammar = await new TreeSitterAssets().grammar("python");
+  const grammar = await new EvidTreeSitterAssets().grammar("python");
   const pinned = Uint8Array.from(await TestParserAssets.bytes(grammar));
   await TestFileSystem.experiment(
     join(__dirname, `acquisition-${randomUUID()}`),
@@ -33,7 +33,7 @@ export async function test_parser_acquisition_failures(): Promise<void> {
     async (cacheDirectory) => {
       let requests = 0;
       let mode = "unavailable";
-      const assets = new TreeSitterAssets({
+      const assets = new EvidTreeSitterAssets({
         cacheDirectory,
         attempts: 2,
         fetch: async () => {

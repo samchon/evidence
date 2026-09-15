@@ -1,4 +1,4 @@
-import { EvidenceLanguageRegistry, EvidenceParser } from "@wrtnlabs/evidence";
+import { EvidLanguageRegistry, EvidParser } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { TestParserError } from "../../internal/TestParserError";
@@ -23,50 +23,50 @@ export async function test_parser_selection(): Promise<void> {
   // Ambiguous headers follow the configured type; TSX remains a TypeScript variant.
   TestValidator.equals(
     "C header",
-    EvidenceLanguageRegistry.select("c", "include/value.h").id,
+    EvidLanguageRegistry.select("c", "include/value.h").id,
     "c",
   );
   TestValidator.equals(
     "C++ header",
-    EvidenceLanguageRegistry.select("cpp", "include/value.h").id,
+    EvidLanguageRegistry.select("cpp", "include/value.h").id,
     "cpp",
   );
   TestValidator.equals(
     "Windows TSX path",
-    EvidenceLanguageRegistry.select("typescript", "C:\\src\\View.tsx").id,
+    EvidLanguageRegistry.select("typescript", "C:\\src\\View.tsx").id,
     "tsx",
   );
   TestValidator.equals(
     "Ruby named file",
-    EvidenceLanguageRegistry.select("ruby", "Gemfile").id,
+    EvidLanguageRegistry.select("ruby", "Gemfile").id,
     "ruby",
   );
 
   TestValidator.equals(
     "MATLAB source",
-    EvidenceLanguageRegistry.select("matlab", "contract.m").id,
+    EvidLanguageRegistry.select("matlab", "contract.m").id,
     "matlab",
   );
   await TestParserError.expect("unsupported-extension", () =>
-    EvidenceLanguageRegistry.select("python", "contract.ts"),
+    EvidLanguageRegistry.select("python", "contract.ts"),
   );
   await TestParserError.expect("unsupported-extension", () =>
-    EvidenceLanguageRegistry.select("typescript", "contract.TS"),
+    EvidLanguageRegistry.select("typescript", "contract.TS"),
   );
   await TestParserError.expect("unsupported-extension", () =>
-    EvidenceLanguageRegistry.select("ruby", "gemfile"),
+    EvidLanguageRegistry.select("ruby", "gemfile"),
   );
 
   // Mutating inspection results must not modify later selections or certification metadata.
-  const languages = EvidenceLanguageRegistry.list();
+  const languages = EvidLanguageRegistry.list();
   for (const language of languages) language.grammars.splice(0);
   TestValidator.equals(
     "registry is isolated",
-    EvidenceLanguageRegistry.select("python", "contract.py").id,
+    EvidLanguageRegistry.select("python", "contract.py").id,
     "python",
   );
 
-  const parser = new EvidenceParser();
+  const parser = new EvidParser();
   try {
     TestValidator.equals(
       "no eager language initialization",

@@ -1,8 +1,8 @@
-import { EvidenceSwiftAdapter } from "@wrtnlabs/evidence";
+import { EvidSwiftAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TreeSitterAssets } from "../../../../packages/evidence/src/internal/TreeSitterAssets";
-import { TreeSitterAssetScope } from "../../../../packages/evidence/src/internal/TreeSitterAssetScope";
+import { EvidTreeSitterAssets } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssets";
+import { EvidTreeSitterAssetScope } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssetScope";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestParserAssets } from "../../internal/TestParserAssets";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -15,7 +15,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 2. Verify the selected asset and warm offline equivalence.
  */
 export async function test_swift_acquisition(): Promise<void> {
-  const grammar = await new TreeSitterAssets().grammar("swift");
+  const grammar = await new EvidTreeSitterAssets().grammar("swift");
   const bytes = Uint8Array.from(await TestParserAssets.bytes(grammar));
   const source = TestSourceSnapshot.create(
     "src/Contract.swift",
@@ -27,7 +27,7 @@ export async function test_swift_acquisition(): Promise<void> {
     {},
     async (directory) => {
       const requests: string[] = [];
-      const cold = await TreeSitterAssetScope.run(
+      const cold = await EvidTreeSitterAssetScope.run(
         {
           cacheDirectory: directory,
           fetch: async (input) => {
@@ -35,9 +35,9 @@ export async function test_swift_acquisition(): Promise<void> {
             return new Response(bytes);
           },
         },
-        () => new EvidenceSwiftAdapter().analyze(source),
+        () => new EvidSwiftAdapter().analyze(source),
       );
-      const warm = await TreeSitterAssetScope.run(
+      const warm = await EvidTreeSitterAssetScope.run(
         {
           cacheDirectory: directory,
           attempts: 1,
@@ -45,7 +45,7 @@ export async function test_swift_acquisition(): Promise<void> {
             throw new Error("offline");
           },
         },
-        () => new EvidenceSwiftAdapter().analyze(source),
+        () => new EvidSwiftAdapter().analyze(source),
       );
 
       TestValidator.equals(

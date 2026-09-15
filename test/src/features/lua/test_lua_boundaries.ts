@@ -1,4 +1,4 @@
-import { EvidenceLuaAdapter } from "@wrtnlabs/evidence";
+import { EvidLuaAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -10,7 +10,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 1. Analyze dynamic exports. 2. Require incompleteness. 3. Analyze a fresh static snapshot and require recovery.
  */
 export async function test_lua_boundaries(): Promise<void> {
-  const adapter = new EvidenceLuaAdapter();
+  const adapter = new EvidLuaAdapter();
   const cases = [
     'local M = require("dependency")\nreturn M',
     "local M = {}\nsetmetatable(M, {})\nreturn M",

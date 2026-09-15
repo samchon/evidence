@@ -1,4 +1,4 @@
-import { EvidenceTagParser } from "@wrtnlabs/evidence";
+import { EvidTagParser } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -16,13 +16,13 @@ import { TestDocumentation } from "../../internal/TestDocumentation";
 export async function test_tag_context(): Promise<void> {
   const fixture = TestDocumentation.create(dedent`
     /**
-     * @evidence ../real.ts#run Implements the behavior.
+     * @evid ../real.ts#run Implements the behavior.
      * Continued reason.
      * ~~~typescript
-     * @evidence ../example.ts#fake This remains fenced.
+     * @evid ../example.ts#fake This remains fenced.
      */
   `);
-  const parser = new EvidenceTagParser(
+  const parser = new EvidTagParser(
     fixture.content,
     fixture.host,
     fixture.documentation,
@@ -45,9 +45,9 @@ export async function test_tag_context(): Promise<void> {
 
   // A different controller retains its own malformed-annotation finding.
   const invalid = TestDocumentation.create(
-    "/** @evidence ../missing.ts#run */",
+    "/** @evid ../missing.ts#run */",
   );
-  const rejected = new EvidenceTagParser(
+  const rejected = new EvidTagParser(
     invalid.content,
     invalid.host,
     invalid.documentation,

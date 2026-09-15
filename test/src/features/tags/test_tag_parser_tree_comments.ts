@@ -1,9 +1,9 @@
 import {
-  EvidenceDocumentation,
-  EvidenceParser,
-  EvidenceTagParser,
-} from "@wrtnlabs/evidence";
-import type { IEvidenceHost } from "@wrtnlabs/evidence";
+  EvidDocumentation,
+  EvidParser,
+  EvidTagParser,
+} from "evid";
+import type { IEvidHost } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -18,12 +18,12 @@ import { dedent } from "@typia/utils";
  */
 export async function test_tag_parser_tree_comments(): Promise<void> {
   const content = dedent`
-    const example = "/** @evidence ../fake.ts#name Not a comment. */";
-    const expression = /@evidence/;
-    /** @evidence ../real.ts#run Verifies the function. */
+    const example = "/** @evid ../fake.ts#name Not a comment. */";
+    const expression = /@evid/;
+    /** @evid ../real.ts#run Verifies the function. */
     export function test_run() {}
   `;
-  const parser = new EvidenceParser();
+  const parser = new EvidParser();
   try {
     const targets = await parser.parse(
       { type: "typescript", file: "/project/test.ts", content },
@@ -32,7 +32,7 @@ export async function test_tag_parser_tree_comments(): Promise<void> {
           .captures("(comment) @documentation")
           .flatMap((capture) => {
             const range = session.range(capture.node);
-            const host: IEvidenceHost = {
+            const host: IEvidHost = {
               id: "test-doc",
               file: "/project/test.ts",
               range,
@@ -40,7 +40,7 @@ export async function test_tag_parser_tree_comments(): Promise<void> {
               unitIds: ["test-run"],
               attachment: "attached",
             };
-            const documentation = EvidenceDocumentation.read(
+            const documentation = EvidDocumentation.read(
               content,
               host.id,
               range,
@@ -52,7 +52,7 @@ export async function test_tag_parser_tree_comments(): Promise<void> {
                 allowWithdrawal: true,
               },
             );
-            return EvidenceTagParser.parse(
+            return EvidTagParser.parse(
               content,
               host,
               documentation,

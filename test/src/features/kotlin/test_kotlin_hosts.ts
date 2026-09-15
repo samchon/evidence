@@ -1,8 +1,8 @@
 import {
-  EvidenceFingerprint,
-  EvidenceInventory,
-  EvidenceKotlinAdapter,
-} from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidInventory,
+  EvidKotlinAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -18,26 +18,26 @@ export async function test_kotlin_hosts(): Promise<void> {
   const source = dedent`
     /**
      * 계약 😀
-     * @evidence docs/spec.md#contract Implements the contract.
+     * @evid docs/spec.md#contract Implements the contract.
      */
     @Deprecated("legacy")
     class Contract {
       /** @internal Withdraws the nested type. */
       class Retired { val child = 1; }
-      /** @evidence docs/spec.md#value Implements the value. */
+      /** @evid docs/spec.md#value Implements the value. */
       val \`value.part\` = 1
     }
     /**
      * Examples:
      * ~~~kotlin
-     * @evidence docs/spec.md#example Inert example.
+     * @evid docs/spec.md#example Inert example.
      * ~~~
      *
-     *     @evidence docs/spec.md#indented Inert indented example.
+     *     @evid docs/spec.md#indented Inert indented example.
      */
     fun sample() = 1
   `.replaceAll("\n", "\r\n");
-  const adapter = new EvidenceKotlinAdapter();
+  const adapter = new EvidKotlinAdapter();
   const inventory = await adapter.analyze(
     TestSourceSnapshot.create("src/Contract.kt", source),
   );
@@ -58,7 +58,7 @@ export async function test_kotlin_hosts(): Promise<void> {
   TestValidator.equals(
     "UTF-16 offset after astral text",
     declaration.location.range.start.offset,
-    source.indexOf("@evidence"),
+    source.indexOf("@evid"),
   );
   TestValidator.equals(
     "CRLF source line",
@@ -66,7 +66,7 @@ export async function test_kotlin_hosts(): Promise<void> {
     3,
   );
   const selected = inventory.units.map((unit) => unit.id);
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   TestValidator.equals(
     "withdrawn descendant target",
     graph.resolve(
@@ -113,19 +113,19 @@ export async function test_kotlin_hosts(): Promise<void> {
   );
   TestValidator.equals(
     "descendant annotation does not stale ancestor review",
-    EvidenceFingerprint.inspect(inventory, contract.id).fingerprint,
-    EvidenceFingerprint.inspect(rewritten, contract.id).fingerprint,
+    EvidFingerprint.inspect(inventory, contract.id).fingerprint,
+    EvidFingerprint.inspect(rewritten, contract.id).fingerprint,
   );
   const changed = await adapter.analyze(
     TestSourceSnapshot.create("src/Contract.kt", source.replace("= 1", "= 2")),
   );
   TestValidator.notEquals(
     "semantic subtree edit changes fingerprint",
-    EvidenceFingerprint.inspect(inventory, contract.id).fingerprint,
-    EvidenceFingerprint.inspect(changed, contract.id).fingerprint,
+    EvidFingerprint.inspect(inventory, contract.id).fingerprint,
+    EvidFingerprint.inspect(changed, contract.id).fingerprint,
   );
 
-  // Every Evidence tag kind on an ordinary comment remains an unsupported carrier.
+  // Every Evid tag kind on an ordinary comment remains an unsupported carrier.
   for (const tag of [
     "evidence",
     "evidenceExclude",

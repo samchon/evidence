@@ -1,28 +1,28 @@
-import { EvidenceTargetResolver } from "@wrtnlabs/evidence";
+import { EvidTargetResolver } from "evid";
 import type {
-  EvidenceAcknowledgementKind,
-  IEvidenceDeclaration,
-  IEvidenceGraphHostCoverage,
-  IEvidenceGraphObligation,
-  IEvidenceGraphResolution,
-  IEvidenceGraphResult,
-  IEvidenceGraphReviewResolution,
-  IEvidenceHost,
-  IEvidenceInventory,
-  IEvidenceTargetResolution,
-  IEvidenceUnit,
-} from "@wrtnlabs/evidence";
-import { SourceText } from "../../../packages/evidence/src/internal/SourceText";
+  EvidAcknowledgementKind,
+  IEvidDeclaration,
+  IEvidGraphHostCoverage,
+  IEvidGraphObligation,
+  IEvidGraphResolution,
+  IEvidGraphResult,
+  IEvidGraphReviewResolution,
+  IEvidHost,
+  IEvidInventory,
+  IEvidTargetResolution,
+  IEvidUnit,
+} from "evid";
+import { EvidSourceText } from "../../../packages/evidence/src/internal/EvidSourceText";
 
 /** Builds graph statements and already-resolved targets for pure policy tests. */
 export namespace TestGraph {
   export function declaration(
-    inventory: IEvidenceInventory,
+    inventory: IEvidInventory,
     id: string,
-    host: IEvidenceHost,
-    kind: EvidenceAcknowledgementKind,
+    host: IEvidHost,
+    kind: EvidAcknowledgementKind,
     target: string,
-  ): IEvidenceDeclaration {
+  ): IEvidDeclaration {
     const source = inventory.sources.find(
       (candidate) => candidate.physicalPath === host.file,
     );
@@ -30,7 +30,7 @@ export namespace TestGraph {
       host.range.start.offset + inventory.declarations.length,
       host.range.end.offset,
     );
-    const declaration: IEvidenceDeclaration = {
+    const declaration: IEvidDeclaration = {
       id,
       hostId: host.id,
       kind,
@@ -41,7 +41,7 @@ export namespace TestGraph {
         range:
           source === undefined
             ? host.range
-            : new SourceText(source.content).range(offset, offset),
+            : new EvidSourceText(source.content).range(offset, offset),
       },
     };
     inventory.declarations.push(declaration);
@@ -49,16 +49,16 @@ export namespace TestGraph {
   }
 
   export function resolved(
-    declaration: IEvidenceDeclaration,
-    unit: IEvidenceUnit,
-  ): IEvidenceGraphResolution {
+    declaration: IEvidDeclaration,
+    unit: IEvidUnit,
+  ): IEvidGraphResolution {
     return {
       declarationId: declaration.id,
       resolution: resolution(unit),
     };
   }
 
-  export function resolution(unit: IEvidenceUnit): IEvidenceTargetResolution {
+  export function resolution(unit: IEvidUnit): IEvidTargetResolution {
     return {
       status: "resolved",
       addresses: [],
@@ -69,11 +69,11 @@ export namespace TestGraph {
   }
 
   export async function resolveDeclarations(
-    claim: IEvidenceInventory,
-    reference: IEvidenceInventory,
+    claim: IEvidInventory,
+    reference: IEvidInventory,
     unitIds: string[],
-  ): Promise<IEvidenceGraphResolution[]> {
-    const resolver = new EvidenceTargetResolver([reference]);
+  ): Promise<IEvidGraphResolution[]> {
+    const resolver = new EvidTargetResolver([reference]);
     return Promise.all(
       claim.declarations.map(async (declaration) => ({
         declarationId: declaration.id,
@@ -87,11 +87,11 @@ export namespace TestGraph {
   }
 
   export async function resolveReviews(
-    claim: IEvidenceInventory,
-    reference: IEvidenceInventory,
+    claim: IEvidInventory,
+    reference: IEvidInventory,
     unitIds: string[],
-  ): Promise<IEvidenceGraphReviewResolution[]> {
-    const resolver = new EvidenceTargetResolver([reference]);
+  ): Promise<IEvidGraphReviewResolution[]> {
+    const resolver = new EvidTargetResolver([reference]);
     return Promise.all(
       claim.reviews.map(async (review) => ({
         reviewId: review.id,
@@ -105,10 +105,10 @@ export namespace TestGraph {
   }
 
   export function obligation(
-    result: IEvidenceGraphResult,
+    result: IEvidGraphResult,
     claim: number,
     reference: number,
-  ): IEvidenceGraphObligation {
+  ): IEvidGraphObligation {
     const claimResult = result.claims[claim];
     if (claimResult === undefined)
       throw new Error("Missing graph claim result.");
@@ -118,11 +118,11 @@ export namespace TestGraph {
   }
 
   export function hostCoverage(
-    result: IEvidenceGraphResult,
+    result: IEvidGraphResult,
     claim: number,
     reference: number,
     hostUnitId: string,
-  ): IEvidenceGraphHostCoverage {
+  ): IEvidGraphHostCoverage {
     const coverage = obligation(result, claim, reference).hostCoverage.find(
       (candidate) => candidate.hostUnitId === hostUnitId,
     );
@@ -131,7 +131,7 @@ export namespace TestGraph {
     return coverage;
   }
 
-  function host(inventory: IEvidenceInventory, id: string): IEvidenceHost {
+  function host(inventory: IEvidInventory, id: string): IEvidHost {
     const found = inventory.hosts.find((candidate) => candidate.id === id);
     if (found === undefined) throw new Error(`Missing graph host: ${id}`);
     return found;

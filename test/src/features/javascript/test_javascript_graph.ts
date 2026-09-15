@@ -1,10 +1,10 @@
 import {
-  EvidenceFingerprint,
-  EvidenceGraph,
-  EvidenceJavaScriptAdapter,
-  EvidenceMarkdownAdapter,
-} from "@wrtnlabs/evidence";
-import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidGraph,
+  EvidJavaScriptAdapter,
+  EvidMarkdownAdapter,
+} from "evid";
+import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -20,7 +20,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Verify source-scope fingerprints.
  */
 export async function test_javascript_graph(): Promise<void> {
-  const requirements = await new EvidenceMarkdownAdapter().analyze(
+  const requirements = await new EvidMarkdownAdapter().analyze(
     TestSourceSnapshot.create(
       "docs/requirements.md",
       dedent`
@@ -38,17 +38,17 @@ export async function test_javascript_graph(): Promise<void> {
       `,
     ),
   );
-  const implementation = await new EvidenceJavaScriptAdapter().analyze(
+  const implementation = await new EvidJavaScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/contracts.mjs",
       dedent`
-        /** @evidence docs/requirements.md#service Implements the public type. */
+        /** @evid docs/requirements.md#service Implements the public type. */
         export class Service {}
 
-        /** @evidence docs/requirements.md#run Implements the operation. */
+        /** @evid docs/requirements.md#run Implements the operation. */
         export function run() { return 1; }
 
-        /** @evidence docs/requirements.md#value Implements the exported value. */
+        /** @evid docs/requirements.md#value Implements the exported value. */
         export const value = 1;
       `,
     ),
@@ -69,7 +69,7 @@ export async function test_javascript_graph(): Promise<void> {
     requirementUnits.map((unit) => unit.id),
   );
 
-  const complete = EvidenceGraph.evaluate({
+  const complete = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -95,7 +95,7 @@ export async function test_javascript_graph(): Promise<void> {
     missing.declarations = missing.declarations.filter(
       (declaration) => !declaration.target.endsWith(`#${anchor}`),
     );
-    const partial = EvidenceGraph.evaluate({
+    const partial = EvidGraph.evaluate({
       claims: [
         {
           severity: "error",
@@ -141,25 +141,25 @@ export async function test_javascript_graph(): Promise<void> {
 
   TestValidator.equals(
     "evidence metadata preserves fingerprint",
-    EvidenceFingerprint.inspect(original, originalUnit.id).fingerprint,
-    EvidenceFingerprint.inspect(editedReason, reasonUnit.id).fingerprint,
+    EvidFingerprint.inspect(original, originalUnit.id).fingerprint,
+    EvidFingerprint.inspect(editedReason, reasonUnit.id).fingerprint,
   );
   TestValidator.notEquals(
     "implementation change moves fingerprint",
-    EvidenceFingerprint.inspect(original, originalUnit.id).fingerprint,
-    EvidenceFingerprint.inspect(editedBody, bodyUnit.id).fingerprint,
+    EvidFingerprint.inspect(original, originalUnit.id).fingerprint,
+    EvidFingerprint.inspect(editedBody, bodyUnit.id).fingerprint,
   );
 }
 
 async function fingerprintInventory(
   reason: string,
   statement: string,
-): Promise<IEvidenceInventory> {
-  return new EvidenceJavaScriptAdapter().analyze(
+): Promise<IEvidInventory> {
+  return new EvidJavaScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/fingerprint.mjs",
       dedent`
-        /** @evidence docs/requirements.md#run ${reason} */
+        /** @evid docs/requirements.md#run ${reason} */
         export function run() { ${statement} }
       `,
     ),
@@ -167,9 +167,9 @@ async function fingerprintInventory(
 }
 
 function requireUnit(
-  inventory: IEvidenceInventory,
+  inventory: IEvidInventory,
   name: string,
-): IEvidenceUnit {
+): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === name || candidate.identity.at(-1) === name,

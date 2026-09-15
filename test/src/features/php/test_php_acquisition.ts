@@ -1,11 +1,11 @@
 import {
-  EvidenceLanguageRegistry,
-  EvidenceParser,
-  EvidencePhpAdapter,
-} from "@wrtnlabs/evidence";
+  EvidLanguageRegistry,
+  EvidParser,
+  EvidPhpAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TreeSitterAssets } from "../../../../packages/evidence/src/internal/TreeSitterAssets";
+import { EvidTreeSitterAssets } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssets";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestParserAssets } from "../../internal/TestParserAssets";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -19,12 +19,12 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Repeat offline and require equivalent output.
  */
 export async function test_php_acquisition(): Promise<void> {
-  const selected = EvidenceLanguageRegistry.select("php", "contract.php");
-  const grammar = await new TreeSitterAssets().grammar(selected.id);
+  const selected = EvidLanguageRegistry.select("php", "contract.php");
+  const grammar = await new EvidTreeSitterAssets().grammar(selected.id);
   const pinned = Uint8Array.from(await TestParserAssets.bytes(grammar));
   await TestFileSystem.experiment("php-acquisition", {}, async (directory) => {
     const requests: string[] = [];
-    const cold = new TreeSitterAssets({
+    const cold = new EvidTreeSitterAssets({
       cacheDirectory: directory,
       fetch: async (url) => {
         requests.push(String(url));
@@ -32,7 +32,7 @@ export async function test_php_acquisition(): Promise<void> {
       },
     });
     const coldBytes = await cold.bytes(grammar);
-    const offline = new TreeSitterAssets({
+    const offline = new EvidTreeSitterAssets({
       cacheDirectory: directory,
       attempts: 1,
       fetch: async () => {
@@ -54,15 +54,15 @@ export async function test_php_acquisition(): Promise<void> {
     "contract.php",
     "<?php class Contract { public int $value = 1; }",
   );
-  const cold = await new EvidencePhpAdapter().analyze(source);
-  const warm = await new EvidencePhpAdapter().analyze(source);
+  const cold = await new EvidPhpAdapter().analyze(source);
+  const warm = await new EvidPhpAdapter().analyze(source);
   TestValidator.equals("warm analysis preserves inventory", warm, cold);
   TestValidator.equals(
     "real PHP grammar yields complete analysis",
     warm.complete,
     true,
   );
-  const parser = new EvidenceParser();
+  const parser = new EvidParser();
   try {
     await parser.parse(
       { type: "php", file: "contract.php", content: "<?php function run() {}" },

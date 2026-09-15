@@ -1,6 +1,6 @@
 import { TestParserAssets } from "../../internal/TestParserAssets";
 import { TestValidator } from "@nestia/e2e";
-import { TreeSitterAssets } from "../../../../packages/evidence/src/internal/TreeSitterAssets";
+import { EvidTreeSitterAssets } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssets";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
@@ -26,7 +26,7 @@ import { TestSignal } from "../../internal/TestSignal";
  *    exactly two timeout aborts.
  */
 export async function test_parser_acquisition_cancellation(): Promise<void> {
-  const grammar = await new TreeSitterAssets().grammar("python");
+  const grammar = await new EvidTreeSitterAssets().grammar("python");
   const pinned = Uint8Array.from(await TestParserAssets.bytes(grammar));
   await TestFileSystem.experiment(
     join(__dirname, `cancel-${randomUUID()}`),
@@ -52,12 +52,12 @@ export async function test_parser_acquisition_cancellation(): Promise<void> {
         transferAborted = init?.signal?.aborted ?? false;
         return new Response(pinned);
       }
-      const first = new TreeSitterAssets({
+      const first = new EvidTreeSitterAssets({
         cacheDirectory,
         fetch: transfer,
         signal: cancellation.signal,
       });
-      const second = new TreeSitterAssets({
+      const second = new EvidTreeSitterAssets({
         cacheDirectory,
         fetch: transfer,
         progress: () => joined.open(),
@@ -89,7 +89,7 @@ export async function test_parser_acquisition_cancellation(): Promise<void> {
 
       // A timeout aborts the transport and retries only the configured finite number of times.
       let timeouts = 0;
-      const timed = new TreeSitterAssets({
+      const timed = new EvidTreeSitterAssets({
         cacheDirectory: join(cacheDirectory, "timeout"),
         attempts: 2,
         timeoutMilliseconds: 10,

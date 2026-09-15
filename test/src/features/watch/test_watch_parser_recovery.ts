@@ -1,10 +1,10 @@
-import { EvidenceWatcher } from "@wrtnlabs/evidence";
-import type { EvidenceWatchCycle } from "@wrtnlabs/evidence";
+import { EvidWatcher } from "evid";
+import type { EvidWatchCycle } from "evid";
 import { TestParserAssets } from "../../internal/TestParserAssets";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
-import { TreeSitterAssets } from "../../../../packages/evidence/src/internal/TreeSitterAssets";
-import { TreeSitterAssetScope } from "../../../../packages/evidence/src/internal/TreeSitterAssetScope";
+import { EvidTreeSitterAssets } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssets";
+import { EvidTreeSitterAssetScope } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssetScope";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
@@ -24,8 +24,8 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  *    one successful retry occurred before the watcher closes.
  */
 export async function test_watch_parser_recovery(): Promise<void> {
-  const grammar = await new TreeSitterAssets().grammar("python");
-  const configGrammar = await new TreeSitterAssets().grammar("typescript");
+  const grammar = await new EvidTreeSitterAssets().grammar("python");
+  const configGrammar = await new EvidTreeSitterAssets().grammar("typescript");
   const pinned = Uint8Array.from(await TestParserAssets.bytes(grammar));
   const configPinned = Uint8Array.from(
     await TestParserAssets.bytes(configGrammar),
@@ -33,7 +33,7 @@ export async function test_watch_parser_recovery(): Promise<void> {
   await TestFileSystem.experiment(
     join(__dirname, `parser-recovery-${randomUUID()}`),
     {
-      "project/evidence.config.ts": dedent`
+      "project/evid.config.ts": dedent`
         export default {
           claims: [{
             type: "python",
@@ -49,17 +49,17 @@ export async function test_watch_parser_recovery(): Promise<void> {
       `,
       "project/api.py": dedent`
       def run():
-          """@evidence requirements.md#execute Execute the requirement."""
+          """@evid requirements.md#execute Execute the requirement."""
           return 1
     `,
       "project/requirements.md": "## Execute\nRun the operation.\n",
     },
     async (directory) => {
-      const cycles: EvidenceWatchCycle[] = [];
+      const cycles: EvidWatchCycle[] = [];
       let available = false;
       let requests = 0;
-      const watcher = new EvidenceWatcher(
-        join(directory, "project", "evidence.config.ts"),
+      const watcher = new EvidWatcher(
+        join(directory, "project", "evid.config.ts"),
         {
           pollIntervalMilliseconds: 10,
           debounceMilliseconds: 0,
@@ -70,7 +70,7 @@ export async function test_watch_parser_recovery(): Promise<void> {
         void watcher.close();
       }, 10_000);
       try {
-        await TreeSitterAssetScope.run(
+        await EvidTreeSitterAssetScope.run(
           {
             cacheDirectory: join(directory, "cache"),
             attempts: 1,

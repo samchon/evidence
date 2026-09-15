@@ -1,8 +1,8 @@
 ﻿import {
-  EvidenceFingerprint,
-  EvidenceInventory,
-  EvidenceScalaAdapter,
-} from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidInventory,
+  EvidScalaAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -23,7 +23,7 @@ export async function test_scala_exports(): Promise<void> {
       dedent`
       package demo
       object Forward {
-        /** @evidence docs/spec.md#run Publishes the operation. */
+        /** @evid docs/spec.md#run Publishes the operation. */
         export Origin.{run as call, value, Alias}
       }
     `,
@@ -41,10 +41,10 @@ export async function test_scala_exports(): Promise<void> {
     `,
     ),
   ]);
-  const adapter = new EvidenceScalaAdapter();
+  const adapter = new EvidScalaAdapter();
   const inventory = await adapter.analyze(sources);
   TestValidator.equals("bounded exports complete", inventory.diagnostics, []);
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   const selected = inventory.units.map((unit) => unit.id);
   const alias = graph.resolve(
     {
@@ -79,8 +79,8 @@ export async function test_scala_exports(): Promise<void> {
   source.content = source.content.replace("def run = 1", "def run = 2");
   TestValidator.notEquals(
     "target edit invalidates exported fingerprint",
-    EvidenceFingerprint.inspect(inventory, run.id).fingerprint,
-    EvidenceFingerprint.inspect(await adapter.analyze(changed), run.id)
+    EvidFingerprint.inspect(inventory, run.id).fingerprint,
+    EvidFingerprint.inspect(await adapter.analyze(changed), run.id)
       .fingerprint,
   );
   const withdrawn = structuredClone(sources);
@@ -93,7 +93,7 @@ export async function test_scala_exports(): Promise<void> {
   const hidden = await adapter.analyze(withdrawn);
   TestValidator.equals(
     "source withdrawal crosses export aliases",
-    new EvidenceInventory([hidden]).resolve(
+    new EvidInventory([hidden]).resolve(
       {
         file: "/project/src/Forward.scala",
         segments: ["demo", "object Forward", "call"],

@@ -1,7 +1,7 @@
 import {
-  EvidenceJavaAdapter,
-  EvidenceLanguageRegistry,
-} from "@wrtnlabs/evidence";
+  EvidJavaAdapter,
+  EvidLanguageRegistry,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -17,7 +17,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_java_units(): Promise<void> {
   // Certified metadata publishes the exact upstream grammar version and source boundary.
-  const language = EvidenceLanguageRegistry.list().find(
+  const language = EvidLanguageRegistry.list().find(
     (entry) => entry.type === "java",
   );
   if (language === undefined)
@@ -27,7 +27,7 @@ export async function test_java_units(): Promise<void> {
   TestValidator.equals(
     "certified Java adapter",
     language.adapter.entry,
-    "EvidenceJavaAdapter",
+    "EvidJavaAdapter",
   );
   TestValidator.equals(
     "published Java grammar version",
@@ -36,7 +36,7 @@ export async function test_java_units(): Promise<void> {
   );
 
   // Separate source files share a package identity without importing or executing Java.
-  const inventory = await new EvidenceJavaAdapter().analyze(
+  const inventory = await new EvidJavaAdapter().analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create(
         "src/com/example/Sale.java",

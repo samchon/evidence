@@ -1,5 +1,5 @@
-import { EvidenceInventory, EvidenceMarkdownAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+import { EvidInventory, EvidMarkdownAdapter } from "evid";
+import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -35,7 +35,7 @@ export async function test_markdown_units(): Promise<void> {
     # First duplicate {#same}
     # Second duplicate {#same}
   `;
-  const adapter = new EvidenceMarkdownAdapter();
+  const adapter = new EvidMarkdownAdapter();
   const inventory = await adapter.analyze(
     TestSourceSnapshot.create("docs/guide.custom", content),
   );
@@ -80,7 +80,7 @@ export async function test_markdown_units(): Promise<void> {
       file.id,
     );
   }
-  const index = new EvidenceInventory([inventory]);
+  const index = new EvidInventory([inventory]);
   TestValidator.equals(
     "duplicate heading target",
     index.resolve(
@@ -93,10 +93,10 @@ export async function test_markdown_units(): Promise<void> {
 }
 
 function requireUnit(
-  inventory: IEvidenceInventory,
-  symbol: IEvidenceUnit["symbol"],
+  inventory: IEvidInventory,
+  symbol: IEvidUnit["symbol"],
   name: string,
-): IEvidenceUnit {
+): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.symbol === symbol && candidate.name === name,
   );

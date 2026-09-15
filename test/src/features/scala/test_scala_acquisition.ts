@@ -1,7 +1,7 @@
-﻿import { EvidenceScalaAdapter } from "@wrtnlabs/evidence";
+﻿import { EvidScalaAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
-import { TreeSitterAssetScope } from "../../../../packages/evidence/src/internal/TreeSitterAssetScope";
-import { TreeSitterAssets } from "../../../../packages/evidence/src/internal/TreeSitterAssets";
+import { EvidTreeSitterAssetScope } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssetScope";
+import { EvidTreeSitterAssets } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssets";
 import { TestParserAssets } from "../../internal/TestParserAssets";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -16,7 +16,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Reopen the warmed cache with network access disabled and verify its inventory equals the cold result.
  */
 export async function test_scala_acquisition(): Promise<void> {
-  const grammar = await new TreeSitterAssets().grammar("scala");
+  const grammar = await new EvidTreeSitterAssets().grammar("scala");
   const pinned = Uint8Array.from(await TestParserAssets.bytes(grammar));
   const snapshot = TestSourceSnapshot.create(
     "src/Contract.scala",
@@ -27,7 +27,7 @@ export async function test_scala_acquisition(): Promise<void> {
     {},
     async (cacheDirectory) => {
       const requests: string[] = [];
-      const cold = await TreeSitterAssetScope.run(
+      const cold = await EvidTreeSitterAssetScope.run(
         {
           cacheDirectory,
           fetch: async (input) => {
@@ -35,13 +35,13 @@ export async function test_scala_acquisition(): Promise<void> {
             return new Response(pinned);
           },
         },
-        async () => new EvidenceScalaAdapter().analyze(snapshot),
+        async () => new EvidScalaAdapter().analyze(snapshot),
       );
       TestValidator.equals("cold Scala analysis complete", cold.complete, true);
       TestValidator.equals("only selected Scala variant acquired", requests, [
         grammar.wasm.url,
       ]);
-      const warm = await TreeSitterAssetScope.run(
+      const warm = await EvidTreeSitterAssetScope.run(
         {
           cacheDirectory,
           attempts: 1,
@@ -49,7 +49,7 @@ export async function test_scala_acquisition(): Promise<void> {
             throw new Error("offline");
           },
         },
-        async () => new EvidenceScalaAdapter().analyze(snapshot),
+        async () => new EvidScalaAdapter().analyze(snapshot),
       );
       TestValidator.equals("warm offline analysis equivalent", warm, cold);
     },

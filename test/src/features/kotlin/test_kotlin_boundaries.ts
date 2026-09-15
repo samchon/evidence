@@ -1,4 +1,4 @@
-import { EvidenceKotlinAdapter } from "@wrtnlabs/evidence";
+import { EvidKotlinAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -10,7 +10,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 1. Analyze unresolved public forms. 2. Require incompleteness. 3. Verify explicit public and private cases select only the public surface.
  */
 export async function test_kotlin_boundaries(): Promise<void> {
-  const adapter = new EvidenceKotlinAdapter();
+  const adapter = new EvidKotlinAdapter();
   const cases = new Map<string, string>([
     [
       "class Derived : Base() { override fun run() = 1; }\n",

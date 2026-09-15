@@ -1,8 +1,8 @@
 import {
-  EvidenceAccessor,
-  EvidenceInventory,
-  EvidenceSqlAdapter,
-} from "@wrtnlabs/evidence";
+  EvidAccessor,
+  EvidInventory,
+  EvidSqlAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -16,7 +16,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Require duplicate, ambiguous, and failed sources to remain incomplete.
  */
 export async function test_sql_units(): Promise<void> {
-  const adapter = new EvidenceSqlAdapter();
+  const adapter = new EvidSqlAdapter();
   const inventory = await adapter.analyze(
     TestSourceSnapshot.create(
       "schema.sql",
@@ -79,12 +79,12 @@ export async function test_sql_units(): Promise<void> {
     true,
   );
   const address = ambiguous.addresses.find(
-    (entry) => EvidenceAccessor.format(entry.segments) === "A.B",
+    (entry) => EvidAccessor.format(entry.segments) === "A.B",
   );
   if (address === undefined) throw new Error("Missing ambiguous address.");
   TestValidator.equals(
     "schema qualification and column collision stays ambiguous",
-    new EvidenceInventory([ambiguous]).resolve(
+    new EvidInventory([ambiguous]).resolve(
       address,
       ambiguous.units.map((unit) => unit.id),
     ).status,

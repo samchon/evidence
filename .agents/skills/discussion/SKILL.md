@@ -1,6 +1,6 @@
 ---
 name: discussion
-description: Defines explicitly requested structured Evidence design discussion and persistent research conclusions. Use for a requested discussion or team debate, not ordinary implementation, review, or a factual question.
+description: Defines explicitly requested structured Evid design discussion and persistent research conclusions. Use for a requested discussion or team debate, not ordinary implementation, review, or a factual question.
 ---
 
 # Discussion

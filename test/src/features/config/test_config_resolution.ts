@@ -1,7 +1,7 @@
-import type { IEvidenceConfig } from "@wrtnlabs/evidence";
+import type { IEvidConfig } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { createEvidenceConfigPlan } from "../../../../packages/evidence/src/internal/createEvidenceConfigPlan";
+import { createEvidConfigPlan } from "../../../../packages/evidence/src/internal/createEvidConfigPlan";
 
 /**
  * Resolves artifact defaults and severity inheritance without losing authored configuration.
@@ -11,7 +11,7 @@ import { createEvidenceConfigPlan } from "../../../../packages/evidence/src/inte
  * produce executable selections while preserving diagnostic indices and the
  * caller's original optional settings.
  *
- * 1. Build the plan and require its default anchor to end in evidence.config.ts.
+ * 1. Build the plan and require its default anchor to end in evid.config.ts.
  * 2. Filter disabled, off, and obligation-free claims while retaining authored
  *    claim indices 0, 1, 2 and reference indices 0, 1.
  * 3. Check role-specific selectors:
@@ -23,7 +23,7 @@ import { createEvidenceConfigPlan } from "../../../../packages/evidence/src/inte
  * 5. With root severity off, retain only the claim that explicitly overrides it.
  */
 export function test_config_resolution(): void {
-  const config: IEvidenceConfig = {
+  const config: IEvidConfig = {
     severity: "warning",
     claims: [
       {
@@ -74,7 +74,7 @@ export function test_config_resolution(): void {
     ],
   };
 
-  const plan = createEvidenceConfigPlan(config);
+  const plan = createEvidConfigPlan(config);
   const programming = plan.claims[0];
   const database = plan.claims[1];
   const swagger = plan.claims[2];
@@ -96,7 +96,7 @@ export function test_config_resolution(): void {
 
   TestValidator.equals(
     "default configuration anchor",
-    plan.configFile.replaceAll("\\", "/").endsWith("/evidence.config.ts"),
+    plan.configFile.replaceAll("\\", "/").endsWith("/evid.config.ts"),
     true,
   );
 
@@ -168,7 +168,7 @@ export function test_config_resolution(): void {
   );
 
   // A claim can override the root default, while an inherited root off removes the claim.
-  const rootOff = createEvidenceConfigPlan({
+  const rootOff = createEvidConfigPlan({
     severity: "off",
     claims: [
       {

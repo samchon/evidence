@@ -1,7 +1,7 @@
 import {
-  EvidencePostgresqlAdapter,
-  EvidenceSqlAdapter,
-} from "@wrtnlabs/evidence";
+  EvidPostgresqlAdapter,
+  EvidSqlAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -19,8 +19,8 @@ export async function test_postgresql_dialect(): Promise<void> {
     "schema.sql",
     "CREATE TABLE App.Item (ID INTEGER);",
   );
-  const postgres = await new EvidencePostgresqlAdapter().analyze(snapshot);
-  const portable = await new EvidenceSqlAdapter().analyze(snapshot);
+  const postgres = await new EvidPostgresqlAdapter().analyze(snapshot);
+  const portable = await new EvidSqlAdapter().analyze(snapshot);
 
   TestValidator.equals("PostgreSQL complete", postgres.diagnostics, []);
   TestValidator.equals("portable SQL complete", portable.diagnostics, []);

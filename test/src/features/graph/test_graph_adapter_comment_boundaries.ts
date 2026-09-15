@@ -1,14 +1,14 @@
 import {
-  EvidenceGoAdapter,
-  EvidenceGraph,
-  EvidenceMarkdownAdapter,
-  EvidenceRubyAdapter,
-  EvidenceRustAdapter,
-} from "@wrtnlabs/evidence";
+  EvidGoAdapter,
+  EvidGraph,
+  EvidMarkdownAdapter,
+  EvidRubyAdapter,
+  EvidRustAdapter,
+} from "evid";
 import type {
-  IEvidenceInventory,
-  IEvidenceGraphResult,
-} from "@wrtnlabs/evidence";
+  IEvidInventory,
+  IEvidGraphResult,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { TestGraph } from "../../internal/TestGraph";
@@ -32,16 +32,16 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *    coverage to recover.
  */
 export async function test_graph_adapter_comment_boundaries(): Promise<void> {
-  const reference = await new EvidenceMarkdownAdapter().analyze(
+  const reference = await new EvidMarkdownAdapter().analyze(
     TestSourceSnapshot.create(
       "docs/spec.md",
       "## Value {#value}\n\nRequires a value.\n",
     ),
   );
-  const tag = "@evidence docs/spec.md#value Implements the value.";
+  const tag = "@evid docs/spec.md#value Implements the value.";
   const cases = [
     {
-      adapter: new EvidenceRubyAdapter(),
+      adapter: new EvidRubyAdapter(),
       file: "src/value.rb",
       content: dedent`
       class Value
@@ -53,7 +53,7 @@ export async function test_graph_adapter_comment_boundaries(): Promise<void> {
     `,
     },
     {
-      adapter: new EvidenceRustAdapter(),
+      adapter: new EvidRustAdapter(),
       file: "src/value.rs",
       content: dedent`
       pub struct Value(
@@ -99,7 +99,7 @@ export async function test_graph_adapter_comment_boundaries(): Promise<void> {
   }
 
   // Aligned Go trailing comments previously supplied false coverage from the next declaration.
-  const go = new EvidenceGoAdapter();
+  const go = new EvidGoAdapter();
   const invalid = await go.analyze(
     TestSourceSnapshot.create(
       "src/value.go",
@@ -132,13 +132,13 @@ export async function test_graph_adapter_comment_boundaries(): Promise<void> {
  * focused on whether its comment attaches to the intended property host.
  */
 async function evaluate(
-  claim: IEvidenceInventory,
-  reference: IEvidenceInventory,
-): Promise<IEvidenceGraphResult> {
+  claim: IEvidInventory,
+  reference: IEvidInventory,
+): Promise<IEvidGraphResult> {
   const selected = reference.units
     .filter((unit) => unit.symbol === "h2")
     .map((unit) => unit.id);
-  return EvidenceGraph.evaluate({
+  return EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -153,7 +153,7 @@ async function evaluate(
             severity: "error",
             inventory: reference,
             unitIds: selected,
-            singleEvidencePerSymbol: true,
+            singleEvidPerSymbol: true,
             resolutions: await TestGraph.resolveDeclarations(
               claim,
               reference,

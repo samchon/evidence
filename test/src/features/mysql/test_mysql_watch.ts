@@ -1,4 +1,4 @@
-import { EvidenceChecker, EvidenceWatcher } from "@wrtnlabs/evidence";
+import { EvidChecker, EvidWatcher } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
@@ -17,16 +17,16 @@ export async function test_mysql_watch(): Promise<void> {
   await TestFileSystem.experiment(
     "mysql-watch",
     {
-      "evidence.config.ts": dedent`
+      "evid.config.ts": dedent`
       export default { claims: [{ type: "typescript", files: ["claim.ts"], reference: { type: "mysql", files: ["schemas/*.sql"], symbol: "column" } }] };
     `,
       "claim.ts":
-        "/** @evidence ./schemas/contract.sql#Contract Verifies the schema. */\nexport function claim() {}",
+        "/** @evid ./schemas/contract.sql#Contract Verifies the schema. */\nexport function claim() {}",
       "schemas/contract.sql": "CREATE TABLE Contract (id INT);",
     },
     async (directory) => {
-      const config = join(directory, "evidence.config.ts");
-      const watcher = new EvidenceWatcher(config, {
+      const config = join(directory, "evid.config.ts");
+      const watcher = new EvidWatcher(config, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
       });
@@ -36,7 +36,7 @@ export async function test_mysql_watch(): Promise<void> {
           TestValidator.equals(
             `fresh cycle ${cycle.cycle}`,
             cycle.report,
-            await EvidenceChecker.check(config),
+            await EvidChecker.check(config),
           );
           if (cycle.cycle === 1) {
             TestValidator.equals("initial coverage", cycle.success, true);

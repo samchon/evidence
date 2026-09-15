@@ -1,14 +1,14 @@
-import { EvidenceChecker } from "@wrtnlabs/evidence";
+import { EvidChecker } from "evid";
 import type {
-  IEvidenceCheckAnalysis,
-  IEvidenceConfigPlan,
-} from "@wrtnlabs/evidence";
+  IEvidCheckAnalysis,
+  IEvidConfigPlan,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
-import { createEvidenceConfigPlan } from "../../../../packages/evidence/src/internal/createEvidenceConfigPlan";
+import { createEvidConfigPlan } from "../../../../packages/evidence/src/internal/createEvidConfigPlan";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
 /**
@@ -40,7 +40,7 @@ export async function test_cross_language_graph(): Promise<void> {
     const plan = createPlan(directory);
 
     // The baseline has six independent obligations spanning every artifact family.
-    const complete = await EvidenceChecker.evaluate(plan);
+    const complete = await EvidChecker.evaluate(plan);
     assertCompleteGraph(complete, "baseline");
 
     TestValidator.equals(
@@ -76,7 +76,7 @@ export async function test_cross_language_graph(): Promise<void> {
     await TestFileSystem.save(directory, {
       "src/sale.ts": implementationSource(false),
     });
-    const removedCitation = await EvidenceChecker.evaluate(plan);
+    const removedCitation = await EvidChecker.evaluate(plan);
 
     TestValidator.equals(
       "removed citation exit",
@@ -107,7 +107,7 @@ export async function test_cross_language_graph(): Promise<void> {
         The sale service exposes a public cancellation function.
       `,
     });
-    const addedRequirement = await EvidenceChecker.evaluate(plan);
+    const addedRequirement = await EvidChecker.evaluate(plan);
 
     TestValidator.equals(
       "new requirement exit",
@@ -133,7 +133,7 @@ export async function test_cross_language_graph(): Promise<void> {
       ),
       "src/index.ts": 'export { createSale as makeSale } from "./sale";\n',
     });
-    const renamedExport = await EvidenceChecker.evaluate(plan);
+    const renamedExport = await EvidChecker.evaluate(plan);
 
     TestValidator.equals(
       "renamed export exit",
@@ -158,7 +158,7 @@ export async function test_cross_language_graph(): Promise<void> {
       "src/index.ts": requireRecord(records, "src/index.ts"),
       "openapi.yaml": "openapi: [",
     });
-    const malformedSwagger = await EvidenceChecker.evaluate(plan);
+    const malformedSwagger = await EvidChecker.evaluate(plan);
 
     TestValidator.equals(
       "malformed parser exit",
@@ -200,14 +200,14 @@ export async function test_cross_language_graph(): Promise<void> {
     await TestFileSystem.save(directory, {
       "openapi.yaml": requireRecord(records, "openapi.yaml"),
     });
-    const repaired = await EvidenceChecker.evaluate(plan);
+    const repaired = await EvidChecker.evaluate(plan);
     assertCompleteGraph(repaired, "repaired");
   });
 }
 
 function fixtureRecords(): Record<string, string> {
   return {
-    "evidence.config.ts": "export default {};\n",
+    "evid.config.ts": "export default {};\n",
     "docs/implementation.md": dedent`
       ## Implementation {#implementation}
 
@@ -228,14 +228,14 @@ function fixtureRecords(): Record<string, string> {
 
       Call the public operation.
 
-      <!-- @evidence POST:/sales Documents the public sale workflow. -->
+      <!-- @evid POST:/sales Documents the public sale workflow. -->
     `,
     "prisma/schema.prisma": dedent`
       datasource db {
         provider = "postgresql"
       }
 
-      /// @evidence docs/persistence.md#persistence Persists the required sale identity.
+      /// @evid docs/persistence.md#persistence Persists the required sale identity.
       model Sale {
         id String @id
       }
@@ -244,7 +244,7 @@ function fixtureRecords(): Record<string, string> {
     "src/sale.ts": implementationSource(true),
     "src/index.ts": 'export { createSale } from "./sale";\n',
     "test/sale.test.ts": dedent`
-      /** @evidence ../src/index.ts#createSale Verifies the public sale function. */
+      /** @evid ../src/index.ts#createSale Verifies the public sale function. */
       export function test_create_sale(): void {}
     `,
   };
@@ -255,9 +255,9 @@ function implementationSource(includeRequirement: boolean): string {
     /**
      *${
        includeRequirement
-         ? " @evidence docs/implementation.md#implementation Implements the documented service entry.\n     *"
+         ? " @evid docs/implementation.md#implementation Implements the documented service entry.\n     *"
          : ""
-     } @evidence prisma:Sale Creates the persisted sale model.
+     } @evid prisma:Sale Creates the persisted sale model.
      */
     export function createSale(): string {
       return "sale";
@@ -276,15 +276,15 @@ function swaggerSource(): string {
         post:
           description: |-
             Creates a sale.
-            @evidence docs/api.md#sales-api Exposes the documented sale operation.
+            @evid docs/api.md#sales-api Exposes the documented sale operation.
           responses:
             "201":
               description: Created
   `;
 }
 
-function createPlan(directory: string): IEvidenceConfigPlan {
-  return createEvidenceConfigPlan(
+function createPlan(directory: string): IEvidConfigPlan {
+  return createEvidConfigPlan(
     {
       severity: "error",
       claims: [
@@ -352,12 +352,12 @@ function createPlan(directory: string): IEvidenceConfigPlan {
         },
       ],
     },
-    join(directory, "evidence.config.ts"),
+    join(directory, "evid.config.ts"),
   );
 }
 
 function assertCompleteGraph(
-  analysis: IEvidenceCheckAnalysis,
+  analysis: IEvidCheckAnalysis,
   scenario: string,
 ): void {
   TestValidator.equals(
@@ -386,7 +386,7 @@ function assertCompleteGraph(
 }
 
 function assertDiagnostic(
-  analysis: IEvidenceCheckAnalysis,
+  analysis: IEvidCheckAnalysis,
   code: string,
   claim: number,
   reference: number,

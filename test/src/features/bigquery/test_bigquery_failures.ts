@@ -1,4 +1,4 @@
-import { EvidenceBigQueryAdapter } from "@wrtnlabs/evidence";
+import { EvidBigQueryAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -13,7 +13,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Retain an unreadable-source failure and exclude a temporary table while retaining the persistent table and column.
  */
 export async function test_bigquery_failures(): Promise<void> {
-  const adapter = new EvidenceBigQueryAdapter();
+  const adapter = new EvidBigQueryAdapter();
   for (const content of [
     "CREATE TABLE ds.result AS SELECT 1 AS id;",
     "CREATE VIEW ds.result AS SELECT 1 AS id;",

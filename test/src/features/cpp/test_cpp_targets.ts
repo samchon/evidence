@@ -1,5 +1,5 @@
-import { EvidenceCppAdapter } from "@wrtnlabs/evidence";
-import type { EvidenceTargetResolutionStatus } from "@wrtnlabs/evidence";
+import { EvidCppAdapter } from "evid";
+import type { EvidTargetResolutionStatus } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -8,7 +8,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 interface ICppTargetStatus {
   target: string | undefined;
-  status: EvidenceTargetResolutionStatus;
+  status: EvidTargetResolutionStatus;
 }
 
 /** Resolves C++ namespaces, templates, callable families, and bounded aliases.
@@ -20,7 +20,7 @@ interface ICppTargetStatus {
  * 3. Require invalid, missing, or ambiguous aliases to preserve their resolution status.
  */
 export async function test_cpp_targets(): Promise<void> {
-  const adapter = new EvidenceCppAdapter();
+  const adapter = new EvidCppAdapter();
   const reference = await adapter.analyze(
     TestSourceSnapshot.create(
       "include/models.hpp",
@@ -54,17 +54,17 @@ export async function test_cpp_targets(): Promise<void> {
       "test/verify.cpp",
       dedent`
         /**
-         * @evidence ../include/models.hpp#shop.Sale Verifies the class.
-         * @evidence ../include/models.hpp#shop.Sale.constructor Verifies construction.
-         * @evidence ../include/models.hpp#shop.Sale.destructor Verifies destruction.
-         * @evidence ../include/models.hpp#shop.Sale.total Verifies the method family.
-         * @evidence ../include/models.hpp#shop.Sale["operator bool"] Verifies conversion.
-         * @evidence ../include/models.hpp#shop.Sale["operator +"] Verifies the operator.
-         * @evidence ../include/models.hpp#shop["Box\`1"] Verifies template arity.
-         * @evidence ../include/models.hpp#shop["Box\`1"].value Verifies the template member.
-         * @evidence ../include/models.hpp#public_api.Sale.total Verifies a using declaration.
-         * @evidence ../include/models.hpp#public_alias["Box\`1"].value Verifies a namespace alias.
-         * @evidence ../include/models.hpp#shop.Box.value Does not erase template arity.
+         * @evid ../include/models.hpp#shop.Sale Verifies the class.
+         * @evid ../include/models.hpp#shop.Sale.constructor Verifies construction.
+         * @evid ../include/models.hpp#shop.Sale.destructor Verifies destruction.
+         * @evid ../include/models.hpp#shop.Sale.total Verifies the method family.
+         * @evid ../include/models.hpp#shop.Sale["operator bool"] Verifies conversion.
+         * @evid ../include/models.hpp#shop.Sale["operator +"] Verifies the operator.
+         * @evid ../include/models.hpp#shop["Box\`1"] Verifies template arity.
+         * @evid ../include/models.hpp#shop["Box\`1"].value Verifies the template member.
+         * @evid ../include/models.hpp#public_api.Sale.total Verifies a using declaration.
+         * @evid ../include/models.hpp#public_alias["Box\`1"].value Verifies a namespace alias.
+         * @evid ../include/models.hpp#shop.Box.value Does not erase template arity.
          */
         void verify() {}
       `,

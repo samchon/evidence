@@ -1,8 +1,8 @@
 import {
-  EvidenceLanguageRegistry,
-  EvidenceRubyAdapter,
-} from "@wrtnlabs/evidence";
-import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+  EvidLanguageRegistry,
+  EvidRubyAdapter,
+} from "evid";
+import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -19,7 +19,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_ruby_units(): Promise<void> {
   // Certified metadata identifies the pinned grammar and declared source boundary.
-  const language = EvidenceLanguageRegistry.list().find(
+  const language = EvidLanguageRegistry.list().find(
     (entry) => entry.type === "ruby",
   );
   if (language?.adapter === undefined)
@@ -27,7 +27,7 @@ export async function test_ruby_units(): Promise<void> {
   TestValidator.equals(
     "certified Ruby adapter",
     language.adapter.entry,
-    "EvidenceRubyAdapter",
+    "EvidRubyAdapter",
   );
   TestValidator.equals(
     "published Ruby grammar version",
@@ -35,7 +35,7 @@ export async function test_ruby_units(): Promise<void> {
     true,
   );
 
-  const inventory = await new EvidenceRubyAdapter().analyze(
+  const inventory = await new EvidRubyAdapter().analyze(
     TestSourceSnapshot.create(
       "lib/shop.rb",
       dedent`
@@ -153,9 +153,9 @@ export async function test_ruby_units(): Promise<void> {
 }
 
 function requireUnit(
-  inventory: IEvidenceInventory,
+  inventory: IEvidInventory,
   identity: string,
-): IEvidenceUnit {
+): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.join(".") === identity,
   );

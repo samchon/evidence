@@ -1,28 +1,28 @@
 import {
-  EvidenceAccessor,
-  EvidenceCAdapter,
-  EvidenceCSharpAdapter,
-  EvidenceCppAdapter,
-  EvidenceGoAdapter,
-  EvidenceJavaAdapter,
-  EvidenceJavaScriptAdapter,
-  EvidenceKotlinAdapter,
-  EvidenceObjcAdapter,
-  EvidenceDartAdapter,
-  EvidenceScalaAdapter,
-  EvidenceMatlabAdapter,
-  EvidenceSwiftAdapter,
-  EvidencePhpAdapter,
-  EvidencePythonAdapter,
-  EvidenceRubyAdapter,
-  EvidenceRustAdapter,
-  EvidenceTypeScriptAdapter,
-  EvidenceZigAdapter,
-} from "@wrtnlabs/evidence";
+  EvidAccessor,
+  EvidCAdapter,
+  EvidCSharpAdapter,
+  EvidCppAdapter,
+  EvidGoAdapter,
+  EvidJavaAdapter,
+  EvidJavaScriptAdapter,
+  EvidKotlinAdapter,
+  EvidObjcAdapter,
+  EvidDartAdapter,
+  EvidScalaAdapter,
+  EvidMatlabAdapter,
+  EvidSwiftAdapter,
+  EvidPhpAdapter,
+  EvidPythonAdapter,
+  EvidRubyAdapter,
+  EvidRustAdapter,
+  EvidTypeScriptAdapter,
+  EvidZigAdapter,
+} from "evid";
 import type {
-  EvidenceProgrammingSymbol,
-  IEvidenceWithdrawal,
-} from "@wrtnlabs/evidence";
+  EvidProgrammingSymbol,
+  IEvidWithdrawal,
+} from "evid";
 import { dedent } from "@typia/utils";
 
 import { LuaCertificationFixture } from "./LuaCertificationFixture";
@@ -61,26 +61,26 @@ export namespace AdapterCertificationFixtures {
     const file = "src/Contract.h";
     return {
       type: "objc",
-      adapter: new EvidenceObjcAdapter(),
+      adapter: new EvidObjcAdapter(),
       sources: [
         {
           file,
           content: dedent`
         /**
          * 계약 😀
-         * @evidence docs/requirements.md#type Implements the certified type.
+         * @evid docs/requirements.md#type Implements the certified type.
          */
         @interface Contract {
           @private int hidden;
         }
         /**
          * 실행
-         * @evidence docs/requirements.md#function Implements the certified function.
+         * @evid docs/requirements.md#function Implements the certified function.
          */
         - (int)run;
         /**
          * 값
-         * @evidence docs/requirements.md#property Implements the certified property.
+         * @evid docs/requirements.md#property Implements the certified property.
          */
         @property int value;
         /** @internal Retired public contract. */
@@ -136,10 +136,10 @@ export namespace AdapterCertificationFixtures {
         source: {
           file: "src/FalsePositive.m",
           content: dedent`
-          /** @evidence docs/requirements.md#attached Attached documentation. */
+          /** @evid docs/requirements.md#attached Attached documentation. */
           const char *run(void) {
-            // @evidence docs/requirements.md#comment Ordinary comments are inert.
-            return "@evidence docs/requirements.md#literal Literal text is inert.";
+            // @evid docs/requirements.md#comment Ordinary comments are inert.
+            return "@evid docs/requirements.md#literal Literal text is inert.";
           }
         `,
         },
@@ -158,25 +158,25 @@ export namespace AdapterCertificationFixtures {
     const file = "src/certification.ts";
     return {
       type: "typescript",
-      adapter: new EvidenceTypeScriptAdapter(),
+      adapter: new EvidTypeScriptAdapter(),
       sources: [
         {
           file,
           content: dedent`
             /**
              * 계약 한글
-             * @evidence docs/requirements.md#type Implements the certified type.
+             * @evid docs/requirements.md#type Implements the certified type.
              */
             export class Contract {
               /**
                * 실행 한글
-               * @evidence docs/requirements.md#function Implements the certified function.
+               * @evid docs/requirements.md#function Implements the certified function.
                */
               public run(): number { return 1; }
 
               /**
                * 값 한글
-               * @evidence docs/requirements.md#property Implements the certified property.
+               * @evid docs/requirements.md#property Implements the certified property.
                */
               public value = 1;
 
@@ -246,10 +246,10 @@ export namespace AdapterCertificationFixtures {
         source: {
           file: "src/false-positive.ts",
           content: dedent`
-            /** @evidence docs/requirements.md#attached Attached documentation. */
+            /** @evid docs/requirements.md#attached Attached documentation. */
             export function run(): string {
-              // @evidence docs/requirements.md#comment Ordinary comments are inert.
-              return "@evidence docs/requirements.md#literal Literal text is inert.";
+              // @evid docs/requirements.md#comment Ordinary comments are inert.
+              return "@evid docs/requirements.md#literal Literal text is inert.";
             }
           `,
         },
@@ -268,25 +268,25 @@ export namespace AdapterCertificationFixtures {
     const file = "src/certification.mjs";
     return {
       type: "javascript",
-      adapter: new EvidenceJavaScriptAdapter(),
+      adapter: new EvidJavaScriptAdapter(),
       sources: [
         {
           file,
           content: dedent`
             /**
              * 계약 한글
-             * @evidence docs/requirements.md#type Implements the certified type.
+             * @evid docs/requirements.md#type Implements the certified type.
              */
             export class Contract {
               /**
                * 실행 한글
-               * @evidence docs/requirements.md#function Implements the certified function.
+               * @evid docs/requirements.md#function Implements the certified function.
                */
               run() { return 1; }
 
               /**
                * 값 한글
-               * @evidence docs/requirements.md#property Implements the certified property.
+               * @evid docs/requirements.md#property Implements the certified property.
                */
               value = 1;
 
@@ -351,10 +351,10 @@ export namespace AdapterCertificationFixtures {
         source: {
           file: "src/false-positive.mjs",
           content: dedent`
-            /** @evidence docs/requirements.md#attached Attached documentation. */
+            /** @evid docs/requirements.md#attached Attached documentation. */
             export function run() {
-              // @evidence docs/requirements.md#comment Ordinary comments are inert.
-              return "@evidence docs/requirements.md#literal Literal text is inert.";
+              // @evid docs/requirements.md#comment Ordinary comments are inert.
+              return "@evid docs/requirements.md#literal Literal text is inert.";
             }
           `,
         },
@@ -373,23 +373,23 @@ export namespace AdapterCertificationFixtures {
     const file = "src/certification.py";
     return {
       type: "python",
-      adapter: new EvidencePythonAdapter(),
+      adapter: new EvidPythonAdapter(),
       sources: [
         {
           file,
           content: dedent`
             # 계약 한글
-            # @evidence docs/requirements.md#type Implements the certified type.
+            # @evid docs/requirements.md#type Implements the certified type.
             class Contract:
                 def run(self):
                     """
                     실행 한글
-                    @evidence docs/requirements.md#function Implements the certified function.
+                    @evid docs/requirements.md#function Implements the certified function.
                     """
                     return 1
 
                 # 값 한글
-                # @evidence docs/requirements.md#property Implements the certified property.
+                # @evid docs/requirements.md#property Implements the certified property.
                 value = 1
 
                 _hidden = 0
@@ -447,10 +447,10 @@ export namespace AdapterCertificationFixtures {
         source: {
           file: "src/false-positive.py",
           content: dedent`
-            # @evidence docs/requirements.md#attached Attached documentation.
+            # @evid docs/requirements.md#attached Attached documentation.
             def run():
-                # @evidence docs/requirements.md#comment Body comments cannot host evidence.
-                return "@evidence docs/requirements.md#literal Literal text is inert."
+                # @evid docs/requirements.md#comment Body comments cannot host evidence.
+                return "@evid docs/requirements.md#literal Literal text is inert."
           `,
         },
         attachedTarget: "docs/requirements.md#attached",
@@ -469,7 +469,7 @@ export namespace AdapterCertificationFixtures {
     const file = "src/certification.go";
     return {
       type: "go",
-      adapter: new EvidenceGoAdapter(),
+      adapter: new EvidGoAdapter(),
       sources: [
         {
           file,
@@ -477,16 +477,16 @@ export namespace AdapterCertificationFixtures {
             package certification
 
             // 계약 한글
-            // @evidence docs/requirements.md#type Implements the certified type.
+            // @evid docs/requirements.md#type Implements the certified type.
             type Contract struct {
                 // 값 한글
-                // @evidence docs/requirements.md#property Implements the certified property.
+                // @evid docs/requirements.md#property Implements the certified property.
                 Value int
                 hidden int
             }
 
             // 실행 한글
-            // @evidence docs/requirements.md#function Implements the certified function.
+            // @evid docs/requirements.md#function Implements the certified function.
             func (Contract) Run() int { return 1 }
 
             // @internal Retired public contract.
@@ -536,10 +536,10 @@ export namespace AdapterCertificationFixtures {
           content: dedent`
             package certification
 
-            // @evidence docs/requirements.md#attached Attached documentation.
+            // @evid docs/requirements.md#attached Attached documentation.
             func Run() string {
-                // @evidence docs/requirements.md#comment Body comments are inert.
-                return "@evidence docs/requirements.md#literal Literal text is inert."
+                // @evid docs/requirements.md#comment Body comments are inert.
+                return "@evid docs/requirements.md#literal Literal text is inert."
             }
           `,
         },
@@ -558,23 +558,23 @@ export namespace AdapterCertificationFixtures {
     const file = "src/certification.rs";
     return {
       type: "rust",
-      adapter: new EvidenceRustAdapter(),
+      adapter: new EvidRustAdapter(),
       sources: [
         {
           file,
           content: dedent`
             /// 계약 한글
-            /// @evidence docs/requirements.md#type Implements the certified type.
+            /// @evid docs/requirements.md#type Implements the certified type.
             pub struct Contract {
                 /// 값 한글
-                /// @evidence docs/requirements.md#property Implements the certified property.
+                /// @evid docs/requirements.md#property Implements the certified property.
                 pub value: i32,
                 hidden: i32,
             }
 
             impl Contract {
                 /// 실행 한글
-                /// @evidence docs/requirements.md#function Implements the certified function.
+                /// @evid docs/requirements.md#function Implements the certified function.
                 pub fn run(&self) -> i32 { 1 }
 
                 /// @internal Retired public contract.
@@ -628,10 +628,10 @@ export namespace AdapterCertificationFixtures {
         source: {
           file: "src/false-positive.rs",
           content: dedent`
-            /// @evidence docs/requirements.md#attached Attached documentation.
+            /// @evid docs/requirements.md#attached Attached documentation.
             pub fn run() -> &'static str {
-                // @evidence docs/requirements.md#comment Ordinary comments are inert.
-                "@evidence docs/requirements.md#literal Literal text is inert."
+                // @evid docs/requirements.md#comment Ordinary comments are inert.
+                "@evid docs/requirements.md#literal Literal text is inert."
             }
           `,
         },
@@ -650,7 +650,7 @@ export namespace AdapterCertificationFixtures {
     const file = "src/Contract.php";
     return {
       type: "php",
-      adapter: new EvidencePhpAdapter(),
+      adapter: new EvidPhpAdapter(),
       sources: [
         {
           file,
@@ -658,18 +658,18 @@ export namespace AdapterCertificationFixtures {
             <?php
             /**
              * 계약 한글
-             * @evidence docs/requirements.md#type Implements the certified type.
+             * @evid docs/requirements.md#type Implements the certified type.
              */
             class Contract {
                 /**
                  * 실행 한글
-                 * @evidence docs/requirements.md#function Implements the certified function.
+                 * @evid docs/requirements.md#function Implements the certified function.
                  */
                 public function run() { return 1; }
 
                 /**
                  * 값 한글
-                 * @evidence docs/requirements.md#property Implements the certified property.
+                 * @evid docs/requirements.md#property Implements the certified property.
                  */
                 public int $value = 1;
 
@@ -734,10 +734,10 @@ export namespace AdapterCertificationFixtures {
           content: dedent`
             <?php
             class FalsePositive {
-                /** @evidence docs/requirements.md#attached Attached documentation. */
+                /** @evid docs/requirements.md#attached Attached documentation. */
                 public function run() {
-                    // @evidence docs/requirements.md#comment Ordinary comments are inert.
-                    return "@evidence docs/requirements.md#literal Literal text is inert.";
+                    // @evid docs/requirements.md#comment Ordinary comments are inert.
+                    return "@evid docs/requirements.md#literal Literal text is inert.";
                 }
             }
           `,
@@ -757,25 +757,25 @@ export namespace AdapterCertificationFixtures {
     const file = "src/Contract.java";
     return {
       type: "java",
-      adapter: new EvidenceJavaAdapter(),
+      adapter: new EvidJavaAdapter(),
       sources: [
         {
           file,
           content: dedent`
             /**
              * 계약 한글
-             * @evidence docs/requirements.md#type Implements the certified type.
+             * @evid docs/requirements.md#type Implements the certified type.
              */
             public class Contract {
                 /**
                  * 실행 한글
-                 * @evidence docs/requirements.md#function Implements the certified function.
+                 * @evid docs/requirements.md#function Implements the certified function.
                  */
                 public int run() { return 1; }
 
                 /**
                  * 값 한글
-                 * @evidence docs/requirements.md#property Implements the certified property.
+                 * @evid docs/requirements.md#property Implements the certified property.
                  */
                 public int value = 1;
 
@@ -839,10 +839,10 @@ export namespace AdapterCertificationFixtures {
           file: "src/FalsePositive.java",
           content: dedent`
             public class FalsePositive {
-                /** @evidence docs/requirements.md#attached Attached documentation. */
+                /** @evid docs/requirements.md#attached Attached documentation. */
                 public String run() {
-                    // @evidence docs/requirements.md#comment Ordinary comments are inert.
-                    return "@evidence docs/requirements.md#literal Literal text is inert.";
+                    // @evid docs/requirements.md#comment Ordinary comments are inert.
+                    return "@evid docs/requirements.md#literal Literal text is inert.";
                 }
             }
           `,
@@ -863,25 +863,25 @@ export namespace AdapterCertificationFixtures {
     const file = "src/Contract.dart";
     return {
       type: "dart",
-      adapter: new EvidenceDartAdapter(),
+      adapter: new EvidDartAdapter(),
       sources: [
         {
           file,
           content: dedent`
             /**
              * 계약 한글
-             * @evidence docs/requirements.md#type Implements the certified type.
+             * @evid docs/requirements.md#type Implements the certified type.
              */
             class Contract {
                 /**
                  * 실행 한글
-                 * @evidence docs/requirements.md#function Implements the certified function.
+                 * @evid docs/requirements.md#function Implements the certified function.
                  */
                 int run() { return 1; }
 
                 /**
                  * 값 한글
-                 * @evidence docs/requirements.md#property Implements the certified property.
+                 * @evid docs/requirements.md#property Implements the certified property.
                  */
                 final value = 1;
 
@@ -945,10 +945,10 @@ export namespace AdapterCertificationFixtures {
           file: "src/FalsePositive.dart",
           content: dedent`
             class FalsePositive {
-                /** @evidence docs/requirements.md#attached Attached documentation. */
+                /** @evid docs/requirements.md#attached Attached documentation. */
                 String run() {
-                    // @evidence docs/requirements.md#comment Ordinary comments are inert.
-                    return "@evidence docs/requirements.md#literal Literal text is inert.";
+                    // @evid docs/requirements.md#comment Ordinary comments are inert.
+                    return "@evid docs/requirements.md#literal Literal text is inert.";
                 }
             }
           `,
@@ -969,25 +969,25 @@ export namespace AdapterCertificationFixtures {
     const file = "src/Contract.kt";
     return {
       type: "kotlin",
-      adapter: new EvidenceKotlinAdapter(),
+      adapter: new EvidKotlinAdapter(),
       sources: [
         {
           file,
           content: dedent`
             /**
              * 계약 한글
-             * @evidence docs/requirements.md#type Implements the certified type.
+             * @evid docs/requirements.md#type Implements the certified type.
              */
             class Contract {
                 /**
                  * 실행 한글
-                 * @evidence docs/requirements.md#function Implements the certified function.
+                 * @evid docs/requirements.md#function Implements the certified function.
                  */
                 fun run(): Int { return 1 }
 
                 /**
                  * 값 한글
-                 * @evidence docs/requirements.md#property Implements the certified property.
+                 * @evid docs/requirements.md#property Implements the certified property.
                  */
                 val value = 1
 
@@ -1051,10 +1051,10 @@ export namespace AdapterCertificationFixtures {
           file: "src/FalsePositive.kt",
           content: dedent`
             class FalsePositive {
-                /** @evidence docs/requirements.md#attached Attached documentation. */
+                /** @evid docs/requirements.md#attached Attached documentation. */
                 fun run(): String {
-                    // @evidence docs/requirements.md#comment Ordinary comments are inert.
-                    return "@evidence docs/requirements.md#literal Literal text is inert."
+                    // @evid docs/requirements.md#comment Ordinary comments are inert.
+                    return "@evid docs/requirements.md#literal Literal text is inert."
                 }
             }
           `,
@@ -1074,25 +1074,25 @@ export namespace AdapterCertificationFixtures {
     const file = "src/Contract.swift";
     return {
       type: "swift",
-      adapter: new EvidenceSwiftAdapter(),
+      adapter: new EvidSwiftAdapter(),
       sources: [
         {
           file,
           content: dedent`
             /**
              * 계약 한글
-             * @evidence docs/requirements.md#type Implements the certified type.
+             * @evid docs/requirements.md#type Implements the certified type.
              */
             public struct Contract {
                 /**
                  * 실행 한글
-                 * @evidence docs/requirements.md#function Implements the certified function.
+                 * @evid docs/requirements.md#function Implements the certified function.
                  */
                 public func run() -> Int { return 1 }
 
                 /**
                  * 값 한글
-                 * @evidence docs/requirements.md#property Implements the certified property.
+                 * @evid docs/requirements.md#property Implements the certified property.
                  */
                 public let value = 1
 
@@ -1156,10 +1156,10 @@ export namespace AdapterCertificationFixtures {
           file: "src/FalsePositive.swift",
           content: dedent`
             public struct FalsePositive {
-                /** @evidence docs/requirements.md#attached Attached documentation. */
+                /** @evid docs/requirements.md#attached Attached documentation. */
                 public func run() -> String {
-                    // @evidence docs/requirements.md#comment Ordinary comments are inert.
-                    return "@evidence docs/requirements.md#literal Literal text is inert."
+                    // @evid docs/requirements.md#comment Ordinary comments are inert.
+                    return "@evid docs/requirements.md#literal Literal text is inert."
                 }
             }
           `,
@@ -1180,22 +1180,22 @@ export namespace AdapterCertificationFixtures {
     const file = "src/Contract.m";
     return {
       type: "matlab",
-      adapter: new EvidenceMatlabAdapter(),
+      adapter: new EvidMatlabAdapter(),
       sources: [
         {
           file,
           content: dedent`
             classdef Contract
               % 계약 한글
-              % @evidence docs/requirements.md#type Implements the certified type.
+              % @evid docs/requirements.md#type Implements the certified type.
               methods
                 function value = run(obj)
-                  % @evidence docs/requirements.md#function Implements the certified function.
+                  % @evid docs/requirements.md#function Implements the certified function.
                   value = 1;
                 end
               end
               properties
-                % @evidence docs/requirements.md#property Implements the certified property.
+                % @evid docs/requirements.md#property Implements the certified property.
                 value = 1
                 % @internal Retired public contract.
                 LEGACY = 1
@@ -1255,9 +1255,9 @@ export namespace AdapterCertificationFixtures {
           file: "src/run.m",
           content: dedent`
             function value = run()
-              % @evidence docs/requirements.md#attached Attached documentation.
-              value = "@evidence docs/requirements.md#literal Literal text is inert.";
-              % @evidence docs/requirements.md#comment Body comments are inert.
+              % @evid docs/requirements.md#attached Attached documentation.
+              value = "@evid docs/requirements.md#literal Literal text is inert.";
+              % @evid docs/requirements.md#comment Body comments are inert.
             end
           `.concat("\n"),
         },
@@ -1277,25 +1277,25 @@ export namespace AdapterCertificationFixtures {
     const file = "src/Contract.scala";
     return {
       type: "scala",
-      adapter: new EvidenceScalaAdapter(),
+      adapter: new EvidScalaAdapter(),
       sources: [
         {
           file,
           content: dedent`
             /**
              * 계약 한글
-             * @evidence docs/requirements.md#type Implements the certified type.
+             * @evid docs/requirements.md#type Implements the certified type.
              */
             class Contract {
                 /**
                  * 실행 한글
-                 * @evidence docs/requirements.md#function Implements the certified function.
+                 * @evid docs/requirements.md#function Implements the certified function.
                  */
                 def run(): Int = { return 1 }
 
                 /**
                  * 값 한글
-                 * @evidence docs/requirements.md#property Implements the certified property.
+                 * @evid docs/requirements.md#property Implements the certified property.
                  */
                 val value = 1
 
@@ -1359,10 +1359,10 @@ export namespace AdapterCertificationFixtures {
           file: "src/FalsePositive.scala",
           content: dedent`
             class FalsePositive {
-                /** @evidence docs/requirements.md#attached Attached documentation. */
+                /** @evid docs/requirements.md#attached Attached documentation. */
                 def run(): String = {
-                    // @evidence docs/requirements.md#comment Ordinary comments are inert.
-                    return "@evidence docs/requirements.md#literal Literal text is inert."
+                    // @evid docs/requirements.md#comment Ordinary comments are inert.
+                    return "@evid docs/requirements.md#literal Literal text is inert."
                 }
             }
           `,
@@ -1382,19 +1382,19 @@ export namespace AdapterCertificationFixtures {
     const file = "src/certification.zig";
     return {
       type: "zig",
-      adapter: new EvidenceZigAdapter(),
+      adapter: new EvidZigAdapter(),
       sources: [
         {
           file,
           content: dedent`
         /// 계약 🔎
-        /// @evidence docs/requirements.md#type Implements the certified type.
+        /// @evid docs/requirements.md#type Implements the certified type.
         pub const Contract = struct {
           /// 계약 🔎
-          /// @evidence docs/requirements.md#function Implements the certified function.
+          /// @evid docs/requirements.md#function Implements the certified function.
           pub fn run() i32 { return 1; }
           /// 값 🔎
-          /// @evidence docs/requirements.md#property Implements the certified property.
+          /// @evid docs/requirements.md#property Implements the certified property.
           value: i32,
           const hidden = 0;
           /// @internal Retired public contract.
@@ -1445,10 +1445,10 @@ export namespace AdapterCertificationFixtures {
         source: {
           file: "src/false-positive.zig",
           content: dedent`
-          /// @evidence docs/requirements.md#attached Attached documentation.
+          /// @evid docs/requirements.md#attached Attached documentation.
           pub fn run() []const u8 {
-            // @evidence docs/requirements.md#comment Ordinary comments are inert.
-            return "@evidence docs/requirements.md#literal Literal text is inert.";
+            // @evid docs/requirements.md#comment Ordinary comments are inert.
+            return "@evid docs/requirements.md#literal Literal text is inert.";
           }
         `,
         },
@@ -1467,21 +1467,21 @@ export namespace AdapterCertificationFixtures {
     const file = "src/Contract.cs";
     return {
       type: "csharp",
-      adapter: new EvidenceCSharpAdapter(),
+      adapter: new EvidCSharpAdapter(),
       sources: [
         {
           file,
           content: dedent`
             /// 계약 한글
-            /// @evidence docs/requirements.md#type Implements the certified type.
+            /// @evid docs/requirements.md#type Implements the certified type.
             public class Contract
             {
                 /// 실행 한글
-                /// @evidence docs/requirements.md#function Implements the certified function.
+                /// @evid docs/requirements.md#function Implements the certified function.
                 public int Run() { return 1; }
 
                 /// 값 한글
-                /// @evidence docs/requirements.md#property Implements the certified property.
+                /// @evid docs/requirements.md#property Implements the certified property.
                 public int Value { get; set; } = 1;
 
                 private int Hidden { get; set; }
@@ -1547,11 +1547,11 @@ export namespace AdapterCertificationFixtures {
           content: dedent`
             public class FalsePositive
             {
-                /// @evidence docs/requirements.md#attached Attached documentation.
+                /// @evid docs/requirements.md#attached Attached documentation.
                 public string Run()
                 {
-                    // @evidence docs/requirements.md#comment Ordinary comments are inert.
-                    return "@evidence docs/requirements.md#literal Literal text is inert.";
+                    // @evid docs/requirements.md#comment Ordinary comments are inert.
+                    return "@evid docs/requirements.md#literal Literal text is inert.";
                 }
             }
           `,
@@ -1571,26 +1571,26 @@ export namespace AdapterCertificationFixtures {
     const file = "src/certification.c";
     return {
       type: "c",
-      adapter: new EvidenceCAdapter(),
+      adapter: new EvidCAdapter(),
       sources: [
         {
           file,
           content: dedent`
             /**
              * 계약 한글
-             * @evidence docs/requirements.md#type Implements the certified type.
+             * @evid docs/requirements.md#type Implements the certified type.
              */
             struct Contract {
                 /**
                  * 값 한글
-                 * @evidence docs/requirements.md#property Implements the certified property.
+                 * @evid docs/requirements.md#property Implements the certified property.
                  */
                 int value;
             };
 
             /**
              * 실행 한글
-             * @evidence docs/requirements.md#function Implements the certified function.
+             * @evid docs/requirements.md#function Implements the certified function.
              */
             int run(void) { return 1; }
 
@@ -1650,10 +1650,10 @@ export namespace AdapterCertificationFixtures {
         source: {
           file: "src/false-positive.c",
           content: dedent`
-            /** @evidence docs/requirements.md#attached Attached documentation. */
+            /** @evid docs/requirements.md#attached Attached documentation. */
             const char *run(void) {
-                // @evidence docs/requirements.md#comment Ordinary comments are inert.
-                return "@evidence docs/requirements.md#literal Literal text is inert.";
+                // @evid docs/requirements.md#comment Ordinary comments are inert.
+                return "@evid docs/requirements.md#literal Literal text is inert.";
             }
           `,
         },
@@ -1672,26 +1672,26 @@ export namespace AdapterCertificationFixtures {
     const file = "src/certification.cpp";
     return {
       type: "cpp",
-      adapter: new EvidenceCppAdapter(),
+      adapter: new EvidCppAdapter(),
       sources: [
         {
           file,
           content: dedent`
             /**
              * 계약 한글
-             * @evidence docs/requirements.md#type Implements the certified type.
+             * @evid docs/requirements.md#type Implements the certified type.
              */
             class Contract {
             public:
                 /**
                  * 실행 한글
-                 * @evidence docs/requirements.md#function Implements the certified function.
+                 * @evid docs/requirements.md#function Implements the certified function.
                  */
                 int run() const { return 1; }
 
                 /**
                  * 값 한글
-                 * @evidence docs/requirements.md#property Implements the certified property.
+                 * @evid docs/requirements.md#property Implements the certified property.
                  */
                 int value;
 
@@ -1757,10 +1757,10 @@ export namespace AdapterCertificationFixtures {
         source: {
           file: "src/false-positive.cpp",
           content: dedent`
-            /** @evidence docs/requirements.md#attached Attached documentation. */
+            /** @evid docs/requirements.md#attached Attached documentation. */
             const char *run() {
-                // @evidence docs/requirements.md#comment Ordinary comments are inert.
-                return "@evidence docs/requirements.md#literal Literal text is inert.";
+                // @evid docs/requirements.md#comment Ordinary comments are inert.
+                return "@evid docs/requirements.md#literal Literal text is inert.";
             }
           `,
         },
@@ -1779,20 +1779,20 @@ export namespace AdapterCertificationFixtures {
     const file = "src/certification.rb";
     return {
       type: "ruby",
-      adapter: new EvidenceRubyAdapter(),
+      adapter: new EvidRubyAdapter(),
       sources: [
         {
           file,
           content: dedent`
             # 계약 한글
-            # @evidence docs/requirements.md#type Implements the certified type.
+            # @evid docs/requirements.md#type Implements the certified type.
             class Contract
               # 실행 한글
-              # @evidence docs/requirements.md#function Implements the certified function.
+              # @evid docs/requirements.md#function Implements the certified function.
               def run; 1; end
 
               # 값 한글
-              # @evidence docs/requirements.md#property Implements the certified property.
+              # @evid docs/requirements.md#property Implements the certified property.
               attr_reader :value
 
               private
@@ -1852,10 +1852,10 @@ export namespace AdapterCertificationFixtures {
           file: "src/false-positive.rb",
           content: dedent`
             class FalsePositive
-              # @evidence docs/requirements.md#attached Attached documentation.
+              # @evid docs/requirements.md#attached Attached documentation.
               def run
-                # @evidence docs/requirements.md#comment Body comments are inert.
-                "@evidence docs/requirements.md#literal Literal text is inert."
+                # @evid docs/requirements.md#comment Body comments are inert.
+                "@evid docs/requirements.md#literal Literal text is inert."
               end
             end
           `,
@@ -1873,11 +1873,11 @@ export namespace AdapterCertificationFixtures {
 
   function unit(
     file: string,
-    symbol: EvidenceProgrammingSymbol,
+    symbol: EvidProgrammingSymbol,
     identity: string[],
     parent?: string[],
     aliases: string[][] = [],
-    withdrawals: IEvidenceWithdrawal["tag"][] = [],
+    withdrawals: IEvidWithdrawal["tag"][] = [],
     sites: number = 1,
   ): IAdapterCertificationUnit {
     const addresses: IAdapterCertificationAddress[] = [
@@ -1885,7 +1885,7 @@ export namespace AdapterCertificationFixtures {
       ...aliases,
     ].map((segments) => ({
       file,
-      accessor: EvidenceAccessor.format(segments),
+      accessor: EvidAccessor.format(segments),
     }));
     return {
       key: key(symbol, identity),
@@ -1935,7 +1935,7 @@ export namespace AdapterCertificationFixtures {
     };
   }
 
-  function key(symbol: EvidenceProgrammingSymbol, identity: string[]): string {
-    return `${symbol}:${EvidenceAccessor.format(identity)}`;
+  function key(symbol: EvidProgrammingSymbol, identity: string[]): string {
+    return `${symbol}:${EvidAccessor.format(identity)}`;
   }
 }

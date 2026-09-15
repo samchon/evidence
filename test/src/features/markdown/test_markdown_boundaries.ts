@@ -1,9 +1,9 @@
-import { EvidenceMarkdownAdapter } from "@wrtnlabs/evidence";
+import { EvidMarkdownAdapter } from "evid";
 import type {
-  IEvidenceDeclaration,
-  IEvidenceHost,
-  IEvidenceUnit,
-} from "@wrtnlabs/evidence";
+  IEvidDeclaration,
+  IEvidHost,
+  IEvidUnit,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -13,7 +13,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * Excludes Markdown syntax examples from heading and annotation discovery.
  *
  * Fence, inline-code, rendered-code, MDX-template, indentation, and comment
- * regions may contain realistic Evidence syntax without declaring a public unit or host.
+ * regions may contain realistic Evid syntax without declaring a public unit or host.
  *
  * 1. Analyze one visible heading plus heading and annotation syntax in each excluded region.
  * 2. Mention rendered tags in several literal forms and require them not to hide
@@ -39,7 +39,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *     retaining authored whitespace and a tag-bearing comment on the host.
  * 13. Keep a comment adjacent to an ATX marker from fabricating a heading.
  * 14. Verify only the visible headings and real children materialize as section units.
- * 15. Verify only real HTML comments declare their Evidence targets.
+ * 15. Verify only real HTML comments declare their Evid targets.
  * 16. Require no diagnostics from the ignored examples.
  */
 export async function test_markdown_boundaries(): Promise<void> {
@@ -48,19 +48,19 @@ export async function test_markdown_boundaries(): Promise<void> {
 
     ~~~~markdown
     ## Fenced heading
-    <!-- @evidence docs/fake.md#fenced This is an example. -->
+    <!-- @evid docs/fake.md#fenced This is an example. -->
     ~~~~
 
-    \`<!-- @evidence docs/fake.md#inline This is inline code. -->\`
+    \`<!-- @evid docs/fake.md#inline This is inline code. -->\`
 
     <pre>
     ## Rendered heading
-    @evidence docs/fake.md#pre This is rendered code.
+    @evid docs/fake.md#pre This is rendered code.
     </pre>
 
     const example={\`
     ## MDX heading
-    @evidence docs/fake.md#mdx This is rendered code.
+    @evid docs/fake.md#mdx This is rendered code.
     \`}
 
     Literal \`<pre>\`, \`</pre>\`, paired \`<pre></pre>\`, longer \`\`<pre>\`\`, escaped \\<pre>, and <prefix> prose.
@@ -125,14 +125,14 @@ export async function test_markdown_boundaries(): Promise<void> {
 
     <!--
       ## Comment heading
-      @evidence docs/spec.md#rule Implements the visible <pre> section.
+      @evid docs/spec.md#rule Implements the visible <pre> section.
     -->
 
     <!--
     Comment before rendered code.
     --> <pre>
     ## Rendered after comment close and pre open
-    @evidence docs/fake.md#comment-pre This remains rendered.
+    @evid docs/fake.md#comment-pre This remains rendered.
     </pre>
 
     ## After comment close and pre open
@@ -140,7 +140,7 @@ export async function test_markdown_boundaries(): Promise<void> {
     <pre>
     </pre><!--
     ## Commented after pre close and comment open
-    This comment mentions @evidence without declaring it.
+    This comment mentions @evid without declaring it.
     -->
 
     ## After pre close and comment open
@@ -165,13 +165,13 @@ export async function test_markdown_boundaries(): Promise<void> {
 
     ## After template ignores pre close
 
-    <div title="<!-- @evidence docs/fake.md#attribute Fabricated. -->"><span title="<pre>">Visible attributes.</span></div>
+    <div title="<!-- @evid docs/fake.md#attribute Fabricated. -->"><span title="<pre>">Visible attributes.</span></div>
 
     ## Generated <!-- hidden heading text --> name
 
     ## Explicit <!-- hidden heading text --> name {#explicit-comment}
 
-    ## Tagged <!-- @evidence docs/spec.md#heading Implements the heading. --> name {#tagged-comment}
+    ## Tagged <!-- @evid docs/spec.md#heading Implements the heading. --> name {#tagged-comment}
 
     ## Deliberately  <!-- invisible --> spaced {#spaced-comment}
 
@@ -179,14 +179,14 @@ export async function test_markdown_boundaries(): Promise<void> {
 
     ## Real child
   `;
-  const inventory = await new EvidenceMarkdownAdapter().analyze(
+  const inventory = await new EvidMarkdownAdapter().analyze(
     TestSourceSnapshot.create("guide.md", content),
   );
 
   TestValidator.equals(
     "only real headings materialize",
     inventory.units
-      .map((unit: IEvidenceUnit): string => unit.name)
+      .map((unit: IEvidUnit): string => unit.name)
       .sort(compare),
     [
       "After backticked rendered close",
@@ -219,20 +219,20 @@ export async function test_markdown_boundaries(): Promise<void> {
   TestValidator.equals(
     "only real HTML annotations are parsed",
     inventory.declarations
-      .map((entry: IEvidenceDeclaration): string => entry.target)
+      .map((entry: IEvidDeclaration): string => entry.target)
       .sort(compare),
     ["docs/spec.md#heading", "docs/spec.md#rule"],
   );
-  const tagged: IEvidenceUnit | undefined = inventory.units.find(
-    (unit: IEvidenceUnit): boolean => unit.identity.at(-1) === "tagged-comment",
+  const tagged: IEvidUnit | undefined = inventory.units.find(
+    (unit: IEvidUnit): boolean => unit.identity.at(-1) === "tagged-comment",
   );
-  const declaration: IEvidenceDeclaration | undefined =
+  const declaration: IEvidDeclaration | undefined =
     inventory.declarations.find(
-      (entry: IEvidenceDeclaration): boolean =>
+      (entry: IEvidDeclaration): boolean =>
         entry.target === "docs/spec.md#heading",
     );
-  const host: IEvidenceHost | undefined = inventory.hosts.find(
-    (entry: IEvidenceHost): boolean => entry.id === declaration?.hostId,
+  const host: IEvidHost | undefined = inventory.hosts.find(
+    (entry: IEvidHost): boolean => entry.id === declaration?.hostId,
   );
   TestValidator.equals(
     "heading-line annotation attaches to that heading",

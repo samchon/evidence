@@ -1,4 +1,4 @@
-import { EvidenceFingerprint, EvidenceLuaAdapter } from "@wrtnlabs/evidence";
+import { EvidFingerprint, EvidLuaAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -13,9 +13,9 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_lua_hosts(): Promise<void> {
   const content = dedent`
     --- 한글 📘
-    --- @evidence spec.md#run Covers the run requirement.
+    --- @evid spec.md#run Covers the run requirement.
     --- \`\`\`lua
-    --- @evidence spec.md#example A fenced example is inert.
+    --- @evid spec.md#example A fenced example is inert.
     --- \`\`\`
     function run() return 1 end
     --[=[
@@ -24,7 +24,7 @@ export async function test_lua_hosts(): Promise<void> {
     local hidden = { child = 1 }
     return { hidden = hidden }
   `.replaceAll("\n", "\r\n");
-  const adapter = new EvidenceLuaAdapter();
+  const adapter = new EvidLuaAdapter();
   const inventory = await adapter.analyze(
     TestSourceSnapshot.create("source.lua", content),
   );
@@ -45,7 +45,7 @@ export async function test_lua_hosts(): Promise<void> {
   TestValidator.equals(
     "original UTF-16 annotation offset",
     declaration.location.range.start.offset,
-    content.indexOf("@evidence spec.md#run"),
+    content.indexOf("@evid spec.md#run"),
   );
   const hidden = inventory.units.find((unit) => unit.name === "hidden");
   if (hidden === undefined) throw new Error("Hidden table is missing.");
@@ -66,17 +66,17 @@ export async function test_lua_hosts(): Promise<void> {
   );
   TestValidator.equals(
     "CRLF semantic fingerprints are stable",
-    EvidenceFingerprint.inspect(inventory, fn.id).fingerprint,
-    EvidenceFingerprint.inspect(normalized, fn.id).fingerprint,
+    EvidFingerprint.inspect(inventory, fn.id).fingerprint,
+    EvidFingerprint.inspect(normalized, fn.id).fingerprint,
   );
   const unsupported = await adapter.analyze(
     TestSourceSnapshot.create(
       "source.lua",
       dedent`
-    --- @evidence spec.md#private Private documentation cannot claim coverage.
+    --- @evid spec.md#private Private documentation cannot claim coverage.
     local function hidden() end
-    -- @evidence spec.md#ordinary Ordinary comment is not LuaDoc.
-    function publicFunction() return "@evidence spec.md#string A string cannot claim coverage." end
+    -- @evid spec.md#ordinary Ordinary comment is not LuaDoc.
+    function publicFunction() return "@evid spec.md#string A string cannot claim coverage." end
   `,
     ),
   );
@@ -113,7 +113,7 @@ export async function test_lua_hosts(): Promise<void> {
     throw new Error("Public string-returning function is missing.");
   TestValidator.notEquals(
     "unsupported tag-looking strings remain semantic content",
-    EvidenceFingerprint.inspect(unsupported, publicFunction.id).fingerprint,
-    EvidenceFingerprint.inspect(changedLiteral, publicFunction.id).fingerprint,
+    EvidFingerprint.inspect(unsupported, publicFunction.id).fingerprint,
+    EvidFingerprint.inspect(changedLiteral, publicFunction.id).fingerprint,
   );
 }

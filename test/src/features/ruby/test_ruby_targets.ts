@@ -1,5 +1,5 @@
-import { EvidenceRubyAdapter } from "@wrtnlabs/evidence";
-import type { EvidenceTargetResolutionStatus } from "@wrtnlabs/evidence";
+import { EvidRubyAdapter } from "evid";
+import type { EvidTargetResolutionStatus } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -8,7 +8,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 interface IRubyTargetStatus {
   target: string | undefined;
-  status: EvidenceTargetResolutionStatus;
+  status: EvidTargetResolutionStatus;
 }
 
 /** Resolves Ruby containers, method sides, attributes, setters, and operators.
@@ -21,7 +21,7 @@ interface IRubyTargetStatus {
  *    statuses and their intended public units.
  */
 export async function test_ruby_targets(): Promise<void> {
-  const adapter = new EvidenceRubyAdapter();
+  const adapter = new EvidRubyAdapter();
   const reference = await adapter.analyze(
     TestSourceSnapshot.create(
       "lib/shop/sale.rb",
@@ -44,13 +44,13 @@ export async function test_ruby_targets(): Promise<void> {
       "test/verify.rb",
       dedent`
         module Verify
-          # @evidence ../lib/shop/sale.rb#Shop.Sale Verifies the class.
-          # @evidence ../lib/shop/sale.rb#Shop.Sale.total Verifies the instance method.
-          # @evidence ../lib/shop/sale.rb#Shop.Sale.self.find Verifies the singleton method.
-          # @evidence ../lib/shop/sale.rb#Shop.Sale.status Verifies the attribute.
-          # @evidence ../lib/shop/sale.rb#Shop.Sale["price="] Verifies the setter.
-          # @evidence ../lib/shop/sale.rb#Shop.Sale["[]"] Verifies the operator.
-          # @evidence ../lib/shop/sale.rb#Shop.Sale.find Does not erase the method side.
+          # @evid ../lib/shop/sale.rb#Shop.Sale Verifies the class.
+          # @evid ../lib/shop/sale.rb#Shop.Sale.total Verifies the instance method.
+          # @evid ../lib/shop/sale.rb#Shop.Sale.self.find Verifies the singleton method.
+          # @evid ../lib/shop/sale.rb#Shop.Sale.status Verifies the attribute.
+          # @evid ../lib/shop/sale.rb#Shop.Sale["price="] Verifies the setter.
+          # @evid ../lib/shop/sale.rb#Shop.Sale["[]"] Verifies the operator.
+          # @evid ../lib/shop/sale.rb#Shop.Sale.find Does not erase the method side.
           def run; end
         end
       `,

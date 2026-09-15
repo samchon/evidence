@@ -1,7 +1,7 @@
-import { EvidenceParser, EvidenceSqlAdapter } from "@wrtnlabs/evidence";
+import { EvidParser, EvidSqlAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
-import { TreeSitterAssetScope } from "../../../../packages/evidence/src/internal/TreeSitterAssetScope";
-import { TreeSitterAssets } from "../../../../packages/evidence/src/internal/TreeSitterAssets";
+import { EvidTreeSitterAssetScope } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssetScope";
+import { EvidTreeSitterAssets } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssets";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestParserAssets } from "../../internal/TestParserAssets";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -15,7 +15,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Analyze again offline and require equivalent inventory.
  */
 export async function test_sql_parser(): Promise<void> {
-  const grammar = await new TreeSitterAssets().grammar("sql");
+  const grammar = await new EvidTreeSitterAssets().grammar("sql");
   const bytes = await TestParserAssets.bytes(grammar);
   const snapshot = TestSourceSnapshot.create(
     "schema.sql",
@@ -26,7 +26,7 @@ export async function test_sql_parser(): Promise<void> {
     {},
     async (cacheDirectory) => {
       const requests: string[] = [];
-      const cold = await TreeSitterAssetScope.run(
+      const cold = await EvidTreeSitterAssetScope.run(
         {
           cacheDirectory,
           fetch: async (input) => {
@@ -34,7 +34,7 @@ export async function test_sql_parser(): Promise<void> {
             return new Response(Uint8Array.from(bytes));
           },
         },
-        async () => new EvidenceSqlAdapter().analyze(snapshot),
+        async () => new EvidSqlAdapter().analyze(snapshot),
       );
       TestValidator.equals("cold SQL source complete", cold.complete, true);
       TestValidator.equals(
@@ -42,19 +42,19 @@ export async function test_sql_parser(): Promise<void> {
         requests,
         [grammar.wasm.url],
       );
-      const warm = await TreeSitterAssetScope.run(
+      const warm = await EvidTreeSitterAssetScope.run(
         {
           cacheDirectory,
           fetch: async () => {
             throw new Error("offline");
           },
         },
-        async () => new EvidenceSqlAdapter().analyze(snapshot),
+        async () => new EvidSqlAdapter().analyze(snapshot),
       );
       TestValidator.equals("warm offline inventory equivalence", warm, cold);
     },
   );
-  const parser = new EvidenceParser();
+  const parser = new EvidParser();
   try {
     const names = await parser.parse(
       {

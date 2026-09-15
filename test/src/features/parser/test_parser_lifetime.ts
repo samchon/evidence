@@ -1,8 +1,8 @@
-import { EvidenceParser } from "@wrtnlabs/evidence";
+import { EvidParser } from "evid";
 import type {
-  EvidenceParseSession,
-  IEvidenceParserInput,
-} from "@wrtnlabs/evidence";
+  EvidParseSession,
+  IEvidParserInput,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { TestParserError } from "../../internal/TestParserError";
@@ -26,12 +26,12 @@ import { TestSignal } from "../../internal/TestSignal";
  * 5. Close again and require the runtime to remain closed without failure.
  */
 export async function test_parser_lifetime(): Promise<void> {
-  const parser = new EvidenceParser({ concurrency: 1 });
+  const parser = new EvidParser({ concurrency: 1 });
   const entered = new TestSignal();
   const release = new TestSignal();
-  const borrowed: EvidenceParseSession[] = [];
+  const borrowed: EvidParseSession[] = [];
   const expected = new Error("Adapter callback failed.");
-  const input: IEvidenceParserInput = {
+  const input: IEvidParserInput = {
     type: "typescript",
     file: "contract.ts",
     content: "export const answer = 42;",

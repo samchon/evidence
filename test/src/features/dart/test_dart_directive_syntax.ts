@@ -1,4 +1,4 @@
-import { EvidenceDartAdapter, EvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidDartAdapter, EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -13,7 +13,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Verify annotation strings do not create dependencies.
  */
 export async function test_dart_directive_syntax(): Promise<void> {
-  const inventory = await new EvidenceDartAdapter().analyze(
+  const inventory = await new EvidDartAdapter().analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create(
         "src/api.dart",
@@ -46,7 +46,7 @@ export async function test_dart_directive_syntax(): Promise<void> {
       .map((unit) => unit.name),
     ["first", "second"],
   );
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   for (const name of ["first", "second", "Exported"])
     TestValidator.equals(
       `${name} resolves through actual URI`,

@@ -1,4 +1,4 @@
-import { EvidenceJavaAdapter } from "@wrtnlabs/evidence";
+import { EvidJavaAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -14,7 +14,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Require missing or ambiguous paths to retain their statuses.
  */
 export async function test_java_targets(): Promise<void> {
-  const adapter = new EvidenceJavaAdapter();
+  const adapter = new EvidJavaAdapter();
 
   // Package identity stays semantic; file targets begin at the top-level type.
   const reference = await adapter.analyze(
@@ -56,14 +56,14 @@ export async function test_java_targets(): Promise<void> {
       dedent`
         public class Verify {
             /**
-             * @evidence ../main/com/example/Sale.java#Sale Verifies the public type.
-             * @evidence ../main/com/example/Sale.java#Sale.total Verifies the public field.
-             * @evidence ../main/com/example/Sale.java#Sale.calculate Verifies every overload.
-             * @evidence ../main/com/example/Sale.java#Sale.Metadata Verifies the nested type.
-             * @evidence ../main/com/example/Sale.java#Sale.Metadata.label Verifies the nested field.
-             * @evidence ../main/com/example/Point.java#Point.x Verifies the record component.
-             * @evidence ../main/com/example/State.java#State.READY Verifies the enum constant.
-             * @evidence ../main/com/example/Label.java#Label.value Verifies the annotation element.
+             * @evid ../main/com/example/Sale.java#Sale Verifies the public type.
+             * @evid ../main/com/example/Sale.java#Sale.total Verifies the public field.
+             * @evid ../main/com/example/Sale.java#Sale.calculate Verifies every overload.
+             * @evid ../main/com/example/Sale.java#Sale.Metadata Verifies the nested type.
+             * @evid ../main/com/example/Sale.java#Sale.Metadata.label Verifies the nested field.
+             * @evid ../main/com/example/Point.java#Point.x Verifies the record component.
+             * @evid ../main/com/example/State.java#State.READY Verifies the enum constant.
+             * @evid ../main/com/example/Label.java#Label.value Verifies the annotation element.
              */
             public void verify() {}
         }
@@ -140,7 +140,7 @@ export async function test_java_targets(): Promise<void> {
       "src/test/CollisionTest.java",
       dedent`
         public class CollisionTest {
-            /** @evidence ../main/Collision.java#Collision.value Verifies one selected namespace. */
+            /** @evid ../main/Collision.java#Collision.value Verifies one selected namespace. */
             public void verify() {}
         }
       `,

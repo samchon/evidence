@@ -1,8 +1,8 @@
-import { EvidenceParser } from "@wrtnlabs/evidence";
+import { EvidParser } from "evid";
 import type {
-  EvidenceParseSession,
-  IEvidenceParserInput,
-} from "@wrtnlabs/evidence";
+  EvidParseSession,
+  IEvidParserInput,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { TestParserError } from "../../internal/TestParserError";
@@ -23,11 +23,11 @@ import { TestSignal } from "../../internal/TestSignal";
  * 4. Close the parser and require every active slot to be released.
  */
 export async function test_parser_concurrent(): Promise<void> {
-  const parser = new EvidenceParser({ concurrency: 2 });
+  const parser = new EvidParser({ concurrency: 2 });
   const ready = new TestSignal();
   const release = new TestSignal();
-  const sessions: EvidenceParseSession[] = [];
-  const inputs: IEvidenceParserInput[] = [
+  const sessions: EvidParseSession[] = [];
+  const inputs: IEvidParserInput[] = [
     {
       type: "typescript",
       file: "alpha.ts",

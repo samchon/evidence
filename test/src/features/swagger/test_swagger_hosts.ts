@@ -1,9 +1,9 @@
-import { EvidenceSwaggerAdapter } from "@wrtnlabs/evidence";
+import { EvidSwaggerAdapter } from "evid";
 import type {
-  IEvidenceDeclaration,
-  IEvidenceHost,
-  IEvidenceInventory,
-} from "@wrtnlabs/evidence";
+  IEvidDeclaration,
+  IEvidHost,
+  IEvidInventory,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -17,7 +17,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 2. Verify extracted targets, coordinates, and host diagnostics.
  */
 export async function test_swagger_hosts(): Promise<void> {
-  const inventory = await new EvidenceSwaggerAdapter().analyze(
+  const inventory = await new EvidSwaggerAdapter().analyze(
     TestSourceSnapshot.create(
       "openapi.yaml",
       dedent`
@@ -32,16 +32,16 @@ export async function test_swagger_hosts(): Promise<void> {
                 Creates a member.
 
                 \`\`\`
-                @evidence docs/spec.md#fenced This is an example.
+                @evid docs/spec.md#fenced This is an example.
                 \`\`\`
 
-                @evidence docs/spec.md#members Implements member creation.
-                @evidenceReview docs/spec.md#members #abcdef0 Read the requirement.
-                @evidenceExclude docs/spec.md#legacy The legacy route is intentionally absent.
-                @evidenceExcludeReview docs/spec.md#legacy #1234567 Checked the removal.
+                @evid docs/spec.md#members Implements member creation.
+                @evidReview docs/spec.md#members #abcdef0 Read the requirement.
+                @evidExclude docs/spec.md#legacy The legacy route is intentionally absent.
+                @evidExcludeReview docs/spec.md#legacy #1234567 Checked the removal.
               responses:
                 "200":
-                  description: "@evidence docs/spec.md#response This is not an operation host."
+                  description: "@evid docs/spec.md#response This is not an operation host."
           /health:
             get:
               responses:
@@ -50,7 +50,7 @@ export async function test_swagger_hosts(): Promise<void> {
         components:
           schemas:
             Member:
-              description: "@evidence docs/spec.md#component This is not an operation host."
+              description: "@evid docs/spec.md#component This is not an operation host."
               type: object
       `.replaceAll("\n", "\r\n"),
     ),
@@ -98,7 +98,7 @@ export async function test_swagger_hosts(): Promise<void> {
   TestValidator.equals("Swagger host diagnostics", inventory.diagnostics, []);
 
   // YAML aliases retain the physical anchor location that owns their decoded text.
-  const aliased = await new EvidenceSwaggerAdapter().analyze(
+  const aliased = await new EvidSwaggerAdapter().analyze(
     TestSourceSnapshot.create(
       "aliased.yaml",
       dedent`
@@ -109,7 +109,7 @@ export async function test_swagger_hosts(): Promise<void> {
         x-operation: &operation
           description: |-
             Shared operation prose.
-            @evidence docs/spec.md#alias Applies the shared contract.
+            @evid docs/spec.md#alias Applies the shared contract.
           responses:
             "200":
               description: OK
@@ -123,12 +123,12 @@ export async function test_swagger_hosts(): Promise<void> {
   TestValidator.equals("aliased description source line", line(alias), 8);
   TestValidator.equals(
     "aliased declaration source text",
-    declarationText(aliased, alias).startsWith("@evidence"),
+    declarationText(aliased, alias).startsWith("@evid"),
     true,
   );
 
   // One Unicode escape may decode to two UTF-16 units before a later annotation.
-  const escaped = await new EvidenceSwaggerAdapter().analyze(
+  const escaped = await new EvidSwaggerAdapter().analyze(
     TestSourceSnapshot.create(
       "escaped.yaml",
       dedent`
@@ -139,7 +139,7 @@ export async function test_swagger_hosts(): Promise<void> {
         paths:
           /escaped:
             get:
-              description: "\\U0001F600\\n@evidence docs/spec.md#escaped Maps the source token."
+              description: "\\U0001F600\\n@evid docs/spec.md#escaped Maps the source token."
               responses:
                 "200":
                   description: OK
@@ -149,15 +149,15 @@ export async function test_swagger_hosts(): Promise<void> {
   const unicode = requireDeclaration(escaped, "docs/spec.md#escaped");
   TestValidator.equals(
     "escaped declaration source text",
-    declarationText(escaped, unicode).startsWith("@evidence"),
+    declarationText(escaped, unicode).startsWith("@evid"),
     true,
   );
 }
 
 function requireDeclaration(
-  inventory: IEvidenceInventory,
+  inventory: IEvidInventory,
   target: string,
-): IEvidenceDeclaration {
+): IEvidDeclaration {
   const declaration = inventory.declarations.find(
     (candidate) => candidate.target === target,
   );
@@ -167,9 +167,9 @@ function requireDeclaration(
 }
 
 function requireHost(
-  inventory: IEvidenceInventory,
-  declaration: IEvidenceDeclaration,
-): IEvidenceHost {
+  inventory: IEvidInventory,
+  declaration: IEvidDeclaration,
+): IEvidHost {
   const host = inventory.hosts.find(
     (candidate) => candidate.id === declaration.hostId,
   );
@@ -178,7 +178,7 @@ function requireHost(
   return host;
 }
 
-function line(declaration: IEvidenceDeclaration): number {
+function line(declaration: IEvidDeclaration): number {
   const range = declaration.location.range;
   if (range === undefined)
     throw new Error(`Missing Swagger declaration range: ${declaration.target}`);
@@ -186,8 +186,8 @@ function line(declaration: IEvidenceDeclaration): number {
 }
 
 function declarationText(
-  inventory: IEvidenceInventory,
-  declaration: IEvidenceDeclaration,
+  inventory: IEvidInventory,
+  declaration: IEvidDeclaration,
 ): string {
   const source = inventory.sources.find(
     (candidate) => candidate.physicalPath === declaration.location.file,

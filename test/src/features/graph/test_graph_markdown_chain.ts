@@ -1,10 +1,10 @@
 import {
-  EvidenceFingerprint,
-  EvidenceGraph,
-  EvidenceMarkdownAdapter,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
-import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidGraph,
+  EvidMarkdownAdapter,
+  EvidTypeScriptAdapter,
+} from "evid";
+import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -28,20 +28,20 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *    missing-acknowledgement findings derived from unavailable claim content.
  */
 export async function test_graph_markdown_chain(): Promise<void> {
-  const implementation = await new EvidenceTypeScriptAdapter().analyze(
+  const implementation = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/calculator.ts",
       "export function calculatePrice(): number { return 0; }",
     ),
   );
   const calculatePrice = requireUnit(implementation, "calculatePrice");
-  const implementationFingerprint = EvidenceFingerprint.inspect(
+  const implementationFingerprint = EvidFingerprint.inspect(
     implementation,
     calculatePrice.id,
   ).fingerprint;
 
   // The middle Markdown document claims that one TypeScript export implements its rule.
-  const requirements = await new EvidenceMarkdownAdapter().analyze(
+  const requirements = await new EvidMarkdownAdapter().analyze(
     TestSourceSnapshot.create(
       "docs/requirements.md",
       dedent`
@@ -50,20 +50,20 @@ export async function test_graph_markdown_chain(): Promise<void> {
         Calculate the final price.
 
         <!--
-        @evidence ../src/calculator.ts#calculatePrice Names the public implementation.
-        @evidenceReview ../src/calculator.ts#calculatePrice #${implementationFingerprint} Read the function and checked the return contract.
+        @evid ../src/calculator.ts#calculatePrice Names the public implementation.
+        @evidReview ../src/calculator.ts#calculatePrice #${implementationFingerprint} Read the function and checked the return contract.
         -->
       `,
     ),
   );
   const pricing = requireUnit(requirements, "pricing");
-  const requirementFingerprint = EvidenceFingerprint.inspect(
+  const requirementFingerprint = EvidFingerprint.inspect(
     requirements,
     pricing.id,
   ).fingerprint;
 
   // The downstream Markdown guide claims that it explains the middle requirement.
-  const guide = await new EvidenceMarkdownAdapter().analyze(
+  const guide = await new EvidMarkdownAdapter().analyze(
     TestSourceSnapshot.create(
       "docs/guide.md",
       dedent`
@@ -72,14 +72,14 @@ export async function test_graph_markdown_chain(): Promise<void> {
         Apply the configured pricing rule.
 
         <!--
-        @evidence docs/requirements.md#pricing Explains the pricing requirement.
-        @evidenceReview docs/requirements.md#pricing #${requirementFingerprint} Read the requirement and checked the guide steps.
+        @evid docs/requirements.md#pricing Explains the pricing requirement.
+        @evidReview docs/requirements.md#pricing #${requirementFingerprint} Read the requirement and checked the guide steps.
         -->
       `,
     ),
   );
   const checkout = requireUnit(guide, "checkout");
-  const result = EvidenceGraph.evaluate({
+  const result = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -134,7 +134,7 @@ export async function test_graph_markdown_chain(): Promise<void> {
   TestValidator.predicate("Markdown chain succeeds", result.success);
 
   // Failed claim discovery remains active and cannot become an empty passing host set.
-  const failedGuide = await new EvidenceMarkdownAdapter().analyze(
+  const failedGuide = await new EvidMarkdownAdapter().analyze(
     TestSourceSnapshot.fail(
       TestSourceSnapshot.create("docs/guide.md", "## Checkout {#checkout}"),
       {
@@ -144,7 +144,7 @@ export async function test_graph_markdown_chain(): Promise<void> {
       },
     ),
   );
-  const interrupted = EvidenceGraph.evaluate({
+  const interrupted = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -187,9 +187,9 @@ export async function test_graph_markdown_chain(): Promise<void> {
 }
 
 function requireUnit(
-  inventory: IEvidenceInventory,
+  inventory: IEvidInventory,
   identity: string,
-): IEvidenceUnit {
+): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.at(-1) === identity,
   );

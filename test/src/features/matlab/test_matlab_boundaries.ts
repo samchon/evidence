@@ -1,7 +1,7 @@
 import {
-  EvidenceLanguageRegistry,
-  EvidenceMatlabAdapter,
-} from "@wrtnlabs/evidence";
+  EvidLanguageRegistry,
+  EvidMatlabAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -15,7 +15,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Verify failed snapshots preserve incompleteness through adapter analysis.
  */
 export async function test_matlab_boundaries(): Promise<void> {
-  const adapter = new EvidenceMatlabAdapter();
+  const adapter = new EvidMatlabAdapter();
   for (const content of [
     "classdef Dynamic < dynamicprops\nend\n",
     "function Dynamic()\naddpath('other');\nend\n",
@@ -80,7 +80,7 @@ export async function test_matlab_boundaries(): Promise<void> {
     );
   TestValidator.equals(
     "configured .m uses MATLAB",
-    EvidenceLanguageRegistry.select("matlab", "Shared.m").id,
+    EvidLanguageRegistry.select("matlab", "Shared.m").id,
     "matlab",
   );
   const unavailable = TestSourceSnapshot.create("src/missing.m", "");

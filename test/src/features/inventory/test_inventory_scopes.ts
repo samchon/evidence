@@ -1,4 +1,4 @@
-import { EvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { TestInventory } from "../../internal/TestInventory";
@@ -50,7 +50,7 @@ export async function test_inventory_scopes(): Promise<void> {
     "export const unrelated = 3;",
   );
 
-  const index = new EvidenceInventory([input]);
+  const index = new EvidInventory([input]);
   const selected = index.select(["member"]);
 
   TestValidator.equals(

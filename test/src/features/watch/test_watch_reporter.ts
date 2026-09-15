@@ -1,8 +1,8 @@
-import { EvidenceWatchReporter } from "@wrtnlabs/evidence";
+import { EvidWatchReporter } from "evid";
 import type {
-  EvidenceWatchCycle,
-  IEvidenceWatchFailureCycle,
-} from "@wrtnlabs/evidence";
+  EvidWatchCycle,
+  IEvidWatchFailureCycle,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import typia from "typia";
 
@@ -20,7 +20,7 @@ import typia from "typia";
  *    instruction to remain visible.
  */
 export function test_watch_reporter(): void {
-  const failure: IEvidenceWatchFailureCycle = {
+  const failure: IEvidWatchFailureCycle = {
     schemaVersion: 1,
     command: "check",
     watch: true,
@@ -28,25 +28,25 @@ export function test_watch_reporter(): void {
     status: "failed",
     success: false,
     exitCode: 2,
-    configFile: "/project/evidence.config.ts",
+    configFile: "/project/evid.config.ts",
     message: "Imported settings are invalid.",
     repair: "Correct the imported settings.",
   };
 
   // JSON uses a single compact line that independently validates as a cycle.
-  const json = EvidenceWatchReporter.json(failure);
+  const json = EvidWatchReporter.json(failure);
   TestValidator.equals("one JSON line", json.trim().split("\n").length, 1);
   TestValidator.equals(
     "typed JSON cycle",
-    typia.json.assertParse<EvidenceWatchCycle>(json).cycle,
+    typia.json.assertParse<EvidWatchCycle>(json).cycle,
     7,
   );
 
   // Text identifies the cycle and retains the current failure and repair.
-  const text = EvidenceWatchReporter.text(failure);
+  const text = EvidWatchReporter.text(failure);
   TestValidator.predicate(
     "text cycle status",
-    text.includes("Evidence watch cycle 7 (failed)."),
+    text.includes("Evid watch cycle 7 (failed)."),
   );
   TestValidator.predicate(
     "text failure",

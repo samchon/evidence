@@ -1,4 +1,4 @@
-import { EvidenceTagParser } from "@wrtnlabs/evidence";
+import { EvidTagParser } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -19,10 +19,10 @@ export async function test_tag_comment_styles(): Promise<void> {
   const html = TestDocumentation.create(
     dedent`
     <!--
-      @evidence docs/spec.md#rule Implements the rule.
+      @evid docs/spec.md#rule Implements the rule.
       @architecture approved this wording.
       @internal is prose in this host grammar.
-      @evidenceReview docs/spec.md#rule Reviewed the claim.
+      @evidReview docs/spec.md#rule Reviewed the claim.
     -->
   `,
     {
@@ -32,7 +32,7 @@ export async function test_tag_comment_styles(): Promise<void> {
       allowWithdrawal: false,
     },
   );
-  const htmlResult = EvidenceTagParser.parse(
+  const htmlResult = EvidTagParser.parse(
     html.content,
     html.host,
     html.documentation,
@@ -57,7 +57,7 @@ export async function test_tag_comment_styles(): Promise<void> {
 
   const prisma = TestDocumentation.create(
     dedent`
-    /// @evidence prisma:Sale.price Implements the column.
+    /// @evid prisma:Sale.price Implements the column.
     /// @namespace Shop
     /// @internal Implementation detail.
   `.replaceAll("\n", "\r\n"),
@@ -69,7 +69,7 @@ export async function test_tag_comment_styles(): Promise<void> {
       allowWithdrawal: true,
     },
   );
-  const prismaResult = EvidenceTagParser.parse(
+  const prismaResult = EvidTagParser.parse(
     prisma.content,
     prisma.host,
     prisma.documentation,
@@ -89,7 +89,7 @@ export async function test_tag_comment_styles(): Promise<void> {
   if (entry === undefined || entry.location.range === undefined)
     throw new Error("Missing annotation range.");
   const range = entry.location.range;
-  const expected = "@evidence prisma:Sale.price Implements the column.";
+  const expected = "@evid prisma:Sale.price Implements the column.";
   TestValidator.equals(
     "exact source span excludes CR and comment prefix",
     prisma.content.slice(range.start.offset, range.end.offset),

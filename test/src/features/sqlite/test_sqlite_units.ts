@@ -1,9 +1,9 @@
 import {
-  EvidenceAccessor,
-  EvidenceFingerprint,
-  EvidenceInventory,
-  EvidenceSqliteAdapter,
-} from "@wrtnlabs/evidence";
+  EvidAccessor,
+  EvidFingerprint,
+  EvidInventory,
+  EvidSqliteAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -32,7 +32,7 @@ export async function test_sqlite_units(): Promise<void> {
     "schema.sql",
     "alias.sql",
   ]);
-  const inventory = await new EvidenceSqliteAdapter().analyze(snapshot);
+  const inventory = await new EvidSqliteAdapter().analyze(snapshot);
 
   TestValidator.equals(
     "SQLite extraction diagnostics",
@@ -47,7 +47,7 @@ export async function test_sqlite_units(): Promise<void> {
   TestValidator.equals(
     "exact semantic names and kinds",
     inventory.units
-      .map((unit) => `${unit.symbol}:${EvidenceAccessor.format(unit.identity)}`)
+      .map((unit) => `${unit.symbol}:${EvidAccessor.format(unit.identity)}`)
       .sort((left, right) => left.localeCompare(right, "en")),
     [
       'model:main["order.items"]',
@@ -82,7 +82,7 @@ export async function test_sqlite_units(): Promise<void> {
       );
     }
   }
-  const index = new EvidenceInventory([inventory]);
+  const index = new EvidInventory([inventory]);
   const selected = inventory.units.map((unit) => unit.id);
   TestValidator.equals(
     "literal dots resolve without invented owners",
@@ -108,7 +108,7 @@ export async function test_sqlite_units(): Promise<void> {
   );
 
   // Schema identity and content survive relocation while file-qualified addresses move.
-  const relocated = await new EvidenceSqliteAdapter().analyze(
+  const relocated = await new EvidSqliteAdapter().analyze(
     TestSourceSnapshot.create("moved.sql", source),
   );
   TestValidator.equals(
@@ -119,12 +119,12 @@ export async function test_sqlite_units(): Promise<void> {
   for (const unit of inventory.units)
     TestValidator.equals(
       "relocation-stable fingerprint",
-      EvidenceFingerprint.inspect(inventory, unit.id).fingerprint,
-      EvidenceFingerprint.inspect(relocated, unit.id).fingerprint,
+      EvidFingerprint.inspect(inventory, unit.id).fingerprint,
+      EvidFingerprint.inspect(relocated, unit.id).fingerprint,
     );
 
   // SQLite's main schema is implicit and quoted identifiers remain ASCII-insensitive.
-  const duplicate = await new EvidenceSqliteAdapter().analyze(
+  const duplicate = await new EvidSqliteAdapter().analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create(
         "one.sql",
@@ -142,13 +142,13 @@ export async function test_sqlite_units(): Promise<void> {
     false,
   );
 
-  const schemas = await new EvidenceSqliteAdapter().analyze(
+  const schemas = await new EvidSqliteAdapter().analyze(
     TestSourceSnapshot.create(
       "two-schemas.sql",
       "CREATE TABLE Item (id INTEGER); CREATE TEMP TABLE Item (id INTEGER);",
     ),
   );
-  const schemaIndex = new EvidenceInventory([schemas]);
+  const schemaIndex = new EvidInventory([schemas]);
   const schemaIds = schemas.units.map((unit) => unit.id);
   for (const schema of ["main", "temp"])
     TestValidator.equals(

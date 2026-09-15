@@ -1,8 +1,8 @@
 import {
-  EvidenceFingerprint,
-  EvidenceInventory,
-  EvidenceSqliteAdapter,
-} from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidInventory,
+  EvidSqliteAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -19,25 +19,25 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_sqlite_hosts(): Promise<void> {
   const source = dedent`
     -- 계약 😀
-    -- @evidence docs.md#table Implements the table.
+    -- @evid docs.md#table Implements the table.
     CREATE TABLE "주문" (
-      /** @evidence docs.md#amount Records the amount. */
+      /** @evid docs.md#amount Records the amount. */
       amount INTEGER DEFAULT 1,
-      text_value TEXT DEFAULT '@evidence docs.md#literal Inert string.'
+      text_value TEXT DEFAULT '@evid docs.md#literal Inert string.'
     );
     /* @internal Withdraws the complete table. */
     CREATE TABLE Retired (child INTEGER);
     /**
      * Examples:
      * ~~~sql
-     * @evidence docs.md#example Inert code.
+     * @evid docs.md#example Inert code.
      * ~~~
      *
-     *     @evidence docs.md#indented Inert indented code.
+     *     @evid docs.md#indented Inert indented code.
      */
     CREATE TABLE Example (id INTEGER);
   `.replaceAll("\n", "\r\n");
-  const adapter = new EvidenceSqliteAdapter();
+  const adapter = new EvidSqliteAdapter();
   const inventory = await adapter.analyze(
     TestSourceSnapshot.create("schema.sql", source),
   );
@@ -58,14 +58,14 @@ export async function test_sqlite_hosts(): Promise<void> {
   TestValidator.equals(
     "UTF-16 offset after astral comment",
     annotation.location.range.start.offset,
-    source.indexOf("@evidence"),
+    source.indexOf("@evid"),
   );
   TestValidator.equals(
     "CRLF line preserved",
     annotation.location.range.start.line,
     2,
   );
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   TestValidator.equals(
     "withdrawn child resolves hidden",
     graph.resolve(
@@ -90,18 +90,18 @@ export async function test_sqlite_hosts(): Promise<void> {
   );
   TestValidator.equals(
     "annotation edit preserves parent fingerprint",
-    EvidenceFingerprint.inspect(inventory, table.id).fingerprint,
-    EvidenceFingerprint.inspect(annotationEdit, table.id).fingerprint,
+    EvidFingerprint.inspect(inventory, table.id).fingerprint,
+    EvidFingerprint.inspect(annotationEdit, table.id).fingerprint,
   );
   TestValidator.notEquals(
     "column semantic edit invalidates parent fingerprint",
-    EvidenceFingerprint.inspect(inventory, table.id).fingerprint,
-    EvidenceFingerprint.inspect(semanticEdit, table.id).fingerprint,
+    EvidFingerprint.inspect(inventory, table.id).fingerprint,
+    EvidFingerprint.inspect(semanticEdit, table.id).fingerprint,
   );
 
   for (const comment of [
-    "-- @evidence docs.md#detached Detached comment.\n\nCREATE TABLE Fresh (id INTEGER);",
-    "CREATE TABLE Fresh (id INTEGER); -- @evidence docs.md#trailing Trailing comment.",
+    "-- @evid docs.md#detached Detached comment.\n\nCREATE TABLE Fresh (id INTEGER);",
+    "CREATE TABLE Fresh (id INTEGER); -- @evid docs.md#trailing Trailing comment.",
   ]) {
     const detached = await adapter.analyze(
       TestSourceSnapshot.create("detached.sql", comment),
@@ -124,7 +124,7 @@ export async function test_sqlite_hosts(): Promise<void> {
       dedent`
     CREATE TABLE Fresh (
       id INTEGER, -- ordinary trailing prose
-      -- @evidence docs.md#next Documents the next column.
+      -- @evid docs.md#next Documents the next column.
       documented TEXT
     );
   `,

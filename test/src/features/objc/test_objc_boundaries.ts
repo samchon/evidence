@@ -1,7 +1,7 @@
 import {
-  EvidenceLanguageRegistry,
-  EvidenceObjcAdapter,
-} from "@wrtnlabs/evidence";
+  EvidLanguageRegistry,
+  EvidObjcAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -16,12 +16,12 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Verify a source failure remains incomplete.
  */
 export async function test_objc_boundaries(): Promise<void> {
-  const adapter = new EvidenceObjcAdapter();
+  const adapter = new EvidObjcAdapter();
   TestValidator.equals(
     "configured types distinguish the shared MATLAB and Objective-C extension",
     [
-      EvidenceLanguageRegistry.select("objc", "src/Shared.m").id,
-      EvidenceLanguageRegistry.select("matlab", "src/Shared.m").id,
+      EvidLanguageRegistry.select("objc", "src/Shared.m").id,
+      EvidLanguageRegistry.select("matlab", "src/Shared.m").id,
     ],
     ["objc", "matlab"],
   );
@@ -64,7 +64,7 @@ export async function test_objc_boundaries(): Promise<void> {
     );
     TestValidator.equals(
       "selected grammar wins overlapping extension",
-      EvidenceLanguageRegistry.select("objc", file).id,
+      EvidLanguageRegistry.select("objc", file).id,
       "objc",
     );
   }

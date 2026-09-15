@@ -1,9 +1,9 @@
-import { EvidenceFingerprint, EvidencePrismaAdapter } from "@wrtnlabs/evidence";
+import { EvidFingerprint, EvidPrismaAdapter } from "evid";
 import type {
-  IEvidenceInventory,
-  IEvidenceSourceFile,
-  IEvidenceUnit,
-} from "@wrtnlabs/evidence";
+  IEvidInventory,
+  IEvidSourceFile,
+  IEvidUnit,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -68,8 +68,8 @@ export async function test_prisma_units(): Promise<void> {
   );
   TestValidator.equals(
     "model fingerprint survives a file move",
-    EvidenceFingerprint.inspect(moved, movedSale.id).fingerprint,
-    EvidenceFingerprint.inspect(baseline, originalSale.id).fingerprint,
+    EvidFingerprint.inspect(moved, movedSale.id).fingerprint,
+    EvidFingerprint.inspect(baseline, originalSale.id).fingerprint,
   );
 
   // Member semantics affect the model subtree without changing the model's own digest.
@@ -82,15 +82,15 @@ export async function test_prisma_units(): Promise<void> {
   );
   TestValidator.notEquals(
     "model fingerprint includes member content",
-    EvidenceFingerprint.inspect(changed, changedSale.id).fingerprint,
-    EvidenceFingerprint.inspect(baseline, originalSale.id).fingerprint,
+    EvidFingerprint.inspect(changed, changedSale.id).fingerprint,
+    EvidFingerprint.inspect(baseline, originalSale.id).fingerprint,
   );
 }
 
 async function analyze(
   moved: boolean,
   priceType: string,
-): Promise<IEvidenceInventory> {
+): Promise<IEvidInventory> {
   const header = dedent`
     generator client {
       provider        = "prisma-client-js"
@@ -135,21 +135,21 @@ async function analyze(
     "prisma/relations.schema",
     moved ? `${sale}\n\n${seller}` : seller,
   );
-  return new EvidencePrismaAdapter().analyze(
+  return new EvidPrismaAdapter().analyze(
     TestSourceSnapshot.combine([core, relations]),
   );
 }
 
-function requireUnit(inventory: IEvidenceInventory, id: string): IEvidenceUnit {
+function requireUnit(inventory: IEvidInventory, id: string): IEvidUnit {
   const unit = inventory.units.find((candidate) => candidate.id === id);
   if (unit === undefined) throw new Error(`Missing Prisma unit: ${id}`);
   return unit;
 }
 
 function requireSource(
-  inventory: IEvidenceInventory,
+  inventory: IEvidInventory,
   id: string,
-): IEvidenceSourceFile {
+): IEvidSourceFile {
   const source = inventory.sources.find((candidate) => candidate.id === id);
   if (source === undefined) throw new Error(`Missing Prisma source: ${id}`);
   return source;

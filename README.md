@@ -1,6 +1,6 @@
-# @wrtnlabs/evidence
+# evid
 
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/wrtnlabs/evidence/blob/master/LICENSE) [![npm version](https://img.shields.io/npm/v/@wrtnlabs/evidence.svg)](https://www.npmjs.com/package/@wrtnlabs/evidence) [![npm downloads](https://img.shields.io/npm/dm/@wrtnlabs/evidence.svg)](https://www.npmjs.com/package/@wrtnlabs/evidence) [![build](https://github.com/wrtnlabs/evidence/actions/workflows/build.yml/badge.svg)](https://github.com/wrtnlabs/evidence/actions/workflows/build.yml) [![test](https://github.com/wrtnlabs/evidence/actions/workflows/test.yml/badge.svg)](https://github.com/wrtnlabs/evidence/actions/workflows/test.yml)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/wrtnlabs/evid/blob/master/LICENSE) [![npm version](https://img.shields.io/npm/v/evid.svg)](https://www.npmjs.com/package/evid) [![npm downloads](https://img.shields.io/npm/dm/evid.svg)](https://www.npmjs.com/package/evid) [![build](https://github.com/wrtnlabs/evid/actions/workflows/build.yml/badge.svg)](https://github.com/wrtnlabs/evid/actions/workflows/build.yml) [![test](https://github.com/wrtnlabs/evid/actions/workflows/test.yml/badge.svg)](https://github.com/wrtnlabs/evid/actions/workflows/test.yml)
 
 ![Evidence Graph: make every SKILL instruction 100% enforced](https://ttsc.dev/evidence/og-evidence-skill-instructions.png)
 
@@ -11,10 +11,10 @@ Every rule, requirement, schema, and API becomes an obligation the check enforce
 
 ```tsx
 /**
- * @evidence docs/discount.md#coupon-stacking States the per-issuer stacking limit this section defines, in the buyer's words.
- * @evidence ../hooks/useCouponStacking.ts#useCouponStacking Renders the limit this hook resolves.
- * @evidence .agents/skills/principles/SKILL.md#no-hard-coding Renders limits from props instead of branching on known issuer names.
- * @evidenceExclude .agents/skills/principles/SKILL.md#fix-root-causes No failure path exists in a pure renderer.
+ * @evid docs/discount.md#coupon-stacking States the per-issuer stacking limit this section defines, in the buyer's words.
+ * @evid ../hooks/useCouponStacking.ts#useCouponStacking Renders the limit this hook resolves.
+ * @evid .agents/skills/principles/SKILL.md#no-hard-coding Renders limits from props instead of branching on known issuer names.
+ * @evidExclude .agents/skills/principles/SKILL.md#fix-root-causes No failure path exists in a pure renderer.
  */
 export function CouponStackingNotice(props: IProps): JSX.Element;
 ```
@@ -23,26 +23,26 @@ Four sentences the agent must write before the check passes: what the component 
 
 ```bash
 $ npx evidence
-Evidence check complete.
+Evid check complete.
 Coverage: 3/4 units covered, 1 missing.
 
 ERROR [graph-missing-acknowledgement] claim[0] 'components' (typescript) -> reference[1] (typescript)
 Location: /workspace/app/src/hooks/useCouponStacking.ts:1:1
 Claim 1 ('components') reference 2: Missing acknowledgement for '/workspace/app/src/hooks/useCouponStacking.ts#useCouponStacking'.
-Repair: Cite the claim artifact that implements this unit with @evidence, or exclude it on an eligible carrier when it does not apply.
+Repair: Cite the claim artifact that implements this unit with @evid, or exclude it on an eligible carrier when it does not apply.
 ```
 
-The error list is the task list. Evidence reads 19 programming languages, 7 database schema languages, Markdown, and Swagger from source, with no compiler or build of the checked project.
+The error list is the task list. Evid reads 19 programming languages, 7 database schema languages, Markdown, and Swagger from source, with no compiler or build of the checked project.
 
 ## Setup
 
 ```bash
-npm install -D typescript ttsc @wrtnlabs/evidence
+npm install -D typescript ttsc evid
 npx evidence init
 npx evidence
 ```
 
-`typescript` and [`ttsc`](https://github.com/samchon/ttsc) are peer dependencies; `ttsc` supplies `ttsx`, which evaluates `evidence.config.ts` without a project `tsconfig.json`. Grammars download on first use. [Step 1](#step-1-enforce-your-principles) fills the config in.
+`typescript` and [`ttsc`](https://github.com/samchon/ttsc) are peer dependencies; `ttsc` supplies `ttsx`, which evaluates `evid.config.ts` without a project `tsconfig.json`. Grammars download on first use. [Step 1](#step-1-enforce-your-principles) fills the config in.
 
 ## Why a graph
 
@@ -68,9 +68,9 @@ So the checker asks. Every function answers every rule in its own documentation 
 
 ```ts
 /**
- * @evidence .agents/skills/principles/SKILL.md#no-hard-coding Looks the handler up in the registry it was handed and branches on no known name.
- * @evidence .agents/skills/principles/SKILL.md#fix-root-causes Rejects an unknown name at the lookup instead of retrying a failed call later.
- * @evidence .agents/skills/principles/SKILL.md#yagni One lookup and one throw, with no cache or index built ahead of time.
+ * @evid .agents/skills/principles/SKILL.md#no-hard-coding Looks the handler up in the registry it was handed and branches on no known name.
+ * @evid .agents/skills/principles/SKILL.md#fix-root-causes Rejects an unknown name at the lookup instead of retrying a failed call later.
+ * @evid .agents/skills/principles/SKILL.md#yagni One lookup and one throw, with no cache or index built ahead of time.
  */
 export function resolveHandler(name: string, registry: Map<string, Handler>): Handler;
 ```
@@ -81,10 +81,10 @@ The checker cannot tell whether a sentence is true. That is the reviewer's job, 
 
 ## Step 1: Enforce your principles
 
-Replace the starter `evidence.config.ts` with one claim:
+Replace the starter `evid.config.ts` with one claim:
 
 ```ts
-import type { IEvidenceConfig } from "@wrtnlabs/evidence";
+import type { IEvidConfig } from "evid";
 
 export default {
   claims: [
@@ -101,14 +101,14 @@ export default {
       },
     },
   ],
-} satisfies IEvidenceConfig;
+} satisfies IEvidConfig;
 ```
 
 A **claim** selects what must cite: every function under `src`. Its **reference** selects what must be cited: every H2 in the skill file. `checklist` makes every function answer every heading.
 
 ```bash
 $ npx evidence
-Evidence check complete.
+Evid check complete.
 Coverage: 0/3 units covered, 3 missing.
 
 ERROR [graph-checklist-missing] claim[0] 'every function answers every engineering principle' (typescript) -> reference[0] (markdown)
@@ -120,11 +120,11 @@ Repair: Cite every missing checklist item from this host, or exclude the scope t
 On an existing repository this is hundreds of errors: the real distance between your rule file and your code. Paying it down is not your job. Add this to `AGENTS.md`:
 
 ```markdown
-## Evidence
+## Evid
 
 Run `npx evidence` before finishing any task. Every error names an obligation and its repair.
-Do the work first, then write the `@evidence` line on the declaration that supplies it, stating why in one sentence.
-Never write a tag to silence an error. Never weaken `evidence.config.ts` to pass.
+Do the work first, then write the `@evid` line on the declaration that supplies it, stating why in one sentence.
+Never write a tag to silence an error. Never weaken `evid.config.ts` to pass.
 Use `npx evidence list` to find an address and `npx evidence inspect '<target>'` to see why one does not resolve.
 ```
 
@@ -132,11 +132,11 @@ The agent works through the list, fixing code wherever an honest answer cannot b
 
 ```bash
 $ npx evidence
-Evidence check complete.
+Evid check complete.
 Coverage: 3/3 units covered, 0 missing.
 ```
 
-Run the same command in CI and keep its exit code: 1 is a violation, 2 is incomplete analysis. `requireReview: true` on the reference also demands an `@evidenceReview` per answer that expires when the rule's text changes; see [Reviews](#reviews).
+Run the same command in CI and keep its exit code: 1 is a violation, 2 is incomplete analysis. `requireReview: true` on the reference also demands an `@evidReview` per answer that expires when the rule's text changes; see [Reviews](#reviews).
 
 ## Step 2: Ground code in requirements
 
@@ -152,7 +152,7 @@ Each arrow is one claim. Requirements cite idea notes, so a dropped idea is caug
 Two claims draw the bottom of the picture:
 
 ```ts
-import type { IEvidenceConfig } from "@wrtnlabs/evidence";
+import type { IEvidConfig } from "evid";
 
 export default {
   claims: [
@@ -172,11 +172,11 @@ export default {
         type: "typescript",
         files: ["src/**/*.ts"],
         symbol: "function",
-        noEvidenceExclude: true,
+        noEvidExclude: true,
       },
     },
   ],
-} satisfies IEvidenceConfig;
+} satisfies IEvidConfig;
 ```
 
 Every requirement must be cited by a function under `src`; every function under `src` must be cited by a test, with no exclusions. With one requirement, `src/calculator.ts` exporting `add`, and `test/calculator.test.ts` exporting `test_add`, the first check fails twice:
@@ -189,31 +189,31 @@ Add prices without intermediate rounding.
 
 ```bash
 $ npx evidence
-Evidence check complete.
+Evid check complete.
 Coverage: 0/2 units covered, 2 missing.
 
 ERROR [graph-missing-acknowledgement] claim[0] 'implementation' (typescript) -> reference[0] (markdown)
 Location: /workspace/app/docs/requirements.md:3:1
 Claim 1 ('implementation') reference 1: Missing acknowledgement for '/workspace/app/docs/requirements.md#["exact-addition"]'.
-Repair: Cite the claim artifact that implements this unit with @evidence, or exclude it on an eligible carrier when it does not apply.
+Repair: Cite the claim artifact that implements this unit with @evid, or exclude it on an eligible carrier when it does not apply.
 
 ERROR [graph-missing-acknowledgement] claim[1] 'tests' (typescript) -> reference[0] (typescript)
 Location: /workspace/app/src/calculator.ts:1:1
 Claim 2 ('tests') reference 1: Missing acknowledgement for '/workspace/app/src/calculator.ts#add'.
-Repair: Cite the claim artifact that implements this unit with positive @evidence.
+Repair: Cite the claim artifact that implements this unit with positive @evid.
 ```
 
 Markdown targets resolve from the reference root, which defaults to the config directory; programming targets resolve from the citing file:
 
 ```ts
-/** @evidence docs/requirements.md#exact-addition Implements exact addition without intermediate rounding. */
+/** @evid docs/requirements.md#exact-addition Implements exact addition without intermediate rounding. */
 export function add(left: number, right: number): number {
   return left + right;
 }
 ```
 
 ```ts
-/** @evidence ../src/calculator.ts#add Verifies exact addition through the public function. */
+/** @evid ../src/calculator.ts#add Verifies exact addition through the public function. */
 export function test_add(): void {
   if (add(1, 2) !== 3) throw new Error("Unexpected sum.");
 }
@@ -221,16 +221,16 @@ export function test_add(): void {
 
 ```bash
 $ npx evidence
-Evidence check complete.
+Evid check complete.
 Coverage: 2/2 units covered, 0 missing.
 ```
 
-Evidence checked two edges. It did not run `test_add` and did not prove either sentence true. One layer up, Markdown cites Markdown in HTML comments, so the rendered document stays clean:
+Evid checked two edges. It did not run `test_add` and did not prove either sentence true. One layer up, Markdown cites Markdown in HTML comments, so the rendered document stays clean:
 
 ```md
 ## Coupon stacking {#coupon-stacking}
 
-<!-- @evidence ideas/2026-03-checkout.md#stacking-limit Turns the note's per-issuer idea into a testable limit. -->
+<!-- @evid ideas/2026-03-checkout.md#stacking-limit Turns the note's per-issuer idea into a testable limit. -->
 
 A buyer may apply at most one coupon per issuer to one order.
 ```
@@ -247,7 +247,7 @@ A buyer may apply at most one coupon per issuer to one order.
 No table without a document behind it, and no API without a test on it:
 
 ```ts
-import type { IEvidenceConfig } from "@wrtnlabs/evidence";
+import type { IEvidConfig } from "evid";
 
 export default {
   claims: [
@@ -272,15 +272,15 @@ export default {
       type: "typescript",
       files: ["test/features/**/*.ts"],
       symbol: "function",
-      reference: { type: "swagger", file: "packages/api/swagger.json", noEvidenceExclude: true },
+      reference: { type: "swagger", file: "packages/api/swagger.json", noEvidExclude: true },
     },
   ],
-} satisfies IEvidenceConfig;
+} satisfies IEvidConfig;
 ```
 
-- Prisma: `/// @evidence docs/requirements/orders.md#order-lifecycle Persists every state the lifecycle names.`
-- Swagger `description`: `@evidence prisma:Order Reads and transitions the persisted order.`
-- Test: `/** @evidence POST:/orders/{orderId}/coupons Rejects an over-stacked coupon set. */`
+- Prisma: `/// @evid docs/requirements/orders.md#order-lifecycle Persists every state the lifecycle names.`
+- Swagger `description`: `@evid prisma:Order Reads and transitions the persisted order.`
+- Test: `/** @evid POST:/orders/{orderId}/coupons Rejects an over-stacked coupon set. */`
 
 ### Frontend
 
@@ -292,7 +292,7 @@ export default {
 The first layer is a document somebody else publishes:
 
 ```ts
-import type { IEvidenceConfig } from "@wrtnlabs/evidence";
+import type { IEvidConfig } from "evid";
 
 export default {
   claims: [
@@ -318,7 +318,7 @@ export default {
       reference: { type: "typescript", files: ["src/screens/**/*.tsx"], symbol: "function" },
     },
   ],
-} satisfies IEvidenceConfig;
+} satisfies IEvidConfig;
 ```
 
 "The API is wired up but there is no screen yet" stops being a green check.
@@ -344,10 +344,10 @@ A **claim** is a population whose hosts must cite; a **reference** is a populati
 
 ### Coverage
 
-- `@evidence` covers its target and the target's selected descendants: a class covers its methods, a file its sections, a model its columns.
-- `@evidenceExclude` covers the same way while recording that the target does not apply. The two cannot overlap in one obligation.
-- `noEvidenceExclude` refuses exclusions. `uniqueEvidence` allows at most one positive host per unit. `singleEvidencePerSymbol` requires every host, tagged or not, to cite exactly one unit. `evidenceExcludeCarriers` limits which claim files may carry exclusions.
-- `checklist` (Markdown references) requires every host to answer every selected heading; `@evidenceExclude docs/rules.md <reason>` excuses one host from the whole file. It cannot combine with `uniqueEvidence` or `singleEvidencePerSymbol`.
+- `@evid` covers its target and the target's selected descendants: a class covers its methods, a file its sections, a model its columns.
+- `@evidExclude` covers the same way while recording that the target does not apply. The two cannot overlap in one obligation.
+- `noEvidExclude` refuses exclusions. `uniqueEvid` allows at most one positive host per unit. `singleEvidPerSymbol` requires every host, tagged or not, to cite exactly one unit. `evidenceExcludeCarriers` limits which claim files may carry exclusions.
+- `checklist` (Markdown references) requires every host to answer every selected heading; `@evidExclude docs/rules.md <reason>` excuses one host from the whole file. It cannot combine with `uniqueEvid` or `singleEvidPerSymbol`.
 
 ### Reviews
 
@@ -355,8 +355,8 @@ A false tag removes the error, not the problem. `requireReview: true` demands a 
 
 ```ts
 /**
- * @evidence .agents/skills/principles/SKILL.md#no-hard-coding Looks the handler up in the registry it was handed and branches on no known name.
- * @evidenceReview .agents/skills/principles/SKILL.md#no-hard-coding #6385235 Searched the body for literal names and fixture values; found none.
+ * @evid .agents/skills/principles/SKILL.md#no-hard-coding Looks the handler up in the registry it was handed and branches on no known name.
+ * @evidReview .agents/skills/principles/SKILL.md#no-hard-coding #6385235 Searched the body for literal names and fixture values; found none.
  */
 ```
 
@@ -365,11 +365,11 @@ The fingerprint is seven hexadecimal characters over the cited unit and its subt
 ```bash
 ERROR [graph-missing-review] claim[0] 'every function answers every engineering principle' (typescript) -> reference[0] (markdown)
 Location: /workspace/app/src/resolve.ts:4:4
-Claim 1 ('every function answers every engineering principle') reference 1: @evidence for '.agents/skills/principles/SKILL.md#no-hard-coding' has no matching @evidenceReview; the current scope fingerprint is '#6385235'.
-Repair: Add '@evidenceReview .agents/skills/principles/SKILL.md#no-hard-coding #6385235 <what you checked>' on the same semantic host.
+Claim 1 ('every function answers every engineering principle') reference 1: @evid for '.agents/skills/principles/SKILL.md#no-hard-coding' has no matching @evidReview; the current scope fingerprint is '#6385235'.
+Repair: Add '@evidReview .agents/skills/principles/SKILL.md#no-hard-coding #6385235 <what you checked>' on the same semantic host.
 ```
 
-Reviews never provide coverage. `@evidenceReview` pairs with `@evidence`; `@evidenceExcludeReview` pairs with `@evidenceExclude`. A fingerprint version upgrade expires every review once; re-review before updating the value. The checker handles omissions; humans handle falsehoods.
+Reviews never provide coverage. `@evidReview` pairs with `@evid`; `@evidExcludeReview` pairs with `@evidExclude`. A fingerprint version upgrade expires every review once; re-review before updating the value. The checker handles omissions; humans handle falsehoods.
 
 ### States
 
@@ -385,7 +385,7 @@ Incomplete analysis never passes as an empty population, and a resolved citation
 
 ## Configuration
 
-`evidence.config.ts` exports one `IEvidenceConfig`: `claims` and an optional root `severity`. It is evaluated through the consumer's `ttsx` and validated with `typia` before any source is read.
+`evid.config.ts` exports one `IEvidConfig`: `claims` and an optional root `severity`. It is evaluated through the consumer's `ttsx` and validated with `typia` before any source is read.
 
 ### Claim
 
@@ -393,7 +393,7 @@ Incomplete analysis never passes as an empty population, and a resolved citation
 | --- | --- | --- | --- |
 | `type` | Artifact type |  | Selects the adapter: `typescript`, `rust`, `prisma`, `markdown`, `swagger`, and every other certified type. |
 | `files` | `string[]` |  | Ordered globs relative to `root`; `!` excludes, a later pattern reincludes. |
-| `reference` | `IEvidenceReference \| IEvidenceReference[]` |  | One reference or an array of independent obligations. |
+| `reference` | `IEvidReference \| IEvidReference[]` |  | One reference or an array of independent obligations. |
 | `name` | `string` |  | Labels diagnostics. |
 | `severity` | `"error" \| "warning" \| "off"` | root, then `error` | `off` removes the claim; `warning` never fails the check. |
 | `disabled` | `boolean` | `false` | Validates the shape but loads nothing. |
@@ -409,10 +409,10 @@ Incomplete analysis never passes as an empty population, and a resolved citation
 | `files` / `file` | `string[]` / `string` |  | Globs, or for a Swagger reference one local path or URL. |
 | `root` | `string` | config directory | Same rules as claim roots. |
 | `symbol` | Symbol or nonempty array | family default | Selects the denominator. |
-| `severity` | Evidence severity | claim | `off` removes the reference. |
-| `noEvidenceExclude` | `boolean` | `false` | Exclusions fail and provide no coverage. |
-| `uniqueEvidence` | `boolean` | `false` | At most one positive host per unit. |
-| `singleEvidencePerSymbol` | `boolean` | `false` | Every host cites exactly one unit. |
+| `severity` | Evid severity | claim | `off` removes the reference. |
+| `noEvidExclude` | `boolean` | `false` | Exclusions fail and provide no coverage. |
+| `uniqueEvid` | `boolean` | `false` | At most one positive host per unit. |
+| `singleEvidPerSymbol` | `boolean` | `false` | Every host cites exactly one unit. |
 | `requireReview` | `boolean` | `false` | Every acknowledgement needs a current review. |
 | `checklist` | `boolean` | `false` | Markdown only. Every host answers every selected heading. |
 
@@ -430,10 +430,10 @@ Incomplete analysis never passes as an empty population, and a resolved citation
 ## Tags and targets
 
 ```text
-@evidence <target> <reason>
-@evidenceExclude <target> <reason>
-@evidenceReview <target> [#fingerprint] <description>
-@evidenceExcludeReview <target> [#fingerprint] <description>
+@evid <target> <reason>
+@evidExclude <target> <reason>
+@evidReview <target> [#fingerprint] <description>
+@evidExcludeReview <target> [#fingerprint] <description>
 ```
 
 Tags live in documentation attached to a public declaration. A target is one whitespace-free token; the prose is required. `{@link Symbol}` is rejected: addresses are file-qualified. `@internal`, `@hidden`, and `@ignore` withdraw a declaration and its descendants.
@@ -546,7 +546,7 @@ Markdown yields one `file` unit and one per ATX `h1` to `h4`; HTML comments are 
 
 | Option | Behavior |
 | --- | --- |
-| `-c, --config <path>` | Config path, default `evidence.config.ts`. |
+| `-c, --config <path>` | Config path, default `evid.config.ts`. |
 | `--cwd <path>` | Resolve CLI paths from another directory. |
 | `--format <value>` | Output format from the table above. |
 | `-o, --output <path>` | Write the result to a file and keep stdout empty. |
@@ -560,23 +560,23 @@ Exit 0 is a complete analysis without errors, 1 is a complete analysis with viol
 Importing the package starts no parser, loads no configuration, and runs no command.
 
 ```ts
-import { EvidenceChecker, EvidenceReporter } from "@wrtnlabs/evidence";
+import { EvidChecker, EvidReporter } from "evid";
 
-const report = await EvidenceChecker.check("evidence.config.ts");
-process.stdout.write(EvidenceReporter.render(report, "text"));
+const report = await EvidChecker.check("evid.config.ts");
+process.stdout.write(EvidReporter.render(report, "text"));
 process.exitCode = report.exitCode;
 ```
 
 | Entry point | Purpose |
 | --- | --- |
-| `EvidenceChecker.check` / `analyze` | The report, or the report with its graph input and result. |
-| `new EvidenceQuery(analysis, cwd)` | `list`, `inspect`, and `graph` over one captured analysis. |
-| `EvidenceCommand.run(args)` | A finite CLI command with buffered output. |
-| `new EvidenceWatcher(configFile, options)` | `watch(callback)` and `close()`; poll, debounce, and parser-retry intervals. |
-| `EvidenceConfigLoader.load` / `plan` | The validated config, or the plan with defaults resolved. |
-| `new EvidenceParser()` | `parse(input, callback)` over a borrowed Tree-sitter tree with query helpers. |
-| `EvidenceLanguageRegistry` | `list()`, `databases()`, `candidates()`, `select(type, file)`. |
-| `Evidence*Adapter`, `EvidenceInventory`, `EvidenceGraph`, `EvidenceFingerprint` | Adapter analysis, inventory merging, graph evaluation, fingerprints. |
+| `EvidChecker.check` / `analyze` | The report, or the report with its graph input and result. |
+| `new EvidQuery(analysis, cwd)` | `list`, `inspect`, and `graph` over one captured analysis. |
+| `EvidCommand.run(args)` | A finite CLI command with buffered output. |
+| `new EvidWatcher(configFile, options)` | `watch(callback)` and `close()`; poll, debounce, and parser-retry intervals. |
+| `EvidConfigLoader.load` / `plan` | The validated config, or the plan with defaults resolved. |
+| `new EvidParser()` | `parse(input, callback)` over a borrowed Tree-sitter tree with query helpers. |
+| `EvidLanguageRegistry` | `list()`, `databases()`, `candidates()`, `select(type, file)`. |
+| `Evid*Adapter`, `EvidInventory`, `EvidGraph`, `EvidFingerprint` | Adapter analysis, inventory merging, graph evaluation, fingerprints. |
 
 ## Grammar cache
 
@@ -592,6 +592,6 @@ The package ships no grammar WASM. A manifest pins each grammar's commit, URL, S
 
 ## Related
 
-- [Evidence Graph: Make Every SKILL Instruction 100% Enforced](https://ttsc.dev/blog/evidence-graph-make-every-skill-instruction-100-percent-enforced/), the article this README follows.
+- [Evid Graph: Make Every SKILL Instruction 100% Enforced](https://ttsc.dev/blog/evidence-graph-make-every-skill-instruction-100-percent-enforced/), the article this README follows.
 - [`@ttsc/evidence`](https://github.com/samchon/ttsc/tree/master/packages/evidence), the compiler-integrated variant for TypeScript projects on `ttsc`.
-- [Benchmark](https://ttsc.dev/docs/benchmark/evidence) and [raw sessions](https://github.com/samchon/evidence-benchmark-results).
+- [Benchmark](https://ttsc.dev/docs/benchmark/evidence) and [raw sessions](https://github.com/wrtnlabs/evid-benchmark-results).

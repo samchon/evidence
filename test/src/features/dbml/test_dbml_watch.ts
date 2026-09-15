@@ -1,4 +1,4 @@
-﻿import { EvidenceChecker, EvidenceWatcher } from "@wrtnlabs/evidence";
+﻿import { EvidChecker, EvidWatcher } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
@@ -17,19 +17,19 @@ export async function test_dbml_watch(): Promise<void> {
   await TestFileSystem.experiment(
     "dbml-watch",
     {
-      "evidence.config.ts": dedent`
+      "evid.config.ts": dedent`
       export default { claims: [{ type: "typescript", files: ["claims.ts"], reference: { type: "dbml", files: ["schema/*.dbml"], symbol: "relation" } }] };
     `,
       "claims.ts": dedent`
-      /** @evidence ./schema/posts.dbml#posts Covers declared post relations. */
+      /** @evid ./schema/posts.dbml#posts Covers declared post relations. */
       export function verify() {}
     `,
       "schema/posts.dbml":
         "Table posts { user_id int }\nRef owner: posts.user_id > users.id",
     },
     async (directory) => {
-      const file = join(directory, "evidence.config.ts");
-      const watcher = new EvidenceWatcher(file, {
+      const file = join(directory, "evid.config.ts");
+      const watcher = new EvidWatcher(file, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
       });
@@ -39,7 +39,7 @@ export async function test_dbml_watch(): Promise<void> {
           TestValidator.equals(
             `fresh DBML watch cycle ${cycle.cycle}`,
             cycle.report,
-            await EvidenceChecker.check(file),
+            await EvidChecker.check(file),
           );
           if (cycle.cycle === 1) {
             TestValidator.equals(

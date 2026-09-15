@@ -1,4 +1,4 @@
-import { EvidenceDartAdapter } from "@wrtnlabs/evidence";
+import { EvidDartAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -12,7 +12,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Accept supported external imports and local forms, reject an unadvertised extension, and retain an unreadable-source failure.
  */
 export async function test_dart_boundaries(): Promise<void> {
-  const adapter = new EvidenceDartAdapter();
+  const adapter = new EvidDartAdapter();
   for (const [content, code] of new Map<string, string>([
     ["part 'missing.g.dart'; class Existing {}", "dart-unresolved-library"],
     ["part of missing.library; class Model {}", "dart-part-owner"],

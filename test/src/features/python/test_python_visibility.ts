@@ -1,4 +1,4 @@
-import { EvidenceInventory, EvidencePythonAdapter } from "@wrtnlabs/evidence";
+import { EvidInventory, EvidPythonAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -14,7 +14,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Verify withdrawal hides its target without suppressing unrelated public declarations or completion.
  */
 export async function test_python_visibility(): Promise<void> {
-  const inventory = await new EvidencePythonAdapter().analyze(
+  const inventory = await new EvidPythonAdapter().analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create(
         "pkg/dep.py",
@@ -61,7 +61,7 @@ export async function test_python_visibility(): Promise<void> {
     false,
   );
 
-  const population = new EvidenceInventory([inventory]).select(
+  const population = new EvidInventory([inventory]).select(
     inventory.units.map((unit) => unit.id),
   );
   TestValidator.equals(

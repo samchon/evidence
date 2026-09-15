@@ -1,4 +1,4 @@
-import { EvidenceChecker, EvidenceWatcher } from "@wrtnlabs/evidence";
+import { EvidChecker, EvidWatcher } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
@@ -17,16 +17,16 @@ export async function test_postgresql_watch(): Promise<void> {
   await TestFileSystem.experiment(
     "postgresql-watch",
     {
-      "evidence.config.ts": dedent`
+      "evid.config.ts": dedent`
       export default { claims: [{ type: "typescript", files: ["claim.ts"], reference: { type: "postgresql", files: ["schema/*.sql"], symbol: "column" } }] };
     `,
       "claim.ts":
-        "/** @evidence ./schema/base.sql#app.item Covers the table. */\nexport function claim() {}\n",
+        "/** @evid ./schema/base.sql#app.item Covers the table. */\nexport function claim() {}\n",
       "schema/base.sql": "CREATE TABLE app.Item (id integer);\n",
     },
     async (directory) => {
-      const file = join(directory, "evidence.config.ts");
-      const watcher = new EvidenceWatcher(file, {
+      const file = join(directory, "evid.config.ts");
+      const watcher = new EvidWatcher(file, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
       });
@@ -36,7 +36,7 @@ export async function test_postgresql_watch(): Promise<void> {
           TestValidator.equals(
             `fresh snapshot ${cycle.cycle}`,
             cycle.report,
-            await EvidenceChecker.check(file),
+            await EvidChecker.check(file),
           );
           if (cycle.cycle === 1) {
             TestValidator.equals("initial coverage", cycle.success, true);

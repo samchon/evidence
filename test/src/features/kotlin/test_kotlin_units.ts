@@ -1,8 +1,8 @@
 import {
-  EvidenceAccessor,
-  EvidenceInventory,
-  EvidenceKotlinAdapter,
-} from "@wrtnlabs/evidence";
+  EvidAccessor,
+  EvidInventory,
+  EvidKotlinAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -61,13 +61,13 @@ export async function test_kotlin_units(): Promise<void> {
     `,
     ),
   ]);
-  const inventory = await new EvidenceKotlinAdapter().analyze(snapshot);
+  const inventory = await new EvidKotlinAdapter().analyze(snapshot);
 
   TestValidator.equals("complete Kotlin surface", inventory.diagnostics, []);
   TestValidator.equals(
     "exact declarations",
     inventory.units
-      .map((unit) => `${unit.symbol}:${EvidenceAccessor.format(unit.identity)}`)
+      .map((unit) => `${unit.symbol}:${EvidAccessor.format(unit.identity)}`)
       .sort((a, b) => a.localeCompare(b)),
     [
       "type:example.Contract",
@@ -114,7 +114,7 @@ export async function test_kotlin_units(): Promise<void> {
     inventory.units.reduce((sum, unit) => sum + unit.sites.length, 0),
   );
   const selected = inventory.units.map((unit) => unit.id);
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   TestValidator.equals(
     "logical file alias resolves same unit",
     graph.resolve(

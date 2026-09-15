@@ -1,4 +1,4 @@
-import { EvidenceFingerprint, EvidenceMatlabAdapter } from "@wrtnlabs/evidence";
+import { EvidFingerprint, EvidMatlabAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -21,7 +21,7 @@ export async function test_matlab_fingerprints(): Promise<void> {
       end
     end
   `.concat("\n");
-  const adapter = new EvidenceMatlabAdapter();
+  const adapter = new EvidMatlabAdapter();
   const original = await adapter.analyze(
     TestSourceSnapshot.create("src/Contract.m", content),
   );
@@ -47,12 +47,12 @@ export async function test_matlab_fingerprints(): Promise<void> {
   );
   TestValidator.equals(
     "sibling does not change member fingerprint",
-    EvidenceFingerprint.inspect(original, second.id).fingerprint,
-    EvidenceFingerprint.inspect(sibling, second.id).fingerprint,
+    EvidFingerprint.inspect(original, second.id).fingerprint,
+    EvidFingerprint.inspect(sibling, second.id).fingerprint,
   );
   TestValidator.notEquals(
     "access metadata changes fingerprint",
-    EvidenceFingerprint.inspect(original, second.id).fingerprint,
-    EvidenceFingerprint.inspect(metadata, second.id).fingerprint,
+    EvidFingerprint.inspect(original, second.id).fingerprint,
+    EvidFingerprint.inspect(metadata, second.id).fingerprint,
   );
 }

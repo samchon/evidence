@@ -1,8 +1,8 @@
 import {
-  EvidenceFingerprint,
-  EvidenceInventory,
-  EvidenceScalaAdapter,
-} from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidInventory,
+  EvidScalaAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -16,35 +16,35 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 1. Analyze the fixture and verify supported declarations, UTF-16 offset, and CRLF line coordinates.
  * 2. Resolve withdrawn and literal dotted paths and verify hidden, resolved, and missing outcomes.
  * 3. Compare ancestor fingerprints after metadata and semantic subtree edits.
- * 4. Verify every Evidence tag on an ordinary comment is rejected without creating evidence or review records.
+ * 4. Verify every Evid tag on an ordinary comment is rejected without creating evidence or review records.
  */
 export async function test_scala_hosts(): Promise<void> {
   const source = dedent`
     /**
      * 계약 😀
-     * @evidence docs/spec.md#contract Implements the contract.
+     * @evid docs/spec.md#contract Implements the contract.
      */
     @deprecated("legacy", "1.0")
     class Contract {
       /** @internal Withdraws the nested type. */
       class Retired { val child = 1; }
-      /** @evidence docs/spec.md#value Implements the value. */
+      /** @evid docs/spec.md#value Implements the value. */
       val \`value.part\` = 1
     }
     /**
      * {{{
-     * @evidence docs/spec.md#scaladoc Inert Scaladoc example.
+     * @evid docs/spec.md#scaladoc Inert Scaladoc example.
      * }}}
      * Examples:
      * ~~~scala
-     * @evidence docs/spec.md#example Inert example.
+     * @evid docs/spec.md#example Inert example.
      * ~~~
      *
-     *     @evidence docs/spec.md#indented Inert indented example.
+     *     @evid docs/spec.md#indented Inert indented example.
      */
     def sample() = 1
   `.replaceAll("\n", "\r\n");
-  const adapter = new EvidenceScalaAdapter();
+  const adapter = new EvidScalaAdapter();
   const inventory = await adapter.analyze(
     TestSourceSnapshot.create("src/Contract.scala", source),
   );
@@ -65,7 +65,7 @@ export async function test_scala_hosts(): Promise<void> {
   TestValidator.equals(
     "UTF-16 offset after astral text",
     declaration.location.range.start.offset,
-    source.indexOf("@evidence"),
+    source.indexOf("@evid"),
   );
   TestValidator.equals(
     "CRLF source line",
@@ -73,7 +73,7 @@ export async function test_scala_hosts(): Promise<void> {
     3,
   );
   const selected = inventory.units.map((unit) => unit.id);
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   TestValidator.equals(
     "withdrawn descendant target",
     graph.resolve(
@@ -120,8 +120,8 @@ export async function test_scala_hosts(): Promise<void> {
   );
   TestValidator.equals(
     "descendant annotation does not stale ancestor review",
-    EvidenceFingerprint.inspect(inventory, contract.id).fingerprint,
-    EvidenceFingerprint.inspect(rewritten, contract.id).fingerprint,
+    EvidFingerprint.inspect(inventory, contract.id).fingerprint,
+    EvidFingerprint.inspect(rewritten, contract.id).fingerprint,
   );
   const changed = await adapter.analyze(
     TestSourceSnapshot.create(
@@ -131,11 +131,11 @@ export async function test_scala_hosts(): Promise<void> {
   );
   TestValidator.notEquals(
     "semantic subtree edit changes fingerprint",
-    EvidenceFingerprint.inspect(inventory, contract.id).fingerprint,
-    EvidenceFingerprint.inspect(changed, contract.id).fingerprint,
+    EvidFingerprint.inspect(inventory, contract.id).fingerprint,
+    EvidFingerprint.inspect(changed, contract.id).fingerprint,
   );
 
-  // Every Evidence tag kind on an ordinary comment remains an unsupported carrier.
+  // Every Evid tag kind on an ordinary comment remains an unsupported carrier.
   for (const tag of [
     "evidence",
     "evidenceExclude",

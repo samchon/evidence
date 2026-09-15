@@ -1,4 +1,4 @@
-import { EvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { TestInventory } from "../../internal/TestInventory";
@@ -77,8 +77,8 @@ export async function test_inventory_serialization(): Promise<void> {
   originalSite.content.push(body);
   repeatedSite.content = [body, ...repeatedSite.content, body];
 
-  const forward = new EvidenceInventory([input, second]);
-  const reverse = new EvidenceInventory([second, input]);
+  const forward = new EvidInventory([input, second]);
+  const reverse = new EvidInventory([second, input]);
 
   TestValidator.equals(
     "deterministic serialization",
@@ -122,6 +122,6 @@ export async function test_inventory_serialization(): Promise<void> {
         if (range.start.offset === body.start.offset) range.start.line += 1;
   TestValidator.predicate(
     "conflicting content coordinates fail",
-    !new EvidenceInventory([input, invalid]).snapshot().complete,
+    !new EvidInventory([input, invalid]).snapshot().complete,
   );
 }

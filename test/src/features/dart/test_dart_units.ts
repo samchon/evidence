@@ -1,4 +1,4 @@
-import { EvidenceDartAdapter, EvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidDartAdapter, EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -13,7 +13,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Verify private declarations are excluded while complementary public accessors share a unit.
  */
 export async function test_dart_units(): Promise<void> {
-  const inventory = await new EvidenceDartAdapter().analyze(
+  const inventory = await new EvidDartAdapter().analyze(
     TestSourceSnapshot.create(
       "src/contract.dart",
       dedent`
@@ -92,7 +92,7 @@ export async function test_dart_units(): Promise<void> {
     inventory.units.find((unit) => unit.name === "top")?.sites?.length,
     2,
   );
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   const ids = inventory.units.map((unit) => unit.id);
   TestValidator.equals(
     "logical alias resolves",

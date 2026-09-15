@@ -1,4 +1,4 @@
-import { EvidenceGoAdapter } from "@wrtnlabs/evidence";
+import { EvidGoAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -13,7 +13,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Require only intended package sharing.
  */
 export async function test_go_packages(): Promise<void> {
-  const inventory = await new EvidenceGoAdapter().analyze(
+  const inventory = await new EvidGoAdapter().analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create(
         "shop/api.go",

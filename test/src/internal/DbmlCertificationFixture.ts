@@ -1,5 +1,5 @@
-﻿import { EvidenceAccessor, EvidenceDbmlAdapter } from "@wrtnlabs/evidence";
-import type { EvidenceDatabaseSymbol } from "@wrtnlabs/evidence";
+﻿import { EvidAccessor, EvidDbmlAdapter } from "evid";
+import type { EvidDatabaseSymbol } from "evid";
 import { dedent } from "@typia/utils";
 
 import type { IDatabaseAdapterCertification } from "./certification/IDatabaseAdapterCertification";
@@ -15,25 +15,25 @@ export namespace DbmlCertificationFixture {
     const relation = key("relation", ["public", "posts", "$ref:owner"]);
     return {
       type: "dbml",
-      adapter: new EvidenceDbmlAdapter(),
+      adapter: new EvidDbmlAdapter(),
       sources: [
         {
           file,
           content: dedent`
-        /* 😀 @evidence is inert mid-line prose.
-         * @evidence docs/requirements.md#model Persists the account identity.
+        /* 😀 @evid is inert mid-line prose.
+         * @evid docs/requirements.md#model Persists the account identity.
          */
         Table users {
           id int [pk]
         }
         Table posts {
           /* 😀
-           * @evidence docs/requirements.md#column Stores the account foreign key.
+           * @evid docs/requirements.md#column Stores the account foreign key.
            */
           user_id int
         }
         /* 😀
-         * @evidence docs/requirements.md#relation Connects each post to its account.
+         * @evid docs/requirements.md#relation Connects each post to its account.
          */
         Ref owner: posts.user_id > users.id
         Table hidden {
@@ -81,13 +81,13 @@ export namespace DbmlCertificationFixture {
         source: {
           file,
           content: dedent`
-        /* @evidence docs/requirements.md#attached Owns the schema table. */
+        /* @evid docs/requirements.md#attached Owns the schema table. */
         Table users {
           id int
-          example text [default: '@evidence docs/requirements.md#literal Inert default value.']
+          example text [default: '@evid docs/requirements.md#literal Inert default value.']
           Note: '''
           \`\`\`
-          @evidence docs/requirements.md#example Inert fenced example.
+          @evid docs/requirements.md#example Inert fenced example.
           \`\`\`
           '''
         }
@@ -107,14 +107,14 @@ export namespace DbmlCertificationFixture {
   }
 
   /** Formats expected unit keys from literal contract segments. */
-  function key(symbol: EvidenceDatabaseSymbol, identity: string[]): string {
-    return `${symbol}:${EvidenceAccessor.format(identity)}`;
+  function key(symbol: EvidDatabaseSymbol, identity: string[]): string {
+    return `${symbol}:${EvidAccessor.format(identity)}`;
   }
 
   /** Constructs expected canonical and default-schema addresses without consulting extraction. */
   function unit(
     file: string,
-    symbol: EvidenceDatabaseSymbol,
+    symbol: EvidDatabaseSymbol,
     identity: string[],
   ): IDatabaseAdapterCertificationUnit {
     return {
@@ -127,7 +127,7 @@ export namespace DbmlCertificationFixture {
       sites: 1,
       addresses: [identity, identity.slice(1)].map((segments) => ({
         file,
-        accessor: EvidenceAccessor.format(segments),
+        accessor: EvidAccessor.format(segments),
       })),
       withdrawals: [],
     };

@@ -1,8 +1,8 @@
 import {
-  EvidenceGraph,
-  EvidenceKotlinAdapter,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
+  EvidGraph,
+  EvidKotlinAdapter,
+  EvidTypeScriptAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -16,7 +16,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 1. Select each Kotlin symbol kind. 2. Evaluate covered and uncovered claims. 3. Require review-only claims to retain missing IDs.
  */
 export async function test_kotlin_graph(): Promise<void> {
-  const reference = await new EvidenceKotlinAdapter().analyze(
+  const reference = await new EvidKotlinAdapter().analyze(
     TestSourceSnapshot.create(
       "src/Contract.kt",
       dedent`
@@ -26,15 +26,15 @@ export async function test_kotlin_graph(): Promise<void> {
   `,
     ),
   );
-  const claims = await new EvidenceTypeScriptAdapter().analyze(
+  const claims = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/Claims.ts",
       dedent`
-    /** @evidence ./Contract.kt#Contract Verifies the type. */
+    /** @evid ./Contract.kt#Contract Verifies the type. */
     export class TypeClaim {}
-    /** @evidence ./Contract.kt#run Verifies the operation. */
+    /** @evid ./Contract.kt#run Verifies the operation. */
     export function runClaim() {}
-    /** @evidence ./Contract.kt#value Verifies the value. */
+    /** @evid ./Contract.kt#value Verifies the value. */
     export const valueClaim = 1;
   `,
     ),
@@ -63,7 +63,7 @@ export async function test_kotlin_graph(): Promise<void> {
             ),
           )
         : [];
-      const graph = EvidenceGraph.evaluate({
+      const graph = EvidGraph.evaluate({
         claims: [
           {
             severity: "error",
@@ -96,11 +96,11 @@ export async function test_kotlin_graph(): Promise<void> {
       );
     }
   }
-  const review = await new EvidenceKotlinAdapter().analyze(
+  const review = await new EvidKotlinAdapter().analyze(
     TestSourceSnapshot.create(
       "src/Review.kt",
       dedent`
-    /** @evidenceReview ./Contract.kt#run Reviewed without an acknowledgement. */
+    /** @evidReview ./Contract.kt#run Reviewed without an acknowledgement. */
     fun review() = 1
   `,
     ),
@@ -114,7 +114,7 @@ export async function test_kotlin_graph(): Promise<void> {
   const functions = reference.units
     .filter((unit) => unit.symbol === "function")
     .map((unit) => unit.id);
-  const graph = EvidenceGraph.evaluate({
+  const graph = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",

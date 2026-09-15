@@ -1,4 +1,4 @@
-import { EvidenceFingerprint, EvidenceObjcAdapter } from "@wrtnlabs/evidence";
+import { EvidFingerprint, EvidObjcAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -24,7 +24,7 @@ export async function test_objc_fingerprint_siblings(): Promise<void> {
     @end
     int run(void), other(int value);
   `;
-  const adapter = new EvidenceObjcAdapter();
+  const adapter = new EvidObjcAdapter();
   const original = await adapter.analyze(
     TestSourceSnapshot.create("src/Contract.m", source),
   );
@@ -59,13 +59,13 @@ export async function test_objc_fingerprint_siblings(): Promise<void> {
       throw new Error("Missing sibling declaration.");
     TestValidator.equals(
       `${stableName} excludes sibling content`,
-      EvidenceFingerprint.inspect(original, stable.id).fingerprint,
-      EvidenceFingerprint.inspect(changed, stable.id).fingerprint,
+      EvidFingerprint.inspect(original, stable.id).fingerprint,
+      EvidFingerprint.inspect(changed, stable.id).fingerprint,
     );
     TestValidator.notEquals(
       `${changedName} retains its own semantic edit`,
-      EvidenceFingerprint.inspect(original, modified.id).fingerprint,
-      EvidenceFingerprint.inspect(changed, modified.id).fingerprint,
+      EvidFingerprint.inspect(original, modified.id).fingerprint,
+      EvidFingerprint.inspect(changed, modified.id).fingerprint,
     );
   }
 }

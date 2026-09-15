@@ -1,15 +1,15 @@
 import {
-  EvidenceGraph,
-  EvidenceMarkdownAdapter,
-  EvidenceTargetResolver,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
+  EvidGraph,
+  EvidMarkdownAdapter,
+  EvidTargetResolver,
+  EvidTypeScriptAdapter,
+} from "evid";
 import type {
-  IEvidenceGraphResolution,
-  IEvidenceHost,
-  IEvidenceInventory,
-  IEvidenceUnit,
-} from "@wrtnlabs/evidence";
+  IEvidGraphResolution,
+  IEvidHost,
+  IEvidInventory,
+  IEvidUnit,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -48,7 +48,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *    - Only the empty-reference finding and no host-coverage ledger.
  */
 export async function test_graph_checklist(): Promise<void> {
-  const requirements = await new EvidenceMarkdownAdapter().analyze(
+  const requirements = await new EvidMarkdownAdapter().analyze(
     TestSourceSnapshot.create(
       "docs/rules.md",
       dedent`
@@ -69,17 +69,17 @@ export async function test_graph_checklist(): Promise<void> {
   const whackAMole = requireUnit(requirements, "no-whack-a-mole");
 
   // One complete host cannot discharge a partial or undocumented host's checklist.
-  const claims = await new EvidenceTypeScriptAdapter().analyze(
+  const claims = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/checks.ts",
       dedent`
         /**
-         * @evidence docs/rules.md#no-hardcoding Uses injected policy.
-         * @evidence docs/rules.md#no-whack-a-mole Repairs the shared cause.
+         * @evid docs/rules.md#no-hardcoding Uses injected policy.
+         * @evid docs/rules.md#no-whack-a-mole Repairs the shared cause.
          */
         export function thorough(): void {}
 
-        /** @evidence docs/rules.md#no-hardcoding Uses injected policy. */
+        /** @evid docs/rules.md#no-hardcoding Uses injected policy. */
         export function partial(): void {}
 
         export function empty(): void {}
@@ -98,7 +98,7 @@ export async function test_graph_checklist(): Promise<void> {
     checklistResolutions.map((entry) => entry.resolution.status),
     ["resolved", "resolved", "resolved"],
   );
-  const checklist = EvidenceGraph.evaluate({
+  const checklist = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -139,17 +139,17 @@ export async function test_graph_checklist(): Promise<void> {
   );
 
   // A selected file citation answers only the file item and does not cascade into headings.
-  const fileClaim = await new EvidenceTypeScriptAdapter().analyze(
+  const fileClaim = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/file-check.ts",
       dedent`
-        /** @evidence docs/rules.md Answers only the document item. */
+        /** @evid docs/rules.md Answers only the document item. */
         export function checksFile(): void {}
       `,
     ),
   );
   const checksFile = requireUnit(fileClaim, "checksFile");
-  const fileChecklist = EvidenceGraph.evaluate({
+  const fileChecklist = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -185,7 +185,7 @@ export async function test_graph_checklist(): Promise<void> {
 
   // An unselected positive aggregate is diagnosed once and suppresses duplicate
   // host repair demands.
-  const aggregate = EvidenceGraph.evaluate({
+  const aggregate = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -225,26 +225,26 @@ export async function test_graph_checklist(): Promise<void> {
 
   // An exclusion keeps its subtree cascade on its own host without conflicting
   // with another host's evidence.
-  const exclusions = await new EvidenceTypeScriptAdapter().analyze(
+  const exclusions = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/exclusions.ts",
       dedent`
-        /** @evidenceExclude docs/rules.md No checklist rule applies here. */
+        /** @evidExclude docs/rules.md No checklist rule applies here. */
         export function excluded(): void {}
 
-        /** @evidence docs/rules.md#no-hardcoding Uses injected policy. */
-        export function localEvidence(): void {}
+        /** @evid docs/rules.md#no-hardcoding Uses injected policy. */
+        export function localEvid(): void {}
       `,
     ),
   );
   const excluded = requireUnit(exclusions, "excluded");
-  const localEvidence = requireUnit(exclusions, "localEvidence");
-  const excludedChecklist = EvidenceGraph.evaluate({
+  const localEvid = requireUnit(exclusions, "localEvid");
+  const excludedChecklist = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
         inventory: exclusions,
-        unitIds: [excluded.id, localEvidence.id],
+        unitIds: [excluded.id, localEvid.id],
         references: [
           {
             severity: "error",
@@ -268,7 +268,7 @@ export async function test_graph_checklist(): Promise<void> {
   );
   TestValidator.equals(
     "other host remains independent",
-    TestGraph.hostCoverage(excludedChecklist, 0, 0, localEvidence.id)
+    TestGraph.hostCoverage(excludedChecklist, 0, 0, localEvid.id)
       .missingUnitIds,
     [whackAMole.id],
   );
@@ -279,25 +279,25 @@ export async function test_graph_checklist(): Promise<void> {
   );
 
   // Conflicts and overlapping exclusions are keyed to one semantic checklist host.
-  const localRules = await new EvidenceTypeScriptAdapter().analyze(
+  const localRules = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/local-rules.ts",
       dedent`
         /**
-         * @evidence docs/rules.md#no-hardcoding Applies here.
-         * @evidenceExclude docs/rules.md#no-hardcoding Does not apply here.
+         * @evid docs/rules.md#no-hardcoding Applies here.
+         * @evidExclude docs/rules.md#no-hardcoding Does not apply here.
          */
         export function conflict(): void {}
 
         /**
-         * @evidenceExclude docs/rules.md No rules apply here.
-         * @evidenceExclude docs/rules.md#no-hardcoding This rule also does not apply.
+         * @evidExclude docs/rules.md No rules apply here.
+         * @evidExclude docs/rules.md#no-hardcoding This rule also does not apply.
          */
         export function duplicate(): void {}
       `,
     ),
   );
-  const localResult = EvidenceGraph.evaluate({
+  const localResult = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -332,12 +332,12 @@ export async function test_graph_checklist(): Promise<void> {
 
   // Refusing exclusions removes only that answer and leaves each host's positive
   // obligation visible.
-  const strictChecklist = EvidenceGraph.evaluate({
+  const strictChecklist = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
         inventory: exclusions,
-        unitIds: [excluded.id, localEvidence.id],
+        unitIds: [excluded.id, localEvid.id],
         references: [
           {
             severity: "error",
@@ -348,7 +348,7 @@ export async function test_graph_checklist(): Promise<void> {
               whackAMole.id,
             ]),
             checklist: true,
-            noEvidenceExclude: true,
+            noEvidExclude: true,
           },
         ],
       },
@@ -368,13 +368,13 @@ export async function test_graph_checklist(): Promise<void> {
 
   // An unselected carrier can answer an ordinary sibling reference but cannot
   // clear any host's checklist.
-  const carrierClaim = await new EvidenceTypeScriptAdapter().analyze(
+  const carrierClaim = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/carrier.ts",
       dedent`
         export function owing(): void {}
 
-        /** @evidenceExclude docs/rules.md#no-hardcoding Shared exclusion. */
+        /** @evidExclude docs/rules.md#no-hardcoding Shared exclusion. */
         export const carrier = true;
       `,
     ),
@@ -383,7 +383,7 @@ export async function test_graph_checklist(): Promise<void> {
   const carrierResolutions = await resolveAll(carrierClaim, requirements, [
     hardcoding.id,
   ]);
-  const unhosted = EvidenceGraph.evaluate({
+  const unhosted = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -408,7 +408,7 @@ export async function test_graph_checklist(): Promise<void> {
     1,
   );
 
-  const sharedCarrier = EvidenceGraph.evaluate({
+  const sharedCarrier = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -458,7 +458,7 @@ export async function test_graph_checklist(): Promise<void> {
     message: "The sibling reference could not be read.",
     repair: "Restore access to the sibling reference.",
   });
-  const uncertainCarrier = EvidenceGraph.evaluate({
+  const uncertainCarrier = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -489,7 +489,7 @@ export async function test_graph_checklist(): Promise<void> {
     0,
   );
 
-  const emptyCarrier = EvidenceGraph.evaluate({
+  const emptyCarrier = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -526,13 +526,13 @@ export async function test_graph_checklist(): Promise<void> {
   );
 
   // A refused aggregate in another claim cannot consume the original claim's deferred report.
-  const aggregateCarrierClaim = await new EvidenceTypeScriptAdapter().analyze(
+  const aggregateCarrierClaim = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/aggregate-carrier.ts",
       dedent`
         export function owesAggregate(): void {}
 
-        /** @evidence docs/rules.md Answers every rule at once. */
+        /** @evid docs/rules.md Answers every rule at once. */
         export const aggregateCarrier = true;
       `,
     ),
@@ -547,7 +547,7 @@ export async function test_graph_checklist(): Promise<void> {
     requirements,
     [hardcoding.id],
   );
-  const answeredAggregate = EvidenceGraph.evaluate({
+  const answeredAggregate = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -600,7 +600,7 @@ export async function test_graph_checklist(): Promise<void> {
     message: "The Markdown file could not be read.",
     repair: "Restore access to the Markdown file.",
   });
-  const failedChecklist = EvidenceGraph.evaluate({
+  const failedChecklist = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -630,7 +630,7 @@ export async function test_graph_checklist(): Promise<void> {
     0,
   );
 
-  const emptyChecklist = EvidenceGraph.evaluate({
+  const emptyChecklist = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -673,12 +673,12 @@ export async function test_graph_checklist(): Promise<void> {
  * distinguish evidence carried by selected hosts from unhosted acknowledgements.
  */
 async function resolveAll(
-  claim: IEvidenceInventory,
-  reference: IEvidenceInventory,
+  claim: IEvidInventory,
+  reference: IEvidInventory,
   unitIds: string[],
-): Promise<IEvidenceGraphResolution[]> {
-  const resolver = new EvidenceTargetResolver([reference]);
-  const output: IEvidenceGraphResolution[] = [];
+): Promise<IEvidGraphResolution[]> {
+  const resolver = new EvidTargetResolver([reference]);
+  const output: IEvidGraphResolution[] = [];
   for (const declaration of claim.declarations)
     output.push({
       declarationId: declaration.id,
@@ -698,9 +698,9 @@ async function resolveAll(
  * and final identity segment, so a miss signals broken test setup.
  */
 function requireUnit(
-  inventory: IEvidenceInventory,
+  inventory: IEvidInventory,
   identity: string,
-): IEvidenceUnit {
+): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.symbol === identity ||
@@ -718,7 +718,7 @@ function requireUnit(
  * Resolution cannot substitute another host because attachment is part of the
  * claim-local checklist policy being exercised.
  */
-function requireHost(inventory: IEvidenceInventory, id: string): IEvidenceHost {
+function requireHost(inventory: IEvidInventory, id: string): IEvidHost {
   const host = inventory.hosts.find((candidate) => candidate.id === id);
   if (host === undefined) throw new Error(`Missing checklist host: ${id}`);
   return host;
@@ -731,7 +731,7 @@ function requireHost(inventory: IEvidenceInventory, id: string): IEvidenceHost {
  * deduplication cannot silently merge independent obligations.
  */
 function count(
-  result: ReturnType<typeof EvidenceGraph.evaluate>,
+  result: ReturnType<typeof EvidGraph.evaluate>,
   code: string,
 ): number {
   return result.diagnostics.filter((diagnostic) => diagnostic.code === code)

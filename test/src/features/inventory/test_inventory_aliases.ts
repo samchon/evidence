@@ -1,4 +1,4 @@
-import { EvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { TestInventory } from "../../internal/TestInventory";
@@ -46,7 +46,7 @@ export async function test_inventory_aliases(): Promise<void> {
     segments: ["Again"],
   });
 
-  const index = new EvidenceInventory([input, structuredClone(input)]);
+  const index = new EvidInventory([input, structuredClone(input)]);
   const population = index.select(["box", "box"]);
 
   TestValidator.predicate("complete identity inventory", population.complete);
@@ -82,7 +82,7 @@ export async function test_inventory_aliases(): Promise<void> {
     file: "/project/barrel.ts",
     segments: ["Renamed"],
   });
-  const ambiguous = new EvidenceInventory([input]).resolve(
+  const ambiguous = new EvidInventory([input]).resolve(
     { file: "/project/barrel.ts", segments: ["Renamed"] },
     ["box", "other"],
   );

@@ -1,8 +1,8 @@
 import {
-  EvidenceFingerprint,
-  EvidenceInventory,
-  EvidenceObjcAdapter,
-} from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidInventory,
+  EvidObjcAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -20,11 +20,11 @@ export async function test_objc_hosts(): Promise<void> {
   const source = dedent`
     /**
      * 계약 😀
-     * @evidence docs/spec.md#contract Implements the contract.
+     * @evid docs/spec.md#contract Implements the contract.
      */
     @interface Contract
     /// 값 😀
-    /// @evidence docs/spec.md#value Implements the value.
+    /// @evid docs/spec.md#value Implements the value.
     @property int value;
     /** @internal Withdraws the selector. */
     - (void)retired;
@@ -32,18 +32,18 @@ export async function test_objc_hosts(): Promise<void> {
     /**
      * Examples:
      * ~~~objc
-     * @evidence docs/spec.md#fenced Inert example.
+     * @evid docs/spec.md#fenced Inert example.
      * ~~~
      * @code
-     * @evidence docs/spec.md#code Inert example.
+     * @evid docs/spec.md#code Inert example.
      * @endcode
      * <pre>
-     * @evidence docs/spec.md#html Inert example.
+     * @evid docs/spec.md#html Inert example.
      * </pre>
      */
     int sample(void) { return 1; }
   `.replaceAll("\n", "\r\n");
-  const adapter = new EvidenceObjcAdapter();
+  const adapter = new EvidObjcAdapter();
   const snapshot = TestSourceSnapshot.combine([
     TestSourceSnapshot.create("src/Contract.h", source),
     TestSourceSnapshot.create(
@@ -73,10 +73,10 @@ export async function test_objc_hosts(): Promise<void> {
   TestValidator.equals(
     "original UTF-16 offset",
     tag.location.range.start.offset,
-    source.indexOf("@evidence"),
+    source.indexOf("@evid"),
   );
   TestValidator.equals("CRLF line", tag.location.range.start.line, 3);
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   TestValidator.equals(
     "withdrawal propagates to implementation address",
     graph.resolve(
@@ -98,8 +98,8 @@ export async function test_objc_hosts(): Promise<void> {
   const rewritten = await adapter.analyze(annotation);
   TestValidator.equals(
     "annotation edit preserves review",
-    EvidenceFingerprint.inspect(inventory, contract.id).fingerprint,
-    EvidenceFingerprint.inspect(rewritten, contract.id).fingerprint,
+    EvidFingerprint.inspect(inventory, contract.id).fingerprint,
+    EvidFingerprint.inspect(rewritten, contract.id).fingerprint,
   );
   const semantic = structuredClone(snapshot);
   const semanticFile = semantic.files[0];
@@ -111,8 +111,8 @@ export async function test_objc_hosts(): Promise<void> {
   const changed = await adapter.analyze(semantic);
   TestValidator.notEquals(
     "semantic edit invalidates review",
-    EvidenceFingerprint.inspect(inventory, contract.id).fingerprint,
-    EvidenceFingerprint.inspect(changed, contract.id).fingerprint,
+    EvidFingerprint.inspect(inventory, contract.id).fingerprint,
+    EvidFingerprint.inspect(changed, contract.id).fingerprint,
   );
   for (const tagName of [
     "evidence",

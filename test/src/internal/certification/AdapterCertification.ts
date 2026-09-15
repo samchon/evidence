@@ -1,19 +1,19 @@
 import {
-  EvidenceAccessor,
-  EvidenceFingerprint,
-  EvidenceGraph,
-  EvidenceInventory,
-  EvidenceMarkdownAdapter,
-} from "@wrtnlabs/evidence";
+  EvidAccessor,
+  EvidFingerprint,
+  EvidGraph,
+  EvidInventory,
+  EvidMarkdownAdapter,
+} from "evid";
 import type {
-  EvidenceProgrammingSymbol,
-  EvidenceDatabaseSymbol,
-  IEvidenceAddress,
-  IEvidenceInventory,
-  IEvidenceSourceFile,
-  IEvidenceSourceSnapshot,
-  IEvidenceUnit,
-} from "@wrtnlabs/evidence";
+  EvidProgrammingSymbol,
+  EvidDatabaseSymbol,
+  IEvidAddress,
+  IEvidInventory,
+  IEvidSourceFile,
+  IEvidSourceSnapshot,
+  IEvidUnit,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { TestGraph } from "../TestGraph";
@@ -45,7 +45,7 @@ export namespace AdapterCertification {
     sources: IAdapterCertificationSource[] = certification.sources,
     root: string = "/project",
     sourceIdentity: string = "source",
-  ): Promise<IEvidenceInventory> {
+  ): Promise<IEvidInventory> {
     return certification.adapter.analyze(
       snapshot(sources, root, sourceIdentity),
     );
@@ -59,7 +59,7 @@ export namespace AdapterCertification {
    */
   export function assertInventory(
     certification: IAdapterCertification | IDatabaseAdapterCertification,
-    inventory: IEvidenceInventory,
+    inventory: IEvidInventory,
   ): void {
     TestValidator.equals(
       `${certification.type} certification adapter type`,
@@ -166,7 +166,7 @@ export namespace AdapterCertification {
       TestValidator.equals(
         `${certification.type} Unicode annotation offset for ${requirement.target}`,
         declaration.location.range.start.offset,
-        source.content.indexOf(`@evidence ${requirement.target}`),
+        source.content.indexOf(`@evid ${requirement.target}`),
       );
       TestValidator.predicate(
         `${certification.type} Unicode prefix for ${requirement.target}`,
@@ -187,7 +187,7 @@ export namespace AdapterCertification {
     certification: IAdapterCertification | IDatabaseAdapterCertification,
   ): Promise<void> {
     const claim = await analyze(certification);
-    const reference = await new EvidenceMarkdownAdapter().analyze(
+    const reference = await new EvidMarkdownAdapter().analyze(
       TestSourceSnapshot.create(
         "docs/requirements.md",
         certification.requirements
@@ -216,7 +216,7 @@ export namespace AdapterCertification {
       reference,
       selected,
     );
-    const complete = EvidenceGraph.evaluate({
+    const complete = EvidGraph.evaluate({
       claims: [
         {
           severity: "error",
@@ -248,7 +248,7 @@ export namespace AdapterCertification {
       missing.declarations = missing.declarations.filter(
         (declaration) => declaration.target !== requirement.target,
       );
-      const partial = EvidenceGraph.evaluate({
+      const partial = EvidGraph.evaluate({
         claims: [
           {
             severity: "error",
@@ -359,7 +359,7 @@ export namespace AdapterCertification {
           content: source.content.replaceAll("\n", "\r\n"),
         }),
       );
-    const relocated: IEvidenceInventory = await analyze(
+    const relocated: IEvidInventory = await analyze(
       certification,
       portableSources,
       "/another-checkout",
@@ -368,25 +368,25 @@ export namespace AdapterCertification {
     const originalUnit = requireUnit(original, certification.mutation.unit);
     const reasonUnit = requireUnit(reason, certification.mutation.unit);
     const contentUnit = requireUnit(content, certification.mutation.unit);
-    const relocatedUnit: IEvidenceUnit = requireUnit(
+    const relocatedUnit: IEvidUnit = requireUnit(
       relocated,
       certification.mutation.unit,
     );
 
     TestValidator.equals(
       `${certification.type} annotation-stable fingerprint`,
-      EvidenceFingerprint.inspect(original, originalUnit.id).fingerprint,
-      EvidenceFingerprint.inspect(reason, reasonUnit.id).fingerprint,
+      EvidFingerprint.inspect(original, originalUnit.id).fingerprint,
+      EvidFingerprint.inspect(reason, reasonUnit.id).fingerprint,
     );
     TestValidator.notEquals(
       `${certification.type} semantic mutation fingerprint`,
-      EvidenceFingerprint.inspect(original, originalUnit.id).fingerprint,
-      EvidenceFingerprint.inspect(content, contentUnit.id).fingerprint,
+      EvidFingerprint.inspect(original, originalUnit.id).fingerprint,
+      EvidFingerprint.inspect(content, contentUnit.id).fingerprint,
     );
     TestValidator.equals(
       `${certification.type} checkout and line-ending portable fingerprint`,
-      EvidenceFingerprint.inspect(original, originalUnit.id).fingerprint,
-      EvidenceFingerprint.inspect(relocated, relocatedUnit.id).fingerprint,
+      EvidFingerprint.inspect(original, originalUnit.id).fingerprint,
+      EvidFingerprint.inspect(relocated, relocatedUnit.id).fingerprint,
     );
   }
 
@@ -415,7 +415,7 @@ export namespace AdapterCertification {
       throw new Error(`${certification.type} certification address is absent.`);
     const ambiguous = structuredClone(inventory);
     ambiguous.addresses.push({ ...address, unitId: second.id });
-    const resolution = new EvidenceInventory([ambiguous]).resolve(
+    const resolution = new EvidInventory([ambiguous]).resolve(
       pickAddress(address),
       certification.requirements.map(
         (requirement) => requireUnit(ambiguous, requirement.unit).id,
@@ -438,17 +438,17 @@ export namespace AdapterCertification {
     sources: IAdapterCertificationSource[],
     root: string,
     sourceIdentity: string,
-  ): IEvidenceSourceSnapshot {
+  ): IEvidSourceSnapshot {
     return TestSourceSnapshot.combine(
       sources.map(
-        (source: IAdapterCertificationSource): IEvidenceSourceSnapshot => {
-          const snapshot: IEvidenceSourceSnapshot = TestSourceSnapshot.create(
+        (source: IAdapterCertificationSource): IEvidSourceSnapshot => {
+          const snapshot: IEvidSourceSnapshot = TestSourceSnapshot.create(
             source.file,
             source.content,
             [source.file],
             root,
           );
-          const file: IEvidenceSourceFile | undefined = snapshot.files[0];
+          const file: IEvidSourceFile | undefined = snapshot.files[0];
           if (file === undefined)
             throw new Error("Certification source snapshot is empty.");
           file.id = `${sourceIdentity}:${source.file}`;
@@ -459,12 +459,12 @@ export namespace AdapterCertification {
   }
 
   function normalizeUnit(
-    inventory: IEvidenceInventory,
-    unit: IEvidenceUnit,
+    inventory: IEvidInventory,
+    unit: IEvidUnit,
     keys: Map<string, string>,
     files: Map<string, string>,
   ): IAdapterCertificationUnitBase<
-    EvidenceProgrammingSymbol | EvidenceDatabaseSymbol
+    EvidProgrammingSymbol | EvidDatabaseSymbol
   > {
     return {
       key: unitKey(unit),
@@ -478,7 +478,7 @@ export namespace AdapterCertification {
         .filter((address) => address.unitId === unit.id)
         .map((address) => ({
           file: files.get(address.file) ?? address.file,
-          accessor: EvidenceAccessor.format(address.segments),
+          accessor: EvidAccessor.format(address.segments),
         }))
         .sort(compareAddress),
       withdrawals: unit.withdrawals
@@ -489,10 +489,10 @@ export namespace AdapterCertification {
 
   function normalizeExpectedUnit(
     unit: IAdapterCertificationUnitBase<
-      EvidenceProgrammingSymbol | EvidenceDatabaseSymbol
+      EvidProgrammingSymbol | EvidDatabaseSymbol
     >,
   ): IAdapterCertificationUnitBase<
-    EvidenceProgrammingSymbol | EvidenceDatabaseSymbol
+    EvidProgrammingSymbol | EvidDatabaseSymbol
   > {
     return {
       ...unit,
@@ -508,9 +508,9 @@ export namespace AdapterCertification {
   }
 
   function requireUnit(
-    inventory: IEvidenceInventory,
+    inventory: IEvidInventory,
     key: string,
-  ): IEvidenceUnit {
+  ): IEvidUnit {
     const unit = inventory.units.find(
       (candidate) => unitKey(candidate) === key,
     );
@@ -526,8 +526,8 @@ export namespace AdapterCertification {
     return key;
   }
 
-  function unitKey(unit: IEvidenceUnit): string {
-    return `${unit.symbol}:${EvidenceAccessor.format(unit.identity)}`;
+  function unitKey(unit: IEvidUnit): string {
+    return `${unit.symbol}:${EvidAccessor.format(unit.identity)}`;
   }
 
   function replace(
@@ -550,16 +550,16 @@ export namespace AdapterCertification {
     return output;
   }
 
-  function pickAddress(address: IEvidenceAddress): IEvidenceAddress {
+  function pickAddress(address: IEvidAddress): IEvidAddress {
     return { file: address.file, segments: address.segments };
   }
 
   function compareKey(
     left: IAdapterCertificationUnitBase<
-      EvidenceProgrammingSymbol | EvidenceDatabaseSymbol
+      EvidProgrammingSymbol | EvidDatabaseSymbol
     >,
     right: IAdapterCertificationUnitBase<
-      EvidenceProgrammingSymbol | EvidenceDatabaseSymbol
+      EvidProgrammingSymbol | EvidDatabaseSymbol
     >,
   ): number {
     return compare(left.key, right.key);
@@ -585,7 +585,7 @@ export namespace AdapterCertification {
 
   function declarationSymbol(
     symbol: string,
-  ): EvidenceProgrammingSymbol | EvidenceDatabaseSymbol {
+  ): EvidProgrammingSymbol | EvidDatabaseSymbol {
     if (
       symbol === "type" ||
       symbol === "function" ||

@@ -1,4 +1,4 @@
-import { EvidenceGraph } from "@wrtnlabs/evidence";
+import { EvidGraph } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { TestGraph } from "../../internal/TestGraph";
@@ -76,7 +76,7 @@ export async function test_graph_hierarchy_conflicts(): Promise<void> {
     "evidence",
     "parent",
   );
-  const cascade = EvidenceGraph.evaluate({
+  const cascade = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -156,7 +156,7 @@ export async function test_graph_hierarchy_conflicts(): Promise<void> {
     "evidence",
     "child",
   );
-  const otherEvidence = TestGraph.declaration(
+  const otherEvid = TestGraph.declaration(
     conflictClaim,
     "other-evidence",
     otherHost,
@@ -177,7 +177,7 @@ export async function test_graph_hierarchy_conflicts(): Promise<void> {
     "evidenceExclude",
     "parent",
   );
-  const repeatedEvidence = EvidenceGraph.evaluate({
+  const repeatedEvid = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -191,7 +191,7 @@ export async function test_graph_hierarchy_conflicts(): Promise<void> {
             resolutions: [
               TestGraph.resolved(first, child),
               TestGraph.resolved(repeated, child),
-              TestGraph.resolved(otherEvidence, child),
+              TestGraph.resolved(otherEvid, child),
             ],
           },
         ],
@@ -201,12 +201,12 @@ export async function test_graph_hierarchy_conflicts(): Promise<void> {
 
   TestValidator.equals(
     "duplicate positive scope",
-    count(repeatedEvidence, "graph-duplicate-evidence"),
+    count(repeatedEvid, "graph-duplicate-evidence"),
     1,
   );
 
   // Each later exclusion reports one finding even when its scope covers several descendants.
-  const conflicts = EvidenceGraph.evaluate({
+  const conflicts = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -252,7 +252,7 @@ export async function test_graph_hierarchy_conflicts(): Promise<void> {
  * expanding a single authored acknowledgement over multiple descendants.
  */
 function count(
-  result: ReturnType<typeof EvidenceGraph.evaluate>,
+  result: ReturnType<typeof EvidGraph.evaluate>,
   code: string,
 ): number {
   return result.diagnostics.filter((diagnostic) => diagnostic.code === code)

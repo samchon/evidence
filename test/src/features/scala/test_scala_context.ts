@@ -1,8 +1,8 @@
 ﻿import {
-  EvidenceFingerprint,
-  EvidenceInventory,
-  EvidenceScalaAdapter,
-} from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidInventory,
+  EvidScalaAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -17,9 +17,9 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Change the receiver to invalidate that fingerprint, then verify withdrawal removes the exported path while the source member remains selectable.
  */
 export async function test_scala_context(): Promise<void> {
-  const adapter = new EvidenceScalaAdapter();
+  const adapter = new EvidScalaAdapter();
   const source = dedent`
-    /** @evidence docs/spec.md#extension Supports both extensions. */
+    /** @evid docs/spec.md#extension Supports both extensions. */
     extension (value: Int) {
       def first = 1
       def second = 2
@@ -43,7 +43,7 @@ export async function test_scala_context(): Promise<void> {
     inventory.declarations.length,
     2,
   );
-  const fingerprint = EvidenceFingerprint.inspect(
+  const fingerprint = EvidFingerprint.inspect(
     inventory,
     first.id,
   ).fingerprint;
@@ -55,7 +55,7 @@ export async function test_scala_context(): Promise<void> {
   );
   TestValidator.equals(
     "sibling body is outside method content",
-    EvidenceFingerprint.inspect(sibling, first.id).fingerprint,
+    EvidFingerprint.inspect(sibling, first.id).fingerprint,
     fingerprint,
   );
   const receiver = await adapter.analyze(
@@ -66,10 +66,10 @@ export async function test_scala_context(): Promise<void> {
   );
   TestValidator.notEquals(
     "receiver change invalidates extension review",
-    EvidenceFingerprint.inspect(receiver, first.id).fingerprint,
+    EvidFingerprint.inspect(receiver, first.id).fingerprint,
     fingerprint,
   );
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   const selected = inventory.units.map((unit) => unit.id);
   TestValidator.equals(
     "withdrawn export owner exposes no alias",

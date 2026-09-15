@@ -1,4 +1,4 @@
-import { EvidenceCppAdapter, EvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidCppAdapter, EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -13,58 +13,58 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Require inert annotated carriers to remain diagnostics.
  */
 export async function test_cpp_hosts(): Promise<void> {
-  const inventory = await new EvidenceCppAdapter().analyze(
+  const inventory = await new EvidCppAdapter().analyze(
     TestSourceSnapshot.create(
       "src/contracts.cpp",
       dedent`
         /**
-         * @evidence docs/requirements.md#type Implements the class.
+         * @evid docs/requirements.md#type Implements the class.
          * @code
-         * @evidence docs/requirements.md#code Doxygen source is inert.
+         * @evid docs/requirements.md#code Doxygen source is inert.
          * @endcode
-         * <pre>@evidence docs/requirements.md#pre Preformatted text is inert.</pre>
+         * <pre>@evid docs/requirements.md#pre Preformatted text is inert.</pre>
          */
         class Contracts {
         public:
-            /// @evidence docs/requirements.md#field Implements the field.
+            /// @evid docs/requirements.md#field Implements the field.
             int value;
 
-            /// @evidence docs/requirements.md#function Implements the method.
+            /// @evid docs/requirements.md#function Implements the method.
             int run() {
-                /** @evidence docs/requirements.md#body Body documentation is unsupported. */
-                const char *text = "@evidence docs/requirements.md#string Strings are unsupported.";
-                const char *raw = R"tag(@evidence docs/requirements.md#raw Raw strings are unsupported.)tag";
+                /** @evid docs/requirements.md#body Body documentation is unsupported. */
+                const char *text = "@evid docs/requirements.md#string Strings are unsupported.";
+                const char *raw = R"tag(@evid docs/requirements.md#raw Raw strings are unsupported.)tag";
                 return text[0] + raw[0];
             }
 
-            int first, second; ///< @evidence docs/requirements.md#trailing Implements both fields.
+            int first, second; ///< @evid docs/requirements.md#trailing Implements both fields.
 
             enum class Result {
-                success, ///< @evidence docs/requirements.md#enumerator Implements the enumerator.
+                success, ///< @evid docs/requirements.md#enumerator Implements the enumerator.
                 failure,
             };
 
         private:
-            /** @evidence docs/requirements.md#private Private declarations are unsupported. */
+            /** @evid docs/requirements.md#private Private declarations are unsupported. */
             int secret;
         };
 
-        /** @evidence docs/requirements.md#template Implements the template. */
+        /** @evid docs/requirements.md#template Implements the template. */
         template <class T>
         struct Box {
             T value;
         };
 
-        /** @evidence docs/requirements.md#attribute Implements the decorated function. */
+        /** @evid docs/requirements.md#attribute Implements the decorated function. */
         [[nodiscard]] int decorated();
 
-        // @evidence docs/requirements.md#ordinary Ordinary comments are unsupported.
+        // @evid docs/requirements.md#ordinary Ordinary comments are unsupported.
         int ordinary;
 
-        /** @evidence docs/requirements.md#static Internal linkage is unsupported. */
+        /** @evid docs/requirements.md#static Internal linkage is unsupported. */
         static int hidden;
 
-        /** @evidence docs/requirements.md#detached Detached Doxygen is unsupported. */
+        /** @evid docs/requirements.md#detached Detached Doxygen is unsupported. */
 
         int detached;
       `,
@@ -109,7 +109,7 @@ export async function test_cpp_hosts(): Promise<void> {
     7,
   );
 
-  const withdrawn = await new EvidenceCppAdapter().analyze(
+  const withdrawn = await new EvidCppAdapter().analyze(
     TestSourceSnapshot.create(
       "include/hidden.hpp",
       dedent`
@@ -123,7 +123,7 @@ export async function test_cpp_hosts(): Promise<void> {
       `,
     ),
   );
-  const population = new EvidenceInventory([withdrawn]).select(
+  const population = new EvidInventory([withdrawn]).select(
     withdrawn.units.map((unit) => unit.id),
   );
   TestValidator.equals(

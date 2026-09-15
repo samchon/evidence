@@ -1,5 +1,5 @@
-import { EvidenceConfigLoader } from "@wrtnlabs/evidence";
-import type { IEvidenceConfig } from "@wrtnlabs/evidence";
+import { EvidConfigLoader } from "evid";
+import type { IEvidConfig } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
@@ -35,7 +35,7 @@ export async function test_config_loader(): Promise<void> {
   const location = join(__dirname, `loader $' ${randomUUID()}`);
   const source = dedent`
     import { files } from "./helpers/files";
-    import type { IEvidenceConfig } from "@wrtnlabs/evidence";
+    import type { IEvidConfig } from "evid";
 
     export default {
       claims: [
@@ -45,7 +45,7 @@ export async function test_config_loader(): Promise<void> {
           reference: { type: "markdown", files: ["docs/**"] },
         },
       ],
-    } satisfies IEvidenceConfig;
+    } satisfies IEvidConfig;
   `;
 
   await TestFileSystem.experiment(
@@ -65,10 +65,10 @@ export async function test_config_loader(): Promise<void> {
     async (directory) => {
       // All module extensions load imports without checking the unrelated source.
       for (const extension of ["ts", "cts", "mts"]) {
-        const filename = `evidence.config.${extension}`;
+        const filename = `evid.config.${extension}`;
         await TestFileSystem.save(directory, { [filename]: source });
 
-        const output = await EvidenceConfigLoader.load(
+        const output = await EvidConfigLoader.load(
           join(directory, filename),
         );
 
@@ -81,8 +81,8 @@ export async function test_config_loader(): Promise<void> {
 
       // The evaluator supplies its own compiler project after resolving consumer dependencies.
       await rm(join(directory, "tsconfig.json"));
-      const isolated: IEvidenceConfig = await EvidenceConfigLoader.load(
-        join(directory, "evidence.config.ts"),
+      const isolated: IEvidConfig = await EvidConfigLoader.load(
+        join(directory, "evid.config.ts"),
       );
       TestValidator.equals(
         "config without tsconfig",
@@ -92,7 +92,7 @@ export async function test_config_loader(): Promise<void> {
 
       // Evaluator stdout and stderr share the diagnostic sink instead of process stdout.
       await TestFileSystem.save(directory, {
-        "evidence.config.ts": dedent`
+        "evid.config.ts": dedent`
           console.log("config-output-token");
           console.error("config-error-token");
           export default { claims: [] };
@@ -103,7 +103,7 @@ export async function test_config_loader(): Promise<void> {
         diagnostics.push(content);
       }
 
-      await evaluateTypeScriptConfig(join(directory, "evidence.config.ts"), {
+      await evaluateTypeScriptConfig(join(directory, "evid.config.ts"), {
         writeDiagnostic,
       });
 
@@ -119,7 +119,7 @@ export async function test_config_loader(): Promise<void> {
 
       // Unsupported artifact identifiers fail with their exact configuration path.
       await TestFileSystem.save(directory, {
-        "evidence.config.ts": dedent`
+        "evid.config.ts": dedent`
           export default {
             claims: [
               {
@@ -132,20 +132,20 @@ export async function test_config_loader(): Promise<void> {
         `,
       });
       const unsupported = await failure(() =>
-        EvidenceConfigLoader.load(join(directory, "evidence.config.ts")),
+        EvidConfigLoader.load(join(directory, "evid.config.ts")),
       );
 
       TestValidator.predicate(
         "unsupported artifact path",
         unsupported.includes(
-          "claims[0].type: artifact type 'graphql' has no certified Evidence adapter",
+          "claims[0].type: artifact type 'graphql' has no certified Evid adapter",
         ),
       );
 
       // A disabled population is validated and planned without touching its missing root.
       await TestFileSystem.save(directory, {
-        "evidence.config.ts": dedent`
-          import type { IEvidenceConfig } from "@wrtnlabs/evidence";
+        "evid.config.ts": dedent`
+          import type { IEvidConfig } from "evid";
 
           export default {
             claims: [
@@ -160,43 +160,43 @@ export async function test_config_loader(): Promise<void> {
                 },
               },
             ],
-          } satisfies IEvidenceConfig;
+          } satisfies IEvidConfig;
         `,
       });
 
-      const inactive = await EvidenceConfigLoader.plan(
-        join(directory, "evidence.config.ts"),
+      const inactive = await EvidConfigLoader.plan(
+        join(directory, "evid.config.ts"),
       );
 
       TestValidator.equals(
         "configuration plan anchor",
         inactive.configFile,
-        join(directory, "evidence.config.ts"),
+        join(directory, "evid.config.ts"),
       );
       TestValidator.equals("inactive populations", inactive.claims, []);
 
       // Runtime exceptions reject the loader promise instead of returning data.
       await TestFileSystem.save(directory, {
-        "evidence.config.ts": dedent`
+        "evid.config.ts": dedent`
           throw new Error("Config failed during evaluation");
           export default {};
         `,
       });
 
       await TestValidator.error("runtime exception", () =>
-        EvidenceConfigLoader.load(join(directory, "evidence.config.ts")),
+        EvidConfigLoader.load(join(directory, "evid.config.ts")),
       );
 
       // Imported type errors reach the caller through the evaluator failure.
       await TestFileSystem.save(directory, {
-        "evidence.config.ts": source,
+        "evid.config.ts": source,
         "helpers/files.ts": dedent`
           export const files: string[] = [123];
         `,
       });
 
       await TestValidator.error("imported TypeScript error", () =>
-        EvidenceConfigLoader.load(join(directory, "evidence.config.ts")),
+        EvidConfigLoader.load(join(directory, "evid.config.ts")),
       );
     },
   );
@@ -215,5 +215,5 @@ async function failure(closure: () => Promise<unknown>): Promise<string> {
     if (cause instanceof Error) return cause.message;
     throw cause;
   }
-  throw new Error("Expected Evidence configuration loading to fail.");
+  throw new Error("Expected Evid configuration loading to fail.");
 }

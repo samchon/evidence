@@ -1,10 +1,10 @@
 import {
-  EvidenceFingerprint,
-  EvidenceGoAdapter,
-  EvidenceGraph,
-  EvidenceMarkdownAdapter,
-} from "@wrtnlabs/evidence";
-import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidGoAdapter,
+  EvidGraph,
+  EvidMarkdownAdapter,
+} from "evid";
+import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -20,7 +20,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Verify a prose-only edit preserves fingerprints.
  */
 export async function test_go_graph(): Promise<void> {
-  const requirements = await new EvidenceMarkdownAdapter().analyze(
+  const requirements = await new EvidMarkdownAdapter().analyze(
     TestSourceSnapshot.create(
       "docs/requirements.md",
       dedent`
@@ -38,19 +38,19 @@ export async function test_go_graph(): Promise<void> {
       `,
     ),
   );
-  const implementation = await new EvidenceGoAdapter().analyze(
+  const implementation = await new EvidGoAdapter().analyze(
     TestSourceSnapshot.create(
       "src/contracts.go",
       dedent`
         package contracts
 
-        // @evidence docs/requirements.md#service Implements the public type.
+        // @evid docs/requirements.md#service Implements the public type.
         type Service struct{}
 
-        // @evidence docs/requirements.md#run Implements the operation.
+        // @evid docs/requirements.md#run Implements the operation.
         func Run() {}
 
-        // @evidence docs/requirements.md#value Implements the public value.
+        // @evid docs/requirements.md#value Implements the public value.
         var Value = 1
       ` + "\n",
     ),
@@ -66,7 +66,7 @@ export async function test_go_graph(): Promise<void> {
     requireUnit(implementation, "Value"),
   ];
 
-  const complete = EvidenceGraph.evaluate({
+  const complete = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -96,7 +96,7 @@ export async function test_go_graph(): Promise<void> {
     missing.declarations = missing.declarations.filter(
       (declaration) => !declaration.target.endsWith(`#${anchor}`),
     );
-    const partial = EvidenceGraph.evaluate({
+    const partial = EvidGraph.evaluate({
       claims: [
         {
           severity: "error",
@@ -142,13 +142,13 @@ export async function test_go_graph(): Promise<void> {
 
   TestValidator.equals(
     "Go evidence metadata preserves fingerprint",
-    EvidenceFingerprint.inspect(original, originalUnit.id).fingerprint,
-    EvidenceFingerprint.inspect(editedReason, reasonUnit.id).fingerprint,
+    EvidFingerprint.inspect(original, originalUnit.id).fingerprint,
+    EvidFingerprint.inspect(editedReason, reasonUnit.id).fingerprint,
   );
   TestValidator.notEquals(
     "Go implementation moves fingerprint",
-    EvidenceFingerprint.inspect(original, originalUnit.id).fingerprint,
-    EvidenceFingerprint.inspect(editedBody, bodyUnit.id).fingerprint,
+    EvidFingerprint.inspect(original, originalUnit.id).fingerprint,
+    EvidFingerprint.inspect(editedBody, bodyUnit.id).fingerprint,
   );
 
   // A sibling specification in one declaration group has its own fingerprint.
@@ -158,22 +158,22 @@ export async function test_go_graph(): Promise<void> {
   const firstEdited = requireUnit(groupedEdited, "First");
   TestValidator.equals(
     "Go grouped declaration fingerprint isolation",
-    EvidenceFingerprint.inspect(groupedOriginal, firstOriginal.id).fingerprint,
-    EvidenceFingerprint.inspect(groupedEdited, firstEdited.id).fingerprint,
+    EvidFingerprint.inspect(groupedOriginal, firstOriginal.id).fingerprint,
+    EvidFingerprint.inspect(groupedEdited, firstEdited.id).fingerprint,
   );
 }
 
 async function fingerprintInventory(
   reason: string,
   statement: string,
-): Promise<IEvidenceInventory> {
-  return new EvidenceGoAdapter().analyze(
+): Promise<IEvidInventory> {
+  return new EvidGoAdapter().analyze(
     TestSourceSnapshot.create(
       "src/fingerprint.go",
       dedent`
         package contracts
 
-        // @evidence docs/requirements.md#run ${reason}
+        // @evid docs/requirements.md#run ${reason}
         func Run() int {
             ${statement}
         }
@@ -182,8 +182,8 @@ async function fingerprintInventory(
   );
 }
 
-async function groupedInventory(second: number): Promise<IEvidenceInventory> {
-  return new EvidenceGoAdapter().analyze(
+async function groupedInventory(second: number): Promise<IEvidInventory> {
+  return new EvidGoAdapter().analyze(
     TestSourceSnapshot.create(
       "src/grouped.go",
       dedent`
@@ -199,9 +199,9 @@ async function groupedInventory(second: number): Promise<IEvidenceInventory> {
 }
 
 function requireUnit(
-  inventory: IEvidenceInventory,
+  inventory: IEvidInventory,
   name: string,
-): IEvidenceUnit {
+): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === name || candidate.identity.at(-1) === name,

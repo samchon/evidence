@@ -1,5 +1,5 @@
-import { EvidencePythonAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidPythonAdapter } from "evid";
+import type { IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -16,7 +16,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 4. Analyze malformed source and verify parse failure is reported as incomplete.
  */
 export async function test_python_failures(): Promise<void> {
-  const adapter = new EvidencePythonAdapter();
+  const adapter = new EvidPythonAdapter();
 
   // Dynamic __all__ retains ordinary public declarations instead of erasing obligations.
   const dynamic = await adapter.analyze(
@@ -219,6 +219,6 @@ export async function test_python_failures(): Promise<void> {
   );
 }
 
-function hasCode(inventory: IEvidenceInventory, code: string): boolean {
+function hasCode(inventory: IEvidInventory, code: string): boolean {
   return inventory.diagnostics.some((diagnostic) => diagnostic.code === code);
 }

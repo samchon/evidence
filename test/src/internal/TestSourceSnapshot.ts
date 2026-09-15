@@ -1,7 +1,7 @@
 import type {
-  IEvidenceSourceDiagnostic,
-  IEvidenceSourceSnapshot,
-} from "@wrtnlabs/evidence";
+  IEvidSourceDiagnostic,
+  IEvidSourceSnapshot,
+} from "evid";
 import { createHash } from "node:crypto";
 
 /**
@@ -19,8 +19,8 @@ export namespace TestSourceSnapshot {
    * because it cannot supply root identity.
    */
   export function combine(
-    snapshots: IEvidenceSourceSnapshot[],
-  ): IEvidenceSourceSnapshot {
+    snapshots: IEvidSourceSnapshot[],
+  ): IEvidSourceSnapshot {
     const first = snapshots[0];
     if (first === undefined)
       throw new Error("At least one source snapshot is required.");
@@ -44,7 +44,7 @@ export namespace TestSourceSnapshot {
     content: string,
     aliases: string[] = [relative],
     root: string = "/project",
-  ): IEvidenceSourceSnapshot {
+  ): IEvidSourceSnapshot {
     return {
       root: {
         declared: ".",
@@ -83,9 +83,9 @@ export namespace TestSourceSnapshot {
    * discovery so adapters cannot mistake a missing population for an empty one.
    */
   export function fail(
-    snapshot: IEvidenceSourceSnapshot,
-    diagnostic: IEvidenceSourceDiagnostic,
-  ): IEvidenceSourceSnapshot {
+    snapshot: IEvidSourceSnapshot,
+    diagnostic: IEvidSourceDiagnostic,
+  ): IEvidSourceSnapshot {
     snapshot.complete = false;
     snapshot.diagnostics.push(diagnostic);
     return snapshot;

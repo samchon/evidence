@@ -1,7 +1,7 @@
 import {
-  EvidenceLanguageRegistry,
-  EvidenceScalaAdapter,
-} from "@wrtnlabs/evidence";
+  EvidLanguageRegistry,
+  EvidScalaAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
@@ -32,7 +32,7 @@ export async function test_scala_boundaries(): Promise<void> {
     "class Broken { def run( { }",
     "object Source { class Nested { val value = 1 } }; object Forward { export Source.Nested }",
   ]) {
-    const inventory = await new EvidenceScalaAdapter().analyze(
+    const inventory = await new EvidScalaAdapter().analyze(
       TestSourceSnapshot.create("src/Boundary.scala", source),
     );
     TestValidator.equals(`incomplete ${source}`, inventory.complete, false);
@@ -44,7 +44,7 @@ export async function test_scala_boundaries(): Promise<void> {
       ),
     );
   }
-  const unsupported = await new EvidenceScalaAdapter().analyze(
+  const unsupported = await new EvidScalaAdapter().analyze(
     TestSourceSnapshot.create("src/Script.sc", "val value = 1"),
   );
   TestValidator.equals(
@@ -60,7 +60,7 @@ export async function test_scala_boundaries(): Promise<void> {
       message: "Cannot read source.",
     },
   );
-  const unavailable = await new EvidenceScalaAdapter().analyze(failed);
+  const unavailable = await new EvidScalaAdapter().analyze(failed);
   TestValidator.equals(
     "source failure stays incomplete",
     unavailable.complete,
@@ -75,10 +75,10 @@ export async function test_scala_boundaries(): Promise<void> {
   );
   TestValidator.equals(
     "configured source spelling",
-    EvidenceLanguageRegistry.select("scala", "src/Selected.scala").id,
+    EvidLanguageRegistry.select("scala", "src/Selected.scala").id,
     "scala",
   );
-  const privateGiven = await new EvidenceScalaAdapter().analyze(
+  const privateGiven = await new EvidScalaAdapter().analyze(
     TestSourceSnapshot.create(
       "src/Private.scala",
       "private object Hidden { given Ordering[Int] = ???; val Some(value) = Some(1) }",

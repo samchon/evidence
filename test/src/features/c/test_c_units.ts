@@ -1,4 +1,4 @@
-import { EvidenceCAdapter, EvidenceLanguageRegistry } from "@wrtnlabs/evidence";
+import { EvidCAdapter, EvidLanguageRegistry } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -14,7 +14,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_c_units(): Promise<void> {
   // Certified metadata describes the exact grammar and explicit-source boundary.
-  const language = EvidenceLanguageRegistry.list().find(
+  const language = EvidLanguageRegistry.list().find(
     (entry) => entry.type === "c",
   );
   if (language === undefined) throw new Error("Missing C language metadata.");
@@ -23,7 +23,7 @@ export async function test_c_units(): Promise<void> {
   TestValidator.equals(
     "certified C adapter",
     language.adapter.entry,
-    "EvidenceCAdapter",
+    "EvidCAdapter",
   );
   TestValidator.equals(
     "published C grammar version",
@@ -31,7 +31,7 @@ export async function test_c_units(): Promise<void> {
     true,
   );
 
-  const inventory = await new EvidenceCAdapter().analyze(
+  const inventory = await new EvidCAdapter().analyze(
     TestSourceSnapshot.create(
       "include/shop.h",
       dedent`

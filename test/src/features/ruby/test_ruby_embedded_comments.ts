@@ -1,8 +1,8 @@
 import {
-  EvidenceFingerprint,
-  EvidenceInventory,
-  EvidenceRubyAdapter,
-} from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidInventory,
+  EvidRubyAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -22,12 +22,12 @@ export async function test_ruby_embedded_comments(): Promise<void> {
     class Sale
     =begin rdoc
     계약 💎
-    @evidence docs/spec.md#create Documents creation.
+    @evid docs/spec.md#create Documents creation.
     =end
       class Create
     =begin
-    @evidence docs/spec.md#title Documents the title.
-    @evidenceReview docs/spec.md#title #abcdef0 Reviewed the title.
+    @evid docs/spec.md#title Documents the title.
+    @evidReview docs/spec.md#title #abcdef0 Reviewed the title.
     =end
         attr_reader :title
       end
@@ -39,7 +39,7 @@ export async function test_ruby_embedded_comments(): Promise<void> {
       end
     end
   `;
-  const adapter = new EvidenceRubyAdapter();
+  const adapter = new EvidRubyAdapter();
   for (const content of [
     source,
     source.replaceAll("\n", "\r\n"),
@@ -85,7 +85,7 @@ export async function test_ruby_embedded_comments(): Promise<void> {
     );
     TestValidator.equals(
       "embedded withdrawal keeps its owner",
-      new EvidenceInventory([inventory])
+      new EvidInventory([inventory])
         .select(inventory.units.map((unit) => unit.id))
         .hidden.map((unit) => unit.identity.join("."))
         .sort((a, b) => a.localeCompare(b)),
@@ -95,7 +95,7 @@ export async function test_ruby_embedded_comments(): Promise<void> {
       TestValidator.equals(
         "original tag coordinates",
         item.location.range?.start?.offset,
-        content.indexOf(`@evidence ${item.target}`),
+        content.indexOf(`@evid ${item.target}`),
       );
     const edited = await adapter.analyze(
       TestSourceSnapshot.create(
@@ -116,21 +116,21 @@ export async function test_ruby_embedded_comments(): Promise<void> {
     if (sale === undefined) throw new Error("Missing Sale.");
     TestValidator.equals(
       "nested metadata does not stale ancestor reviews",
-      EvidenceFingerprint.inspect(inventory, sale.id).fingerprint,
-      EvidenceFingerprint.inspect(edited, sale.id).fingerprint,
+      EvidFingerprint.inspect(inventory, sale.id).fingerprint,
+      EvidFingerprint.inspect(edited, sale.id).fingerprint,
     );
     TestValidator.notEquals(
       "nested declaration edits stale ancestor reviews",
-      EvidenceFingerprint.inspect(inventory, sale.id).fingerprint,
-      EvidenceFingerprint.inspect(changed, sale.id).fingerprint,
+      EvidFingerprint.inspect(inventory, sale.id).fingerprint,
+      EvidFingerprint.inspect(changed, sale.id).fingerprint,
     );
   }
 
   // Blank lines, an intervening end, and mismatched line-comment indentation still break attachment.
   for (const content of [
-    "class Sale\n=begin\n@evidence docs/spec.md#detached Detached documentation.\n=end\n\n  class Child; end\nend\n",
-    "class Sale\n=begin\n@evidence docs/spec.md#boundary Must not escape the class.\n=end\nend\nclass Other; end\n",
-    "class Sale\n# @evidence docs/spec.md#indent A line comment must match indentation.\n  class Child; end\nend\n",
+    "class Sale\n=begin\n@evid docs/spec.md#detached Detached documentation.\n=end\n\n  class Child; end\nend\n",
+    "class Sale\n=begin\n@evid docs/spec.md#boundary Must not escape the class.\n=end\nend\nclass Other; end\n",
+    "class Sale\n# @evid docs/spec.md#indent A line comment must match indentation.\n  class Child; end\nend\n",
   ]) {
     const inventory = await adapter.analyze(
       TestSourceSnapshot.create("lib/sale.rb", content),

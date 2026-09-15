@@ -1,8 +1,8 @@
 import {
-  EvidenceDbmlAdapter,
-  EvidenceInventory,
-  EvidenceFingerprint,
-} from "@wrtnlabs/evidence";
+  EvidDbmlAdapter,
+  EvidInventory,
+  EvidFingerprint,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -17,7 +17,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Repair the affected source and require normal schema analysis to recover.
  */
 export async function test_dbml_failure_recovery(): Promise<void> {
-  const adapter = new EvidenceDbmlAdapter();
+  const adapter = new EvidDbmlAdapter();
   const failures = [
     "Table users { id int [ref] }",
     "Enum state { active active }",
@@ -127,7 +127,7 @@ export async function test_dbml_failure_recovery(): Promise<void> {
   );
   TestValidator.equals(
     "withdrawn parent hides its column",
-    new EvidenceInventory([hidden]).select(
+    new EvidInventory([hidden]).select(
       hidden.units
         .filter((unit) => unit.symbol === "column")
         .map((unit) => unit.id),
@@ -160,7 +160,7 @@ export async function test_dbml_failure_recovery(): Promise<void> {
     throw new Error("Expected posts model.");
   TestValidator.notEquals(
     "relation ownership/cardinality changes model fingerprint",
-    EvidenceFingerprint.inspect(recovered, before.id).fingerprint,
-    EvidenceFingerprint.inspect(altered, after.id).fingerprint,
+    EvidFingerprint.inspect(recovered, before.id).fingerprint,
+    EvidFingerprint.inspect(altered, after.id).fingerprint,
   );
 }

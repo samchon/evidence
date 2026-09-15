@@ -1,8 +1,8 @@
 import {
-  EvidenceGraph,
-  EvidenceSwiftAdapter,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
+  EvidGraph,
+  EvidSwiftAdapter,
+  EvidTypeScriptAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -11,13 +11,13 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
 /** Evaluates every selected Swift declaration as a reference.
  *
- * Evidence covers a selector while a review-only target remains missing.
+ * Evid covers a selector while a review-only target remains missing.
  *
  * 1. Evaluate acknowledged and undocumented selectors.
  * 2. Verify exact missing populations and review behavior.
  */
 export async function test_swift_graph(): Promise<void> {
-  const reference = await new EvidenceSwiftAdapter().analyze(
+  const reference = await new EvidSwiftAdapter().analyze(
     TestSourceSnapshot.create(
       "src/Contract.swift",
       dedent`
@@ -27,15 +27,15 @@ export async function test_swift_graph(): Promise<void> {
   `,
     ),
   );
-  const claims = await new EvidenceTypeScriptAdapter().analyze(
+  const claims = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/Claims.ts",
       dedent`
-    /** @evidence ./Contract.swift#Contract Verifies the type. */
+    /** @evid ./Contract.swift#Contract Verifies the type. */
     export class TypeClaim {}
-    /** @evidence ./Contract.swift#run Verifies the operation. */
+    /** @evid ./Contract.swift#run Verifies the operation. */
     export function runClaim() {}
-    /** @evidence ./Contract.swift#value Verifies the value. */
+    /** @evid ./Contract.swift#value Verifies the value. */
     export const valueClaim = 1;
   `,
     ),
@@ -64,7 +64,7 @@ export async function test_swift_graph(): Promise<void> {
             ),
           )
         : [];
-      const graph = EvidenceGraph.evaluate({
+      const graph = EvidGraph.evaluate({
         claims: [
           {
             severity: "error",
@@ -97,11 +97,11 @@ export async function test_swift_graph(): Promise<void> {
       );
     }
   }
-  const review = await new EvidenceSwiftAdapter().analyze(
+  const review = await new EvidSwiftAdapter().analyze(
     TestSourceSnapshot.create(
       "src/Review.swift",
       dedent`
-    /** @evidenceReview ./Contract.swift#run Reviewed without an acknowledgement. */
+    /** @evidReview ./Contract.swift#run Reviewed without an acknowledgement. */
     public func review() -> Int { 1 }
   `,
     ),
@@ -115,7 +115,7 @@ export async function test_swift_graph(): Promise<void> {
   const functions = reference.units
     .filter((unit) => unit.symbol === "function")
     .map((unit) => unit.id);
-  const graph = EvidenceGraph.evaluate({
+  const graph = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",

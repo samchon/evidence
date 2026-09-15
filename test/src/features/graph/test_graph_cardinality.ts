@@ -1,4 +1,4 @@
-import { EvidenceGraph } from "@wrtnlabs/evidence";
+import { EvidGraph } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { TestGraph } from "../../internal/TestGraph";
@@ -11,14 +11,14 @@ import { TestInventory } from "../../internal/TestInventory";
  * cardinality. Aggregate scopes expand to selected descendants, while exclusions
  * can satisfy ordinary coverage without becoming positive evidence.
  *
- * 1. Check three claim subjects under singleEvidencePerSymbol:
+ * 1. Check three claim subjects under singleEvidPerSymbol:
  *    - An uncited subject reports zero positive units.
  *    - Two comment fragments citing the same unit count once for their shared owner.
  *    - An aggregate citation covering two selected children reports two units.
  * 2. Supply only an exclusion and require ordinary coverage to pass, positive
  *    cardinality to remain zero, and no unique-positive-host finding.
  * 3. Have two semantic hosts cite one reference unit, with a repeated fragment
- *    on one host; compare ordinary and uniqueEvidence reference entries.
+ *    on one host; compare ordinary and uniqueEvid reference entries.
  * 4. Require exactly one uniqueness finding on the second reference, counting
  *    two semantic hosts rather than three physical citation positions.
  */
@@ -119,7 +119,7 @@ export async function test_graph_cardinality(): Promise<void> {
     "evidence",
     "parent",
   );
-  const single = EvidenceGraph.evaluate({
+  const single = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -135,7 +135,7 @@ export async function test_graph_cardinality(): Promise<void> {
               TestGraph.resolved(repeatedCitation, first),
               TestGraph.resolved(broadCitation, parent),
             ],
-            singleEvidencePerSymbol: true,
+            singleEvidPerSymbol: true,
           },
         ],
       },
@@ -192,7 +192,7 @@ export async function test_graph_cardinality(): Promise<void> {
     "evidenceExclude",
     "first",
   );
-  const exclusionOnly = EvidenceGraph.evaluate({
+  const exclusionOnly = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -204,8 +204,8 @@ export async function test_graph_cardinality(): Promise<void> {
             inventory: reference,
             unitIds: [first.id],
             resolutions: [TestGraph.resolved(exclusion, first)],
-            uniqueEvidence: true,
-            singleEvidencePerSymbol: true,
+            uniqueEvid: true,
+            singleEvidPerSymbol: true,
           },
         ],
       },
@@ -233,7 +233,7 @@ export async function test_graph_cardinality(): Promise<void> {
     [],
   );
 
-  // Two different semantic hosts violate only the reference that enables uniqueEvidence.
+  // Two different semantic hosts violate only the reference that enables uniqueEvid.
   const uniqueClaim = TestInventory.create();
   const owner = TestInventory.unit(
     uniqueClaim,
@@ -296,7 +296,7 @@ export async function test_graph_cardinality(): Promise<void> {
     TestGraph.resolved(ownerRepeated, first),
     TestGraph.resolved(otherCitation, first),
   ];
-  const unique = EvidenceGraph.evaluate({
+  const unique = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -314,7 +314,7 @@ export async function test_graph_cardinality(): Promise<void> {
             inventory: reference,
             unitIds: [first.id],
             resolutions,
-            uniqueEvidence: true,
+            uniqueEvid: true,
           },
         ],
       },

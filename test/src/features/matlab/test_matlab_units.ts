@@ -1,4 +1,4 @@
-import { EvidenceInventory, EvidenceMatlabAdapter } from "@wrtnlabs/evidence";
+import { EvidInventory, EvidMatlabAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -13,7 +13,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Resolve an aliased public property through the inventory.
  */
 export async function test_matlab_units(): Promise<void> {
-  const inventory = await new EvidenceMatlabAdapter().analyze(
+  const inventory = await new EvidMatlabAdapter().analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create(
         "src/Contract.m",
@@ -151,7 +151,7 @@ export async function test_matlab_units(): Promise<void> {
     inventory.hosts.length,
     inventory.units.reduce((count, unit) => count + unit.sites.length, 0),
   );
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   TestValidator.equals(
     "logical alias",
     graph.resolve(

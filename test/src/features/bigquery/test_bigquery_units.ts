@@ -1,7 +1,7 @@
 import {
-  EvidenceBigQueryAdapter,
-  EvidenceFingerprint,
-} from "@wrtnlabs/evidence";
+  EvidBigQueryAdapter,
+  EvidFingerprint,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -26,7 +26,7 @@ export async function test_bigquery_units(): Promise<void> {
       CONSTRAINT customer_key FOREIGN KEY (customer_id) REFERENCES \`acme-prod.sales.customers\` (id) NOT ENFORCED
     ) OPTIONS(description="Orders schema");
   `;
-  const adapter = new EvidenceBigQueryAdapter();
+  const adapter = new EvidBigQueryAdapter();
   const inventory = await adapter.analyze(
     TestSourceSnapshot.create("schema.sql", content, [
       "schema.sql",
@@ -95,8 +95,8 @@ export async function test_bigquery_units(): Promise<void> {
   );
   TestValidator.equals(
     "file move preserves review",
-    EvidenceFingerprint.inspect(moved, model.id).fingerprint,
-    EvidenceFingerprint.inspect(inventory, model.id).fingerprint,
+    EvidFingerprint.inspect(moved, model.id).fingerprint,
+    EvidFingerprint.inspect(inventory, model.id).fingerprint,
   );
   const changed = await adapter.analyze(
     TestSourceSnapshot.create(
@@ -106,7 +106,7 @@ export async function test_bigquery_units(): Promise<void> {
   );
   TestValidator.notEquals(
     "nested semantic edit invalidates table review",
-    EvidenceFingerprint.inspect(changed, model.id).fingerprint,
-    EvidenceFingerprint.inspect(inventory, model.id).fingerprint,
+    EvidFingerprint.inspect(changed, model.id).fingerprint,
+    EvidFingerprint.inspect(inventory, model.id).fingerprint,
   );
 }

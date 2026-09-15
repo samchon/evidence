@@ -1,5 +1,5 @@
-import { EvidenceCSharpAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidCSharpAdapter } from "evid";
+import type { IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -14,7 +14,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Require every affected inventory to be incomplete with a diagnostic.
  */
 export async function test_csharp_failures(): Promise<void> {
-  const adapter = new EvidenceCSharpAdapter();
+  const adapter = new EvidCSharpAdapter();
 
   // Duplicate public types must opt into one compatible partial identity.
   const duplicate = await adapter.analyze(
@@ -200,7 +200,7 @@ export async function test_csharp_failures(): Promise<void> {
   );
 }
 
-function hasCode(inventory: IEvidenceInventory, code: string): boolean {
+function hasCode(inventory: IEvidInventory, code: string): boolean {
   return inventory.diagnostics.some((diagnostic) => diagnostic.code === code);
 }
 

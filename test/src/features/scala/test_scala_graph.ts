@@ -1,8 +1,8 @@
 import {
-  EvidenceGraph,
-  EvidenceScalaAdapter,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
+  EvidGraph,
+  EvidScalaAdapter,
+  EvidTypeScriptAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -19,7 +19,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Analyze a review-only Scala annotation and verify it is retained as review data without supplying missing coverage.
  */
 export async function test_scala_graph(): Promise<void> {
-  const reference = await new EvidenceScalaAdapter().analyze(
+  const reference = await new EvidScalaAdapter().analyze(
     TestSourceSnapshot.create(
       "src/Contract.scala",
       dedent`
@@ -29,15 +29,15 @@ export async function test_scala_graph(): Promise<void> {
   `,
     ),
   );
-  const claims = await new EvidenceTypeScriptAdapter().analyze(
+  const claims = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/Claims.ts",
       dedent`
-    /** @evidence ./Contract.scala#Contract Verifies the type. */
+    /** @evid ./Contract.scala#Contract Verifies the type. */
     export class TypeClaim {}
-    /** @evidence ./Contract.scala#run Verifies the operation. */
+    /** @evid ./Contract.scala#run Verifies the operation. */
     export function runClaim() {}
-    /** @evidence ./Contract.scala#value Verifies the value. */
+    /** @evid ./Contract.scala#value Verifies the value. */
     export const valueClaim = 1;
   `,
     ),
@@ -66,7 +66,7 @@ export async function test_scala_graph(): Promise<void> {
             ),
           )
         : [];
-      const graph = EvidenceGraph.evaluate({
+      const graph = EvidGraph.evaluate({
         claims: [
           {
             severity: "error",
@@ -99,11 +99,11 @@ export async function test_scala_graph(): Promise<void> {
       );
     }
   }
-  const review = await new EvidenceScalaAdapter().analyze(
+  const review = await new EvidScalaAdapter().analyze(
     TestSourceSnapshot.create(
       "src/Review.scala",
       dedent`
-    /** @evidenceReview ./Contract.scala#run Reviewed without an acknowledgement. */
+    /** @evidReview ./Contract.scala#run Reviewed without an acknowledgement. */
     def review() = 1
   `,
     ),
@@ -117,7 +117,7 @@ export async function test_scala_graph(): Promise<void> {
   const functions = reference.units
     .filter((unit) => unit.symbol === "function")
     .map((unit) => unit.id);
-  const graph = EvidenceGraph.evaluate({
+  const graph = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",

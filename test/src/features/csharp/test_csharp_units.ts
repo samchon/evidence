@@ -1,7 +1,7 @@
 import {
-  EvidenceCSharpAdapter,
-  EvidenceLanguageRegistry,
-} from "@wrtnlabs/evidence";
+  EvidCSharpAdapter,
+  EvidLanguageRegistry,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -17,7 +17,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_csharp_units(): Promise<void> {
   // Certified metadata names the exact pinned grammar and adapter boundary.
-  const language = EvidenceLanguageRegistry.list().find(
+  const language = EvidLanguageRegistry.list().find(
     (entry) => entry.type === "csharp",
   );
   if (language === undefined) throw new Error("Missing C# language metadata.");
@@ -26,7 +26,7 @@ export async function test_csharp_units(): Promise<void> {
   TestValidator.equals(
     "certified C# adapter",
     language.adapter.entry,
-    "EvidenceCSharpAdapter",
+    "EvidCSharpAdapter",
   );
   TestValidator.equals(
     "published C# grammar version",
@@ -34,7 +34,7 @@ export async function test_csharp_units(): Promise<void> {
     true,
   );
 
-  const inventory = await new EvidenceCSharpAdapter().analyze(
+  const inventory = await new EvidCSharpAdapter().analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create(
         "src/Sale.cs",

@@ -1,8 +1,8 @@
 import {
-  EvidenceFingerprint,
-  EvidenceInventory,
-  EvidenceSwiftAdapter,
-} from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidInventory,
+  EvidSwiftAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -46,7 +46,7 @@ export async function test_swift_extension_ownership(): Promise<void> {
     `,
     ),
   ];
-  const adapter = new EvidenceSwiftAdapter();
+  const adapter = new EvidSwiftAdapter();
   const inventory = await adapter.analyze(TestSourceSnapshot.combine(sources));
 
   TestValidator.equals(
@@ -108,10 +108,10 @@ export async function test_swift_extension_ownership(): Promise<void> {
   );
   TestValidator.notEquals(
     "extension edit invalidates original ancestor review",
-    EvidenceFingerprint.inspect(inventory, root.id).fingerprint,
-    EvidenceFingerprint.inspect(changed, root.id).fingerprint,
+    EvidFingerprint.inspect(inventory, root.id).fingerprint,
+    EvidFingerprint.inspect(changed, root.id).fingerprint,
   );
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   TestValidator.equals(
     "extension declared nested type is resolvable",
     graph.resolve(

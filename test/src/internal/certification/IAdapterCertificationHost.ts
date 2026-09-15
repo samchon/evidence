@@ -1,7 +1,7 @@
-import type { IEvidenceHost } from "@wrtnlabs/evidence";
+import type { IEvidHost } from "evid";
 
 /** Exact attachment class and semantic owners of one certification host. */
 export interface IAdapterCertificationHost {
-  attachment: IEvidenceHost["attachment"];
+  attachment: IEvidHost["attachment"];
   units: string[];
 }

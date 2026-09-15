@@ -1,4 +1,4 @@
-import { EvidenceChecker, EvidenceWatcher } from "@wrtnlabs/evidence";
+import { EvidChecker, EvidWatcher } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
@@ -17,18 +17,18 @@ export async function test_sql_watch(): Promise<void> {
   await TestFileSystem.experiment(
     "sql-watch",
     {
-      "evidence.config.ts": dedent`
+      "evid.config.ts": dedent`
       export default { claims: [{ type: "typescript", files: ["claims.ts"], reference: { type: "sql", files: ["contracts/*.sql"], symbol: "column" } }] };
     `,
       "claims.ts": dedent`
-      /** @evidence ./contracts/Contract.sql#CONTRACT Implements the contract. */
+      /** @evid ./contracts/Contract.sql#CONTRACT Implements the contract. */
       export function claim() {}
     `,
       "contracts/Contract.sql": "CREATE TABLE contract (value INTEGER);\n",
     },
     async (directory) => {
-      const file = join(directory, "evidence.config.ts");
-      const watcher = new EvidenceWatcher(file, {
+      const file = join(directory, "evid.config.ts");
+      const watcher = new EvidWatcher(file, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
       });
@@ -38,7 +38,7 @@ export async function test_sql_watch(): Promise<void> {
           TestValidator.equals(
             `fresh SQL cycle ${cycle.cycle}`,
             cycle.report,
-            await EvidenceChecker.check(file),
+            await EvidChecker.check(file),
           );
           if (cycle.cycle === 1) {
             TestValidator.equals("initial SQL coverage", cycle.success, true);
@@ -71,7 +71,7 @@ export async function test_sql_watch(): Promise<void> {
               true,
             );
             await TestFileSystem.save(directory, {
-              "evidence.config.ts": dedent`
+              "evid.config.ts": dedent`
             export default { claims: [{ type: "typescript", files: ["claims.ts"], reference: { type: "sql", files: ["contracts/*.sql"], symbol: "model" } }] };
           `,
             });

@@ -1,4 +1,4 @@
-import { EvidenceGraph, EvidencePrismaAdapter } from "@wrtnlabs/evidence";
+import { EvidGraph, EvidPrismaAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -12,7 +12,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Repair the schema and require complete recovery.
  */
 export async function test_prisma_failures(): Promise<void> {
-  const adapter = new EvidencePrismaAdapter();
+  const adapter = new EvidPrismaAdapter();
   const broken = await adapter.analyze(
     TestSourceSnapshot.create(
       "prisma/schema.prisma",
@@ -34,7 +34,7 @@ export async function test_prisma_failures(): Promise<void> {
   );
 
   // An incomplete claim remains active and cannot pass as an empty host population.
-  const graph = EvidenceGraph.evaluate({
+  const graph = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",

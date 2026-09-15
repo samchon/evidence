@@ -1,8 +1,8 @@
-import { EvidenceBigQueryAdapter, EvidenceParser } from "@wrtnlabs/evidence";
+import { EvidBigQueryAdapter, EvidParser } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TreeSitterAssets } from "../../../../packages/evidence/src/internal/TreeSitterAssets";
-import { TreeSitterAssetScope } from "../../../../packages/evidence/src/internal/TreeSitterAssetScope";
+import { EvidTreeSitterAssets } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssets";
+import { EvidTreeSitterAssetScope } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssetScope";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestParserAssets } from "../../internal/TestParserAssets";
 import { TestParserError } from "../../internal/TestParserError";
@@ -17,7 +17,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Parse the schema directly, then reject a TypeScript extension and an unsupported GoogleSQL query capture.
  */
 export async function test_bigquery_acquisition(): Promise<void> {
-  const grammar = await new TreeSitterAssets().grammar("bigquery");
+  const grammar = await new EvidTreeSitterAssets().grammar("bigquery");
   const bytes = await TestParserAssets.bytes(grammar);
   const source = TestSourceSnapshot.create(
     "schema.bqsql",
@@ -28,7 +28,7 @@ export async function test_bigquery_acquisition(): Promise<void> {
     {},
     async (cacheDirectory) => {
       const requests: string[] = [];
-      const cold = await TreeSitterAssetScope.run(
+      const cold = await EvidTreeSitterAssetScope.run(
         {
           cacheDirectory,
           fetch: async (input) => {
@@ -36,7 +36,7 @@ export async function test_bigquery_acquisition(): Promise<void> {
             return new Response(Uint8Array.from(bytes));
           },
         },
-        async () => new EvidenceBigQueryAdapter().analyze(source),
+        async () => new EvidBigQueryAdapter().analyze(source),
       );
       TestValidator.equals("only configured grammar downloaded", requests, [
         grammar.wasm.url,
@@ -46,7 +46,7 @@ export async function test_bigquery_acquisition(): Promise<void> {
         cold.diagnostics,
         [],
       );
-      const warm = await TreeSitterAssetScope.run(
+      const warm = await EvidTreeSitterAssetScope.run(
         {
           cacheDirectory,
           attempts: 1,
@@ -54,13 +54,13 @@ export async function test_bigquery_acquisition(): Promise<void> {
             throw new Error("offline");
           },
         },
-        async () => new EvidenceBigQueryAdapter().analyze(source),
+        async () => new EvidBigQueryAdapter().analyze(source),
       );
       TestValidator.equals("warm offline inventory is equivalent", warm, cold);
     },
   );
 
-  const parser = new EvidenceParser();
+  const parser = new EvidParser();
   try {
     await parser.parse(
       {

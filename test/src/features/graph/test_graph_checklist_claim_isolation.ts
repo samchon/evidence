@@ -1,12 +1,12 @@
-import { EvidenceChecker } from "@wrtnlabs/evidence";
+import { EvidChecker } from "evid";
 import type {
-  EvidenceCommandExitCode,
-  EvidenceProgrammingSymbol,
-  EvidenceSeverity,
-  IEvidenceCheckReport,
-  IEvidenceDiagnostic,
-  IEvidenceProgrammingClaim,
-} from "@wrtnlabs/evidence";
+  EvidCommandExitCode,
+  EvidProgrammingSymbol,
+  EvidSeverity,
+  IEvidCheckReport,
+  IEvidDiagnostic,
+  IEvidProgrammingClaim,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
@@ -39,22 +39,22 @@ export async function test_graph_checklist_claim_isolation(): Promise<void> {
     location,
     {
       "claims.ts": [
-        "/** @evidence rules.md#rule Implements the rule. */",
+        "/** @evid rules.md#rule Implements the rule. */",
         "export function run(): void {}",
-        "/** @evidence rules.md#rule Defines the rule. */",
+        "/** @evid rules.md#rule Defines the rule. */",
         "export interface Shape {}",
         "",
       ].join("\n"),
       "rules.md": `# Rule {#rule}\n\nDo the work.\n`,
     },
     async (directory: string): Promise<void> => {
-      const config: string = join(directory, "evidence.json");
-      const disabled: IEvidenceProgrammingClaim = claim("type", "off");
-      const broad: IEvidenceProgrammingClaim = claim(
+      const config: string = join(directory, "evid.json");
+      const disabled: IEvidProgrammingClaim = claim("type", "off");
+      const broad: IEvidProgrammingClaim = claim(
         ["type", "function"],
         "warning",
       );
-      const narrow: IEvidenceProgrammingClaim = claim("type", "error");
+      const narrow: IEvidProgrammingClaim = claim("type", "error");
 
       await check(directory, config, [disabled, broad, narrow], 2, 1);
       await check(directory, config, [disabled, narrow, broad], 1, 1);
@@ -77,9 +77,9 @@ export async function test_graph_checklist_claim_isolation(): Promise<void> {
  * scenario resolves the same physical declarations and reference unit.
  */
 function claim(
-  symbol: EvidenceProgrammingSymbol | EvidenceProgrammingSymbol[],
-  severity: EvidenceSeverity,
-): IEvidenceProgrammingClaim {
+  symbol: EvidProgrammingSymbol | EvidProgrammingSymbol[],
+  severity: EvidSeverity,
+): IEvidProgrammingClaim {
   return {
     type: "typescript",
     files: ["claims.ts"],
@@ -100,7 +100,7 @@ function claim(
  * Its uncertainty must remain local even though it reuses the claim inventory
  * and declaration IDs exercised by the complete checklist claim.
  */
-function incompleteClaim(): IEvidenceProgrammingClaim {
+function incompleteClaim(): IEvidProgrammingClaim {
   return {
     ...claim("type", "error"),
     reference: {
@@ -122,16 +122,16 @@ function incompleteClaim(): IEvidenceProgrammingClaim {
 async function check(
   directory: string,
   config: string,
-  claims: IEvidenceProgrammingClaim[],
+  claims: IEvidProgrammingClaim[],
   expectedClaim: number,
-  exitCode: EvidenceCommandExitCode,
+  exitCode: EvidCommandExitCode,
 ): Promise<void> {
   await TestFileSystem.save(directory, {
-    "evidence.json": JSON.stringify({ claims }),
+    "evid.json": JSON.stringify({ claims }),
   });
-  const report: IEvidenceCheckReport = await EvidenceChecker.check(config);
-  const unhosted: IEvidenceDiagnostic[] = report.diagnostics.filter(
-    (diagnostic: IEvidenceDiagnostic): boolean =>
+  const report: IEvidCheckReport = await EvidChecker.check(config);
+  const unhosted: IEvidDiagnostic[] = report.diagnostics.filter(
+    (diagnostic: IEvidDiagnostic): boolean =>
       diagnostic.code === "graph-unhosted-checklist",
   );
   TestValidator.equals(

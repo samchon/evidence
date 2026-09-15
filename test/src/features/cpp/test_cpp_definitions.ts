@@ -1,5 +1,5 @@
-import { EvidenceCppAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+import { EvidCppAdapter } from "evid";
+import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -14,7 +14,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Require overload families to remain separate from unrelated names.
  */
 export async function test_cpp_definitions(): Promise<void> {
-  const inventory = await new EvidenceCppAdapter().analyze(
+  const inventory = await new EvidCppAdapter().analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create(
         "include/shop.hpp",
@@ -119,9 +119,9 @@ export async function test_cpp_definitions(): Promise<void> {
 }
 
 function requireUnit(
-  inventory: IEvidenceInventory,
+  inventory: IEvidInventory,
   identity: string,
-): IEvidenceUnit {
+): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.join(".") === identity,
   );

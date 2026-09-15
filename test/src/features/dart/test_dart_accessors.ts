@@ -1,4 +1,4 @@
-import { EvidenceDartAdapter } from "@wrtnlabs/evidence";
+import { EvidDartAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -13,7 +13,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Verify a withdrawn accessor family is hidden and has no eligible host.
  */
 export async function test_dart_accessors(): Promise<void> {
-  const inventory = await new EvidenceDartAdapter().analyze(
+  const inventory = await new EvidDartAdapter().analyze(
     TestSourceSnapshot.create(
       "src/accessors.dart",
       dedent`

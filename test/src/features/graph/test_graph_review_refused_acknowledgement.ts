@@ -1,9 +1,9 @@
 import {
-  EvidenceGraph,
-  EvidenceMarkdownAdapter,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
-import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+  EvidGraph,
+  EvidMarkdownAdapter,
+  EvidTypeScriptAdapter,
+} from "evid";
+import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -23,7 +23,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Require one refused-aggregate diagnostic and no orphan-review diagnostic.
  */
 export async function test_graph_review_refused_acknowledgement(): Promise<void> {
-  const requirements = await new EvidenceMarkdownAdapter().analyze(
+  const requirements = await new EvidMarkdownAdapter().analyze(
     TestSourceSnapshot.create(
       "docs/rules.md",
       dedent`
@@ -36,20 +36,20 @@ export async function test_graph_review_refused_acknowledgement(): Promise<void>
     ),
   );
   const price = requireUnit(requirements, "price");
-  const claims = await new EvidenceTypeScriptAdapter().analyze(
+  const claims = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/pricing.ts",
       dedent`
         /**
-         * @evidence docs/rules.md Implements all rules.
-         * @evidenceReview docs/rules.md Reviewed the aggregate statement.
+         * @evid docs/rules.md Implements all rules.
+         * @evidReview docs/rules.md Reviewed the aggregate statement.
          */
         export function priceSale(): void {}
       `,
     ),
   );
   const priceSale = requireUnit(claims, "priceSale");
-  const result = EvidenceGraph.evaluate({
+  const result = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -90,9 +90,9 @@ export async function test_graph_review_refused_acknowledgement(): Promise<void>
 }
 
 function requireUnit(
-  inventory: IEvidenceInventory,
+  inventory: IEvidInventory,
   identity: string,
-): IEvidenceUnit {
+): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.at(-1) === identity,
   );
@@ -101,7 +101,7 @@ function requireUnit(
 }
 
 function count(
-  result: ReturnType<typeof EvidenceGraph.evaluate>,
+  result: ReturnType<typeof EvidGraph.evaluate>,
   code: string,
 ): number {
   return result.diagnostics.filter((diagnostic) => diagnostic.code === code)

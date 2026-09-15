@@ -1,4 +1,4 @@
-import { EvidenceChecker, EvidenceWatcher } from "@wrtnlabs/evidence";
+import { EvidChecker, EvidWatcher } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
@@ -17,11 +17,11 @@ export async function test_objc_watch(): Promise<void> {
   await TestFileSystem.experiment(
     "objc-watch",
     {
-      "evidence.config.ts": dedent`
+      "evid.config.ts": dedent`
       export default { claims: [{ type: "typescript", files: ["claims.ts"], reference: { type: "objc", files: ["contracts/*.h", "contracts/*.m"], symbol: "property" } }] };
     `,
       "claims.ts": dedent`
-      /** @evidence ./contracts/Contract.h#Contract Implements the contract. */
+      /** @evid ./contracts/Contract.h#Contract Implements the contract. */
       export function claim() {}
     `,
       "contracts/Contract.h":
@@ -29,8 +29,8 @@ export async function test_objc_watch(): Promise<void> {
       "contracts/Contract.m": "@implementation Contract\n@end\n",
     },
     async (directory) => {
-      const file = join(directory, "evidence.config.ts");
-      const watcher = new EvidenceWatcher(file, {
+      const file = join(directory, "evid.config.ts");
+      const watcher = new EvidWatcher(file, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
       });
@@ -40,7 +40,7 @@ export async function test_objc_watch(): Promise<void> {
           TestValidator.equals(
             `fresh Objective-C cycle ${cycle.cycle}`,
             cycle.report,
-            await EvidenceChecker.check(file),
+            await EvidChecker.check(file),
           );
           if (cycle.cycle === 1) {
             TestValidator.equals(

@@ -1,4 +1,4 @@
-import { EvidenceAccessor, EvidenceRustAdapter } from "@wrtnlabs/evidence";
+import { EvidAccessor, EvidRustAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -16,7 +16,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_rust_modules(): Promise<void> {
   // Inline, conventional, private, and orphan modules share one selected snapshot.
-  const inventory = await new EvidenceRustAdapter().analyze(
+  const inventory = await new EvidRustAdapter().analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create(
         "src/lib.rs",
@@ -99,7 +99,7 @@ export async function test_rust_modules(): Promise<void> {
       .filter((address) => address.unitId === sale.id)
       .map(
         (address) =>
-          `${address.file}#${EvidenceAccessor.format(address.segments)}`,
+          `${address.file}#${EvidAccessor.format(address.segments)}`,
       )
       .sort(compare),
     [
@@ -120,7 +120,7 @@ export async function test_rust_modules(): Promise<void> {
       .filter((address) => address.unitId === secret.id)
       .map(
         (address) =>
-          `${address.file}#${EvidenceAccessor.format(address.segments)}`,
+          `${address.file}#${EvidAccessor.format(address.segments)}`,
       )
       .sort(compare),
     ["/project/src/hidden.rs#Secret", "/project/src/lib.rs#PublicSecret"],
@@ -137,7 +137,7 @@ export async function test_rust_modules(): Promise<void> {
       .filter((address) => address.unitId === detail.id)
       .map(
         (address) =>
-          `${address.file}#${EvidenceAccessor.format(address.segments)}`,
+          `${address.file}#${EvidAccessor.format(address.segments)}`,
       )
       .sort(compare),
     [
@@ -149,7 +149,7 @@ export async function test_rust_modules(): Promise<void> {
   );
 
   // Logical source addresses retain module layout when physical files are linked elsewhere.
-  const linked = await new EvidenceRustAdapter().analyze(
+  const linked = await new EvidRustAdapter().analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create(
         "physical/crate/lib.rs",

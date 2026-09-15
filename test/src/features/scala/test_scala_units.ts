@@ -1,10 +1,10 @@
 ﻿import typia from "typia";
-import type { IEvidenceInventory } from "@wrtnlabs/evidence";
+import type { IEvidInventory } from "evid";
 import {
-  EvidenceAccessor,
-  EvidenceInventory,
-  EvidenceScalaAdapter,
-} from "@wrtnlabs/evidence";
+  EvidAccessor,
+  EvidInventory,
+  EvidScalaAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -19,7 +19,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Resolve a file alias and a synthetic case-class apply target, then verify serialization preserves the inventory.
  */
 export async function test_scala_units(): Promise<void> {
-  const inventory = await new EvidenceScalaAdapter().analyze(
+  const inventory = await new EvidScalaAdapter().analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create(
         "src/Scala2.scala",
@@ -71,7 +71,7 @@ export async function test_scala_units(): Promise<void> {
   TestValidator.equals(
     "exact independent surface",
     inventory.units
-      .map((unit) => `${unit.symbol}:${EvidenceAccessor.format(unit.identity)}`)
+      .map((unit) => `${unit.symbol}:${EvidAccessor.format(unit.identity)}`)
       .sort((a, b) => a.localeCompare(b, "en")),
     [
       "type:demo.Contract",
@@ -113,7 +113,7 @@ export async function test_scala_units(): Promise<void> {
       .map((unit) => unit.sites.length),
     [2, 2],
   );
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   TestValidator.equals(
     "logical aliases share identity",
     graph.resolve(
@@ -138,7 +138,7 @@ export async function test_scala_units(): Promise<void> {
   );
   TestValidator.equals(
     "source inventory serializes",
-    typia.json.assertParse<IEvidenceInventory>(JSON.stringify(inventory)),
+    typia.json.assertParse<IEvidInventory>(JSON.stringify(inventory)),
     inventory,
   );
 }

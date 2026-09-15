@@ -1,13 +1,13 @@
-import { EvidenceChecker, EvidencePythonAdapter } from "@wrtnlabs/evidence";
+import { EvidChecker, EvidPythonAdapter } from "evid";
 import type {
-  IEvidenceCheckReport,
-  IEvidenceDeclaration,
-  IEvidenceDiagnostic,
-  IEvidenceHost,
-  IEvidenceInventory,
-  IEvidencePublicAddress,
-  IEvidenceUnit,
-} from "@wrtnlabs/evidence";
+  IEvidCheckReport,
+  IEvidDeclaration,
+  IEvidDiagnostic,
+  IEvidHost,
+  IEvidInventory,
+  IEvidPublicAddress,
+  IEvidUnit,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
@@ -34,7 +34,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *    final kind, remove obsolete nested descendants, retain an accessor family
  *    only when its decorator extends the same binding, and prevent module or
  *    class augmented updates from preserving another kind.
- * 5. Run the original false-success fixture through EvidenceChecker and require
+ * 5. Run the original false-success fixture through EvidChecker and require
  *    one uncovered requirement; remove the obsolete definition and require the
  *    same coverage outcome for the byte-identical survivor.
  * 6. Attach evidence to the final definition and require recovery to a passing
@@ -42,19 +42,19 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *    positive controls in the focused Python validation set.
  */
 export async function test_python_redefinitions(): Promise<void> {
-  const repeated: IEvidenceInventory =
-    await new EvidencePythonAdapter().analyze(
+  const repeated: IEvidInventory =
+    await new EvidPythonAdapter().analyze(
       TestSourceSnapshot.create(
         "contract.py",
         [
-          "# @evidence rules.md#rule Replaced function.",
+          "# @evid rules.md#rule Replaced function.",
           "def run():",
           "    return 1",
           "",
           "def run():",
           "    return 2",
           "",
-          "# @evidence rules.md#rule Replaced async function.",
+          "# @evid rules.md#rule Replaced async function.",
           "async def fetch():",
           "    return 1",
           "",
@@ -62,14 +62,14 @@ export async function test_python_redefinitions(): Promise<void> {
           "    return 2",
           "",
           "class Service:",
-          "    # @evidence rules.md#rule Replaced method.",
+          "    # @evid rules.md#rule Replaced method.",
           "    def call(self):",
           "        return 1",
           "",
           "    def call(self):",
           "        return 2",
           "",
-          "    # @evidence rules.md#rule Replaced property.",
+          "    # @evid rules.md#rule Replaced property.",
           "    @property",
           "    def value(self):",
           "        return 1",
@@ -106,7 +106,7 @@ export async function test_python_redefinitions(): Promise<void> {
       ),
     );
   for (const identity of ["run", "fetch", "call", "value"]) {
-    const unit: IEvidenceUnit = requireUnit(repeated, identity);
+    const unit: IEvidUnit = requireUnit(repeated, identity);
     TestValidator.equals(
       `${identity} surviving declaration site`,
       unit.sites.length,
@@ -115,10 +115,10 @@ export async function test_python_redefinitions(): Promise<void> {
     TestValidator.predicate(
       `${identity} does not inherit replaced evidence`,
       repeated.hosts.every(
-        (host: IEvidenceHost): boolean =>
+        (host: IEvidHost): boolean =>
           !host.unitIds.includes(unit.id) ||
           !repeated.declarations.some(
-            (declaration: IEvidenceDeclaration): boolean =>
+            (declaration: IEvidDeclaration): boolean =>
               declaration.hostId === host.id,
           ),
       ),
@@ -134,13 +134,13 @@ export async function test_python_redefinitions(): Promise<void> {
   TestValidator.predicate(
     "replaced constructor fields removed",
     repeated.units.every(
-      (unit: IEvidenceUnit): boolean =>
+      (unit: IEvidUnit): boolean =>
         !["obsolete", "obsolete_empty", "obsolete_nested"].includes(unit.name),
     ),
   );
 
-  const replacedClass: IEvidenceInventory =
-    await new EvidencePythonAdapter().analyze(
+  const replacedClass: IEvidInventory =
+    await new EvidPythonAdapter().analyze(
       TestSourceSnapshot.create(
         "classes.py",
         [
@@ -154,7 +154,7 @@ export async function test_python_redefinitions(): Promise<void> {
         ].join("\n"),
       ),
     );
-  const contract: IEvidenceUnit = requireUnit(replacedClass, "Contract");
+  const contract: IEvidUnit = requireUnit(replacedClass, "Contract");
   TestValidator.equals("replacement class site", contract.sites.length, 1);
   TestValidator.equals(
     "replacement class withdrawals",
@@ -164,18 +164,18 @@ export async function test_python_redefinitions(): Promise<void> {
   TestValidator.predicate(
     "replacement class current member",
     replacedClass.units.some(
-      (unit: IEvidenceUnit): boolean => unit.name === "current",
+      (unit: IEvidUnit): boolean => unit.name === "current",
     ),
   );
   TestValidator.predicate(
     "replacement class obsolete member removed",
     replacedClass.units.every(
-      (unit: IEvidenceUnit): boolean => unit.name !== "old",
+      (unit: IEvidUnit): boolean => unit.name !== "old",
     ),
   );
 
-  const reexported: IEvidenceInventory =
-    await new EvidencePythonAdapter().analyze(
+  const reexported: IEvidInventory =
+    await new EvidPythonAdapter().analyze(
       TestSourceSnapshot.combine([
         TestSourceSnapshot.create(
           "package/contract.py",
@@ -187,7 +187,7 @@ export async function test_python_redefinitions(): Promise<void> {
         ),
       ]),
     );
-  const survivingRun: IEvidenceUnit = requireUnit(reexported, "run");
+  const survivingRun: IEvidUnit = requireUnit(reexported, "run");
   TestValidator.equals(
     "reexported survivor site",
     survivingRun.sites.length,
@@ -196,36 +196,36 @@ export async function test_python_redefinitions(): Promise<void> {
   TestValidator.predicate(
     "reexport resolves final binding",
     reexported.addresses.some(
-      (address: IEvidencePublicAddress): boolean =>
+      (address: IEvidPublicAddress): boolean =>
         address.unitId === survivingRun.id &&
         address.file.endsWith("/package/api.py") &&
         address.segments.join(".") === "public",
     ),
   );
 
-  const crossKind: IEvidenceInventory =
-    await new EvidencePythonAdapter().analyze(
+  const crossKind: IEvidInventory =
+    await new EvidPythonAdapter().analyze(
       TestSourceSnapshot.create(
         "cross-kind.py",
         [
-          "# @evidence rules.md#rule Replaced module function.",
+          "# @evid rules.md#rule Replaced module function.",
           "def top():",
           "    return 'function'",
           "top = 'property'",
           "",
-          "# @evidence rules.md#rule Replaced augmented module function.",
+          "# @evid rules.md#rule Replaced augmented module function.",
           "@runtime_value",
           "def module_augmented():",
           "    return 'function'",
           "module_augmented += 1",
           "",
           "class Service:",
-          "    # @evidence rules.md#rule Replaced method.",
+          "    # @evid rules.md#rule Replaced method.",
           "    def convert(self):",
           "        return 'method'",
           "    convert = 'property'",
           "",
-          "    # @evidence rules.md#rule Replaced property.",
+          "    # @evid rules.md#rule Replaced property.",
           "    operate = 'property'",
           "    def operate(self):",
           "        return 'method'",
@@ -247,7 +247,7 @@ export async function test_python_redefinitions(): Promise<void> {
           "        pass",
           "",
           "class ReboundAccess:",
-          "    # @evidence rules.md#rule Replaced getter.",
+          "    # @evid rules.md#rule Replaced getter.",
           "    @property",
           "    def value(self):",
           "        return 1",
@@ -261,7 +261,7 @@ export async function test_python_redefinitions(): Promise<void> {
           "        pass",
           "",
           "class Augmented:",
-          "    # @evidence rules.md#rule Replaced decorated method.",
+          "    # @evid rules.md#rule Replaced decorated method.",
           "    @runtime_value",
           "    def changed(self):",
           "        return 1",
@@ -290,7 +290,7 @@ export async function test_python_redefinitions(): Promise<void> {
     requireIdentity(crossKind, "Service.prototype.operate").symbol,
     "function",
   );
-  const nested: IEvidenceUnit = requireIdentity(crossKind, "Service.Contract");
+  const nested: IEvidUnit = requireIdentity(crossKind, "Service.Contract");
   TestValidator.equals(
     "replacement nested class sites",
     nested.sites.length,
@@ -305,7 +305,7 @@ export async function test_python_redefinitions(): Promise<void> {
   TestValidator.predicate(
     "obsolete nested descendant removed",
     crossKind.units.every(
-      (unit: IEvidenceUnit): boolean => unit.name !== "obsolete",
+      (unit: IEvidUnit): boolean => unit.name !== "obsolete",
     ),
   );
   TestValidator.equals(
@@ -326,7 +326,7 @@ export async function test_python_redefinitions(): Promise<void> {
   TestValidator.equals(
     "cross-kind obsolete metadata rejected",
     crossKind.diagnostics.map(
-      (diagnostic: IEvidenceDiagnostic): string => diagnostic.code,
+      (diagnostic: IEvidDiagnostic): string => diagnostic.code,
     ),
     [
       "unsupported-annotation-host",
@@ -346,7 +346,7 @@ export async function test_python_redefinitions(): Promise<void> {
   await TestFileSystem.experiment(
     location,
     {
-      "evidence.json": JSON.stringify({
+      "evid.json": JSON.stringify({
         claims: [
           {
             type: "python",
@@ -360,13 +360,13 @@ export async function test_python_redefinitions(): Promise<void> {
           },
         ],
       }),
-      "contract.py": `# @evidence rules.md#rule Replaced implementation.\ndef run():\n    return 1\n\n${survivor}`,
+      "contract.py": `# @evid rules.md#rule Replaced implementation.\ndef run():\n    return 1\n\n${survivor}`,
       "rules.md": `# Rule {#rule}\n\nDo the work.\n`,
     },
     async (directory: string): Promise<void> => {
-      const config: string = join(directory, "evidence.json");
-      const withHistory: IEvidenceCheckReport =
-        await EvidenceChecker.check(config);
+      const config: string = join(directory, "evid.json");
+      const withHistory: IEvidCheckReport =
+        await EvidChecker.check(config);
       TestValidator.equals(
         "replaced evidence cannot cover",
         withHistory.exitCode,
@@ -379,8 +379,8 @@ export async function test_python_redefinitions(): Promise<void> {
       );
 
       await TestFileSystem.save(directory, { "contract.py": survivor });
-      const withoutHistory: IEvidenceCheckReport =
-        await EvidenceChecker.check(config);
+      const withoutHistory: IEvidCheckReport =
+        await EvidChecker.check(config);
       TestValidator.equals(
         "removing dead history keeps outcome",
         withoutHistory.exitCode,
@@ -393,10 +393,10 @@ export async function test_python_redefinitions(): Promise<void> {
       );
 
       await TestFileSystem.save(directory, {
-        "contract.py": `# @evidence rules.md#rule Current implementation.\n${survivor}`,
+        "contract.py": `# @evid rules.md#rule Current implementation.\n${survivor}`,
       });
-      const recovered: IEvidenceCheckReport =
-        await EvidenceChecker.check(config);
+      const recovered: IEvidCheckReport =
+        await EvidChecker.check(config);
       TestValidator.equals(
         "current evidence recovers coverage",
         recovered.exitCode,
@@ -418,13 +418,13 @@ export async function test_python_redefinitions(): Promise<void> {
  * scanner failure rather than a valid alternative selection.
  */
 function requireUnit(
-  inventory: IEvidenceInventory,
+  inventory: IEvidInventory,
   name: string,
-): IEvidenceUnit {
-  const units: IEvidenceUnit[] = inventory.units.filter(
-    (unit: IEvidenceUnit): boolean => unit.name === name,
+): IEvidUnit {
+  const units: IEvidUnit[] = inventory.units.filter(
+    (unit: IEvidUnit): boolean => unit.name === name,
   );
-  const unit: IEvidenceUnit | undefined = units[0];
+  const unit: IEvidUnit | undefined = units[0];
   if (units.length !== 1 || unit === undefined)
     throw new Error(`Expected one Python unit named ${name}.`);
   return unit;
@@ -438,13 +438,13 @@ function requireUnit(
  * meaningful assertion boundary.
  */
 function requireIdentity(
-  inventory: IEvidenceInventory,
+  inventory: IEvidInventory,
   identity: string,
-): IEvidenceUnit {
-  const units: IEvidenceUnit[] = inventory.units.filter(
-    (unit: IEvidenceUnit): boolean => unit.identity.join(".") === identity,
+): IEvidUnit {
+  const units: IEvidUnit[] = inventory.units.filter(
+    (unit: IEvidUnit): boolean => unit.identity.join(".") === identity,
   );
-  const unit: IEvidenceUnit | undefined = units[0];
+  const unit: IEvidUnit | undefined = units[0];
   if (units.length !== 1 || unit === undefined)
     throw new Error(`Expected one Python unit at ${identity}.`);
   return unit;

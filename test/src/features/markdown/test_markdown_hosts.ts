@@ -1,4 +1,4 @@
-import { EvidenceMarkdownAdapter } from "@wrtnlabs/evidence";
+import { EvidMarkdownAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -17,17 +17,17 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_markdown_hosts(): Promise<void> {
   const content = dedent`
-    <!-- @evidence docs/spec.md#file Supplies the document contract. -->
+    <!-- @evid docs/spec.md#file Supplies the document contract. -->
     # Parent
-    <!-- @evidenceReview docs/spec.md#file #abcdef0 Checked the document. -->
+    <!-- @evidReview docs/spec.md#file #abcdef0 Checked the document. -->
     ## Child
-    <!-- An eligible host without an Evidence tag. -->
+    <!-- An eligible host without an Evid tag. -->
     ##### Unsupported detail
-    <!-- @evidence docs/spec.md#detail This host is too deep. -->
+    <!-- @evid docs/spec.md#detail This host is too deep. -->
     #### Supported again
-    <!-- @evidenceExclude docs/spec.md#optional This part does not apply. -->
+    <!-- @evidExclude docs/spec.md#optional This part does not apply. -->
   `.replaceAll("\n", "\r\n");
-  const inventory = await new EvidenceMarkdownAdapter().analyze(
+  const inventory = await new EvidMarkdownAdapter().analyze(
     TestSourceSnapshot.create("guide.md", content),
   );
 
@@ -78,6 +78,6 @@ export async function test_markdown_hosts(): Promise<void> {
       review.location.range.start.offset,
       review.location.range.end.offset,
     ),
-    "@evidenceReview docs/spec.md#file #abcdef0 Checked the document.",
+    "@evidReview docs/spec.md#file #abcdef0 Checked the document.",
   );
 }

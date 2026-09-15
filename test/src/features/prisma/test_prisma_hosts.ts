@@ -1,9 +1,9 @@
-import { EvidenceInventory, EvidencePrismaAdapter } from "@wrtnlabs/evidence";
+import { EvidInventory, EvidPrismaAdapter } from "evid";
 import type {
-  IEvidenceDeclaration,
-  IEvidenceHost,
-  IEvidenceInventory,
-} from "@wrtnlabs/evidence";
+  IEvidDeclaration,
+  IEvidHost,
+  IEvidInventory,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -23,53 +23,53 @@ export async function test_prisma_hosts(): Promise<void> {
       provider = "postgresql"
     }
 
-    /// @evidence docs/spec.md#sale The sale model implements the requirement.
+    /// @evid docs/spec.md#sale The sale model implements the requirement.
     // Prisma retains the surrounding documentation run.
     model Sale {
       id String @id
       brace String @default("}")
 
-      /** @evidence docs/spec.md#price The column stores the required amount. */
+      /** @evid docs/spec.md#price The column stores the required amount. */
       price Int
 
-      /* @evidence docs/spec.md#plain Plain block documentation is supported. */
+      /* @evid docs/spec.md#plain Plain block documentation is supported. */
       plain String
 
-      /// @evidence docs/spec.md#note The note remains documented across a blank line.
+      /// @evid docs/spec.md#note The note remains documented across a blank line.
 
       note String
 
-      /// @evidence docs/spec.md#index This comment documents no field.
+      /// @evid docs/spec.md#index This comment documents no field.
       @@index([price])
     }
 
     /// @hidden Internal persistence detail.
-    /// @evidence docs/spec.md#seller A withdrawn model cannot claim evidence.
+    /// @evid docs/spec.md#seller A withdrawn model cannot claim evidence.
     model Seller {
       id String @id
     }
 
-    /// @evidence docs/spec.md#status Enums are outside the Evidence population.
+    /// @evid docs/spec.md#status Enums are outside the Evid population.
     enum SaleStatus {
       ACTIVE
     }
 
-    // @evidence docs/spec.md#line Prisma discards this comment.
+    // @evid docs/spec.md#line Prisma discards this comment.
     model LineOnly {
       id String @id
     }
 
-    //// @evidence docs/spec.md#buried A fourth slash buries this tag.
+    //// @evid docs/spec.md#buried A fourth slash buries this tag.
     model Buried {
       id String @id
     }
   `;
   const ledger = dedent`
-    /// @evidenceExclude docs/spec.md#deferred Persistence is intentionally deferred.
-    /// @evidenceExcludeReview docs/spec.md#deferred Reviewed the deferral.
-    /// @evidence docs/spec.md#misplaced Positive evidence needs a declaration host.
+    /// @evidExclude docs/spec.md#deferred Persistence is intentionally deferred.
+    /// @evidExcludeReview docs/spec.md#deferred Reviewed the deferral.
+    /// @evid docs/spec.md#misplaced Positive evidence needs a declaration host.
   `;
-  const inventory = await new EvidencePrismaAdapter().analyze(
+  const inventory = await new EvidPrismaAdapter().analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create(
         "prisma/schema.prisma",
@@ -127,7 +127,7 @@ export async function test_prisma_hosts(): Promise<void> {
   );
 
   // A model withdrawal removes the model and every member from public selection.
-  const selection = new EvidenceInventory([inventory]).select([
+  const selection = new EvidInventory([inventory]).select([
     "prisma:Seller",
     "prisma:Seller.id",
   ]);
@@ -162,9 +162,9 @@ export async function test_prisma_hosts(): Promise<void> {
 }
 
 function requireDeclaration(
-  inventory: IEvidenceInventory,
+  inventory: IEvidInventory,
   target: string,
-): IEvidenceDeclaration {
+): IEvidDeclaration {
   const declaration = inventory.declarations.find(
     (candidate) => candidate.target === target,
   );
@@ -174,9 +174,9 @@ function requireDeclaration(
 }
 
 function requireHost(
-  inventory: IEvidenceInventory,
-  declaration: IEvidenceDeclaration,
-): IEvidenceHost {
+  inventory: IEvidInventory,
+  declaration: IEvidDeclaration,
+): IEvidHost {
   const host = inventory.hosts.find(
     (candidate) => candidate.id === declaration.hostId,
   );
@@ -185,7 +185,7 @@ function requireHost(
   return host;
 }
 
-function requireLine(declaration: IEvidenceDeclaration): number {
+function requireLine(declaration: IEvidDeclaration): number {
   const range = declaration.location.range;
   if (range === undefined)
     throw new Error(`Missing Prisma declaration range: ${declaration.target}`);

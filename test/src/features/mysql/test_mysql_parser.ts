@@ -1,7 +1,7 @@
-import { EvidenceMysqlAdapter, EvidenceParser } from "@wrtnlabs/evidence";
+import { EvidMysqlAdapter, EvidParser } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
-import { TreeSitterAssetScope } from "../../../../packages/evidence/src/internal/TreeSitterAssetScope";
+import { EvidTreeSitterAssetScope } from "../../../../packages/evidence/src/internal/EvidTreeSitterAssetScope";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 import { TestParserAssets } from "../../internal/TestParserAssets";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -15,7 +15,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Analyze again offline and require an equivalent warm inventory.
  */
 export async function test_mysql_parser(): Promise<void> {
-  const parser = new EvidenceParser();
+  const parser = new EvidParser();
   const grammar = (await parser.grammars()).find(
     (entry) => entry.id === "mysql",
   );
@@ -33,9 +33,9 @@ export async function test_mysql_parser(): Promise<void> {
     "mysql-parser-cache",
     {},
     async (directory) => {
-      const cold = await TreeSitterAssetScope.run(
+      const cold = await EvidTreeSitterAssetScope.run(
         { cacheDirectory: directory, fetch: download },
-        async () => new EvidenceMysqlAdapter().analyze(snapshot),
+        async () => new EvidMysqlAdapter().analyze(snapshot),
       );
       TestValidator.equals(
         "cold MySQL inventory is complete",
@@ -45,9 +45,9 @@ export async function test_mysql_parser(): Promise<void> {
       TestValidator.equals("only MySQL bytes are acquired", downloads, [
         grammar.wasm.url,
       ]);
-      const warm = await TreeSitterAssetScope.run(
+      const warm = await EvidTreeSitterAssetScope.run(
         { cacheDirectory: directory, fetch: offline },
-        async () => new EvidenceMysqlAdapter().analyze(snapshot),
+        async () => new EvidMysqlAdapter().analyze(snapshot),
       );
       TestValidator.equals("warm offline analysis is equivalent", warm, cold);
     },

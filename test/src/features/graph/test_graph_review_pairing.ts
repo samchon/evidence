@@ -1,10 +1,10 @@
 import {
-  EvidenceFingerprint,
-  EvidenceGraph,
-  EvidenceMarkdownAdapter,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
-import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidGraph,
+  EvidMarkdownAdapter,
+  EvidTypeScriptAdapter,
+} from "evid";
+import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -30,7 +30,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *    the diagnostic identifies the actual repair rather than reporting it twice.
  */
 export async function test_graph_review_pairing(): Promise<void> {
-  const requirements = await new EvidenceMarkdownAdapter().analyze(
+  const requirements = await new EvidMarkdownAdapter().analyze(
     TestSourceSnapshot.create(
       "docs/spec.md",
       dedent`
@@ -46,41 +46,41 @@ export async function test_graph_review_pairing(): Promise<void> {
   );
   const pricing = requireUnit(requirements, "pricing");
   const tax = requireUnit(requirements, "tax");
-  const pricingFingerprint = EvidenceFingerprint.inspect(
+  const pricingFingerprint = EvidFingerprint.inspect(
     requirements,
     pricing.id,
   ).fingerprint;
-  const taxFingerprint = EvidenceFingerprint.inspect(
+  const taxFingerprint = EvidFingerprint.inspect(
     requirements,
     tax.id,
   ).fingerprint;
-  const claims = await new EvidenceTypeScriptAdapter().analyze(
+  const claims = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/pairing.ts",
       dedent`
-        /** @evidence docs/spec.md#pricing Implements the pricing rule. */
+        /** @evid docs/spec.md#pricing Implements the pricing rule. */
         export interface Merged {
           price: number;
         }
 
-        /** @evidenceReview docs/spec.md#pricing #${pricingFingerprint} Checked both halves of the merged contract. */
+        /** @evidReview docs/spec.md#pricing #${pricingFingerprint} Checked both halves of the merged contract. */
         export namespace Merged {
           export const category = "retail";
         }
 
         /**
-         * @evidenceExclude docs/spec.md#tax The tax service owns this rule.
-         * @evidenceReview docs/spec.md#tax #${taxFingerprint} Filed under the wrong question.
+         * @evidExclude docs/spec.md#tax The tax service owns this rule.
+         * @evidReview docs/spec.md#tax #${taxFingerprint} Filed under the wrong question.
          */
         export function wrongKind(): void {}
 
-        /** @evidenceReview docs/spec.md#pricing #${pricingFingerprint} Reviewed another host's citation. */
+        /** @evidReview docs/spec.md#pricing #${pricingFingerprint} Reviewed another host's citation. */
         export function orphan(): void {}
 
         /**
-         * @evidence docs/spec.md#pricing Implements the pricing rule.
-         * @evidenceReview docs/spec.md#pricing #${pricingFingerprint} Checked the cap once.
-         * @evidenceReview docs/spec.md#pricing #${pricingFingerprint} Checked the cap twice.
+         * @evid docs/spec.md#pricing Implements the pricing rule.
+         * @evidReview docs/spec.md#pricing #${pricingFingerprint} Checked the cap once.
+         * @evidReview docs/spec.md#pricing #${pricingFingerprint} Checked the cap twice.
          */
         export function duplicate(): void {}
       `,
@@ -90,7 +90,7 @@ export async function test_graph_review_pairing(): Promise<void> {
     (name) => requireUnit(claims, name).id,
   );
   const selected = [pricing.id, tax.id];
-  const result = EvidenceGraph.evaluate({
+  const result = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -157,9 +157,9 @@ export async function test_graph_review_pairing(): Promise<void> {
  * declaration, preventing a missing fixture from weakening the graph setup.
  */
 function requireUnit(
-  inventory: IEvidenceInventory,
+  inventory: IEvidInventory,
   identity: string,
-): IEvidenceUnit {
+): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === identity || candidate.identity.at(-1) === identity,
@@ -175,7 +175,7 @@ function requireUnit(
  * findings, which a presence-only assertion would not detect.
  */
 function count(
-  result: ReturnType<typeof EvidenceGraph.evaluate>,
+  result: ReturnType<typeof EvidGraph.evaluate>,
   code: string,
 ): number {
   return result.diagnostics.filter((diagnostic) => diagnostic.code === code)

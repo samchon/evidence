@@ -1,4 +1,4 @@
-import { EvidenceJavaScriptAdapter } from "@wrtnlabs/evidence";
+import { EvidJavaScriptAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -13,7 +13,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Verify literal names stay one segment.
  */
 export async function test_javascript_units(): Promise<void> {
-  const inventory = await new EvidenceJavaScriptAdapter().analyze(
+  const inventory = await new EvidJavaScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/contracts.mjs",
       dedent`
@@ -82,7 +82,7 @@ export async function test_javascript_units(): Promise<void> {
     [],
   );
 
-  const defaults = await new EvidenceJavaScriptAdapter().analyze(
+  const defaults = await new EvidJavaScriptAdapter().analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create(
         "src/default-arrow.mjs",

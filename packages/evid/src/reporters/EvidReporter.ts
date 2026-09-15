@@ -1,0 +1,129 @@
+import type { IEvidCheckReport } from "../structures/IEvidCheckReport";
+import type { IEvidDiagnostic } from "../structures/IEvidDiagnostic";
+import type { EvidReportFormat } from "../typings/EvidReportFormat";
+
+/**
+ * Serializes an evaluated check for terminal users or machine consumers.
+ *
+ * Both formats read the same report and preserve its diagnostic order. Rendering
+ * does not evaluate coverage or change process status, which keeps presentation
+ * separate from the check programmer's completeness and severity decisions.
+ */
+export namespace EvidReporter {
+  /**
+   * Selects the requested representation of a completed report object.
+   *
+   * The returned string includes its final newline and is ready for a stream or
+   * output file. This function performs no I/O.
+   */
+  export function render(
+    report: IEvidCheckReport,
+    format: EvidReportFormat,
+  ): string {
+    return format === "json" ? json(report) : text(report);
+  }
+
+  /**
+   * Serializes the versioned report as indented JSON.
+   *
+   * No fields are projected away, so consumers retain claim boundaries and
+   * structured diagnostic coordinates alongside the aggregate counts.
+   */
+  export function json(report: IEvidCheckReport): string {
+    return JSON.stringify(report, null, 2) + "\n";
+  }
+
+  /**
+   * Renders summary counts followed by actionable diagnostic blocks.
+   *
+   * Each finding includes configuration context, location, subject, and repair.
+   * Missing source coordinates fall back to file or aggregate context rather
+   * than implying an invented line number.
+   */
+  export function text(report: IEvidCheckReport): string {
+    const counts = report.counts;
+    const lines: string[] = [
+      `Evid check ${report.status}.`,
+      `Config: ${report.configFile}`,
+      `Claims: ${counts.activeClaims}/${counts.claims} active.`,
+      `Obligations: ${counts.activeObligations}/${counts.obligations} active, ${counts.incompleteObligations} incomplete.`,
+      `Coverage: ${counts.coveredUnits}/${counts.units} units covered, ${counts.missingUnits} missing.`,
+      `Diagnostics: ${counts.errors} errors, ${counts.warnings} warnings.`,
+    ];
+    for (const diagnostic of report.diagnostics)
+      lines.push("", ...diagnosticLines(report, diagnostic));
+    return lines.join("\n") + "\n";
+  }
+}
+
+/**
+ * Expands one finding into the common terminal diagnostic layout.
+ *
+ * Keeping context, location, and subject on separate lines lets aggregate and
+ * source-level findings share the layout without losing their repair guidance.
+ */
+function diagnosticLines(
+  report: IEvidCheckReport,
+  diagnostic: IEvidDiagnostic,
+): string[] {
+  return [
+    `${diagnostic.severity.toUpperCase()} [${diagnostic.code}] ${context(report, diagnostic)}`,
+    `Location: ${location(diagnostic)}`,
+    `Subject: ${subject(diagnostic)}`,
+    diagnostic.message,
+    `Repair: ${diagnostic.repair}`,
+  ];
+}
+
+/**
+ * Labels a diagnostic with its authored claim and reference coordinates.
+ *
+ * Claim names supplement numeric identities. If a reference result is unavailable,
+ * the authored index still identifies the boundary without an artifact label.
+ */
+function context(
+  report: IEvidCheckReport,
+  diagnostic: IEvidDiagnostic,
+): string {
+  const claim = report.claims.find(
+    (candidate) => candidate.claim === diagnostic.claim,
+  );
+  if (claim === undefined) return "unscoped analysis";
+  const claimText = `claim[${claim.claim}]${claim.name === undefined ? "" : ` '${claim.name}'`} (${claim.type})`;
+  if (diagnostic.reference === undefined) return claimText;
+  const reference = claim.obligations.find(
+    (candidate) => candidate.reference === diagnostic.reference,
+  );
+  return reference === undefined
+    ? `${claimText} -> reference[${diagnostic.reference}]`
+    : `${claimText} -> reference[${reference.reference}] (${reference.type})`;
+}
+
+/**
+ * Chooses the most precise location supplied by a diagnostic.
+ *
+ * File-only failures and aggregate findings remain readable when extraction
+ * could not provide a concrete source span.
+ */
+function location(diagnostic: IEvidDiagnostic): string {
+  const location = diagnostic.location;
+  if (location === undefined) return "configuration or aggregate graph";
+  const start = location.range?.start;
+  return start === undefined
+    ? location.file
+    : `${location.file}:${start.line}:${start.column}`;
+}
+
+/**
+ * Identifies the host and authored target involved in a finding.
+ *
+ * Target text is JSON-escaped so quotes and control characters remain visible.
+ * Findings without either coordinate apply to the configured population.
+ */
+function subject(diagnostic: IEvidDiagnostic): string {
+  const values: string[] = [];
+  if (diagnostic.hostId !== undefined) values.push(`host ${diagnostic.hostId}`);
+  if (diagnostic.target !== undefined)
+    values.push(`target ${JSON.stringify(diagnostic.target)}`);
+  return values.length === 0 ? "configured population" : values.join(", ");
+}

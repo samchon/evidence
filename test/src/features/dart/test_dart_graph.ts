@@ -1,8 +1,8 @@
 import {
-  EvidenceGraph,
-  EvidenceDartAdapter,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
+  EvidGraph,
+  EvidDartAdapter,
+  EvidTypeScriptAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -18,7 +18,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Resolve a review-only Dart annotation and require it to leave the referenced function missing.
  */
 export async function test_dart_graph(): Promise<void> {
-  const reference = await new EvidenceDartAdapter().analyze(
+  const reference = await new EvidDartAdapter().analyze(
     TestSourceSnapshot.create(
       "src/Contract.dart",
       dedent`
@@ -28,15 +28,15 @@ export async function test_dart_graph(): Promise<void> {
   `,
     ),
   );
-  const claims = await new EvidenceTypeScriptAdapter().analyze(
+  const claims = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/Claims.ts",
       dedent`
-    /** @evidence ./Contract.dart#Contract Verifies the type. */
+    /** @evid ./Contract.dart#Contract Verifies the type. */
     export class TypeClaim {}
-    /** @evidence ./Contract.dart#run Verifies the operation. */
+    /** @evid ./Contract.dart#run Verifies the operation. */
     export function runClaim() {}
-    /** @evidence ./Contract.dart#value Verifies the value. */
+    /** @evid ./Contract.dart#value Verifies the value. */
     export const valueClaim = 1;
   `,
     ),
@@ -65,7 +65,7 @@ export async function test_dart_graph(): Promise<void> {
             ),
           )
         : [];
-      const graph = EvidenceGraph.evaluate({
+      const graph = EvidGraph.evaluate({
         claims: [
           {
             severity: "error",
@@ -98,11 +98,11 @@ export async function test_dart_graph(): Promise<void> {
       );
     }
   }
-  const review = await new EvidenceDartAdapter().analyze(
+  const review = await new EvidDartAdapter().analyze(
     TestSourceSnapshot.create(
       "src/Review.dart",
       dedent`
-    /** @evidenceReview ./Contract.dart#run Reviewed without an acknowledgement. */
+    /** @evidReview ./Contract.dart#run Reviewed without an acknowledgement. */
     int review() => 1;
   `,
     ),
@@ -116,7 +116,7 @@ export async function test_dart_graph(): Promise<void> {
   const functions = reference.units
     .filter((unit) => unit.symbol === "function")
     .map((unit) => unit.id);
-  const graph = EvidenceGraph.evaluate({
+  const graph = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",

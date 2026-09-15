@@ -1,11 +1,11 @@
 import {
-  EvidenceTargetResolver,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
+  EvidTargetResolver,
+  EvidTypeScriptAdapter,
+} from "evid";
 import type {
-  IEvidenceHost,
-  IEvidenceTargetStatement,
-} from "@wrtnlabs/evidence";
+  IEvidHost,
+  IEvidTargetStatement,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -20,7 +20,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Verify the exact resolved unit or failure status.
  */
 export async function test_target_resolution(): Promise<void> {
-  const inventory = await new EvidenceTypeScriptAdapter().analyze(
+  const inventory = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create(
         "src/calculator.ts",
@@ -56,7 +56,7 @@ export async function test_target_resolution(): Promise<void> {
       TestSourceSnapshot.create("src/wrong.ts", "export const different = 1;"),
     ]),
   );
-  const resolver = new EvidenceTargetResolver([inventory]);
+  const resolver = new EvidTargetResolver([inventory]);
   const host = createHost("/project/docs/requirements.md");
   const ids = inventory.units.map((unit) => unit.id);
 
@@ -191,7 +191,7 @@ export async function test_target_resolution(): Promise<void> {
   if (dependencyAddress === undefined)
     throw new Error("Missing dependency address fixture.");
   dependencyAddress.selected = false;
-  const dependencyInventory = await new EvidenceTypeScriptAdapter().analyze(
+  const dependencyInventory = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.combine([
       dependencySnapshot,
       TestSourceSnapshot.create(
@@ -200,7 +200,7 @@ export async function test_target_resolution(): Promise<void> {
       ),
     ]),
   );
-  const dependencyResolver = new EvidenceTargetResolver([dependencyInventory]);
+  const dependencyResolver = new EvidTargetResolver([dependencyInventory]);
   const dependencyIds = dependencyInventory.units.map((unit) => unit.id);
   const throughEntry = await dependencyResolver.resolve(
     createStatement("../src/entry.ts#PublicDependency"),
@@ -221,7 +221,7 @@ export async function test_target_resolution(): Promise<void> {
   );
 }
 
-function createHost(file: string): IEvidenceHost {
+function createHost(file: string): IEvidHost {
   return {
     id: "claim-host",
     file,
@@ -236,7 +236,7 @@ function createHost(file: string): IEvidenceHost {
   };
 }
 
-function createStatement(target: string): IEvidenceTargetStatement {
+function createStatement(target: string): IEvidTargetStatement {
   return {
     hostId: "claim-host",
     target,

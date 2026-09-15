@@ -1,8 +1,8 @@
 import {
-  EvidenceGraph,
-  EvidenceZigAdapter,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
+  EvidGraph,
+  EvidZigAdapter,
+  EvidTypeScriptAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -18,7 +18,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Verify review-only references remain missing.
  */
 export async function test_zig_graph(): Promise<void> {
-  const reference = await new EvidenceZigAdapter().analyze(
+  const reference = await new EvidZigAdapter().analyze(
     TestSourceSnapshot.create(
       "src/Contract.zig",
       dedent`
@@ -28,15 +28,15 @@ export async function test_zig_graph(): Promise<void> {
   `,
     ),
   );
-  const claims = await new EvidenceTypeScriptAdapter().analyze(
+  const claims = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/Claims.ts",
       dedent`
-    /** @evidence ./Contract.zig#Contract Verifies the type. */
+    /** @evid ./Contract.zig#Contract Verifies the type. */
     export class TypeClaim {}
-    /** @evidence ./Contract.zig#run Verifies the operation. */
+    /** @evid ./Contract.zig#run Verifies the operation. */
     export function runClaim() {}
-    /** @evidence ./Contract.zig#value Verifies the value. */
+    /** @evid ./Contract.zig#value Verifies the value. */
     export const valueClaim = 1;
   `,
     ),
@@ -65,7 +65,7 @@ export async function test_zig_graph(): Promise<void> {
             ),
           )
         : [];
-      const graph = EvidenceGraph.evaluate({
+      const graph = EvidGraph.evaluate({
         claims: [
           {
             severity: "error",
@@ -98,11 +98,11 @@ export async function test_zig_graph(): Promise<void> {
       );
     }
   }
-  const review = await new EvidenceZigAdapter().analyze(
+  const review = await new EvidZigAdapter().analyze(
     TestSourceSnapshot.create(
       "src/Review.zig",
       dedent`
-    /// @evidenceReview ./Contract.zig#run Reviewed without an acknowledgement.
+    /// @evidReview ./Contract.zig#run Reviewed without an acknowledgement.
     pub fn review() i32 { return 1; }
   `,
     ),
@@ -116,7 +116,7 @@ export async function test_zig_graph(): Promise<void> {
   const functions = reference.units
     .filter((unit) => unit.symbol === "function")
     .map((unit) => unit.id);
-  const graph = EvidenceGraph.evaluate({
+  const graph = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",

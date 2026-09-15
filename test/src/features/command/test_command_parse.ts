@@ -1,5 +1,5 @@
-import { EvidenceCommand, EvidenceCommandError } from "@wrtnlabs/evidence";
-import type { IEvidenceCheckCommand } from "@wrtnlabs/evidence";
+import { EvidCommand, EvidCommandError } from "evid";
+import type { IEvidCheckCommand } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import assert from "node:assert/strict";
 
@@ -21,23 +21,23 @@ import assert from "node:assert/strict";
  */
 export function test_command_parse(): void {
   // Bare invocation and the explicit command have the same complete defaults.
-  const defaults: IEvidenceCheckCommand = {
+  const defaults: IEvidCheckCommand = {
     operation: "check",
     cwd: ".",
-    config: "evidence.config.ts",
+    config: "evid.config.ts",
     format: "text",
   };
-  TestValidator.equals("bare check", EvidenceCommand.parse([]), defaults);
+  TestValidator.equals("bare check", EvidCommand.parse([]), defaults);
   TestValidator.equals(
     "explicit check",
-    EvidenceCommand.parse(["check"]),
+    EvidCommand.parse(["check"]),
     defaults,
   );
   TestValidator.equals(
     "watch aliases",
     [
-      EvidenceCommand.parse(["--watch"]),
-      EvidenceCommand.parse(["check", "-w"]),
+      EvidCommand.parse(["--watch"]),
+      EvidCommand.parse(["check", "-w"]),
     ],
     [
       { ...defaults, watch: true },
@@ -48,28 +48,28 @@ export function test_command_parse(): void {
   // Both spellings preserve authored paths until execution resolves --cwd.
   TestValidator.equals(
     "check options",
-    EvidenceCommand.parse([
+    EvidCommand.parse([
       "check",
       "--cwd",
       "nested",
       "-c",
-      "config/evidence.config.ts",
+      "config/evid.config.ts",
       "--format",
       "json",
       "-o",
-      "reports/evidence.json",
+      "reports/evid.json",
     ]),
     {
       operation: "check",
       cwd: "nested",
-      config: "config/evidence.config.ts",
+      config: "config/evid.config.ts",
       format: "json",
-      output: "reports/evidence.json",
+      output: "reports/evid.json",
     },
   );
   TestValidator.equals(
     "init options",
-    EvidenceCommand.parse([
+    EvidCommand.parse([
       "init",
       "--cwd",
       "nested",
@@ -84,7 +84,7 @@ export function test_command_parse(): void {
   );
   TestValidator.equals(
     "list filters",
-    EvidenceCommand.parse([
+    EvidCommand.parse([
       "list",
       "--language",
       "typescript",
@@ -96,7 +96,7 @@ export function test_command_parse(): void {
     {
       operation: "list",
       cwd: ".",
-      config: "evidence.config.ts",
+      config: "evid.config.ts",
       format: "json",
       language: "typescript",
       kind: "property",
@@ -104,18 +104,18 @@ export function test_command_parse(): void {
   );
   TestValidator.equals(
     "Kotlin list filter",
-    EvidenceCommand.parse(["list", "--language", "kotlin"]),
+    EvidCommand.parse(["list", "--language", "kotlin"]),
     {
       operation: "list",
       cwd: ".",
-      config: "evidence.config.ts",
+      config: "evid.config.ts",
       format: "text",
       language: "kotlin",
     },
   );
   TestValidator.equals(
     "inspect target",
-    EvidenceCommand.parse([
+    EvidCommand.parse([
       "inspect",
       "src/contract.ts#Contract.member",
       "--cwd",
@@ -125,23 +125,23 @@ export function test_command_parse(): void {
       operation: "inspect",
       target: "src/contract.ts#Contract.member",
       cwd: "project",
-      config: "evidence.config.ts",
+      config: "evid.config.ts",
       format: "text",
     },
   );
   TestValidator.equals(
     "graph format",
-    EvidenceCommand.parse(["graph", "--format", "dot"]),
+    EvidCommand.parse(["graph", "--format", "dot"]),
     {
       operation: "graph",
       cwd: ".",
-      config: "evidence.config.ts",
+      config: "evid.config.ts",
       format: "dot",
     },
   );
   TestValidator.equals(
     "languages without config",
-    EvidenceCommand.parse(["languages", "--format", "json"]),
+    EvidCommand.parse(["languages", "--format", "json"]),
     {
       operation: "languages",
       cwd: ".",
@@ -158,13 +158,13 @@ export function test_command_parse(): void {
   ])
     TestValidator.equals(
       `help arguments: ${args.join(" ")}`,
-      EvidenceCommand.parse(args),
+      EvidCommand.parse(args),
       { operation: "help" },
     );
   for (const flag of ["--version", "-v"])
     TestValidator.equals(
       `version flag: ${flag}`,
-      EvidenceCommand.parse([flag]),
+      EvidCommand.parse([flag]),
       { operation: "version" },
     );
 
@@ -178,7 +178,7 @@ export function test_command_parse(): void {
     ["--format", "yaml"],
     ["init", "--format", "json"],
     ["init", "--output", "report.txt"],
-    ["languages", "--config", "evidence.config.ts"],
+    ["languages", "--config", "evid.config.ts"],
     ["graph", "--format", "text"],
     ["inspect"],
     ["inspect", "one.ts#A", "two.ts#B"],
@@ -192,8 +192,8 @@ export function test_command_parse(): void {
     ["list", "--watch"],
   ])
     assert.throws(
-      () => EvidenceCommand.parse(args),
-      EvidenceCommandError,
+      () => EvidCommand.parse(args),
+      EvidCommandError,
       `Expected invalid arguments to fail: ${args.join(" ")}`,
     );
 }

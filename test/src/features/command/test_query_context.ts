@@ -1,4 +1,4 @@
-import { EvidenceQuery } from "@wrtnlabs/evidence";
+import { EvidQuery } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
@@ -29,7 +29,7 @@ export async function test_query_context(): Promise<void> {
     TestQueryAnalysis.records(),
     async (directory) => {
       const analysis = await TestQueryAnalysis.analyze(directory, 2);
-      const query = new EvidenceQuery(analysis, directory);
+      const query = new EvidQuery(analysis, directory);
       const listing = query.list();
       const baseline = structuredClone(listing);
       const target = listing.items.find(

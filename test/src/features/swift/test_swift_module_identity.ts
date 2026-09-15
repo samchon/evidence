@@ -1,4 +1,4 @@
-import { EvidenceInventory, EvidenceSwiftAdapter } from "@wrtnlabs/evidence";
+import { EvidInventory, EvidSwiftAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -11,7 +11,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 2. Verify distinct identities and resolution.
  */
 export async function test_swift_module_identity(): Promise<void> {
-  const adapter = new EvidenceSwiftAdapter();
+  const adapter = new EvidSwiftAdapter();
   const first = await adapter.analyze(
     TestSourceSnapshot.create(
       "Contract.swift",
@@ -28,7 +28,7 @@ export async function test_swift_module_identity(): Promise<void> {
       "/project/Second",
     ),
   );
-  const inventory = new EvidenceInventory([first, second]);
+  const inventory = new EvidInventory([first, second]);
   const combined = inventory.snapshot();
 
   TestValidator.equals(

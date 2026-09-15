@@ -1,4 +1,4 @@
-import { EvidenceSqliteAdapter } from "@wrtnlabs/evidence";
+import { EvidSqliteAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -28,7 +28,7 @@ export async function test_sqlite_boundaries(): Promise<void> {
     "CREATE TABLE broken (id INTEGER, FOREIGN KEY (id) REFERENCES other(a, b));",
     "CREATE TABLE broken (id INTEGER,",
   ]) {
-    const inventory = await new EvidenceSqliteAdapter().analyze(
+    const inventory = await new EvidSqliteAdapter().analyze(
       TestSourceSnapshot.create(
         "schema.sql",
         `CREATE TABLE valid (id INTEGER);\n${statement}`,
@@ -47,7 +47,7 @@ export async function test_sqlite_boundaries(): Promise<void> {
   }
 
   // A declared qualified schema does not require ATTACH execution to inventory its names.
-  const qualified = await new EvidenceSqliteAdapter().analyze(
+  const qualified = await new EvidSqliteAdapter().analyze(
     TestSourceSnapshot.create(
       "schema.sql",
       "CREATE TABLE archive.items (id INTEGER PRIMARY KEY, owner INTEGER REFERENCES owners MATCH simple ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED);",
@@ -72,7 +72,7 @@ export async function test_sqlite_boundaries(): Promise<void> {
       path: "/project/schema.sql",
     },
   );
-  const inventory = await new EvidenceSqliteAdapter().analyze(failed);
+  const inventory = await new EvidSqliteAdapter().analyze(failed);
   TestValidator.equals(
     "source failure stays incomplete",
     inventory.complete,

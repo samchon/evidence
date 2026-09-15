@@ -1,4 +1,4 @@
-import { EvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { TestInventory } from "../../internal/TestInventory";
@@ -59,7 +59,7 @@ export async function test_inventory_withdrawal(): Promise<void> {
     },
   });
 
-  const index = new EvidenceInventory([first, second]);
+  const index = new EvidInventory([first, second]);
   const selected = index.select(["box", "value"]);
 
   TestValidator.predicate(

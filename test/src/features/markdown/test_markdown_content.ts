@@ -1,5 +1,5 @@
-import { EvidenceMarkdownAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+import { EvidMarkdownAdapter } from "evid";
+import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -8,7 +8,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 /**
  * Partitions Markdown content among file and heading units at real section boundaries.
  *
- * Evidence needs each unit's owned ranges to exclude nested supported sections
+ * Evid needs each unit's owned ranges to exclude nested supported sections
  * while retaining deep headings, fenced text, and prose that belongs to the current section.
  *
  * 1. Analyze file prelude, nested H1-H4 sections, an anchorless heading, a deep heading, and annotations.
@@ -32,14 +32,14 @@ export async function test_markdown_content(): Promise<void> {
     ~~~~text
     code change
     ~~~~
-    <!-- @evidence docs/spec.md#leaf Supplies the leaf. -->
-    Inline <!-- @evidence docs/spec.md#inline Supplies adjacent prose. --> prose.
+    <!-- @evid docs/spec.md#leaf Supplies the leaf. -->
+    Inline <!-- @evid docs/spec.md#inline Supplies adjacent prose. --> prose.
     ##
     Unanchored body.
     ### Nested after missing
     Nested body.
   `;
-  const inventory = await new EvidenceMarkdownAdapter().analyze(
+  const inventory = await new EvidMarkdownAdapter().analyze(
     TestSourceSnapshot.create("guide.md", content),
   );
   const file = requireUnit(inventory, "file", "guide.md");
@@ -72,7 +72,7 @@ export async function test_markdown_content(): Promise<void> {
       "~~~~text",
       "code change",
       "~~~~",
-      "Inline <!-- @evidence docs/spec.md#inline Supplies adjacent prose. --> prose.",
+      "Inline <!-- @evid docs/spec.md#inline Supplies adjacent prose. --> prose.",
     ],
   );
   TestValidator.equals(
@@ -83,17 +83,17 @@ export async function test_markdown_content(): Promise<void> {
   TestValidator.equals(
     "comment-only lines leave owned content",
     lines(content, leaf).includes(
-      "<!-- @evidence docs/spec.md#leaf Supplies the leaf. -->",
+      "<!-- @evid docs/spec.md#leaf Supplies the leaf. -->",
     ),
     false,
   );
 }
 
 function requireUnit(
-  inventory: IEvidenceInventory,
-  symbol: IEvidenceUnit["symbol"],
+  inventory: IEvidInventory,
+  symbol: IEvidUnit["symbol"],
   name: string,
-): IEvidenceUnit {
+): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.symbol === symbol && candidate.name === name,
   );
@@ -102,7 +102,7 @@ function requireUnit(
   return unit;
 }
 
-function lines(content: string, unit: IEvidenceUnit): string[] {
+function lines(content: string, unit: IEvidUnit): string[] {
   const site = unit.sites[0];
   if (site === undefined)
     throw new Error(`Markdown unit ${unit.id} has no site.`);

@@ -1,8 +1,8 @@
 import {
-  EvidenceAccessor,
-  EvidenceInventory,
-  EvidencePhpAdapter,
-} from "@wrtnlabs/evidence";
+  EvidAccessor,
+  EvidInventory,
+  EvidPhpAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -46,7 +46,7 @@ export async function test_php_units(): Promise<void> {
     <?php
     function afterTemplate() {}
   `;
-  const inventory = await new EvidencePhpAdapter().analyze(
+  const inventory = await new EvidPhpAdapter().analyze(
     TestSourceSnapshot.create("src/contract.php", source, [
       "src/contract.php",
       "alias/contract.php",
@@ -83,7 +83,7 @@ export async function test_php_units(): Promise<void> {
       "function:App.Domain.afterTemplate",
     ].sort((a, b) => a.localeCompare(b)),
   );
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   const selected = inventory.units.map((unit) => unit.id);
   TestValidator.equals(
     "file alias preserves property address",
@@ -115,11 +115,11 @@ export async function test_php_units(): Promise<void> {
   );
   TestValidator.equals(
     "canonical accessor retains dollar sign",
-    EvidenceAccessor.format(["App", "Domain", "Contract", "$first"]),
+    EvidAccessor.format(["App", "Domain", "Contract", "$first"]),
     "App.Domain.Contract.$first",
   );
 
-  const unicode = await new EvidencePhpAdapter().analyze(
+  const unicode = await new EvidPhpAdapter().analyze(
     TestSourceSnapshot.create(
       "unicode.php",
       "<?php class \u00c0 {} class \u00e0 {}",
@@ -136,7 +136,7 @@ export async function test_php_units(): Promise<void> {
     ["\u00c0", "\u00e0"],
   );
 
-  const brackets = await new EvidencePhpAdapter().analyze(
+  const brackets = await new EvidPhpAdapter().analyze(
     TestSourceSnapshot.create(
       "brackets.php",
       "<?php namespace One { class Same {} } namespace Two { class Same {} } namespace { function globalRun() {} }",
@@ -152,7 +152,7 @@ export async function test_php_units(): Promise<void> {
     ),
   );
 
-  const colliding = await new EvidencePhpAdapter().analyze(
+  const colliding = await new EvidPhpAdapter().analyze(
     TestSourceSnapshot.create(
       "collision.php",
       "<?php namespace App \\ Domain; class Shared {} function Shared() {} const Value = 1, value = 2;",
@@ -175,7 +175,7 @@ export async function test_php_units(): Promise<void> {
       ["App", "Domain", "value"],
     ].sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b))),
   );
-  const collisionGraph = new EvidenceInventory([colliding]);
+  const collisionGraph = new EvidInventory([colliding]);
   const collisionAddress = {
     file: "/project/collision.php",
     segments: ["App", "Domain", "Shared"],

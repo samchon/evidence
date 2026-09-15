@@ -1,8 +1,8 @@
 import {
-  EvidenceFingerprint,
-  EvidenceInventory,
-  EvidenceRustAdapter,
-} from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidInventory,
+  EvidRustAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -22,18 +22,18 @@ export async function test_rust_tuple_comments(): Promise<void> {
   const content = dedent`
     pub struct Sale(
       // An ordinary comment is not a field.
-      /// @evidence docs/spec.md#first Documents the first field.
-      /// @evidenceReview docs/spec.md#first #abcdef0 Reviewed the first field.
+      /// @evid docs/spec.md#first Documents the first field.
+      /// @evidReview docs/spec.md#first #abcdef0 Reviewed the first field.
       #[deprecated]
       /* Whitespace between attributes and visibility. */
       pub /* Whitespace between visibility and type. */ i32,
       // Private fields still occupy their actual numeric position.
       i16,
-      /** @evidence docs/spec.md#last Documents the last field. */
+      /** @evid docs/spec.md#last Documents the last field. */
       pub i64,
     );
   `;
-  const adapter = new EvidenceRustAdapter();
+  const adapter = new EvidRustAdapter();
   const inventory = await adapter.analyze(
     TestSourceSnapshot.create("src/lib.rs", content),
   );
@@ -73,7 +73,7 @@ export async function test_rust_tuple_comments(): Promise<void> {
     inventory.declarations.find((item) => item.target === "docs/spec.md#first")
       ?.hostId,
   );
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   for (const [segment, status] of [
     ["0", "resolved"],
     ["1", "missing"],
@@ -109,13 +109,13 @@ export async function test_rust_tuple_comments(): Promise<void> {
     if (unit === undefined) throw new Error(`Missing ${name}.`);
     TestValidator.equals(
       "review metadata is excluded",
-      EvidenceFingerprint.inspect(inventory, unit.id).fingerprint,
-      EvidenceFingerprint.inspect(edited, unit.id).fingerprint,
+      EvidFingerprint.inspect(inventory, unit.id).fingerprint,
+      EvidFingerprint.inspect(edited, unit.id).fingerprint,
     );
     TestValidator.notEquals(
       "real field content is retained",
-      EvidenceFingerprint.inspect(inventory, unit.id).fingerprint,
-      EvidenceFingerprint.inspect(changed, unit.id).fingerprint,
+      EvidFingerprint.inspect(inventory, unit.id).fingerprint,
+      EvidFingerprint.inspect(changed, unit.id).fingerprint,
     );
   }
 }

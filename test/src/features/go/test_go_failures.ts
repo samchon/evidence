@@ -1,5 +1,5 @@
-import { EvidenceGoAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidGoAdapter } from "evid";
+import type { IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -14,7 +14,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Retain no falsely complete population.
  */
 export async function test_go_failures(): Promise<void> {
-  const adapter = new EvidenceGoAdapter();
+  const adapter = new EvidGoAdapter();
 
   // A selected exported method cannot disappear when its receiver source is absent.
   const missing = await adapter.analyze(
@@ -136,6 +136,6 @@ export async function test_go_failures(): Promise<void> {
   );
 }
 
-function hasCode(inventory: IEvidenceInventory, code: string): boolean {
+function hasCode(inventory: IEvidInventory, code: string): boolean {
   return inventory.diagnostics.some((diagnostic) => diagnostic.code === code);
 }

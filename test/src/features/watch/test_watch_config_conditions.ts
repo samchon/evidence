@@ -1,8 +1,8 @@
 import {
-  EvidenceConfigLoader,
-  type IEvidenceConfig,
-  type IEvidenceSourceDependency,
-} from "@wrtnlabs/evidence";
+  EvidConfigLoader,
+  type IEvidConfig,
+  type IEvidSourceDependency,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
@@ -10,7 +10,7 @@ import { symlink } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { join } from "node:path";
 
-import { ConfigDependencyScanner } from "../../../../packages/evidence/src/internal/ConfigDependencyScanner";
+import { EvidConfigDependencyScanner } from "../../../../packages/evidence/src/internal/EvidConfigDependencyScanner";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
 /**
@@ -31,7 +31,7 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  *    set, proving that success does not come from observing whole packages.
  * 4. Require a package exposing only an import condition to resolve normally.
  * 5. Require a package selected by CommonJS whose `.js` entry belongs to an ESM
- *    package scope; verify Node and scanning use import for its nested request.
+ *    package scope; verify EvidNode and scanning use import for its nested request.
  * 6. Reach a physical ESM config through a CommonJS-scoped directory link;
  *    require evaluation and scanning to derive static import conditions from
  *    the physical package while retaining both sides of the link for watch.
@@ -42,7 +42,7 @@ export async function test_watch_config_conditions(): Promise<void> {
     location,
     {
       "package.json": JSON.stringify({ type: "module" }),
-      "evidence.config.ts": dedent`
+      "evid.config.ts": dedent`
         import "dual-entry";
         import "./require-helper.cts";
         export { default as imported } from "./import-helper.mts";
@@ -103,10 +103,10 @@ export async function test_watch_config_conditions(): Promise<void> {
     },
     async (directory: string): Promise<void> => {
       const dependencies: string[] = (
-        await new ConfigDependencyScanner(
-          join(directory, "evidence.config.ts"),
+        await new EvidConfigDependencyScanner(
+          join(directory, "evid.config.ts"),
         ).scan()
-      ).map((dependency: IEvidenceSourceDependency): string =>
+      ).map((dependency: IEvidSourceDependency): string =>
         dependency.path.replaceAll("\\", "/"),
       );
       const relative: (file: string) => string = (file: string): string =>
@@ -156,8 +156,8 @@ export async function test_watch_config_conditions(): Promise<void> {
         "import",
       );
       const packageModeDependencies: string[] = (
-        await new ConfigDependencyScanner(packageModeFile).scan()
-      ).map((dependency: IEvidenceSourceDependency): string =>
+        await new EvidConfigDependencyScanner(packageModeFile).scan()
+      ).map((dependency: IEvidSourceDependency): string =>
         dependency.path.replaceAll("\\", "/"),
       );
       TestValidator.predicate(
@@ -178,7 +178,7 @@ export async function test_watch_config_conditions(): Promise<void> {
     join(location, "physical config mode"),
     {
       "physical/package.json": JSON.stringify({ type: "module" }),
-      "physical/config/evidence.config.ts": dedent`
+      "physical/config/evid.config.ts": dedent`
         import severity from "physical-mode";
 
         export default {
@@ -207,9 +207,9 @@ export async function test_watch_config_conditions(): Promise<void> {
       const physicalDirectory: string = join(directory, "physical/config");
       const logicalDirectory: string = join(directory, "logical/config-link");
       await symlink(physicalDirectory, logicalDirectory, "junction");
-      const configFile: string = join(logicalDirectory, "evidence.config.ts");
-      const config: IEvidenceConfig =
-        await EvidenceConfigLoader.load(configFile);
+      const configFile: string = join(logicalDirectory, "evid.config.ts");
+      const config: IEvidConfig =
+        await EvidConfigLoader.load(configFile);
       TestValidator.equals(
         "physical config module mode",
         config.severity,
@@ -217,8 +217,8 @@ export async function test_watch_config_conditions(): Promise<void> {
       );
 
       const dependencies: string[] = (
-        await new ConfigDependencyScanner(configFile).scan()
-      ).map((dependency: IEvidenceSourceDependency): string =>
+        await new EvidConfigDependencyScanner(configFile).scan()
+      ).map((dependency: IEvidSourceDependency): string =>
         dependency.path.replaceAll("\\", "/"),
       );
       const relative: (file: string) => string = (file: string): string =>
@@ -238,7 +238,7 @@ export async function test_watch_config_conditions(): Promise<void> {
       TestValidator.predicate(
         "logical config dependency retained",
         dependencies.includes(
-          relative("logical/config-link/evidence.config.ts"),
+          relative("logical/config-link/evid.config.ts"),
         ),
       );
       TestValidator.predicate(

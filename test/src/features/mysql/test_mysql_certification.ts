@@ -1,5 +1,5 @@
-import { EvidenceAccessor, EvidenceMysqlAdapter } from "@wrtnlabs/evidence";
-import type { EvidenceDatabaseSymbol } from "@wrtnlabs/evidence";
+import { EvidAccessor, EvidMysqlAdapter } from "evid";
+import type { EvidDatabaseSymbol } from "evid";
 import { dedent } from "@typia/utils";
 
 import { DatabaseAdapterCertification } from "../../internal/certification/DatabaseAdapterCertification";
@@ -18,7 +18,7 @@ export async function test_mysql_certification(): Promise<void> {
   const relation = 'foreign-key:["parent_id"]->["Parent"](["id"])';
   const fixture: IDatabaseAdapterCertification = {
     type: "mysql",
-    adapter: new EvidenceMysqlAdapter(),
+    adapter: new EvidMysqlAdapter(),
     sources: [
       {
         file: "schema.sql",
@@ -26,11 +26,11 @@ export async function test_mysql_certification(): Promise<void> {
       /* 계약 😀 */
 
       CREATE TABLE Parent (id INT PRIMARY KEY);
-      /** @evidence ./docs/requirements.md#model Verifies the child model. */
+      /** @evid ./docs/requirements.md#model Verifies the child model. */
       CREATE TABLE Child (
-        /** @evidence ./docs/requirements.md#column Verifies the parent identifier. */
+        /** @evid ./docs/requirements.md#column Verifies the parent identifier. */
         parent_id INT,
-        /** @evidence ./docs/requirements.md#relation Verifies the foreign key. */
+        /** @evid ./docs/requirements.md#relation Verifies the foreign key. */
         FOREIGN KEY (parent_id) REFERENCES Parent (id)
       );
     `,
@@ -50,7 +50,7 @@ export async function test_mysql_certification(): Promise<void> {
       { attachment: "attached", units: ["column:Child.parent_id"] },
       {
         attachment: "attached",
-        units: [`relation:${EvidenceAccessor.format(["Child", relation])}`],
+        units: [`relation:${EvidAccessor.format(["Child", relation])}`],
       },
     ],
     requirements: [
@@ -60,7 +60,7 @@ export async function test_mysql_certification(): Promise<void> {
         target: "./docs/requirements.md#column",
       },
       {
-        unit: `relation:${EvidenceAccessor.format(["Child", relation])}`,
+        unit: `relation:${EvidAccessor.format(["Child", relation])}`,
         target: "./docs/requirements.md#relation",
       },
     ],
@@ -84,8 +84,8 @@ export async function test_mysql_certification(): Promise<void> {
       source: {
         file: "schema.sql",
         content: dedent`
-      /** @evidence ./docs/requirements.md#attached Verifies the table. */
-      CREATE TABLE Source (value TEXT DEFAULT '@evidence ./docs/requirements.md#inert Inert SQL string.');
+      /** @evid ./docs/requirements.md#attached Verifies the table. */
+      CREATE TABLE Source (value TEXT DEFAULT '@evid ./docs/requirements.md#inert Inert SQL string.');
     `,
       },
       attachedTarget: "./docs/requirements.md#attached",
@@ -116,11 +116,11 @@ export async function test_mysql_certification(): Promise<void> {
  * preserving an explicit parent only for members owned by a model.
  */
 function unit(
-  symbol: EvidenceDatabaseSymbol,
+  symbol: EvidDatabaseSymbol,
   identity: string[],
   parent?: string,
 ): IDatabaseAdapterCertificationUnit {
-  const accessor = EvidenceAccessor.format(identity);
+  const accessor = EvidAccessor.format(identity);
   return {
     key: `${symbol}:${accessor}`,
     symbol,

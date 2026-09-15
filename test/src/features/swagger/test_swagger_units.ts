@@ -1,5 +1,5 @@
-import { EvidenceSwaggerAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidSwaggerAdapter } from "evid";
+import type { IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
@@ -100,8 +100,8 @@ export async function test_swagger_units(): Promise<void> {
       `,
     },
     async (directory) => {
-      const config = join(directory, "evidence.config.ts");
-      const adapter = new EvidenceSwaggerAdapter();
+      const config = join(directory, "evid.config.ts");
+      const adapter = new EvidSwaggerAdapter();
       const swagger = await adapter.load(config, "swagger.json");
       const openapi = await adapter.load(config, "openapi.yaml");
       const openapi30 = await adapter.load(config, "openapi30.json");
@@ -141,6 +141,6 @@ export async function test_swagger_units(): Promise<void> {
   );
 }
 
-function targets(inventory: IEvidenceInventory): string[] {
+function targets(inventory: IEvidInventory): string[] {
   return inventory.units.map((unit) => unit.name);
 }

@@ -1,11 +1,11 @@
 import type {
-  EvidenceProgrammingType,
-  EvidenceProgrammingSymbol,
-} from "@wrtnlabs/evidence";
+  EvidProgrammingType,
+  EvidProgrammingSymbol,
+} from "evid";
 import type { IAdapterCertificationBase } from "./IAdapterCertificationBase";
 
 /** Complete executable contract for one programming adapter. */
 export interface IAdapterCertification extends IAdapterCertificationBase<
-  EvidenceProgrammingType,
-  EvidenceProgrammingSymbol
+  EvidProgrammingType,
+  EvidProgrammingSymbol
 > {}

@@ -1,4 +1,4 @@
-import { EvidenceDartAdapter } from "@wrtnlabs/evidence";
+import { EvidDartAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -12,7 +12,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Verify local export shadowing and supported cycles remain analyzable.
  */
 export async function test_dart_library_failures(): Promise<void> {
-  const adapter = new EvidenceDartAdapter();
+  const adapter = new EvidDartAdapter();
   for (const [sources, code] of new Map<string[], string>([
     [["part 'part.dart';", "class Wrong {}"], "dart-part-owner"],
     [

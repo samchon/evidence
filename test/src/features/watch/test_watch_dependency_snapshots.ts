@@ -1,10 +1,10 @@
-import type { IEvidenceSourceDependency } from "@wrtnlabs/evidence";
+import type { IEvidSourceDependency } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { rm, symlink } from "node:fs/promises";
 import { join } from "node:path";
 
-import { WatchDependencySnapshot } from "../../../../packages/evidence/src/internal/WatchDependencySnapshot";
+import { EvidWatchDependencySnapshot } from "../../../../packages/evidence/src/internal/EvidWatchDependencySnapshot";
 import { TestFileSystem } from "../../internal/TestFileSystem";
 
 /**
@@ -34,24 +34,24 @@ export async function test_watch_dependency_snapshots(): Promise<void> {
     async (directory) => {
       const root = join(directory, "root");
       const source = join(root, "source.ts");
-      const dependencies: IEvidenceSourceDependency[] = [
+      const dependencies: IEvidSourceDependency[] = [
         { path: root, recursive: true },
         { path: source, recursive: false },
       ];
-      const initial = await WatchDependencySnapshot.capture(dependencies);
+      const initial = await EvidWatchDependencySnapshot.capture(dependencies);
 
       // File bytes change even when the source remains at the same exact path.
       await TestFileSystem.save(directory, {
         "root/source.ts": "export const value = 2;\n",
       });
-      const edited = await WatchDependencySnapshot.capture(dependencies);
+      const edited = await EvidWatchDependencySnapshot.capture(dependencies);
       TestValidator.predicate("content edit detected", !initial.equals(edited));
 
       // A recursive dependency records immediate names so new glob candidates appear.
       await TestFileSystem.save(directory, {
         "root/created.ts": "export const created = true;\n",
       });
-      const created = await WatchDependencySnapshot.capture(dependencies);
+      const created = await EvidWatchDependencySnapshot.capture(dependencies);
       TestValidator.predicate(
         "directory creation detected",
         !edited.equals(created),
@@ -59,7 +59,7 @@ export async function test_watch_dependency_snapshots(): Promise<void> {
 
       // Missing exact paths retain a version that changes when they are repaired.
       await TestFileSystem.erase(source);
-      const deleted = await WatchDependencySnapshot.capture(dependencies);
+      const deleted = await EvidWatchDependencySnapshot.capture(dependencies);
       TestValidator.predicate(
         "file deletion detected",
         !created.equals(deleted),
@@ -72,13 +72,13 @@ export async function test_watch_dependency_snapshots(): Promise<void> {
       } catch {
         return;
       }
-      const linked: IEvidenceSourceDependency[] = [
+      const linked: IEvidSourceDependency[] = [
         { path: link, recursive: true },
       ];
-      const firstTarget = await WatchDependencySnapshot.capture(linked);
+      const firstTarget = await EvidWatchDependencySnapshot.capture(linked);
       await rm(link, { recursive: true, force: true });
       await symlink(join(directory, "target-b"), link, "junction");
-      const secondTarget = await WatchDependencySnapshot.capture(linked);
+      const secondTarget = await EvidWatchDependencySnapshot.capture(linked);
 
       TestValidator.predicate(
         "junction retarget detected",

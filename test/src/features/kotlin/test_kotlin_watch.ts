@@ -1,4 +1,4 @@
-import { EvidenceChecker, EvidenceWatcher } from "@wrtnlabs/evidence";
+import { EvidChecker, EvidWatcher } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { join } from "node:path";
@@ -15,18 +15,18 @@ export async function test_kotlin_watch(): Promise<void> {
   await TestFileSystem.experiment(
     "kotlin-watch",
     {
-      "evidence.config.ts": dedent`
+      "evid.config.ts": dedent`
       export default { claims: [{ type: "typescript", files: ["claims.ts"], reference: { type: "kotlin", files: ["contracts/*.kt"], symbol: "property" } }] };
     `,
       "claims.ts": dedent`
-      /** @evidence ./contracts/Contract.kt#Contract Implements the contract. */
+      /** @evid ./contracts/Contract.kt#Contract Implements the contract. */
       export function claim() {}
     `,
       "contracts/Contract.kt": "class Contract { val value = 1; }\n",
     },
     async (directory) => {
-      const file = join(directory, "evidence.config.ts");
-      const watcher = new EvidenceWatcher(file, {
+      const file = join(directory, "evid.config.ts");
+      const watcher = new EvidWatcher(file, {
         pollIntervalMilliseconds: 10,
         debounceMilliseconds: 10,
       });
@@ -36,7 +36,7 @@ export async function test_kotlin_watch(): Promise<void> {
           TestValidator.equals(
             `fresh Kotlin cycle ${cycle.cycle}`,
             cycle.report,
-            await EvidenceChecker.check(file),
+            await EvidChecker.check(file),
           );
           if (cycle.cycle === 1) {
             TestValidator.equals(
@@ -72,7 +72,7 @@ export async function test_kotlin_watch(): Promise<void> {
               true,
             );
             await TestFileSystem.save(directory, {
-              "evidence.config.ts": dedent`
+              "evid.config.ts": dedent`
             export default { claims: [{ type: "typescript", files: ["claims.ts"], reference: { type: "kotlin", files: ["contracts/*.kt"], symbol: "type" } }] };
           `,
             });

@@ -1,4 +1,4 @@
-﻿import { EvidenceDbmlAdapter, EvidenceInventory } from "@wrtnlabs/evidence";
+﻿import { EvidDbmlAdapter, EvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -15,24 +15,24 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_dbml_hosts(): Promise<void> {
   const source = dedent`
     Table users {
-      id int [note: '@evidence ./spec.md#column Owns the identifier column.']
-      value text [default: '@evidence ./spec.md#literal Inert value.'] // @evidence ./spec.md#trailing Does not document the next column.
+      id int [note: '@evid ./spec.md#column Owns the identifier column.']
+      value text [default: '@evid ./spec.md#literal Inert value.'] // @evid ./spec.md#trailing Does not document the next column.
       next int
       Note: '''
-      @evidence ./spec.md#model Owns the table note.
+      @evid ./spec.md#model Owns the table note.
       \`\`\`
-      @evidence ./spec.md#example Inert example.
+      @evid ./spec.md#example Inert example.
       \`\`\`
       '''
       indexes {
-        id [note: '@evidence ./spec.md#index Unsupported index carrier.']
+        id [note: '@evid ./spec.md#index Unsupported index carrier.']
       }
     }
     Enum state {
-      active [note: '@evidence ./spec.md#enum Unsupported enum carrier.']
+      active [note: '@evid ./spec.md#enum Unsupported enum carrier.']
     }
   `;
-  const inventory = await new EvidenceDbmlAdapter().analyze(
+  const inventory = await new EvidDbmlAdapter().analyze(
     TestSourceSnapshot.create("schema.dbml", source),
   );
   TestValidator.equals(
@@ -61,7 +61,7 @@ export async function test_dbml_hosts(): Promise<void> {
     "trailing tag never attaches to following member",
     inventory.hosts.every(
       (host) =>
-        host.range.start.offset !== source.indexOf("// @evidence") ||
+        host.range.start.offset !== source.indexOf("// @evid") ||
         !host.unitIds.includes(second?.id ?? ""),
     ),
   );
@@ -76,11 +76,11 @@ export async function test_dbml_hosts(): Promise<void> {
     "Table users { id int }",
     ["linked/schema.dbml"],
   );
-  const merged = await new EvidenceDbmlAdapter().analyze(
+  const merged = await new EvidDbmlAdapter().analyze(
     TestSourceSnapshot.combine([first, aliased]),
   );
   TestValidator.equals("one physical table inventory", merged.units.length, 2);
-  const resolver = new EvidenceInventory([merged]);
+  const resolver = new EvidInventory([merged]);
   const primary = resolver.resolve(
     {
       file: "/project/schema.dbml",

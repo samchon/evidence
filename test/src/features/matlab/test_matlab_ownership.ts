@@ -1,4 +1,4 @@
-import { EvidenceInventory, EvidenceMatlabAdapter } from "@wrtnlabs/evidence";
+import { EvidInventory, EvidMatlabAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -19,7 +19,7 @@ export async function test_matlab_ownership(): Promise<void> {
     dedent`
     classdef Widget
       methods
-        % @evidence doc.md#prototype Documents the external method contract.
+        % @evid doc.md#prototype Documents the external method contract.
         run(obj)
       end
       methods (Access=private)
@@ -40,7 +40,7 @@ export async function test_matlab_ownership(): Promise<void> {
     "src/+pkg/@Widget/extra.m",
     "function extra(obj)\nend\n",
   );
-  const inventory = await new EvidenceMatlabAdapter().analyze(
+  const inventory = await new EvidMatlabAdapter().analyze(
     TestSourceSnapshot.combine([cls, run, secret, additional]),
   );
 
@@ -67,7 +67,7 @@ export async function test_matlab_ownership(): Promise<void> {
     method?.sites?.length,
     2,
   );
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   for (const file of ["Widget.m", "run.m"])
     TestValidator.equals(
       `external address ${file}`,
@@ -115,7 +115,7 @@ export async function test_matlab_ownership(): Promise<void> {
         dependency.recursive && dependency.path.endsWith("/@Widget"),
     ),
   );
-  const reversed = await new EvidenceMatlabAdapter().analyze(
+  const reversed = await new EvidMatlabAdapter().analyze(
     TestSourceSnapshot.combine([additional, secret, run, cls]),
   );
   TestValidator.equals(
@@ -123,7 +123,7 @@ export async function test_matlab_ownership(): Promise<void> {
     reversed,
     inventory,
   );
-  const missing = await new EvidenceMatlabAdapter().analyze(run);
+  const missing = await new EvidMatlabAdapter().analyze(run);
   TestValidator.equals("missing class cannot pass", missing.complete, false);
   TestValidator.predicate(
     "actionable legacy boundary",
@@ -131,7 +131,7 @@ export async function test_matlab_ownership(): Promise<void> {
       (diagnostic) => diagnostic.code === "matlab-class-folder",
     ),
   );
-  const missingImplementation = await new EvidenceMatlabAdapter().analyze(cls);
+  const missingImplementation = await new EvidMatlabAdapter().analyze(cls);
   TestValidator.equals(
     "missing implementations cannot pass",
     missingImplementation.complete,

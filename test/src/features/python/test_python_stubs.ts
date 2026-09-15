@@ -1,5 +1,5 @@
-import { EvidencePythonAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidPythonAdapter } from "evid";
+import type { IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -15,7 +15,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Verify explicitly exported private declarations remain selectable while unselected private declarations stay hidden.
  */
 export async function test_python_stubs(): Promise<void> {
-  const inventory = await new EvidencePythonAdapter().analyze(
+  const inventory = await new EvidPythonAdapter().analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create(
         "types/contracts.pyi",
@@ -78,7 +78,7 @@ export async function test_python_stubs(): Promise<void> {
   TestValidator.equals("complete Python stubs", inventory.diagnostics, []);
 }
 
-function addresses(inventory: IEvidenceInventory, file: string): string[] {
+function addresses(inventory: IEvidInventory, file: string): string[] {
   return inventory.addresses
     .filter((address) => address.file === file)
     .map((address) => address.segments.join("."))

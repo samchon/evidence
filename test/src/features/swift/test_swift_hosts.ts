@@ -1,8 +1,8 @@
 import {
-  EvidenceFingerprint,
-  EvidenceInventory,
-  EvidenceSwiftAdapter,
-} from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidInventory,
+  EvidSwiftAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -18,25 +18,25 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_swift_hosts(): Promise<void> {
   const source = dedent`
     /// 계약 😀
-    /// @evidence docs/spec.md#contract Implements the contract.
+    /// @evid docs/spec.md#contract Implements the contract.
     @available(*, deprecated)
     public struct Contract {
       /** @internal Withdraws the nested type. */
       public struct Retired { public let child = 1 }
-      /// @evidence docs/spec.md#value Implements the value.
+      /// @evid docs/spec.md#value Implements the value.
       public let 값 = 1
     }
     /**
      * Examples:
      * ~~~swift
-     * @evidence docs/spec.md#example Inert fenced example.
+     * @evid docs/spec.md#example Inert fenced example.
      * ~~~
      *
-     *     @evidence docs/spec.md#indented Inert indented example.
+     *     @evid docs/spec.md#indented Inert indented example.
      */
     public func sample() {}
   `.replaceAll("\n", "\r\n");
-  const adapter = new EvidenceSwiftAdapter();
+  const adapter = new EvidSwiftAdapter();
   const inventory = await adapter.analyze(
     TestSourceSnapshot.create("src/Contract.swift", source),
   );
@@ -51,7 +51,7 @@ export async function test_swift_hosts(): Promise<void> {
   TestValidator.equals(
     "original UTF-16 offset after astral text",
     declaration?.location?.range?.start?.offset,
-    source.indexOf("@evidence"),
+    source.indexOf("@evid"),
   );
   TestValidator.equals(
     "original CRLF line",
@@ -65,7 +65,7 @@ export async function test_swift_hosts(): Promise<void> {
     contract.sites[0]?.range?.start?.offset,
     source.indexOf("@available"),
   );
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   TestValidator.equals(
     "withdrawn nested descendants",
     graph.resolve(
@@ -88,8 +88,8 @@ export async function test_swift_hosts(): Promise<void> {
   );
   TestValidator.equals(
     "annotation edits preserve ancestor reviews",
-    EvidenceFingerprint.inspect(inventory, contract.id).fingerprint,
-    EvidenceFingerprint.inspect(rewritten, contract.id).fingerprint,
+    EvidFingerprint.inspect(inventory, contract.id).fingerprint,
+    EvidFingerprint.inspect(rewritten, contract.id).fingerprint,
   );
   const changed = await adapter.analyze(
     TestSourceSnapshot.create(
@@ -99,13 +99,13 @@ export async function test_swift_hosts(): Promise<void> {
   );
   TestValidator.notEquals(
     "semantic member edit stales ancestor reviews",
-    EvidenceFingerprint.inspect(inventory, contract.id).fingerprint,
-    EvidenceFingerprint.inspect(changed, contract.id).fingerprint,
+    EvidFingerprint.inspect(inventory, contract.id).fingerprint,
+    EvidFingerprint.inspect(changed, contract.id).fingerprint,
   );
 
   // A string that resembles an annotation remains semantic implementation content.
   const literalSource =
-    'public func literal() -> String { "@evidence docs/spec.md#value Literal content." }';
+    'public func literal() -> String { "@evid docs/spec.md#value Literal content." }';
   const literal = await adapter.analyze(
     TestSourceSnapshot.create("src/Literal.swift", literalSource),
   );
@@ -119,8 +119,8 @@ export async function test_swift_hosts(): Promise<void> {
   if (literalUnit === undefined) throw new Error("Missing literal function.");
   TestValidator.notEquals(
     "unsupported annotation strings remain fingerprint content",
-    EvidenceFingerprint.inspect(literal, literalUnit.id).fingerprint,
-    EvidenceFingerprint.inspect(literalChanged, literalUnit.id).fingerprint,
+    EvidFingerprint.inspect(literal, literalUnit.id).fingerprint,
+    EvidFingerprint.inspect(literalChanged, literalUnit.id).fingerprint,
   );
 
   for (const tag of [

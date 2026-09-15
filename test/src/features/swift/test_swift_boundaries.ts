@@ -1,4 +1,4 @@
-import { EvidenceSwiftAdapter } from "@wrtnlabs/evidence";
+import { EvidSwiftAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -12,7 +12,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 2. Verify incomplete diagnostics and failed-source handling.
  */
 export async function test_swift_boundaries(): Promise<void> {
-  const adapter = new EvidenceSwiftAdapter();
+  const adapter = new EvidSwiftAdapter();
   const cases = new Map<string, string>([
     [
       "extension External { public func run() {} }",

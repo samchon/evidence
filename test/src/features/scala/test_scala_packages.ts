@@ -1,4 +1,4 @@
-﻿import { EvidenceAccessor, EvidenceScalaAdapter } from "@wrtnlabs/evidence";
+﻿import { EvidAccessor, EvidScalaAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
@@ -13,7 +13,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Verify implicit conversion syntax creates no extra hosts beyond discovered units.
  */
 export async function test_scala_packages(): Promise<void> {
-  const inventory = await new EvidenceScalaAdapter().analyze(
+  const inventory = await new EvidScalaAdapter().analyze(
     TestSourceSnapshot.create(
       "src/Packages.scala",
       dedent`
@@ -41,7 +41,7 @@ export async function test_scala_packages(): Promise<void> {
   TestValidator.equals(
     "exact package identities",
     inventory.units
-      .map((unit) => `${unit.symbol}:${EvidenceAccessor.format(unit.identity)}`)
+      .map((unit) => `${unit.symbol}:${EvidAccessor.format(unit.identity)}`)
       .sort((a, b) => a.localeCompare(b, "en")),
     [
       "type:outer.nested.Contract",

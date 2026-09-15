@@ -1,7 +1,7 @@
 import {
-  EvidenceInventory,
-  EvidencePostgresqlAdapter,
-} from "@wrtnlabs/evidence";
+  EvidInventory,
+  EvidPostgresqlAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -37,11 +37,11 @@ export async function test_postgresql_units(): Promise<void> {
       dedent`
       ALTER TABLE app.Account ADD COLUMN label text;
       ALTER TABLE app.Account ADD CONSTRAINT region_fk FOREIGN KEY (ID, region) REFERENCES app.Account (ID, region);
-      COMMENT ON COLUMN app.Account.label IS '@evidence spec.md#label Describes the label.';
+      COMMENT ON COLUMN app.Account.label IS '@evid spec.md#label Describes the label.';
     `,
     ),
   ]);
-  const inventory = await new EvidencePostgresqlAdapter().analyze(snapshot);
+  const inventory = await new EvidPostgresqlAdapter().analyze(snapshot);
 
   TestValidator.equals(
     "complete PostgreSQL inventory",
@@ -88,7 +88,7 @@ export async function test_postgresql_units(): Promise<void> {
       inventory.units.find((owner) => owner.id === unit.parentId)?.identity,
       unit.identity.slice(0, 2),
     );
-  const graph = new EvidenceInventory([inventory]);
+  const graph = new EvidInventory([inventory]);
   const selected = inventory.units.map((unit) => unit.id);
   TestValidator.equals(
     "literal-dot file alias",
@@ -123,7 +123,7 @@ export async function test_postgresql_units(): Promise<void> {
     ),
     [["app", "account", "label"]],
   );
-  const reversed = await new EvidencePostgresqlAdapter().analyze({
+  const reversed = await new EvidPostgresqlAdapter().analyze({
     ...snapshot,
     files: [...snapshot.files].reverse(),
   });

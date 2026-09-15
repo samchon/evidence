@@ -1,8 +1,8 @@
 import {
-  EvidenceCppAdapter,
-  EvidenceLanguageRegistry,
-} from "@wrtnlabs/evidence";
-import type { IEvidenceInventory, IEvidenceUnit } from "@wrtnlabs/evidence";
+  EvidCppAdapter,
+  EvidLanguageRegistry,
+} from "evid";
+import type { IEvidInventory, IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -18,7 +18,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  */
 export async function test_cpp_units(): Promise<void> {
   // Certified metadata names the exact grammar and explicit declared surface.
-  const language = EvidenceLanguageRegistry.list().find(
+  const language = EvidLanguageRegistry.list().find(
     (entry) => entry.type === "cpp",
   );
   if (language?.adapter === undefined)
@@ -26,7 +26,7 @@ export async function test_cpp_units(): Promise<void> {
   TestValidator.equals(
     "certified C++ adapter",
     language.adapter.entry,
-    "EvidenceCppAdapter",
+    "EvidCppAdapter",
   );
   TestValidator.equals(
     "published C++ grammar version",
@@ -34,7 +34,7 @@ export async function test_cpp_units(): Promise<void> {
     true,
   );
 
-  const inventory = await new EvidenceCppAdapter().analyze(
+  const inventory = await new EvidCppAdapter().analyze(
     TestSourceSnapshot.create(
       "include/shop.hpp",
       dedent`
@@ -177,9 +177,9 @@ export async function test_cpp_units(): Promise<void> {
 }
 
 function requireUnit(
-  inventory: IEvidenceInventory,
+  inventory: IEvidInventory,
   identity: string,
-): IEvidenceUnit {
+): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) => candidate.identity.join(".") === identity,
   );

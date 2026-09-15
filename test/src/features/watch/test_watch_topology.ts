@@ -1,9 +1,9 @@
 import {
-  EvidenceChecker,
-  EvidenceWatchReporter,
-  EvidenceWatcher,
-} from "@wrtnlabs/evidence";
-import type { EvidenceWatchCycle } from "@wrtnlabs/evidence";
+  EvidChecker,
+  EvidWatchReporter,
+  EvidWatcher,
+} from "evid";
+import type { EvidWatchCycle } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
@@ -32,13 +32,13 @@ export async function test_watch_topology(): Promise<void> {
   await TestFileSystem.experiment(
     location,
     {
-      "evidence.config.ts": config(),
+      "evid.config.ts": config(),
       "docs/pricing.md": requirement("Pricing", "pricing"),
       "src/calculator.ts": implementation(false),
     },
     async (directory) => {
-      const configFile = join(directory, "evidence.config.ts");
-      const watcher = new EvidenceWatcher(configFile, {
+      const configFile = join(directory, "evid.config.ts");
+      const watcher = new EvidWatcher(configFile, {
         pollIntervalMilliseconds: 20,
         debounceMilliseconds: 20,
       });
@@ -51,9 +51,9 @@ export async function test_watch_topology(): Promise<void> {
         TestValidator.equals(
           `fresh report ${cycle.cycle}`,
           cycle.report,
-          await EvidenceChecker.check(configFile),
+          await EvidChecker.check(configFile),
         );
-        output.push(EvidenceWatchReporter.json(cycle));
+        output.push(EvidWatchReporter.json(cycle));
 
         // Creating a second requirement under the watched glob adds an obligation.
         if (cycle.cycle === 1) {
@@ -97,7 +97,7 @@ export async function test_watch_topology(): Promise<void> {
       TestValidator.equals(
         "NDJSON cycle identifiers",
         lines.map(
-          (line) => typia.json.assertParse<EvidenceWatchCycle>(line).cycle,
+          (line) => typia.json.assertParse<EvidWatchCycle>(line).cycle,
         ),
         [1, 2, 3, 4],
       );
@@ -107,7 +107,7 @@ export async function test_watch_topology(): Promise<void> {
 
 function config(): string {
   return dedent`
-    import type { IEvidenceConfig } from "@wrtnlabs/evidence";
+    import type { IEvidConfig } from "evid";
 
     export default {
       claims: [
@@ -122,7 +122,7 @@ function config(): string {
           },
         },
       ],
-    } satisfies IEvidenceConfig;
+    } satisfies IEvidConfig;
   `;
 }
 
@@ -137,8 +137,8 @@ function requirement(title: string, anchor: string): string {
 function implementation(refund: boolean): string {
   return dedent`
     /**
-     * @evidence docs/pricing.md#pricing Implements pricing.
-     ${refund ? "* @evidence docs/refund.md#refund Implements refunds." : ""}
+     * @evid docs/pricing.md#pricing Implements pricing.
+     ${refund ? "* @evid docs/refund.md#refund Implements refunds." : ""}
      */
     export function calculate(): number {
       return 1;

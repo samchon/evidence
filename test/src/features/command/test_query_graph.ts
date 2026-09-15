@@ -1,5 +1,5 @@
-import { EvidenceGraphReporter, EvidenceQuery } from "@wrtnlabs/evidence";
-import type { IEvidenceGraphReport } from "@wrtnlabs/evidence";
+import { EvidGraphReporter, EvidQuery } from "evid";
+import type { IEvidGraphReport } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
@@ -32,7 +32,7 @@ export async function test_query_graph(): Promise<void> {
     TestQueryAnalysis.records(),
     async (directory) => {
       const analysis = await TestQueryAnalysis.analyze(directory, 2);
-      const report = EvidenceQuery.graph(analysis, directory);
+      const report = EvidQuery.graph(analysis, directory);
 
       // Equal targets in two configured references retain separate obligation IDs.
       TestValidator.equals(
@@ -68,15 +68,15 @@ export async function test_query_graph(): Promise<void> {
       );
 
       // JSON is a deterministic and structurally validated lossless report.
-      const json = EvidenceGraphReporter.json(report);
+      const json = EvidGraphReporter.json(report);
       TestValidator.equals(
         "graph JSON structure",
-        typia.json.assertParse<IEvidenceGraphReport>(json),
+        typia.json.assertParse<IEvidGraphReport>(json),
         report,
       );
       TestValidator.equals(
         "deterministic graph JSON",
-        EvidenceGraphReporter.json(report),
+        EvidGraphReporter.json(report),
         json,
       );
 
@@ -85,8 +85,8 @@ export async function test_query_graph(): Promise<void> {
       const node = hostile.nodes.find((candidate) => candidate.role !== "host");
       if (node === undefined) throw new Error("Missing graph identity node.");
       node.target = 'safe"]\nattacker --> victim["';
-      const mermaid = EvidenceGraphReporter.mermaid(hostile);
-      const dot = EvidenceGraphReporter.dot(hostile);
+      const mermaid = EvidGraphReporter.mermaid(hostile);
+      const dot = EvidGraphReporter.dot(hostile);
       TestValidator.predicate(
         "visual relation kinds",
         mermaid.includes("-.->") &&

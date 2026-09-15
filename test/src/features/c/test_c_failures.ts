@@ -1,5 +1,5 @@
-import { EvidenceCAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceInventory } from "@wrtnlabs/evidence";
+import { EvidCAdapter } from "evid";
+import type { IEvidInventory } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -14,7 +14,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Require each inventory to be incomplete and to retain actionable diagnostics.
  */
 export async function test_c_failures(): Promise<void> {
-  const adapter = new EvidenceCAdapter();
+  const adapter = new EvidCAdapter();
 
   // Conditional branches are not treated as simultaneous declarations.
   const conditional = await adapter.analyze(
@@ -152,6 +152,6 @@ export async function test_c_failures(): Promise<void> {
   );
 }
 
-function hasCode(inventory: IEvidenceInventory, code: string): boolean {
+function hasCode(inventory: IEvidInventory, code: string): boolean {
   return inventory.diagnostics.some((diagnostic) => diagnostic.code === code);
 }

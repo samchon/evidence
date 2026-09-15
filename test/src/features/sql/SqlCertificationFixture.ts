@@ -1,8 +1,8 @@
-import { EvidenceAccessor, EvidenceSqlAdapter } from "@wrtnlabs/evidence";
+import { EvidAccessor, EvidSqlAdapter } from "evid";
 import type {
-  EvidenceDatabaseSymbol,
-  IEvidenceWithdrawal,
-} from "@wrtnlabs/evidence";
+  EvidDatabaseSymbol,
+  IEvidWithdrawal,
+} from "evid";
 import { dedent } from "@typia/utils";
 import type { IDatabaseAdapterCertification } from "../../internal/certification/IDatabaseAdapterCertification";
 import type { IDatabaseAdapterCertificationUnit } from "../../internal/certification/IDatabaseAdapterCertificationUnit";
@@ -29,21 +29,21 @@ export namespace SqlCertificationFixture {
     ];
     return {
       type: "sql",
-      adapter: new EvidenceSqlAdapter(),
+      adapter: new EvidSqlAdapter(),
       sources: [
         {
           file,
           content: dedent`
         -- 검증 🧪
-        -- @evidence docs/requirements.md#model Implements the certified model.
+        -- @evid docs/requirements.md#model Implements the certified model.
         CREATE TABLE child (
           -- 값 🧪
-          -- @evidence docs/requirements.md#column Implements the certified column.
+          -- @evid docs/requirements.md#column Implements the certified column.
           id INTEGER,
           -- @internal Retired column.
           legacy INTEGER,
           -- 검증 🧪
-          -- @evidence docs/requirements.md#relation Implements the certified relation.
+          -- @evid docs/requirements.md#relation Implements the certified relation.
           FOREIGN KEY (id) REFERENCES parent(id)
         );
       `,
@@ -57,7 +57,7 @@ export namespace SqlCertificationFixture {
         { unit: "model:CHILD", target: "docs/requirements.md#model" },
         { unit: "column:CHILD.ID", target: "docs/requirements.md#column" },
         {
-          unit: `relation:${EvidenceAccessor.format(["CHILD", relation])}`,
+          unit: `relation:${EvidAccessor.format(["CHILD", relation])}`,
           target: "docs/requirements.md#relation",
         },
       ],
@@ -77,11 +77,11 @@ export namespace SqlCertificationFixture {
         source: {
           file,
           content: dedent`
-        -- @evidence docs/requirements.md#attached Attached table documentation.
+        -- @evid docs/requirements.md#attached Attached table documentation.
         CREATE TABLE example (
-          value VARCHAR(100) DEFAULT '@evidence docs/requirements.md#literal Inert SQL literal.'
+          value VARCHAR(100) DEFAULT '@evid docs/requirements.md#literal Inert SQL literal.'
         );
-        -- @evidence docs/requirements.md#orphan Detached comment.
+        -- @evid docs/requirements.md#orphan Detached comment.
       `,
         },
         attachedTarget: "docs/requirements.md#attached",
@@ -102,21 +102,21 @@ export namespace SqlCertificationFixture {
      * top-level model record.
      */
     function unit(
-      symbol: EvidenceDatabaseSymbol,
+      symbol: EvidDatabaseSymbol,
       identity: string[],
       parent?: string[],
-      withdrawals: IEvidenceWithdrawal["tag"][] = [],
+      withdrawals: IEvidWithdrawal["tag"][] = [],
     ): IDatabaseAdapterCertificationUnit {
       return {
-        key: `${symbol}:${EvidenceAccessor.format(identity)}`,
+        key: `${symbol}:${EvidAccessor.format(identity)}`,
         symbol,
         identity,
         sites: 1,
-        addresses: [{ file, accessor: EvidenceAccessor.format(identity) }],
+        addresses: [{ file, accessor: EvidAccessor.format(identity) }],
         withdrawals,
         ...(parent === undefined
           ? {}
-          : { parent: `model:${EvidenceAccessor.format(parent)}` }),
+          : { parent: `model:${EvidAccessor.format(parent)}` }),
       };
     }
   }

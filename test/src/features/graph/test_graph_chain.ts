@@ -1,15 +1,15 @@
 import {
-  EvidenceGraph,
-  EvidenceMarkdownAdapter,
-  EvidenceTargetResolver,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
+  EvidGraph,
+  EvidMarkdownAdapter,
+  EvidTargetResolver,
+  EvidTypeScriptAdapter,
+} from "evid";
 import type {
-  IEvidenceDeclaration,
-  IEvidenceHost,
-  IEvidenceInventory,
-  IEvidenceUnit,
-} from "@wrtnlabs/evidence";
+  IEvidDeclaration,
+  IEvidHost,
+  IEvidInventory,
+  IEvidUnit,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -19,7 +19,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 /**
  * Evaluates a requirement-to-implementation-to-test chain through real adapters.
  *
- * Each link is an independent configured claim/reference pair. Evidence from the
+ * Each link is an independent configured claim/reference pair. Evid from the
  * test to the implementation cannot substitute for the implementation's citation
  * to a requirement, and breaking one link must not erase the other link's coverage.
  *
@@ -33,7 +33,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  *    reference obligation to report the method as missing.
  */
 export async function test_graph_chain(): Promise<void> {
-  const requirements = await new EvidenceMarkdownAdapter().analyze(
+  const requirements = await new EvidMarkdownAdapter().analyze(
     TestSourceSnapshot.create(
       "docs/requirements.md",
       dedent`
@@ -45,12 +45,12 @@ export async function test_graph_chain(): Promise<void> {
       `,
     ),
   );
-  const implementation = await new EvidenceTypeScriptAdapter().analyze(
+  const implementation = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/calculator.ts",
       dedent`
         export class Calculator {
-          /** @evidence docs/requirements.md#rounding Implements exact addition. */
+          /** @evid docs/requirements.md#rounding Implements exact addition. */
           public add(x: number, y: number): number {
             return x + y;
           }
@@ -58,11 +58,11 @@ export async function test_graph_chain(): Promise<void> {
       `,
     ),
   );
-  const tests = await new EvidenceTypeScriptAdapter().analyze(
+  const tests = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/calculator.test.ts",
       dedent`
-        /** @evidence ./calculator.ts#Calculator.prototype.add Verifies exact addition. */
+        /** @evid ./calculator.ts#Calculator.prototype.add Verifies exact addition. */
         export function test_add(): void {
           if (1 + 2 !== 3) throw new Error("Unexpected sum.");
         }
@@ -76,21 +76,21 @@ export async function test_graph_chain(): Promise<void> {
   const implementationDeclaration = requireDeclaration(implementation);
   const testDeclaration = requireDeclaration(tests);
 
-  const requirementResolution = await new EvidenceTargetResolver([
+  const requirementResolution = await new EvidTargetResolver([
     requirements,
   ]).resolve(
     implementationDeclaration,
     requireHost(implementation, implementationDeclaration.hostId),
     [requirementUnit.id],
   );
-  const implementationResolution = await new EvidenceTargetResolver([
+  const implementationResolution = await new EvidTargetResolver([
     implementation,
   ]).resolve(testDeclaration, requireHost(tests, testDeclaration.hostId), [
     implementationUnit.id,
   ]);
 
   // Both configured claims must independently acknowledge the unit selected by their reference.
-  const complete = EvidenceGraph.evaluate({
+  const complete = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -137,7 +137,7 @@ export async function test_graph_chain(): Promise<void> {
   // Removing the implementation citation breaks only the requirement obligation.
   const uncitedImplementation = structuredClone(implementation);
   uncitedImplementation.declarations = [];
-  const missingRequirement = EvidenceGraph.evaluate({
+  const missingRequirement = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -187,7 +187,7 @@ export async function test_graph_chain(): Promise<void> {
   // Removing the test citation preserves implementation coverage and breaks only its own obligation.
   const uncitedTests = structuredClone(tests);
   uncitedTests.declarations = [];
-  const missingTest = EvidenceGraph.evaluate({
+  const missingTest = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -242,9 +242,9 @@ export async function test_graph_chain(): Promise<void> {
  * fixtures use declaration names. Missing extraction fails setup immediately.
  */
 function requireUnit(
-  inventory: IEvidenceInventory,
+  inventory: IEvidInventory,
   name: string,
-): IEvidenceUnit {
+): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === name || candidate.identity.at(-1) === name,
@@ -260,8 +260,8 @@ function requireUnit(
  * instead of constructing an accidentally empty resolution list.
  */
 function requireDeclaration(
-  inventory: IEvidenceInventory,
-): IEvidenceDeclaration {
+  inventory: IEvidInventory,
+): IEvidDeclaration {
   const declaration = inventory.declarations[0];
   if (declaration === undefined)
     throw new Error("Missing graph declaration fixture.");
@@ -274,7 +274,7 @@ function requireDeclaration(
  * Resolution needs that carrier's source origin, so a missing host is a setup
  * failure rather than a reason to invent a command-relative location.
  */
-function requireHost(inventory: IEvidenceInventory, id: string): IEvidenceHost {
+function requireHost(inventory: IEvidInventory, id: string): IEvidHost {
   const host = inventory.hosts.find((candidate) => candidate.id === id);
   if (host === undefined) throw new Error(`Missing graph host: ${id}`);
   return host;

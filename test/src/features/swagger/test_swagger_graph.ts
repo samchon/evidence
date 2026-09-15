@@ -1,17 +1,17 @@
 import {
-  EvidenceFingerprint,
-  EvidenceGraph,
-  EvidenceMarkdownAdapter,
-  EvidenceSwaggerAdapter,
-  EvidenceTargetResolver,
-  EvidenceTypeScriptAdapter,
-} from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidGraph,
+  EvidMarkdownAdapter,
+  EvidSwaggerAdapter,
+  EvidTargetResolver,
+  EvidTypeScriptAdapter,
+} from "evid";
 import type {
-  IEvidenceDeclaration,
-  IEvidenceHost,
-  IEvidenceInventory,
-  IEvidenceUnit,
-} from "@wrtnlabs/evidence";
+  IEvidDeclaration,
+  IEvidHost,
+  IEvidInventory,
+  IEvidUnit,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -27,7 +27,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Verify graph outcomes and resolution statuses.
  */
 export async function test_swagger_graph(): Promise<void> {
-  const specification = await new EvidenceMarkdownAdapter().analyze(
+  const specification = await new EvidMarkdownAdapter().analyze(
     TestSourceSnapshot.create(
       "docs/spec.md",
       dedent`
@@ -38,44 +38,44 @@ export async function test_swagger_graph(): Promise<void> {
     ),
   );
   const members = requireUnit(specification, "members");
-  const specificationFingerprint = EvidenceFingerprint.inspect(
+  const specificationFingerprint = EvidFingerprint.inspect(
     specification,
     members.id,
   ).fingerprint;
 
   // The operation description claims the Markdown requirement and records its review.
-  const swagger = await new EvidenceSwaggerAdapter().analyze(
+  const swagger = await new EvidSwaggerAdapter().analyze(
     TestSourceSnapshot.create(
       "openapi.yaml",
       swaggerDocument(dedent`
         Creates a member.
 
-        @evidence docs/spec.md#members Implements the member requirement.
-        @evidenceReview docs/spec.md#members #${specificationFingerprint} Read the requirement and checked the API contract.
+        @evid docs/spec.md#members Implements the member requirement.
+        @evidReview docs/spec.md#members #${specificationFingerprint} Read the requirement and checked the API contract.
       `),
     ),
   );
   const operation = requireUnit(swagger, "POST:/members");
-  const operationFingerprint = EvidenceFingerprint.inspect(
+  const operationFingerprint = EvidFingerprint.inspect(
     swagger,
     operation.id,
   ).fingerprint;
 
   // A TypeScript claim can cite the file-independent Swagger operation target.
-  const client = await new EvidenceTypeScriptAdapter().analyze(
+  const client = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/client.ts",
       dedent`
         /**
-         * @evidence POST:/members Calls the documented API operation.
-         * @evidenceReview POST:/members #${operationFingerprint} Read the normalized operation and request schema.
+         * @evid POST:/members Calls the documented API operation.
+         * @evidReview POST:/members #${operationFingerprint} Read the normalized operation and request schema.
          */
         export function createMember(): void {}
       `,
     ),
   );
   const createMember = requireUnit(client, "createMember");
-  const graph = EvidenceGraph.evaluate({
+  const graph = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -133,22 +133,22 @@ export async function test_swagger_graph(): Promise<void> {
   );
 
   // Target grammar and exact operation lookup report distinct failures.
-  const failures = await new EvidenceTypeScriptAdapter().analyze(
+  const failures = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.create(
       "src/failures.ts",
       dedent`
-        /** @evidence POST /members Contains whitespace instead of a colon. */
+        /** @evid POST /members Contains whitespace instead of a colon. */
         export function spaced(): void {}
 
-        /** @evidence post:/members Uses a lowercase method. */
+        /** @evid post:/members Uses a lowercase method. */
         export function lowercase(): void {}
 
-        /** @evidence POST:/Members Changes the exact path spelling. */
+        /** @evid POST:/Members Changes the exact path spelling. */
         export function missing(): void {}
       `,
     ),
   );
-  const resolver = new EvidenceTargetResolver([swagger]);
+  const resolver = new EvidTargetResolver([swagger]);
   const unitIds = [operation.id];
   TestValidator.equals(
     "spaced Swagger target",
@@ -185,11 +185,11 @@ export async function test_swagger_graph(): Promise<void> {
   );
 
   // Equal addresses in separate documents become ambiguous when selected together.
-  const duplicate = await new EvidenceSwaggerAdapter().analyze(
+  const duplicate = await new EvidSwaggerAdapter().analyze(
     TestSourceSnapshot.create("duplicate.yaml", swaggerDocument("Duplicate.")),
   );
   const duplicateOperation = requireUnit(duplicate, "POST:/members");
-  const ambiguous = new EvidenceTargetResolver([swagger, duplicate]);
+  const ambiguous = new EvidTargetResolver([swagger, duplicate]);
   const declaration = requireDeclaration(client, "POST:/members");
   TestValidator.equals(
     "separate document ambiguity",
@@ -228,9 +228,9 @@ function swaggerDocument(description: string): string {
 }
 
 function requireUnit(
-  inventory: IEvidenceInventory,
+  inventory: IEvidInventory,
   identity: string,
-): IEvidenceUnit {
+): IEvidUnit {
   const unit = inventory.units.find(
     (candidate) =>
       candidate.name === identity || candidate.identity.at(-1) === identity,
@@ -240,9 +240,9 @@ function requireUnit(
 }
 
 function requireDeclaration(
-  inventory: IEvidenceInventory,
+  inventory: IEvidInventory,
   target: string,
-): IEvidenceDeclaration {
+): IEvidDeclaration {
   const declaration = inventory.declarations.find(
     (candidate) => candidate.target === target,
   );
@@ -252,9 +252,9 @@ function requireDeclaration(
 }
 
 function requireHost(
-  inventory: IEvidenceInventory,
-  declaration: IEvidenceDeclaration,
-): IEvidenceHost {
+  inventory: IEvidInventory,
+  declaration: IEvidDeclaration,
+): IEvidHost {
   const host = inventory.hosts.find(
     (candidate) => candidate.id === declaration.hostId,
   );

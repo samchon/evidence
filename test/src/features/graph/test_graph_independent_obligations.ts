@@ -1,5 +1,5 @@
-import { EvidenceGraph } from "@wrtnlabs/evidence";
-import type { IEvidenceGraphClaim } from "@wrtnlabs/evidence";
+import { EvidGraph } from "evid";
+import type { IEvidGraphClaim } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { TestGraph } from "../../internal/TestGraph";
@@ -47,7 +47,7 @@ export async function test_graph_independent_obligations(): Promise<void> {
     [firstUnit.id],
     "/** Shared documentation. */",
   );
-  const firstEvidence = TestGraph.declaration(
+  const firstEvid = TestGraph.declaration(
     firstClaim,
     "first-evidence",
     firstHost,
@@ -67,14 +67,14 @@ export async function test_graph_independent_obligations(): Promise<void> {
   ]);
   uncoveredClaim.name = "secondary";
 
-  const independent = EvidenceGraph.evaluate({
+  const independent = EvidGraph.evaluate({
     claims: [
       claim(firstClaim, firstUnit.id, [
         {
           severity: "error",
           inventory: reference,
           unitIds: [target.id],
-          resolutions: [TestGraph.resolved(firstEvidence, target)],
+          resolutions: [TestGraph.resolved(firstEvid, target)],
         },
       ]),
       uncoveredClaim,
@@ -136,7 +136,7 @@ export async function test_graph_independent_obligations(): Promise<void> {
     "evidenceExclude",
     "target",
   );
-  const repeated = EvidenceGraph.evaluate({
+  const repeated = EvidGraph.evaluate({
     claims: [
       claim(exclusionClaim, exclusionUnit.id, [
         {
@@ -150,7 +150,7 @@ export async function test_graph_independent_obligations(): Promise<void> {
           inventory: reference,
           unitIds: [target.id],
           resolutions: [TestGraph.resolved(exclusion, target)],
-          noEvidenceExclude: true,
+          noEvidExclude: true,
         },
       ]),
     ],
@@ -190,10 +190,10 @@ export async function test_graph_independent_obligations(): Promise<void> {
  * It preserves reference order because the assertions verify diagnostic indices.
  */
 function claim(
-  inventory: IEvidenceGraphClaim["inventory"],
+  inventory: IEvidGraphClaim["inventory"],
   unitId: string,
-  references: IEvidenceGraphClaim["references"],
-): IEvidenceGraphClaim {
+  references: IEvidGraphClaim["references"],
+): IEvidGraphClaim {
   return {
     severity: "error",
     inventory,

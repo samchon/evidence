@@ -1,4 +1,4 @@
-import { EvidenceParser } from "@wrtnlabs/evidence";
+import { EvidParser } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { TestParserError } from "../../internal/TestParserError";
@@ -21,7 +21,7 @@ import { TestParserError } from "../../internal/TestParserError";
  *    healthy empty result from the preceding syntax and query failures.
  */
 export async function test_parser_failures(): Promise<void> {
-  const parser = new EvidenceParser({ concurrency: 1 });
+  const parser = new EvidParser({ concurrency: 1 });
   let callbacks = 0;
 
   try {

@@ -1,4 +1,4 @@
-import { EvidenceZigAdapter } from "@wrtnlabs/evidence";
+import { EvidZigAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 
@@ -10,7 +10,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 2. Verify incomplete diagnostics and retained boundary behavior.
  */
 export async function test_zig_boundaries(): Promise<void> {
-  const adapter = new EvidenceZigAdapter();
+  const adapter = new EvidZigAdapter();
   const cases = new Map<string, string>([
     [String.raw`pub const @"\x61" = 1;`, "zig-identifier-escape"],
     [

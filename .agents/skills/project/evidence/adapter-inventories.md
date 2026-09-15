@@ -1,6 +1,6 @@
 # Adapter inventories
 
-Implement `IEvidenceAdapter.analyze(snapshot)` to translate source snapshots into serializable graph data. The adapter owns declaration classification, public visibility, structural ownership, export resolution, documentation attachment, and unsupported-construct detection. A successful syntax parse alone does not establish a complete Evidence inventory.
+Implement `IEvidAdapter.analyze(snapshot)` to translate source snapshots into serializable graph data. The adapter owns declaration classification, public visibility, structural ownership, export resolution, documentation attachment, and unsupported-construct detection. A successful syntax parse alone does not establish a complete Evid inventory.
 
 This guide gives implementation-level inventories for Markdown, TypeScript, JavaScript, Python, Go, Rust, Java, C#, C, C++, Ruby, and Prisma. The root README's [Languages](../../../../README.md#languages) section is the authoritative current boundary for all 28 supported artifact types, including the adapters whose implementation chapters have not yet been expanded here:
 
@@ -10,20 +10,20 @@ This guide gives implementation-level inventories for Markdown, TypeScript, Java
 | Database | Portable SQL, PostgreSQL, MySQL, SQLite, BigQuery, and DBML |
 | Document/API | Swagger/OpenAPI, plus the Markdown summary used by public configuration |
 
-`EvidenceLanguageRegistry.list()`, `EvidenceLanguageRegistry.databases()`, and `evidence languages` provide the machine-readable certification set. Prose does not make a candidate or grammar-only entry selectable.
+`EvidLanguageRegistry.list()`, `EvidLanguageRegistry.databases()`, and `evidence languages` provide the machine-readable certification set. Prose does not make a candidate or grammar-only entry selectable.
 
 ## Identities and locations
 
 | Record | Meaning |
 | --- | --- |
-| `IEvidenceUnit` | One semantic identity, its selector, explicit parent, declaration sites, and retained withdrawal markers. |
-| `IEvidenceUnit.contentDigest` | An optional adapter-supplied digest of that unit's own normalized semantic content. |
-| `IEvidencePublicAddress` | A file and literal accessor segments that expose a unit. Several addresses can expose the same identity. |
-| `IEvidenceUnitSite` | One declaration position and the content ranges belonging to this unit. |
-| `IEvidenceHost` | A position that can carry documentation, its attachment status, declaration site, and semantic owners. |
-| `IEvidenceDeclaration` | A positive acknowledgement or an exclusion with a target and reason. |
-| `IEvidenceReview` | A verification statement paired by acknowledgement kind, host, and target; it supplies no coverage. |
-| `IEvidenceInventory.annotationRanges` | Every parser-recognized annotation span that fingerprinting must remove from semantic content. |
+| `IEvidUnit` | One semantic identity, its selector, explicit parent, declaration sites, and retained withdrawal markers. |
+| `IEvidUnit.contentDigest` | An optional adapter-supplied digest of that unit's own normalized semantic content. |
+| `IEvidPublicAddress` | A file and literal accessor segments that expose a unit. Several addresses can expose the same identity. |
+| `IEvidUnitSite` | One declaration position and the content ranges belonging to this unit. |
+| `IEvidHost` | A position that can carry documentation, its attachment status, declaration site, and semantic owners. |
+| `IEvidDeclaration` | A positive acknowledgement or an exclusion with a target and reason. |
+| `IEvidReview` | A verification statement paired by acknowledgement kind, host, and target; it supplies no coverage. |
+| `IEvidInventory.annotationRanges` | Every parser-recognized annotation span that fingerprinting must remove from semantic content. |
 
 Assign globally unambiguous IDs from physical source identity and language-established declaration identity. Merge overloads, declaration fragments, or reopened containers only when the language establishes that they are one identity. Never merge unrelated declarations by display name. Keep public module addresses independent of the defining file and identity.
 
@@ -37,7 +37,7 @@ Fingerprint input comes from an adapter-supplied `contentDigest` or the source s
 
 ## Combining and selecting
 
-Construct `EvidenceInventory` from adapter inventories, then use `select(ids)` independently for each configured population. The constructor owns a validated copy; neither source-input mutations nor edits to returned snapshots change the index. Duplicate aliases and declaration records do not duplicate obligations. Different physical spellings of the same filesystem identity receive a deterministic declaration path while public addresses remain distinct.
+Construct `EvidInventory` from adapter inventories, then use `select(ids)` independently for each configured population. The constructor owns a validated copy; neither source-input mutations nor edits to returned snapshots change the index. Duplicate aliases and declaration records do not duplicate obligations. Different physical spellings of the same filesystem identity receive a deterministic declaration path while public addresses remain distinct.
 
 Host `origins` retain the original paths used for relative citations; omitting the field initially means `file`. Resolve relative targets in the applicable population and source context, rather than using a diagnostic path chosen during merging. Several origins must not let scan order silently choose different evidence targets.
 
@@ -49,29 +49,29 @@ Host `origins` retain the original paths used for relative citations; omitting t
 
 ## File-qualified targets
 
-`EvidenceFileTarget.parse(target, origin)` handles file-qualified programming targets. It decodes the path, resolves it from the citing file, and retains each accessor segment. Omitting `#` addresses the artifact's file unit; a trailing `#` is invalid. `format(address)` produces canonical text by percent-encoding reserved path characters and using dotted identifiers or JSON-string brackets for members. Equivalent encoded paths therefore reach the same absolute address, while `A.B` and `A["B.C"]` remain different.
+`EvidFileTarget.parse(target, origin)` handles file-qualified programming targets. It decodes the path, resolves it from the citing file, and retains each accessor segment. Omitting `#` addresses the artifact's file unit; a trailing `#` is invalid. `format(address)` produces canonical text by percent-encoding reserved path characters and using dotted identifiers or JSON-string brackets for members. Equivalent encoded paths therefore reach the same absolute address, while `A.B` and `A["B.C"]` remain different.
 
 Markdown keeps its original target grammar. Its file path is relative to the reference population root, `\` becomes `/`, and repeated leading `./` is ignored. Case, percent signs, and other path text remain literal. The text after `#` is one literal anchor segment, including dots, colons, and hyphens. Do not percent-decode Markdown paths or parse their anchors as programming accessors.
 
 Prisma targets contain no file path. Parse `prisma:Model` and `prisma:Model.member` into the virtual `prisma:` address plus one or two identifier segments. Model identity belongs to the whole selected schema, so moving its declaration between selected files cannot change its target.
 
-`EvidenceTargetResolver` accepts reference inventories, a target-bearing acknowledgement or review, its claim host, and the reference's selected unit IDs. For Markdown it matches root-relative logical source addresses. For other file-qualified artifacts it tries every retained claim-host origin. It queries only exact public addresses in the selected structural scope, unifies aliases by semantic unit ID, and never searches another file for a matching display name.
+`EvidTargetResolver` accepts reference inventories, a target-bearing acknowledgement or review, its claim host, and the reference's selected unit IDs. For Markdown it matches root-relative logical source addresses. For other file-qualified artifacts it tries every retained claim-host origin. It queries only exact public addresses in the selected structural scope, unifies aliases by semantic unit ID, and never searches another file for a matching display name.
 
-Resolution distinguishes malformed targets, missing files, existing files outside the reference, missing or unselected public members, withdrawn identities, ambiguous addresses, unsupported hosts, and incomplete inventories. An incomplete export graph prevents an otherwise valid address from resolving. An adapter may load an address only for dependency analysis by setting `IEvidenceSourceAddress.selected` to `false`; such a file can supply a selected barrel export but cannot be cited directly. TypeScript reexports must remain inside both the logical and resolved physical population roots.
+Resolution distinguishes malformed targets, missing files, existing files outside the reference, missing or unselected public members, withdrawn identities, ambiguous addresses, unsupported hosts, and incomplete inventories. An incomplete export graph prevents an otherwise valid address from resolving. An adapter may load an address only for dependency analysis by setting `IEvidSourceAddress.selected` to `false`; such a file can supply a selected barrel export but cannot be cited directly. TypeScript reexports must remain inside both the logical and resolved physical population roots.
 
 ## Graph evaluation
 
-`EvidenceGraph.evaluate(input)` consumes fully materialized inventories and target resolutions without reading files. Each configured claim and each element of its reference array remains a separate indexed obligation; an optional claim name only labels its diagnostics. A disabled claim or a healthy claim with no selected semantic host is inactive; an incomplete claim remains active because failed discovery cannot prove that its population is empty.
+`EvidGraph.evaluate(input)` consumes fully materialized inventories and target resolutions without reading files. Each configured claim and each element of its reference array remains a separate indexed obligation; an optional claim name only labels its diagnostics. A disabled claim or a healthy claim with no selected semantic host is inactive; an incomplete claim remains active because failed discovery cannot prove that its population is empty.
 
-Supply only the claim declarations whose target grammar applies to a reference in that reference's `resolutions`. The evaluator first accepts an exact resolved target in the reference's structural scope, then checks its claim host. Positive evidence must belong to a selected semantic claim host. An exclusion may use any attached claim host unless `exclusionHostIds` narrows the carrier set, and `noEvidenceExclude` refuses every exclusion. Reviews never enter the coverage ledger.
+Supply only the claim declarations whose target grammar applies to a reference in that reference's `resolutions`. The evaluator first accepts an exact resolved target in the reference's structural scope, then checks its claim host. Positive evidence must belong to a selected semantic claim host. An exclusion may use any attached claim host unless `exclusionHostIds` narrows the carrier set, and `noEvidExclude` refuses every exclusion. Reviews never enter the coverage ledger.
 
 An accepted acknowledgement covers the selected target and selected descendants reached through explicit `parentId` links. The resulting edge retains the declaration, its documentation position, its semantic host identities, the exact target, and every selected unit covered by the scope. Repeating positive evidence on the same semantic host and exact target is a duplicate. Overlapping exclusions and opposite positive/exclusion intent each produce one finding for the later declaration, regardless of the number of descendants in the overlap. Positive evidence from different semantic hosts remains valid.
 
-Cardinality policies count semantic identities rather than documentation positions. `uniqueEvidence` permits at most one distinct positive claim host for each selected reference unit. `singleEvidencePerSymbol` requires each selected claim host, including hosts with no tags, to cite exactly one distinct selected reference unit. Aggregate targets count every selected descendant, while exclusions contribute no positive host or unit count.
+Cardinality policies count semantic identities rather than documentation positions. `uniqueEvid` permits at most one distinct positive claim host for each selected reference unit. `singleEvidPerSymbol` requires each selected claim host, including hosts with no tags, to cite exactly one distinct selected reference unit. Aggregate targets count every selected descendant, while exclusions contribute no positive host or unit count.
 
 Supply applicable review target results in `reviewResolutions`. Review pairing uses acknowledgement kind, exact resolved target identity, and overlapping semantic host identity. This lets merged declaration positions review the same host while keeping unrelated declarations separate. A review at an unattached position falls back to its exact physical host. Duplicate reviews at one documentation position, orphan reviews, and reviews of the opposite acknowledgement kind receive distinct diagnostics. A real acknowledgement refused by another policy still prevents its review from being mislabeled as orphan; neither record enters coverage.
 
-`requireReview` adds freshness checks to accepted acknowledgement edges. Each edge exposes the same seven-character value returned by `EvidenceFingerprint.inspect`. A missing review, a review without a fingerprint, and a stale fingerprint are mutually exclusive findings, and each repair names the current value. Review resolution that is incomplete makes the obligation incomplete and suppresses those derivative findings. Explicit resolved reviews are still audited for structural pairing when freshness is not required.
+`requireReview` adds freshness checks to accepted acknowledgement edges. Each edge exposes the same seven-character value returned by `EvidFingerprint.inspect`. A missing review, a review without a fingerprint, and a stale fingerprint are mutually exclusive findings, and each repair names the current value. Review resolution that is incomplete makes the obligation incomplete and suppresses those derivative findings. Explicit resolved reviews are still audited for structural pairing when freshness is not required.
 
 Fingerprint version 2 hashes each adapter-owned portable unit identity, artifact and symbol kinds, segmented semantic identity, normalized own content, retained withdrawal kinds, and every explicit descendant linked by `parentId`. File-scoped adapters retain a checkout-relative declaring path, while database adapters whose semantic identities span an ordered schema set remain stable when a declaration moves between those files. It removes registered annotations, normalizes CRLF and CR to LF, trims trailing horizontal whitespace, and ignores trailing blank lines. Filesystem device/inode identity, canonical link targets, absolute checkout roots, source offsets, and selected public aliases do not affect the result. Distinct configured source roots and distinct declaring paths remain distinguishable where their adapter identity includes them. Changing this contract requires another fingerprint-version increment; consumers then inspect the new value and re-review affected scopes rather than mechanically accepting the migration.
 
@@ -81,18 +81,18 @@ Incomplete claim, reference, or target analysis leaves its active obligation inc
 
 ## Documentation and tags
 
-Identify real documentation through the artifact parser and establish its semantic host before reading tags. Pass known comment delimiters to `EvidenceDocumentation.read(content, hostId, range, syntax)`. JSDoc-style comments use their own delimiter and line prefix; Prisma documentation can use `///`; Markdown HTML comments have no foreign-tag field boundaries. The helper preserves a source map through prefix removal and CRLF normalization.
+Identify real documentation through the artifact parser and establish its semantic host before reading tags. Pass known comment delimiters to `EvidDocumentation.read(content, hostId, range, syntax)`. JSDoc-style comments use their own delimiter and line prefix; Prisma documentation can use `///`; Markdown HTML comments have no foreign-tag field boundaries. The helper preserves a source map through prefix removal and CRLF normalization.
 
-For decoded text such as Swagger operation descriptions, an adapter may supply `IEvidenceDocumentation` directly. Provide each UTF-16 code unit's original start in `offsets` and exclusive end in `ends`, followed by the final source boundary in `offsets`. Maps must remain ordered and within the host. These separate boundaries preserve gaps caused by decoration or encoded text.
+For decoded text such as Swagger operation descriptions, an adapter may supply `IEvidDocumentation` directly. Provide each UTF-16 code unit's original start in `offsets` and exclusive end in `ends`, followed by the final source boundary in `offsets`. Maps must remain ordered and within the host. These separate boundaries preserve gaps caused by decoration or encoded text.
 
-`EvidenceTagParser.parse(content, host, documentation)` recognizes:
+`EvidTagParser.parse(content, host, documentation)` recognizes:
 
 ```text
-@evidence <target> <reason>
+@evid <target> <reason>
 @link <file>#<Accessor> <reason>
-@evidenceExclude <target> <reason>
-@evidenceReview <target> [#<fingerprint>] <description>
-@evidenceExcludeReview <target> [#<fingerprint>] <description>
+@evidExclude <target> <reason>
+@evidReview <target> [#<fingerprint>] <description>
+@evidExcludeReview <target> [#<fingerprint>] <description>
 ```
 
 Markers begin a documentation line and end at a space, tab, or line boundary. Reasons and review descriptions can continue across lines. Fenced examples produce no tags. `tagBoundaries` controls whether another tool's line-start tag ends an acknowledgement; reviews always end at another tag. `allowWithdrawal` enables line-start `@internal`, `@hidden`, and `@ignore` in documentation positions where withdrawal is meaningful. Prose mentions do not withdraw declarations.
@@ -103,21 +103,21 @@ Accessor examples include `Class.prototype.member`, `Namespace["member.with.dots
 
 ## Markdown inventories
 
-`EvidenceMarkdownAdapter` materializes one file unit and each ATX H1-H4 section. Setext headings and H5/H6 do not form units. A deeper or unaddressable heading still opens a source region: its content belongs to the nearest real ancestor, while annotations in that region are unsupported until another H1-H4 host opens.
+`EvidMarkdownAdapter` materializes one file unit and each ATX H1-H4 section. Setext headings and H5/H6 do not form units. A deeper or unaddressable heading still opens a source region: its content belongs to the nearest real ancestor, while annotations in that region are unsupported until another H1-H4 host opens.
 
 Prefer a valid trailing `{#anchor}`; otherwise derive the anchor from the heading by retaining Unicode letters, numbers, and underscores, removing punctuation, and collapsing whitespace or hyphens. Keep duplicate anchors as distinct identities with the same public address so resolution reports ambiguity. Every selected logical file alias contributes an address, but an alias containing whitespace contributes a diagnostic because the authored target grammar cannot represent it as one token.
 
-HTML comments are the only Markdown documentation hosts. Register a real comment even when it has no Evidence tag, attach it to the unit active on its opening line, and parse it with `tagBoundaries: false` and `allowWithdrawal: false`. Report a line-start tag rendered as ordinary prose, including list and quote forms. Ignore tag-shaped examples in fences, indented code, `<pre>` blocks, and MDX template code.
+HTML comments are the only Markdown documentation hosts. Register a real comment even when it has no Evid tag, attach it to the unit active on its opening line, and parse it with `tagBoundaries: false` and `allowWithdrawal: false`. Report a line-start tag rendered as ordinary prose, including list and quote forms. Ignore tag-shaped examples in fences, indented code, `<pre>` blocks, and MDX template code.
 
 Partition a section's own content into original source ranges. Include heading lines, ordinary body text, deeper unsupported headings, and fenced examples. Exclude full HTML-comment lines; retain surrounding prose when a comment appears mid-line so later fingerprinting can remove only the registered comment span. Preserve the source snapshot's completeness and diagnostics before normalizing the inventory.
 
 ## TypeScript inventories
 
-`EvidenceTypeScriptAdapter` parses `.ts`, `.mts`, `.cts`, and `.tsx` snapshots with the pinned TypeScript or TSX grammar acquired through the verified parser cache. It materializes exported interfaces, type aliases, classes, and namespaces as `type` units; object-shaped aliases also expose their members. Function and generator declarations are `function` units. A variable is a function only when a `const` identifier is initialized directly with a function value; mutable variables, typed declarations without such an initializer, and destructured leaves are properties.
+`EvidTypeScriptAdapter` parses `.ts`, `.mts`, `.cts`, and `.tsx` snapshots with the pinned TypeScript or TSX grammar acquired through the verified parser cache. It materializes exported interfaces, type aliases, classes, and namespaces as `type` units; object-shaped aliases also expose their members. Function and generator declarations are `function` units. A variable is a function only when a `const` identifier is initialized directly with a function value; mutable variables, typed declarations without such an initializer, and destructured leaves are properties.
 
 Public class methods and directly written function fields are functions. Other public fields are properties. Static members use `Class.member`; instance members and parameter properties use `Class.prototype.member`. Interface members and object-type members use their containing type directly, except when an interface merges with a class and therefore joins the class instance side. Constructors, get/set and auto-accessors, private/protected members, computed names, index signatures, static blocks, and enums do not form units.
 
-Compatible interface, class, and namespace declarations with the same TypeScript identity share one `type` unit. Exported namespace declarations contribute their own site and nested public declarations, so an interface `IShoppingSale` beside `namespace IShoppingSale { export interface ICreate { title: string } }` exposes `IShoppingSale`, `IShoppingSale.ICreate`, and `IShoppingSale.ICreate.title`. A function and namespace may merge in TypeScript, but Evidence keeps the callable function unit and excludes that companion namespace's static body from the declared target grammar.
+Compatible interface, class, and namespace declarations with the same TypeScript identity share one `type` unit. Exported namespace declarations contribute their own site and nested public declarations, so an interface `IShoppingSale` beside `namespace IShoppingSale { export interface ICreate { title: string } }` exposes `IShoppingSale`, `IShoppingSale.ICreate`, and `IShoppingSale.ICreate.title`. A function and namespace may merge in TypeScript, but Evid keeps the callable function unit and excludes that companion namespace's static body from the declared target grammar.
 
 Local declaration identity remains separate from each exported address. The adapter follows direct exports, local aliases, defaults, imported bindings that are re-exported, named and star reexports, and namespace exports through relative source-snapshot paths. It recognizes `.js` to `.ts`/`.tsx`, `.mjs` to `.mts`, `.cjs` to `.cts`, and declaration-file substitutions. Explicit exports shadow star candidates; competing star candidates remain distinct so resolution can report ambiguity. Traversal terminates finite cycles, and a named export cycle that never reaches a declaration marks the inventory incomplete.
 
@@ -139,7 +139,7 @@ Attach only JSDoc that immediately precedes a supported declaration. Retain unsu
 
 ## Python inventories
 
-`EvidencePythonAdapter` parses `.py` and `.pyi` snapshots with the pinned Python grammar acquired through the verified parser cache. It inventories the statically declared source surface and never imports or executes the analyzed application.
+`EvidPythonAdapter` parses `.py` and `.pyi` snapshots with the pinned Python grammar acquired through the verified parser cache. It inventories the statically declared source surface and never imports or executes the analyzed application.
 
 Classify supported declarations as follows:
 
@@ -165,13 +165,13 @@ Without `__all__`, publish supported module declarations and statically resolved
 
 Resolve relative imports from the importing file's package directory. Resolve absolute dotted imports from the configured population root. Recognize `.py`, `.pyi`, and `__init__.py`/`__init__.pyi` candidates already present in the snapshot, retain reexport identity, and terminate finite cycles. Missing, outside-root, ambiguous, declaration-free cyclic, and unresolved explicit exports make analysis incomplete. This bounded resolver does not model environment-dependent `sys.path`, installed packages, or `from . import submodule` fallback loading.
 
-An actual class or function docstring is an eligible documentation carrier. A consecutive same-indent run of standalone `#` comments attaches only when it immediately precedes a supported declaration without a blank line; a run before a decorated definition attaches across the decorators. Property assignments can use the same adjacent-comment form, including the first class member and a directly declared constructor field. Determine adjacency from original source lines even when the grammar places a leading comment outside the declaration's body block. Module docstrings, assigned strings, other arbitrary string expressions, detached comments, trailing code comments, and comments on unpublished declarations remain unsupported annotation hosts. Register all parsed tag-bearing comments as annotation ranges, including unsupported carriers, so Evidence metadata does not move semantic fingerprints or disappear without a finding.
+An actual class or function docstring is an eligible documentation carrier. A consecutive same-indent run of standalone `#` comments attaches only when it immediately precedes a supported declaration without a blank line; a run before a decorated definition attaches across the decorators. Property assignments can use the same adjacent-comment form, including the first class member and a directly declared constructor field. Determine adjacency from original source lines even when the grammar places a leading comment outside the declaration's body block. Module docstrings, assigned strings, other arbitrary string expressions, detached comments, trailing code comments, and comments on unpublished declarations remain unsupported annotation hosts. Register all parsed tag-bearing comments as annotation ranges, including unsupported carriers, so Evid metadata does not move semantic fingerprints or disappear without a finding.
 
 Conditional module declarations/imports, conditional class declarations, dynamic `__all__`, and unresolved local imports are explicit incomplete-analysis boundaries. Dynamic module attributes, `globals()`, `getattr`, module `__getattr__`, decorators, and application initialization are never executed or used to fabricate units.
 
 ## Go inventories
 
-`EvidenceGoAdapter` parses `.go` snapshots with the pinned Go grammar acquired through the verified parser cache and groups physical files by directory and package. It inventories the selected declared source without invoking the Go toolchain.
+`EvidGoAdapter` parses `.go` snapshots with the pinned Go grammar acquired through the verified parser cache and groups physical files by directory and package. It inventories the selected declared source without invoking the Go toolchain.
 
 Classify supported declarations as follows:
 
@@ -189,13 +189,13 @@ Resolve a receiver against a selected local defined type in the same directory a
 
 Treat the configured files as the exact source set. Do not evaluate `//go:build`, legacy build tags, `GOOS`, `GOARCH`, or filename platform suffixes. If selected alternatives declare the same identity, retain their sites and mark the inventory incomplete. Include selected `_test.go` files; keep an ordinary package, its same-package tests, and the matching external `_test` package under their distinct package identities. Incompatible package clauses in one directory are incomplete.
 
-Attach consecutive same-column standalone `//` comments and block comments only when they immediately precede a supported declaration without a blank line. A trailing code comment never joins a following standalone run or documents the next declaration. A comment before a grouped declaration attaches to every supported specification in that group; a specification or member comment attaches only to that declaration. Detached comments, function-body comments, interpreted and raw strings, and commented-out declarations are unsupported annotation hosts. Register accepted documentation and tag-bearing unsupported carriers as annotation ranges so Evidence metadata does not move semantic fingerprints.
+Attach consecutive same-column standalone `//` comments and block comments only when they immediately precede a supported declaration without a blank line. A trailing code comment never joins a following standalone run or documents the next declaration. A comment before a grouped declaration attaches to every supported specification in that group; a specification or member comment attaches only to that declaration. Detached comments, function-body comments, interpreted and raw strings, and commented-out declarations are unsupported annotation hosts. Register accepted documentation and tag-bearing unsupported carriers as annotation ranges so Evid metadata does not move semantic fingerprints.
 
 Do not run generators or import external package declarations. Generated declarations participate only when their `.go` source is already present in the selected snapshot. Unreadable ownership, duplicate selected declarations, incompatible packages, and parser failures must leave the inventory incomplete instead of reducing its public population.
 
 ## Rust inventories
 
-`EvidenceRustAdapter` parses `.rs` snapshots with the pinned Rust grammar acquired through the verified parser cache. It constructs a static crate and module graph from the selected source and never invokes Cargo, rustc, build scripts, or application macros.
+`EvidRustAdapter` parses `.rs` snapshots with the pinned Rust grammar acquired through the verified parser cache. It constructs a static crate and module graph from the selected source and never invokes Cargo, rustc, build scripts, or application macros.
 
 Classify supported declarations as follows:
 
@@ -222,7 +222,7 @@ The adapter inventories explicit selected source rather than the feature-resolve
 
 ## Java inventories
 
-`EvidenceJavaAdapter` parses `.java` snapshots with the pinned `tree-sitter-java` v0.23.5 grammar acquired through the verified parser cache. It inventories the declared source-public surface without invoking `javac`, a build tool, application code, or annotation processors.
+`EvidJavaAdapter` parses `.java` snapshots with the pinned `tree-sitter-java` v0.23.5 grammar acquired through the verified parser cache. It inventories the declared source-public surface without invoking `javac`, a build tool, application code, or annotation processors.
 
 Classify supported declarations as follows:
 
@@ -246,13 +246,13 @@ Group methods by package, owner, and method name. Every overload contributes a d
 
 Attach only a Javadoc block immediately preceding a supported declaration. Modifiers and annotations belong to the declaration and do not break attachment. One Javadoc block on a multi-variable field declaration hosts every public variable from that source site; Javadoc on each overload hosts the shared overload family at that declaration site. Withdrawal on any overload hides the merged family, and withdrawal on a type hides its descendants.
 
-Mask `{@code ...}`, `{@literal ...}`, `{@snippet ...}`, `<code>...</code>`, and `<pre>...</pre>` regions before parsing tags so documentation examples cannot create graph statements. Retain tag-bearing ordinary comments, strings, text blocks, and Javadoc attached only to unpublished declarations as unsupported hosts. Register every recognized carrier range so Evidence metadata does not move semantic fingerprints.
+Mask `{@code ...}`, `{@literal ...}`, `{@snippet ...}`, `<code>...</code>`, and `<pre>...</pre>` regions before parsing tags so documentation examples cannot create graph statements. Retain tag-bearing ordinary comments, strings, text blocks, and Javadoc attached only to unpublished declarations as unsupported hosts. Register every recognized carrier range so Evid metadata does not move semantic fingerprints.
 
 Apply source visibility independently of Java Platform Module System exports. A selected `module-info.java` contributes no units and does not restrict public packages. Do not execute annotation processors; a generated declaration participates only when its `.java` file is selected explicitly. Syntax errors, unreadable selected sources, and conflicting identities leave the inventory incomplete rather than reducing the public denominator.
 
 ## C# inventories
 
-`EvidenceCSharpAdapter` parses `.cs` snapshots with the pinned `tree-sitter-c-sharp` v0.23.5 grammar acquired through the verified parser cache. It inventories explicit source declarations without invoking the .NET SDK, loading assemblies, executing source generators, or running application code.
+`EvidCSharpAdapter` parses `.cs` snapshots with the pinned `tree-sitter-c-sharp` v0.23.5 grammar acquired through the verified parser cache. It inventories explicit source declarations without invoking the .NET SDK, loading assemblies, executing source generators, or running application code.
 
 Classify supported declarations as follows:
 
@@ -283,7 +283,7 @@ The classification follows the C# reference for [accessibility levels](https://l
 
 ## C inventories
 
-`EvidenceCAdapter` parses `.c` and `.h` snapshots with the pinned `tree-sitter-c` v0.24.2 grammar acquired through the verified parser cache. It inventories explicit declarations without invoking a preprocessor, compiler, build system, linker, application, or native toolchain.
+`EvidCAdapter` parses `.c` and `.h` snapshots with the pinned `tree-sitter-c` v0.24.2 grammar acquired through the verified parser cache. It inventories explicit declarations without invoking a preprocessor, compiler, build system, linker, application, or native toolchain.
 
 Classify supported declarations as follows:
 
@@ -313,7 +313,7 @@ The declaration model follows the [C declarator grammar](https://github.com/tree
 
 ## C++ inventories
 
-`EvidenceCppAdapter` parses `.cpp`, `.cc`, `.cxx`, `.c++`, `.C`, `.h`, `.hpp`, `.hh`, `.hxx`, `.h++`, `.H`, `.ipp`, `.tpp`, `.ixx`, `.cppm`, `.ccm`, `.cxxm`, and `.c++m` snapshots with the pinned `tree-sitter-cpp` v0.23.4 grammar acquired through the verified parser cache. It inventories explicit declarations without invoking a preprocessor, compiler, build system, template instantiator, module resolver, linker, application, or native toolchain.
+`EvidCppAdapter` parses `.cpp`, `.cc`, `.cxx`, `.c++`, `.C`, `.h`, `.hpp`, `.hh`, `.hxx`, `.h++`, `.H`, `.ipp`, `.tpp`, `.ixx`, `.cppm`, `.ccm`, `.cxxm`, and `.c++m` snapshots with the pinned `tree-sitter-cpp` v0.23.4 grammar acquired through the verified parser cache. It inventories explicit declarations without invoking a preprocessor, compiler, build system, template instantiator, module resolver, linker, application, or native toolchain.
 
 Classify supported declarations as follows:
 
@@ -344,7 +344,7 @@ The declaration model follows the pinned [tree-sitter-cpp](https://github.com/tr
 
 ## Ruby inventories
 
-`EvidenceRubyAdapter` parses `.rb`, `.rake`, and `.gemspec` snapshots, plus `Gemfile` and `Rakefile`, with the pinned `tree-sitter-ruby` v0.23.1 grammar acquired through the verified parser cache. It inventories explicit declarations without starting Ruby, loading the application, or choosing runtime file order.
+`EvidRubyAdapter` parses `.rb`, `.rake`, and `.gemspec` snapshots, plus `Gemfile` and `Rakefile`, with the pinned `tree-sitter-ruby` v0.23.1 grammar acquired through the verified parser cache. It inventories explicit declarations without starting Ruby, loading the application, or choosing runtime file order.
 
 Classify supported declarations as follows:
 
@@ -370,7 +370,7 @@ The declaration and visibility model follows the [Ruby module and class syntax](
 
 ## Prisma inventories
 
-`EvidencePrismaAdapter` parses all selected physical files as one schema with `@prisma/prisma-schema-wasm`. Prefer a parser resolvable from the project root, then use the package's pinned fallback. Deduplicate physical sources before parsing and retain every logical address on the resulting source snapshot. A rejected schema makes the inventory incomplete and produces no guessed units.
+`EvidPrismaAdapter` parses all selected physical files as one schema with `@prisma/prisma-schema-wasm`. Prefer a parser resolvable from the project root, then use the package's pinned fallback. Deduplicate physical sources before parsing and retain every logical address on the resulting source snapshot. A rejected schema makes the inventory incomplete and produces no guessed units.
 
 Use the parser's `models` collection as the denominator. Materialize models and views as `model`, non-object fields as `column`, and object fields as `relation`; this includes relation back-references without a local `@relation` attribute. Enums, composite types, indexes, generators, and datasources remain outside the unit set. The position scanner may attach source sites to parser-established identities, but a missed position must retain the unit with a file-level fallback.
 

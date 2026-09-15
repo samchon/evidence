@@ -1,4 +1,4 @@
-import { EvidenceGraph } from "@wrtnlabs/evidence";
+import { EvidGraph } from "evid";
 import { TestValidator } from "@nestia/e2e";
 
 import { TestGraph } from "../../internal/TestGraph";
@@ -54,7 +54,7 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
     [carrier.id],
     "/** Class documentation. */",
   );
-  const misplacedEvidence = TestGraph.declaration(
+  const misplacedEvid = TestGraph.declaration(
     claim,
     "misplaced-evidence",
     carrierHost,
@@ -69,7 +69,7 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
     "target",
   );
 
-  const carrierResult = EvidenceGraph.evaluate({
+  const carrierResult = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -81,7 +81,7 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
             inventory: reference,
             unitIds: [target.id],
             resolutions: [
-              TestGraph.resolved(misplacedEvidence, target),
+              TestGraph.resolved(misplacedEvid, target),
               TestGraph.resolved(acceptedExclusion, target),
             ],
           },
@@ -104,7 +104,7 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
   );
 
   // An explicit empty carrier selection refuses the same exclusion and leaves coverage missing.
-  const restricted = EvidenceGraph.evaluate({
+  const restricted = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -138,7 +138,7 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
     description: "The target was reviewed.",
     location: { file: carrierHost.file, range: carrierHost.range },
   });
-  const reviewOnly = EvidenceGraph.evaluate({
+  const reviewOnly = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -171,7 +171,7 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
     message: "The reference file could not be read.",
     repair: "Restore access to the reference file.",
   });
-  const failed = EvidenceGraph.evaluate({
+  const failed = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -183,8 +183,8 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
             inventory: failedReference,
             unitIds: [target.id],
             resolutions: [],
-            uniqueEvidence: true,
-            singleEvidencePerSymbol: true,
+            uniqueEvid: true,
+            singleEvidPerSymbol: true,
           },
         ],
       },
@@ -229,7 +229,7 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
     withdrawals: [],
     diagnostics: [],
   };
-  const uncertain = EvidenceGraph.evaluate({
+  const uncertain = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -259,7 +259,7 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
   );
 
   // A healthy empty reference reports the population cause once and evaluates no hosts.
-  const empty = EvidenceGraph.evaluate({
+  const empty = EvidGraph.evaluate({
     claims: [
       {
         severity: "error",
@@ -271,8 +271,8 @@ export async function test_graph_hosts_and_failures(): Promise<void> {
             inventory: TestInventory.create(),
             unitIds: [],
             resolutions: [],
-            uniqueEvidence: true,
-            singleEvidencePerSymbol: true,
+            uniqueEvid: true,
+            singleEvidPerSymbol: true,
           },
         ],
       },

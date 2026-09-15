@@ -1,5 +1,5 @@
-import { EvidenceTypeScriptAdapter } from "@wrtnlabs/evidence";
-import type { IEvidenceUnit } from "@wrtnlabs/evidence";
+import { EvidTypeScriptAdapter } from "evid";
+import type { IEvidUnit } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -65,7 +65,7 @@ export async function test_typescript_units(): Promise<void> {
 
     export enum Ignored { A }
   `;
-  const inventory = await new EvidenceTypeScriptAdapter().analyze(
+  const inventory = await new EvidTypeScriptAdapter().analyze(
     TestSourceSnapshot.create("src/contracts.ts", content),
   );
 
@@ -130,10 +130,10 @@ export async function test_typescript_units(): Promise<void> {
 }
 
 function requireUnit(
-  units: IEvidenceUnit[],
-  symbol: IEvidenceUnit["symbol"],
+  units: IEvidUnit[],
+  symbol: IEvidUnit["symbol"],
   identity: string,
-): IEvidenceUnit {
+): IEvidUnit {
   const unit = units.find(
     (entry) => entry.symbol === symbol && entry.identity.join(".") === identity,
   );

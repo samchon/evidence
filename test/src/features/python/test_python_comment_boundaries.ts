@@ -1,4 +1,4 @@
-import { EvidencePythonAdapter } from "@wrtnlabs/evidence";
+import { EvidPythonAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -16,41 +16,41 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
 export async function test_python_comment_boundaries(): Promise<void> {
   const content = dedent`
     class Detached:
-        # @evidence docs/spec.md#blank A blank line breaks attachment.
+        # @evid docs/spec.md#blank A blank line breaks attachment.
 
         title = ""
 
     class Indented:
-            # @evidence docs/spec.md#indent A different indent cannot attach.
+            # @evid docs/spec.md#indent A different indent cannot attach.
         title = ""
 
     class Private:
-        # @evidence docs/spec.md#private A private field cannot host evidence.
+        # @evid docs/spec.md#private A private field cannot host evidence.
         _title = ""
 
     class Skipped:
-        # @evidence docs/spec.md#pass A pass statement cannot host evidence.
+        # @evid docs/spec.md#pass A pass statement cannot host evidence.
         pass
         title = ""
 
     def body():
-        # @evidence docs/spec.md#local A local cannot host evidence.
+        # @evid docs/spec.md#local A local cannot host evidence.
         title = ""
 
-    class Header: # @evidence docs/spec.md#header A header comment cannot attach.
+    class Header: # @evid docs/spec.md#header A header comment cannot attach.
                  title = ""
 
-    value = 1 # @evidence docs/spec.md#inline An inline comment is not leading documentation.
-    # @evidence docs/spec.md#valid Documents only the next declaration.
+    value = 1 # @evid docs/spec.md#inline An inline comment is not leading documentation.
+    # @evid docs/spec.md#valid Documents only the next declaration.
     valid = 2
 
     class Outer:
         class Inner:
             pass
-        # @evidence docs/spec.md#sibling Documents the dedented sibling.
+        # @evid docs/spec.md#sibling Documents the dedented sibling.
         sibling = ""
   `;
-  const inventory = await new EvidencePythonAdapter().analyze(
+  const inventory = await new EvidPythonAdapter().analyze(
     TestSourceSnapshot.create("src/boundaries.py", content),
   );
 

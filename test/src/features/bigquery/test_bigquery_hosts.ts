@@ -1,7 +1,7 @@
 import {
-  EvidenceBigQueryAdapter,
-  EvidenceFingerprint,
-} from "@wrtnlabs/evidence";
+  EvidBigQueryAdapter,
+  EvidFingerprint,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -16,14 +16,14 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Keep review annotations separate from declarations and preserve the model fingerprint across an annotation-only edit.
  */
 export async function test_bigquery_hosts(): Promise<void> {
-  const adapter = new EvidenceBigQueryAdapter();
+  const adapter = new EvidBigQueryAdapter();
   const content = dedent`
     -- Orders schema
-    -- @evidence ./spec.ts#contract Documents the table.
+    -- @evid ./spec.ts#contract Documents the table.
     CREATE TABLE ds.orders (
-      id INT64 OPTIONS(description="😀\\n@evidence ./spec.ts#contract Documents the identifier."),
-      inert STRING DEFAULT '@evidence ./spec.ts#contract This is a default value.',
-      sample STRING OPTIONS(description='Example:\\n\`\`\`sql\\n@evidence ./spec.ts#contract Inert example.\\n\`\`\`'),
+      id INT64 OPTIONS(description="😀\\n@evid ./spec.ts#contract Documents the identifier."),
+      inert STRING DEFAULT '@evid ./spec.ts#contract This is a default value.',
+      sample STRING OPTIONS(description='Example:\\n\`\`\`sql\\n@evid ./spec.ts#contract Inert example.\\n\`\`\`'),
       /* @hidden */
       secret STRING
     );
@@ -50,7 +50,7 @@ export async function test_bigquery_hosts(): Promise<void> {
   TestValidator.equals(
     "original UTF-16 tag start",
     description.location.range.start.offset,
-    content.indexOf("@evidence", content.indexOf("😀")),
+    content.indexOf("@evid", content.indexOf("😀")),
   );
   TestValidator.equals(
     "CRLF keeps the original description line",
@@ -94,7 +94,7 @@ export async function test_bigquery_hosts(): Promise<void> {
   const reviewed = await adapter.analyze(
     TestSourceSnapshot.create(
       "review.sql",
-      "CREATE TABLE ds.reviewed (id INT64) OPTIONS(description='Stable prose.\\n@evidenceReview ./spec.ts#contract Reviewed the definition.');",
+      "CREATE TABLE ds.reviewed (id INT64) OPTIONS(description='Stable prose.\\n@evidReview ./spec.ts#contract Reviewed the definition.');",
     ),
   );
   TestValidator.equals(
@@ -109,8 +109,8 @@ export async function test_bigquery_hosts(): Promise<void> {
   );
   TestValidator.equals(
     "annotation-only description edit preserves review fingerprint",
-    EvidenceFingerprint.inspect(reviewed, model.id).fingerprint,
-    EvidenceFingerprint.inspect(baseline, model.id).fingerprint,
+    EvidFingerprint.inspect(reviewed, model.id).fingerprint,
+    EvidFingerprint.inspect(baseline, model.id).fingerprint,
   );
 
   const trailing = await adapter.analyze(
@@ -119,7 +119,7 @@ export async function test_bigquery_hosts(): Promise<void> {
       dedent`
     CREATE TABLE ds.trailing (
       id INT64, -- @hidden This trailing note must not withdraw the next field.
-      -- @evidence ./spec.ts#contract Documents only the next field.
+      -- @evid ./spec.ts#contract Documents only the next field.
       next STRING
     );
   `,

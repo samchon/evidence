@@ -1,4 +1,4 @@
-import { EvidencePythonAdapter } from "@wrtnlabs/evidence";
+import { EvidPythonAdapter } from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -15,7 +15,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * 3. Verify the resolved units have the expected type, property, method, and function identities.
  */
 export async function test_python_targets(): Promise<void> {
-  const adapter = new EvidencePythonAdapter();
+  const adapter = new EvidPythonAdapter();
   const reference = await adapter.analyze(
     TestSourceSnapshot.combine([
       TestSourceSnapshot.create(
@@ -43,10 +43,10 @@ export async function test_python_targets(): Promise<void> {
       dedent`
         def verify():
             """
-            @evidence ../src/sale.py#Sale Verifies the type.
-            @evidence ../src/sale.py#Sale.currency Verifies the class attribute.
-            @evidence ../src/sale.py#Sale.prototype.total Verifies the instance method.
-            @evidence ../src/calculator.py#add Verifies the function.
+            @evid ../src/sale.py#Sale Verifies the type.
+            @evid ../src/sale.py#Sale.currency Verifies the class attribute.
+            @evid ../src/sale.py#Sale.prototype.total Verifies the instance method.
+            @evid ../src/calculator.py#add Verifies the function.
             """
             return None
       `,

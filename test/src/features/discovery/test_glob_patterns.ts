@@ -1,6 +1,6 @@
 import { TestValidator } from "@nestia/e2e";
 
-import { FileGlob } from "../../../../packages/evidence/src/internal/FileGlob";
+import { EvidFileGlob } from "../../../../packages/evidence/src/internal/EvidFileGlob";
 
 /**
  * Preserves upstream wildcard boundaries, Unicode characters, and ordered exclusions.
@@ -20,8 +20,8 @@ import { FileGlob } from "../../../../packages/evidence/src/internal/FileGlob";
  */
 export async function test_glob_patterns(): Promise<void> {
   // A single star stays in one segment; globstar also accepts no intermediate directory.
-  const shallow = new FileGlob(["docs/*.md"]);
-  const recursive = new FileGlob(["docs/**/*.md"]);
+  const shallow = new EvidFileGlob(["docs/*.md"]);
+  const recursive = new EvidFileGlob(["docs/**/*.md"]);
 
   TestValidator.predicate("shallow file", shallow.matches("docs/spec.md"));
   TestValidator.predicate(
@@ -38,7 +38,7 @@ export async function test_glob_patterns(): Promise<void> {
   );
 
   // Separators normalize, but case and the order of exclusions remain significant.
-  const ordered = new FileGlob([
+  const ordered = new EvidFileGlob([
     "docs\\**\\*.md",
     "!docs/private/**",
     "docs/private/public.md",
@@ -62,7 +62,7 @@ export async function test_glob_patterns(): Promise<void> {
   );
 
   // A question mark consumes one code point, including one outside the BMP.
-  const character = new FileGlob(["scripts/check-?.ts"]);
+  const character = new EvidFileGlob(["scripts/check-?.ts"]);
 
   TestValidator.predicate(
     "Unicode character",
@@ -74,15 +74,15 @@ export async function test_glob_patterns(): Promise<void> {
   );
   TestValidator.predicate(
     "bare directory",
-    !new FileGlob(["docs/"]).matches("docs/spec.md"),
+    !new EvidFileGlob(["docs/"]).matches("docs/spec.md"),
   );
   TestValidator.predicate(
     "literal bracket",
-    new FileGlob(["docs/[a].md"]).matches("docs/[a].md"),
+    new EvidFileGlob(["docs/[a].md"]).matches("docs/[a].md"),
   );
   TestValidator.predicate(
     "no character class extension",
-    !new FileGlob(["docs/[a].md"]).matches("docs/a.md"),
+    !new EvidFileGlob(["docs/[a].md"]).matches("docs/a.md"),
   );
 
   // Invalid glob syntax must reject before filesystem discovery.
@@ -98,6 +98,6 @@ export async function test_glob_patterns(): Promise<void> {
     ["docs//*.md"],
   ])
     await TestValidator.error("invalid glob selection", async () => {
-      new FileGlob(patterns);
+      new EvidFileGlob(patterns);
     });
 }

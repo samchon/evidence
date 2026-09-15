@@ -1,8 +1,8 @@
 import {
-  EvidenceFingerprint,
-  EvidenceInventory,
-  EvidenceMysqlAdapter,
-} from "@wrtnlabs/evidence";
+  EvidFingerprint,
+  EvidInventory,
+  EvidMysqlAdapter,
+} from "evid";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 
@@ -21,22 +21,22 @@ export async function test_mysql_hosts(): Promise<void> {
   const source = dedent`
     /* Unicode 계약 😀 */
     CREATE TABLE Contract (
-      id INT COMMENT '@evidence ./spec.md#column Verifies the column.',
-      note TEXT DEFAULT '@evidence ./spec.md#string Inert default value.',
+      id INT COMMENT '@evid ./spec.md#column Verifies the column.',
+      note TEXT DEFAULT '@evid ./spec.md#string Inert default value.',
       /** @internal Retired field. */
       retired INT,
-      /** @evidenceReview ./spec.md#relation Reviewed without evidence. */
+      /** @evidReview ./spec.md#relation Reviewed without evidence. */
       FOREIGN KEY parent_fk (id) REFERENCES Parent (id)
-    ) COMMENT='@evidence ./spec.md#model Verifies the model.';
+    ) COMMENT='@evid ./spec.md#model Verifies the model.';
     /**
      * Examples:
      * ~~~sql
-     * @evidence ./spec.md#example Inert fenced example.
+     * @evid ./spec.md#example Inert fenced example.
      * ~~~
      */
     CREATE TABLE Example (id INT);
   `.replaceAll("\n", "\r\n");
-  const adapter = new EvidenceMysqlAdapter();
+  const adapter = new EvidMysqlAdapter();
   const original = await adapter.analyze(
     TestSourceSnapshot.create("schema.sql", source),
   );
@@ -62,13 +62,13 @@ export async function test_mysql_hosts(): Promise<void> {
   TestValidator.equals(
     "UTF-16 offsets after astral Unicode",
     tag.location.range.start.offset,
-    source.indexOf("@evidence ./spec.md#column"),
+    source.indexOf("@evid ./spec.md#column"),
   );
   TestValidator.equals("CRLF line mapping", tag.location.range.start.line, 3);
   const selected = original.units.map((unit) => unit.id);
   TestValidator.equals(
     "withdrawn column remains diagnosed as hidden",
-    new EvidenceInventory([original]).resolve(
+    new EvidInventory([original]).resolve(
       { file: "/project/schema.sql", segments: ["Contract", "retired"] },
       selected,
     ).status,
@@ -87,8 +87,8 @@ export async function test_mysql_hosts(): Promise<void> {
   );
   TestValidator.equals(
     "COMMENT annotation edits preserve ancestor review",
-    EvidenceFingerprint.inspect(original, model.id).fingerprint,
-    EvidenceFingerprint.inspect(annotated, model.id).fingerprint,
+    EvidFingerprint.inspect(original, model.id).fingerprint,
+    EvidFingerprint.inspect(annotated, model.id).fingerprint,
   );
   const changed = await adapter.analyze(
     TestSourceSnapshot.create(
@@ -98,13 +98,13 @@ export async function test_mysql_hosts(): Promise<void> {
   );
   TestValidator.notEquals(
     "column type edit invalidates ancestor review",
-    EvidenceFingerprint.inspect(original, model.id).fingerprint,
-    EvidenceFingerprint.inspect(changed, model.id).fingerprint,
+    EvidFingerprint.inspect(original, model.id).fingerprint,
+    EvidFingerprint.inspect(changed, model.id).fingerprint,
   );
   const escaped = await adapter.analyze(
     TestSourceSnapshot.create(
       "escaped.sql",
-      "CREATE TABLE Escaped (id INT COMMENT 'Owner''s note.\n@evidence ./spec.md#escaped Verifies escaped prose.');",
+      "CREATE TABLE Escaped (id INT COMMENT 'Owner''s note.\n@evid ./spec.md#escaped Verifies escaped prose.');",
     ),
   );
   TestValidator.equals(
