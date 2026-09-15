@@ -96,9 +96,10 @@ export class EvidenceGraph {
  * Owns coverage accumulation and deferred findings for one graph evaluation.
  *
  * Claim and reference contexts keep local populations and resolutions, while this
- * controller records whether acknowledgements participate anywhere in the graph.
- * That shared participation state is needed to avoid declaring an unhosted
- * checklist citation invalid before another applicable reference can explain it.
+ * controller records whether acknowledgements participate within each claim.
+ * That claim-local participation state avoids declaring an unhosted checklist
+ * citation invalid before another applicable reference can explain it, without
+ * allowing an independent claim to suppress the finding.
  *
  * The public facade creates a new controller for every evaluation. Its sets and
  * maps therefore describe one traversal only and must not become facade caches.
@@ -107,8 +108,9 @@ class GraphEvaluator {
   /**
    * Acknowledgements handled by a complete applicable obligation.
    *
-   * Final checklist reporting consults this set across references, preventing a
-   * citation accepted elsewhere from receiving a premature unhosted finding.
+   * Final checklist reporting consults this set across one claim's references.
+   * Keys include the claim occurrence because repeated populations remain
+   * independent obligations even when they reuse declaration IDs.
    */
   private readonly answeredDeclarations = new Set<string>();
 
@@ -226,7 +228,9 @@ class GraphEvaluator {
     );
     if (!snapshot.complete)
       for (const declaration of snapshot.declarations)
-        this.uncertainDeclarations.add(declaration.id);
+        this.uncertainDeclarations.add(
+          this.declarationKey(claimIndex, declaration.id),
+        );
     if (snapshot.complete && population.units.length === 0)
       return {
         claim: this.claimIndex(claimIndex),
@@ -288,7 +292,9 @@ class GraphEvaluator {
     );
     if (!snapshot.complete)
       for (const declaration of claimInventory.declarations)
-        this.uncertainDeclarations.add(declaration.id);
+        this.uncertainDeclarations.add(
+          this.declarationKey(claimIndex, declaration.id),
+        );
     const unitIds = population.units.map((unit) => unit.id);
     if (!snapshot.complete)
       return this.obligation(
@@ -362,14 +368,18 @@ class GraphEvaluator {
     if (incomplete) {
       for (const entry of resolutions)
         if (entry.resolution.status === "incomplete")
-          this.uncertainDeclarations.add(entry.declarationId);
+          this.uncertainDeclarations.add(
+            this.declarationKey(claimIndex, entry.declarationId),
+          );
       if (
         reviewResolutions.some(
           (entry) => entry.resolution.status === "incomplete",
         )
       )
         for (const declaration of claimInventory.declarations)
-          this.uncertainDeclarations.add(declaration.id);
+          this.uncertainDeclarations.add(
+            this.declarationKey(claimIndex, declaration.id),
+          );
       return this.obligation(
         claimIndex,
         referenceIndex,
@@ -549,7 +559,9 @@ class GraphEvaluator {
         declaration.kind === "evidence" &&
         !selectedUnitIds.has(target.id)
       ) {
-        this.answeredDeclarations.add(declaration.id);
+        this.answeredDeclarations.add(
+          this.declarationKey(claimIndex, declaration.id),
+        );
         this.diagnostics.push(
           this.problem(
             "graph-checklist-aggregate",
@@ -593,7 +605,9 @@ class GraphEvaluator {
         unitIds,
         fingerprint: fingerprints.inspect(target.id).fingerprint,
       });
-      this.answeredDeclarations.add(declaration.id);
+      this.answeredDeclarations.add(
+        this.declarationKey(claimIndex, declaration.id),
+      );
       if (!checklist) for (const id of unitIds) covered.add(id);
     }
     this.evaluateReviews(context, edges);
@@ -1476,7 +1490,7 @@ class GraphEvaluator {
   }
 
   /**
-   * Defers an unhosted checklist finding until every reference can participate.
+   * Defers an unhosted checklist finding until every claim reference participates.
    *
    * The same declaration may be an eligible answer under another obligation.
    * For duplicate deferred records, the error severity is retained over warning
@@ -1488,12 +1502,14 @@ class GraphEvaluator {
     claim: number,
     reference: number,
   ): void {
-    const previous = this.unhostedChecklists.get(declaration.id);
+    const key: string = this.declarationKey(claim, declaration.id);
+    const previous: IEvidenceUnhostedChecklist | undefined =
+      this.unhostedChecklists.get(key);
     if (
       previous === undefined ||
       (previous.severity === "warning" && severity === "error")
     )
-      this.unhostedChecklists.set(declaration.id, {
+      this.unhostedChecklists.set(key, {
         declaration,
         severity,
         claim,
@@ -1502,17 +1518,21 @@ class GraphEvaluator {
   }
 
   /**
-   * Reports deferred checklist annotations that remain conclusively unhosted.
+   * Reports claim-local checklist annotations that remain conclusively unhosted.
    *
    * Accepted participation suppresses the finding, and uncertain participation
    * suppresses it as well because an incomplete reference cannot prove that the
-   * declaration is ineligible everywhere.
+   * declaration is ineligible throughout its claim.
    */
   private reportUnhostedChecklists(): void {
     for (const record of this.unhostedChecklists.values()) {
       if (
-        this.answeredDeclarations.has(record.declaration.id) ||
-        this.uncertainDeclarations.has(record.declaration.id)
+        this.answeredDeclarations.has(
+          this.declarationKey(record.claim, record.declaration.id),
+        ) ||
+        this.uncertainDeclarations.has(
+          this.declarationKey(record.claim, record.declaration.id),
+        )
       )
         continue;
       this.diagnostics.push(
@@ -1527,6 +1547,16 @@ class GraphEvaluator {
         ),
       );
     }
+  }
+
+  /**
+   * Names deferred declaration state within one configured claim occurrence.
+   *
+   * Source inventories can be reused verbatim by several claims, so a raw
+   * declaration ID cannot distinguish their independent policy outcomes.
+   */
+  private declarationKey(claim: number, declarationId: string): string {
+    return JSON.stringify([claim, declarationId]);
   }
 
   /**

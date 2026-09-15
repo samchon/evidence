@@ -1,4 +1,5 @@
 import { EvidenceDocumentation } from "../../parsers/EvidenceDocumentation";
+import { DocumentationExamples } from "../../parsers/DocumentationExamples";
 import type { IEvidenceDocumentation } from "../../structures/IEvidenceDocumentation";
 import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { IMatlabDocumentation } from "./IMatlabDocumentation";
@@ -11,7 +12,7 @@ import type { IMatlabDocumentation } from "./IMatlabDocumentation";
  */
 export namespace MatlabDocumentation {
   /**
-   * Maps a classified carrier and masks ineligible example text without moving offsets.
+   * Maps a carrier and masks examples without moving source offsets.
    *
    * The resulting documentation retains its source mapping while annotations in
    * help examples cannot be parsed as Evidence declarations.
@@ -41,9 +42,7 @@ export namespace MatlabDocumentation {
    */
   function mask(input: string): string {
     const characters = input.split("");
-    const htmlCode = /<(pre|code)\b[^>]*>[\s\S]*?<\/\1\s*>/giu;
-    for (const match of input.matchAll(htmlCode))
-      hide(characters, match.index, match.index + match[0].length);
+    DocumentationExamples.maskHtml(characters, input, ["pre", "code"]);
     const lines = input.split("\n");
     const indents = lines.filter((line) => line.trim() !== "").map(indentation);
     const baseline = indents.reduce(
@@ -76,7 +75,7 @@ export namespace MatlabDocumentation {
   }
 
   /**
-   * Replaces example characters with spaces while retaining original line boundaries.
+   * Replaces example characters while retaining original line boundaries.
    *
    * Preserved newlines and character positions keep parsed tag offsets valid for
    * source diagnostics after the example text has been hidden.

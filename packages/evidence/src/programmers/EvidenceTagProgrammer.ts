@@ -1,5 +1,7 @@
 import type { IEvidenceTagContext } from "../contexts/IEvidenceTagContext";
 import { EvidenceTargetBody } from "../internal/EvidenceTargetBody";
+import { DocumentationExamples } from "../parsers/DocumentationExamples";
+import type { IDocumentationFence } from "../parsers/IDocumentationFence";
 import type { IEvidenceSourceLocation } from "../structures/IEvidenceSourceLocation";
 import type { IEvidenceTagParseResult } from "../structures/IEvidenceTagParseResult";
 
@@ -20,47 +22,49 @@ export namespace EvidenceTagProgrammer {
    * Parses valid Evidence tags and diagnostics from one mapped documentation block.
    *
    * The function consumes no text outside {@link IEvidenceTagContext.documentation}.
-   * It preserves multiline tag bodies, ignores apparent tags inside fenced code,
-   * and flushes a pending annotation at every boundary that makes continuation
-   * impossible. Invalid tags become diagnostics rather than aborting sibling tags.
+   * It preserves multiline tag bodies, ignores apparent tags inside fenced code
+   * or HTML comments, and flushes a pending annotation at every boundary that
+   * makes continuation impossible. Invalid tags become diagnostics rather than
+   * aborting sibling tags.
    */
   export function parse(context: IEvidenceTagContext): IEvidenceTagParseResult {
     validate(context);
+    const characters: string[] = context.documentation.text.split("");
+    DocumentationExamples.maskHtmlComments(
+      characters,
+      context.documentation.text,
+    );
+    const input: string = characters.join("");
+    const lines: string[] = input.split("\n");
+    const documentBaseline: number = DocumentationExamples.baseline(input);
     let cursor = 0;
-    for (const rawLine of context.documentation.text.split("\n")) {
+    for (const rawLine of lines) {
       const line = rawLine.trim();
       // Coordinates must point at trimmed annotation text while cursor advances
       // across the untrimmed mapped documentation, including blank-line bytes.
       const start = cursor + rawLine.indexOf(line);
       const end = start + line.length;
       cursor += rawLine.length + 1;
-      const delimiter = /^(`{3,}|~{3,})(.*)$/.exec(line);
-      if (delimiter !== null) {
-        const marker = delimiter[1] ?? "";
-        // Closing fences must use the opening marker character and at least its
-        // length; a shorter marker remains literal code inside the fenced block.
+      const delimiter: IDocumentationFence | undefined =
+        DocumentationExamples.fence(rawLine, documentBaseline);
+      if (delimiter !== undefined) {
         if (context.fence === "") {
-          context.fence = marker[0] ?? "";
-          context.fenceLength = marker.length;
+          // An opening fence ends prose continuation before example text can
+          // satisfy or alter an annotation's reason or review description.
+          flush(context);
+          context.fence = delimiter.marker;
+          context.fenceLength = delimiter.length;
         } else if (
-          marker[0] === context.fence &&
-          marker.length >= context.fenceLength &&
-          (delimiter[2] ?? "").trim() === ""
+          // Closing fences must use the opening marker character and at least its
+          // length; a shorter marker remains literal code inside the fenced block.
+          delimiter.marker === context.fence &&
+          delimiter.length >= context.fenceLength &&
+          delimiter.remainder.trim() === ""
         )
           context.fence = "";
-        if (context.pending !== undefined) {
-          context.pending.body += "\n" + line;
-          context.pending.end = end;
-        }
         continue;
       }
-      if (context.fence !== "") {
-        if (context.pending !== undefined) {
-          context.pending.body += "\n" + line;
-          context.pending.end = end;
-        }
-        continue;
-      }
+      if (context.fence !== "") continue;
       const marker =
         /^@(evidenceExcludeReview|evidenceReview|evidenceExclude|evidence|link)(?:[ \t]|$)/.exec(
           line,

@@ -16,7 +16,7 @@ import { TestSourceSnapshot } from "../../internal/TestSourceSnapshot";
  * narrower ownership than its enclosing statement or the complete source file.
  *
  * 1. Extract a type, a documented member, an unrelated type, and sibling variable
- *    declarators; require version one, a seven-character presentation, and a
+ *    declarators; require version two, a seven-character presentation, and a
  *    declaration content digest distinct from the source-cache digest.
  * 2. Mark the inventory incomplete and require fingerprint inspection to reject.
  * 3. Change review hash/prose, line endings, and trailing whitespace; require the
@@ -47,7 +47,7 @@ export async function test_fingerprint_content(): Promise<void> {
   const priceFingerprint = EvidenceFingerprint.inspect(original, price.id);
   const firstFingerprint = EvidenceFingerprint.inspect(original, first.id);
 
-  TestValidator.equals("fingerprint version", saleFingerprint.version, 1);
+  TestValidator.equals("fingerprint version", saleFingerprint.version, 2);
   TestValidator.equals(
     "presented fingerprint length",
     saleFingerprint.fingerprint.length,

@@ -1,4 +1,5 @@
 import { EvidenceDocumentation } from "../../parsers/EvidenceDocumentation";
+import { DocumentationExamples } from "../../parsers/DocumentationExamples";
 import type { IEvidenceDocumentation } from "../../structures/IEvidenceDocumentation";
 import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { IKotlinDocumentation } from "./IKotlinDocumentation";
@@ -11,7 +12,7 @@ import type { IKotlinDocumentation } from "./IKotlinDocumentation";
  */
 export namespace KotlinDocumentation {
   /**
-   * Maps a classified carrier and removes ineligible example text without moving offsets.
+   * Maps a carrier and removes examples without moving source offsets.
    *
    * Only block KDoc receives Kotlin-specific masking; other classified carriers
    * retain EvidenceDocumentation's normalized text and source mapping unchanged.
@@ -35,16 +36,14 @@ export namespace KotlinDocumentation {
   }
 
   /**
-   * Masks HTML examples and Markdown indented code while leaving line positions intact.
+   * Masks HTML examples and Markdown indented code before tag parsing.
    *
    * Fence handling remains in the shared tag parser because it depends on the
    * annotation grammar rather than Kotlin documentation syntax.
    */
   function mask(input: string): string {
     const characters = input.split("");
-    const htmlCode = /<(pre|code)\b[^>]*>[\s\S]*?<\/\1\s*>/giu;
-    for (const match of input.matchAll(htmlCode))
-      hide(characters, match.index, match.index + match[0].length);
+    DocumentationExamples.maskHtml(characters, input, ["pre", "code"]);
     const lines = input.split("\n");
     const indents = lines.filter((line) => line.trim() !== "").map(indentation);
     const baseline = indents.reduce(
@@ -77,7 +76,7 @@ export namespace KotlinDocumentation {
   }
 
   /**
-   * Replaces example characters with spaces while retaining original line boundaries.
+   * Replaces example characters while retaining original line boundaries.
    *
    * Spaces prevent tags inside examples from parsing, and retained CR/LF bytes
    * preserve the offset mapping used for diagnostics outside those examples.

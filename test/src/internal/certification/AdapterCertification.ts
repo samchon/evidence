@@ -10,6 +10,7 @@ import type {
   EvidenceDatabaseSymbol,
   IEvidenceAddress,
   IEvidenceInventory,
+  IEvidenceSourceFile,
   IEvidenceSourceSnapshot,
   IEvidenceUnit,
 } from "@wrtnlabs/evidence";
@@ -24,15 +25,38 @@ import type { IAdapterCertificationAddress } from "./IAdapterCertificationAddres
 import type { IAdapterCertificationHost } from "./IAdapterCertificationHost";
 import type { IAdapterCertificationSource } from "./IAdapterCertificationSource";
 
-/** Runs the same inventory, graph, failure, and mutation contract for every adapter. */
+/**
+ * Runs the shared inventory, graph, failure, and mutation contract for adapters.
+ *
+ * Language-specific fixtures supply expected declarations while this namespace
+ * enforces the cross-adapter completeness and fingerprint guarantees.
+ */
 export namespace AdapterCertification {
+  /**
+   * Analyzes one certification fixture under a chosen physical checkout identity.
+   *
+   * Most callers use the deterministic default snapshot. Fingerprint portability
+   * checks supply another root and source identity while preserving relative
+   * declaring paths, reproducing the discovery changes caused by checkout moves
+   * and file replacement.
+   */
   export async function analyze(
     certification: IAdapterCertification | IDatabaseAdapterCertification,
     sources: IAdapterCertificationSource[] = certification.sources,
+    root: string = "/project",
+    sourceIdentity: string = "source",
   ): Promise<IEvidenceInventory> {
-    return certification.adapter.analyze(snapshot(sources));
+    return certification.adapter.analyze(
+      snapshot(sources, root, sourceIdentity),
+    );
   }
 
+  /**
+   * Compares one analyzed fixture with its complete declared inventory contract.
+   *
+   * Units, public addresses, hosts, annotations, diagnostics, and Unicode source
+   * mappings must all match; excluded declarations must remain absent.
+   */
   export function assertInventory(
     certification: IAdapterCertification | IDatabaseAdapterCertification,
     inventory: IEvidenceInventory,
@@ -153,6 +177,12 @@ export namespace AdapterCertification {
     }
   }
 
+  /**
+   * Verifies complete and one-missing-unit graph outcomes for one adapter fixture.
+   *
+   * Each declared requirement is removed in turn so a passing aggregate cannot
+   * hide an adapter that attached evidence to the wrong semantic unit.
+   */
   export async function assertGraph(
     certification: IAdapterCertification | IDatabaseAdapterCertification,
   ): Promise<void> {
@@ -247,6 +277,12 @@ export namespace AdapterCertification {
     }
   }
 
+  /**
+   * Requires malformed, incomplete, and false-positive controls to fail safely.
+   *
+   * Adapter diagnostics must preserve incompleteness for lost surface while
+   * unsupported annotations remain explicit without inventing declaration hosts.
+   */
   export async function assertFailures(
     certification: IAdapterCertification | IDatabaseAdapterCertification,
   ): Promise<void> {
@@ -288,6 +324,14 @@ export namespace AdapterCertification {
     );
   }
 
+  /**
+   * Certifies semantic sensitivity and filesystem-independent review identity.
+   *
+   * Annotation prose and line-ending representation remain outside reviewed
+   * content. A real implementation mutation expires the fingerprint, whereas a
+   * different checkout root and source identity must preserve it for the same
+   * relative declaration.
+   */
   export async function assertFingerprint(
     certification: IAdapterCertification | IDatabaseAdapterCertification,
   ): Promise<void> {
@@ -308,9 +352,26 @@ export namespace AdapterCertification {
         certification.mutation.contentAfter,
       ),
     );
+    const portableSources: IAdapterCertificationSource[] =
+      certification.sources.map(
+        (source: IAdapterCertificationSource): IAdapterCertificationSource => ({
+          ...source,
+          content: source.content.replaceAll("\n", "\r\n"),
+        }),
+      );
+    const relocated: IEvidenceInventory = await analyze(
+      certification,
+      portableSources,
+      "/another-checkout",
+      "replacement",
+    );
     const originalUnit = requireUnit(original, certification.mutation.unit);
     const reasonUnit = requireUnit(reason, certification.mutation.unit);
     const contentUnit = requireUnit(content, certification.mutation.unit);
+    const relocatedUnit: IEvidenceUnit = requireUnit(
+      relocated,
+      certification.mutation.unit,
+    );
 
     TestValidator.equals(
       `${certification.type} annotation-stable fingerprint`,
@@ -322,8 +383,19 @@ export namespace AdapterCertification {
       EvidenceFingerprint.inspect(original, originalUnit.id).fingerprint,
       EvidenceFingerprint.inspect(content, contentUnit.id).fingerprint,
     );
+    TestValidator.equals(
+      `${certification.type} checkout and line-ending portable fingerprint`,
+      EvidenceFingerprint.inspect(original, originalUnit.id).fingerprint,
+      EvidenceFingerprint.inspect(relocated, relocatedUnit.id).fingerprint,
+    );
   }
 
+  /**
+   * Confirms that two units sharing one public spelling resolve ambiguously.
+   *
+   * The fixture duplicates an address deliberately and requires the inventory
+   * resolver to refuse an arbitrary declaration choice.
+   */
   export async function assertAmbiguity(
     certification: IAdapterCertification | IDatabaseAdapterCertification,
   ): Promise<void> {
@@ -356,12 +428,32 @@ export namespace AdapterCertification {
     );
   }
 
+  /**
+   * Builds one certification snapshot with caller-selected checkout identity.
+   *
+   * Relative declaring paths remain fixture-owned while physical roots and
+   * process-local source IDs can vary for fingerprint portability checks.
+   */
   function snapshot(
     sources: IAdapterCertificationSource[],
+    root: string,
+    sourceIdentity: string,
   ): IEvidenceSourceSnapshot {
     return TestSourceSnapshot.combine(
-      sources.map((source) =>
-        TestSourceSnapshot.create(source.file, source.content),
+      sources.map(
+        (source: IAdapterCertificationSource): IEvidenceSourceSnapshot => {
+          const snapshot: IEvidenceSourceSnapshot = TestSourceSnapshot.create(
+            source.file,
+            source.content,
+            [source.file],
+            root,
+          );
+          const file: IEvidenceSourceFile | undefined = snapshot.files[0];
+          if (file === undefined)
+            throw new Error("Certification source snapshot is empty.");
+          file.id = `${sourceIdentity}:${source.file}`;
+          return snapshot;
+        },
       ),
     );
   }

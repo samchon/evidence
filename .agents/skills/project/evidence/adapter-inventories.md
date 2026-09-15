@@ -2,6 +2,16 @@
 
 Implement `IEvidenceAdapter.analyze(snapshot)` to translate source snapshots into serializable graph data. The adapter owns declaration classification, public visibility, structural ownership, export resolution, documentation attachment, and unsupported-construct detection. A successful syntax parse alone does not establish a complete Evidence inventory.
 
+This guide gives implementation-level inventories for Markdown, TypeScript, JavaScript, Python, Go, Rust, Java, C#, C, C++, Ruby, and Prisma. The root README's [Languages](../../../../README.md#languages) section is the authoritative current boundary for all 28 supported artifact types, including the adapters whose implementation chapters have not yet been expanded here:
+
+| Family | Authoritative coverage supplied by the root README |
+| --- | --- |
+| Programming | Kotlin, Swift, PHP, Dart, Scala, Lua, Objective-C, Zig, and MATLAB |
+| Database | Portable SQL, PostgreSQL, MySQL, SQLite, BigQuery, and DBML |
+| Document/API | Swagger/OpenAPI, plus the Markdown summary used by public configuration |
+
+`EvidenceLanguageRegistry.list()`, `EvidenceLanguageRegistry.databases()`, and `evidence languages` provide the machine-readable certification set. Prose does not make a candidate or grammar-only entry selectable.
+
 ## Identities and locations
 
 | Record | Meaning |
@@ -63,7 +73,7 @@ Supply applicable review target results in `reviewResolutions`. Review pairing u
 
 `requireReview` adds freshness checks to accepted acknowledgement edges. Each edge exposes the same seven-character value returned by `EvidenceFingerprint.inspect`. A missing review, a review without a fingerprint, and a stale fingerprint are mutually exclusive findings, and each repair names the current value. Review resolution that is incomplete makes the obligation incomplete and suppresses those derivative findings. Explicit resolved reviews are still audited for structural pairing when freshness is not required.
 
-Fingerprint version 1 hashes the exact declaring identity, symbol kind, normalized own content, retained withdrawal kinds, and every explicit descendant linked by `parentId`. It removes registered annotations, normalizes CRLF and CR to LF, trims trailing horizontal whitespace, and ignores trailing blank lines. It does not depend on the selected public alias or reference projection. Changing the digest algorithm requires a fingerprint-version increment; consumers then inspect the new value and re-review affected scopes rather than mechanically accepting the migration.
+Fingerprint version 2 hashes each adapter-owned portable unit identity, artifact and symbol kinds, segmented semantic identity, normalized own content, retained withdrawal kinds, and every explicit descendant linked by `parentId`. File-scoped adapters retain a checkout-relative declaring path, while database adapters whose semantic identities span an ordered schema set remain stable when a declaration moves between those files. It removes registered annotations, normalizes CRLF and CR to LF, trims trailing horizontal whitespace, and ignores trailing blank lines. Filesystem device/inode identity, canonical link targets, absolute checkout roots, source offsets, and selected public aliases do not affect the result. Distinct configured source roots and distinct declaring paths remain distinguishable where their adapter identity includes them. Changing this contract requires another fingerprint-version increment; consumers then inspect the new value and re-review affected scopes rather than mechanically accepting the migration.
 
 A Markdown `checklist` creates one obligation for every selected claim host and selected Markdown item. Positive evidence answers only the selected item it names. Exclusions retain descendant coverage for their own host. An unselected positive aggregate produces one direct diagnostic and records its selected descendants as explained, so the same host does not receive derivative missing-item diagnostics for that mistake. The obligation's `hostCoverage` retains each host's covered, missing, and explained units; its top-level covered units are those answered by every host. Configuration validation rejects checklists on other artifact kinds, incompatible cardinality options, and gathered exclusion carriers unless exclusions are disabled for that reference.
 
@@ -103,9 +113,11 @@ Partition a section's own content into original source ranges. Include heading l
 
 ## TypeScript inventories
 
-`EvidenceTypeScriptAdapter` parses `.ts`, `.mts`, `.cts`, and `.tsx` snapshots with the packaged TypeScript or TSX grammar. It materializes exported interfaces, type aliases, classes, and namespaces as `type` units; object-shaped aliases also expose their members. Function and generator declarations are `function` units. A variable is a function only when a `const` identifier is initialized directly with a function value; mutable variables, typed declarations without such an initializer, and destructured leaves are properties.
+`EvidenceTypeScriptAdapter` parses `.ts`, `.mts`, `.cts`, and `.tsx` snapshots with the pinned TypeScript or TSX grammar acquired through the verified parser cache. It materializes exported interfaces, type aliases, classes, and namespaces as `type` units; object-shaped aliases also expose their members. Function and generator declarations are `function` units. A variable is a function only when a `const` identifier is initialized directly with a function value; mutable variables, typed declarations without such an initializer, and destructured leaves are properties.
 
 Public class methods and directly written function fields are functions. Other public fields are properties. Static members use `Class.member`; instance members and parameter properties use `Class.prototype.member`. Interface members and object-type members use their containing type directly, except when an interface merges with a class and therefore joins the class instance side. Constructors, get/set and auto-accessors, private/protected members, computed names, index signatures, static blocks, and enums do not form units.
+
+Compatible interface, class, and namespace declarations with the same TypeScript identity share one `type` unit. Exported namespace declarations contribute their own site and nested public declarations, so an interface `IShoppingSale` beside `namespace IShoppingSale { export interface ICreate { title: string } }` exposes `IShoppingSale`, `IShoppingSale.ICreate`, and `IShoppingSale.ICreate.title`. A function and namespace may merge in TypeScript, but Evidence keeps the callable function unit and excludes that companion namespace's static body from the declared target grammar.
 
 Local declaration identity remains separate from each exported address. The adapter follows direct exports, local aliases, defaults, imported bindings that are re-exported, named and star reexports, and namespace exports through relative source-snapshot paths. It recognizes `.js` to `.ts`/`.tsx`, `.mjs` to `.mts`, `.cjs` to `.cts`, and declaration-file substitutions. Explicit exports shadow star candidates; competing star candidates remain distinct so resolution can report ambiguity. Traversal terminates finite cycles, and a named export cycle that never reaches a declaration marks the inventory incomplete.
 
@@ -127,7 +139,7 @@ Attach only JSDoc that immediately precedes a supported declaration. Retain unsu
 
 ## Python inventories
 
-`EvidencePythonAdapter` parses `.py` and `.pyi` snapshots with the packaged Python grammar. It inventories the statically declared source surface and never imports or executes the analyzed application.
+`EvidencePythonAdapter` parses `.py` and `.pyi` snapshots with the pinned Python grammar acquired through the verified parser cache. It inventories the statically declared source surface and never imports or executes the analyzed application.
 
 Classify supported declarations as follows:
 
@@ -159,7 +171,7 @@ Conditional module declarations/imports, conditional class declarations, dynamic
 
 ## Go inventories
 
-`EvidenceGoAdapter` parses `.go` snapshots with the packaged Go grammar and groups physical files by directory and package. It inventories the selected declared source without invoking the Go toolchain.
+`EvidenceGoAdapter` parses `.go` snapshots with the pinned Go grammar acquired through the verified parser cache and groups physical files by directory and package. It inventories the selected declared source without invoking the Go toolchain.
 
 Classify supported declarations as follows:
 
@@ -183,7 +195,7 @@ Do not run generators or import external package declarations. Generated declara
 
 ## Rust inventories
 
-`EvidenceRustAdapter` parses `.rs` snapshots with the packaged Rust grammar. It constructs a static crate and module graph from the selected source and never invokes Cargo, rustc, build scripts, or application macros.
+`EvidenceRustAdapter` parses `.rs` snapshots with the pinned Rust grammar acquired through the verified parser cache. It constructs a static crate and module graph from the selected source and never invokes Cargo, rustc, build scripts, or application macros.
 
 Classify supported declarations as follows:
 
@@ -210,7 +222,7 @@ The adapter inventories explicit selected source rather than the feature-resolve
 
 ## Java inventories
 
-`EvidenceJavaAdapter` parses `.java` snapshots with the packaged `tree-sitter-java` v0.23.5 grammar. It inventories the declared source-public surface without invoking `javac`, a build tool, application code, or annotation processors.
+`EvidenceJavaAdapter` parses `.java` snapshots with the pinned `tree-sitter-java` v0.23.5 grammar acquired through the verified parser cache. It inventories the declared source-public surface without invoking `javac`, a build tool, application code, or annotation processors.
 
 Classify supported declarations as follows:
 
@@ -240,7 +252,7 @@ Apply source visibility independently of Java Platform Module System exports. A 
 
 ## C# inventories
 
-`EvidenceCSharpAdapter` parses `.cs` snapshots with the packaged `tree-sitter-c-sharp` v0.23.5 grammar. It inventories explicit source declarations without invoking the .NET SDK, loading assemblies, executing source generators, or running application code.
+`EvidenceCSharpAdapter` parses `.cs` snapshots with the pinned `tree-sitter-c-sharp` v0.23.5 grammar acquired through the verified parser cache. It inventories explicit source declarations without invoking the .NET SDK, loading assemblies, executing source generators, or running application code.
 
 Classify supported declarations as follows:
 
@@ -271,7 +283,7 @@ The classification follows the C# reference for [accessibility levels](https://l
 
 ## C inventories
 
-`EvidenceCAdapter` parses `.c` and `.h` snapshots with the packaged `tree-sitter-c` v0.24.2 grammar. It inventories explicit declarations without invoking a preprocessor, compiler, build system, linker, application, or native toolchain.
+`EvidenceCAdapter` parses `.c` and `.h` snapshots with the pinned `tree-sitter-c` v0.24.2 grammar acquired through the verified parser cache. It inventories explicit declarations without invoking a preprocessor, compiler, build system, linker, application, or native toolchain.
 
 Classify supported declarations as follows:
 
@@ -301,7 +313,7 @@ The declaration model follows the [C declarator grammar](https://github.com/tree
 
 ## C++ inventories
 
-`EvidenceCppAdapter` parses `.cpp`, `.cc`, `.cxx`, `.c++`, `.C`, `.h`, `.hpp`, `.hh`, `.hxx`, `.h++`, `.H`, `.ipp`, `.tpp`, `.ixx`, `.cppm`, `.ccm`, `.cxxm`, and `.c++m` snapshots with the packaged `tree-sitter-cpp` v0.23.4 grammar. It inventories explicit declarations without invoking a preprocessor, compiler, build system, template instantiator, module resolver, linker, application, or native toolchain.
+`EvidenceCppAdapter` parses `.cpp`, `.cc`, `.cxx`, `.c++`, `.C`, `.h`, `.hpp`, `.hh`, `.hxx`, `.h++`, `.H`, `.ipp`, `.tpp`, `.ixx`, `.cppm`, `.ccm`, `.cxxm`, and `.c++m` snapshots with the pinned `tree-sitter-cpp` v0.23.4 grammar acquired through the verified parser cache. It inventories explicit declarations without invoking a preprocessor, compiler, build system, template instantiator, module resolver, linker, application, or native toolchain.
 
 Classify supported declarations as follows:
 
@@ -332,7 +344,7 @@ The declaration model follows the pinned [tree-sitter-cpp](https://github.com/tr
 
 ## Ruby inventories
 
-`EvidenceRubyAdapter` parses `.rb`, `.rake`, and `.gemspec` snapshots, plus `Gemfile` and `Rakefile`, with the packaged `tree-sitter-ruby` v0.23.1 grammar. It inventories explicit declarations without starting Ruby, loading the application, or choosing runtime file order.
+`EvidenceRubyAdapter` parses `.rb`, `.rake`, and `.gemspec` snapshots, plus `Gemfile` and `Rakefile`, with the pinned `tree-sitter-ruby` v0.23.1 grammar acquired through the verified parser cache. It inventories explicit declarations without starting Ruby, loading the application, or choosing runtime file order.
 
 Classify supported declarations as follows:
 

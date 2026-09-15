@@ -139,11 +139,63 @@ export class EcmaScriptAdapter implements IEvidenceAdapter {
       inventory.units = inventory.units.filter((unit) =>
         published.has(unit.id),
       );
-      this.materializeComments(inventory, analyses, published);
+      const stablePublished: Set<string> = this.stabilizeRuntimeUnits(
+        inventory,
+        analyses,
+        published,
+      );
+      this.materializeComments(inventory, analyses, stablePublished);
       return new EvidenceInventory([inventory]).snapshot();
     } finally {
       await parser.close();
     }
+  }
+
+  /**
+   * Restores stable JavaScript IDs after runtime-rebinding selection completes.
+   *
+   * Occurrence suffixes keep documentation on replaced values isolated during
+   * export resolution. Once that resolver has selected the public winners, this
+   * pass canonicalizes their units, parents, addresses, comment attachments, and
+   * fallback host positions together. Attachments on unpublished occurrences
+   * retain private IDs and cannot become eligible through the transition.
+   */
+  private stabilizeRuntimeUnits(
+    inventory: IEvidenceInventory,
+    analyses: IEcmaScriptFileAnalysis[],
+    published: Set<string>,
+  ): Set<string> {
+    const stableIds: Map<string, string> = new Map<string, string>();
+    const owners: Set<string> = new Set<string>();
+    for (const id of published) {
+      const stable: string = id.replace(/:binding:\d+$/u, "");
+      if (owners.has(stable))
+        throw new Error(
+          `${this.name} runtime bindings share semantic identity: ${stable}`,
+        );
+      owners.add(stable);
+      stableIds.set(id, stable);
+    }
+    for (const unit of inventory.units) {
+      const stable: string | undefined = stableIds.get(unit.id);
+      if (stable === undefined) continue;
+      unit.id = stable;
+      if (unit.parentId !== undefined)
+        unit.parentId = stableIds.get(unit.parentId) ?? unit.parentId;
+    }
+    for (const address of inventory.addresses)
+      address.unitId = stableIds.get(address.unitId) ?? address.unitId;
+    for (const analysis of analyses) {
+      for (const comment of analysis.comments)
+        for (const attachment of comment.attachments)
+          attachment.unitId =
+            stableIds.get(attachment.unitId) ?? attachment.unitId;
+      for (const position of analysis.positions)
+        position.unitIds = position.unitIds.map(
+          (unitId: string): string => stableIds.get(unitId) ?? unitId,
+        );
+    }
+    return owners;
   }
 
   private async scan(

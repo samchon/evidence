@@ -6,6 +6,7 @@ import typia from "typia";
 import { EvidenceInventory } from "../../graph/EvidenceInventory";
 import { EvidenceSourceLoader } from "../../loaders/EvidenceSourceLoader";
 import { EvidenceTagParser } from "../../parsers/EvidenceTagParser";
+import type { IRemoteSwaggerSource } from "./IRemoteSwaggerSource";
 import type { ISwaggerOperation } from "./ISwaggerOperation";
 import type { IYamlScalarMapping } from "./IYamlScalarMapping";
 import { SourcePath } from "../../internal/SourcePath";
@@ -91,18 +92,18 @@ export class EvidenceSwaggerAdapter implements IEvidenceAdapter {
     file: string,
     root: string = ".",
   ): Promise<IEvidenceInventory> {
-    let display = file;
+    let display: string = SwaggerRemoteReader.safeDisplay(file);
     try {
       if (file === "" || file.trim() !== file)
         throw new Error("A Swagger source must not be empty or padded.");
-      const remote = SwaggerRemoteReader.parse(file);
+      const remote: URL | undefined = SwaggerRemoteReader.parse(file);
       if (remote === undefined)
         return await this.analyze(
           await EvidenceSourceLoader.file(configFile, file, root),
         );
       display = SwaggerRemoteReader.display(remote);
-      const read = await SwaggerRemoteReader.read(remote);
-      const absoluteRoot = SourcePath.root(configFile, root);
+      const read: IRemoteSwaggerSource = await SwaggerRemoteReader.read(remote);
+      const absoluteRoot: string = SourcePath.root(configFile, root);
       return await this.analyze({
         root: {
           declared: root,
@@ -116,6 +117,7 @@ export class EvidenceSwaggerAdapter implements IEvidenceAdapter {
           {
             id: `swagger:remote:${createHash("sha256").update(file).digest("hex")}`,
             physicalPath: display,
+            fingerprintPath: display,
             content: read.content,
             digest: read.digest,
             addresses: [
@@ -132,7 +134,10 @@ export class EvidenceSwaggerAdapter implements IEvidenceAdapter {
         complete: true,
       });
     } catch (cause) {
-      return this.failure(display, cause);
+      return this.failure(
+        display,
+        SwaggerRemoteReader.safeMessage(cause, file),
+      );
     }
   }
 
@@ -234,6 +239,12 @@ export class EvidenceSwaggerAdapter implements IEvidenceAdapter {
     }
   }
 
+  /**
+   * Parses one mapped operation description into inventory annotations.
+   *
+   * Declarations, reviews, diagnostics, and their exact source ranges are copied
+   * together so fingerprinting can exclude metadata without dropping prose.
+   */
   private parse(
     inventory: IEvidenceInventory,
     source: IEvidenceSourceFile,
@@ -261,7 +272,13 @@ export class EvidenceSwaggerAdapter implements IEvidenceAdapter {
     );
   }
 
-  private failure(file: string, cause: unknown): IEvidenceInventory {
+  /**
+   * Creates an incomplete inventory for one safely described source failure.
+   *
+   * The diagnostic retains the requested source label while an empty population
+   * cannot be mistaken for a complete Swagger document.
+   */
+  private failure(file: string, message: string): IEvidenceInventory {
     return new EvidenceInventory([
       {
         schemaVersion: 1,
@@ -276,7 +293,7 @@ export class EvidenceSwaggerAdapter implements IEvidenceAdapter {
           {
             code: "swagger-source-failed",
             severity: "error",
-            message: `The Swagger source could not be loaded: ${this.message(cause)}`,
+            message: `The Swagger source could not be loaded: ${message}`,
             repair:
               "Correct the exact local path or HTTP(S) URL and restore access to the document.",
             location: { file },
@@ -288,6 +305,12 @@ export class EvidenceSwaggerAdapter implements IEvidenceAdapter {
     ]).snapshot();
   }
 
+  /**
+   * Converts an unknown local analysis failure into diagnostic text.
+   *
+   * Remote load failures use SwaggerRemoteReader's credential-safe boundary
+   * before they reach this adapter.
+   */
   private message(cause: unknown): string {
     return cause instanceof Error ? cause.message : String(cause);
   }

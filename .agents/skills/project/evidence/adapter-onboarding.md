@@ -96,7 +96,8 @@ Inspect package metadata and preparation scripts directly. Do not add tarball in
 Run:
 
 ```bash
-pnpm test
+pnpm start --include test_parser_grammars
+pnpm start --include test_adapter_certification
 pnpm check:format
 ```
 

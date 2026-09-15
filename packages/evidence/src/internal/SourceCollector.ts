@@ -87,6 +87,17 @@ export class SourceCollector {
     this.watch(absolute, false);
     this.watch(SourcePath.slash(path.dirname(absolute)), false);
     try {
+      const rootPhysical: string = await this.resolvePhysical(
+        this.root.absolute,
+      );
+      const rootInfo: BigIntStats = await stat(rootPhysical, { bigint: true });
+      if (!rootInfo.isDirectory())
+        throw new SourceFailure(
+          "root-unreadable",
+          "The population root is not a directory.",
+        );
+      this.root.physical = rootPhysical;
+      this.watch(rootPhysical, true);
       const physical = await this.resolvePhysical(absolute);
       const info = await stat(physical, { bigint: true });
       if (!info.isFile())
@@ -112,11 +123,14 @@ export class SourceCollector {
    * equivalent source snapshots do not vary with filesystem traversal order.
    */
   public snapshot(): IEvidenceSourceSnapshot {
-    const files = [...this.files.values()];
-    for (const file of files)
+    const files: IEvidenceSourceFile[] = [...this.files.values()];
+    for (const file of files) {
       file.addresses.sort((left, right) =>
         compare(left.relative, right.relative),
       );
+      const declaring: IEvidenceSourceAddress | undefined = file.addresses[0];
+      if (declaring !== undefined) file.fingerprintPath = declaring.display;
+    }
     files.sort((left, right) =>
       compare(
         left.addresses[0]?.relative ?? left.physicalPath,
@@ -263,6 +277,15 @@ export class SourceCollector {
       this.files.set(id, {
         id,
         physicalPath: physical,
+        fingerprintPath: address.display,
+        ...(this.root.physical === undefined
+          ? {}
+          : {
+              fingerprintRoot: {
+                physicalPath: this.root.physical,
+                fingerprintPath: this.root.display,
+              },
+            }),
         content,
         digest: createHash("sha256").update(bytes).digest("hex"),
         addresses: [address],

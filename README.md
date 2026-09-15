@@ -42,7 +42,7 @@ npx evidence init
 npx evidence
 ```
 
-`typescript` and [`ttsc`](https://github.com/samchon/ttsc) are peer dependencies; `ttsc` supplies `ttsx`, which evaluates `evidence.config.ts`. Grammars download on first use. [Step 1](#step-1-enforce-your-principles) fills the config in.
+`typescript` and [`ttsc`](https://github.com/samchon/ttsc) are peer dependencies; `ttsc` supplies `ttsx`, which evaluates `evidence.config.ts` without a project `tsconfig.json`. Grammars download on first use. [Step 1](#step-1-enforce-your-principles) fills the config in.
 
 ## Why a graph
 
@@ -356,7 +356,7 @@ A false tag removes the error, not the problem. `requireReview: true` demands a 
 ```ts
 /**
  * @evidence .agents/skills/principles/SKILL.md#no-hard-coding Looks the handler up in the registry it was handed and branches on no known name.
- * @evidenceReview .agents/skills/principles/SKILL.md#no-hard-coding #3eb537a Searched the body for literal names and fixture values; found none.
+ * @evidenceReview .agents/skills/principles/SKILL.md#no-hard-coding #6385235 Searched the body for literal names and fixture values; found none.
  */
 ```
 
@@ -365,11 +365,11 @@ The fingerprint is seven hexadecimal characters over the cited unit and its subt
 ```bash
 ERROR [graph-missing-review] claim[0] 'every function answers every engineering principle' (typescript) -> reference[0] (markdown)
 Location: /workspace/app/src/resolve.ts:4:4
-Claim 1 ('every function answers every engineering principle') reference 1: @evidence for '.agents/skills/principles/SKILL.md#no-hard-coding' has no matching @evidenceReview; the current scope fingerprint is '#3eb537a'.
-Repair: Add '@evidenceReview .agents/skills/principles/SKILL.md#no-hard-coding #3eb537a <what you checked>' on the same semantic host.
+Claim 1 ('every function answers every engineering principle') reference 1: @evidence for '.agents/skills/principles/SKILL.md#no-hard-coding' has no matching @evidenceReview; the current scope fingerprint is '#6385235'.
+Repair: Add '@evidenceReview .agents/skills/principles/SKILL.md#no-hard-coding #6385235 <what you checked>' on the same semantic host.
 ```
 
-Reviews never provide coverage. `@evidenceReview` pairs with `@evidence`; `@evidenceExcludeReview` pairs with `@evidenceExclude`. The checker handles omissions; humans handle falsehoods.
+Reviews never provide coverage. `@evidenceReview` pairs with `@evidence`; `@evidenceExcludeReview` pairs with `@evidenceExclude`. A fingerprint version upgrade expires every review once; re-review before updating the value. The checker handles omissions; humans handle falsehoods.
 
 ### States
 
@@ -531,7 +531,7 @@ Addresses are file-qualified except Prisma: `schema.sql#app.item.id`, `schema.sq
 
 ### Markdown and Swagger
 
-Markdown yields one `file` unit and one per ATX `h1` to `h4`; HTML comments are the only hosts. Swagger 2.0 and OpenAPI 3.x yield `METHOD:/path` operations whose `description` hosts tags; a reference by URL is fetched on every load.
+Markdown yields one `file` unit and one per ATX `h1` to `h4`; HTML comments are the only hosts. Swagger 2.0 and OpenAPI 3.x yield `METHOD:/path` operations whose `description` hosts tags; an operation's fingerprint covers its content, effective servers and security, and referenced local components. A reference by URL is fetched on every load.
 
 ## CLI
 

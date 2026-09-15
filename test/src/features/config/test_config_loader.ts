@@ -1,7 +1,9 @@
 import { EvidenceConfigLoader } from "@wrtnlabs/evidence";
+import type { IEvidenceConfig } from "@wrtnlabs/evidence";
 import { TestValidator } from "@nestia/e2e";
 import { dedent } from "@typia/utils";
 import { randomUUID } from "node:crypto";
+import { rm } from "node:fs/promises";
 import { join } from "node:path";
 
 import { evaluateTypeScriptConfig } from "../../../../packages/evidence/src/internal/evaluateTypeScriptConfig";
@@ -17,13 +19,15 @@ import { TestFileSystem } from "../../internal/TestFileSystem";
  * 1. Use a path containing spaces and literal punctuation; load equivalent ts,
  *    cts, and mts configurations that import helper globs while an unrelated
  *    TypeScript file contains a type error.
- * 2. Emit stdout and stderr from configuration evaluation and require both tokens
+ * 2. Remove the consumer tsconfig and require the isolated evaluator to load the
+ *    same TypeScript configuration and its imported helper.
+ * 3. Emit stdout and stderr from configuration evaluation and require both tokens
  *    to reach the supplied diagnostic sink.
- * 3. Configure an unsupported artifact and require its exact claims[0].type path
+ * 4. Configure an unsupported artifact and require its exact claims[0].type path
  *    and adapter-certification cause in the loading error.
- * 4. Plan a disabled claim with missing source and reference paths; require the
+ * 5. Plan a disabled claim with missing source and reference paths; require the
  *    correct configuration anchor and no active claims without touching those inputs.
- * 5. Require runtime exceptions and type errors in an imported helper to reject
+ * 6. Require runtime exceptions and type errors in an imported helper to reject
  *    loading rather than return partial configuration data.
  */
 export async function test_config_loader(): Promise<void> {
@@ -74,6 +78,17 @@ export async function test_config_loader(): Promise<void> {
           ["src/**"],
         );
       }
+
+      // The evaluator supplies its own compiler project after resolving consumer dependencies.
+      await rm(join(directory, "tsconfig.json"));
+      const isolated: IEvidenceConfig = await EvidenceConfigLoader.load(
+        join(directory, "evidence.config.ts"),
+      );
+      TestValidator.equals(
+        "config without tsconfig",
+        isolated.claims[0]?.files,
+        ["src/**"],
+      );
 
       // Evaluator stdout and stderr share the diagnostic sink instead of process stdout.
       await TestFileSystem.save(directory, {

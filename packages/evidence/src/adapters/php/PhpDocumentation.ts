@@ -1,4 +1,5 @@
 import { EvidenceDocumentation } from "../../parsers/EvidenceDocumentation";
+import { DocumentationExamples } from "../../parsers/DocumentationExamples";
 import type { IEvidenceDocumentation } from "../../structures/IEvidenceDocumentation";
 import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { IPhpDocumentation } from "./IPhpDocumentation";
@@ -11,7 +12,7 @@ import type { IPhpDocumentation } from "./IPhpDocumentation";
  */
 export namespace PhpDocumentation {
   /**
-   * Maps a classified carrier and removes ineligible example text without moving offsets.
+   * Maps a carrier and removes examples without moving source offsets.
    *
    * The returned documentation keeps the shared parser's coordinates while its
    * masked text prevents annotations in PHPDoc examples from becoming evidence.
@@ -42,9 +43,7 @@ export namespace PhpDocumentation {
    */
   function mask(input: string): string {
     const characters = input.split("");
-    const htmlCode = /<(pre|code)\b[^>]*>[\s\S]*?<\/\1\s*>/giu;
-    for (const match of input.matchAll(htmlCode))
-      hide(characters, match.index, match.index + match[0].length);
+    DocumentationExamples.maskHtml(characters, input, ["pre", "code"]);
     const lines = input.split("\n");
     const indents = lines.filter((line) => line.trim() !== "").map(indentation);
     const baseline = indents.reduce(

@@ -1,4 +1,5 @@
 import { EvidenceDocumentation } from "../../parsers/EvidenceDocumentation";
+import { DocumentationExamples } from "../../parsers/DocumentationExamples";
 import type { IEvidenceDocumentation } from "../../structures/IEvidenceDocumentation";
 import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { IZigDocumentation } from "./IZigDocumentation";
@@ -11,7 +12,7 @@ import type { IZigDocumentation } from "./IZigDocumentation";
  */
 export namespace ZigDocumentation {
   /**
-   * Maps one classified carrier and removes ineligible example text without moving offsets.
+   * Maps one carrier and removes examples without moving source offsets.
    *
    * Only triple-slash documentation is masked because other carrier forms exist
    * solely to report unsupported tag-bearing source text with its original mapping.
@@ -42,9 +43,7 @@ export namespace ZigDocumentation {
    */
   function mask(input: string): string {
     const characters = input.split("");
-    const htmlCode = /<(pre|code)\b[^>]*>[\s\S]*?<\/\1\s*>/giu;
-    for (const match of input.matchAll(htmlCode))
-      hide(characters, match.index, match.index + match[0].length);
+    DocumentationExamples.maskHtml(characters, input, ["pre", "code"]);
     const lines = input.split("\n");
     const indents = lines.filter((line) => line.trim() !== "").map(indentation);
     const baseline = indents.reduce(
@@ -77,7 +76,7 @@ export namespace ZigDocumentation {
   }
 
   /**
-   * Replaces example characters with spaces while retaining original line boundaries.
+   * Replaces example characters while retaining original line boundaries.
    *
    * Keeping line endings intact preserves Evidence tag offsets and diagnostics
    * relative to the original source documentation carrier.

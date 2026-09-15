@@ -1,16 +1,19 @@
 import { EvidenceDocumentation } from "../../parsers/EvidenceDocumentation";
+import { DocumentationExamples } from "../../parsers/DocumentationExamples";
 import type { IEvidenceDocumentation } from "../../structures/IEvidenceDocumentation";
 import type { IEvidenceSourceFile } from "../../structures/IEvidenceSourceFile";
 import type { ISqlDocumentation } from "./ISqlDocumentation";
 
 /**
- * Reads SQL documentation while preserving source mappings and masking code examples.
+ * Reads SQL documentation while preserving source mappings and masking code
+ * examples.
  *
- * Shared SQL adapters use the result before passing supported annotations to the tag parser.
+ * Shared SQL adapters use the result before passing supported annotations to the
+ * tag parser.
  */
 export namespace SqlDocumentation {
   /**
-   * Maps a classified carrier and removes ineligible example text without moving offsets.
+   * Maps a carrier and removes examples without moving source offsets.
    *
    * Preserved offsets keep tag diagnostics aligned with the original SQL source.
    */
@@ -53,15 +56,14 @@ export namespace SqlDocumentation {
   }
 
   /**
-   * Masks HTML examples and Markdown indented code while shared tag parsing handles fences.
+   * Masks HTML examples and Markdown indented code before tag parsing.
    *
-   * Masking replaces only visible characters so source line and UTF-16 positions remain stable.
+   * Masking replaces only visible characters so source line and UTF-16 positions
+   * remain stable.
    */
   function mask(input: string): string {
     const characters = input.split("");
-    const htmlCode = /<(pre|code)\b[^>]*>[\s\S]*?<\/\1\s*>/giu;
-    for (const match of input.matchAll(htmlCode))
-      hide(characters, match.index, match.index + match[0].length);
+    DocumentationExamples.maskHtml(characters, input, ["pre", "code"]);
     const lines = input.split("\n");
     const indents = lines.filter((line) => line.trim() !== "").map(indentation);
     const baseline = indents.reduce(
@@ -93,9 +95,10 @@ export namespace SqlDocumentation {
   }
 
   /**
-   * Replaces example characters with spaces while retaining original line boundaries.
+   * Replaces example characters while retaining original line boundaries.
    *
-   * Newlines remain intact so later offset mapping still identifies the source carrier.
+   * Newlines remain intact so later offset mapping still identifies the source
+   * carrier.
    */
   function hide(characters: string[], start: number, end: number): void {
     for (let index = start; index < end; ++index)

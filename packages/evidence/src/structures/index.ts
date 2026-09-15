@@ -63,6 +63,7 @@ export type * from "./IEvidenceSourceAddress";
 export type * from "./IEvidenceSourceDependency";
 export type * from "./IEvidenceSourceDiagnostic";
 export type * from "./IEvidenceSourceFile";
+export type * from "./IEvidenceSourceFingerprintRoot";
 export type * from "./IEvidenceSourcePosition";
 export type * from "./IEvidenceSourceRange";
 export type * from "./IEvidenceSourceRoot";
