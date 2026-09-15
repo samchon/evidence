@@ -234,7 +234,7 @@ export abstract class EvidEcmaScriptAdapter<
         comments: [],
         diagnostics: [
           {
-            code: `${String(this.type)}-${parserError?.code ?? "parse-failed"}`,
+            code: `${this.type as string}-${parserError?.code ?? "parse-failed"}`,
             severity: "error",
             message:
               parserError?.message ??
